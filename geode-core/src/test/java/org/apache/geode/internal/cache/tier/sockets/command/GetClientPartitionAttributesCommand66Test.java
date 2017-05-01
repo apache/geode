@@ -14,12 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
@@ -48,7 +45,7 @@ public class GetClientPartitionAttributesCommand66Test {
   @Mock
   private ServerConnection serverConnection;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock

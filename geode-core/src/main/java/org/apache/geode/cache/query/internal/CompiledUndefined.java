@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.internal;
 import java.util.*;
 
 import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.IndexInfo;
 import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
@@ -100,7 +99,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     } finally {
       observer.afterIndexLookup(set);
     }
-    return QueryUtils.getconditionedIndexResults(set, idxInfo[0], context, indexFieldsSize,
+    return QueryUtils.getConditionedIndexResults(set, idxInfo[0], context, indexFieldsSize,
         completeExpansionNeeded, iterOperands, indpndntItrs);
   }
 
@@ -224,7 +223,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, ')');
     _value.generateCanonicalizedExpression(clauseBuffer, context);

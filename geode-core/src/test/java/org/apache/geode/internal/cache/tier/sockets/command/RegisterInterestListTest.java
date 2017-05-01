@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
@@ -27,9 +29,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
@@ -44,10 +46,10 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class RegisterInterestListTest {
+
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
   private static final byte[] DURABLE = new byte[8];
-
 
   @Mock
   private SecurityService securityService;
@@ -58,7 +60,7 @@ public class RegisterInterestListTest {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock
@@ -83,7 +85,6 @@ public class RegisterInterestListTest {
   public void setUp() throws Exception {
     this.registerInterestList = new RegisterInterestList();
     MockitoAnnotations.initMocks(this);
-
 
     when(this.authzRequest.registerInterestListAuthorize(eq(REGION_NAME), any(), any()))
         .thenReturn(this.registerInterestOperationContext);

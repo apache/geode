@@ -53,10 +53,10 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionException;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TransactionMessage;
@@ -134,7 +134,7 @@ public abstract class PartitionMessage extends DistributionMessage
     setRecipient(recipient);
     this.regionId = regionId;
     this.processorId = processor == null ? 0 : processor.getProcessorId();
-    if (processor != null && this.isSevereAlertCompatible()) {
+    if (processor != null && isSevereAlertCompatible()) {
       processor.enableSevereAlertProcessing();
     }
     initTxMemberId();
@@ -146,7 +146,7 @@ public abstract class PartitionMessage extends DistributionMessage
     setRecipients(recipients);
     this.regionId = regionId;
     this.processorId = processor == null ? 0 : processor.getProcessorId();
-    if (processor != null && this.isSevereAlertCompatible()) {
+    if (processor != null && isSevereAlertCompatible()) {
       processor.enableSevereAlertProcessing();
     }
     initTxMemberId();
@@ -174,8 +174,6 @@ public abstract class PartitionMessage extends DistributionMessage
 
   /**
    * Copy constructor that initializes the fields declared in this class
-   * 
-   * @param other
    */
   public PartitionMessage(PartitionMessage other) {
     this.regionId = other.regionId;
@@ -262,7 +260,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * check to see if the cache is closing
    */
   public boolean checkCacheClosing(DistributionManager dm) {
-    GemFireCacheImpl cache = getGemFireCacheImpl();
+    InternalCache cache = getInternalCache();
     // return (cache != null && cache.isClosed());
     return cache == null || cache.isClosed();
   }
@@ -281,11 +279,11 @@ public abstract class PartitionMessage extends DistributionMessage
     return PartitionedRegion.getPRFromId(this.regionId);
   }
 
-  GemFireCacheImpl getGemFireCacheImpl() {
+  InternalCache getInternalCache() {
     return GemFireCacheImpl.getInstance();
   }
 
-  TXManagerImpl getTXManagerImpl(GemFireCacheImpl cache) {
+  TXManagerImpl getTXManagerImpl(InternalCache cache) {
     return cache.getTxManager();
   }
 
@@ -321,8 +319,7 @@ public abstract class PartitionMessage extends DistributionMessage
         // the partitioned region can't be found (bug 36585)
         thr = new ForceReattemptException(
             LocalizedStrings.PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
-                .toLocalizedString(
-                    new Object[] {dm.getDistributionManagerId(), Integer.valueOf(regionId)}));
+                .toLocalizedString(dm.getDistributionManagerId(), regionId));
         return; // reply sent in finally block below
       }
 
@@ -331,7 +328,7 @@ public abstract class PartitionMessage extends DistributionMessage
       }
       thr = UNHANDLED_EXCEPTION;
 
-      GemFireCacheImpl cache = getGemFireCacheImpl();
+      InternalCache cache = getInternalCache();
       if (cache == null) {
         throw new ForceReattemptException(
             LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString());
@@ -401,8 +398,8 @@ public abstract class PartitionMessage extends DistributionMessage
                   .toLocalizedString());
         }
       }
-      if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message: ", t.getMessage(),
+      if (logger.isTraceEnabled(LogMarker.DM) && t instanceof RuntimeException) {
+        logger.trace(LogMarker.DM, "Exception caught while processing message: {}", t.getMessage(),
             t);
       }
     } finally {
@@ -598,7 +595,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   @Override
   public String toString() {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     String className = getClass().getName();
     // className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); //
     // partition.<foo> more generic version
@@ -613,7 +610,7 @@ public abstract class PartitionMessage extends DistributionMessage
       if (pr != null) {
         name = pr.getFullPath();
       }
-    } catch (Exception e) {
+    } catch (Exception ignore) {
       /* ignored */
       name = null;
     }
@@ -630,10 +627,10 @@ public abstract class PartitionMessage extends DistributionMessage
 
   /**
    * Helper class of {@link #toString()}
-   * 
+   *
    * @param buff buffer in which to append the state of this instance
    */
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     buff.append(" processorId=").append(this.processorId);
     if (this.notificationOnly) {
       buff.append(" notificationOnly=").append(this.notificationOnly);
@@ -704,7 +701,7 @@ public abstract class PartitionMessage extends DistributionMessage
         return false;
       }
       return pr.notifiesMultipleSerialGateways();
-    } catch (PRLocallyDestroyedException e) {
+    } catch (PRLocallyDestroyedException ignore) {
       return false;
     } catch (RuntimeException ignore) {
       return false;
@@ -770,15 +767,15 @@ public abstract class PartitionMessage extends DistributionMessage
         if (removeMember(id, true)) {
           this.prce = new ForceReattemptException(
               LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                  .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}));
+                  .toLocalizedString(id, crashed));
         }
         checkIfDone();
       } else {
         Exception e = new Exception(
             LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID.toLocalizedString());
         logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0,
-            Boolean.valueOf(crashed)), e);
+            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0, crashed),
+            e);
       }
     }
 
@@ -788,7 +785,6 @@ public abstract class PartitionMessage extends DistributionMessage
      * @throws CacheException if the recipient threw a cache exception during message processing
      * @throws ForceReattemptException if the recipient left the distributed system before the
      *         response was received.
-     * @throws PrimaryBucketException
      */
     final public void waitForCacheException()
         throws CacheException, ForceReattemptException, PrimaryBucketException {
@@ -867,7 +863,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * For Distributed Tx
    */
   private void setIfTransactionDistributed() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       if (cache.getTxManager() != null) {
         this.isTransactionDistributed = cache.getTxManager().isDistributed();

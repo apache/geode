@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.distributed.internal.ServerLocation;

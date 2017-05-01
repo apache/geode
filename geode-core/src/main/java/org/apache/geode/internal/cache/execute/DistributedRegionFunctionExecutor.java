@@ -27,7 +27,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -404,7 +404,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
    */
   @Override
   public void validateExecution(Function function, Set targetMembers) {
-    GemFireCacheImpl cache = region.getGemFireCache();
+    InternalCache cache = region.getGemFireCache();
     if (cache != null && cache.getTxManager().getTXState() != null) {
       if (targetMembers.size() > 1) {
         throw new TransactionException(
@@ -419,18 +419,18 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
         } else if (!target.equals(funcTarget)) {
           throw new TransactionDataNotColocatedException(
               LocalizedStrings.PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1
-                  .toLocalizedString(new Object[] {target, funcTarget}));
+                  .toLocalizedString(target, funcTarget));
         }
       }
     }
     if (!MemoryThresholds.isLowMemoryExceptionDisabled() && function.optimizeForWrite()) {
       try {
         region.checkIfAboveThreshold(null);
-      } catch (LowMemoryException e) {
+      } catch (LowMemoryException ignore) {
         Set<DistributedMember> htrm = region.getMemoryThresholdReachedMembers();
         throw new LowMemoryException(
             LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                .toLocalizedString(new Object[] {function.getId(), htrm}),
+                .toLocalizedString(function.getId(), htrm),
             htrm);
 
       }

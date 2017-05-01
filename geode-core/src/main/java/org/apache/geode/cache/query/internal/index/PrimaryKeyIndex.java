@@ -12,11 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * PrimaryKeyIndex.java
- *
- * Created on March 20, 2005, 6:47 PM
- */
 package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
@@ -51,9 +46,6 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
-/**
- * 
- */
 public class PrimaryKeyIndex extends AbstractIndex {
 
   protected long numUses = 0;
@@ -64,7 +56,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
       String origIndxExpr, String[] defintions, IndexStatistics indexStatistics) {
     super(indexName, region, fromClause, indexedExpression, projectionAttributes, origFromClause,
         origIndxExpr, defintions, indexStatistics);
-    // TODO : Asif Check if the below is correct
+    // TODO: Check if the below is correct
     Class constr = region.getAttributes().getValueConstraint();
     if (constr == null)
       constr = Object.class;
@@ -91,21 +83,13 @@ public class PrimaryKeyIndex extends AbstractIndex {
   void addMapping(RegionEntry entry) throws IMQException {}
 
   @Override
-  void instantiateEvaluator(IndexCreationHelper ich) {}
+  void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {}
 
   @Override
   void lockedQuery(Object key, int operator, Collection results, Set keysToRemove,
       ExecutionContext context) throws TypeMismatchException {
     assert keysToRemove == null;
-    // System.out.println("PrimaryKeyIndex.lockedQuery");
-    // System.out.println(" key="+key);
-    // System.out.println(" key.class="+(key != null ? key.getClass().getName()
-    // : "null"));
-    // if(key == null){
-    // numUses++;
-    // return;
-    // }
-    // key = TypeUtils.indexKeyFor(key);
+
     int limit = -1;
 
     // Key cannot be PdxString in a region
@@ -114,8 +98,8 @@ public class PrimaryKeyIndex extends AbstractIndex {
     }
 
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
-    if (applyLimit != null && applyLimit.booleanValue()) {
-      limit = ((Integer) context.cacheGet(CompiledValue.RESULT_LIMIT)).intValue();
+    if (applyLimit != null && applyLimit) {
+      limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
     }
     QueryObserver observer = QueryObserverHolder.getInstance();
     if (limit != -1 && results.size() == limit) {
@@ -235,8 +219,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
             continue;
           }
           Object val = entry.getValue();
-          // TODO:Asif: is this correct. What should be the behaviour of null
-          // values?
+          // TODO: is this correct. What should be the behaviour of null values?
           if (val != null) {
             boolean ok = true;
             if (runtimeItr != null) {
@@ -253,22 +236,6 @@ public class PrimaryKeyIndex extends AbstractIndex {
             }
           }
         }
-        // if (key != null && key != QueryService.UNDEFINED) {
-        // Region.Entry entry = getRegion().getEntry(key);
-        // if (entry != null) {
-        // Object val = entry.getValue();
-        // if (val != null) {
-        // boolean ok = true;
-        // if (runtimeItr != null) {
-        // runtimeItr.setCurrent(val);
-        // ok = QueryUtils.applyCondition(iterOps, context);
-        // }
-        // if (ok) {
-        // applyProjection(projAttrib, context, results,val,intermediateResults,isIntersection);
-        // }
-        // }
-        // }
-        // }
         break;
       }
       default: {
@@ -335,14 +302,6 @@ public class PrimaryKeyIndex extends AbstractIndex {
     }
   }
 
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.cache.query.internal.index.AbstractIndex#lockedQuery(java.lang.Object,
-   * int, java.lang.Object, int, java.util.Collection, java.util.Set)
-   */
-
   @Override
   void lockedQuery(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
       int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
@@ -359,15 +318,13 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
   @Override
   void addMapping(Object key, Object value, RegionEntry entry) throws IMQException {
-    // TODO Auto-generated method stub
-
+    // do nothing
   }
 
   @Override
   void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
     // Do Nothing; We are not going to call this for PrimaryKeyIndex ever.
   }
-
 
   public boolean isEmpty() {
     return createStats("primaryKeyIndex").getNumberOfKeys() == 0 ? true : false;

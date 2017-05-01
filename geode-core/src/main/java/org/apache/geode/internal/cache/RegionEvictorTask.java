@@ -14,25 +14,24 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.lru.HeapEvictor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
- * 
  * Takes delta to be evicted and tries to evict the least no of LRU entry which would make
  * evictedBytes more than or equal to the delta
  * 
  * @since GemFire 6.0
- * 
  */
 public class RegionEvictorTask implements Runnable {
 
@@ -77,7 +76,7 @@ public class RegionEvictorTask implements Runnable {
     }
   }
 
-  private GemFireCacheImpl getGemFireCache() {
+  private InternalCache getInternalCache() {
     return getHeapEvictor().getGemFireCache();
   }
 
@@ -87,12 +86,12 @@ public class RegionEvictorTask implements Runnable {
 
   @Override
   public void run() {
-    getGemFireCache().getCachePerfStats().incEvictorJobsStarted();
+    getInternalCache().getCachePerfStats().incEvictorJobsStarted();
     long bytesEvicted = 0;
     long totalBytesEvicted = 0;
     try {
       while (true) {
-        getGemFireCache().getCachePerfStats();
+        getInternalCache().getCachePerfStats();
         final long start = CachePerfStats.getStatTime();
         synchronized (this.regionSet) {
           if (this.regionSet.isEmpty()) {
@@ -121,15 +120,15 @@ public class RegionEvictorTask implements Runnable {
               logger.warn(LocalizedMessage.create(LocalizedStrings.Eviction_EVICTOR_TASK_EXCEPTION,
                   new Object[] {e.getMessage()}), e);
             } finally {
-              getGemFireCache().getCachePerfStats();
+              getInternalCache().getCachePerfStats();
               long end = CachePerfStats.getStatTime();
-              getGemFireCache().getCachePerfStats().incEvictWorkTime(end - start);
+              getInternalCache().getCachePerfStats().incEvictWorkTime(end - start);
             }
           }
         }
       }
     } finally {
-      getGemFireCache().getCachePerfStats().incEvictorJobsCompleted();
+      getInternalCache().getCachePerfStats().incEvictorJobsCompleted();
     }
   }
 

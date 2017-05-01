@@ -49,6 +49,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.extension.mock.MockCacheExtension;
@@ -144,7 +145,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
       localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
       getSystem(localProps);
-      Cache cache = getCache();
+      InternalCache cache = getCache();
 
       assertNotNull(cache);
 
@@ -215,7 +216,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
       localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
       getSystem(localProps);
-      Cache cache = getCache();
+      InternalCache cache = getCache();
 
       assertNotNull(cache);
 
@@ -420,7 +421,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
       localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
       getSystem(localProps);
-      Cache cache = getCache();
+      InternalCache cache = getCache();
       assertNotNull(cache);
       return getAllNormalMembers(cache);
     });

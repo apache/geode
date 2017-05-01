@@ -24,6 +24,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
@@ -560,7 +561,6 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   /**
-   * 
    * @param idx of the variable length field
    * @return the offset to the variable length field
    */
@@ -697,10 +697,10 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     // only create a tracking one if we might need it
     UnreadPdxType unreadLocalPdxType = null;
     boolean needToTrackReads = TESTHOOK_TRACKREADS;
-    GemFireCacheImpl gfc = GemFireCacheImpl
+    InternalCache cache = GemFireCacheImpl
         .getForPdx("PDX registry is unavailable because the Cache has been closed.");
-    TypeRegistry tr = gfc.getPdxRegistry();
-    if (!gfc.getPdxIgnoreUnreadFields()) {
+    TypeRegistry tr = cache.getPdxRegistry();
+    if (!cache.getPdxIgnoreUnreadFields()) {
       PdxType localPdxType = tr.getExistingTypeForClass(pdxClass);
       if (localPdxType != null) {
         if (getPdxType().getTypeId() != localPdxType.getTypeId()
@@ -736,7 +736,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       }
       ((PdxSerializable) result).fromData(pdxReader);
     } else {
-      PdxSerializer pdxSerializer = gfc.getPdxSerializer();
+      PdxSerializer pdxSerializer = cache.getPdxSerializer();
       if (pdxSerializer != null) {
         result = pdxSerializer.fromData(pdxClass, pdxReader);
         if (result == null) {
@@ -843,8 +843,6 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   public void orderedDeserialize(Object obj, AutoClassInfo ci) {
     PdxReaderImpl reader = prepForOrderedReading();
     for (PdxFieldWrapper f : ci.getFields()) {
-      // System.out.println("DEBUG reading field=" + f.getField().getName() + " offset=" +
-      // reader.dis.position());
       f.orderedDeserialize(reader, obj);
     }
   }
@@ -866,8 +864,6 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   /**
-   * 
-   * @param field
    * @return PdxString if field is a String otherwise invokes {@link #readField(String)}
    */
   public Object readRawField(String field) {
@@ -888,9 +884,6 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   /**
    * This method checks whether Object field is String type. If its String then it returns PdxString
    * otherwise null.
-   * 
-   * @param ft
-   * @return
    */
   private PdxString getPdxStringFromObjectField(PdxField ft) {
     if (ft.getFieldType() == FieldType.OBJECT) {
@@ -912,8 +905,6 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   /**
-   * 
-   * @param ft
    * @return returns {@link PdxString}
    */
   public PdxString readPdxString(PdxField ft) {

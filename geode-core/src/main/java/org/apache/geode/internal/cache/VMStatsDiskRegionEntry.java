@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 /**
@@ -20,8 +19,6 @@ package org.apache.geode.internal.cache;
  * statistics Disk -> entries can be on disk
  *
  * @since GemFire 3.5.1
- *
- *
  */
 public abstract class VMStatsDiskRegionEntry extends AbstractOplogDiskRegionEntry {
   protected VMStatsDiskRegionEntry(RegionEntryContext context, Object value) {

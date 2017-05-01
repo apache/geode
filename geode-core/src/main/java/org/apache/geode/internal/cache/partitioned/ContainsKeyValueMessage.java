@@ -143,7 +143,7 @@ public final class ContainsKeyValueMessage extends PartitionMessageWithDirectRep
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; valueCheck=").append(this.valueCheck).append("; key=").append(this.key)
         .append("; bucketId=").append(this.bucketId);

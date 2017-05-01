@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.client.internal.EndpointManager.EndpointListenerAdapter;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -93,7 +94,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
             logger.debug("Error occurred while pinging server: {} - {}", endpoint.getLocation(),
                 e.getMessage());
           }
-          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+          InternalCache cache = GemFireCacheImpl.getInstance();
           if (cache != null) {
             ClientMetadataService cms = cache.getClientMetadataService();
             cms.removeBucketServerLocation(endpoint.getLocation());

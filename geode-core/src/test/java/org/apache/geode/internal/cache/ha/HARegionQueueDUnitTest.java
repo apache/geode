@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
   private static volatile boolean toCnt = true;
   private static volatile Thread createQueuesThread;
 
-  private static Cache cache = null;
+  private static InternalCache cache = null;
   private static HARegionQueue hrq = null;
   private static Thread[] opThreads;
 
@@ -98,14 +99,15 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create cache
    */
-  private Cache createCache() throws CacheException {
+  private InternalCache createCache() throws CacheException {
     Properties props = new Properties();
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
     ds = getSystem(props);
-    Cache cache = null;
-    cache = CacheFactory.create(ds);
+    InternalCache cache = null;
+    cache = (InternalCache) CacheFactory.create(ds);
     if (cache == null) {
+      // TODO: never throw an anonymous inner class
       throw new CacheException("CacheFactory.create() returned null ") {};
     }
     return cache;
@@ -125,7 +127,6 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(() -> HARegionQueueDUnitTest.putValue2());
     vm0.invoke(() -> HARegionQueueDUnitTest.getValue1());
     vm1.invoke(() -> HARegionQueueDUnitTest.getValue2());
-
   }
 
   /**

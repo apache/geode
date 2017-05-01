@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -42,34 +43,17 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * This message is sent to all the nodes in the DistributedSystem. It contains the list of messages
  * that have been dispatched by this node. The messages are received by other nodes and the
  * processing is handed over to an executor
- * 
- * 
  */
 public final class QueueRemovalMessage extends PooledDistributionMessage {
   private static final Logger logger = LogService.getLogger();
-
-  // /**
-  // * Executor for processing incoming messages
-  // */
-  // private static final Executor executor;
-
 
   /**
    * List of messages (String[] )
    */
   private List messagesList;
 
-  // /**
-  // * create the executor in a static block
-  // */
-  // static {
-  // //TODO:Mitul best implementation of executor for this task?
-  // executor = Executors.newCachedThreadPool();
-  // }
-
   /**
    * Constructor : Set the recipient list to ALL_RECIPIENTS
-   * 
    */
   public QueueRemovalMessage() {
     this.setRecipient(ALL_RECIPIENTS);
@@ -77,8 +61,6 @@ public final class QueueRemovalMessage extends PooledDistributionMessage {
 
   /**
    * Set the message list
-   * 
-   * @param messages
    */
   public void setMessagesList(List messages) {
     this.messagesList = messages;
@@ -87,22 +69,19 @@ public final class QueueRemovalMessage extends PooledDistributionMessage {
   /**
    * Extracts the region from the message list and hands over the message removal task to the
    * executor
-   * 
-   * @param dm
    */
   @Override
   protected void process(DistributionManager dm) {
-
-    final GemFireCacheImpl cache;
+    final InternalCache cache;
     // use GemFireCache.getInstance to avoid blocking during cache.xml processing.
-    cache = GemFireCacheImpl.getInstance(); // CacheFactory.getAnyInstance();
+    cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       Iterator iterator = this.messagesList.iterator();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
         while (iterator.hasNext()) {
           final String regionName = (String) iterator.next();
-          final int size = ((Integer) iterator.next()).intValue();
+          final int size = (Integer) iterator.next();
           final LocalRegion region = (LocalRegion) cache.getRegion(regionName);
           final HARegionQueue hrq;
           if (region == null || !region.isInitialized()) {
@@ -134,21 +113,21 @@ public final class QueueRemovalMessage extends PooledDistributionMessage {
                       regionName, id);
                 }
                 hrq.removeDispatchedEvents(id);
-              } catch (RegionDestroyedException rde) {
+              } catch (RegionDestroyedException ignore) {
                 logger.info(LocalizedMessage.create(
                     LocalizedStrings.QueueRemovalMessage_QUEUE_FOUND_DESTROYED_WHILE_PROCESSING_THE_LAST_DISPTACHED_SEQUENCE_ID_FOR_A_HAREGIONQUEUES_DACE_THE_EVENT_ID_IS_0_FOR_HAREGION_WITH_NAME_1,
                     new Object[] {id, regionName}));
-              } catch (CancelException e) {
+              } catch (CancelException ignore) {
                 return; // cache or DS is closing
               } catch (CacheException e) {
                 logger.error(LocalizedMessage.create(
                     LocalizedStrings.QueueRemovalMessage_QUEUEREMOVALMESSAGEPROCESSEXCEPTION_IN_PROCESSING_THE_LAST_DISPTACHED_SEQUENCE_ID_FOR_A_HAREGIONQUEUES_DACE_THE_PROBLEM_IS_WITH_EVENT_ID__0_FOR_HAREGION_WITH_NAME_1,
                     new Object[] {regionName, id}), e);
-              } catch (InterruptedException ie) {
+              } catch (InterruptedException ignore) {
                 return; // interrupt occurs during shutdown. this runs in an executor, so just stop
                         // processing
               }
-            } catch (RejectedExecutionException e) {
+            } catch (RejectedExecutionException ignore) {
               interrupted = true;
             } finally {
               if (interrupted) {
@@ -165,14 +144,13 @@ public final class QueueRemovalMessage extends PooledDistributionMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    /**
+    /*
      * first write the total list size then in a loop write the region name, number of eventIds and
      * the event ids
-     * 
      */
     super.toData(out);
     // write the size of the data list
-    DataSerializer.writeInteger(Integer.valueOf(this.messagesList.size()), out);
+    DataSerializer.writeInteger(this.messagesList.size(), out);
     Iterator iterator = messagesList.iterator();
     String regionName = null;
     Integer numberOfIds = null;
@@ -185,7 +163,7 @@ public final class QueueRemovalMessage extends PooledDistributionMessage {
       numberOfIds = (Integer) iterator.next();
       // write the number of event ids
       DataSerializer.writeInteger(numberOfIds, out);
-      maxVal = numberOfIds.intValue();
+      maxVal = numberOfIds;
       // write the event ids
       for (int i = 0; i < maxVal; i++) {
         eventId = iterator.next();
@@ -200,14 +178,13 @@ public final class QueueRemovalMessage extends PooledDistributionMessage {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    /**
+    /*
      * read the total list size, reconstruct the message list in a loop by reading the region name,
      * number of eventIds and the event ids
-     * 
      */
     super.fromData(in);
     // read the size of the message
-    int size = DataSerializer.readInteger(in).intValue();
+    int size = DataSerializer.readInteger(in);
     this.messagesList = new LinkedList();
     int eventIdSizeInt;
     for (int i = 0; i < size; i++) {
@@ -216,7 +193,7 @@ public final class QueueRemovalMessage extends PooledDistributionMessage {
       // read the datasize
       Integer eventIdSize = DataSerializer.readInteger(in);
       this.messagesList.add(eventIdSize);
-      eventIdSizeInt = eventIdSize.intValue();
+      eventIdSizeInt = eventIdSize;
       // read the total number of events
       for (int j = 0; j < eventIdSizeInt; j++) {
         this.messagesList.add(DataSerializer.readObject(in));

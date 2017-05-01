@@ -12,20 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
-// import org.apache.geode.internal.*;
-import org.apache.geode.internal.cache.*;
-import java.io.*;
-// import java.net.*;
-// import java.util.*;
-import org.apache.geode.distributed.internal.membership.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A message that is sent in response to a {@link CacheInfoRequest}.
@@ -33,30 +31,30 @@ import org.apache.geode.distributed.internal.membership.*;
  * @since GemFire 3.5
  */
 public final class CacheInfoResponse extends AdminResponse {
-  // instance variables
+
   private RemoteCacheInfo info;
 
-
   /**
-   * Returns a <code>CacheInfoResponse</code> that will be returned to the specified recipient.
+   * Returns a {@code CacheInfoResponse} that will be returned to the specified recipient.
    */
   public static CacheInfoResponse create(DistributionManager dm,
       InternalDistributedMember recipient) {
     CacheInfoResponse m = new CacheInfoResponse();
     m.setRecipient(recipient);
     try {
-      GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getInstanceCloseOk(dm.getSystem());
+      InternalCache c = (InternalCache) CacheFactory.getInstanceCloseOk(dm.getSystem());
       m.info = new RemoteCacheInfo(c);
-    } catch (CancelException ex) {
+    } catch (CancelException ignore) {
       m.info = null;
     }
     return m;
   }
 
-  public RemoteCacheInfo getCacheInfo() {
+  RemoteCacheInfo getCacheInfo() {
     return this.info;
   }
 
+  @Override
   public int getDSFID() {
     return CACHE_INFO_RESPONSE;
   }

@@ -14,10 +14,30 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.management.ObjectName;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
@@ -45,27 +65,9 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.management.ObjectName;
 
 public class WanCommands extends AbstractCommandsSupport {
+
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
@@ -198,7 +200,7 @@ public class WanCommands extends AbstractCommandsSupport {
     final String id = senderId.trim();
 
     try {
-      final Cache cache = CacheFactory.getAnyInstance();
+      final InternalCache cache = getCache();
       final SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
@@ -317,23 +319,16 @@ public class WanCommands extends AbstractCommandsSupport {
           help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) String onMember) {
 
     Result result = null;
-    if (senderId != null)
+    if (senderId != null) {
       senderId = senderId.trim();
-    // if (memberNameOrId != null)
-    // memberNameOrId = memberNameOrId.trim();
-    //
-    // if (memberNameOrId != null && onGroup != null) {
-    // return ResultBuilder
-    // .createUserErrorResult(CliStrings.GATEWAY__MSG__OPTIONS);
-    // }
+    }
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
       GatewaySenderMXBean bean = null;
-
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
       Set<DistributedMember> dsMembers = null;
@@ -394,79 +389,20 @@ public class WanCommands extends AbstractCommandsSupport {
           help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) String onMember) {
 
     Result result = null;
-    if (senderId != null)
+    if (senderId != null) {
       senderId = senderId.trim();
-    // if (memberNameOrId != null)
-    // memberNameOrId = memberNameOrId.trim();
-    //
-    // if (memberNameOrId != null && onGroup != null) {
-    // return ResultBuilder
-    // .createUserErrorResult(CliStrings.GATEWAY__MSG__OPTIONS);
-    // }
+    }
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-
       GatewaySenderMXBean bean = null;
-      //
-      // if (memberNameOrId != null && memberNameOrId.length() > 0) {
-      // InfoResultData resultData = ResultBuilder.createInfoResultData();
-      // DistributedMember memberToBeInvoked = CliUtil
-      // .getDistributedMemberByNameOrId(memberNameOrId);
-      //
-      // if (memberToBeInvoked != null) {
-      // String memberId = memberToBeInvoked.getId();
-      // if (cache.getDistributedSystem().getDistributedMember().getId()
-      // .equals(memberId)) {
-      // bean = service.getLocalGatewaySenderMXBean(senderId);
-      // } else {
-      // ObjectName objectName = service.getGatewaySenderMBeanName(memberToBeInvoked,
-      // senderId);
-      // bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
-      // }
-      // if (bean != null) {
-      // if (bean.isRunning()) {
-      // if (bean.isPaused()) {
-      // bean.resume();
-      // resultData.addLine(CliStrings.format(
-      // CliStrings.GATEWAY_SENDER_0_IS_RESUMED_ON_MEMBER_1,
-      // new Object[] { senderId, memberId }));
-      // return ResultBuilder.buildResult(resultData);
-      // }
-      // resultData.addLine(CliStrings.format(
-      // CliStrings.GATEWAY_SENDER_0_IS_NOT_PAUSED_ON_MEMBER_1,
-      // new Object[] { senderId, memberId }));
-      // return ResultBuilder.buildResult(resultData);
-      // }
-      // resultData.addLine(CliStrings.format(
-      // CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1,
-      // new Object[] { senderId, memberId }));
-      // return ResultBuilder.buildResult(resultData);
-      // }
-      // return ResultBuilder.createBadConfigurationErrorResult(CliStrings
-      // .format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-      // new Object[] { senderId, memberId }));
-      // }
-      // return ResultBuilder.createUserErrorResult(CliStrings.format(
-      // CliStrings.GATEWAY_MSG_MEMBER_0_NOT_FOUND,
-      // new Object[] { memberNameOrId }));
-      // }
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = null;
-      // if (onGroup != null && onGroup.length > 0) {
-      // dsMembers = CliUtil.getDistributedMembersByGroup(cache, onGroup);
-      // } else {
-      // dsMembers = CliUtil.getAllNormalMembers(cache);
-      // }
-      // if (dsMembers.isEmpty()) {
-      // return ResultBuilder
-      // .createUserErrorResult(CliStrings.GATEWAY_MSG_MEMBERS_NOT_FOUND);
-      // }
-      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+
+      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -527,13 +463,11 @@ public class WanCommands extends AbstractCommandsSupport {
       senderId = senderId.trim();
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-
       GatewaySenderMXBean bean = null;
-
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
       Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
@@ -668,7 +602,7 @@ public class WanCommands extends AbstractCommandsSupport {
     }
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
       TabularResultData resultData = ResultBuilder.createTabularResultData();
@@ -726,9 +660,8 @@ public class WanCommands extends AbstractCommandsSupport {
           help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) String onMember) {
     Result result = null;
 
-
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
@@ -791,13 +724,11 @@ public class WanCommands extends AbstractCommandsSupport {
     Result result = null;
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-
       GatewayReceiverMXBean receieverBean = null;
-
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
       Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
@@ -850,22 +781,12 @@ public class WanCommands extends AbstractCommandsSupport {
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String onGroup) {
 
     Result result = null;
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     try {
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      Set<DistributedMember> dsMembers = null;
-      // if (onGroup != null && onGroup.length > 0) {
-      // dsMembers = CliUtil.getDistributedMembersByGroup(cache, onGroup);
-      // } else {
-      // dsMembers = CliUtil.getAllNormalMembers(cache);
-      // }
-      // if (dsMembers.isEmpty()) {
-      // return ResultBuilder
-      // .createUserErrorResult(CliStrings.GATEWAY_MSG_MEMBERS_NOT_FOUND);
-      // }
-      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
 
       Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans =
           new TreeMap<String, Map<String, GatewaySenderMXBean>>();
@@ -945,12 +866,11 @@ public class WanCommands extends AbstractCommandsSupport {
     if (senderId != null)
       senderId = senderId.trim();
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
       GatewaySenderMXBean bean = null;
-
 
       CompositeResultData crd = ResultBuilder.createCompositeResultData();
       TabularResultData availableSenderData =
@@ -1001,10 +921,9 @@ public class WanCommands extends AbstractCommandsSupport {
     Result result = null;
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
-
 
       CompositeResultData crd = ResultBuilder.createCompositeResultData();
       TabularResultData availableReceiverData =
@@ -1038,7 +957,6 @@ public class WanCommands extends AbstractCommandsSupport {
     }
     return result;
   }
-
 
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
       help = CliStrings.DESTROY_GATEWAYSENDER__HELP)
@@ -1128,18 +1046,6 @@ public class WanCommands extends AbstractCommandsSupport {
     return resultData;
   }
 
-  // CliStrings.format(
-  // CliStrings.GATEWAY_SENDER_0_IS_STARTED_ON_MEMBER_1,
-  // new Object[] {senderId, memberId });
-  //
-  // CliStrings.format(
-  // CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1,
-  // new Object[] {senderId, memberId });
-  //
-  // CliStrings.format(
-  // CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-  // new Object[] {senderId, memberId });
-
   private void accumulateListGatewayResult(CompositeResultData crd,
       Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans,
       Map<String, GatewayReceiverMXBean> gatewayReceiverBeans) {
@@ -1179,7 +1085,6 @@ public class WanCommands extends AbstractCommandsSupport {
             entry.getValue().getConnectedGatewaySenders());
       }
     }
-
   }
 
   private void accumulateStartResult(TabularResultData resultData, String member, String Status,

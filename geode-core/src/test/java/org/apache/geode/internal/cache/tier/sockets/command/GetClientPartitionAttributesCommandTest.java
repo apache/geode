@@ -28,7 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
@@ -48,7 +48,7 @@ public class GetClientPartitionAttributesCommandTest {
   @Mock
   private ServerConnection serverConnection;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock

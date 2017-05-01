@@ -12,11 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.function.Function;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CopyHelper;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.DeltaSerializationException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.SerializationException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.SerializedCacheValue;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.query.IndexMaintenanceException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
@@ -28,7 +50,14 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
@@ -43,46 +72,46 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.offheap.*;
+import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.ReferenceCountHelper;
+import org.apache.geode.internal.offheap.Releasable;
+import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.function.Function;
-
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
 /**
  * Implementation of an entry event
+ *
+ * must be public for DataSerializableFixedID
  */
-// must be public for DataSerializableFixedID
 public class EntryEventImpl
     implements EntryEvent, InternalCacheEvent, DataSerializableFixedID, EntryOperation, Releasable {
   private static final Logger logger = LogService.getLogger();
 
   // PACKAGE FIELDS //
   public transient LocalRegion region;
+
   private transient RegionEntry re;
 
   protected KeyInfo keyInfo;
 
-  // private long eventId;
   /** the event's id. Scoped by distributedMember. */
   protected EventID eventID;
 
   private Object newValue = null;
+
   /**
    * If we ever serialize the new value then it should be stored in this field in case we need the
    * serialized form again later. This was added to fix bug 43781. Note that we also have the
    * "newValueBytes" field. But it is only non-null if setSerializedNewValue was called.
    */
   private byte[] cachedSerializedNewValue = null;
+
   @Retained(ENTRY_EVENT_OLD_VALUE)
   private Object oldValue = null;
 
@@ -116,14 +145,10 @@ public class EntryEventImpl
    */
   protected DistributedMember distributedMember;
 
-
   /**
    * transient storage for the message that caused the event
    */
   transient DistributionMessage causedByMessage;
-
-
-  // private static long eventID = 0;
 
   /**
    * The originating membershipId of this event.
@@ -138,12 +163,12 @@ public class EntryEventImpl
    */
   private byte[] deltaBytes = null;
 
-
   /** routing information for cache clients for this event */
   private FilterInfo filterInfo;
 
   /** new value stored in serialized form */
   protected byte[] newValueBytes;
+
   /** old value stored in serialized form */
   private byte[] oldValueBytes;
 
@@ -157,7 +182,9 @@ public class EntryEventImpl
 
   public final static Object SUSPECT_TOKEN = new Object();
 
-  public EntryEventImpl() {}
+  public EntryEventImpl() {
+    // do nothing
+  }
 
   /**
    * Reads the contents of this message from the given input.
@@ -229,7 +256,7 @@ public class EntryEventImpl
     }
 
     this.txId = this.region.getTXId();
-    /**
+    /*
      * this might set txId for events done from a thread that has a tx even though the op is non-tx.
      * For example region ops.
      */
@@ -341,9 +368,8 @@ public class EntryEventImpl
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       EventID eventID) {
-    EntryEventImpl entryEvent = new EntryEventImpl(region, op, key, newValue, callbackArgument,
-        originRemote, distributedMember, generateCallbacks, eventID);
-    return entryEvent;
+    return new EntryEventImpl(region, op, key, newValue, callbackArgument, originRemote,
+        distributedMember, generateCallbacks, eventID);
   }
 
   /**
@@ -356,9 +382,8 @@ public class EntryEventImpl
   public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       boolean fromRILocalDestroy) {
-    EntryEventImpl entryEvent = new EntryEventImpl(region, op, key, originRemote, distributedMember,
-        generateCallbacks, fromRILocalDestroy);
-    return entryEvent;
+    return new EntryEventImpl(region, op, key, originRemote, distributedMember, generateCallbacks,
+        fromRILocalDestroy);
   }
 
   /**
@@ -374,9 +399,8 @@ public class EntryEventImpl
   public static EntryEventImpl create(final LocalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newVal, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean initializeId) {
-    EntryEventImpl entryEvent = new EntryEventImpl(region, op, key, newVal, callbackArgument,
-        originRemote, distributedMember, generateCallbacks, initializeId);
-    return entryEvent;
+    return new EntryEventImpl(region, op, key, newVal, callbackArgument, originRemote,
+        distributedMember, generateCallbacks, initializeId);
   }
 
   /**
@@ -915,7 +939,7 @@ public class EntryEventImpl
   public final Object getOldValueAsOffHeapDeserializedOrRaw() {
     Object result = basicGetOldValue();
     if (mayHaveOffHeapReferences() && result instanceof StoredObject) {
-      result = ((StoredObject) result).getDeserializedForReading();
+      result = ((CachedDeserializable) result).getDeserializedForReading();
     }
     return AbstractRegion.handleNotAvailable(result); // fixes 49499
   }
@@ -1289,7 +1313,7 @@ public class EntryEventImpl
   public final Object getNewValueAsOffHeapDeserializedOrRaw() {
     Object result = getRawNewValue();
     if (mayHaveOffHeapReferences() && result instanceof StoredObject) {
-      result = ((StoredObject) result).getDeserializedForReading();
+      result = ((CachedDeserializable) result).getDeserializedForReading();
     }
     return AbstractRegion.handleNotAvailable(result); // fixes 49499
   }
@@ -1462,8 +1486,6 @@ public class EntryEventImpl
    * hasn't been set yet.
    * 
    * @param oldValueForDelta Used by Delta Propagation feature
-   * 
-   * @throws RegionClearedException
    */
   void putExistingEntry(final LocalRegion owner, final RegionEntry reentry, boolean requireOldValue,
       Object oldValueForDelta) throws RegionClearedException {
@@ -1524,8 +1546,6 @@ public class EntryEventImpl
 
   /**
    * Put a newValue into the given, write synced, new, region entry.
-   * 
-   * @throws RegionClearedException
    */
   void putNewEntry(final LocalRegion owner, final RegionEntry reentry)
       throws RegionClearedException {
@@ -1791,7 +1811,7 @@ public class EntryEventImpl
           OffHeapHelper.releaseWithNoTracking(v);
         }
       }
-    } catch (EntryNotFoundException ex) {
+    } catch (EntryNotFoundException ignore) {
       return false;
     }
   }
@@ -2012,7 +2032,7 @@ public class EntryEventImpl
       synchronized (this.offHeapLock) {
         ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
       }
-    } catch (IllegalStateException ex) {
+    } catch (IllegalStateException ignore) {
       buf.append("OFFHEAP_VALUE_FREED");
     }
     buf.append(";newValue=");
@@ -2020,7 +2040,7 @@ public class EntryEventImpl
       synchronized (this.offHeapLock) {
         ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
       }
-    } catch (IllegalStateException ex) {
+    } catch (IllegalStateException ignore) {
       buf.append("OFFHEAP_VALUE_FREED");
     }
     buf.append(";callbackArg=");
@@ -2029,10 +2049,6 @@ public class EntryEventImpl
     buf.append(isOriginRemote());
     buf.append(";originMember=");
     buf.append(getDistributedMember());
-    // if (this.partitionMessage != null) {
-    // buf.append("; partitionMessage=");
-    // buf.append(this.partitionMessage);
-    // }
     if (this.isPossibleDuplicate()) {
       buf.append(";posDup");
     }
@@ -2054,11 +2070,8 @@ public class EntryEventImpl
       buf.append(this.eventID);
     }
     if (this.deltaBytes != null) {
-      buf.append(";[" + this.deltaBytes.length + " deltaBytes]");
+      buf.append(";[").append(this.deltaBytes.length).append(" deltaBytes]");
     }
-    // else {
-    // buf.append(";[no deltaBytes]");
-    // }
     if (this.filterInfo != null) {
       buf.append(";routing=");
       buf.append(this.filterInfo);
@@ -2239,8 +2252,6 @@ public class EntryEventImpl
 
   /**
    * Sets the operation type.
-   * 
-   * @param eventType
    */
   public void setEventType(EnumListenerEvent eventType) {
     this.eventType = eventType;
@@ -2416,8 +2427,6 @@ public class EntryEventImpl
   /**
    * This method sets the delta bytes used in Delta Propagation feature. <B>For internal delta, see
    * setNewValue().</B>
-   * 
-   * @param deltaBytes
    */
   public void setDeltaBytes(byte[] deltaBytes) {
     this.deltaBytes = deltaBytes;
@@ -2494,7 +2503,6 @@ public class EntryEventImpl
    * this method joins together version tag timestamps and the "lastModified" timestamps generated
    * and stored in entries. If a change does not already carry a lastModified timestamp
    * 
-   * @param suggestedTime
    * @return the timestamp to store in the entry
    */
   public long getEventTime(long suggestedTime) {
@@ -2741,10 +2749,10 @@ public class EntryEventImpl
         // System.identityHashCode(ov));
         if (ReferenceCountHelper.trackReferenceCounts()) {
           ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-          ((StoredObject) ov).release();
+          ((Releasable) ov).release();
           ReferenceCountHelper.setReferenceCountOwner(null);
         } else {
-          ((StoredObject) ov).release();
+          ((Releasable) ov).release();
         }
       }
       OffHeapHelper.releaseAndTrackOwner(nv, this);

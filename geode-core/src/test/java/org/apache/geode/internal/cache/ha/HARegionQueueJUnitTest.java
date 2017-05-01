@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.After;
 import org.junit.Before;
@@ -63,7 +64,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class HARegionQueueJUnitTest {
 
   /** The cache instance */
-  protected Cache cache = null;
+  protected InternalCache cache = null;
 
   /** Logger for this test */
   protected LogWriter logger;
@@ -95,8 +96,8 @@ public class HARegionQueueJUnitTest {
   /**
    * Creates the cache instance for the test
    */
-  private Cache createCache() throws CacheException {
-    return new CacheFactory().set(MCAST_PORT, "0").create();
+  private InternalCache createCache() throws CacheException {
+    return (InternalCache) new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   /**
@@ -817,7 +818,7 @@ public class HARegionQueueJUnitTest {
    */
   static class HARQTestClass extends HARegionQueue.TestOnlyHARegionQueue {
 
-    public HARQTestClass(String REGION_NAME, Cache cache, HARegionQueueJUnitTest test)
+    public HARQTestClass(String REGION_NAME, InternalCache cache, HARegionQueueJUnitTest test)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       super(REGION_NAME, cache);
     }
@@ -1544,7 +1545,7 @@ public class HARegionQueueJUnitTest {
     props.put(LOG_LEVEL, "config");
     // props.put("mcast-port","11111");
     try {
-      cache = CacheFactory.create(DistributedSystem.connect(props));
+      cache = (InternalCache) CacheFactory.create(DistributedSystem.connect(props));
     } catch (Exception e1) {
       throw new AssertionError("Test failed because of exception. Exception=", e1);
     }

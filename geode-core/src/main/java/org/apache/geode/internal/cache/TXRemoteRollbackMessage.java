@@ -30,15 +30,12 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- * 
- *
- */
 public class TXRemoteRollbackMessage extends TXMessage {
-
   private static final Logger logger = LogService.getLogger();
 
-  public TXRemoteRollbackMessage() {}
+  public TXRemoteRollbackMessage() {
+    // nothing
+  }
 
   public TXRemoteRollbackMessage(int txUniqId, InternalDistributedMember onBehalfOfClientMember,
       ReplyProcessor21 processor) {
@@ -60,7 +57,7 @@ public class TXRemoteRollbackMessage extends TXMessage {
 
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       throw new CacheClosedException(
           LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());

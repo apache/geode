@@ -195,7 +195,7 @@ public class PartitionedRegionDestroyDUnitTest extends PartitionedRegionDUnitTes
 
           public void run2() throws CacheException {
 
-            Cache cache = getCache();
+            InternalCache cache = getCache();
             Region rootRegion = PartitionedRegionHelper.getPRRoot(cache);
             // Region allPRs = PartitionedRegionHelper.getPRConfigRegion(rootRegion,
             // getCache());

@@ -29,9 +29,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
@@ -46,11 +46,11 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class RegisterInterestList66Test {
+
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
   private static final byte[] DURABLE = new byte[8];
   private static final byte[] DATA_POLICY = new byte[] {0x01, 0x01};
-
 
   @Mock
   private SecurityService securityService;
@@ -61,7 +61,7 @@ public class RegisterInterestList66Test {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock
@@ -88,7 +88,6 @@ public class RegisterInterestList66Test {
   public void setUp() throws Exception {
     this.registerInterestList66 = new RegisterInterestList66();
     MockitoAnnotations.initMocks(this);
-
 
     when(this.authzRequest.registerInterestListAuthorize(eq(REGION_NAME), any(), any()))
         .thenReturn(this.registerInterestOperationContext);

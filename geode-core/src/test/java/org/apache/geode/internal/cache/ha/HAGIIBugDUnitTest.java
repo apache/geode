@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -72,7 +73,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm3 = null;
 
-  protected static Cache cache = null;
+  protected static InternalCache cache = null;
 
   static String regionQueueName = "regionQueue1";
 
@@ -135,7 +136,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(ds);
     ds.disconnect();
     ds = getSystem(props);
-    cache = CacheFactory.create(ds);
+    cache = (InternalCache) CacheFactory.create(ds);
     assertNotNull(cache);
   }
 

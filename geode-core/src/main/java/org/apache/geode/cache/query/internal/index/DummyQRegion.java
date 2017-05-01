@@ -12,12 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * DummyQRegion.java
- *
- * Created on March 15, 2005, 6:40 PM
- */
-
 package org.apache.geode.cache.query.internal.index;
 
 import java.util.ArrayList;
@@ -34,18 +28,14 @@ import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.CachedDeserializable;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
-/**
- *
- */
 public class DummyQRegion extends QRegion {
 
   private RegionEntry entry = null;
@@ -67,13 +57,13 @@ public class DummyQRegion extends QRegion {
     constraint = region.getAttributes().getKeyConstraint();
     if (constraint != null)
       keyType = TypeUtils.getObjectType(constraint);
-    values = new ResultsBag(((GemFireCacheImpl) region.getCache()).getCachePerfStats());
+    values = new ResultsBag(((HasCachePerfStats) region.getCache()).getCachePerfStats());
     values.setElementType(valueType);
     keys = new ResultsSet();
     keys.setElementType(keyType);
     entries = new ResultsSet();
-    entries.setElementType(TypeUtils.getRegionEntryType(region)); // gets key and value types from
-                                                                  // region
+    // gets key and value types from region
+    entries.setElementType(TypeUtils.getRegionEntryType(region));
   }
 
   @Override
@@ -107,7 +97,7 @@ public class DummyQRegion extends QRegion {
 
   @Override
   public Set keySet() {
-    return (ResultsSet) getKeys();
+    return (Set) getKeys();
   }
 
   @Override
@@ -173,7 +163,7 @@ public class DummyQRegion extends QRegion {
   @Override
   public SelectResults getValues() {
     if (values == null) {
-      values = new ResultsBag(((GemFireCacheImpl) getRegion().getCache()).getCachePerfStats());
+      values = new ResultsBag(((HasCachePerfStats) getRegion().getCache()).getCachePerfStats());
       values.setElementType(valueType);
     }
     values.clear();
@@ -218,7 +208,7 @@ public class DummyQRegion extends QRegion {
 
   @Override
   public Set entrySet(boolean recursive) {
-    return (ResultsSet) getEntries();
+    return (Set) getEntries();
   }
 
   @Override

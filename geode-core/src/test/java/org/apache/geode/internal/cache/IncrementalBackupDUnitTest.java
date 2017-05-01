@@ -14,62 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.geode.internal.ClassPathLoader;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.admin.AdminDistributedSystemFactory;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.BackupStatus;
-import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.internal.cache.persistence.BackupManager;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.internal.util.TransformUtils;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -84,6 +30,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminDistributedSystemFactory;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.TransformUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests for the incremental backup feature.
@@ -104,12 +87,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
   /**
    * End value for data load.
    */
-  private int dataEnd = dataStart + DATA_INCREMENT;
+  private int dataEnd = this.dataStart + DATA_INCREMENT;
 
   /**
    * Regular expression used to search for member operation log files.
    */
-  private final static String OPLOG_REGEX = ".*\\.[kdc]rf$";
+  private static final String OPLOG_REGEX = ".*\\.[kdc]rf$";
 
   /**
    * Creates test regions for a member.
@@ -123,22 +106,18 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
       getRegionFactory(cache).setDiskStoreName("fooStore").create("fooRegion");
       getRegionFactory(cache).setDiskStoreName("barStore").create("barRegion");
     }
-
   };
 
-  protected RegionFactory<Integer, String> getRegionFactory(Cache cache) {
+  private RegionFactory<Integer, String> getRegionFactory(Cache cache) {
     return cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
   }
 
   /**
    * A FileFilter that looks for a timestamped gemfire backup directory.
    */
-  private final static FileFilter backupDirFilter = new FileFilter() {
-    @Override
-    public boolean accept(File file) {
-      // This will break in about 90 years...
-      return (file.isDirectory() && file.getName().startsWith("20"));
-    }
+  private static final FileFilter backupDirFilter = file -> {
+    // This will break in about 90 years...
+    return file.isDirectory() && file.getName().startsWith("20");
   };
 
   /**
@@ -213,7 +192,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
   @SuppressWarnings("unchecked")
   private Set<PersistentID> getMissingMembers(VM vm) {
     return (Set<PersistentID>) vm.invoke(new SerializableCallable("getMissingMembers") {
-
+      @Override
       public Object call() {
         return AdminDistributedSystemImpl
             .getMissingPersistentMembers(getSystem().getDistributionManager());
@@ -229,7 +208,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    */
   private BackupStatus baseline(VM vm) {
     return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
-
+      @Override
       public Object call() {
         DistributedSystemConfig config;
         AdminDistributedSystem adminDS = null;
@@ -258,7 +237,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    */
   private BackupStatus incremental(VM vm) {
     return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
-
+      @Override
       public Object call() {
         DistributedSystemConfig config;
         AdminDistributedSystem adminDS = null;
@@ -287,7 +266,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    */
   private BackupStatus incremental2(VM vm) {
     return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
-
+      @Override
       public Object call() {
         DistributedSystemConfig config;
         AdminDistributedSystem adminDS = null;
@@ -343,23 +322,17 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    * @return a PersistentID for a member's disk store.
    */
   private PersistentID getPersistentID(final VM vm, final String diskStoreName) {
-    final PersistentID id = (PersistentID) vm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() {
-        PersistentID id = null;
-        Collection<DiskStoreImpl> diskStores = ((GemFireCacheImpl) getCache()).listDiskStores();
-        for (DiskStoreImpl diskStore : diskStores) {
-          if (diskStore.getName().equals(diskStoreName)) {
-            id = diskStore.getPersistentID();
-            break;
-          }
+    return vm.invoke(() -> {
+      PersistentID id = null;
+      Collection<DiskStore> diskStores = ((InternalCache) getCache()).listDiskStores();
+      for (DiskStore diskStore : diskStores) {
+        if (diskStore.getName().equals(diskStoreName)) {
+          id = ((DiskStoreImpl) diskStore).getPersistentID();
+          break;
         }
-
-        return id;
       }
+      return id;
     });
-
-    return id;
   }
 
   /**
@@ -380,22 +353,19 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    *        disconnected).
    */
   private PersistentID disconnect(final VM disconnectVM, final VM testVM) {
-    final PersistentID id = (PersistentID) disconnectVM.invoke(new SerializableCallable() {
-      @Override
-      public Object call() {
-        PersistentID id = null;
-        Collection<DiskStoreImpl> diskStores = ((GemFireCacheImpl) getCache()).listDiskStores();
-        for (DiskStoreImpl diskStore : diskStores) {
-          if (diskStore.getName().equals("fooStore")) {
-            id = diskStore.getPersistentID();
-            break;
-          }
+    final PersistentID id = disconnectVM.invoke(() -> {
+      PersistentID persistentID = null;
+      Collection<DiskStore> diskStores = ((InternalCache) getCache()).listDiskStores();
+      for (DiskStore diskStore : diskStores) {
+        if (diskStore.getName().equals("fooStore")) {
+          persistentID = ((DiskStoreImpl) diskStore).getPersistentID();
+          break;
         }
-
-        getSystem().disconnect();
-
-        return id;
       }
+
+      getSystem().disconnect();
+
+      return persistentID;
     });
 
     final Set<PersistentID> missingMembers = new HashSet<>();
@@ -405,7 +375,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
         missingMembers.clear();
         missingMembers.addAll(getMissingMembers(testVM));
 
-        return (missingMembers.contains(id));
+        return missingMembers.contains(id);
       }
 
       @Override
@@ -423,7 +393,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    * @param vm a member of the distributed system.
    */
   private void openCache(VM vm) {
-    vm.invoke(createRegions);
+    vm.invoke(this.createRegions);
   }
 
   /**
@@ -435,15 +405,14 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        Collection<DiskStoreImpl> backupInProgress =
-            ((GemFireCacheImpl) getCache()).listDiskStores();
+        Collection<DiskStore> backupInProgress = ((InternalCache) getCache()).listDiskStores();
         List<DiskStoreImpl> backupCompleteList = new LinkedList<>();
 
         while (backupCompleteList.size() < backupInProgress.size()) {
-          for (DiskStoreImpl diskStore : backupInProgress) {
-            if ((null == diskStore.getInProgressBackup())
-                && (!backupCompleteList.contains(diskStore))) {
-              backupCompleteList.add(diskStore);
+          for (DiskStore diskStore : backupInProgress) {
+            if (((DiskStoreImpl) diskStore).getInProgressBackup() == null
+                && !backupCompleteList.contains(diskStore)) {
+              backupCompleteList.add((DiskStoreImpl) diskStore);
             }
           }
         }
@@ -470,9 +439,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Peforms a second incremental backup.
-   * 
-   * @return
+   * Performs a second incremental backup.
    */
   private BackupStatus performIncremental2() {
     return incremental2(Host.getHost(0).getVM(1));
@@ -519,7 +486,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     File[] memberDirs = dateDirs[0].listFiles(new FileFilter() {
       @Override
       public boolean accept(File file) {
-        return (file.isDirectory() && (file.getName().contains(memberId)));
+        return file.isDirectory() && file.getName().contains(memberId);
       }
     });
 
@@ -546,9 +513,8 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    * 
    * @param command a shell command.
    * @return the exit value of processing the shell command.
-   * @throws Exception bad, really bad.
    */
-  private int execute(String command) throws Exception {
+  private int execute(String command) throws IOException, InterruptedException {
     final ProcessBuilder builder = new ProcessBuilder(command);
     builder.redirectErrorStream(true);
     final Process process = builder.start();
@@ -559,11 +525,11 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     new Thread(new Runnable() {
       @Override
       public void run() {
-        BufferedReader reader = null;
 
         try {
-          reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-          String line = null;
+          BufferedReader reader =
+              new BufferedReader(new InputStreamReader(process.getInputStream()));
+          String line;
 
           do {
             line = reader.readLine();
@@ -572,7 +538,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
           reader.close();
         } catch (IOException e) {
-          log("Excecute: error while reading standard in: " + e.getMessage());
+          log("Execute: error while reading standard in: " + e.getMessage());
         }
       }
     }).start();
@@ -583,11 +549,10 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     new Thread(new Runnable() {
       @Override
       public void run() {
-        BufferedReader reader = null;
-
         try {
-          reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-          String line = null;
+          BufferedReader reader =
+              new BufferedReader(new InputStreamReader(process.getErrorStream()));
+          String line;
 
           do {
             line = reader.readLine();
@@ -608,7 +573,8 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    * 
    * @param backupDir the member's backup directory containing the restore script.
    */
-  private void performRestore(File memberDir, File backupDir) throws Exception {
+  private void performRestore(File memberDir, File backupDir)
+      throws IOException, InterruptedException {
     /*
      * The restore script will not restore if there is an if file in the copy to directory. Remove
      * these files first.
@@ -699,7 +665,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void postSetUp() throws Exception {
     createDataRegions();
-    createRegions.run();
+    this.createRegions.run();
     loadMoreData();
 
     log("Data region created and populated.");
@@ -720,8 +686,6 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    * present in both the baseline and member's disk store should not be copied during the
    * incremental backup. Additionally, the restore script should reference and copy operation logs
    * from the baseline backup.
-   * 
-   * @throws Exception
    */
   @Test
   public void testIncrementalBackup() throws Exception {
@@ -900,7 +864,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
       public boolean done() {
         missingMembers.clear();
         missingMembers.addAll(getMissingMembers(Host.getHost(0).getVM(1)));
-        return (!missingMembers.contains(missingMember));
+        return !missingMembers.contains(missingMember);
       }
 
       @Override
@@ -1028,13 +992,14 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
      * Custom incremental backup callable that retrieves the current baseline before deletion.
      */
     SerializableCallable callable = new SerializableCallable("Backup all members.") {
-      private File baselineDir = getBaselineBackupDir();
+      private final File baselineDir = getBaselineBackupDir();
 
+      @Override
       public Object call() {
-        DistributedSystemConfig config;
         AdminDistributedSystem adminDS = null;
         try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
+          DistributedSystemConfig config =
+              AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
           adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
           adminDS.connect();
           return adminDS.backupAllMembers(getIncrementalDir(), this.baselineDir);
@@ -1079,8 +1044,6 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Successful if a user deployed jar file is included as part of the backup.
-   * 
-   * @throws Exception
    */
   @Test
   public void testBackupUserDeployedJarFiles() throws Exception {
@@ -1094,13 +1057,10 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Deploy a "dummy" jar to the VM.
      */
-    File deployedJarFile = (File) vm0.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        DeployedJar deployedJar =
-            ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, classBytes);
-        return deployedJar.getFile();
-      }
+    File deployedJarFile = vm0.invoke(() -> {
+      DeployedJar deployedJar =
+          ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, classBytes);
+      return deployedJar.getFile();
     });
 
     assertTrue(deployedJarFile.exists());
@@ -1124,12 +1084,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Get the VM's user directory.
      */
-    final String vmDir = (String) vm0.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        return System.getProperty("user.dir");
-      }
-    });
+    final String vmDir = vm0.invoke(() -> System.getProperty("user.dir"));
 
     File backupDir = getBackupDirForMember(getBaselineDir(), getMemberId(vm0));
 
@@ -1138,7 +1093,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Cleanup "dummy" jar from file system.
      */
-    Pattern pattern = Pattern.compile("^" + jarName + ".*#\\d++$");
+    Pattern pattern = Pattern.compile('^' + jarName + ".*#\\d++$");
     deleteMatching(new File("."), pattern);
 
     // Execute the restore
@@ -1179,7 +1134,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Cleanup "dummy" jar from file system.
      */
-    pattern = Pattern.compile("^" + jarName + ".*#\\d++$");
+    pattern = Pattern.compile('^' + jarName + ".*#\\d++$");
     deleteMatching(new File(vmDir), pattern);
   }
 

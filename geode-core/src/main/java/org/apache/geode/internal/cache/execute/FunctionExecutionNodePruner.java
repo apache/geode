@@ -171,7 +171,7 @@ public class FunctionExecutionNodePruner {
 
     // return node;
     return (nodesOfEqualSize.size() > 0
-        ? nodesOfEqualSize.get(PartitionedRegion.rand.nextInt(nodesOfEqualSize.size())) : null);
+        ? nodesOfEqualSize.get(PartitionedRegion.RANDOM.nextInt(nodesOfEqualSize.size())) : null);
   }
 
   public static HashMap<Integer, HashSet> groupByBucket(PartitionedRegion pr, Set routingKeys,

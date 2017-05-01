@@ -14,6 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
@@ -28,18 +41,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Implementation of PoolFactory.
@@ -217,7 +218,7 @@ public class PoolFactoryImpl implements PoolFactory {
       InetAddress hostAddr = InetAddress.getByName(host);
       InetSocketAddress sockAddr = new InetSocketAddress(hostAddr, port);
       l.add(sockAddr);
-    } catch (UnknownHostException cause) {
+    } catch (UnknownHostException ignore) {
       // IllegalArgumentException ex = new IllegalArgumentException("Unknown host " + host);
       // ex.initCause(cause);
       // throw ex;
@@ -310,7 +311,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * @since GemFire 5.7
    */
   public Pool create(String name) throws CacheException {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       TypeRegistry registry = cache.getPdxRegistry();
       if (registry != null && !attributes.isGateway()) {

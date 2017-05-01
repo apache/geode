@@ -162,7 +162,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
     List list = compiler.compileFromClause("/pos pf");
     ExecutionContext context =
         new ExecutionContext(new Object[] {"bindkey"}, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
 
     Iterator iter = list.iterator();
     while (iter.hasNext()) {
@@ -177,7 +177,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
     List args = new ArrayList();
     args.add(cl);
     CompiledOperation cop = new CompiledOperation(cp, "get", args);
-    StringBuffer sbuff = new StringBuffer();
+    StringBuilder sbuff = new StringBuilder();
     cop.generateCanonicalizedExpression(sbuff, context);
     assertEquals(sbuff.toString(), "iter1.positions.get('key1')");
 
@@ -187,7 +187,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
     // args.add(cb);
     // cop = new CompiledOperation(cp, "get", args);
     //// context.setBindArguments(new Object[]{"bindkey"});
-    // sbuff = new StringBuffer();
+    // sbuff = new StringBuilder();
     // cop.generateCanonicalizedExpression(sbuff, context);
     // assertIndexDetailsEquals(sbuff.toString(),"iter1.positions.get('bindkey')");
     //
@@ -197,7 +197,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
     // args = new ArrayList();
     // args.add(cb);
     // cop = new CompiledOperation(cp, "get", args);
-    // sbuff = new StringBuffer();
+    // sbuff = new StringBuilder();
     // cop.generateCanonicalizedExpression(sbuff, context);
     // assertIndexDetailsEquals(sbuff.toString(),"iter1.positions().get('bindkey')");
     //
@@ -207,7 +207,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
     // args = new ArrayList();
     // args.add(cb);
     // cop = new CompiledOperation(cp, "get", args);
-    // sbuff = new StringBuffer();
+    // sbuff = new StringBuilder();
     // cop.generateCanonicalizedExpression(sbuff, context);
     // assertIndexDetailsEquals(sbuff.toString(),"iter1.positions.get('bindkey')");
 
@@ -216,7 +216,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
     args = new ArrayList();
     args.add(cp1);
     cop = new CompiledOperation(cp, "get", args);
-    sbuff = new StringBuffer();
+    sbuff = new StringBuilder();
     cop.generateCanonicalizedExpression(sbuff, context);
     assertEquals(sbuff.toString(), "iter1.positions.get(iter1.pkid)");
 
@@ -224,7 +224,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
     cp = new CompiledPath(new CompiledID("pf"), "getPositions");
     cp1 = new CompiledPath(new CompiledID("pf"), "pkid");
     CompiledIndexOperation ciop = new CompiledIndexOperation(cp, cp1);
-    sbuff = new StringBuffer();
+    sbuff = new StringBuilder();
     ciop.generateCanonicalizedExpression(sbuff, context);
     assertEquals(sbuff.toString(), "iter1.positions[iter1.pkid]");
   }

@@ -34,15 +34,12 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -58,8 +55,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  *
  * The {@link ParallelGatewaySenderQueue} should be shared among all the
  * {@link ParallelGatewaySenderEventProcessor}s.
- * 
- *
  */
 public class ConcurrentParallelGatewaySenderEventProcessor
     extends AbstractGatewaySenderEventProcessor {
@@ -67,8 +62,9 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   protected static final Logger logger = LogService.getLogger();
 
   protected ParallelGatewaySenderEventProcessor processors[];
-  // private final List<ConcurrentParallelGatewaySenderQueue> concurrentParallelQueues;
+
   private GemFireException ex = null;
+
   final int nDispatcher;
 
   public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
@@ -94,8 +90,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     // gets the remaining
     // bucket
     Set<Region> targetRs = new HashSet<Region>();
-    for (LocalRegion pr : ((GemFireCacheImpl) ((AbstractGatewaySender) sender).getCache())
-        .getApplicationRegions()) {
+    for (LocalRegion pr : sender.getCache().getApplicationRegions()) {
       if (pr.getAllGatewaySenderIds().contains(sender.getId())) {
         targetRs.add(pr);
       }
@@ -124,17 +119,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   @Override
   protected void initializeMessageQueue(String id) {
-    /*
-     * Set<Region> targetRs = new HashSet<Region>(); for (LocalRegion pr :
-     * ((GemFireCacheImpl)((ParallelGatewaySenderImpl)sender) .getCache()).getApplicationRegions())
-     * { if (pr.getAllGatewaySenderIds().contains(id)) { targetRs.add(pr); } }
-     */
-    // this.parallelQueue = new ParallelGatewaySenderQueue(this.sender, targetRs);
-    /*
-     * if (sender.getIsHDFSQueue()) this.parallelQueue = new
-     * HDFSParallelGatewaySenderQueue(this.sender, targetRs); else this.parallelQueue = new
-     * ParallelGatewaySenderQueue(this.sender, targetRs);
-     */
+    // nothing
   }
 
   @Override
@@ -148,14 +133,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     }
     int pId = bucketId % this.nDispatcher;
     this.processors[pId].enqueueEvent(operation, event, substituteValue);
-
-    /*
-     * if (getSender().beforeEnqueue(gatewayQueueEvent)) { long start =
-     * getSender().getStatistics().startTime(); try { this.parallelQueue.put(gatewayQueueEvent); }
-     * catch (InterruptedException e) { e.printStackTrace(); } finally { if (gatewayQueueEvent !=
-     * null) { gatewayQueueEvent.release(); } getSender().getStatistics().endPut(start); } else {
-     * getSender().getStatistics().incEventsFiltered(); }
-     */
   }
 
   @Override
@@ -196,7 +173,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     }
   }
 
-
   private void waitForRunningStatus() {
     for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
       synchronized (parallelProcessor.runningStateLock) {
@@ -217,7 +193,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       }
     }
   }
-
 
   @Override
   public void stopProcessing() {
@@ -299,7 +274,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
       parallelProcessor.waitForDispatcherToPause();
     }
-    // super.waitForDispatcherToPause();
   }
 
   @Override
@@ -330,23 +304,11 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     }
     return l;
   }
-  /*
-   * public List<ConcurrentParallelGatewaySenderQueue> getConcurrentParallelQueues() { return
-   * concurrentParallelQueues; }
-   */
 
   @Override
   public RegionQueue getQueue() {
     return this.queue;
   }
-
-  /*
-   * public Set<PartitionedRegion> getRegions() { return
-   * ((ParallelGatewaySenderQueue)(processors[0].getQueue())).getRegions(); }
-   * 
-   * public int localSize() { return
-   * ((ParallelGatewaySenderQueue)(processors[0].getQueue())).localSize(); }
-   */
 
   @Override
   public GatewaySenderEventDispatcher getDispatcher() {

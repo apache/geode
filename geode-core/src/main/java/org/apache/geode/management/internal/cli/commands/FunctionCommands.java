@@ -14,8 +14,21 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
@@ -25,7 +38,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -51,30 +64,21 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
- * 
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class FunctionCommands implements CommandMarker {
+
   private final ListFunctionFunction listFunctionFunction = new ListFunctionFunction();
 
   private Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
+  }
+
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
@@ -176,8 +180,7 @@ public class FunctionCommands implements CommandMarker {
         return result;
       }
 
-      Cache cache = CacheFactory.getAnyInstance();
-
+      InternalCache cache = getCache();
 
       if (resultCollector != null) {
         resultCollectorInstance =
@@ -208,11 +211,10 @@ public class FunctionCommands implements CommandMarker {
       } else if (onRegion != null && onRegion.length() > 0) {
         if (cache.getRegion(onRegion) == null) {
           // find a member where region is present
-          DistributedRegionMXBean bean =
-              ManagementService.getManagementService(GemFireCacheImpl.getInstance())
-                  .getDistributedRegionMXBean(onRegion);
+          DistributedRegionMXBean bean = ManagementService.getManagementService(getCache())
+              .getDistributedRegionMXBean(onRegion);
           if (bean == null) {
-            bean = ManagementService.getManagementService(GemFireCacheImpl.getInstance())
+            bean = ManagementService.getManagementService(getCache())
                 .getDistributedRegionMXBean(Region.SEPARATOR + onRegion);
 
             if (bean == null) {
@@ -350,7 +352,7 @@ public class FunctionCommands implements CommandMarker {
     return result;
   }
 
-  DistributedMember getMember(Cache cache, String memberNameOrId) {
+  DistributedMember getMember(InternalCache cache, String memberNameOrId) {
     DistributedMember member = null;
     Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
     Iterator<DistributedMember> it = dsMembers.iterator();
@@ -365,8 +367,8 @@ public class FunctionCommands implements CommandMarker {
   }
 
   void executeAndGetResults(String functionId, String filterString, String resultCollector,
-      String[] arguments, Cache cache, DistributedMember member, TabularResultData resultTable,
-      String onRegion) {
+      String[] arguments, InternalCache cache, DistributedMember member,
+      TabularResultData resultTable, String onRegion) {
     StringBuilder resultMessege = new StringBuilder();
     try {
       Function function = new UserFunctionExecution();
@@ -448,7 +450,7 @@ public class FunctionCommands implements CommandMarker {
           help = CliStrings.DESTROY_FUNCTION__ONMEMBER__HELP) String memberId) {
     Result result = null;
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       Set<DistributedMember> dsMembers = new HashSet<DistributedMember>();
       if (groups != null && memberId != null) {
         return ResultBuilder
@@ -479,7 +481,6 @@ public class FunctionCommands implements CommandMarker {
       result = ResultBuilder.buildResult(errorResultData);
       return result;
     }
-
   }
 
   /**
@@ -510,7 +511,7 @@ public class FunctionCommands implements CommandMarker {
     }
   }
 
-  Result executeFunction(Cache cache, Set<DistributedMember> DsMembers, String functionId) {
+  Result executeFunction(InternalCache cache, Set<DistributedMember> DsMembers, String functionId) {
     // unregister on a set of of members
     Function unregisterFunction = new UnregisterFunction();
     FunctionService.registerFunction(unregisterFunction);
@@ -565,7 +566,7 @@ public class FunctionCommands implements CommandMarker {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;
 
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
 
     Set<DistributedMember> targetMembers;
     try {

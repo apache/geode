@@ -72,7 +72,7 @@ public class ExecutionContextJUnitTest {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
     try {
       Iterator iter = list.iterator();
       while (iter.hasNext()) {
@@ -100,7 +100,7 @@ public class ExecutionContextJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
       Iterator iter = list.iterator();
       int i = 0;
       while (iter.hasNext()) {
@@ -128,7 +128,7 @@ public class ExecutionContextJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
       Iterator iter = list.iterator();
       int i = 0;
       CompiledIteratorDef iterDef = null;
@@ -143,7 +143,7 @@ public class ExecutionContextJUnitTest {
             rIter.getIndexInternalID().equals("index_iter" + i));
       }
       Set temp = new HashSet();
-      context.computeUtlimateDependencies(iterDef, temp);
+      context.computeUltimateDependencies(iterDef, temp);
       String regionPath = context
           .getRegionPathForIndependentRuntimeIterator((RuntimeIterator) temp.iterator().next());
       if (!(regionPath != null && regionPath.equals("/portfolio"))) {
@@ -166,7 +166,7 @@ public class ExecutionContextJUnitTest {
         "/portfolio p, p.positions, p.addreses addrs, addrs.collection1 coll1, /dummy d1, d1.collection2 d2");
     RuntimeIterator indItr = null;
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
     int i = 0;
     List checkList = new ArrayList();
     try {

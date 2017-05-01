@@ -550,7 +550,7 @@ public class PartitionedIndex extends AbstractIndex {
   }
 
   @Override
-  void instantiateEvaluator(IndexCreationHelper ich) {
+  void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
     throw new UnsupportedOperationException();
   }
 

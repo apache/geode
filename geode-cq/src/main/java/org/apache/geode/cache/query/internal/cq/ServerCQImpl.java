@@ -44,7 +44,7 @@ import org.apache.geode.cache.query.internal.CompiledSelect;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -216,7 +216,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       }
     }
 
-    // this.cqService.addToCqEventKeysMap(this);
     this.updateCqCreateStats();
 
     // Initialize the state of CQ.
@@ -283,7 +282,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * @return String modified query.
    */
   private Query constructServerSideQuery() throws QueryException {
-    GemFireCacheImpl cache = (GemFireCacheImpl) cqService.getCache();
+    InternalCache cache = cqService.getInternalCache();
     DefaultQuery locQuery = (DefaultQuery) cache.getLocalQueryService().newQuery(this.queryString);
     CompiledSelect select = locQuery.getSimpleSelect();
     CompiledIteratorDef from = (CompiledIteratorDef) select.getIterators().get(0);
@@ -371,8 +370,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     if (!CqServiceProvider.MAINTAIN_KEYS) {
       return;
     }
-    // this.logger.fine("Marking key in Results Cache For CQ :" +
-    // this.cqName + " key :" + key);
 
     if (this.cqResultKeys != null) {
       synchronized (this.cqResultKeys) {

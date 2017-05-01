@@ -15,10 +15,9 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,15 +28,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.operations.DestroyOperationContext;
 import org.apache.geode.cache.operations.KeySetOperationContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
@@ -64,7 +61,7 @@ public class KeySetTest {
   @Mock
   private LocalRegion region;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private ChunkedMessage chunkedResponseMessage;
   @Mock
@@ -157,6 +154,5 @@ public class KeySetTest {
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
-
 
 }

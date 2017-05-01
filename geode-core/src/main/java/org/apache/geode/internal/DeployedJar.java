@@ -14,26 +14,16 @@
  */
 package org.apache.geode.internal;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Declarable;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.logging.log4j.Logger;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -46,6 +36,20 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.regex.Pattern;
+
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * ClassLoader for a single JAR file.
@@ -53,18 +57,21 @@ import java.util.jar.JarInputStream;
  * @since GemFire 7.0
  */
 public class DeployedJar {
-  private final static Logger logger = LogService.getLogger();
-  private final static MessageDigest messageDigest = getMessageDigest();
+
+  private static final Logger logger = LogService.getLogger();
+  private static final MessageDigest messageDigest = getMessageDigest();
+  private static final byte[] ZERO_BYTES = new byte[0];
+  private static final Pattern PATTERN_SLASH = Pattern.compile("/");
 
   private final String jarName;
   private final File file;
   private final byte[] md5hash;
-  private final Collection<Function> registeredFunctions = new ArrayList<Function>();
+  private final Collection<Function> registeredFunctions = new ArrayList<>();
 
   private static MessageDigest getMessageDigest() {
     try {
       return MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException nsaex) {
+    } catch (NoSuchAlgorithmException ignored) {
       // Failure just means we can't do a simple compare for content equality
     }
     return null;
@@ -75,7 +82,7 @@ public class DeployedJar {
   }
 
   public int getVersion() {
-    return JarDeployer.extractVersionFromFilename(file.getName());
+    return JarDeployer.extractVersionFromFilename(this.file.getName());
   }
 
   public DeployedJar(File versionedJarFile, String jarName) throws IOException {
@@ -86,7 +93,7 @@ public class DeployedJar {
    * Writes the given jarBytes to versionedJarFile
    */
   public DeployedJar(File versionedJarFile, final String jarName, byte[] jarBytes)
-      throws IOException {
+      throws FileNotFoundException {
     Assert.assertTrue(jarBytes != null, "jarBytes cannot be null");
     Assert.assertTrue(jarName != null, "jarName cannot be null");
     Assert.assertTrue(versionedJarFile != null, "versionedJarFile cannot be null");
@@ -124,13 +131,13 @@ public class DeployedJar {
 
     try {
       jarInputStream = new JarInputStream(inputStream);
-      valid = (jarInputStream.getNextJarEntry() != null);
+      valid = jarInputStream.getNextJarEntry() != null;
     } catch (IOException ignore) {
       // Ignore this exception and just return false
     } finally {
       try {
         jarInputStream.close();
-      } catch (IOException ioex) {
+      } catch (IOException ignored) {
         // Ignore this exception and just return result
       }
     }
@@ -144,10 +151,9 @@ public class DeployedJar {
    * @param jarBytes Bytes of data to be validated.
    * @return True if the data has JAR content, false otherwise
    */
-  public static boolean hasValidJarContent(final byte[] jarBytes) {
+  static boolean hasValidJarContent(final byte[] jarBytes) {
     return hasValidJarContent(new ByteArrayInputStream(jarBytes));
   }
-
 
   /**
    * Scan the JAR file and attempt to load all classes and register any function classes found.
@@ -158,7 +164,7 @@ public class DeployedJar {
   // in the constructor. Once this method is finished, all classes will have been loaded and
   // there will no longer be a need to hang on to the original contents so they will be
   // discarded.
-  public synchronized void loadClassesAndRegisterFunctions() throws ClassNotFoundException {
+  synchronized void loadClassesAndRegisterFunctions() throws ClassNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("Registering functions with DeployedJar: {}", this);
@@ -175,8 +181,8 @@ public class DeployedJar {
 
       while (jarEntry != null) {
         if (jarEntry.getName().endsWith(".class")) {
-          final String className = jarEntry.getName().replaceAll("/", "\\.").substring(0,
-              (jarEntry.getName().length() - 6));
+          final String className = PATTERN_SLASH.matcher(jarEntry.getName()).replaceAll("\\.")
+              .substring(0, jarEntry.getName().length() - 6);
 
           if (functionClasses.contains(className)) {
             if (isDebugEnabled) {
@@ -228,12 +234,11 @@ public class DeployedJar {
     this.registeredFunctions.clear();
 
     try {
-      TypeRegistry typeRegistry =
-          ((GemFireCacheImpl) CacheFactory.getAnyInstance()).getPdxRegistry();
+      TypeRegistry typeRegistry = ((InternalCache) CacheFactory.getAnyInstance()).getPdxRegistry();
       if (typeRegistry != null) {
         typeRegistry.flushCache();
       }
-    } catch (CacheClosedException ccex) {
+    } catch (CacheClosedException ignored) {
       // That's okay, it just means there was nothing to flush to begin with
     }
   }
@@ -245,7 +250,7 @@ public class DeployedJar {
    * @param compareToBytes Bytes to compare the original content to
    * @return True of the MD5 hash is the same o
    */
-  public boolean hasSameContentAs(final byte[] compareToBytes) {
+  boolean hasSameContentAs(final byte[] compareToBytes) {
     // If the MD5 hash can't be calculated then silently return no match
     if (messageDigest == null || this.md5hash == null) {
       return Arrays.equals(compareToBytes, getJarContent());
@@ -268,16 +273,15 @@ public class DeployedJar {
    * @return A collection of Objects that implement the Function interface.
    */
   private Collection<Function> getRegisterableFunctionsFromClass(Class<?> clazz) {
-    final List<Function> registerableFunctions = new ArrayList<Function>();
+    final List<Function> registerableFunctions = new ArrayList<>();
 
     try {
       if (Function.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
         boolean registerUninitializedFunction = true;
         if (Declarable.class.isAssignableFrom(clazz)) {
           try {
-            final List<Properties> propertiesList =
-                ((GemFireCacheImpl) CacheFactory.getAnyInstance())
-                    .getDeclarableProperties(clazz.getName());
+            final List<Properties> propertiesList = ((InternalCache) CacheFactory.getAnyInstance())
+                .getDeclarableProperties(clazz.getName());
 
             if (!propertiesList.isEmpty()) {
               registerUninitializedFunction = false;
@@ -295,7 +299,7 @@ public class DeployedJar {
                 }
               }
             }
-          } catch (CacheClosedException ccex) {
+          } catch (CacheClosedException ignored) {
             // That's okay, it just means there were no properties to init the function with
           }
         }
@@ -309,7 +313,7 @@ public class DeployedJar {
         }
       }
     } catch (Exception ex) {
-      logger.error("Attempting to register function from JAR file: " + this.file.getAbsolutePath(),
+      logger.error("Attempting to register function from JAR file: {}", this.file.getAbsolutePath(),
           ex);
     }
 
@@ -349,15 +353,14 @@ public class DeployedJar {
   }
 
   private byte[] getJarContent() {
-    InputStream channelInputStream = null;
     try {
-      channelInputStream = new FileInputStream(this.file);
+      InputStream channelInputStream = new FileInputStream(this.file);
 
       final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
       final byte[] bytes = new byte[4096];
 
       int bytesRead;
-      while (((bytesRead = channelInputStream.read(bytes)) != -1)) {
+      while ((bytesRead = channelInputStream.read(bytes)) != -1) {
         byteOutStream.write(bytes, 0, bytesRead);
       }
       channelInputStream.close();
@@ -366,7 +369,7 @@ public class DeployedJar {
       logger.error("Error when attempting to read jar contents: ", e);
     }
 
-    return new byte[0];
+    return ZERO_BYTES;
   }
 
   /**
@@ -387,8 +390,8 @@ public class DeployedJar {
   public URL getFileURL() {
     try {
       return this.file.toURL();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (MalformedURLException e) {
+      logger.warn(e);
     }
     return null;
   }
@@ -397,7 +400,7 @@ public class DeployedJar {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((this.jarName == null) ? 0 : this.jarName.hashCode());
+    result = prime * result + (this.jarName == null ? 0 : this.jarName.hashCode());
     return result;
   }
 
@@ -426,12 +429,12 @@ public class DeployedJar {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
+    sb.append('@').append(System.identityHashCode(this)).append('{');
     sb.append("jarName=").append(this.jarName);
     sb.append(",file=").append(this.file.getAbsolutePath());
     sb.append(",md5hash=").append(Arrays.toString(this.md5hash));
     sb.append(",version=").append(this.getVersion());
-    sb.append("}");
+    sb.append('}');
     return sb.toString();
   }
 }

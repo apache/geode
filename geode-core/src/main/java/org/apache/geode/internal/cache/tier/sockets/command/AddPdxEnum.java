@@ -12,16 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -29,7 +26,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.TypeRegistry;
-
 
 public class AddPdxEnum extends BaseCommand {
   private static final Logger logger = LogService.getLogger();
@@ -56,7 +52,7 @@ public class AddPdxEnum extends BaseCommand {
     int enumId = msg.getPart(1).getInt();
 
     try {
-      GemFireCacheImpl cache = (GemFireCacheImpl) servConn.getCache();
+      InternalCache cache = servConn.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
       registry.addRemoteEnum(enumId, enumInfo);
     } catch (Exception e) {

@@ -78,7 +78,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
  *
  * @since GemFire 6.0
  */
-public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
+public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private PutAllEntryData[] putAllPRData;
@@ -118,7 +118,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   public PutAllPRMessage(int bucketId, int size, boolean notificationOnly, boolean posDup,
       boolean skipCallbacks, Object callbackArg) {
-    this.bucketId = Integer.valueOf(bucketId);
+    this.bucketId = bucketId;
     putAllPRData = new PutAllEntryData[size];
     this.notificationOnly = notificationOnly;
     this.posDup = posDup;
@@ -217,7 +217,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.bucketId = Integer.valueOf((int) InternalDataSerializer.readSignedVL(in));
+    this.bucketId = (int) InternalDataSerializer.readSignedVL(in);
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
     }
@@ -249,7 +249,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
     if (bucketId == null) {
       InternalDataSerializer.writeSignedVL(-1, out);
     } else {
-      InternalDataSerializer.writeSignedVL(bucketId.intValue(), out);
+      InternalDataSerializer.writeSignedVL(bucketId, out);
     }
     if (this.bridgeContext != null) {
       DataSerializer.writeObject(this.bridgeContext, out);
@@ -313,7 +313,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
       long startTime) throws EntryExistsException, ForceReattemptException, DataLocationException {
     boolean sendReply = true;
 
@@ -321,14 +321,14 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
     long lastModified = 0L;
     try {
-      result = doLocalPutAll(r, eventSender, lastModified);
+      result = doLocalPutAll(pr, eventSender, lastModified);
     } catch (ForceReattemptException fre) {
-      sendReply(getSender(), getProcessorId(), dm, new ReplyException(fre), r, startTime);
+      sendReply(getSender(), getProcessorId(), dm, new ReplyException(fre), pr, startTime);
       return false;
     }
 
     if (sendReply) {
-      sendReply(getSender(), getProcessorId(), dm, null, r, startTime);
+      sendReply(getSender(), getProcessorId(), dm, null, pr, startTime);
     }
     return false;
   }
@@ -363,8 +363,8 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
    *        lastModified timestamp for last modification
    * @return If succeeds, return true, otherwise, throw exception
    */
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IMSE_DONT_CATCH_IMSE")
-  public final boolean doLocalPutAll(PartitionedRegion r, InternalDistributedMember eventSender,
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings("IMSE_DONT_CATCH_IMSE")
+  public boolean doLocalPutAll(PartitionedRegion r, InternalDistributedMember eventSender,
       long lastModified)
       throws EntryExistsException, ForceReattemptException, DataLocationException {
     boolean didPut = false;
@@ -501,10 +501,8 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
               }
             } // for
 
-          } catch (IllegalMonitorStateException ex) {
-            ForceReattemptException fre =
-                new ForceReattemptException("unable to get lock for primary, retrying... ");
-            throw fre;
+          } catch (IllegalMonitorStateException ignore) {
+            throw new ForceReattemptException("unable to get lock for primary, retrying... ");
           } catch (CacheWriterException cwe) {
             // encounter cacheWriter exception
             partialKeys.saveFailedKey(key, cwe);
@@ -650,7 +648,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
 
   @Override
-  protected final void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; putAllPRDataSize=").append(putAllPRDataSize).append("; bucketId=")
         .append(bucketId);
@@ -661,21 +659,16 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
     buff.append("; directAck=").append(this.directAck);
 
     for (int i = 0; i < putAllPRDataSize; i++) {
-      // buff.append("; entry"+i+":").append(putAllPRData[i]);
-      buff.append("; entry" + i + ":").append(putAllPRData[i].getKey()).append(",")
+      buff.append("; entry").append(i).append(":").append(putAllPRData[i].getKey()).append(",")
           .append(putAllPRData[i].versionTag);
     }
   }
 
-  public final InternalDistributedSystem getInternalDs() {
-    return internalDs;
-  }
-
-  public final void setInternalDs(InternalDistributedSystem internalDs) {
+  public void setInternalDs(InternalDistributedSystem internalDs) {
     this.internalDs = internalDs;
   }
 
-  public final void setDirectAck(boolean directAck) {
+  public void setDirectAck(boolean directAck) {
     this.directAck = directAck;
   }
 
@@ -686,10 +679,8 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   @Override
   public String toString() {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     String className = getClass().getName();
-    // className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); //
-    // partition.<foo> more generic version
     buff.append(className.substring(className.indexOf(PN_TOKEN) + PN_TOKEN.length())); // partition.<foo>
     buff.append("(prid="); // make sure this is the first one
     buff.append(this.regionId);
@@ -701,7 +692,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
       if (pr != null) {
         name = pr.getFullPath();
       }
-    } catch (Exception e) {
+    } catch (Exception ignore) {
       /* ignored */
       name = null;
     }
@@ -721,7 +712,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
     return buff.toString();
   }
 
-  public static final class PutAllReplyMessage extends ReplyMessage {
+  public static class PutAllReplyMessage extends ReplyMessage {
     /** Result of the PutAll operation */
     boolean result;
     VersionedObjectList versions;
@@ -801,7 +792,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("PutAllReplyMessage ").append("processorid=").append(this.processorId)
           .append(" returning ").append(this.result).append(" exception=").append(getException())
           .append(" versions= ").append(this.versions);
@@ -843,17 +834,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
       } catch (ForceReattemptException e) {
         throw e;
       }
-      // try {
-      // waitForRepliesUninterruptibly();
-      // }
-      // catch (ReplyException e) {
-      // Throwable t = e.getCause();
-      // if (t instanceof CacheClosedException) {
-      // throw new PartitionedRegionCommunicationException("Put operation received an exception",
-      // t);
-      // }
-      // e.handleAsUnexpected();
-      // }
       return new PutAllResult(this.returnValue, this.versions);
     }
   }

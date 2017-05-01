@@ -25,7 +25,7 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
@@ -150,7 +150,7 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof AsyncEventQueue)) {
+    if (!(obj instanceof AsyncEventQueueImpl)) {
       return false;
     }
     AsyncEventQueueImpl asyncEventQueue = (AsyncEventQueueImpl) obj;
@@ -203,9 +203,9 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public void destroy(boolean initiator) {
-    GemFireCacheImpl gfci = (GemFireCacheImpl) ((AbstractGatewaySender) this.sender).getCache();
+    InternalCache cache = ((AbstractGatewaySender) this.sender).getCache();
     ((AbstractGatewaySender) this.sender).destroy(initiator);
-    gfci.removeAsyncEventQueue(this);
+    cache.removeAsyncEventQueue(this);
   }
 
   public boolean isBucketSorted() {

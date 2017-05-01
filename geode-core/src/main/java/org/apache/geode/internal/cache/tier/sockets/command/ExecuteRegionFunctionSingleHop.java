@@ -20,13 +20,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -77,7 +77,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     Set<Object> removedNodesSet = null;
     int filterSize = 0, bucketIdsSize = 0, partNumber = 0;
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    int functionTimeout = GemFireCacheImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+    int functionTimeout = ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
     try {
       byte[] bytes = msg.getPart(0).getSerializedForm();
       functionState = bytes[0];

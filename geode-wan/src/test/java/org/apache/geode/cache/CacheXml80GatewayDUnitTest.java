@@ -14,39 +14,40 @@
  */
 package org.apache.geode.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-import org.apache.geode.cache.wan.*;
-import org.apache.geode.cache30.*;
+import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache30.CacheXml70DUnitTest;
+import org.apache.geode.cache30.CacheXmlTestCase;
+import org.apache.geode.cache30.MyGatewayTransportFilter1;
+import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
 
-  public CacheXml80GatewayDUnitTest() {
-    super();
-  }
-
+  @Override
   protected String getGemFireVersion() {
     return CacheXml.VERSION_8_0;
   }
 
   @Test
-  public void testGatewayReceiverWithManualStartTRUE() throws CacheException {
+  public void testGatewayReceiverWithManualStartTRUE() throws Exception {
     // getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -62,11 +63,9 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
     gatewayReceiverFactory.addGatewayTransportFilter(myStreamFilter2);
     GatewayReceiver receiver1 = gatewayReceiverFactory.create();
-    try {
-      receiver1.start();
-    } catch (IOException e) {
-      fail("Could not start GatewayReceiver");
-    }
+
+    receiver1.start();
+
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
@@ -77,7 +76,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testAsyncEventQueueWithSubstitutionFilter() {
+  public void testAsyncEventQueueWithSubstitutionFilter() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -101,7 +100,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testGatewaySenderWithSubstitutionFilter() {
+  public void testGatewaySenderWithSubstitutionFilter() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -136,12 +135,15 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   public static class MyGatewayEventSubstitutionFilter
       implements GatewayEventSubstitutionFilter, Declarable {
 
+    @Override
     public Object getSubstituteValue(EntryEvent event) {
       return event.getKey();
     }
 
+    @Override
     public void close() {}
 
+    @Override
     public void init(Properties properties) {}
   }
 }

@@ -106,7 +106,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     if (this.txUniqId == TXManagerImpl.NOTX) {
       return null;
     } else {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         // ignore and return, we are shutting down!
         return null;
@@ -116,9 +116,9 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
   }
 
-  private void cleanupTransasction(TXStateProxy tx) {
+  private void cleanupTransaction(TXStateProxy tx) {
     if (this.txUniqId != TXManagerImpl.NOTX) {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         // ignore and return, we are shutting down!
         return;
@@ -130,7 +130,6 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
   @Override
   protected void process(final DistributionManager dm) {
-
     Throwable thr = null;
     boolean sendReply = true;
     DistributedRegion dr = null;
@@ -202,7 +201,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
         logger.trace(LogMarker.DM, "Exception caught while processing message", t);
       }
     } finally {
-      cleanupTransasction(tx);
+      cleanupTransaction(tx);
       if (sendReply && this.processorId != 0) {
         ReplyException rex = null;
         if (thr != null) {
@@ -275,9 +274,9 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   /**
    * check to see if the cache is closing
    */
-  final public boolean checkCacheClosing(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    return (cache == null || cache.getCancelCriterion().isCancelInProgress());
+  private boolean checkCacheClosing(DistributionManager dm) {
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    return cache == null || cache.getCancelCriterion().isCancelInProgress();
   }
 
   /**
@@ -285,7 +284,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    * 
    * @return true if the distributed system is closing
    */
-  final public boolean checkDSClosing(DistributionManager dm) {
+  private boolean checkDSClosing(DistributionManager dm) {
     InternalDistributedSystem ds = dm.getSystem();
     return (ds == null || ds.isDisconnecting());
   }

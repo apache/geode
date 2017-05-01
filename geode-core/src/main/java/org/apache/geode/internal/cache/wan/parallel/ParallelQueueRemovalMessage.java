@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -52,7 +53,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * 
  * @since GemFire 8.0
  */
-
 public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
 
   private static final Logger logger = LogService.getLogger();
@@ -73,7 +73,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   @Override
   protected void process(DistributionManager dm) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    final GemFireCacheImpl cache;
+    final InternalCache cache;
     cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);

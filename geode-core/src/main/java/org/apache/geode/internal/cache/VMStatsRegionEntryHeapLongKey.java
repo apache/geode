@@ -64,7 +64,7 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
     this.value = v;
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

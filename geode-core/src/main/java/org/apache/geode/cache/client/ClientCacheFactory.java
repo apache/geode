@@ -12,11 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.client;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.util.Properties;
+
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
@@ -25,11 +33,8 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.AuthenticationRequiredException;
 
 /**
  * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or
@@ -209,7 +214,7 @@ public class ClientCacheFactory {
 
   private ClientCache basicCreate() {
     synchronized (ClientCacheFactory.class) {
-      GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
+      InternalClientCache instance = GemFireCacheImpl.getInstance();
 
       {
         String propValue = this.dsProps.getProperty(MCAST_PORT);
@@ -224,7 +229,7 @@ public class ClientCacheFactory {
       }
       {
         String propValue = this.dsProps.getProperty(LOCATORS);
-        if (propValue != null && !propValue.equals("")) {
+        if (propValue != null && !propValue.isEmpty()) {
           throw new IllegalStateException(
               "On a client cache the locators property must be set to an empty string or not set. It was set to \""
                   + propValue + "\".");
@@ -254,8 +259,7 @@ public class ClientCacheFactory {
 
         return instance;
       } else {
-        GemFireCacheImpl gfc = GemFireCacheImpl.createClient(system, this.pf, cacheConfig);
-        return gfc;
+        return GemFireCacheImpl.createClient(system, this.pf, cacheConfig);
       }
     }
   }
@@ -606,7 +610,7 @@ public class ClientCacheFactory {
    *         ClientCacheFactory
    */
   public static synchronized ClientCache getAnyInstance() {
-    GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
+    InternalClientCache instance = GemFireCacheImpl.getInstance();
     if (instance == null) {
       throw new CacheClosedException(
           LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());

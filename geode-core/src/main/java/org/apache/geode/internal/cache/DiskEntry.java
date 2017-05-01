@@ -27,7 +27,6 @@ import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskStoreImpl.AsyncDiskEntry;
-import org.apache.geode.internal.cache.Token.Tombstone;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.LRUEntry;
@@ -52,18 +51,14 @@ import org.apache.geode.internal.util.BlobHelper;
  * provides accessor and mutator methods for a disk entry's state. This allows us to abstract all of
  * the interesting behavior into a {@linkplain DiskEntry.Helper helper class} that we only need to
  * implement once.
- *
- * <P>
- *
- * Each <code>DiskEntry</code> has a unique <code>id</code> that is used by the {@link DiskRegion}
- * to identify the key/value pair. Before the disk entry is written to disk, the value of the
- * <code>id</code> is {@link DiskRegion#INVALID_ID invalid}. Once the object has been written to
- * disk, the <code>id</code> is a positive number. If the value is {@linkplain Helper#update
- * updated}, then the <code>id</code> is negated to signify that the value on disk is dirty.
+ * <p>
+ * Each {@code DiskEntry} has a unique {@code id} that is used by the {@link DiskRegion} to identify
+ * the key/value pair. Before the disk entry is written to disk, the value of the {@code id} is
+ * {@link DiskRegion#INVALID_ID invalid}. Once the object has been written to disk, the {@code id}
+ * is a positive number. If the value is {@linkplain Helper#update updated}, then the {@code id} is
+ * negated to signify that the value on disk is dirty.
  *
  * @see DiskRegion
- *
- *
  * @since GemFire 3.2
  */
 public interface DiskEntry extends RegionEntry {
@@ -78,8 +73,6 @@ public interface DiskEntry extends RegionEntry {
   /**
    * In some cases we need to do something just before we drop the value from a DiskEntry that is
    * being moved (i.e. overflowed) to disk.
-   * 
-   * @param context
    */
   public void handleValueOverflow(RegionEntryContext context);
 
@@ -90,11 +83,9 @@ public interface DiskEntry extends RegionEntry {
   public boolean isRemovedFromDisk();
 
   /**
-   * Returns the id of this <code>DiskEntry</code>
+   * Returns the id of this {@code DiskEntry}
    */
   public DiskId getDiskId();
-
-  public void _removePhase1();
 
   public int updateAsyncEntrySize(EnableLRU capacityController);
 
@@ -119,10 +110,8 @@ public interface DiskEntry extends RegionEntry {
    */
   public static final byte[] TOMBSTONE_BYTES = new byte[0];
 
-  /////////////////////// Inner Classes //////////////////////
-
   /**
-   * A Helper class for performing functions common to all <code>DiskEntry</code>s.
+   * A Helper class for performing functions common to all {@code DiskEntry}s.
    */
   public static class Helper {
     private static final Logger logger = LogService.getLogger();
@@ -185,12 +174,10 @@ public interface DiskEntry extends RegionEntry {
       }
     }
 
-
     /**
      * Get the value of an entry that is on disk without faulting it in . It checks for the presence
      * in the buffer also. This method is used for concurrent map operations and CQ processing
      * 
-     * @throws DiskAccessException
      * @since GemFire 5.1
      */
     static Object getValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr,
@@ -223,8 +210,8 @@ public interface DiskEntry extends RegionEntry {
         synchronized (syncObj) {
           if (did != null && did.isPendingAsync()) {
             @Retained
-            Object v = entry._getValueRetain(context, true); // TODO:KIRK:OK Rusty had Object v =
-                                                             // entry.getValueWithContext(context);
+            Object v = entry._getValueRetain(context, true);
+
             if (Token.isRemovedFromDisk(v)) {
               v = null;
             }
@@ -309,9 +296,11 @@ public interface DiskEntry extends RegionEntry {
           entry.setLastModified(mgr, de.getLastModified());
 
           ReferenceCountHelper.setReferenceCountOwner(entry);
-          v = de._getValueRetain(context, true); // OFFHEAP copied to heap entry; todo allow entry
-                                                 // to refer to offheap since it will be copied to
-                                                 // network.
+
+          // OFFHEAP copied to heap entry;
+          // TODO: allow entry to refer to offheap since it will be copied to network.
+          v = de._getValueRetain(context, true);
+
           ReferenceCountHelper.setReferenceCountOwner(null);
           if (v == null) {
             if (did == null) {
@@ -331,7 +320,7 @@ public interface DiskEntry extends RegionEntry {
             BytesAndBits bb = null;
             try {
               bb = dr.getBytesAndBits(did, false);
-            } catch (DiskAccessException dae) {
+            } catch (DiskAccessException ignore) {
               return false;
             }
             if (EntryBits.isInvalid(bb.getBits())) {
@@ -367,8 +356,7 @@ public interface DiskEntry extends RegionEntry {
 
             Object tmp = cd.getValue();
             if (tmp instanceof byte[]) {
-              byte[] bb = (byte[]) tmp;
-              entry.value = bb;
+              entry.value = (byte[]) tmp;
               entry.setSerialized(true);
             } else {
               try {
@@ -378,11 +366,10 @@ public interface DiskEntry extends RegionEntry {
                 entry.value = hdos;
                 entry.setSerialized(true);
               } catch (IOException e) {
-                RuntimeException e2 = new IllegalArgumentException(
+                throw new IllegalArgumentException(
                     LocalizedStrings.DiskEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                        .toLocalizedString());
-                e2.initCause(e);
-                throw e2;
+                        .toLocalizedString(),
+                    e);
               }
             }
           }
@@ -460,7 +447,7 @@ public interface DiskEntry extends RegionEntry {
         } else {
           entry.setValueWithContext(drv,
               entry.prepareValueForCache((RegionEntryContext) r, re.getValue(), false));
-          if (!Tombstone.isInvalidOrRemoved(re.getValue())) {
+          if (!Token.isInvalidOrRemoved(re.getValue())) {
             updateStats(drv, r, 1/* InVM */, 0/* OnDisk */, 0);
           }
         }
@@ -574,7 +561,7 @@ public interface DiskEntry extends RegionEntry {
         if (this.bytes == null) {
           return "null";
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int len = getLength();
         for (int i = 0; i < len; i++) {
           sb.append(this.bytes[i]).append(", ");
@@ -808,8 +795,6 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Writes the key/value object stored in the given entry to disk
      * 
-     * @throws RegionClearedException
-     * 
      * @see DiskRegion#put
      */
     private static void writeToDisk(DiskEntry entry, LocalRegion region, boolean async,
@@ -833,8 +818,6 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Updates the value of the disk entry with a new value. This allows us to free up disk space in
      * the non-backup case.
-     * 
-     * @throws RegionClearedException
      */
     public static void update(DiskEntry entry, LocalRegion region, Object newValue,
         EntryEventImpl event) throws RegionClearedException {
@@ -892,7 +875,7 @@ public interface DiskEntry extends RegionEntry {
           if (caughtCacheClosed) {
             // 47616: not to set the value to be removedFromDisk since it failed to persist
           } else {
-            // Asif Ensure that the value is rightly set despite clear so
+            // Ensure that the value is rightly set despite clear so
             // that it can be distributed correctly
             entry.setValueWithContext(region, newValue); // OFFHEAP newValue was already
                                                          // preparedForCache
@@ -1010,12 +993,12 @@ public interface DiskEntry extends RegionEntry {
     @Retained
     public static Object getValueOffHeapOrDiskWithoutFaultIn(DiskEntry entry, LocalRegion region) {
       @Retained
-      Object v = entry._getValueRetain(region, true); // TODO:KIRK:OK Object v =
-                                                      // entry.getValueWithContext(region);
+      Object v = entry._getValueRetain(region, true);
+
       if (v == null || Token.isRemovedFromDisk(v) && !region.isIndexCreationThread()) {
         synchronized (entry) {
-          v = entry._getValueRetain(region, true); // TODO:KIRK:OK v =
-                                                   // entry.getValueWithContext(region);
+          v = entry._getValueRetain(region, true);
+
           if (v == null) {
             v = Helper.getOffHeapValueOnDiskOrBuffer(entry, region.getDiskRegion(), region);
           }
@@ -1024,24 +1007,10 @@ public interface DiskEntry extends RegionEntry {
       if (Token.isRemovedFromDisk(v)) {
         // fix for bug 31800
         v = null;
-        // } else if (v instanceof ByteSource) {
-        // // If the ByteSource contains a Delta or ListOfDelta then we want to deserialize it
-        // Object deserVal = ((CachedDeserializable)v).getDeserializedForReading();
-        // if (deserVal != v) {
-        // OffHeapHelper.release(v);
-        // v = deserVal;
-        // }
       }
       return v;
     }
 
-    /**
-     * 
-     * @param entry
-     * @param region
-     * @return Value
-     * @throws DiskAccessException
-     */
     public static Object faultInValue(DiskEntry entry, LocalRegion region) {
       return faultInValue(entry, region, false);
     }
@@ -1058,8 +1027,8 @@ public interface DiskEntry extends RegionEntry {
     private static Object faultInValue(DiskEntry entry, LocalRegion region, boolean retainResult) {
       DiskRegion dr = region.getDiskRegion();
       @Retained
-      Object v = entry._getValueRetain(region, true); // TODO:KIRK:OK Object v =
-                                                      // entry.getValueWithContext(region);
+      Object v = entry._getValueRetain(region, true);
+
       boolean lruFaultedIn = false;
       boolean done = false;
       try {
@@ -1071,7 +1040,7 @@ public interface DiskEntry extends RegionEntry {
               // See if it is pending async because of a faultOut.
               // If so then if we are not a backup then we can unschedule the pending async.
               // In either case we need to do the lruFaultIn logic.
-              boolean evicted = ((LRUEntry) entry).testEvicted();
+              boolean evicted = ((LRUClockNode) entry).testEvicted();
               if (evicted) {
                 if (!dr.isBackup()) {
                   // @todo do we also need a bit that tells us if it is in the async queue?
@@ -1086,8 +1055,8 @@ public interface DiskEntry extends RegionEntry {
         }
         if (!done && (v == null || Token.isRemovedFromDisk(v) && !region.isIndexCreationThread())) {
           synchronized (entry) {
-            v = entry._getValueRetain(region, true); // TODO:KIRK:OK v =
-                                                     // entry.getValueWithContext(region);
+            v = entry._getValueRetain(region, true);
+
             if (v == null) {
               v = readValueFromDisk(entry, region);
               if (entry instanceof LRUEntry) {
@@ -1126,8 +1095,7 @@ public interface DiskEntry extends RegionEntry {
           DiskId did = entry.getDiskId();
           if (did != null) {
             Object value = null;
-            DiskRecoveryStore region = recoveryStore;
-            DiskRegionView dr = region.getDiskRegionView();
+            DiskRegionView dr = recoveryStore.getDiskRegionView();
             dr.acquireReadLock();
             try {
               synchronized (did) {
@@ -1135,7 +1103,7 @@ public interface DiskEntry extends RegionEntry {
                 if (oplogId == did.getOplogId()) {
                   value = getValueFromDisk(dr, did, in);
                   if (value != null) {
-                    setValueOnFaultIn(value, did, entry, dr, region);
+                    setValueOnFaultIn(value, did, entry, dr, recoveryStore);
                   }
                 }
               }
@@ -1194,7 +1162,7 @@ public interface DiskEntry extends RegionEntry {
       try {
         if (recoveryStore.getEvictionAttributes() != null
             && recoveryStore.getEvictionAttributes().getAlgorithm().isLIFO()) {
-          ((VMLRURegionMap) recoveryStore.getRegionMap()).updateStats();
+          ((AbstractLRURegionMap) recoveryStore.getRegionMap()).updateStats();
           return;
         }
         // this must be done after releasing synchronization
@@ -1314,24 +1282,18 @@ public interface DiskEntry extends RegionEntry {
     }
 
     /**
-     * Writes the value of this <code>DiskEntry</code> to disk and <code>null</code> s out the
-     * reference to the value to free up VM space.
+     * Writes the value of this {@code DiskEntry} to disk and {@code null} s out the reference to
+     * the value to free up VM space.
      * <p>
      * Note that if the value had already been written to disk, it is not written again.
      * <p>
      * Caller must synchronize on entry and it is assumed the entry is evicted
-     * 
-     * see #writeToDisk
-     * 
-     * @throws RegionClearedException
      */
     public static int overflowToDisk(DiskEntry entry, LocalRegion region, EnableLRU ccHelper)
         throws RegionClearedException {
       DiskRegion dr = region.getDiskRegion();
-      final int oldSize = region.calculateRegionEntryValueSize(entry);;
-      // Asif:Get diskID . If it is null, it implies it is
-      // overflow only mode.
-      // long id = entry.getDiskId().getKeyId();
+      final int oldSize = region.calculateRegionEntryValueSize(entry);
+      // Get diskID . If it is null, it implies it is overflow only mode.
       DiskId did = entry.getDiskId();
       if (did == null) {
         ((LRUEntry) entry).setDelayedDiskId(region);
@@ -1348,7 +1310,7 @@ public interface DiskEntry extends RegionEntry {
             return 0;
           }
 
-          // TODO:Asif: Check if we need to overflow even when id is = 0
+          // TODO: Check if we need to overflow even when id is = 0
           boolean wasAlreadyPendingAsync = did.isPendingAsync();
           if (did.needsToBeWritten()) {
             if (dr.isSync()) {
@@ -1474,7 +1436,7 @@ public interface DiskEntry extends RegionEntry {
                     // Only setValue to null if this was an evict.
                     // We could just be a backup that is writing async.
                     if (!Token.isInvalid(entryVal) && (entryVal != Token.TOMBSTONE)
-                        && entry instanceof LRUEntry && ((LRUEntry) entry).testEvicted()) {
+                        && entry instanceof LRUEntry && ((LRUClockNode) entry).testEvicted()) {
                       // Moved this here to fix bug 40116.
                       region.updateSizeOnEvict(entry.getKey(), entryValSize);
                       updateStats(dr, region, -1/* InVM */, 1/* OnDisk */, did.getValueLength());
@@ -1603,11 +1565,6 @@ public interface DiskEntry extends RegionEntry {
       return result;
     }
 
-    /**
-     * @param entry
-     * @param region
-     * @param tag
-     */
     public static void updateVersionOnly(DiskEntry entry, LocalRegion region, VersionTag tag) {
       DiskRegion dr = region.getDiskRegion();
       if (!dr.isBackup()) {
@@ -1709,7 +1666,6 @@ public interface DiskEntry extends RegionEntry {
     }
 
     /**
-     * 
      * @return byte indicating the user bits. The correct value is returned only in the specific
      *         case of entry recovered from oplog ( & not rolled to Htree) & the RECOVER_VALUES flag
      *         is false . In other cases the exact value is not needed

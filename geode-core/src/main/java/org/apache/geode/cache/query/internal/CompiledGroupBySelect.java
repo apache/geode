@@ -67,7 +67,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
     if (aggMap != null) {
       int i = 0;
       for (Map.Entry<Integer, CompiledAggregateFunction> entry : aggMap.entrySet()) {
-        this.aggregateColsPos.set(entry.getKey().intValue());
+        this.aggregateColsPos.set(entry.getKey());
         this.aggregateFunctions[i++] = entry.getValue();
       }
     }
@@ -100,7 +100,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       if (param == null && aggFunc.getFunctionType() == OQLLexerTokenTypes.COUNT) {
         // * case of *, substitue a dummy parameter of compiled literal = 0 to
         // satisfy the code
-        param = new CompiledLiteral(Integer.valueOf(0));
+        param = new CompiledLiteral(0);
 
       } else if (param == null) {
         throw new QueryInvalidException("aggregate function passed invalid parameter");
@@ -468,7 +468,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
   private boolean checkProjectionInGroupBy(Object[] projElem, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     boolean found = false;
-    StringBuffer projAttribBuffer = new StringBuffer();
+    StringBuilder projAttribBuffer = new StringBuilder();
     CompiledValue cvProj = (CompiledValue) TypeUtils.checkCast(projElem[1], CompiledValue.class);
     cvProj.generateCanonicalizedExpression(projAttribBuffer, context);
     String projAttribStr = projAttribBuffer.toString();
@@ -482,7 +482,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
         }
 
         // the grpup by expr is not an alias check for path
-        StringBuffer groupByExprBuffer = new StringBuffer();
+        StringBuilder groupByExprBuffer = new StringBuilder();
         grpBy.generateCanonicalizedExpression(groupByExprBuffer, context);
         final String grpByExprStr = groupByExprBuffer.toString();
 

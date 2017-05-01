@@ -12,13 +12,39 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.CopyException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SerializationException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -27,8 +53,21 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.FindVersionTagOperation;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.VersionTagHolder;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
@@ -43,13 +82,6 @@ import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.security.GemFireSecurityException;
-
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.Semaphore;
-import java.util.regex.Pattern;
 
 public abstract class BaseCommand implements Command {
   protected static final Logger logger = LogService.getLogger();
@@ -125,7 +157,7 @@ public abstract class BaseCommand implements Command {
     boolean shouldMasquerade = shouldMasqueradeForTx(msg, servConn);
     try {
       if (shouldMasquerade) {
-        GemFireCacheImpl cache = (GemFireCacheImpl) servConn.getCache();
+        InternalCache cache = servConn.getCache();
         InternalDistributedMember member =
             (InternalDistributedMember) servConn.getProxyID().getDistributedMember();
         TXManagerImpl txMgr = cache.getTxManager();

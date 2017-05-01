@@ -12,8 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- */
 package org.apache.geode.cache.query.internal;
 
 import static org.junit.Assert.assertFalse;
@@ -42,18 +40,16 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class IndexManagerJUnitTest {
 
   @Before
-  public void setUp() throws java.lang.Exception {
+  public void setUp() throws Exception {
     CacheUtils.startCache();
     Region region = CacheUtils.createRegion("portfolios", Portfolio.class);
     for (int i = 0; i < 4; i++) {
       region.put("" + i, new Portfolio(i));
-      // CacheUtils.log(new Portfolio(i));
     }
-
   }
 
   @After
-  public void tearDown() throws java.lang.Exception {
+  public void tearDown() throws Exception {
     CacheUtils.closeCache();
   }
 
@@ -66,7 +62,7 @@ public class IndexManagerJUnitTest {
    * start time, we can assume that it needs to be reevaluated
    */
   @Test
-  public void testSafeQueryTime() {
+  public void testSafeQueryTime() throws Exception {
     IndexManager.resetIndexBufferTime();
     // fake entry update at LMT of 0 and actual time of 10
     // safe query time set in index manager is going to be 20
@@ -103,7 +99,7 @@ public class IndexManagerJUnitTest {
 
   // Let's test for negative delta's or a system that is slower than others in the cluster
   @Test
-  public void testSafeQueryTimeForASlowNode() {
+  public void testSafeQueryTimeForASlowNode() throws Exception {
     IndexManager.resetIndexBufferTime();
     // fake entry update at LMT of 0 and actual time of 10
     // safe query time set in index manager is going to be -10
@@ -130,7 +126,6 @@ public class IndexManagerJUnitTest {
     assertFalse(IndexManager.needsRecalculation(212, 210));
   }
 
-
   @Test
   public void testBestIndexPick() throws Exception {
     QueryService qs;
@@ -140,7 +135,7 @@ public class IndexManagerJUnitTest {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolios pf");
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
 
     Iterator iter = list.iterator();
     while (iter.hasNext()) {
@@ -171,7 +166,6 @@ public class IndexManagerJUnitTest {
     Assert.assertEquals(id2.getMapping()[0], 1);
     Assert.assertEquals(id2.getMapping()[1], 2);
     Assert.assertEquals(id2.getMapping()[2], 0);
-
   }
 
 }

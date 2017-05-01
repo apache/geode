@@ -29,6 +29,7 @@ import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -40,17 +41,11 @@ import org.apache.geode.internal.logging.LogService;
  * 
  * 1) All setter methods 2) All operations 3) addNotificationListener 4) removeNotificationListener
  * 5) getNotificationInfo
- * 
- * 
  */
-
 public class ManagementFunction extends FunctionAdapter implements InternalEntity {
 
   private static final Logger logger = LogService.getLogger();
 
-  /**
-   * 
-   */
   private static final long serialVersionUID = 1L;
 
   /**
@@ -81,8 +76,7 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
 
     boolean executedSuccessfully = false;
 
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-
+    InternalCache cache = GemFireCacheImpl.getInstance();
 
     Object[] functionArguments = (Object[]) fc.getArguments();
 
@@ -145,10 +139,8 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
           sendException(e, fc);
           return; // member is closing or invalid member
         }
-
       }
     }
-
   }
 
   public String getId() {

@@ -14,12 +14,24 @@
  */
 package org.apache.geode.cache.execute.internal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.ProxyRegion;
 import org.apache.geode.cache.execute.Execution;
@@ -33,11 +45,12 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.execute.*;
+import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
+import org.apache.geode.internal.cache.execute.MemberFunctionExecutor;
+import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
+import org.apache.geode.internal.cache.execute.ServerFunctionExecutor;
+import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides the entry point into execution of user defined {@linkplain Function}s.
@@ -52,8 +65,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since GemFire 7.0
  */
 public class FunctionServiceManager {
-  private final static ConcurrentHashMap<String, Function> idToFunctionMap =
-      new ConcurrentHashMap<String, Function>();
+
+  private static final ConcurrentHashMap<String, Function> idToFunctionMap =
+      new ConcurrentHashMap<>();
 
   /**
    * use when the optimization to execute onMember locally is not desired.
@@ -61,8 +75,9 @@ public class FunctionServiceManager {
   public static final boolean RANDOM_onMember =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "randomizeOnMember");
 
-  public FunctionServiceManager() {}
-
+  public FunctionServiceManager() {
+    // do nothing
+  }
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data dependent function on
@@ -80,12 +95,11 @@ public class FunctionServiceManager {
    * with DataPolicy.PARTITION, it executes on members where the data resides as specified by the
    * filter.
    * 
-   * @param region
    * @return Execution
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
-  public final Execution onRegion(Region region) {
+  public Execution onRegion(Region region) {
     if (region == null) {
       throw new FunctionException(
           LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Region instance "));
@@ -97,9 +111,9 @@ public class FunctionServiceManager {
       Pool pool = PoolManager.find(poolName);
       if (pool.getMultiuserAuthentication()) {
         if (region instanceof ProxyRegion) {
-          ProxyRegion pr = (ProxyRegion) region;
-          region = pr.getRealRegion();
-          proxyCache = (ProxyCache) pr.getAuthenticatedCache();
+          ProxyRegion proxyRegion = (ProxyRegion) region;
+          region = proxyRegion.getRealRegion();
+          proxyCache = proxyRegion.getAuthenticatedCache();
         } else {
           throw new UnsupportedOperationException();
         }
@@ -127,7 +141,7 @@ public class FunctionServiceManager {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  public final Execution onServer(Pool pool, String... groups) {
+  public Execution onServer(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
           LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Pool instance "));
@@ -150,7 +164,7 @@ public class FunctionServiceManager {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  public final Execution onServers(Pool pool, String... groups) {
+  public Execution onServers(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
           LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Pool instance "));
@@ -177,23 +191,24 @@ public class FunctionServiceManager {
    *         pool
    * @since GemFire 6.5
    */
-  public final Execution onServer(RegionService regionService, String... groups) {
+  public Execution onServer(RegionService regionService, String... groups) {
     if (regionService == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("RegionService instance "));
     }
     if (regionService instanceof GemFireCacheImpl) {
-      GemFireCacheImpl gfc = (GemFireCacheImpl) regionService;
-      if (!gfc.isClient()) {
+      InternalClientCache internalCache = (InternalClientCache) regionService;
+      if (!internalCache.isClient()) {
         throw new FunctionException("The cache was not a client cache");
-      } else if (gfc.getDefaultPool() != null) {
-        return onServer(gfc.getDefaultPool(), groups);
+      } else if (internalCache.getDefaultPool() != null) {
+        return onServer(internalCache.getDefaultPool(), groups);
       } else {
         throw new FunctionException("The client cache does not have a default pool");
       }
     } else {
-      ProxyCache pc = (ProxyCache) regionService;
-      return new ServerFunctionExecutor(pc.getUserAttributes().getPool(), false, pc, groups);
+      ProxyCache proxyCache = (ProxyCache) regionService;
+      return new ServerFunctionExecutor(proxyCache.getUserAttributes().getPool(), false, proxyCache,
+          groups);
     }
   }
 
@@ -209,23 +224,24 @@ public class FunctionServiceManager {
    *         pool
    * @since GemFire 6.5
    */
-  public final Execution onServers(RegionService regionService, String... groups) {
+  public Execution onServers(RegionService regionService, String... groups) {
     if (regionService == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("RegionService instance "));
     }
     if (regionService instanceof GemFireCacheImpl) {
-      GemFireCacheImpl gfc = (GemFireCacheImpl) regionService;
-      if (!gfc.isClient()) {
+      InternalClientCache internalCache = (InternalClientCache) regionService;
+      if (!internalCache.isClient()) {
         throw new FunctionException("The cache was not a client cache");
-      } else if (gfc.getDefaultPool() != null) {
-        return onServers(gfc.getDefaultPool(), groups);
+      } else if (internalCache.getDefaultPool() != null) {
+        return onServers(internalCache.getDefaultPool(), groups);
       } else {
         throw new FunctionException("The client cache does not have a default pool");
       }
     } else {
-      ProxyCache pc = (ProxyCache) regionService;
-      return new ServerFunctionExecutor(pc.getUserAttributes().getPool(), true, pc, groups);
+      ProxyCache proxyCache = (ProxyCache) regionService;
+      return new ServerFunctionExecutor(proxyCache.getUserAttributes().getPool(), true, proxyCache,
+          groups);
     }
   }
 
@@ -242,7 +258,7 @@ public class FunctionServiceManager {
    * @since GemFire 6.0
    * 
    */
-  public final Execution onMember(DistributedSystem system, DistributedMember distributedMember) {
+  public Execution onMember(DistributedSystem system, DistributedMember distributedMember) {
     if (system == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("DistributedSystem instance "));
@@ -265,7 +281,7 @@ public class FunctionServiceManager {
    * @throws FunctionException if DistributedSystem instance passed is null
    * @since GemFire 6.0
    */
-  public final Execution onMembers(DistributedSystem system, String... groups) {
+  public Execution onMembers(DistributedSystem system, String... groups) {
     if (system == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("DistributedSystem instance "));
@@ -294,8 +310,7 @@ public class FunctionServiceManager {
    * @throws FunctionException if DistributedSystem instance passed is null
    * @since GemFire 6.0
    */
-  public final Execution onMembers(DistributedSystem system,
-      Set<DistributedMember> distributedMembers) {
+  public Execution onMembers(DistributedSystem system, Set<DistributedMember> distributedMembers) {
     if (system == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("DistributedSystem instance "));
@@ -311,12 +326,11 @@ public class FunctionServiceManager {
    * Returns the {@link Function} defined by the functionId, returns null if no function is found
    * for the specified functionId
    * 
-   * @param functionId
    * @return Function
    * @throws FunctionException if functionID passed is null
    * @since GemFire 6.0
    */
-  public final Function getFunction(String functionId) {
+  public Function getFunction(String functionId) {
     if (functionId == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("functionId instance "));
@@ -336,7 +350,7 @@ public class FunctionServiceManager {
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
    */
-  public final void registerFunction(Function function) {
+  public void registerFunction(Function function) {
     if (function == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("function instance "));
@@ -361,7 +375,7 @@ public class FunctionServiceManager {
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
    */
-  public final void unregisterFunction(String functionId) {
+  public void unregisterFunction(String functionId) {
     if (functionId == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("functionId instance "));
@@ -375,7 +389,7 @@ public class FunctionServiceManager {
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
    */
-  public final boolean isRegistered(String functionId) {
+  public boolean isRegistered(String functionId) {
     if (functionId == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("functionId instance "));
@@ -389,7 +403,7 @@ public class FunctionServiceManager {
    * @return A view of registered functions as a Map of {@link Function#getId()} to {@link Function}
    * @since GemFire 6.0
    */
-  public final Map<String, Function> getRegisteredFunctions() {
+  public Map<String, Function> getRegisteredFunctions() {
     // We have to remove the internal functions before returning the map to the users
     final Map<String, Function> tempIdToFunctionMap = new HashMap<String, Function>();
     for (Map.Entry<String, Function> entry : idToFunctionMap.entrySet()) {
@@ -400,7 +414,7 @@ public class FunctionServiceManager {
     return tempIdToFunctionMap;
   }
 
-  public final void unregisterAllFunctions() {
+  public void unregisterAllFunctions() {
     // Unregistering all the functions registered with the FunctionService.
     Map<String, Function> functions = new HashMap<String, Function>(idToFunctionMap);
     for (String functionId : idToFunctionMap.keySet()) {
@@ -409,25 +423,22 @@ public class FunctionServiceManager {
   }
 
   /**
-   * @param region
    * @return true if the method is called on a region has a {@link Pool}.
    * @since GemFire 6.0
    */
-  private final boolean isClientRegion(Region region) {
+  private boolean isClientRegion(Region region) {
     LocalRegion localRegion = (LocalRegion) region;
     return localRegion.hasServerProxy();
   }
 
-
-  public final Execution onMember(DistributedSystem system, String... groups) {
+  public Execution onMember(DistributedSystem system, String... groups) {
     if (system == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("DistributedSystem instance "));
     }
-    Set<DistributedMember> members = new HashSet<DistributedMember>();
+    Set<DistributedMember> members = new HashSet<>();
     for (String group : groups) {
-      List<DistributedMember> grpMembers =
-          new ArrayList<DistributedMember>(system.getGroupMembers(group));
+      List<DistributedMember> grpMembers = new ArrayList<>(system.getGroupMembers(group));
       if (!grpMembers.isEmpty()) {
         if (!RANDOM_onMember && grpMembers.contains(system.getDistributedMember())) {
           members.add(system.getDistributedMember());

@@ -19,7 +19,6 @@ import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -94,7 +93,7 @@ public class CompiledRegion extends AbstractCompiledValue {
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws NameResolutionException {
     clauseBuffer.insert(0, regionPath);
     // rahul : changed for running queries on partitioned region.

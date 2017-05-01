@@ -91,7 +91,7 @@ public class QueryUtilsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions");
       ExecutionContext context = new ExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
       RuntimeIterator[] indexToItrMappping = new RuntimeIterator[1];
       RuntimeIterator expand = null;
       boolean set = false;
@@ -162,7 +162,7 @@ public class QueryUtilsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions, /employees e");
       ExecutionContext context = new ExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
       RuntimeIterator[] indexToItrMappping = new RuntimeIterator[1];
       RuntimeIterator expand[] = new RuntimeIterator[2];
       boolean set = false;

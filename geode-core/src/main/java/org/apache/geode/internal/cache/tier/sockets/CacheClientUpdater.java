@@ -12,24 +12,68 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.net.ssl.SSLException;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
-import org.apache.geode.cache.client.internal.*;
+import org.apache.geode.cache.client.internal.ClientUpdater;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.EndpointManager;
+import org.apache.geode.cache.client.internal.GetEventValueOp;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.QueueManager;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.ClientServerObserver;
+import org.apache.geode.internal.cache.ClientServerObserverHolder;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
@@ -48,19 +92,6 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import javax.net.ssl.SSLException;
-import java.io.*;
-import java.net.ConnectException;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <code>CacheClientUpdater</code> is a thread that processes update messages from a cache server
@@ -107,6 +138,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * The buffer upon which we receive messages
    */
   private final ByteBuffer commBuffer;
+
   private boolean commBufferReleased;
 
   private final CCUStats stats;
@@ -114,9 +146,9 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
   /**
    * Cache for which we provide service
    */
-  private /* final */ GemFireCacheImpl cache;
-  private /* final */ CachedRegionHelper cacheHelper;
+  private /* final */ InternalCache cache;
 
+  private /* final */ CachedRegionHelper cacheHelper;
 
   /**
    * Principle flag to signal thread's run loop to terminate
@@ -144,7 +176,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
   private boolean isOpCompleted;
 
   public final static String CLIENT_UPDATER_THREAD_NAME = "Cache Client Updater Thread ";
-  /*
+
+  /**
    * to enable test flag
    */
   public static boolean isUsedByTest;
@@ -154,20 +187,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * bytes.
    */
   public static boolean fullValueRequested = false;
-
-  // /**
-  // * True if this thread been initialized. Indicates that the run thread is
-  // * initialized and ready to process messages
-  // * <p>
-  // * TODO is this still needed?
-  // * <p>
-  // * Accesses synchronized via <code>this</code>
-  // *
-  // * @see #notifyInitializationComplete()
-  // * @see #waitForInitialization()
-  // */
-  // private boolean initialized = false;
-
 
   private final ServerLocation location;
 
@@ -185,7 +204,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * @return true if cache appears
    */
   private boolean waitForCache() {
-    GemFireCacheImpl c;
+    InternalCache cache;
     long tilt = System.currentTimeMillis() + MAX_CACHE_WAIT * 1000;
     for (;;) {
       if (quitting()) {
@@ -205,8 +224,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
             new Object[] {this, MAX_CACHE_WAIT}));
         return false;
       }
-      c = GemFireCacheImpl.getInstance();
-      if (c != null && !c.isClosed()) {
+      cache = GemFireCacheImpl.getInstance();
+      if (cache != null && !cache.isClosed()) {
         break;
       }
       boolean interrupted = Thread.interrupted();
@@ -220,8 +239,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         }
       }
     } // for
-    this.cache = c;
-    this.cacheHelper = new CachedRegionHelper(c);
+    this.cache = cache;
+    this.cacheHelper = new CachedRegionHelper(cache);
     return true;
   }
 
@@ -270,7 +289,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
     OutputStream tmpOut = null;
     InputStream tmpIn = null;
     try {
-      /** Size of the server-to-client communication socket buffers */
+      // Size of the server-to-client communication socket buffers
       int socketBufferSize =
           Integer.getInteger("BridgeServer.SOCKET_BUFFER_SIZE", 32768).intValue();
 
@@ -323,7 +342,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         // create a "server" memberId we currently don't know much about the
         // server.
         // Would be nice for it to send us its member id
-        // @todo - change the serverId to use the endpoint's getMemberId() which
+        // TODO: change the serverId to use the endpoint's getMemberId() which
         // returns a
         // DistributedMember (once gfecq branch is merged to trunk).
         MemberAttributes ma =
@@ -463,52 +482,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       EntryLogger.clearSource();
     }
   }
-
-  // /**
-  // * Waits for this thread to be initialized
-  // *
-  // * @return true if initialized; false if stopped before init
-  // */
-  // public boolean waitForInitialization() {
-  // boolean result = false;
-  // // Yogesh : waiting on this thread object is a bad idea
-  // // as when thread exits it notifies to the waiting threads.
-  // synchronized (this) {
-  // for (;;) {
-  // if (quitting()) {
-  // break;
-  // }
-  // boolean interrupted = Thread.interrupted();
-  // try {
-  // this.wait(100); // spurious wakeup ok // timed wait, should fix lost notification problem
-  // rahul.
-  // }
-  // catch (InterruptedException e) {
-  // interrupted = true;
-  // }
-  // finally {
-  // if (interrupted) {
-  // Thread.currentThread().interrupt();
-  // }
-  // }
-  // } // while
-  // // Even if we succeed, there is a risk that we were shut down
-  // // Can't check for cache; it isn't set yet :-(
-  // this.system.getCancelCriterion().checkCancelInProgress(null);
-  // result = this.continueProcessing;
-  // } // synchronized
-  // return result;
-  // }
-
-  // /**
-  // * @see #waitForInitialization()
-  // */
-  // private void notifyInitializationComplete() {
-  // synchronized (this) {
-  // this.initialized = true;
-  // this.notifyAll();
-  // }
-  // }
 
   /**
    * Notifies this thread to stop processing
@@ -1188,21 +1161,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       // message
       if (region.hasServerProxy()) {
         return;
-
-        // NOTE:
-        // As explained in the method description, this code is added as part
-        // of CQ bug fix. Cache server team needs to look into changes relating
-        // to local region.
-        //
-        // Locally invalidate the region
-        // region.basicBridgeClientInvalidate(callbackArgument,
-        // proxy.getProcessedMarker());
-
-        // if (logger.debugEnabled()) {
-        // logger.debug(toString() + ": Cleared region: " + regionName
-        // + " callbackArgument: " + callbackArgument);
-        // }
-
       }
 
     } catch (Exception e) {
@@ -1241,12 +1199,12 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         // servers recursively
       }
 
-      // // CALLBACK TESTING PURPOSE ONLY ////
+      // CALLBACK TESTING PURPOSE ONLY
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
         ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterReceivingFromServer(eventId);
       }
-      // /////////////////////////////////////
+
     }
     // TODO bug: can the following catch be more specific?
     catch (Exception e) {
@@ -1262,7 +1220,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       int noOfParts = msg.getNumberOfParts();
-      // int numOfClasses = noOfParts - 3; // 1 for ds classname, 1 for ds id and 1 for eventId.
       if (isDebugEnabled) {
         logger.debug("{}: Received register dataserializer message of parts {}", getName(),
             noOfParts);
@@ -1273,8 +1230,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
           String dataSerializerClassName =
               (String) CacheServerHelper.deserialize(msg.getPart(i).getSerializedForm());
           int id = msg.getPart(i + 1).getInt();
-          InternalDataSerializer.register(dataSerializerClassName, false, eventId,
-              null/* context */, id);
+          InternalDataSerializer.register(dataSerializerClassName, false, eventId, null, id);
           // distribute is false because we don't want to propagate this to
           // servers recursively
 
@@ -1295,12 +1251,12 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         }
       }
 
-      // // CALLBACK TESTING PURPOSE ONLY ////
+      // CALLBACK TESTING PURPOSE ONLY
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
         ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterReceivingFromServer(eventId);
       }
-      ///////////////////////////////////////
+
     }
     // TODO bug: can the following catch be more specific?
     catch (Exception e) {
@@ -1313,12 +1269,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Processes message to invoke CQ listeners.
-   * 
-   * @param startMessagePart
-   * @param numCqParts
-   * @param messageType
-   * @param key
-   * @param value
    */
   private int processCqs(Message m, int startMessagePart, int numCqParts, int messageType,
       Object key, Object value) {
@@ -1328,7 +1278,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   private int processCqs(Message m, int startMessagePart, int numCqParts, int messageType,
       Object key, Object value, byte[] delta, EventID eventId) {
-    // String[] cqs = new String[numCqs/2];
     HashMap cqs = new HashMap();
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -1495,7 +1444,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       handleException(message, e);
     }
   }
-
 
   private void handleTombstoneOperation(Message msg) {
     String regionName = "unknown";
@@ -1750,10 +1698,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
           // originating from the client
           // and by updating the last update stat, the ServerMonitor is less
           // likely to send pings...
-          // and the ClientHealthMonitor will cause a disconnect -- mthomas
-          // 10/18/2006
-
-          // this._endpoint.setLastUpdate();
+          // and the ClientHealthMonitor will cause a disconnect
 
         } catch (InterruptedIOException e) {
           // Per Sun's support web site, this exception seems to be peculiar
@@ -1868,13 +1813,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
     return socket.getLocalPort();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener#onDisconnect
-   * (org.apache.geode.distributed.internal.InternalDistributedSystem)
-   */
   public void onDisconnect(InternalDistributedSystem sys) {
     stopUpdater();
   }
@@ -1883,15 +1821,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * true if the EndPoint represented by this updater thread has died.
    */
   private volatile boolean endPointDied = false;
-
-  /**
-   * Returns true if the end point represented by this updater is considered dead.
-   * 
-   * @return true if {@link #endpoint} died.
-   */
-  public boolean isEndPointDead() {
-    return this.endPointDied;
-  }
 
   private void verifySocketBufferSize(int requestedBufferSize, int actualBufferSize, String type) {
     if (actualBufferSize < requestedBufferSize) {
@@ -1973,11 +1902,9 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
     public long startTime() {
       return DistributionStats.getStatTime();
     }
-
   }
 
   public boolean isProcessing() {
-    // TODO Auto-generated method stub
     return continueProcessing.get();
   }
 }

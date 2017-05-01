@@ -31,239 +31,196 @@ import javax.resource.spi.LocalTransaction;
 import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionMetaData;
 import javax.security.auth.Subject;
-import javax.transaction.SystemException;
 import javax.transaction.xa.XAResource;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.ra.GFConnectionImpl;
 
-/**
- * 
- *
- */
-public class JCAManagedConnection implements ManagedConnection
+public class JCAManagedConnection implements ManagedConnection {
 
-{
   private final List<ConnectionEventListener> listeners;
 
-  private volatile TXManagerImpl gfTxMgr;
+  private volatile TXManagerImpl transactionManager;
 
-  // private volatile TransactionId currentTxID;
-  private volatile GemFireCacheImpl cache;
+  private volatile InternalCache cache;
 
-  private volatile boolean initDone = false;
+  private volatile boolean initialized = false;
 
-  private volatile PrintWriter logger;
+  private volatile PrintWriter logWriter;
 
-  private JCAManagedConnectionFactory factory;
+  private final JCAManagedConnectionFactory connectionFactory;
 
-  private volatile Set<GFConnectionImpl> connections;
+  private final Set<GFConnectionImpl> connections;
 
-  private volatile JCALocalTransaction localTran;
+  private volatile JCALocalTransaction localTransaction;
 
-  private final static boolean DEBUG = false;
-
-  public JCAManagedConnection(JCAManagedConnectionFactory fact) {
-    this.factory = fact;
-    this.listeners = Collections
-        .<ConnectionEventListener>synchronizedList(new ArrayList<ConnectionEventListener>());
-    this.localTran = new JCALocalTransaction();
-    this.connections =
-        Collections.<GFConnectionImpl>synchronizedSet(new HashSet<GFConnectionImpl>());
+  JCAManagedConnection(JCAManagedConnectionFactory connectionFactory) {
+    this.connectionFactory = connectionFactory;
+    this.listeners = Collections.synchronizedList(new ArrayList<>());
+    this.localTransaction = new JCALocalTransaction();
+    this.connections = Collections.synchronizedSet(new HashSet<>());
   }
 
+  @Override
   public void addConnectionEventListener(ConnectionEventListener listener) {
     this.listeners.add(listener);
-
   }
 
-  public void associateConnection(Object conn) throws ResourceException {
-    if (!(conn instanceof GFConnectionImpl)) {
+  @Override
+  public void associateConnection(Object connection) throws ResourceException {
+    if (!(connection instanceof GFConnectionImpl)) {
       throw new ResourceException("Connection is not of type GFConnection");
     }
 
-    ((GFConnectionImpl) conn).resetManagedConnection(this);
-    this.connections.add((GFConnectionImpl) conn);
+    ((GFConnectionImpl) connection).resetManagedConnection(this);
+    this.connections.add((GFConnectionImpl) connection);
   }
 
+  @Override
   public void cleanup() throws ResourceException {
-    if (DEBUG) {
-      try {
-        throw new NullPointerException("Asif:JCAManagedConnection:cleanup");
-      } catch (NullPointerException npe) {
-        npe.printStackTrace();
-      }
-    }
     synchronized (this.connections) {
-      Iterator<GFConnectionImpl> connsItr = this.connections.iterator();
-      while (connsItr.hasNext()) {
-        GFConnectionImpl conn = connsItr.next();
-        conn.invalidate();
-        connsItr.remove();
+      Iterator<GFConnectionImpl> iterator = this.connections.iterator();
+      while (iterator.hasNext()) {
+        GFConnectionImpl connection = iterator.next();
+        connection.invalidate();
+        iterator.remove();
       }
     }
-    if (this.localTran == null || this.localTran.transactionInProgress()) {
-      if (this.initDone && !this.cache.isClosed()) {
-        this.localTran = new JCALocalTransaction(cache, gfTxMgr);
+    if (this.localTransaction == null || this.localTransaction.transactionInProgress()) {
+      if (this.initialized && !this.cache.isClosed()) {
+        this.localTransaction = new JCALocalTransaction(this.cache, this.transactionManager);
       } else {
-        this.localTran = new JCALocalTransaction();
+        this.localTransaction = new JCALocalTransaction();
       }
     }
-
   }
 
+  @Override
   public void destroy() throws ResourceException {
-    if (DEBUG) {
-      try {
-        throw new NullPointerException("Asif:JCAManagedConnection:destroy");
-      } catch (NullPointerException npe) {
-        npe.printStackTrace();
-      }
-    }
     synchronized (this.connections) {
-      Iterator<GFConnectionImpl> connsItr = this.connections.iterator();
-      while (connsItr.hasNext()) {
-        GFConnectionImpl conn = connsItr.next();
-        conn.invalidate();
-        connsItr.remove();
+      Iterator<GFConnectionImpl> iterator = this.connections.iterator();
+      while (iterator.hasNext()) {
+        GFConnectionImpl connection = iterator.next();
+        connection.invalidate();
+        iterator.remove();
       }
     }
-    this.gfTxMgr = null;
+    this.transactionManager = null;
     this.cache = null;
-    this.localTran = null;
+    this.localTransaction = null;
     this.listeners.clear();
   }
 
+  @Override
   public Object getConnection(Subject arg0, ConnectionRequestInfo arg1) throws ResourceException {
-    if (DEBUG) {
-      try {
-        throw new NullPointerException("Asif:JCAManagedConnection:getConnection");
-      } catch (NullPointerException npe) {
-        npe.printStackTrace();
-      }
+    if (!this.initialized || this.cache.isClosed()) {
+      init();
     }
-    try {
-      if (!this.initDone || this.cache.isClosed()) {
-        init();
-      }
-      LogWriter logger = this.cache.getLogger();
-      if (logger.fineEnabled()) {
-        logger.fine("JCAManagedConnection:getConnection. Returning new Connection");
-      }
+    LogWriter logger = this.cache.getLogger();
+    if (logger.fineEnabled()) {
+      logger.fine("JCAManagedConnection:getConnection. Returning new Connection");
+    }
 
-      GFConnectionImpl conn = new GFConnectionImpl(this);
-      this.connections.add(conn);
-      return conn;
-    } catch (SystemException e) {
-      this.onError(e);
-      throw new ResourceException("GemFire Resource unavailable", e);
-    }
+    GFConnectionImpl connection = new GFConnectionImpl(this);
+    this.connections.add(connection);
+    return connection;
   }
 
-  private void init() throws SystemException {
-    this.cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+  private void init() {
+    this.cache = (InternalCache) CacheFactory.getAnyInstance();
     LogWriter logger = this.cache.getLogger();
     if (logger.fineEnabled()) {
       logger.fine("JCAManagedConnection:init. Inside init");
     }
-    gfTxMgr = cache.getTxManager();
-    this.initDone = true;
+    this.transactionManager = this.cache.getTxManager();
+    this.initialized = true;
   }
 
+  @Override
   public LocalTransaction getLocalTransaction() throws ResourceException {
-    if (DEBUG) {
-      try {
-        throw new NullPointerException("Asif:JCAManagedConnection:getLocalTransaction");
-      } catch (NullPointerException npe) {
-        npe.printStackTrace();
-      }
-    }
-
-    return this.localTran;
+    return this.localTransaction;
   }
 
+  @Override
   public PrintWriter getLogWriter() throws ResourceException {
-    return this.logger;
+    return this.logWriter;
   }
 
+  @Override
   public ManagedConnectionMetaData getMetaData() throws ResourceException {
-    if (DEBUG) {
-      try {
-        throw new NullPointerException("Asif:JCAManagedConnection:getMetaData");
-      } catch (NullPointerException npe) {
-        npe.printStackTrace();
-      }
-    }
-    if (this.initDone && !this.cache.isClosed()) {
+    if (this.initialized && !this.cache.isClosed()) {
       LogWriter logger = this.cache.getLogger();
       if (logger.fineEnabled()) {
         logger.fine("JCAManagedConnection:getMetaData");
       }
     }
-    return new JCAManagedConnectionMetaData(this.factory.getProductName(),
-        this.factory.getVersion(), this.factory.getUserName());
+    return new JCAManagedConnectionMetaData(this.connectionFactory.getProductName(),
+        this.connectionFactory.getVersion(), this.connectionFactory.getUserName());
   }
 
+  @Override
   public XAResource getXAResource() throws ResourceException {
     throw new NotSupportedException("XA Transaction not supported");
   }
 
+  @Override
   public void removeConnectionEventListener(ConnectionEventListener arg0) {
     this.listeners.remove(arg0);
 
   }
 
+  @Override
   public void setLogWriter(PrintWriter logger) throws ResourceException {
-    this.logger = logger;
+    this.logWriter = logger;
   }
 
-  private void onError(Exception e) {
-
-    this.localTran = null;
+  private void onError(Exception e) { // TODO: currently unused
+    this.localTransaction = null;
 
     synchronized (this.connections) {
-      Iterator<GFConnectionImpl> connsItr = this.connections.iterator();
-      while (connsItr.hasNext()) {
-        GFConnectionImpl conn = connsItr.next();
-        conn.invalidate();
+      Iterator<GFConnectionImpl> iterator = this.connections.iterator();
+      while (iterator.hasNext()) {
+        GFConnectionImpl connection = iterator.next();
+        connection.invalidate();
+
         synchronized (this.listeners) {
-          Iterator<ConnectionEventListener> itr = this.listeners.iterator();
-          ConnectionEvent ce =
+          ConnectionEvent event =
               new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED, e);
-          ce.setConnectionHandle(conn);
-          while (itr.hasNext()) {
-            itr.next().connectionErrorOccurred(ce);
+          event.setConnectionHandle(connection);
+          for (ConnectionEventListener listener : this.listeners) {
+            listener.connectionErrorOccurred(event);
           }
         }
-        connsItr.remove();
+
+        iterator.remove();
       }
     }
-
   }
 
-  public void onClose(GFConnectionImpl conn) throws ResourceException {
-    conn.invalidate();
-    this.connections.remove(conn);
+  public void onClose(GFConnectionImpl connection) {
+    connection.invalidate();
+    this.connections.remove(connection);
+
     synchronized (this.listeners) {
-      Iterator<ConnectionEventListener> itr = this.listeners.iterator();
-      ConnectionEvent ce = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
-      ce.setConnectionHandle(conn);
-      while (itr.hasNext()) {
-        itr.next().connectionClosed(ce);
-      }
-    }
-    if (this.connections.isEmpty()) {
-      // safe to dissociate this managedconnection so that it can go to pool
-      if (this.initDone && !this.cache.isClosed()) {
-        this.localTran = new JCALocalTransaction(this.cache, this.gfTxMgr);
-      } else {
-        this.localTran = new JCALocalTransaction();
+      Iterator<ConnectionEventListener> iterator = this.listeners.iterator();
+      ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
+      event.setConnectionHandle(connection);
+      while (iterator.hasNext()) {
+        iterator.next().connectionClosed(event);
       }
     }
 
+    if (this.connections.isEmpty()) {
+      // safe to dissociate this managed connection so that it can go to pool
+      if (this.initialized && !this.cache.isClosed()) {
+        this.localTransaction = new JCALocalTransaction(this.cache, this.transactionManager);
+      } else {
+        this.localTransaction = new JCALocalTransaction();
+      }
+    }
   }
 
 }

@@ -14,30 +14,6 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.logging.log4j.Logger;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -59,7 +35,33 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.net.ssl.SSLException;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataOutputStream;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * TCP server which listens on a port and delegates requests to a request handler. The server uses
@@ -99,20 +101,19 @@ public class TcpServer {
   public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
-  private static int MAX_POOL_SIZE = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100).intValue();
+  private static int MAX_POOL_SIZE =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
   private static int POOL_IDLE_TIMEOUT = 60 * 1000;
 
   private static final Logger log = LogService.getLogger();
 
   protected/* GemStoneAddition */ final/* GemStoneAddition */ static int READ_TIMEOUT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000)
-          .intValue();
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000);
   // This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure
   // the locator backlog.
-  private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000).intValue();
-  private static final int BACKLOG = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG).intValue();
+  private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000);
+  private static final int BACKLOG =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG);
 
   private final int port;
   private int serverSocketPortAtClose;
@@ -129,7 +130,7 @@ public class TcpServer {
 
   private SocketCreator socketCreator;
 
-  /**
+  /*
    * GemStoneAddition - Initialize versions map. Warning: This map must be compatible with all
    * GemFire versions being handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS
    * are same for then current GOSSIPVERSION should be used.
@@ -189,15 +190,15 @@ public class TcpServer {
         POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
-  public void restarting(InternalDistributedSystem ds, GemFireCacheImpl cache,
+  public void restarting(InternalDistributedSystem ds, InternalCache cache,
       ClusterConfigurationService sharedConfig) throws IOException {
     this.shuttingDown = false;
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();
     this.executor = createExecutor(this.poolHelper, this.threadGroup);
-    this.log.info("TcpServer@" + System.identityHashCode(this)
-        + " restarting: completed.  Server thread=" + serverThread + "@"
-        + System.identityHashCode(serverThread) + ";alive=" + serverThread.isAlive());
+    log.info("TcpServer@" + System.identityHashCode(this)
+        + " restarting: completed.  Server thread=" + this.serverThread + '@'
+        + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
   }
 
   public void start() throws IOException {
@@ -280,7 +281,7 @@ public class TcpServer {
         // Allocate no objects here!
         try {
           srv_sock.close();
-        } catch (IOException e) {
+        } catch (IOException ignore) {
           // ignore
         }
         SystemFailure.checkFailure(); // throws
@@ -318,7 +319,7 @@ public class TcpServer {
       executor.shutdown();
       try {
         executor.awaitTermination(SHUTDOWN_WAIT_TIME, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
       }
       handler.shutDown();
@@ -414,9 +415,9 @@ public class TcpServer {
 
         handler.endResponse(request, startTime);
 
-      } catch (EOFException ex) {
+      } catch (EOFException ignore) {
         // client went away - ignore
-      } catch (CancelException ex) {
+      } catch (CancelException ignore) {
         // ignore
       } catch (ClassNotFoundException ex) {
         String sender = null;
@@ -460,7 +461,7 @@ public class TcpServer {
       } finally {
         try {
           sock.close();
-        } catch (IOException e) {
+        } catch (IOException ignore) {
           // ignore
         }
       }
@@ -511,8 +512,6 @@ public class TcpServer {
   /**
    * Returns GossipVersion for older Gemfire versions.
    * 
-   * @param ordinal
-   *
    * @return gossip version
    */
   public static int getGossipVersionForOrdinal(short ordinal) {
@@ -525,12 +524,12 @@ public class TcpServer {
       Iterator<Map.Entry> itr = TcpServer.GOSSIP_TO_GEMFIRE_VERSION_MAP.entrySet().iterator();
       while (itr.hasNext()) {
         Map.Entry entry = itr.next();
-        short o = ((Short) entry.getValue()).shortValue();
+        short o = (Short) entry.getValue();
         if (o == ordinal) {
-          return ((Integer) entry.getKey()).intValue();
+          return (Integer) entry.getKey();
         } else if (o < ordinal && o > closest) {
           closest = o;
-          closestGV = ((Integer) entry.getKey()).intValue();
+          closestGV = (Integer) entry.getKey();
         }
       }
     }

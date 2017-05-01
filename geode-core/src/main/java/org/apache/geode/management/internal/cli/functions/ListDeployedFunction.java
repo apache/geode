@@ -21,7 +21,6 @@ import org.apache.geode.internal.DeployedJar;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Function;
@@ -29,7 +28,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 public class ListDeployedFunction implements Function, InternalEntity {
@@ -39,13 +38,17 @@ public class ListDeployedFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
   @Override
   public void execute(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();

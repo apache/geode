@@ -25,7 +25,6 @@ import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -60,7 +59,7 @@ public class GetOp {
    */
   public static Object execute(ExecutablePool pool, LocalRegion region, Object key,
       Object callbackArg, boolean prSingleHopEnabled, EntryEventImpl clientEvent) {
-    ClientMetadataService cms = ((GemFireCacheImpl) region.getCache()).getClientMetadataService();
+    ClientMetadataService cms = region.getCache().getClientMetadataService();
     GetOpImpl op = new GetOpImpl(region, key, callbackArg, prSingleHopEnabled, clientEvent);
 
     if (logger.isDebugEnabled()) {

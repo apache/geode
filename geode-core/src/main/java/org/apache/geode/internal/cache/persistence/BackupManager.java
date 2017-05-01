@@ -14,21 +14,6 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.MembershipListener;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -44,10 +29,25 @@ import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
 /**
  * This class manages the state an logic to backup a single cache.
- * 
- *
  */
 public class BackupManager implements MembershipListener {
 
@@ -58,11 +58,11 @@ public class BackupManager implements MembershipListener {
   public static final String USER_FILES = "user";
   public static final String CONFIG = "config";
   private InternalDistributedMember sender;
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
   private CountDownLatch allowDestroys = new CountDownLatch(1);
   private volatile boolean isCancelled = false;
 
-  public BackupManager(InternalDistributedMember sender, GemFireCacheImpl gemFireCache) {
+  public BackupManager(InternalDistributedMember sender, InternalCache gemFireCache) {
     this.sender = sender;
     this.cache = gemFireCache;
   }
@@ -81,9 +81,9 @@ public class BackupManager implements MembershipListener {
   private void cleanup() {
     isCancelled = true;
     allowDestroys.countDown();
-    Collection<DiskStoreImpl> diskStores = cache.listDiskStoresIncludingRegionOwned();
-    for (DiskStoreImpl store : diskStores) {
-      store.releaseBackupLock();
+    Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
+    for (DiskStore store : diskStores) {
+      ((DiskStoreImpl) store).releaseBackupLock();
     }
     final DM distributionManager = cache.getInternalDistributedSystem().getDistributionManager();
     distributionManager.removeAllMembershipListener(this);
@@ -92,12 +92,13 @@ public class BackupManager implements MembershipListener {
 
   public HashSet<PersistentID> prepareBackup() {
     HashSet<PersistentID> persistentIds = new HashSet<PersistentID>();
-    Collection<DiskStoreImpl> diskStores = cache.listDiskStoresIncludingRegionOwned();
-    for (DiskStoreImpl store : diskStores) {
-      store.lockStoreBeforeBackup();
-      if (store.hasPersistedData()) {
-        persistentIds.add(store.getPersistentID());
-        store.getStats().startBackup();
+    Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
+    for (DiskStore store : diskStores) {
+      DiskStoreImpl storeImpl = (DiskStoreImpl) store;
+      storeImpl.lockStoreBeforeBackup();
+      if (storeImpl.hasPersistedData()) {
+        persistentIds.add(storeImpl.getPersistentID());
+        storeImpl.getStats().startBackup();
       }
     }
     return persistentIds;
@@ -116,9 +117,10 @@ public class BackupManager implements MembershipListener {
     /*
      * Find the first matching DiskStoreId directory for this member.
      */
-    for (DiskStoreImpl diskStore : cache.listDiskStoresIncludingRegionOwned()) {
+    for (DiskStore diskStore : cache.listDiskStoresIncludingRegionOwned()) {
       File[] matchingFiles = baselineParentDir.listFiles(new FilenameFilter() {
-        Pattern pattern = Pattern.compile(".*" + diskStore.getBackupDirName() + "$");
+        Pattern pattern =
+            Pattern.compile(".*" + ((DiskStoreImpl) diskStore).getBackupDirName() + "$");
 
         public boolean accept(File dir, String name) {
           Matcher m = pattern.matcher(name);
@@ -142,7 +144,6 @@ public class BackupManager implements MembershipListener {
    *        option. May be null if the user specified a full backup.
    * @return null if the backup is to be a full backup otherwise return the data store directory in
    *         the previous backup for this member (if incremental).
-   * @throws IOException
    */
   private File checkBaseline(File baselineParentDir) throws IOException {
     File baselineDir = null;
@@ -188,12 +189,12 @@ public class BackupManager implements MembershipListener {
       File storesDir = new File(backupDir, DATA_STORES);
       RestoreScript restoreScript = new RestoreScript();
       HashSet<PersistentID> persistentIds = new HashSet<PersistentID>();
-      Collection<DiskStoreImpl> diskStores =
-          new ArrayList<DiskStoreImpl>(cache.listDiskStoresIncludingRegionOwned());
+      Collection<DiskStore> diskStores =
+          new ArrayList<DiskStore>(cache.listDiskStoresIncludingRegionOwned());
 
       boolean foundPersistentData = false;
-      for (Iterator<DiskStoreImpl> itr = diskStores.iterator(); itr.hasNext();) {
-        DiskStoreImpl store = itr.next();
+      for (Iterator<DiskStore> itr = diskStores.iterator(); itr.hasNext();) {
+        DiskStoreImpl store = (DiskStoreImpl) itr.next();
         if (store.hasPersistedData()) {
           if (!foundPersistentData) {
             createBackupDir(backupDir);
@@ -210,10 +211,11 @@ public class BackupManager implements MembershipListener {
 
       allowDestroys.countDown();
 
-      for (DiskStoreImpl store : diskStores) {
-        store.finishBackup(this);
-        store.getStats().endBackup();
-        persistentIds.add(store.getPersistentID());
+      for (DiskStore store : diskStores) {
+        DiskStoreImpl storeImpl = (DiskStoreImpl) store;
+        storeImpl.finishBackup(this);
+        storeImpl.getStats().endBackup();
+        persistentIds.add(storeImpl.getPersistentID());
       }
 
       if (foundPersistentData) {
@@ -226,7 +228,6 @@ public class BackupManager implements MembershipListener {
           throw new IOException("Could not delete file " + INCOMPLETE_BACKUP);
         }
       }
-
 
       return persistentIds;
 
@@ -256,7 +257,7 @@ public class BackupManager implements MembershipListener {
       FileUtils.copyFile(new File(DistributedSystem.getPropertiesFile()), propertyBackup);
     }
 
-    // TODO sbawaska: should the gfsecurity.properties file be backed up?
+    // TODO: should the gfsecurity.properties file be backed up?
   }
 
   private void backupUserFiles(RestoreScript restoreScript, File backupDir) throws IOException {
@@ -330,10 +331,7 @@ public class BackupManager implements MembershipListener {
         cache.getInternalDistributedSystem().getDistributedMember();
     String vmId = memberId.toString();
     vmId = cleanSpecialCharacters(vmId);
-    File backupDir = new File(targetDir, vmId);
-
-
-    return backupDir;
+    return new File(targetDir, vmId);
   }
 
   private void createBackupDir(File backupDir) throws IOException {

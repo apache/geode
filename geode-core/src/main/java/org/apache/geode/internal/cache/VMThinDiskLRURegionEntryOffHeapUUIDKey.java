@@ -129,7 +129,7 @@ public class VMThinDiskLRURegionEntryOffHeapUUIDKey extends VMThinDiskLRURegionE
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

@@ -12,23 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
-import java.util.*;
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.membership.*;
-
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * Used to share code with BridgeServerAdvisor and ControllerAdvisor
- *
  */
 public abstract class GridAdvisor extends DistributionAdvisor {
 
@@ -38,9 +41,13 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   }
 
   private final Object cacheLock = new Object();
+
   private volatile List/* <BridgeServerProfile> */ cachedBridgeServerProfiles;
+
   private volatile List/* <ControllerProfile> */ cachedControllerProfiles;
+
   private volatile Set/* <DistributedMember> */ cachedBridgeServerAdvise;
+
   private volatile Set/* <DistributedMember> */ cachedControllerAdvise;
 
   private static final Filter CONTROLLER_FILTER = new Filter() {
@@ -90,11 +97,12 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   }
 
   /**
-   * Returns an unmodifiable <code>List</code> of the <code>BridgeServerProfile</code>s for all
-   * known bridge servers.
+   * Returns an unmodifiable {@code List} of the {@code BridgeServerProfile}s for all known bridge
+   * servers.
    */
   public List/* <BridgeServerProfile> */ fetchBridgeServers() {
-    List/* <BridgeServerProfile> */ result = null; // this.cachedBridgeServerProfiles;
+    List/* <BridgeServerProfile> */ result = null;
+    // TODO: remove double-checking
     if (result == null) {
       synchronized (this.cacheLock) {
         // result = this.cachedBridgeServerProfiles;
@@ -108,8 +116,8 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   }
 
   /**
-   * Returns an unmodifiable <code>List</code> of the <code>ControllerProfile</code>s for all known
-   * cnx controllers.
+   * Returns an unmodifiable {@code List} of the {@code ControllerProfile}s for all known cnx
+   * controllers.
    */
   public List/* <ControllerProfile> */ fetchControllers() {
     List/* <ControllerProfile> */ result = this.cachedControllerProfiles;
@@ -224,8 +232,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     profilesChanged();
   }
 
-
-
   @Override
   public Set adviseProfileRemove() {
     // Our set of profiles includes local members. However, the update
@@ -236,12 +242,10 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     return results;
   }
 
-
-
   /**
    * Describes profile data common for all Grid resources
    */
-  public static abstract class GridProfile extends DistributionAdvisor.Profile {
+  public abstract static class GridProfile extends DistributionAdvisor.Profile {
 
     private String host;
 
@@ -323,7 +327,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
      */
     protected final void tellLocalBridgeServers(boolean removeProfile, boolean exchangeProfiles,
         final List<Profile> replyProfiles) {
-      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      final InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null && !cache.isClosed()) {
         List<?> bridgeServers = cache.getCacheServersAndGatewayReceiver();
         for (int i = 0; i < bridgeServers.size(); i++) {
@@ -367,8 +371,8 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     @Override
     public void fillInToString(StringBuilder sb) {
       super.fillInToString(sb);
-      sb.append("; host=" + this.host);
-      sb.append("; port=" + this.port);
+      sb.append("; host=").append(this.host);
+      sb.append("; port=").append(this.port);
     }
   }
 

@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
@@ -53,10 +52,8 @@ import java.util.Set;
 import javax.management.ObjectName;
 
 /**
- * 
  * @since GemFire 8.0
  */
-
 public class ClientCommands implements CommandMarker {
 
   private Gfsh getGfsh() {
@@ -77,7 +74,7 @@ public class ClientCommands implements CommandMarker {
       String headerText = "ClientList";
       resultTable = resultTable.setHeader(headerText);
 
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       ManagementService service = ManagementService.getExistingManagementService(cache);
       ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
 
@@ -151,6 +148,9 @@ public class ClientCommands implements CommandMarker {
     return result;
   }
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
@@ -174,7 +174,7 @@ public class ClientCommands implements CommandMarker {
     try {
       CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
       SectionResultData sectionResult = compositeResultData.addSection("InfoSection");
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       ManagementService service = ManagementService.getExistingManagementService(cache);
       ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
@@ -204,7 +204,6 @@ public class ClientCommands implements CommandMarker {
             }
           }
         }
-
       }
 
       if (clientHealthStatus == null) {
@@ -225,12 +224,7 @@ public class ClientCommands implements CommandMarker {
         for (int i = 0; i < resultList.size(); i++) {
           try {
             Object object = resultList.get(i);
-            if (object instanceof Exception) {
-              LogWrapper.getInstance().warning(
-                  "Exception in Describe Client " + ((Throwable) object).getMessage(),
-                  ((Throwable) object));
-              continue;
-            } else if (object instanceof Throwable) {
+            if (object instanceof Throwable) {
               LogWrapper.getInstance().warning(
                   "Exception in Describe Client " + ((Throwable) object).getMessage(),
                   ((Throwable) object));
@@ -259,7 +253,6 @@ public class ClientCommands implements CommandMarker {
                   secondaryServers.add(objectResult.secondaryServer);
                 }
               }
-
             }
           } catch (Exception e) {
             LogWrapper.getInstance().info(CliStrings.DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0 + " :: "
@@ -354,7 +347,6 @@ public class ClientCommands implements CommandMarker {
         }
       }
     }
-
   }
 
   @CliAvailabilityIndicator({CliStrings.LIST_CLIENTS, CliStrings.DESCRIBE_CLIENT})

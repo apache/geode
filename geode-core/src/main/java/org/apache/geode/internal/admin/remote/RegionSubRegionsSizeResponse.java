@@ -17,7 +17,6 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -29,25 +28,30 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /**
  * Admin response carrying region info for a member
- * 
  */
 public class RegionSubRegionsSizeResponse extends AdminResponse implements Cancellable {
 
   private static final Logger logger = LogService.getLogger();
 
-  public RegionSubRegionsSizeResponse() {}
+  private RegionSubRegionSnapshot snapshot;
+
+  private boolean cancelled;
+
+  public RegionSubRegionsSizeResponse() {
+    // do nothing
+  }
 
   public RegionSubRegionSnapshot getSnapshot() {
     return this.snapshot;
   }
 
   /**
-   * Returns a <code>RegionSubRegionsSizeResponse</code> that will be returned to the specified
+   * Returns a {@code RegionSubRegionsSizeResponse} that will be returned to the specified
    * recipient. The message will contains a copy of the region snapshot
    */
   public static RegionSubRegionsSizeResponse create(DistributionManager dm,
@@ -60,15 +64,17 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
     return m;
   }
 
-  public void populateSnapshot(DistributionManager dm) {
-    if (cancelled)
+  void populateSnapshot(DistributionManager dm) {
+    if (this.cancelled) {
       return;
+    }
 
     DistributedSystem sys = dm.getSystem();
-    GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getInstance(sys);
+    InternalCache cache = (InternalCache) CacheFactory.getInstance(sys);
 
-    if (cancelled)
+    if (this.cancelled) {
       return;
+    }
 
     RegionSubRegionSnapshot root = new RegionSubRegionSnapshot();
     /*
@@ -93,19 +99,17 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
    * @param regions collection of sub-regions of the region represented by parentSnapShot
    * @param cache cache instance is used for to get the LogWriter instance to log exceptions if any
    */
-  // Re-factored to fix #41060
-  void populateRegionSubRegions(RegionSubRegionSnapshot parentSnapShot, Set regions,
-      GemFireCacheImpl cache) {
-    if (cancelled)
+  private void populateRegionSubRegions(RegionSubRegionSnapshot parentSnapShot, Set regions,
+      InternalCache cache) {
+    if (this.cancelled) {
       return;
+    }
 
-    Region subRegion = null;
-    RegionSubRegionSnapshot subRegionSnapShot = null;
-    for (Iterator iter = regions.iterator(); iter.hasNext();) {
-      subRegion = (Region) iter.next();
+    for (Object region : regions) {
+      Region subRegion = (Region) region;
 
       try {
-        subRegionSnapShot = new RegionSubRegionSnapshot(subRegion);
+        RegionSubRegionSnapshot subRegionSnapShot = new RegionSubRegionSnapshot(subRegion);
         parentSnapShot.addSubRegion(subRegionSnapShot);
 
         Set subRegions = subRegion.subregions(false);
@@ -117,15 +121,15 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
     }
   }
 
-
+  @Override
   public synchronized void cancel() {
-    cancelled = true;
+    this.cancelled = true;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeBoolean(cancelled);
+    out.writeBoolean(this.cancelled);
     DataSerializer.writeObject(this.snapshot, out);
   }
 
@@ -133,23 +137,20 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.cancelled = in.readBoolean();
-    this.snapshot = (RegionSubRegionSnapshot) DataSerializer.readObject(in);
+    this.snapshot = DataSerializer.readObject(in);
   }
 
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
+  @Override
   public int getDSFID() {
     return REGION_SUB_SIZE_RESPONSE;
   }
 
   @Override
   public String toString() {
-    return "RegionSubRegionsSizeResponse [from=" + this.getRecipient() + " "
-        + (snapshot == null ? "null" : snapshot.toString());
+    return "RegionSubRegionsSizeResponse [from=" + this.getRecipient() + ' '
+        + (this.snapshot == null ? "null" : this.snapshot.toString());
   }
-
-  private RegionSubRegionSnapshot snapshot;
-
-  private boolean cancelled;
 }

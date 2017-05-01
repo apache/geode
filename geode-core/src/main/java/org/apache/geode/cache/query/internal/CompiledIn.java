@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal;
 
 import java.lang.reflect.Array;
@@ -50,13 +49,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
-/**
- * Class Description
- *
- * @version $Revision: 1.1 $
- */
-
-
 public class CompiledIn extends AbstractCompiledValue implements Indexable {
   private static final Logger logger = LogService.getLogger();
 
@@ -80,7 +72,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return LITERAL_in;
   }
 
-  /*
+  /**
    * We retrieve the collection from the context cache if it exists This allows us to not have to
    * reevaluate the sub query on every iteration. This improves performance for queries such as
    * "select * from /receipts r where r.type = 'large' and r.id in (select c.id from /customers c
@@ -118,7 +110,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
 
     if (evalColln instanceof Collection) {
-      Iterator iterator = ((Collection) evalColln).iterator();
+      Iterator iterator = ((Iterable) evalColln).iterator();
       while (iterator.hasNext()) {
         Object evalObj = evalElm;
         Object collnObj = iterator.next();
@@ -158,15 +150,16 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return Boolean.FALSE;
   }
 
-  // Asif: If the size of aray is two this implies that it is
-  // a relation ship index & so the key field will be null in both the indexes
-  // as key is not a meaningful entity. The 0th element will refer to LHS
-  // operand
-  // and 1th element will refer to RHS operannd
+  /**
+   * If the size of aray is two this implies that it is a relation ship index & so the key field
+   * will be null in both the indexes as key is not a meaningful entity. The 0th element will refer
+   * to LHS operand and 1th element will refer to RHS operannd
+   */
   public IndexInfo[] getIndexInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
     if (indexInfo != null) {
+      // TODO: == check is identity only
       if (indexInfo == NO_INDEXES_IDENTIFIER) {
         return null;
       } else {
@@ -181,7 +174,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     if (pAndK != null) {
       CompiledValue path = pAndK._path;
       CompiledValue indexKey = pAndK._key;
-      IndexData indexData = QueryUtils.getAvailableIndexIfAny(path, context, this.TOK_EQ);
+      IndexData indexData = QueryUtils.getAvailableIndexIfAny(path, context, TOK_EQ);
       IndexProtocol index = null;
       if (indexData != null) {
         index = indexData.getIndex();
@@ -189,7 +182,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       if (index != null && index.isValid()) {
         newIndexInfo = new IndexInfo[1];
         newIndexInfo[0] = new IndexInfo(indexKey, path, index, indexData.getMatchLevel(),
-            indexData.getMapping(), this.TOK_EQ);
+            indexData.getMapping(), TOK_EQ);
       }
     }
     if (newIndexInfo != null) {
@@ -200,9 +193,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return newIndexInfo;
   }
 
-
-  // _indexInfo is a transient field
-  // if this is just faulted in then can be null
+  /**
+   * _indexInfo is a transient field if this is just faulted in then can be null
+   */
   private IndexInfo[] privGetIndexInfo(ExecutionContext context) {
     return (IndexInfo[]) context.cacheGet(this);
   }
@@ -211,7 +204,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     context.cachePut(this, indexInfo);
   }
 
-  // Invariant: the receiver is dependent on the current iterator.
+  /**
+   * Invariant: the receiver is dependent on the current iterator.
+   */
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     PlanInfo result = new PlanInfo();
@@ -342,8 +337,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    */
   private PathAndKey getPathAndKey(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException {
-    // RuntimeIterator lIter = context.findRuntimeIterator(_left);
-    // RuntimeIterator rIter = context.findRuntimeIterator(_right);
+
     boolean isLeftDependent = context.isDependentOnCurrentScope(this.elm);
     boolean isRightDependent = context.isDependentOnCurrentScope(this.colln);
     if (!isLeftDependent || isRightDependent)
@@ -352,15 +346,14 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     CompiledValue path;
     path = this.elm;
     indexKey = this.colln;
-    // Asif Do not worry about the nature of the collection. As long as it
+    // Do not worry about the nature of the collection. As long as it
     // is not dependent on the current scope we should be fine
 
     return new PathAndKey(path, indexKey);
   }
 
-
   /**
-   * Asif : Evaluates as a filter taking advantage of indexes if appropriate. This function has a
+   * Evaluates as a filter taking advantage of indexes if appropriate. This function has a
    * meaningful implementation only in CompiledComparison & CompiledUndefined . It is unsupported in
    * other classes. The additional parameters which it takes are a boolean which is used to indicate
    * whether the index result set needs to be expanded to the top level or not. The second is a
@@ -378,10 +371,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       QueryInvocationTargetException {
     // see if we're dependent on the current iterator
     // if not let super handle it
-    // RuntimeIterator itr = context.getCurrentIterator();
-    // Support.Assert(itr != null);
-    if (!isDependentOnCurrentScope(context))
+    if (!isDependentOnCurrentScope(context)) {
       return super.filterEvaluate(context, intermediateResults);
+    }
     IndexInfo[] idxInfo = getIndexInfo(context);
     Support.Assert(idxInfo != null,
         "a comparison that is dependent, not indexed, and filter evaluated is not possible");
@@ -395,15 +387,6 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   public int getOperator() {
     return TOK_EQ;
   }
-
-  /**
-   * **************** PRIVATE METHODS **************************
-   * 
-   * @throws QueryInvocationTargetException
-   * @throws NameResolutionException
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   */
 
   private void queryIndex(Object key, IndexInfo indexInfo, SelectResults results,
       CompiledValue iterOperands, RuntimeIterator[] indpndntItrs, ExecutionContext context,
@@ -419,17 +402,14 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         indexInfo._getIndex(), 0, null, indexInfo._operator());
     context.cachePut(CompiledValue.INDEX_INFO, contextIndexInfo);
     indexInfo._index.query(key, TOK_EQ, results, !conditioningNeeded ? iterOperands : null,
-        indpndntItrs == null ? null : indpndntItrs[0], context, projAttrib, null, false); // is
-                                                                                          // Intersection
-
-
-
+        indpndntItrs == null ? null : indpndntItrs[0], context, projAttrib, null, false);
   }
 
   /**
    * evaluate as a filter, involving a single iterator. Use an index if possible.
+   *
+   * Invariant: the receiver is dependent on the current iterator.
    */
-  // Invariant: the receiver is dependent on the current iterator.
   private SelectResults singleBaseCollectionFilterEvaluate(ExecutionContext context,
       SelectResults intermediateResults, boolean completeExpansionNeeded,
       CompiledValue iterOperands, IndexInfo indexInfo, RuntimeIterator[] indpndntItr,
@@ -447,14 +427,14 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     boolean useLinkedDataStructure = false;
     boolean nullValuesAtStart = true;
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
-    if (orderByClause != null && orderByClause.booleanValue()) {
+    if (orderByClause != null && orderByClause) {
       List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
       useLinkedDataStructure = orderByAttrs.size() == 1;
       nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
     }
 
     List projAttrib = null;
-    // ////////////////////////////////////////////////////////////////
+
     ObjectType projResultType = null;
     if (!conditioningNeeded) {
       projResultType = evalProj ? (ObjectType) context.cacheGet(RESULT_TYPE) : null;
@@ -537,7 +517,6 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       }
     }
 
-
     QueryObserver observer = QueryObserverHolder.getInstance();
     try {
       Object evalColln = evaluateColln(context);
@@ -568,7 +547,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         // key in the [1]
         // and the evalColln in the [0] position
         if (key instanceof Object[]) {
-          Iterator iterator = ((ResultsSet) ((Object[]) key)[0]).iterator();
+          Iterator iterator = ((Iterable) ((Object[]) key)[0]).iterator();
           while (iterator.hasNext()) {
             this.queryIndex(new Object[] {iterator.next(), ((Object[]) key)[1]}, indexInfo, results,
                 iterOperands, indpndntItr, context, projAttrib, conditioningNeeded);
@@ -597,48 +576,48 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         } else if (evalColln instanceof long[]) {
           long[] a = (long[]) evalColln;
           for (int i = 0; i < a.length; i++) {
-            this.queryIndex(Long.valueOf(a[i]), indexInfo, results, iterOperands, indpndntItr,
-                context, projAttrib, conditioningNeeded);
+            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
+                projAttrib, conditioningNeeded);
           }
 
         } else if (evalColln instanceof double[]) {
           double[] a = (double[]) evalColln;
           for (int i = 0; i < a.length; i++) {
-            this.queryIndex(Double.valueOf(a[i]), indexInfo, results, iterOperands, indpndntItr,
-                context, projAttrib, conditioningNeeded);
+            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
+                projAttrib, conditioningNeeded);
           }
 
         } else if (evalColln instanceof float[]) {
           float[] a = (float[]) evalColln;
           for (int i = 0; i < a.length; i++) {
-            this.queryIndex(new Float(a[i]), indexInfo, results, iterOperands, indpndntItr, context,
+            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
                 projAttrib, conditioningNeeded);
           }
 
         } else if (evalColln instanceof int[]) {
           int[] a = (int[]) evalColln;
           for (int i = 0; i < a.length; i++) {
-            this.queryIndex(Integer.valueOf(a[i]), indexInfo, results, iterOperands, indpndntItr,
-                context, projAttrib, conditioningNeeded);
+            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
+                projAttrib, conditioningNeeded);
           }
         } else if (evalColln instanceof short[]) {
           short[] a = (short[]) evalColln;
           for (int i = 0; i < a.length; i++) {
-            this.queryIndex(new Short(a[i]), indexInfo, results, iterOperands, indpndntItr, context,
+            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
                 projAttrib, conditioningNeeded);
           }
 
         } else if (evalColln instanceof char[]) {
           char[] a = (char[]) evalColln;
           for (int i = 0; i < a.length; i++) {
-            this.queryIndex(new Character(a[i]), indexInfo, results, iterOperands, indpndntItr,
-                context, projAttrib, conditioningNeeded);
+            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
+                projAttrib, conditioningNeeded);
           }
 
         } else if (evalColln instanceof byte[]) {
           byte[] a = (byte[]) evalColln;
           for (int i = 0; i < a.length; i++) {
-            this.queryIndex(new Byte(a[i]), indexInfo, results, iterOperands, indpndntItr, context,
+            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
                 projAttrib, conditioningNeeded);
           }
 
@@ -646,12 +625,11 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
           throw new TypeMismatchException(
               "Operand of IN cannot be interpreted as a Comparable Object. Operand is of type ="
                   + evalColln.getClass());
-
         }
       }
 
       if (conditioningNeeded) {
-        results = QueryUtils.getconditionedIndexResults(results, indexInfo, context,
+        results = QueryUtils.getConditionedIndexResults(results, indexInfo, context,
             indexFieldsSize, completeExpansionNeeded, iterOperands, indpndntItr);
       } else {
         if (isIntersection && intermediateResults != null) {
@@ -662,7 +640,6 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     } finally {
       observer.afterIndexLookup(results);
     }
-
   }
 
   public boolean isProjectionEvaluationAPossibility(ExecutionContext context) {
@@ -702,15 +679,13 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
     conditioningNeeded = ich == null || ich.shufflingNeeded;
     return conditioningNeeded;
-
   }
-
 
   /**
    * evaluate as a filter, producing an intermediate result set. This may require iteration if there
-   * is no index available. Asif :The booelan true implies that CompiledComparsion when existing on
-   * its own always requires a Completeexpansion to top level iterators. This flag can get toggled
-   * to false only from inside a GroupJunction
+   * is no index available. The boolean true implies that CompiledComparison when existing on its
+   * own always requires a CompleteExpansion to top level iterators. This flag can get toggled to
+   * false only from inside a GroupJunction
    * 
    * @param intermediateResults if this parameter is provided, and we have to iterate, then iterate
    *        over this result set instead of the entire base collection.
@@ -718,7 +693,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    // Asif : This function can be invoked only if the where clause contains
+    // This function can be invoked only if the where clause contains
     // a single condition which is CompiledComparison.
     // If a CompiledComparison exists inside a GroupJunction, then it will
     // always
@@ -738,25 +713,22 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       indpndntItr = (RuntimeIterator) rntmItrs.iterator().next();
     }
 
-    return filterEvaluate(context, intermediateResults, true/*
-                                                             * Complete Expansion needed
-                                                             */, null,
-        indpndntItr != null ? new RuntimeIterator[] {indpndntItr}
-            : null/*
-                   * Asif :It is safe to pass null as the independent iterator to which the
-                   * condition belongs is required only if boolean complete expansion turns out to
-                   * be false, which can happen only in case of CompiledComparison/CompiledUndefined
-                   * called from roupJunction or CompositeGroupJunction
-                   */,
-        true /* is intersection */, this.isConditioningNeededForIndex(indpndntItr, context, true),
-        true);
+    /*
+     * It is safe to pass null as the independent iterator to which the condition belongs is
+     * required only if boolean complete expansion turns out to be false, which can happen only in
+     * case of CompiledComparison/CompiledUndefined called from GroupJunction or
+     * CompositeGroupJunction
+     */
+    return filterEvaluate(context, intermediateResults, true, null,
+        indpndntItr != null ? new RuntimeIterator[] {indpndntItr} : null, true,
+        this.isConditioningNeededForIndex(indpndntItr, context, true), true);
   }
 
-  /*
-   * Asif : This function should never get invoked as now if a CompiledJunction or GroupJunction
-   * contains a single filterable CompiledComparison it should directly call filterEvaluate rather
-   * than auxFilterEvalutae. Overriding this function just for ensuring that auxFilterEvaluate is
-   * not being called by mistake.
+  /**
+   * This function should never get invoked as now if a CompiledJunction or GroupJunction contains a
+   * single filterable CompiledComparison it should directly call filterEvaluate rather than
+   * auxFilterEvalutae. Overriding this function just for ensuring that auxFilterEvaluate is not
+   * being called by mistake.
    */
   public SelectResults auxFilterEvaluate(ExecutionContext context,
       SelectResults intermediateResults) throws FunctionDomainException, TypeMismatchException,
@@ -787,7 +759,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         isThisBetter = thisSize < thatSize;
         break;
       case LITERAL_and:
-        // Asif: Give preference to IN . Is this right? It does not appear . Ideally we need to get
+        // Give preference to IN . Is this right? It does not appear . Ideally we need to get
         // some estimate on Range. This case is possible only in case of RangeJunction
         break;
       case TOK_LE:
@@ -807,15 +779,15 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     IndexInfo[] idxInfo = getIndexInfo(context);
     if (idxInfo == null) {
-      // Asif: This implies it is an independent condition. So evaluate it first
-      // in filter operand
+      // This implies it is an independent condition. So evaluate it first in filter operand
       return 0;
     }
     assert idxInfo.length == 1;
     Object key = idxInfo[0].evaluateIndexKey(context);
 
-    if (key != null && key.equals(QueryService.UNDEFINED))
+    if (key != null && key.equals(QueryService.UNDEFINED)) {
       return 0;
+    }
 
     if (context instanceof QueryExecutionContext) {
       QueryExecutionContext qcontext = (QueryExecutionContext) context;
@@ -862,67 +834,58 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       } else if (evalColln instanceof long[]) {
         long[] a = (long[]) evalColln;
         for (int i = 0; i < a.length; i++) {
-          size +=
-              idxInfo[0]._index.getSizeEstimate(Long.valueOf(a[i]), TOK_EQ, idxInfo[0]._matchLevel);
+          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof double[]) {
         double[] a = (double[]) evalColln;
         for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(Double.valueOf(a[i]), TOK_EQ,
-              idxInfo[0]._matchLevel);
+          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof float[]) {
         float[] a = (float[]) evalColln;
         for (int i = 0; i < a.length; i++) {
-          size +=
-              idxInfo[0]._index.getSizeEstimate(new Float(a[i]), TOK_EQ, idxInfo[0]._matchLevel);
-
+          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof int[]) {
         int[] a = (int[]) evalColln;
         for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(Integer.valueOf(a[i]), TOK_EQ,
-              idxInfo[0]._matchLevel);
+          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
         }
       } else if (evalColln instanceof short[]) {
         short[] a = (short[]) evalColln;
         for (int i = 0; i < a.length; i++) {
-          size +=
-              idxInfo[0]._index.getSizeEstimate(new Short(a[i]), TOK_EQ, idxInfo[0]._matchLevel);
-
+          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof char[]) {
         char[] a = (char[]) evalColln;
         for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(new Character(a[i]), TOK_EQ,
-              idxInfo[0]._matchLevel);
+          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof byte[]) {
         byte[] a = (byte[]) evalColln;
         for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(new Byte(a[i]), TOK_EQ, idxInfo[0]._matchLevel);
-
+          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else {
         throw new TypeMismatchException(
             "Operand of IN cannot be interpreted as a Comparable Object. Operand is of type ="
                 + evalColln.getClass());
-
       }
     }
     return size;
-
   }
 
+  public boolean isRangeEvaluatable() {
+    return false;
+  }
 
-  /* Inner classes for passing stuff around */
-  class PathAndKey {
+  static class PathAndKey {
 
     CompiledValue _path;
     CompiledValue _key;
@@ -932,10 +895,4 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       _key = indexKey;
     }
   }
-
-
-  public boolean isRangeEvaluatable() {
-    return false;
-  }
-
 }

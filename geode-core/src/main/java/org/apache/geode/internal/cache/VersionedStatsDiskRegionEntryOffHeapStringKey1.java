@@ -150,7 +150,7 @@ public class VersionedStatsDiskRegionEntryOffHeapStringKey1
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

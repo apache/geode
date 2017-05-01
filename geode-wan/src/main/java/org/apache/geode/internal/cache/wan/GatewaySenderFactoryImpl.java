@@ -221,11 +221,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     }
 
     if (this.attrs.isParallel()) {
-      // if(this.attrs.getDispatcherThreads() != 1){
-      // throw new GatewaySenderException(
-      // LocalizedStrings.GatewaySenderImpl_PARALLEL_GATEWAY_SENDER_0_CANNOT_BE_CREATED_WITH_DISPATCHER_THREADS_OTHER_THAN_1
-      // .toLocalizedString(id));
-      // }
       if ((this.attrs.getOrderPolicy() != null)
           && this.attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
         throw new GatewaySenderException(
@@ -234,14 +229,14 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
-        ((GemFireCacheImpl) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
-        ((CacheCreation) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
       }
     } else {
       if (this.attrs.getAsyncEventListeners().size() > 0) {
@@ -254,14 +249,14 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
-        ((GemFireCacheImpl) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new SerialGatewaySenderCreation(this.cache, this.attrs);
-        ((CacheCreation) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
       }
     }
     return sender;
@@ -287,13 +282,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
-        ((GemFireCacheImpl) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
-        ((CacheCreation) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
       }
     } else {
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
@@ -301,13 +296,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
-        ((GemFireCacheImpl) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new SerialGatewaySenderCreation(this.cache, this.attrs);
-        ((CacheCreation) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
       }
     }
     return sender;

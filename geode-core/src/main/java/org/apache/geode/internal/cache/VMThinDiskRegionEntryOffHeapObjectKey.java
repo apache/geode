@@ -124,7 +124,7 @@ public class VMThinDiskRegionEntryOffHeapObjectKey extends VMThinDiskRegionEntry
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

@@ -33,27 +33,27 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminRequest;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /**
  * An instruction to all members with cache that they should compact their disk stores.
- * 
- * 
+ * <p>
+ * NOTE: Extracted from org/apache/geode/internal/admin/remote/CompactRequest.java
+ *
  * @since GemFire 7.0
  */
-// NOTE: This is copied from org/apache/geode/internal/admin/remote/CompactRequest.java
-// and modified as per requirements. (original-author Dan Smith)
 public class CompactRequest extends AdminRequest {
   private static final Logger logger = LogService.getLogger();
 
   private String diskStoreName;
+
   private static String notExecutedMembers;
 
   public static Map<DistributedMember, PersistentID> send(DM dm, String diskStoreName,
@@ -103,7 +103,7 @@ public class CompactRequest extends AdminRequest {
 
   public static PersistentID compactDiskStore(String diskStoreName) {
     PersistentID persistentID = null;
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
       DiskStoreImpl diskStore = (DiskStoreImpl) cache.findDiskStore(diskStoreName);
       if (diskStore != null && diskStore.forceCompaction()) {

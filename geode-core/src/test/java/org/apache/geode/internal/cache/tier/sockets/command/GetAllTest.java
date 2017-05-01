@@ -18,8 +18,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Properties;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,8 +27,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.GetOperationContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
@@ -59,7 +57,7 @@ public class GetAllTest {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock

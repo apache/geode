@@ -15,10 +15,11 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,20 +30,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
@@ -57,7 +50,6 @@ public class RegisterInterestTest {
   private static final String KEY = "key1";
   private static final byte[] DURABLE = new byte[8];
 
-
   @Mock
   private SecurityService securityService;
   @Mock
@@ -67,7 +59,7 @@ public class RegisterInterestTest {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock
@@ -88,7 +80,6 @@ public class RegisterInterestTest {
   public void setUp() throws Exception {
     this.registerInterest = new RegisterInterest();
     MockitoAnnotations.initMocks(this);
-
 
     when(this.authzRequest.registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any()))
         .thenReturn(mock(RegisterInterestOperationContext.class));

@@ -35,12 +35,12 @@ import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * 
  * @since GemFire 7.0
  */
 public class JmxManagerAdvisor extends DistributionAdvisor {
@@ -104,10 +104,10 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     return new JmxManagerProfile(memberId, version);
   }
 
-  @Override
   /**
    * Overridden to also include our profile. If our profile is included it will always be first.
    */
+  @Override
   protected List/* <Profile> */ fetchProfiles(Filter f) {
     initializationGate();
     List result = null;
@@ -169,18 +169,12 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       this.profile = p;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.
-     * distributed.internal.DistributionManager)
-     */
     @Override
     protected void process(DistributionManager dm) {
       Throwable thr = null;
       JmxManagerProfile p = null;
       try {
-        final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        final InternalCache cache = GemFireCacheImpl.getInstance();
         if (cache != null && !cache.isClosed()) {
           final JmxManagerAdvisor adv = cache.getJmxManagerAdvisor();
           p = this.profile;
@@ -194,7 +188,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         }
       } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Cache closed, ", this);
+          logger.debug("Cache closed, {}", this);
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -219,11 +213,6 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
-     */
     public int getDSFID() {
       return JMX_MANAGER_PROFILE_MESSAGE;
     }
@@ -338,7 +327,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     @Override
     public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
-      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      final InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null && !cache.isClosed()) {
         handleDistributionAdvisee(cache.getJmxManagerAdvisor().getAdvisee(), removeProfile,
             exchangeProfiles, replyProfiles);

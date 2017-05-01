@@ -56,7 +56,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @SuppressWarnings("serial")
 public class Bug51193DUnitTest extends JUnit4DistributedTestCase {
 
-
   private static final String REGION_NAME = "Bug51193DUnitTest_region";
 
   private static GemFireCacheImpl cache;

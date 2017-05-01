@@ -12,14 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -27,7 +24,6 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
-
 
 public class GetPDXIdForType extends BaseCommand {
 
@@ -53,7 +49,7 @@ public class GetPDXIdForType extends BaseCommand {
 
     int pdxId;
     try {
-      GemFireCacheImpl cache = (GemFireCacheImpl) servConn.getCache();
+      InternalCache cache = servConn.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
       pdxId = registry.defineType(type);
     } catch (Exception e) {

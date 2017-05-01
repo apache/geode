@@ -32,4 +32,12 @@ public class TransactionDataRebalancedException extends TransactionException {
   public TransactionDataRebalancedException(String s) {
     super(s);
   }
+
+  public TransactionDataRebalancedException(Throwable cause) {
+    super(cause);
+  }
+
+  public TransactionDataRebalancedException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

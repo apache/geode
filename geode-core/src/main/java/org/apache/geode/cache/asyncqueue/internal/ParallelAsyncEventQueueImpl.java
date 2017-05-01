@@ -19,23 +19,22 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
-import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -86,7 +85,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
       // Only notify the type registry if this is a WAN gateway queue
       if (!isAsyncEventQueue()) {
-        ((GemFireCacheImpl) getCache()).getPdxRegistry().gatewaySenderStarted(this);
+        getCache().getPdxRegistry().gatewaySenderStarted(this);
       }
       new UpdateAttributesProcessor(this).distribute(false);
 

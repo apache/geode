@@ -311,7 +311,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException {
     // Asif: prepend the internal iterator variable name for this
     // RunTimeIterator

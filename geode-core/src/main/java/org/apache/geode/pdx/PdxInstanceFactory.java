@@ -16,7 +16,6 @@ package org.apache.geode.pdx;
 
 import java.util.Date;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionService;
 
 /**
@@ -41,7 +40,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>char</code>.
+   * {@code char}.
    * <p>
    * Java char is mapped to .NET System.Char.
    * 
@@ -55,7 +54,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>boolean</code>.
+   * {@code boolean}.
    * <p>
    * Java boolean is mapped to .NET System.Boolean.
    * 
@@ -69,7 +68,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>byte</code>.
+   * {@code byte}.
    * <p>
    * Java byte is mapped to .NET System.SByte.
    * 
@@ -83,7 +82,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>short</code>.
+   * {@code short}.
    * <p>
    * Java short is mapped to .NET System.Int16.
    * 
@@ -97,7 +96,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>int</code>.
+   * {@code int}.
    * <p>
    * Java int is mapped to .NET System.Int32.
    * 
@@ -111,7 +110,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>long</code>.
+   * {@code long}.
    * <p>
    * Java long is mapped to .NET System.Int64.
    * 
@@ -125,7 +124,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>float</code>.
+   * {@code float}.
    * <p>
    * Java float is mapped to .NET System.Float.
    * 
@@ -139,7 +138,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>double</code>.
+   * {@code double}.
    * <p>
    * Java double is mapped to .NET System.Double.
    * 
@@ -153,7 +152,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>Date</code>.
+   * {@code Date}.
    * <p>
    * Java Date is mapped to .NET System.DateTime.
    * 
@@ -167,7 +166,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>String</code>.
+   * {@code String}.
    * <p>
    * Java String is mapped to .NET System.String.
    * 
@@ -181,7 +180,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>Object</code>.
+   * {@code Object}.
    * <p>
    * It is best to use one of the other writeXXX methods if your field type will always be XXX. This
    * method allows the field value to be anything that is an instance of Object. This gives you more
@@ -201,16 +200,16 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>Object</code>.
+   * {@code Object}.
    * <p>
    * It is best to use one of the other writeXXX methods if your field type will always be XXX. This
    * method allows the field value to be anything that is an instance of Object. This gives you more
    * flexibility but more space is used to store the serialized field.
    * <p>
    * Note that some Java objects serialized with this method may not be compatible with non-java
-   * languages. To ensure that only portable objects are serialized set the
-   * <code>checkPortability</code> parameter to true. The following is a list of the Java classes
-   * that are portable and the .NET class they are mapped to:
+   * languages. To ensure that only portable objects are serialized set the {@code checkPortability}
+   * parameter to true. The following is a list of the Java classes that are portable and the .NET
+   * class they are mapped to:
    * <ul>
    * <li>instances of {@link PdxSerializable}: .NET class of same name
    * <li>instances of {@link PdxInstance}: .NET class of same name
@@ -235,10 +234,10 @@ public interface PdxInstanceFactory {
    * <li>double[]: System.Double[]
    * <li>String[]: System.String[]
    * <li>byte[][]: System.Byte[][]
-   * <li>Object[]: System.Collections.Generic.List<Object>
-   * <li>java.util.HashMap: System.Collections.Generics.IDictionary<Object, Object>
+   * <li>Object[]: System.Collections.Generic.List&lt;Object&gt;
+   * <li>java.util.HashMap: System.Collections.Generics.IDictionary&lt;Object, Object&gt;
    * <li>java.util.Hashtable: System.Collections.Hashtable
-   * <li>java.util.ArrayList: System.Collections.Generic.IList<Object>
+   * <li>java.util.ArrayList: System.Collections.Generic.IList&lt;Object&gt;
    * <li>java.util.Vector: System.Collections.ArrayList
    * <li>java.util.HashSet: CacheableHashSet
    * <li>java.util.LinkedHashSet: CacheableLinkedHashSet
@@ -259,7 +258,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>boolean[]</code>.
+   * {@code boolean[]}.
    * <p>
    * Java boolean[] is mapped to .NET System.Boolean[].
    * 
@@ -273,7 +272,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>char[]</code>.
+   * {@code char[]}.
    * <p>
    * Java char[] is mapped to .NET System.Char[].
    * 
@@ -287,7 +286,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>byte[]</code>.
+   * {@code byte[]}.
    * <p>
    * Java byte[] is mapped to .NET System.Byte[].
    * 
@@ -301,7 +300,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>short[]</code>.
+   * {@code short[]}.
    * <p>
    * Java short[] is mapped to .NET System.Int16[].
    * 
@@ -315,7 +314,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>int[]</code>.
+   * {@code int[]}.
    * <p>
    * Java int[] is mapped to .NET System.Int32[].
    * 
@@ -329,7 +328,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>long[]</code>.
+   * {@code long[]}.
    * <p>
    * Java long[] is mapped to .NET System.Int64[].
    * 
@@ -343,7 +342,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>float[]</code>.
+   * {@code float[]}.
    * <p>
    * Java float[] is mapped to .NET System.Float[].
    * 
@@ -357,7 +356,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>double[]</code>.
+   * {@code double[]}.
    * <p>
    * Java double[] is mapped to .NET System.Double[].
    * 
@@ -371,7 +370,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>String[]</code>.
+   * {@code String[]}.
    * <p>
    * Java String[] is mapped to .NET System.String[].
    * 
@@ -385,12 +384,12 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>Object[]</code>.
+   * {@code Object[]}.
    * <p>
-   * Java Object[] is mapped to .NET System.Collections.Generic.List<Object>. For how each element
-   * of the array is a mapped to .NET see {@link #writeObject(String, Object, boolean) writeObject}.
-   * Note that this call may serialize elements that are not compatible with non-java languages. To
-   * ensure that only portable objects are serialized use
+   * Java Object[] is mapped to .NET System.Collections.Generic.List&lt;Object&gt;. For how each
+   * element of the array is a mapped to .NET see {@link #writeObject(String, Object, boolean)
+   * writeObject}. Note that this call may serialize elements that are not compatible with non-java
+   * languages. To ensure that only portable objects are serialized use
    * {@link #writeObjectArray(String, Object[], boolean)}.
    * 
    * @param fieldName the name of the field to write
@@ -403,13 +402,13 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>Object[]</code>.
+   * {@code Object[]}.
    * <p>
-   * Java Object[] is mapped to .NET System.Collections.Generic.List<Object>. For how each element
-   * of the array is a mapped to .NET see {@link #writeObject(String, Object, boolean) writeObject}.
-   * Note that this call may serialize elements that are not compatible with non-java languages. To
-   * ensure that only portable objects are serialized use
-   * {@link #writeObjectArray(String, Object[], boolean)}.
+   * Java Object[] is mapped to .NET System.Collections.Generic.List&lt;Object&gt;. For how each
+   * element of the array is a mapped to .NET see {@link #writeObject(String, Object, boolean)
+   * writeObject}. Note that this call may serialize elements that are not compatible with non-java
+   * languages. To ensure that only portable objects are serialized use
+   * {@code writeObjectArray(String, Object[], boolean)}.
    * 
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
@@ -427,7 +426,7 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
-   * <code>byte[][]</code>.
+   * {@code byte[][]}.
    * <p>
    * Java byte[][] is mapped to .NET System.Byte[][].
    * 
@@ -441,8 +440,8 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value and type to the serialized form. This method uses
-   * the <code>fieldType</code> to determine which writeXXX method it should call. If it can not
-   * find a specific match to a writeXXX method it will call {@link #writeObject(String, Object)
+   * the {@code fieldType} to determine which writeXXX method it should call. If it can not find a
+   * specific match to a writeXXX method it will call {@link #writeObject(String, Object)
    * writeObject}. This method may serialize objects that are not portable to non-java languages. To
    * ensure that only objects that are portable to non-java languages are serialized use
    * {@link #writeField(String, Object, Class, boolean)} instead.
@@ -476,7 +475,7 @@ public interface PdxInstanceFactory {
    * 
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
-   *        <code>fieldType</code>
+   *        {@code fieldType}
    * @param fieldType the type of the field to write
    * @return this PdxInstanceFactory
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
@@ -487,11 +486,10 @@ public interface PdxInstanceFactory {
 
   /**
    * Writes the named field with the given value and type to the serialized form. This method uses
-   * the <code>fieldType</code> to determine which writeXXX method it should call. If it can not
-   * find a specific match to a writeXXX method it will call
-   * {@link #writeObject(String, Object, boolean) writeObject}. To ensure that only objects that are
-   * portable to non-java languages are serialized set the <code>checkPortability</code> parameter
-   * to true.
+   * the {@code fieldType} to determine which writeXXX method it should call. If it can not find a
+   * specific match to a writeXXX method it will call {@link #writeObject(String, Object, boolean)
+   * writeObject}. To ensure that only objects that are portable to non-java languages are
+   * serialized set the {@code checkPortability} parameter to true.
    * <p>
    * The fieldTypes that map to a specific method are:
    * <ul>
@@ -522,7 +520,7 @@ public interface PdxInstanceFactory {
    * 
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
-   *        <code>fieldType</code>
+   *        {@code fieldType}
    * @param fieldType the type of the field to write
    * @param checkPortability if true then an exception is thrown if a non-portable object is
    *        serialized

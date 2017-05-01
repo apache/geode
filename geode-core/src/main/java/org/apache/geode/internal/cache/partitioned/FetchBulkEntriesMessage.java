@@ -47,7 +47,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -139,7 +138,7 @@ public final class FetchBulkEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; bucketId=").append(this.bucketIds);
     buff.append("; recipient=").append(this.getRecipient());

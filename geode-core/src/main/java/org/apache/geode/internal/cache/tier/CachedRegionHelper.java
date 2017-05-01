@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 

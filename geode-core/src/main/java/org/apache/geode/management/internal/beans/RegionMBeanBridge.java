@@ -45,8 +45,7 @@ import org.apache.geode.management.internal.beans.stats.StatsRate;
 /**
  * This class acts as a bridge between a Region and RegionMBean This also listens for statistics
  * changes and update its value accordingly
- * 
- * 
+ *
  * @param <K>
  * @param <V>
  */
@@ -100,10 +99,7 @@ public class RegionMBeanBridge<K, V> {
 
   private StatsRate averageReadsRate;
 
-
-
   public static <K, V> RegionMBeanBridge<K, V> getInstance(Region<K, V> region) {
-
     if (region.getAttributes().getPartitionAttributes() != null) {
       RegionMBeanBridge<K, V> bridge = PartitionedRegionBridge.getInstance(region);
       PartitionedRegion parRegion = ((PartitionedRegion) region);
@@ -119,9 +115,7 @@ public class RegionMBeanBridge<K, V> {
         }
 
         bridge.addDiskRegionBridge(diskRegionBridge);
-
       }
-
       return bridge;
 
     } else {
@@ -139,10 +133,8 @@ public class RegionMBeanBridge<K, V> {
         }
       }
       return bridge;
-
     }
   }
-
 
   protected void addDiskRegionBridge(DiskRegionBridge diskRegionBridge) {
     this.diskRegionBridge = diskRegionBridge;
@@ -167,8 +159,6 @@ public class RegionMBeanBridge<K, V> {
 
     this.persistentEnabled = region.getAttributes().getDataPolicy().withPersistence();
 
-
-
     this.regionStats = ((LocalRegion) region).getRegionPerfStats();
     if (regionStats != null) {
       regionMonitor.addStatisticsToMonitor(regionStats.getStats()); // fixes 46692
@@ -183,7 +173,6 @@ public class RegionMBeanBridge<K, V> {
         if (ea != null && ea.getAlgorithm().isLRUMemory()) {
           this.lruMemoryStats = stats;
         }
-
       }
     }
 
@@ -193,8 +182,6 @@ public class RegionMBeanBridge<K, V> {
 
     this.member = GemFireCacheImpl.getInstance().getDistributedSystem().getMemberId();
   }
-
-
 
   public String getRegionType() {
     return region.getAttributes().getDataPolicy().toString();
@@ -215,7 +202,6 @@ public class RegionMBeanBridge<K, V> {
   public MembershipAttributesData listMembershipAttributes() {
     return membershipAttributesData;
   }
-
 
   public RegionAttributesData listRegionAttributes() {
     return regionAttributesData;
@@ -238,11 +224,6 @@ public class RegionMBeanBridge<K, V> {
     return subregionPaths.toArray(new String[subregionPaths.size()]);
   }
 
-  /** Statistic related Methods **/
-
-
-
-  // Dummy constructor for testing purpose only
   public RegionMBeanBridge(CachePerfStats cachePerfStats) {
     this.regionStats = cachePerfStats;
 
@@ -255,8 +236,6 @@ public class RegionMBeanBridge<K, V> {
   // Dummy constructor for testing purpose only
   public RegionMBeanBridge() {}
 
-
-
   public void stopMonitor() {
     regionMonitor.stopListener();
     if (diskRegionBridge != null) {
@@ -264,9 +243,7 @@ public class RegionMBeanBridge<K, V> {
     }
   }
 
-
   private void configureRegionMetrics() {
-
     putAllRate = new StatsRate(StatsKey.PUT_ALLS, StatType.INT_TYPE, regionMonitor);
     getRequestRate = new StatsRate(StatsKey.GETS, StatType.INT_TYPE, regionMonitor);
 
@@ -282,7 +259,6 @@ public class RegionMBeanBridge<K, V> {
     writerCallsAvgLatency = new StatsAverageLatency(StatsKey.CACHE_WRITER_CALLS_COMPLETED,
         StatType.INT_TYPE, StatsKey.CACHE_WRITER_CALL_TIME, regionMonitor);
 
-
     lruDestroyRate = new StatsRate(StatsKey.LRU_DESTROYS, StatType.LONG_TYPE, regionMonitor);
 
     lruEvictionRate = new StatsRate(StatsKey.LRU_EVICTIONS, StatType.LONG_TYPE, regionMonitor);
@@ -290,7 +266,6 @@ public class RegionMBeanBridge<K, V> {
     String[] writesRates = new String[] {StatsKey.PUT_ALLS, StatsKey.PUTS, StatsKey.CREATES};
     averageWritesRate = new StatsRate(writesRates, StatType.INT_TYPE, regionMonitor);
     averageReadsRate = new StatsRate(StatsKey.GETS, StatType.INT_TYPE, regionMonitor);
-
   }
 
   private Number getRegionStatistic(String statName) {
@@ -321,7 +296,6 @@ public class RegionMBeanBridge<K, V> {
     return putAllRate.getRate();
   }
 
-
   public float getPutsRate() {
     return putRequestRate.getRate();
   }
@@ -339,7 +313,6 @@ public class RegionMBeanBridge<K, V> {
       return region.getStatistics().getHitCount();
     }
     return ManagementConstants.NOT_AVAILABLE_LONG;
-
   }
 
   public float getHitRatio() {
@@ -370,7 +343,6 @@ public class RegionMBeanBridge<K, V> {
     return ManagementConstants.NOT_AVAILABLE_LONG;
   }
 
-
   public float getLruDestroyRate() {
     return lruDestroyRate.getRate();
   }
@@ -394,7 +366,6 @@ public class RegionMBeanBridge<K, V> {
     return ManagementConstants.NOT_AVAILABLE_LONG;
   }
 
-
   public boolean isGatewayEnabled() {
     return isGatewayEnabled;
   }
@@ -406,7 +377,6 @@ public class RegionMBeanBridge<K, V> {
   public String getMember() {
     return member;
   }
-
 
   /**
    * Only applicable for PRs
@@ -519,7 +489,6 @@ public class RegionMBeanBridge<K, V> {
   public PartitionAttributesData listPartitionAttributes() {
     return null;
   }
-
 
   public long getDiskReadsAverageLatency() {
     if (this.diskRegionBridge != null) {

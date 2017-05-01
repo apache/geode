@@ -47,7 +47,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.logging.LogService;
@@ -82,9 +82,6 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  * 
  * Even though this class have a lot of utility functions it interacts with the state of the system
  * and contains some state itself.
- * 
- * 
- * 
  */
 public class ManagementAdapter {
 
@@ -94,7 +91,7 @@ public class ManagementAdapter {
   private SystemManagementService service;
 
   /** GemFire Cache impl **/
-  private GemFireCacheImpl cacheImpl;
+  private InternalCache internalCache;
 
   /** Member Name **/
   private String memberSource;
@@ -104,15 +101,11 @@ public class ManagementAdapter {
    **/
   private NotificationBroadcasterSupport memberLevelNotifEmitter;
 
-
   /** The <code>MBeanServer</code> for this application */
   public static final MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
-
   /** MemberMBean instance **/
   private MemberMBean memberBean;
-
-
 
   private volatile boolean serviceInitialised = false;
 
@@ -120,9 +113,7 @@ public class ManagementAdapter {
 
   public static final List<Class> refreshOnInit = new ArrayList<Class>();
 
-
   public static final List<String> internalLocks = new ArrayList<String>();
-
 
   static {
     refreshOnInit.add(RegionMXBean.class);
@@ -132,37 +123,33 @@ public class ManagementAdapter {
     internalLocks.add(DLockService.LTLS); // From reserved lock service name
     internalLocks.add(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
     internalLocks.add(PeerTypeRegistration.LOCK_SERVICE_NAME);
-
   }
 
   protected MemberMBeanBridge memberMBeanBridge;
 
   private final Object regionOpLock = new Object();
 
-
-
   /**
    * Adapter life cycle is tied with the Cache . So its better to make all cache level artifacts as
    * instance variable
-   * 
+   *
    * @param cache gemfire cache
    */
-  public void handleCacheCreation(GemFireCacheImpl cache) throws ManagementException {
+  public void handleCacheCreation(InternalCache cache) throws ManagementException {
     try {
-      this.cacheImpl = (GemFireCacheImpl) cache;
-      this.service = (SystemManagementService) ManagementService.getManagementService(cacheImpl);
+      this.internalCache = cache;
+      this.service =
+          (SystemManagementService) ManagementService.getManagementService(internalCache);
 
-      this.memberMBeanBridge = new MemberMBeanBridge(cacheImpl, service).init();
+      this.memberMBeanBridge = new MemberMBeanBridge(internalCache, service).init();
       this.memberBean = new MemberMBean(memberMBeanBridge);
       this.memberLevelNotifEmitter = memberBean;
 
       ObjectName memberMBeanName = MBeanJMXAdapter.getMemberMBeanName(
           InternalDistributedSystem.getConnectedInstance().getDistributedMember());
 
-
       memberSource = MBeanJMXAdapter
-          .getMemberNameOrId(cacheImpl.getDistributedSystem().getDistributedMember());
-
+          .getMemberNameOrId(internalCache.getDistributedSystem().getDistributedMember());
 
       // Type casting to MemberMXBean to expose only those methods described in
       // the interface;
@@ -170,20 +157,16 @@ public class ManagementAdapter {
           service.registerInternalMBean((MemberMXBean) memberBean, memberMBeanName);
       service.federate(changedMBeanName, MemberMXBean.class, true);
 
-
-
       this.serviceInitialised = true;
 
       // Service initialised is only for ManagementService and not necessarily
       // Manager service.
 
-
-      /** For situations where locator is created before any cache is created **/
+      // For situations where locator is created before any cache is created
       if (InternalLocator.hasLocator()) {
         Locator loc = InternalLocator.getLocator();
         handleLocatorStart(loc);
       }
-
 
       if (cache.getInternalDistributedSystem().getConfig().getJmxManager()) {
         this.service.createManager();
@@ -206,7 +189,6 @@ public class ManagementAdapter {
 
       }
     }
-
   }
 
   /**
@@ -224,7 +206,7 @@ public class ManagementAdapter {
     // register the aggregator for Federation framework to use
     service.addProxyListener(aggregator);
 
-    /**
+    /*
      * get the local member mbean as it need to be provided to aggregator first
      */
 
@@ -269,10 +251,7 @@ public class ManagementAdapter {
         }
         throw new ManagementException(e);
       }
-
     }
-
-
   }
 
   /**
@@ -336,7 +315,6 @@ public class ManagementAdapter {
         logger.warn("Failed to invoke aggregator for {} with exception {}", objectName,
             e.getMessage(), e);
       }
-
     }
     service.removeProxyListener(this.aggregator);
     this.aggregator = null;
@@ -344,7 +322,6 @@ public class ManagementAdapter {
 
   /**
    * Assumption is always cache and MemberMbean has been will be created first
-   * 
    */
   public void handleManagerCreation() throws ManagementException {
     if (!isServiceInitialised("handleManagerCreation")) {
@@ -358,7 +335,6 @@ public class ManagementAdapter {
     ManagerMXBean bean = new ManagerMBean(bridge);
 
     service.registerInternalMBean(bean, managerMBeanName);
-
   }
 
   /**
@@ -380,12 +356,12 @@ public class ManagementAdapter {
       if (localRegion.isDestroyed()) {
         return;
       }
-      /** Bridge is responsible for extracting data from GemFire Layer **/
+      // Bridge is responsible for extracting data from GemFire Layer
       RegionMBeanBridge<K, V> bridge = RegionMBeanBridge.getInstance(region);
 
       RegionMXBean regionMBean = new RegionMBean<K, V>(bridge);
       ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(
-          cacheImpl.getDistributedSystem().getDistributedMember(), region.getFullPath());
+          internalCache.getDistributedSystem().getDistributedMember(), region.getFullPath());
       ObjectName changedMBeanName = service.registerInternalMBean(regionMBean, regionMBeanName);
       service.federate(changedMBeanName, RegionMXBean.class, true);
 
@@ -394,11 +370,7 @@ public class ManagementAdapter {
           ManagementConstants.REGION_CREATED_PREFIX + region.getFullPath());
       memberLevelNotifEmitter.sendNotification(notification);
       memberMBeanBridge.addRegion(region);
-
-
     }
-
-
   }
 
   /**
@@ -413,7 +385,7 @@ public class ManagementAdapter {
     DiskStoreMBeanBridge bridge = new DiskStoreMBeanBridge(disk);
     DiskStoreMXBean diskStoreMBean = new DiskStoreMBean(bridge);
     ObjectName diskStoreMBeanName = MBeanJMXAdapter.getDiskStoreMBeanName(
-        cacheImpl.getDistributedSystem().getDistributedMember(), disk.getName());
+        internalCache.getDistributedSystem().getDistributedMember(), disk.getName());
     ObjectName changedMBeanName = service.registerInternalMBean(diskStoreMBean, diskStoreMBeanName);
 
     service.federate(changedMBeanName, DiskStoreMXBean.class, true);
@@ -425,7 +397,6 @@ public class ManagementAdapter {
     memberMBeanBridge.addDiskStore(disk);
   }
 
-
   /**
    * Handles LockService Creation
    * 
@@ -435,7 +406,7 @@ public class ManagementAdapter {
     if (!isServiceInitialised("handleLockServiceCreation")) {
       return;
     }
-    /** Internal Locks Should not be exposed to client for monitoring **/
+    // Internal Locks Should not be exposed to client for monitoring
     if (internalLocks.contains(lockService.getName())) {
       return;
     }
@@ -443,7 +414,7 @@ public class ManagementAdapter {
     LockServiceMXBean lockServiceMBean = new LockServiceMBean(bridge);
 
     ObjectName lockServiceMBeanName = MBeanJMXAdapter.getLockServiceMBeanName(
-        cacheImpl.getDistributedSystem().getDistributedMember(), lockService.getName());
+        internalCache.getDistributedSystem().getDistributedMember(), lockService.getName());
 
     ObjectName changedMBeanName =
         service.registerInternalMBean(lockServiceMBean, lockServiceMBeanName);
@@ -472,7 +443,7 @@ public class ManagementAdapter {
 
     GatewaySenderMXBean senderMBean = new GatewaySenderMBean(bridge);
     ObjectName senderObjectName = MBeanJMXAdapter.getGatewaySenderMBeanName(
-        cacheImpl.getDistributedSystem().getDistributedMember(), sender.getId());
+        internalCache.getDistributedSystem().getDistributedMember(), sender.getId());
 
     ObjectName changedMBeanName = service.registerInternalMBean(senderMBean, senderObjectName);
 
@@ -482,7 +453,6 @@ public class ManagementAdapter {
         memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_SENDER_CREATED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
 
   /**
@@ -500,7 +470,6 @@ public class ManagementAdapter {
     }
 
     createGatewayReceiverMBean(recv);
-
   }
 
   private void createGatewayReceiverMBean(GatewayReceiver recv) {
@@ -508,7 +477,7 @@ public class ManagementAdapter {
 
     GatewayReceiverMXBean receiverMBean = new GatewayReceiverMBean(bridge);
     ObjectName recvObjectName = MBeanJMXAdapter
-        .getGatewayReceiverMBeanName(cacheImpl.getDistributedSystem().getDistributedMember());
+        .getGatewayReceiverMBeanName(internalCache.getDistributedSystem().getDistributedMember());
 
     ObjectName changedMBeanName = service.registerInternalMBean(receiverMBean, recvObjectName);
 
@@ -518,9 +487,7 @@ public class ManagementAdapter {
         memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_RECEIVER_CREATED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
-
 
   /**
    * Handles Gateway receiver creation
@@ -546,9 +513,7 @@ public class ManagementAdapter {
         memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_RECEIVER_STARTED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
-
 
   /**
    * Handles Gateway receiver creation
@@ -569,7 +534,6 @@ public class ManagementAdapter {
         memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_RECEIVER_STOPPED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
 
   public void handleAsyncEventQueueCreation(AsyncEventQueue queue) throws ManagementException {
@@ -579,7 +543,7 @@ public class ManagementAdapter {
     AsyncEventQueueMBeanBridge bridge = new AsyncEventQueueMBeanBridge(queue);
     AsyncEventQueueMXBean queueMBean = new AsyncEventQueueMBean(bridge);
     ObjectName senderObjectName = MBeanJMXAdapter.getAsycnEventQueueMBeanName(
-        cacheImpl.getDistributedSystem().getDistributedMember(), queue.getId());
+        internalCache.getDistributedSystem().getDistributedMember(), queue.getId());
 
     ObjectName changedMBeanName = service.registerInternalMBean(queueMBean, senderObjectName);
 
@@ -602,7 +566,7 @@ public class ManagementAdapter {
     }
 
     ObjectName asycnEventQueueMBeanName = MBeanJMXAdapter.getAsycnEventQueueMBeanName(
-        cacheImpl.getDistributedSystem().getDistributedMember(), queue.getId());
+        internalCache.getDistributedSystem().getDistributedMember(), queue.getId());
     AsyncEventQueueMBean bean = null;
     try {
       bean = (AsyncEventQueueMBean) service.getLocalAsyncEventQueueMXBean(queue.getId());
@@ -649,7 +613,6 @@ public class ManagementAdapter {
       notification.setUserData(userData);
       service.handleNotification(notification);
     }
-
   }
 
   private Map<String, String> prepareUserData(AlertDetails details) {
@@ -657,13 +620,11 @@ public class ManagementAdapter {
     userData.put(JMXNotificationUserData.ALERT_LEVEL,
         AlertDetails.getAlertLevelAsString(details.getAlertLevel()));
 
-
     String source = details.getSource();
     userData.put(JMXNotificationUserData.THREAD, source);
 
     InternalDistributedMember sender = details.getSender();
-    String nameOrId = memberSource; // TODO Rishi/Abhishek - what if sender is
-    // null?
+    String nameOrId = memberSource; // TODO: what if sender is null?
     if (sender != null) {
       nameOrId = sender.getName();
       nameOrId = nameOrId != null && !nameOrId.trim().isEmpty() ? nameOrId : sender.getId();
@@ -684,13 +645,13 @@ public class ManagementAdapter {
       return;
     }
 
-    CacheServerBridge cacheServerBridge = new CacheServerBridge(cacheServer, cacheImpl);
+    CacheServerBridge cacheServerBridge = new CacheServerBridge(cacheServer, internalCache);
     cacheServerBridge.setMemberMBeanBridge(memberMBeanBridge);
 
     CacheServerMBean cacheServerMBean = new CacheServerMBean(cacheServerBridge);
 
     ObjectName cacheServerMBeanName = MBeanJMXAdapter.getClientServiceMBeanName(
-        cacheServer.getPort(), cacheImpl.getDistributedSystem().getDistributedMember());
+        cacheServer.getPort(), internalCache.getDistributedSystem().getDistributedMember());
 
     ObjectName changedMBeanName =
         service.registerInternalMBean((CacheServerMXBean) cacheServerMBean, cacheServerMBeanName);
@@ -710,7 +671,6 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
 
     memberMBeanBridge.setCacheServer(true);
-
   }
 
   /**
@@ -731,11 +691,10 @@ public class ManagementAdapter {
       ClientMembership.unregisterClientMembershipListener(listener);
     }
 
-
     mbean.stopMonitor();
 
     ObjectName cacheServerMBeanName = MBeanJMXAdapter.getClientServiceMBeanName(server.getPort(),
-        cacheImpl.getDistributedSystem().getDistributedMember());
+        internalCache.getDistributedSystem().getDistributedMember());
     service.unregisterMBean(cacheServerMBeanName);
 
     Notification notification = new Notification(JMXNotificationType.CACHE_SERVER_STOPPED,
@@ -745,7 +704,6 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
 
     memberMBeanBridge.setCacheServer(false);
-
   }
 
   /**
@@ -757,6 +715,7 @@ public class ManagementAdapter {
     if (!isServiceInitialised("handleCacheRemoval")) {
       return;
     }
+
     this.serviceInitialised = false;
     try {
       cleanUpMonitors();
@@ -765,32 +724,28 @@ public class ManagementAdapter {
       if (logger.isDebugEnabled()) {
         logger.debug(e.getMessage(), e);
       }
-
     }
+
     try {
       service.close();
-
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
     } finally {
-      this.cacheImpl = null;
+      this.internalCache = null;
       this.service = null;
       this.memberMBeanBridge = null;
       this.memberBean = null;
       this.memberLevelNotifEmitter = null;
-
-
     }
   }
 
   private void cleanUpMonitors() {
-
     MemberMBean bean = (MemberMBean) service.getMemberMXBean();
     if (bean != null) {
       bean.stopMonitor();
     }
 
-    Set<GatewaySender> senders = cacheImpl.getGatewaySenders();
+    Set<GatewaySender> senders = internalCache.getGatewaySenders();
 
     if (senders != null && senders.size() > 0) {
       for (GatewaySender sender : senders) {
@@ -808,9 +763,8 @@ public class ManagementAdapter {
     }
   }
 
-
   private void cleanBridgeResources() {
-    List<CacheServer> servers = cacheImpl.getCacheServers();
+    List<CacheServer> servers = internalCache.getCacheServers();
 
     if (servers != null && servers.size() > 0) {
       for (CacheServer server : servers) {
@@ -824,7 +778,6 @@ public class ManagementAdapter {
             ClientMembership.unregisterClientMembershipListener(listener);
           }
         }
-
       }
     }
   }
@@ -838,15 +791,14 @@ public class ManagementAdapter {
     if (!isServiceInitialised("handleRegionRemoval")) {
       return;
     }
-    /**
+    /*
      * Moved region remove operation to a guarded block. If a region is getting created it wont
      * allow it to destroy any region.
      */
 
     synchronized (regionOpLock) {
-
       ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(
-          cacheImpl.getDistributedSystem().getDistributedMember(), region.getFullPath());
+          internalCache.getDistributedSystem().getDistributedMember(), region.getFullPath());
       RegionMBean bean = null;
       try {
         bean = (RegionMBean) service.getLocalRegionMBean(region.getFullPath());
@@ -871,7 +823,6 @@ public class ManagementAdapter {
       memberLevelNotifEmitter.sendNotification(notification);
       memberMBeanBridge.removeRegion(region);
     }
-
   }
 
   /**
@@ -880,13 +831,12 @@ public class ManagementAdapter {
    * @param disk
    */
   public void handleDiskRemoval(DiskStore disk) throws ManagementException {
-
     if (!isServiceInitialised("handleDiskRemoval")) {
       return;
     }
 
     ObjectName diskStoreMBeanName = MBeanJMXAdapter.getDiskStoreMBeanName(
-        cacheImpl.getDistributedSystem().getDistributedMember(), disk.getName());
+        internalCache.getDistributedSystem().getDistributedMember(), disk.getName());
 
     DiskStoreMBean bean = null;
     try {
@@ -913,20 +863,18 @@ public class ManagementAdapter {
     memberMBeanBridge.removeDiskStore(disk);
   }
 
-
   /**
    * Handles Lock Service Removal
    * 
    * @param lockService lock service instance
    */
   public void handleLockServiceRemoval(DLockService lockService) throws ManagementException {
-
     if (!isServiceInitialised("handleLockServiceRemoval")) {
       return;
     }
 
     ObjectName lockServiceMBeanName = MBeanJMXAdapter.getLockServiceMBeanName(
-        cacheImpl.getDistributedSystem().getDistributedMember(), lockService.getName());
+        internalCache.getDistributedSystem().getDistributedMember(), lockService.getName());
 
     LockServiceMXBean bean = service.getLocalLockServiceMBean(lockService.getName());
 
@@ -954,7 +902,7 @@ public class ManagementAdapter {
     }
 
     ObjectName locatorMBeanName = MBeanJMXAdapter
-        .getLocatorMBeanName(cacheImpl.getDistributedSystem().getDistributedMember());
+        .getLocatorMBeanName(internalCache.getDistributedSystem().getDistributedMember());
 
     LocatorMBeanBridge bridge = new LocatorMBeanBridge(locator);
     LocatorMBean locatorMBean = new LocatorMBean(bridge);
@@ -989,7 +937,6 @@ public class ManagementAdapter {
         ManagementConstants.GATEWAY_SENDER_STARTED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
 
   public void handleGatewaySenderStop(GatewaySender sender) throws ManagementException {
@@ -1002,7 +949,6 @@ public class ManagementAdapter {
         ManagementConstants.GATEWAY_SENDER_STOPPED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
 
   public void handleGatewaySenderPaused(GatewaySender sender) throws ManagementException {
@@ -1015,7 +961,6 @@ public class ManagementAdapter {
         ManagementConstants.GATEWAY_SENDER_PAUSED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
 
   public void handleGatewaySenderResumed(GatewaySender sender) throws ManagementException {
@@ -1028,7 +973,6 @@ public class ManagementAdapter {
         ManagementConstants.GATEWAY_SENDER_RESUMED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
-
   }
 
   public void handleCacheServiceCreation(CacheService cacheService) throws ManagementException {
@@ -1037,7 +981,7 @@ public class ManagementAdapter {
     }
     // Don't register the CacheServices in the Locator
     InternalDistributedMember member =
-        cacheImpl.getInternalDistributedSystem().getDistributedMember();
+        internalCache.getInternalDistributedSystem().getDistributedMember();
     if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
       return;
     }
@@ -1061,7 +1005,6 @@ public class ManagementAdapter {
    * Private class which acts as a ClientMembershipListener to propagate client joined/left
    * notifications
    */
-
   private static class CacheServerMembershipListenerAdapter
       extends ClientMembershipListenerAdapter {
 
@@ -1088,7 +1031,6 @@ public class ManagementAdapter {
           ManagementConstants.CLIENT_JOINED_PREFIX + event.getMemberId());
       serverLevelNotifEmitter.sendNotification(notification);
       memberLevelNotifEmitter.sendNotification(notification);
-
     }
 
     /**

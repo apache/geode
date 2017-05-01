@@ -67,6 +67,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.dunit.Host;
@@ -152,8 +153,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props = configureSSL(props, sslProperties, clusterLevel);
 
     DistributedSystem ds = getSystem(props);
-    Cache cache = CacheFactory.create(ds);
-    ((GemFireCacheImpl) cache).setReadSerialized(true);
+    InternalCache cache = (InternalCache) CacheFactory.create(ds);
+    cache.setReadSerialized(true);
 
     AttributesFactory factory = new AttributesFactory();
     factory.setEnableBridgeConflation(true);
@@ -276,7 +277,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   }
 
   private void closeCache() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -293,9 +294,9 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   }
 
   /**
-   * @Deprecated once the legacy SSL properties have been removed we need to remove this logic.
+   * @deprecated once the legacy SSL properties have been removed we need to remove this logic.
    */
-  @Deprecated()
+  @Deprecated
   private Properties configureSSL(Properties props, Properties sslProperties,
       boolean clusterLevel) {
 
@@ -368,7 +369,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
         if ((ex.getCause() instanceof BindException)
             || (ex.getCause() != null && ex.getCause().getCause() instanceof BindException)) {
           // close cache and disconnect
-          GemFireCacheImpl existingInstance = GemFireCacheImpl.getInstance();
+          InternalCache existingInstance = GemFireCacheImpl.getInstance();
           if (existingInstance != null) {
             existingInstance.close();
           }

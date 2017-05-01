@@ -46,9 +46,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
   }
 
   @Override
-  void instantiateEvaluator(IndexCreationHelper ich) {
-    this.evaluator = new IMQEvaluator(ich);
-    this.ich = ich;
+  void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
+    this.evaluator = new IMQEvaluator(indexCreationHelper);
+    this.ich = indexCreationHelper;
   }
 
   @Override

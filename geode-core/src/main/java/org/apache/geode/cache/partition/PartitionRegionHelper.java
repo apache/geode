@@ -16,7 +16,6 @@ package org.apache.geode.cache.partition;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,7 +34,7 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
@@ -50,7 +49,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * Utility methods for handling partitioned Regions, for example during execution of {@link Function
  * Functions} on a Partitioned Region.
- * 
  * <p>
  * Example of a Function using utility methods:
  * 
@@ -68,12 +66,14 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *  // ...
  * </pre>
  *
- * 
  * @since GemFire 6.0
  * @see FunctionService#onRegion(Region)
  */
 public final class PartitionRegionHelper {
-  private PartitionRegionHelper() {}
+
+  private PartitionRegionHelper() {
+    // do nothing
+  }
 
   /**
    * Given a partitioned Region, return a map of
@@ -157,8 +157,8 @@ public final class PartitionRegionHelper {
    * @since GemFire 6.0
    */
   public static Set<PartitionRegionInfo> getPartitionRegionInfo(final Cache cache) {
-    Set<PartitionRegionInfo> prDetailsSet = new TreeSet<PartitionRegionInfo>();
-    fillInPartitionedRegionInfo((GemFireCacheImpl) cache, prDetailsSet, false);
+    Set<PartitionRegionInfo> prDetailsSet = new TreeSet<>();
+    fillInPartitionedRegionInfo((InternalCache) cache, prDetailsSet, false);
     return prDetailsSet;
   }
 
@@ -172,26 +172,25 @@ public final class PartitionRegionHelper {
    */
   public static PartitionRegionInfo getPartitionRegionInfo(final Region<?, ?> region) {
     try {
-      PartitionedRegion pr = isPartitionedCheck(region);
-      GemFireCacheImpl cache = (GemFireCacheImpl) region.getCache();
-      return pr.getRedundancyProvider().buildPartitionedRegionInfo(false,
-          cache.getInternalResourceManager().getLoadProbe()); // may return null
-    } catch (ClassCastException e) {
+      PartitionedRegion partitionedRegion = isPartitionedCheck(region);
+      InternalCache cache = (InternalCache) region.getCache();
+      return partitionedRegion.getRedundancyProvider().buildPartitionedRegionInfo(false,
+          cache.getInternalResourceManager().getLoadProbe());
+    } catch (ClassCastException ignore) {
       // not a PR so return null
     }
     return null;
   }
 
-  private static void fillInPartitionedRegionInfo(GemFireCacheImpl cache, final Set prDetailsSet,
+  private static void fillInPartitionedRegionInfo(final InternalCache cache, final Set prDetailsSet,
       final boolean internal) {
     // TODO: optimize by fetching all PR details from each member at once
-    Set<PartitionedRegion> prSet = cache.getPartitionedRegions();
-    if (prSet.isEmpty()) {
+    Set<PartitionedRegion> partitionedRegions = cache.getPartitionedRegions();
+    if (partitionedRegions.isEmpty()) {
       return;
     }
-    for (Iterator<PartitionedRegion> iter = prSet.iterator(); iter.hasNext();) {
-      PartitionedRegion pr = iter.next();
-      PartitionRegionInfo prDetails = pr.getRedundancyProvider()
+    for (PartitionedRegion partitionedRegion : partitionedRegions) {
+      PartitionRegionInfo prDetails = partitionedRegion.getRedundancyProvider()
           .buildPartitionedRegionInfo(internal, cache.getInternalResourceManager().getLoadProbe());
       if (prDetails != null) {
         prDetailsSet.add(prDetails);

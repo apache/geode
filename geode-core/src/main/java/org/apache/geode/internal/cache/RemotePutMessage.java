@@ -52,19 +52,13 @@ import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.internal.util.Breadcrumbs;
 
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_OBJECT;
 
 /**
  * A Replicate Region update message. Meant to be sent only to the peer who hosts transactional
@@ -477,11 +471,6 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
   @Override
   public final void setOperation(Operation operation) {
     this.op = operation;
-  }
-
-  @Override
-  public void setCacheOpRecipients(Collection cacheOpRecipients) {
-    this.cacheOpRecipients = cacheOpRecipients;
   }
 
   /**

@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -39,7 +39,7 @@ public class CommitCommandTest {
    */
   @Test
   public void testWriteNullResponse() throws Exception {
-    Cache cache = mock(Cache.class);
+    InternalCache cache = mock(InternalCache.class);
     Message origMsg = mock(Message.class);
     ServerConnection servConn = mock(ServerConnection.class);
     when(servConn.getResponseMessage()).thenReturn(mock(Message.class));

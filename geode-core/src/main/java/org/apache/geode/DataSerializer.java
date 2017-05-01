@@ -59,6 +59,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -1837,7 +1838,7 @@ public abstract class DataSerializer {
         typeString = readString(in);
       }
 
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       boolean lookForPdxInstance = false;
       ClassNotFoundException cnfEx = null;
       if (typeCode == DSCODE.CLASS && cache != null

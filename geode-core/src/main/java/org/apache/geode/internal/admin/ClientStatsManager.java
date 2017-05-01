@@ -15,7 +15,6 @@
 package org.apache.geode.internal.admin;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -25,7 +24,6 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
-import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -33,30 +31,30 @@ import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.management.internal.cli.CliUtil;
 
 /**
  * This class publishes the client statistics using the admin region.
- * 
  */
 public class ClientStatsManager {
 
   /**
    * Last cache that was initialized
    * 
-   * @guarded.By ClientStatsManager.class
+   * GuardedBy ClientStatsManager.class
    */
-  static GemFireCacheImpl lastInitializedCache = null;
+  private static InternalCache lastInitializedCache = null;
 
   /**
-   * @guarded.By ClientStatsManager.class
+   * GuardedBy ClientStatsManager.class
    */
   private static Statistics cachePerfStats = null;
 
   /**
-   * @guarded.By ClientStatsManager.class
+   * GuardedBy ClientStatsManager.class
    */
   private static Statistics vmStats = null;
 
@@ -66,7 +64,7 @@ public class ClientStatsManager {
    * @param pool Connection pool which may be used for admin region.
    */
   public static synchronized void publishClientStats(PoolImpl pool) {
-    GemFireCacheImpl currentCache = GemFireCacheImpl.getInstance();
+    InternalCache currentCache = GemFireCacheImpl.getInstance();
     if (!initializeStatistics(currentCache)) {
       return; // handles null case too
     }
@@ -106,9 +104,9 @@ public class ClientStatsManager {
       logger.info(LocalizedStrings.ClientStatsManager_FAILED_TO_PUBLISH_CLIENT_STATISTICS, e);
     }
 
-    if (logger.fineEnabled())
+    if (logger.fineEnabled()) {
       logger.fine("Exiting ClientStatsManager#publishClientStats.");
-
+    }
   }
 
   public static void cleanupForTests() {
@@ -117,12 +115,12 @@ public class ClientStatsManager {
 
   /**
    * This method initializes the client statistics to be queried.
-   * 
+   *
+   * GuardedBy ClientStatsManager.class
+   *
    * @return true if statistics correctly initialized
-   * @guarded.By ClientStatsManager.class
    */
-  private static boolean initializeStatistics(GemFireCacheImpl currentCache) {
-
+  private static boolean initializeStatistics(InternalCache currentCache) {
     if (currentCache == null) {
       return false;
     }
@@ -176,7 +174,6 @@ public class ClientStatsManager {
           "VMStats");
     }
 
-
     return true;
   }
 
@@ -186,86 +183,81 @@ public class ClientStatsManager {
    * 
    * @return the client health stats object to be published to the server.
    */
-  private static ClientHealthStats getClientHealthStats(GemFireCacheImpl currentCache,
-      PoolImpl pool) {
+  private static ClientHealthStats getClientHealthStats(InternalCache currentCache, PoolImpl pool) {
     if (currentCache == null) {
       return null;
     }
     ClientHealthStats stats = new ClientHealthStats();
     LogWriterI18n logger = currentCache.getLoggerI18n();
-    {
-      int gets = -1;
-      int puts = -1;
-      int misses = -1;
-      long processCpuTime = -1;
-      int threads = -1;
-      int cacheListenerCalls = -1;
-      int cpus = -1;
-      String poolName = "";
 
-      if (cachePerfStats != null) {
-        gets = cachePerfStats.getInt("gets");
-        puts = cachePerfStats.getInt("puts");
-        misses = cachePerfStats.getInt("misses");
-        cacheListenerCalls = cachePerfStats.getInt("cacheListenerCallsCompleted");
-      }
+    int gets = -1;
+    int puts = -1;
+    int misses = -1;
+    int cacheListenerCalls = -1;
 
-      if (vmStats != null) {
-        processCpuTime = vmStats.getLong("processCpuTime");
-        threads = vmStats.getInt("threads");
-        cpus = vmStats.getInt("cpus");
-      }
+    if (cachePerfStats != null) {
+      gets = cachePerfStats.getInt("gets");
+      puts = cachePerfStats.getInt("puts");
+      misses = cachePerfStats.getInt("misses");
+      cacheListenerCalls = cachePerfStats.getInt("cacheListenerCallsCompleted");
+    }
 
-      stats.setNumOfGets(gets);
-      stats.setNumOfPuts(puts);
-      stats.setNumOfMisses(misses);
-      stats.setNumOfCacheListenerCalls(cacheListenerCalls);
-      stats.setProcessCpuTime(processCpuTime);
-      stats.setNumOfThreads(threads);
-      stats.setCpus(cpus);
+    long processCpuTime = -1;
+    int threads = -1;
+    int cpus = -1;
+    if (vmStats != null) {
+      processCpuTime = vmStats.getLong("processCpuTime");
+      threads = vmStats.getInt("threads");
+      cpus = vmStats.getInt("cpus");
+    }
 
-      poolName = pool.getName();
-      try {
-        Map<String, String> newPoolStats = stats.getPoolStats();
-        String poolStatsStr = "MinConnections=" + pool.getMinConnections() + ";MaxConnections="
-            + pool.getMaxConnections() + ";Redudancy=" + pool.getSubscriptionRedundancy() + ";CQS="
-            + pool.getQueryService().getCqs().length;
-        logger.info(LocalizedStrings.DEBUG,
-            "ClientHealthStats for poolname " + poolName + " poolStatsStr=" + poolStatsStr);
+    stats.setNumOfGets(gets);
+    stats.setNumOfPuts(puts);
+    stats.setNumOfMisses(misses);
+    stats.setNumOfCacheListenerCalls(cacheListenerCalls);
+    stats.setProcessCpuTime(processCpuTime);
+    stats.setNumOfThreads(threads);
+    stats.setCpus(cpus);
 
-        newPoolStats.put(poolName, poolStatsStr);
+    String poolName = pool.getName();
+    try {
+      Map<String, String> newPoolStats = stats.getPoolStats();
+      String poolStatsStr = "MinConnections=" + pool.getMinConnections() + ";MaxConnections="
+          + pool.getMaxConnections() + ";Redundancy=" + pool.getSubscriptionRedundancy() + ";CQS="
+          + pool.getQueryService().getCqs().length;
+      logger.info(LocalizedStrings.DEBUG,
+          "ClientHealthStats for poolName " + poolName + " poolStatsStr=" + poolStatsStr);
 
-        // consider old stats
-        Region clientHealthMonitoringRegion =
-            ClientHealthMonitoringRegion.getInstance(currentCache);
+      newPoolStats.put(poolName, poolStatsStr);
 
-        if (clientHealthMonitoringRegion != null) {
-          InternalDistributedSystem ds =
-              (InternalDistributedSystem) currentCache.getDistributedSystem();
-          ClientHealthStats oldStats =
-              (ClientHealthStats) clientHealthMonitoringRegion.get(ds.getMemberId());
-          logger.info(LocalizedStrings.DEBUG, "getClientHealthStats got oldStats  " + oldStats);
-          if (oldStats != null) {
-            Map<String, String> oldPoolStats = oldStats.getPoolStats();
-            logger.info(LocalizedStrings.DEBUG,
-                "getClientHealthStats got oldPoolStats  " + oldPoolStats);
-            if (oldPoolStats != null) {
-              Iterator<Entry<String, String>> it = oldPoolStats.entrySet().iterator();
-              while (it.hasNext()) {
-                Entry<String, String> entry = it.next();
-                if (!poolName.equals(entry.getKey())) {
-                  stats.getPoolStats().put(entry.getKey(), entry.getValue());
-                }
+      // consider old stats
+      Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(currentCache);
+
+      if (clientHealthMonitoringRegion != null) {
+        InternalDistributedSystem ds =
+            (InternalDistributedSystem) currentCache.getDistributedSystem();
+        ClientHealthStats oldStats =
+            (ClientHealthStats) clientHealthMonitoringRegion.get(ds.getMemberId());
+        logger.info(LocalizedStrings.DEBUG, "getClientHealthStats got oldStats  " + oldStats);
+        if (oldStats != null) {
+          Map<String, String> oldPoolStats = oldStats.getPoolStats();
+          logger.info(LocalizedStrings.DEBUG,
+              "getClientHealthStats got oldPoolStats  " + oldPoolStats);
+          if (oldPoolStats != null) {
+            for (Entry<String, String> entry : oldPoolStats.entrySet()) {
+              if (!poolName.equals(entry.getKey())) {
+                stats.getPoolStats().put(entry.getKey(), entry.getValue());
               }
             }
           }
         }
-
-      } catch (Exception e) {
-        logger.fine("Exception in getting pool stats in  getClientHealthStats "
-            + CliUtil.stackTraceAsString(e));
       }
+
+    } catch (Exception e) {
+      logger.fine("Exception in getting pool stats in  getClientHealthStats "
+          + CliUtil.stackTraceAsString(e));
     }
+
     stats.setUpdateTime(new Date());
     return stats;
   }

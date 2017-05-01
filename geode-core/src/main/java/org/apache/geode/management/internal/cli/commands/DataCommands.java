@@ -14,8 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.apache.shiro.subject.Subject;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -30,7 +50,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -59,41 +79,26 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
- * 
  * @since GemFire 7.0
  */
 public class DataCommands implements CommandMarker {
 
   final int resultItemCount = 9;
+
   private final ExportDataFunction exportDataFunction = new ExportDataFunction();
+
   private final ImportDataFunction importDataFunction = new ImportDataFunction();
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
+  }
+
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
@@ -135,15 +140,13 @@ public class DataCommands implements CommandMarker {
     }
     LogWrapper.getInstance().info("Rebalance returning result >>>" + result);
     return result;
-
-
   }
 
   private class ExecuteRebalanceWithTimeout implements Callable<Result> {
     String[] includeRegions = null;
     String[] excludeRegions = null;
     boolean simulate;
-    Cache cache = CacheFactory.getAnyInstance();;
+    InternalCache cache = getCache();
 
     @Override
     public Result call() throws Exception {
@@ -163,8 +166,6 @@ public class DataCommands implements CommandMarker {
       Result result = null;
       try {
         RebalanceOperation op = null;
-        new HashSet<String>();
-        new HashSet<String>();
 
         if (includeRegions != null && includeRegions.length > 0) {
           CompositeResultData rebalanceResulteData = ResultBuilder.createCompositeResultData();
@@ -253,7 +254,6 @@ public class DataCommands implements CommandMarker {
 
                 result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResulteData,
                     (ArrayList) rstList, index, simulate, cache));
-
               }
 
             } else {
@@ -279,12 +279,11 @@ public class DataCommands implements CommandMarker {
                 // Wait until the rebalance is complete and then get the results
                 result = ResultBuilder.buildResult(buildResultForRebalance(rebalanceResulteData,
                     op.getResults(), index, simulate, cache));
-
               }
             }
             index++;
           }
-          LogWrapper.getInstance().info("Rebalance returning result" + result);
+          LogWrapper.getInstance().info("Rebalance returning result " + result);
           return result;
         } else {
           result = executeRebalanceOnDS(cache, String.valueOf(simulate), excludeRegions);
@@ -307,7 +306,6 @@ public class DataCommands implements CommandMarker {
 
     }
     return rstList;
-
   }
 
   boolean checkResultList(CompositeResultData rebalanceResulteData, List resultList,
@@ -349,10 +347,9 @@ public class DataCommands implements CommandMarker {
     }
 
     return toContinueForOtherMembers;
-
   }
 
-  Result executeRebalanceOnDS(Cache cache, String simulate, String[] excludeRegionsList) {
+  Result executeRebalanceOnDS(InternalCache cache, String simulate, String[] excludeRegionsList) {
     Result result = null;
     int index = 1;
     CompositeResultData rebalanceResulteData = ResultBuilder.createCompositeResultData();
@@ -368,7 +365,6 @@ public class DataCommands implements CommandMarker {
       return ResultBuilder
           .createInfoResult(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
     }
-
 
     Iterator<MemberPRInfo> iterator = listMemberRegion.iterator();
     boolean flagToContinueWithRebalance = false;
@@ -471,7 +467,7 @@ public class DataCommands implements CommandMarker {
     return result;
   }
 
-  public boolean checkMemberPresence(DistributedMember dsMember, Cache cache) {
+  public boolean checkMemberPresence(DistributedMember dsMember, InternalCache cache) {
     // check if member's presence just before executing function
     // this is to avoid running a function on departed members #47248
     Set<DistributedMember> dsMemberList = CliUtil.getAllNormalMembers(cache);
@@ -488,7 +484,7 @@ public class DataCommands implements CommandMarker {
   }
 
   protected CompositeResultData toCompositeResultData(CompositeResultData rebalanceResulteData,
-      ArrayList<String> rstlist, int index, boolean simulate, Cache cache) {
+      ArrayList<String> rstlist, int index, boolean simulate, InternalCache cache) {
 
     // add only if there are any valid regions in results
     if (rstlist.size() > resultItemCount && rstlist.get(resultItemCount) != null
@@ -565,7 +561,7 @@ public class DataCommands implements CommandMarker {
   }
 
   CompositeResultData buildResultForRebalance(CompositeResultData rebalanceResulteData,
-      RebalanceResults results, int index, boolean simulate, Cache cache) {
+      RebalanceResults results, int index, boolean simulate, InternalCache cache) {
     Set<PartitionRebalanceInfo> regions = results.getPartitionRebalanceDetails();
     Iterator iterator = regions.iterator();
 
@@ -655,13 +651,11 @@ public class DataCommands implements CommandMarker {
       cache.getLogger().info(headerText + resultStr);
     }
     return rebalanceResulteData;
-
   }
 
-  public DistributedMember getAssociatedMembers(String region, final Cache cache) {
-
-    DistributedRegionMXBean bean = ManagementService
-        .getManagementService(GemFireCacheImpl.getInstance()).getDistributedRegionMXBean(region);
+  public DistributedMember getAssociatedMembers(String region, final InternalCache cache) {
+    DistributedRegionMXBean bean =
+        ManagementService.getManagementService(cache).getDistributedRegionMXBean(region);
 
     DistributedMember member = null;
 
@@ -688,10 +682,9 @@ public class DataCommands implements CommandMarker {
       }
     }
     return member;
-
   }
 
-  List<MemberPRInfo> getMemberRegionList(Cache cache, List<String> listExcludedRegion) {
+  List<MemberPRInfo> getMemberRegionList(InternalCache cache, List<String> listExcludedRegion) {
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<MemberPRInfo>();
     String[] listDSRegions =
         ManagementService.getManagementService(cache).getDistributedSystemMXBean().listRegions();
@@ -729,15 +722,12 @@ public class DataCommands implements CommandMarker {
 
       if (!regionName.startsWith("/")) {
         regionName = Region.SEPARATOR + regionName;
-
       }
-      // remove this prefix / once Rishi fixes this
+      // remove this prefix /
       DistributedRegionMXBean bean =
-          ManagementService.getManagementService(GemFireCacheImpl.getInstance())
-              .getDistributedRegionMXBean(regionName);
+          ManagementService.getManagementService(cache).getDistributedRegionMXBean(regionName);
 
       if (bean != null) {
-        // TODO: Ajay to call a method once Rishi provides
         if (bean.getRegionType().equals(DataPolicy.PARTITION.toString())
             || bean.getRegionType().equals(DataPolicy.PERSISTENT_PARTITION.toString())) {
 
@@ -755,21 +745,17 @@ public class DataCommands implements CommandMarker {
                   listMember.dsMemberList.add(dsmember);
                 } else {
                   listMemberPRInfo.add(memberAndItsPRRegions);
-
                 }
                 break;
               }
             }
           }
-
         }
       }
     }
 
     return listMemberPRInfo;
   }
-
-
 
   @CliCommand(value = CliStrings.EXPORT_DATA, help = CliStrings.EXPORT_DATA__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
@@ -786,7 +772,6 @@ public class DataCommands implements CommandMarker {
           help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
     this.securityService.authorizeRegionRead(regionName);
-    final Cache cache = CacheFactory.getAnyInstance();
     final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
     Result result = null;
 
@@ -850,7 +835,6 @@ public class DataCommands implements CommandMarker {
     Result result = null;
 
     try {
-      final Cache cache = CacheFactory.getAnyInstance();
       final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
 
       if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
@@ -909,7 +893,7 @@ public class DataCommands implements CommandMarker {
           unspecifiedDefaultValue = "false") boolean putIfAbsent) {
 
     this.securityService.authorizeRegionWrite(regionPath);
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     DataCommandResult dataResult = null;
     if (regionPath == null || regionPath.isEmpty()) {
       return makePresentationResult(DataCommandResult.createPutResult(key, null, null,
@@ -928,8 +912,7 @@ public class DataCommands implements CommandMarker {
     Region region = cache.getRegion(regionPath);
     DataCommandFunction putfn = new DataCommandFunction();
     if (region == null) {
-      Set<DistributedMember> memberList =
-          getRegionAssociatedMembers(regionPath, CacheFactory.getAnyInstance(), false);
+      Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
       if (memberList != null && memberList.size() > 0) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.PUT);
@@ -978,7 +961,7 @@ public class DataCommands implements CommandMarker {
           help = CliStrings.GET__LOAD__HELP) Boolean loadOnCacheMiss) {
     this.securityService.authorizeRegionRead(regionPath, key);
 
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     DataCommandResult dataResult = null;
 
     if (regionPath == null || regionPath.isEmpty()) {
@@ -994,8 +977,7 @@ public class DataCommands implements CommandMarker {
     Region region = cache.getRegion(regionPath);
     DataCommandFunction getfn = new DataCommandFunction();
     if (region == null) {
-      Set<DistributedMember> memberList =
-          getRegionAssociatedMembers(regionPath, CacheFactory.getAnyInstance(), false);
+      Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
       if (memberList != null && memberList.size() > 0) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.GET);
@@ -1054,8 +1036,7 @@ public class DataCommands implements CommandMarker {
           null, null, CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false));
 
     DataCommandFunction locateEntry = new DataCommandFunction();
-    Set<DistributedMember> memberList =
-        getRegionAssociatedMembers(regionPath, CacheFactory.getAnyInstance(), true);
+    Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), true);
     if (memberList != null && memberList.size() > 0) {
       DataCommandRequest request = new DataCommandRequest();
       request.setCommand(CliStrings.LOCATE_ENTRY);
@@ -1088,7 +1069,7 @@ public class DataCommands implements CommandMarker {
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean removeAllKeys,
       @CliOption(key = {CliStrings.REMOVE__KEYCLASS},
           help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     DataCommandResult dataResult = null;
 
     if (regionPath == null || regionPath.isEmpty()) {
@@ -1111,8 +1092,7 @@ public class DataCommands implements CommandMarker {
     Region region = cache.getRegion(regionPath);
     DataCommandFunction removefn = new DataCommandFunction();
     if (region == null) {
-      Set<DistributedMember> memberList =
-          getRegionAssociatedMembers(regionPath, CacheFactory.getAnyInstance(), false);
+      Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
       if (memberList != null && memberList.size() > 0) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.REMOVE);
@@ -1188,7 +1168,6 @@ public class DataCommands implements CommandMarker {
         return true;
       }
       return false;
-
     }
   }
 
@@ -1236,11 +1215,10 @@ public class DataCommands implements CommandMarker {
       }
       return result;
     }
-
   }
 
   public static Set<DistributedMember> getQueryRegionsAssociatedMembers(Set<String> regions,
-      final Cache cache, boolean returnAll) {
+      final InternalCache cache, boolean returnAll) {
     LogWriter logger = cache.getLogger();
     Set<DistributedMember> members = null;
     Set<DistributedMember> newMembers = null;
@@ -1286,8 +1264,8 @@ public class DataCommands implements CommandMarker {
   }
 
   @SuppressWarnings("rawtypes")
-  public static Set<DistributedMember> getRegionAssociatedMembers(String region, final Cache cache,
-      boolean returnAll) {
+  public static Set<DistributedMember> getRegionAssociatedMembers(String region,
+      final InternalCache cache, boolean returnAll) {
 
     DistributedMember member = null;
 
@@ -1336,7 +1314,7 @@ public class DataCommands implements CommandMarker {
     return matchedMembers;
   }
 
-  // TODO - Abhishek revisit after adding support in Gfsh.java?
+  // TODO:k revisit after adding support in Gfsh.java?
   public static Object[] replaceGfshEnvVar(String query, Map<String, String> gfshEnvVarMap) {
     boolean done = false;
     int startIndex = 0;

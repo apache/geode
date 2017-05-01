@@ -32,7 +32,6 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.InternalPartitionDetails;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
@@ -65,7 +64,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * This model is not threadsafe.
  * 
  * @since GemFire 6.0
- * 
  */
 @SuppressWarnings("synthetic-access")
 public class PartitionedRegionLoadModel {
@@ -146,7 +144,6 @@ public class PartitionedRegionLoadModel {
   private final Set<InternalDistributedMember> criticalMembers;
 
   private final PartitionedRegion partitionedRegion;
-
 
   /**
    * Create a new model
@@ -408,10 +405,7 @@ public class PartitionedRegionLoadModel {
         });
   }
 
-
-
   protected void remoteOverRedundancyBucket(BucketRollup bucket, Member targetMember) {
-
     Move bestMove = new Move(null, targetMember, bucket);
     Map<String, Long> colocatedRegionSizes = getColocatedRegionSizes(bucket);
 
@@ -1037,13 +1031,10 @@ public class PartitionedRegionLoadModel {
     Map<String, Member> getColocatedMembers() {
       return this.colocatedMembers;
     }
-
-
   }
 
   /**
    * Represents the sum of all of colocated buckets with a given bucket id.
-   *
    */
   protected class BucketRollup extends Bucket {
     private final Map<String, Bucket> colocatedBuckets = new HashMap<String, Bucket>();
@@ -1073,7 +1064,6 @@ public class PartitionedRegionLoadModel {
             primaryLoad = b.getPrimaryLoad();
           }
           rollup.updateLoad(b.getLoad(), primaryLoad, b.getBytes());
-
         }
         return true;
       }
@@ -1466,8 +1456,6 @@ public class PartitionedRegionLoadModel {
   /**
    * Represents a move from one node to another. Used to keep track of moves that we have already
    * attempted that have failed.
-   * 
-   *
    */
   protected static class Move {
     private final Member source;
@@ -1481,14 +1469,12 @@ public class PartitionedRegionLoadModel {
       this.bucket = bucket;
     }
 
-
     /**
      * @return the source
      */
     public Member getSource() {
       return this.source;
     }
-
 
     /**
      * @return the target
@@ -1497,14 +1483,12 @@ public class PartitionedRegionLoadModel {
       return this.target;
     }
 
-
     /**
      * @return the bucket
      */
     public Bucket getBucket() {
       return this.bucket;
     }
-
 
     @Override
     public int hashCode() {
@@ -1542,9 +1526,6 @@ public class PartitionedRegionLoadModel {
         return false;
       return true;
     }
-
-
-
   }
 
   public static interface AddressComparor {

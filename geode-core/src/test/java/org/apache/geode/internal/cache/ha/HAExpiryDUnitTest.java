@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -65,7 +66,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm3 = null;
 
-  protected static Cache cache = null;
+  protected static InternalCache cache = null;
 
   static String regionQueueName = "regionQueue1";
 
@@ -227,7 +228,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(ds);
     ds.disconnect();
     ds = getSystem(props);
-    cache = CacheFactory.create(ds);
+    cache = (InternalCache) CacheFactory.create(ds);
     assertNotNull(cache);
   }
 
@@ -242,7 +243,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    CacheListener serverListener = new vmListener();
+    CacheListener serverListener = new VMListener();
     factory.setCacheListener(serverListener);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
@@ -255,24 +256,22 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
       cache.getDistributedSystem().disconnect();
     }
   }
-}
 
-
-/**
- * This listener performs the put of Conflatable object in the regionqueue.
- */
-
-class vmListener extends CacheListenerAdapter {
-  public void afterCreate(EntryEvent event) {
-    Cache cache = event.getRegion().getCache();
-    HARegion regionForQueue = (HARegion) cache.getRegion(
-        Region.SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
-    HARegionQueue regionqueue = regionForQueue.getOwner();
-    try {
-      regionqueue.put(new ConflatableObject(event.getKey(), event.getNewValue(),
-          new EventID(new byte[] {1}, 1, 1), false, "region1"));
-    } catch (Exception e) {
-      e.printStackTrace();
+  /**
+   * This listener performs the put of Conflatable object in the regionqueue.
+   */
+  static class VMListener extends CacheListenerAdapter {
+    public void afterCreate(EntryEvent event) {
+      Cache cache = event.getRegion().getCache();
+      HARegion regionForQueue = (HARegion) cache.getRegion(
+          Region.SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
+      HARegionQueue regionqueue = regionForQueue.getOwner();
+      try {
+        regionqueue.put(new ConflatableObject(event.getKey(), event.getNewValue(),
+            new EventID(new byte[] {1}, 1, 1), false, "region1"));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 }

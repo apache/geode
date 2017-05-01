@@ -20,7 +20,7 @@ package org.apache.geode.internal;
  * org.apache package.
  * 
  * This is necessary because we exclude all other objects from the org.apache package. See
- * {@link InternalDataSerializer#writePdx(java.io.DataOutput, org.apache.geode.internal.cache.GemFireCacheImpl, Object, org.apache.geode.pdx.PdxSerializer)}
+ * {@link InternalDataSerializer#writePdx(java.io.DataOutput, org.apache.geode.internal.cache.InternalCache, Object, org.apache.geode.pdx.PdxSerializer)}
  * 
  * 
  */

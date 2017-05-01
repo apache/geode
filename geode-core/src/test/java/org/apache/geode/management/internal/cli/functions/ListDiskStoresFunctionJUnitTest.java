@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +39,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
@@ -67,6 +69,7 @@ public class ListDiskStoresFunctionJUnitTest {
     mockContext = new Mockery() {
       {
         setImposteriser(ClassImposteriser.INSTANCE);
+        setThreadingPolicy(new Synchroniser());
       }
     };
   }
@@ -98,8 +101,8 @@ public class ListDiskStoresFunctionJUnitTest {
 
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
+    final InternalDistributedMember mockMember =
+        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
 
     final DiskStoreImpl mockDiskStoreOne = mockContext.mock(DiskStoreImpl.class, "DiskStoreOne");
     final DiskStoreImpl mockDiskStoreTwo = mockContext.mock(DiskStoreImpl.class, "DiskStoreTwo");
@@ -200,8 +203,8 @@ public class ListDiskStoresFunctionJUnitTest {
   public void testExecuteOnMemberHavingNoDiskStores() throws Throwable {
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
+    final InternalDistributedMember mockMember =
+        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
 
     final FunctionContext mockFunctionContext =
         mockContext.mock(FunctionContext.class, "FunctionContext");
@@ -270,8 +273,8 @@ public class ListDiskStoresFunctionJUnitTest {
   public void testExecuteThrowsRuntimeException() throws Throwable {
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
+    final InternalDistributedMember mockMember =
+        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
 
     final FunctionContext mockFunctionContext =
         mockContext.mock(FunctionContext.class, "FunctionContext");

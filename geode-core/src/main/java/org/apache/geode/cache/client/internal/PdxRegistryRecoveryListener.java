@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -72,7 +73,7 @@ public class PdxRegistryRecoveryListener extends EndpointManager.EndpointListene
       logger.debug("PdxRegistryRecoveryListener - EndpointNowInUse. Now have {} endpoints", count);
     }
     if (count == 1) {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         return;
       }

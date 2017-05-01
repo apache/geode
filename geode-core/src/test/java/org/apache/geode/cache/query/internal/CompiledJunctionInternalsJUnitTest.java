@@ -84,7 +84,7 @@ public class CompiledJunctionInternalsJUnitTest {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
     try {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -144,7 +144,7 @@ public class CompiledJunctionInternalsJUnitTest {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
     try {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -242,7 +242,7 @@ public class CompiledJunctionInternalsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions,/employees e");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       // qs.createIndex("statusIndex",
       // IndexType.FUNCTIONAL,"status","/portfolio");
@@ -331,7 +331,7 @@ public class CompiledJunctionInternalsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions,/employees e");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio p");
       Iterator iter = list.iterator();
       while (iter.hasNext()) {
@@ -395,7 +395,7 @@ public class CompiledJunctionInternalsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions,/employees e");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       // qs.createIndex("statusIndex",
       // IndexType.FUNCTIONAL,"status","/portfolio");
@@ -466,7 +466,7 @@ public class CompiledJunctionInternalsJUnitTest {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
     try {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -512,7 +512,7 @@ public class CompiledJunctionInternalsJUnitTest {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
     try {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -580,7 +580,7 @@ public class CompiledJunctionInternalsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions,/employees e");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -636,7 +636,7 @@ public class CompiledJunctionInternalsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions,/employees e");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       // qs.createIndex("statusIndex",
       // IndexType.FUNCTIONAL,"status","/portfolio");
@@ -705,7 +705,7 @@ public class CompiledJunctionInternalsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions,/employees e");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -774,7 +774,7 @@ public class CompiledJunctionInternalsJUnitTest {
       QCompiler compiler = new QCompiler();
       List list = compiler.compileFromClause("/portfolio p, p.positions,/employees e");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -844,7 +844,7 @@ public class CompiledJunctionInternalsJUnitTest {
       List list =
           compiler.compileFromClause("/portfolio p, p.positions,/employees e, /portfolio1 p1");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
@@ -945,7 +945,7 @@ public class CompiledJunctionInternalsJUnitTest {
       List list = compiler.compileFromClause(
           "/portfolio p, p.positions,/employees e, /employees1 e1, /portfolio p1");
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      context.newScope(context.assosciateScopeID());
+      context.newScope(context.associateScopeID());
 
       // qs.createIndex("statusIndex",
       // IndexType.FUNCTIONAL,"status","/portfolio");
@@ -2861,7 +2861,7 @@ public class CompiledJunctionInternalsJUnitTest {
   private void bindIteratorsAndCreateIndex(ExecutionContext context) throws Exception {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
-    context.newScope(context.assosciateScopeID());
+    context.newScope(context.associateScopeID());
     qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolio");
     Iterator iter = list.iterator();
     while (iter.hasNext()) {

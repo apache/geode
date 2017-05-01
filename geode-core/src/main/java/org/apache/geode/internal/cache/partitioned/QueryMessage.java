@@ -64,18 +64,18 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
   private volatile boolean isPdxSerialized;
   private volatile boolean traceOn;
 
-  // private transient PRQueryResultCollector resultCollector = new PRQueryResultCollector();
-  private transient List<Collection> resultCollector = new ArrayList<Collection>();
-  private transient int tokenCount = 0; // counts how many end of stream tokens received
-  private transient Iterator currentResultIterator;
-  private transient Iterator<Collection> currentSelectResultIterator;
-  private transient boolean isTraceInfoIteration = false;
-  private transient boolean isStructType = false;
+  private final List<Collection> resultCollector = new ArrayList<>();
+  private Iterator currentResultIterator;
+  private Iterator<Collection> currentSelectResultIterator;
+  private boolean isTraceInfoIteration = false;
+  private boolean isStructType = false;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
    */
-  public QueryMessage() {}
+  public QueryMessage() {
+    // do nothing
+  }
 
   public QueryMessage(InternalDistributedMember recipient, int regionId, ReplyProcessor21 processor,
       DefaultQuery query, Object[] parameters, final List buckets) {
@@ -86,7 +86,6 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
     this.cqQuery = query.isCqQuery();
     this.traceOn = query.isTraced() || DefaultQuery.QUERY_VERBOSE;
   }
-
 
   /**
    * Provide results to send back to requestor. terminate by returning END_OF_STREAM token object
@@ -101,10 +100,11 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
           .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
       throw new QueryExecutionLowMemoryException(reason);
     }
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
 
-    while ((this.currentResultIterator == null || !this.currentResultIterator.hasNext())) {
+    while (this.currentResultIterator == null || !this.currentResultIterator.hasNext()) {
       if (this.currentSelectResultIterator.hasNext()) {
         if (this.isTraceInfoIteration && this.currentResultIterator != null) {
           this.isTraceInfoIteration = false;
@@ -115,22 +115,20 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
         }
         this.currentResultIterator = results.iterator();
       } else {
-        // Assert.assertTrue(this.resultCollector.isEmpty());
         return Token.END_OF_STREAM;
       }
     }
     Object data = this.currentResultIterator.next();
     boolean isPostGFE_8_1 = this.getSender().getVersionObject().compareTo(Version.GFE_81) > 0;
-    // Asif: There is a bug in older versions of GFE such that the query node expects the structs to
-    // have
+
+    // There is a bug in older versions of GFE such that the query node expects the structs to have
     // type as ObjectTypes only & not specific types. So the new version needs to send the
-    // inaccurate
-    // struct type for backward compatibility.
+    // inaccurate struct type for backward compatibility.
     if (this.isStructType && !this.isTraceInfoIteration && isPostGFE_8_1) {
       return ((Struct) data).getFieldValues();
     } else if (this.isStructType && !this.isTraceInfoIteration) {
-      Struct s = (Struct) data;
-      ObjectType[] fieldTypes = s.getStructType().getFieldTypes();
+      Struct struct = (Struct) data;
+      ObjectType[] fieldTypes = struct.getStructType().getFieldTypes();
       for (int i = 0; i < fieldTypes.length; ++i) {
         fieldTypes[i] = new ObjectTypeImpl(Object.class);
       }
@@ -140,32 +138,27 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
     }
   }
 
-
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
       long startTime)
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
-    // calculate trace start time if trace is on
-    // this is because the start time is only set if enableClock stats is on
-    // in this case we still want to see trace time even if clock is not enabled
+    // calculate trace start time if trace is on this is because the start time is only set if
+    // enableClock stats is on in this case we still want to see trace time even if clock is not
+    // enabled
     long traceStartTime = 0;
     if (this.traceOn) {
       traceStartTime = NanoTimer.getTime();
     }
-    PRQueryTraceInfo queryTraceInfo = null;
-    List queryTraceList = null;
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
-          r.getFullPath(), buckets);
+          pr.getFullPath(), this.buckets);
     }
 
-    r.waitOnInitialization();
+    pr.waitOnInitialization();
 
-    // PartitionedRegionDataStore ds = r.getDataStore();
-
-    // if (ds != null) {
     if (QueryMonitor.isLowMemory()) {
       String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
           .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
@@ -174,25 +167,26 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
       throw new QueryExecutionLowMemoryException(reason);
     }
 
-    DefaultQuery query = new DefaultQuery(this.queryString, r.getCache(), false);
+    DefaultQuery query = new DefaultQuery(this.queryString, pr.getCache(), false);
     // Remote query, use the PDX types in serialized form.
-    DefaultQuery.setPdxReadSerialized(r.getCache(), true);
-    // In case of "select *" queries we can keep the results in serialized
-    // form and send
+    DefaultQuery.setPdxReadSerialized(pr.getCache(), true);
+    // In case of "select *" queries we can keep the results in serialized form and send
     query.setRemoteQuery(true);
     QueryObserver indexObserver = query.startTrace();
     boolean isQueryTraced = false;
+    List queryTraceList = null;
+
     try {
       query.setIsCqQuery(this.cqQuery);
-      // ds.queryLocalNode(query, this.parameters, this.buckets,
-      // this.resultCollector);
-      PRQueryProcessor qp = new PRQueryProcessor(r, query, parameters, buckets);
+      PRQueryProcessor qp = new PRQueryProcessor(pr, query, this.parameters, this.buckets);
       if (logger.isDebugEnabled()) {
         logger.debug("Started executing query from remote node: {}", query.getQueryString());
       }
       isQueryTraced =
           query.isTraced() && this.sender.getVersionObject().compareTo(Version.GFE_81) >= 0;
+
       // Adds a query trace info object to the results list for remote queries
+      PRQueryTraceInfo queryTraceInfo = null;
       if (isQueryTraced) {
         this.isTraceInfoIteration = true;
         if (DefaultQuery.testHook != null) {
@@ -200,85 +194,77 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
         }
         queryTraceInfo = new PRQueryTraceInfo();
         queryTraceList = Collections.singletonList(queryTraceInfo);
-
       }
 
       this.isStructType = qp.executeQuery(this.resultCollector);
-      // Add the trace info list object after the NWayMergeResults is created so as to
-      // exclude it from the sorted collection of NWayMergeResults
+      // Add the trace info list object after the NWayMergeResults is created so as to exclude it
+      // from the sorted collection of NWayMergeResults
       if (isQueryTraced) {
         this.resultCollector.add(0, queryTraceList);
       }
       this.currentSelectResultIterator = this.resultCollector.iterator();
 
-      // If trace is enabled, we will generate a trace object to send back
-      // The time info will be slightly different than the one logged on this
-      // node
-      // due to generating the trace object information here rather than the
-      // finally
-      // block.
+      // If trace is enabled, we will generate a trace object to send back. The time info will be
+      // slightly different than the one logged on this node due to generating the trace object
+      // information here rather than the finally block.
       if (isQueryTraced) {
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook.doTestHook("Populating Trace Info for Remote Query");
         }
+
         // calculate the number of rows being sent
-        int traceSize = 0;
-        traceSize = queryTraceInfo.calculateNumberOfResults(resultCollector);
-        traceSize -= 1; // subtract the query trace info object
+        int traceSize = queryTraceInfo.calculateNumberOfResults(this.resultCollector);
+        // subtract the query trace info object
+        traceSize -= 1;
         queryTraceInfo.setTimeInMillis((NanoTimer.getTime() - traceStartTime) / 1.0e6f);
         queryTraceInfo.setNumResults(traceSize);
+
         // created the indexes used string
         if (indexObserver instanceof IndexTrackingQueryObserver) {
           Map indexesUsed = ((IndexTrackingQueryObserver) indexObserver).getUsedIndexes();
-          StringBuffer buf = new StringBuffer();
-          buf.append(" indexesUsed(").append(indexesUsed.size()).append(")");
+          StringBuilder sb = new StringBuilder();
+          sb.append(" indexesUsed(").append(indexesUsed.size()).append(")");
           if (indexesUsed.size() > 0) {
-            buf.append(":");
+            sb.append(":");
             for (Iterator itr = indexesUsed.entrySet().iterator(); itr.hasNext();) {
               Map.Entry entry = (Map.Entry) itr.next();
-              buf.append(entry.getKey().toString() + entry.getValue());
+              sb.append(entry.getKey()).append(entry.getValue());
               if (itr.hasNext()) {
-                buf.append(",");
+                sb.append(",");
               }
             }
           }
-          queryTraceInfo.setIndexesUsed(buf.toString());
+          queryTraceInfo.setIndexesUsed(sb.toString());
         }
       }
 
-      // resultSize = this.resultCollector.size() - this.buckets.size(); //Minus
-      // END_OF_BUCKET elements.
       if (QueryMonitor.isLowMemory()) {
         String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
             .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
         throw new QueryExecutionLowMemoryException(reason);
       }
-      super.operateOnPartitionedRegion(dm, r, startTime);
+      super.operateOnPartitionedRegion(dm, pr, startTime);
     } finally {
-      // remove trace info so that it is not included in the num results when
-      // logged
+      // remove trace info so that it is not included in the num results when logged
       if (isQueryTraced) {
-        resultCollector.remove(queryTraceList);
+        this.resultCollector.remove(queryTraceList);
       }
-      DefaultQuery.setPdxReadSerialized(r.getCache(), false);
+      DefaultQuery.setPdxReadSerialized(pr.getCache(), false);
       query.setRemoteQuery(false);
       query.endTrace(indexObserver, traceStartTime, this.resultCollector);
     }
-    // }
-    // else {
-    // l.warning(LocalizedStrings.QueryMessage_QUERYMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER);
-    // }
 
     // Unless there was an exception thrown, this message handles sending the response
     return false;
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; query=").append(this.queryString).append("; bucketids=").append(this.buckets);
   }
 
+  @Override
   public int getDSFID() {
     return PR_QUERY_MESSAGE;
   }

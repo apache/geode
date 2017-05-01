@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal.cli;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -27,6 +26,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFu
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.security.IntegratedSecurityService;
@@ -61,8 +61,7 @@ import java.util.stream.Collectors;
 /**
  * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to Lucene
  * indexes defined in Geode.
- * </p>
- * 
+ *
  * @see AbstractCommandsSupport
  * @see LuceneIndexDetails
  * @see LuceneListIndexFunction
@@ -187,7 +186,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
     this.securityService.authorizeRegionManage(regionPath);
     try {
-      final Cache cache = getCache();
+      final InternalCache cache = getCache();
       LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, fields, analyzers);
       final ResultCollector<?, ?> rc =
           this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
@@ -383,7 +382,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     // region members. Then send the function to the remaining members to handle the case where
     // the index has been created, but not the region
     XmlEntity xmlEntity = null;
-    Cache cache = getCache();
+    InternalCache cache = getCache();
     Set<DistributedMember> regionMembers = getRegionMembers(cache, regionPath);
     Set<DistributedMember> normalMembers = getNormalMembers(cache);
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath);
@@ -422,11 +421,11 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     return xmlEntity;
   }
 
-  protected Set<DistributedMember> getRegionMembers(Cache cache, String regionPath) {
+  protected Set<DistributedMember> getRegionMembers(InternalCache cache, String regionPath) {
     return CliUtil.getMembersForeRegionViaFunction(cache, regionPath, true);
   }
 
-  protected Set<DistributedMember> getNormalMembers(Cache cache) {
+  protected Set<DistributedMember> getNormalMembers(InternalCache cache) {
     return CliUtil.getAllNormalMembers(cache);
   }
 

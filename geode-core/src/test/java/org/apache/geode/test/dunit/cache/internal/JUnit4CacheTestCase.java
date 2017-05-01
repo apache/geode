@@ -39,10 +39,12 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -79,7 +81,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * <p>
    * Field is static so it doesn't get serialized with SerializableRunnable inner classes.
    */
-  private static Cache cache;
+  private static InternalCache cache;
 
   private final CacheTestFixture cacheTestFixture;
 
@@ -112,20 +114,20 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       try {
         System.setProperty(
             DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        Cache newCache;
+        InternalCache newCache;
         if (client) {
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "locators", "");
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-          newCache = (Cache) new ClientCacheFactory(getSystem().getProperties()).create();
+          newCache = (InternalCache) new ClientCacheFactory(getSystem().getProperties()).create();
         } else {
           if (factory == null) {
-            newCache = CacheFactory.create(getSystem());
+            newCache = (InternalCache) CacheFactory.create(getSystem());
           } else {
             Properties props = getSystem().getProperties();
             for (Map.Entry entry : props.entrySet()) {
               factory.set((String) entry.getKey(), (String) entry.getValue());
             }
-            newCache = factory.create();
+            newCache = (InternalCache) factory.create();
           }
         }
         cache = newCache;
@@ -154,7 +156,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       try {
         System.setProperty(
             DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        Cache newCache = CacheFactory.create(getLonerSystem());
+        InternalCache newCache = (InternalCache) CacheFactory.create(getLonerSystem());
         cache = newCache;
       } catch (CacheExistsException e) {
         Assert.fail("the cache already exists", e); // TODO: remove error handling
@@ -211,10 +213,10 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * Finish what {@code beginCacheXml} started. It does this be generating a cache.xml file and then
    * creating a real cache using that cache.xml.
    */
-  public final void finishCacheXml(final String name, final boolean useSchema,
+  public final void finishCacheXml(final File root, final String name, final boolean useSchema,
       final String xmlVersion) {
     synchronized (JUnit4CacheTestCase.class) {
-      File dir = new File("XML_" + xmlVersion);
+      File dir = new File(root, "XML_" + xmlVersion);
       dir.mkdirs();
       File file = new File(dir, name + ".xml");
       try {
@@ -222,8 +224,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
         CacheXmlGenerator.generate(cache, pw, useSchema, xmlVersion);
         pw.close();
       } catch (IOException ex) {
-        Assert.fail("IOException during cache.xml generation to " + file, ex); // TODO: remove error
-                                                                               // handling
+        // TODO: remove error handling
+        Assert.fail("IOException during cache.xml generation to " + file, ex);
       }
       cache = null;
       GemFireCacheImpl.testCacheXml = file;
@@ -238,24 +240,24 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   /**
    * Return a cache for obtaining regions, created lazily.
    */
-  public final Cache getCache() {
+  public final InternalCache getCache() {
     return getCache(false);
   }
 
-  public final Cache getCache(final CacheFactory factory) {
+  public final InternalCache getCache(final CacheFactory factory) {
     return getCache(false, factory);
   }
 
-  public final Cache getCache(final Properties properties) {
+  public final InternalCache getCache(final Properties properties) {
     getSystem(properties);
     return getCache();
   }
 
-  public final Cache getCache(final boolean client) {
+  public final InternalCache getCache(final boolean client) {
     return getCache(client, null);
   }
 
-  public final Cache getCache(final boolean client, final CacheFactory factory) {
+  public final InternalCache getCache(final boolean client, final CacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
@@ -288,7 +290,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    *
    * @since GemFire 6.5
    */
-  public final ClientCache getClientCache(final ClientCacheFactory factory) {
+  public final InternalClientCache getClientCache(final ClientCacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
@@ -308,12 +310,12 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       if (cache == null || cache.isClosed()) {
         cache = null;
         disconnectFromDS();
-        cache = (Cache) factory.create();
+        cache = (InternalCache) factory.create();
       }
       if (cache != null) {
         IgnoredException.addIgnoredException("java.net.ConnectException");
       }
-      return (ClientCache) cache;
+      return (InternalClientCache) cache;
     }
   }
 

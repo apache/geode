@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
@@ -23,29 +22,32 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 
-
-
 /**
+ * TODO: rename ContunuousQueryFunction
  * 
  * @since GemFire 8.0
  */
-
 public class ContunuousQueryFunction implements Function, InternalEntity {
-  public static final String ID = ContunuousQueryFunction.class.getName();
   private static final long serialVersionUID = 1L;
+
+  public static final String ID = ContunuousQueryFunction.class.getName();
+
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   @Override
   public void execute(FunctionContext context) {
     try {
       String clientID = (String) context.getArguments();
-      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       if (cache.getCacheServers().size() > 0) {
         CacheServerImpl server = (CacheServerImpl) cache.getCacheServers().iterator().next();
         if (server != null) {
@@ -105,13 +107,11 @@ public class ContunuousQueryFunction implements Function, InternalEntity {
           .lastResult("Exception in ContunuousQueryFunction =" + e.getMessage());
     }
     context.getResultSender().lastResult(null);
-
   }
 
   @Override
   public String getId() {
     return ContunuousQueryFunction.ID;
-
   }
 
   @Override
@@ -135,8 +135,6 @@ public class ContunuousQueryFunction implements Function, InternalEntity {
     public String primaryServer;
     public String secondaryServer;
 
-
-
     public ClientInfo(String IsClientDurable, String primaryServerId, String secondaryServerId) {
       isDurable = IsClientDurable;
       primaryServer = primaryServerId;
@@ -148,8 +146,5 @@ public class ContunuousQueryFunction implements Function, InternalEntity {
       return "ClientInfo [isDurable=" + isDurable + ", primaryServer=" + primaryServer
           + ", secondaryServer=" + secondaryServer + "]";
     }
-
-
   }
-
 }

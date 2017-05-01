@@ -14,6 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -22,25 +35,16 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.*;
 
 public class DiskStoreMonitor {
   private static final Logger logger = LogService.getLogger();
 
   private static final boolean DISABLE_MONITOR =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_DISABLE_MONITORING");
-  // private static final boolean AUTO_RECONNECT =
-  // Boolean.getBoolean("gemfire.DISK_USAGE_ENABLE_AUTO_RECONNECT");
 
   private static final int USAGE_CHECK_INTERVAL = Integer
       .getInteger(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_POLLING_INTERVAL_MILLIS", 10000);
+
   private static final float LOG_WARNING_THRESHOLD_PCT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_LOG_WARNING_PERCENT", 99);
 
@@ -67,7 +71,7 @@ public class DiskStoreMonitor {
     if (val < 0 || val > 100) {
       throw new IllegalArgumentException(
           LocalizedStrings.DiskWriteAttributesFactory_DISK_USAGE_WARNING_INVALID_0
-              .toLocalizedString(Float.valueOf(val)));
+              .toLocalizedString(val));
     }
   }
 
@@ -80,17 +84,15 @@ public class DiskStoreMonitor {
     if (val < 0 || val > 100) {
       throw new IllegalArgumentException(
           LocalizedStrings.DiskWriteAttributesFactory_DISK_USAGE_CRITICAL_INVALID_0
-              .toLocalizedString(Float.valueOf(val)));
+              .toLocalizedString(val));
     }
   }
 
   private final ScheduledExecutorService exec;
 
   private final Map<DiskStoreImpl, Set<DirectoryHolderUsage>> disks;
-  private final LogUsage logDisk;
 
-  // // this is set when we go into auto_reconnect mode
-  // private volatile DirectoryHolderUsage criticalDisk;
+  private final LogUsage logDisk;
 
   volatile DiskStateAction _testAction;
 
@@ -209,9 +211,9 @@ public class DiskStoreMonitor {
 
   private File getLogDir() {
     File log = null;
-    GemFireCacheImpl gci = GemFireCacheImpl.getInstance();
-    if (gci != null) {
-      InternalDistributedSystem ds = gci.getInternalDistributedSystem();
+    InternalCache internalCache = GemFireCacheImpl.getInstance();
+    if (internalCache != null) {
+      InternalDistributedSystem ds = internalCache.getInternalDistributedSystem();
       if (ds != null) {
         DistributionConfig conf = ds.getConfig();
         if (conf != null) {
@@ -230,7 +232,7 @@ public class DiskStoreMonitor {
     return log;
   }
 
-  abstract class DiskUsage {
+  abstract static class DiskUsage {
     private DiskState state;
 
     DiskUsage() {
@@ -305,7 +307,7 @@ public class DiskStoreMonitor {
     protected abstract void handleStateChange(DiskState next, String pct);
   }
 
-  class LogUsage extends DiskUsage {
+  static class LogUsage extends DiskUsage {
     private final File dir;
 
     public LogUsage(File dir) {
@@ -382,40 +384,11 @@ public class DiskStoreMonitor {
           logger.error(LogMarker.DISK_STORE_MONITOR,
               LocalizedMessage.create(LocalizedStrings.DiskStoreMonitor_DISK_CRITICAL, args));
 
-          try {
-            // // prepare for restart
-            // if (AUTO_RECONNECT) {
-            // disk.getCache().saveCacheXmlForReconnect();
-            // criticalDisk = this;
-            // }
-          } finally {
-            // pull the plug
-            disk.handleDiskAccessException(new DiskAccessException(msg, disk));
-          }
+          // TODO: this is weird...
+          disk.handleDiskAccessException(new DiskAccessException(msg, disk));
           break;
       }
     }
-
-    // private void performReconnect(String msg) {
-    // try {
-    // // don't try to reconnect before the cache is closed
-    // disk._testHandleDiskAccessException.await();
-    //
-    // // now reconnect, clear out the var first so a close can interrupt the
-    // // reconnect
-    // criticalDisk = null;
-    // boolean restart = disk.getCache().getDistributedSystem().tryReconnect(true, msg,
-    // disk.getCache());
-    // if (LogMarker.DISK_STORE_MONITOR || logger.isDebugEnabled()) {
-    // String pre = restart ? "Successfully" : "Unsuccessfully";
-    // logger.info(LocalizedStrings.DEBUG, pre + " attempted to restart cache");
-    // }
-    // } catch (InterruptedException e) {
-    // Thread.currentThread().interrupt();
-    // } finally {
-    // close();
-    // }
-    // }
 
     @Override
     protected File dir() {

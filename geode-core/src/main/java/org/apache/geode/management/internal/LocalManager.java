@@ -17,7 +17,6 @@ package org.apache.geode.management.internal;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,14 +35,15 @@ import org.apache.geode.CancelException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
@@ -55,11 +55,7 @@ import org.apache.geode.management.ManagementException;
  * a) Handles proxy creation when Management node comes up b) Handles proxy creation when a member
  * joins c) Remove proxies when a member leaves or node stops being management node. d) Takes care
  * to create resources like hidden regions for MBean and notification federation.
- * 
- * 
- * 
  */
-
 public class LocalManager extends Manager {
   private static final Logger logger = LogService.getLogger();
 
@@ -74,27 +70,22 @@ public class LocalManager extends Manager {
    */
   protected ScheduledExecutorService singleThreadFederationScheduler;
 
-
   /**
    * This map holds all the components which are eligible for federation. Although filters might
    * prevent any of the component from getting federated.
    */
-
   private Map<ObjectName, FederationComponent> federatedComponentMap;
-
 
   private Object lock = new Object();
 
   private SystemManagementService service;
 
   /**
-   * Public constructor
-   * 
    * @param repo management resource repo
    * @param system internal distributed system
    */
   public LocalManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, Cache cache) {
+      SystemManagementService service, InternalCache cache) {
     super(repo, system, cache);
     this.service = service;
     this.federatedComponentMap = new ConcurrentHashMap<ObjectName, FederationComponent>();
@@ -105,7 +96,6 @@ public class LocalManager extends Manager {
    * 
    * Management Region : its a Replicated NO_ACK region Notification Region : its a Replicated Proxy
    * NO_ACK region
-   * 
    */
   private void startLocalManagement(Map<ObjectName, FederationComponent> federatedComponentMap) {
 
@@ -137,9 +127,9 @@ public class LocalManager extends Manager {
           logger.debug("Creating  Management Region :");
         }
 
-        /**
+        /*
          * Sharing the same Internal Argument for both notification region and monitoring region
-         **/
+         */
         InternalRegionArguments internalArgs = new InternalRegionArguments();
         internalArgs.setIsUsedForMetaRegion(true);
 
@@ -184,7 +174,7 @@ public class LocalManager extends Manager {
                   monitoringRegionAttrs, internalArgs));
           monitoringRegionCreated = true;
 
-        } catch (org.apache.geode.cache.TimeoutException e) {
+        } catch (TimeoutException e) {
           throw new ManagementException(e);
         } catch (RegionExistsException e) {
           throw new ManagementException(e);
@@ -199,7 +189,7 @@ public class LocalManager extends Manager {
               cache.createVMRegion(ManagementConstants.NOTIFICATION_REGION + "_" + appender,
                   notifRegionAttrs, internalArgs));
           notifRegionCreated = true;
-        } catch (org.apache.geode.cache.TimeoutException e) {
+        } catch (TimeoutException e) {
           throw new ManagementException(e);
         } catch (RegionExistsException e) {
           throw new ManagementException(e);
@@ -212,7 +202,6 @@ public class LocalManager extends Manager {
             repo.getLocalMonitoringRegion().localDestroyRegion();
 
           }
-
         }
 
         managementTask = new ManagementTask(federatedComponentMap);
@@ -230,11 +219,8 @@ public class LocalManager extends Manager {
           logger.debug("Notification Region created with Name : {}",
               repo.getLocalNotificationRegion().getName());
         }
-
       }
-
     }
-
   }
 
   public void markForFederation(ObjectName objName, FederationComponent fedComp) {
@@ -251,23 +237,18 @@ public class LocalManager extends Manager {
         // To delete an entry from the region
         repo.getLocalMonitoringRegion().remove(objName.toString());
       }
-
     }
-
   }
 
   /**
    * This method will shutdown various tasks running for management
    */
   private void shutdownTasks() {
-
     // No need of pooledGIIExecutor as this node wont do GII again
     // so better to release resources
     if (this.singleThreadFederationScheduler != null) {
-      List<Runnable> l = this.singleThreadFederationScheduler.shutdownNow();
-
+      this.singleThreadFederationScheduler.shutdownNow();
     }
-
   }
 
   /**
@@ -294,7 +275,6 @@ public class LocalManager extends Manager {
               logger.debug("Unable to clean MBean: {} due to {}", objName, e.getMessage(), e);
             }
           }
-
         }
         repo.destroyLocalMonitoringRegion();
       }
@@ -330,11 +310,7 @@ public class LocalManager extends Manager {
    * guaranteed to execute sequentially, and no more than one task will be active at any given time.
    * Unlike the otherwise equivalent <tt>newScheduledThreadPool(1)</tt> the returned executor is
    * guaranteed not to be reconfigurable to use additional threads.
-   * 
-   * 
-   * 
    */
-
   private class ManagementTask implements Runnable {
 
     private Map<String, FederationComponent> replicaMap;
@@ -346,11 +322,9 @@ public class LocalManager extends Manager {
 
     @Override
     public void run() {
-
       if (logger.isTraceEnabled()) {
         logger.trace("Federation started at managed node : ");
       }
-
 
       try {
         synchronized (lock) {
@@ -380,7 +354,6 @@ public class LocalManager extends Manager {
                   replicaMap.put(key, fedCompInstance);
                 }
               }
-
             }
           }
 
@@ -434,13 +407,11 @@ public class LocalManager extends Manager {
 
   @Override
   public void stopManager() {
-    // Shutting down the GII executor as this node wont require
-    // it anymore
+    // Shutting down the GII executor as this node wont require it anymore
     shutdownTasks();
     // Clean up management Resources
     cleanUpResources();
     running = false;
-
   }
 
   public void stopCacheOps() {

@@ -42,6 +42,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.HARegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -94,7 +95,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   protected static VM member4 = null;
 
-  static Cache cache = null;
+  static InternalCache cache = null;
 
   protected static PartitionedRegion region_FPR = null;
 
@@ -148,7 +149,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
       assertNotNull(ds);
       ds.disconnect();
       ds = getSystem(props);
-      cache = CacheFactory.create(ds);
+      cache = (InternalCache) CacheFactory.create(ds);
       assertNotNull(cache);
     } catch (Exception e) {
       org.apache.geode.test.dunit.Assert.fail("Failed while creating the cache", e);

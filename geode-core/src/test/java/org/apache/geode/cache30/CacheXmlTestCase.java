@@ -14,23 +14,31 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.dunit.Assert.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+
 import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.util.test.TestUtil;
 
 public class CacheXmlTestCase extends JUnit4CacheTestCase {
@@ -41,6 +49,16 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   /** set this to false if a test needs a non-loner distributed system */
   static boolean lonerDistributedSystem = true;
 
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
+
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
@@ -49,6 +67,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     this.xmlFile = null;
+    GemFireCacheImpl.testCacheXml = null;
   }
 
   @Override
@@ -79,11 +98,20 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   /**
    * Finds an XML file with the given name. Looks in $JTESTS.
    */
-  protected File findFile(String fileName) {
-    String path = TestUtil.getResourcePath(getClass(), fileName);
-    return new File(path);
+  protected File findFile(String fileName) throws IOException {
+    return copyResourceToDirectory(this.temporaryFolder.getRoot(), fileName);
+    // String path = TestUtil.getResourcePath(getClass(), fileName);
+    // return new File(path);
   }
 
+  protected File copyResourceToDirectory(File directory, String fileName) throws IOException {
+    URL url = getClass().getResource(fileName);
+    File file = new File(directory, fileName);
+    FileUtils.copyURLToFile(url, file);
+    return file;
+  }
+
+  @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
     if (this.xmlFile != null) {
@@ -104,27 +132,22 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
    * {@link CacheCreation}. It then creates a {@link Cache} from the XML and asserts that it is the
    * same as the cache described in the <code>CacheCreation</code>.
    */
-  protected void testXml(CacheCreation creation) {
+  protected void testXml(CacheCreation creation) throws IOException {
     testXml(creation, true);
   }
 
-  protected void testXml(CacheCreation creation, boolean checkSame) {
-
-    File dir = new File("XML_" + this.getGemFireVersion());
+  protected void testXml(CacheCreation creation, boolean checkSame) throws IOException {
+    File root = this.temporaryFolder.getRoot();
+    File dir = new File(root, "XML_" + getGemFireVersion());
     dir.mkdirs();
-    File file = new File(dir, this.getUniqueName() + ".xml");
+    File file = new File(dir, getUniqueName() + ".xml");
 
     final boolean useSchema = getUseSchema();
     final String version = getGemFireVersion();
-    try {
-      PrintWriter pw = new PrintWriter(new FileWriter(file), true);
-      CacheXmlGenerator.generate(creation, pw, useSchema, version);
-      pw.close();
 
-    } catch (IOException ex) {
-      String s = "While generating XML";
-      Assert.fail(s, ex);
-    }
+    PrintWriter pw = new PrintWriter(new FileWriter(file), true);
+    CacheXmlGenerator.generate(creation, pw, useSchema, version);
+    pw.close();
 
     setXmlFile(file);
 
@@ -142,7 +165,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
       StringWriter sw = new StringWriter();
       CacheXmlGenerator.generate(creation, new PrintWriter(sw, true), useSchema, version);
       CacheXmlGenerator.generate(cache, new PrintWriter(sw, true), useSchema, version);
-      Assert.fail(sw.toString(), re);
+      fail(sw.toString(), re);
     }
   }
 }

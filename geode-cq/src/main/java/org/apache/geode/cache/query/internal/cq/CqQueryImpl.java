@@ -215,7 +215,8 @@ public abstract class CqQueryImpl implements InternalCqQuery {
     }
 
     // Set Query ExecutionContext, that will be used in later execution.
-    this.setQueryExecutionContext(new QueryExecutionContext(null, this.cqService.getCache()));
+    this.setQueryExecutionContext(
+        new QueryExecutionContext(null, (InternalCache) this.cqService.getCache()));
   }
 
   /**

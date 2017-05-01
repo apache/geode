@@ -14,11 +14,35 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.NoSubscriptionServersAvailableException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
@@ -31,26 +55,21 @@ import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.admin.ClientStatsManager;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.net.InetSocketAddress;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
 /**
  * Manages the client side of client to server connections and client queues.
@@ -58,26 +77,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since GemFire 5.7
  */
 public class PoolImpl implements InternalPool {
+
   public static final String ON_DISCONNECT_CLEAR_PDXTYPEIDS =
       DistributionConfig.GEMFIRE_PREFIX + "ON_DISCONNECT_CLEAR_PDXTYPEIDS";
 
   private static final Logger logger = LogService.getLogger();
 
-  public static final int HANDSHAKE_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT",
-          AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS).intValue();
-  public static final long SHUTDOWN_TIMEOUT = Long
-      .getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.SHUTDOWN_TIMEOUT", 30000).longValue();
-  public static final int BACKGROUND_TASK_POOL_SIZE = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_SIZE", 20)
-      .intValue();
-  public static final int BACKGROUND_TASK_POOL_KEEP_ALIVE =
-      Integer
-          .getInteger(
-              DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_KEEP_ALIVE", 1000)
-          .intValue();
-  // For durable client tests only. Connection Sources read this flag
-  // and return an empty list of servers.
+  private static final int HANDSHAKE_TIMEOUT =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT",
+          AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS);
+
+  public static final long SHUTDOWN_TIMEOUT =
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.SHUTDOWN_TIMEOUT", 30000);
+
+  private static final int BACKGROUND_TASK_POOL_SIZE = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_SIZE", 20);
+
+  private static final int BACKGROUND_TASK_POOL_KEEP_ALIVE = Integer.getInteger(
+      DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_KEEP_ALIVE", 1000);
+
+  /**
+   * For durable client tests only. Connection Sources read this flag and return an empty list of
+   * servers.
+   */
   public volatile static boolean TEST_DURABLE_IS_NET_DOWN = false;
 
   private final String name;
@@ -152,7 +174,7 @@ public class PoolImpl implements InternalPool {
     } catch (RuntimeException e) {
       try {
         destroy(false);
-      } catch (RuntimeException e2) {
+      } catch (RuntimeException ignore) {
         // do nothing
       }
       throw e;
@@ -218,9 +240,8 @@ public class PoolImpl implements InternalPool {
       statFactory = ds;
     }
     this.stats = this.startDisabled ? null
-        : new PoolStats(statFactory,
-            getName() + "->" + (serverGroup == null || serverGroup.equals("") ? "[any servers]"
-                : "[" + getServerGroup() + "]"));
+        : new PoolStats(statFactory, getName() + "->"
+            + (isEmpty(serverGroup) ? "[any servers]" : "[" + getServerGroup() + "]"));
 
     source = getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback);
     endpointManager = new EndpointManagerImpl(name, ds, this.cancelCriterion, this.stats);
@@ -526,7 +547,7 @@ public class PoolImpl implements InternalPool {
       if (cnt > 0) {
         throw new IllegalStateException(
             LocalizedStrings.PoolImpl_POOL_COULD_NOT_BE_DESTROYED_BECAUSE_IT_IS_STILL_IN_USE_BY_0_REGIONS
-                .toLocalizedString(Integer.valueOf(cnt)));
+                .toLocalizedString(cnt));
       }
     }
     if (this.pm.unregister(this)) {
@@ -872,8 +893,6 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Hook to return connections that were acquired using acquireConnection.
-   * 
-   * @param conn
    */
   public void returnConnection(Connection conn) {
     manager.returnConnection(conn);
@@ -905,9 +924,9 @@ public class PoolImpl implements InternalPool {
    */
   public Map getThreadIdToSequenceIdMap() {
     if (this.queueManager == null)
-      return Collections.EMPTY_MAP;
+      return Collections.emptyMap();
     if (this.queueManager.getState() == null)
-      return Collections.EMPTY_MAP;
+      return Collections.emptyMap();
     return this.queueManager.getState().getThreadIdToSequenceIdMap();
   }
 
@@ -933,7 +952,7 @@ public class PoolImpl implements InternalPool {
         Exception e = new Exception(msg);
         try {
           processException(e, con);
-        } catch (ServerConnectivityException expected) {
+        } catch (ServerConnectivityException ignore) {
         } finally {
           logger.info("<ExpectedException action=remove>{}</ExpectedException>", msg);
         }
@@ -1038,7 +1057,7 @@ public class PoolImpl implements InternalPool {
    * redundant server. An empty list is returned if we have no redundant servers.
    */
   public List<String> getRedundantNames() {
-    List result = Collections.EMPTY_LIST;
+    List result = Collections.emptyList();
     if (this.queueManager != null) {
       QueueManager.QueueConnections cons = this.queueManager.getAllConnections();
       List<Connection> backupCons = cons.getBackups();
@@ -1060,7 +1079,7 @@ public class PoolImpl implements InternalPool {
    * redundant server. An empty list is returned if we have no redundant servers.
    */
   public List<ServerLocation> getRedundants() {
-    List result = Collections.EMPTY_LIST;
+    List result = Collections.emptyList();
     if (this.queueManager != null) {
       QueueManager.QueueConnections cons = this.queueManager.getAllConnections();
       List<Connection> backupCons = cons.getBackups();
@@ -1181,8 +1200,8 @@ public class PoolImpl implements InternalPool {
     logger.debug("PoolImpl - endpointsNetDownForDUnitTest");
     setTEST_DURABLE_IS_NET_DOWN(true);
     try {
-      java.lang.Thread.sleep(this.pingInterval * 2);
-    } catch (java.lang.InterruptedException ex) {
+      Thread.sleep(this.pingInterval * 2);
+    } catch (java.lang.InterruptedException ignore) {
       // do nothing.
     }
 
@@ -1200,8 +1219,8 @@ public class PoolImpl implements InternalPool {
   public void endpointsNetUpForDUnitTest() {
     setTEST_DURABLE_IS_NET_DOWN(false);
     try {
-      java.lang.Thread.sleep(this.pingInterval * 2);
-    } catch (java.lang.InterruptedException ex) {
+      Thread.sleep(this.pingInterval * 2);
+    } catch (java.lang.InterruptedException ignore) {
       // do nothing.
     }
   }
@@ -1297,10 +1316,9 @@ public class PoolImpl implements InternalPool {
       } catch (VirtualMachineError e) {
         SystemFailure.initiateFailure(e);
         throw e;
-      } catch (CancelException e) {
-        // throw e;
+      } catch (CancelException ignore) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Pool task <{}> cancelled", this, logger.isTraceEnabled() ? e : null);
+          logger.debug("Pool task <{}> cancelled", this);
         }
       } catch (Throwable t) {
         logger.error(LocalizedMessage
@@ -1396,7 +1414,7 @@ public class PoolImpl implements InternalPool {
     for (Entry<Object, Object> entry : properties.entrySet()) {
       props.setProperty((String) entry.getKey(), (String) entry.getValue());
     }
-    ProxyCache proxy = new ProxyCache(props, (GemFireCacheImpl) cache, this);
+    ProxyCache proxy = new ProxyCache(props, (InternalCache) cache, this);
     synchronized (this.proxyCacheList) {
       this.proxyCacheList.add(proxy);
     }
@@ -1410,20 +1428,13 @@ public class PoolImpl implements InternalPool {
     if (re != null) {
       return re;
     }
-    Cache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       if (cacheCriterion != null) {
         return cacheCriterion.generateCancelledException(e);
       }
     } else {
-      if (cacheCriterion == null) {
-        cacheCriterion = cache.getCancelCriterion();
-      } else if (cacheCriterion != cache.getCancelCriterion()) {
-        /*
-         * If the cache instance has somehow changed, we need to get a reference to the new
-         * criterion. This is pretty unlikely because the cache closes all the pools when it shuts
-         * down, but I wanted to be safe.
-         */
+      if (cacheCriterion == null || cacheCriterion != cache.getCancelCriterion()) {
         cacheCriterion = cache.getCancelCriterion();
       }
       return cacheCriterion.generateCancelledException(e);
@@ -1438,7 +1449,7 @@ public class PoolImpl implements InternalPool {
       if (reason != null) {
         return reason;
       }
-      Cache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         if (cacheCriterion != null) {
           return cacheCriterion.cancelInProgress();
@@ -1467,7 +1478,7 @@ public class PoolImpl implements InternalPool {
   }
 
   public boolean getKeepAlive() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       return keepAlive;
     }

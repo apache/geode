@@ -22,6 +22,7 @@ import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -163,7 +164,7 @@ public class VersionedStatsDiskLRURegionEntryOffHeapStringKey2
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

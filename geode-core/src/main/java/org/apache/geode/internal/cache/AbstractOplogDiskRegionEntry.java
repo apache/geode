@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.EntryEvent;
@@ -26,10 +25,9 @@ import org.apache.geode.internal.offheap.annotations.Retained;
  * Abstract implementation class of RegionEntry interface. This is adds Disk support behavior
  *
  * @since GemFire 3.5.1
- *
- *
  */
 public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEntry {
+
   protected AbstractOplogDiskRegionEntry(RegionEntryContext context, Object value) {
     super(context, value);
   }

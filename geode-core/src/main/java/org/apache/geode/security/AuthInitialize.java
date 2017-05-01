@@ -22,6 +22,7 @@ import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 // TODO Add example usage of this interface and configuration details
 /**
@@ -30,7 +31,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
  * server/locator side respectively. Implementations should register name of the static creation
  * function (that returns an object of the class) as the <i>security-peer-auth-init</i> system
  * property on peers and as the <i>security-client-auth-init</i> system property on clients.
- * 
+ *
  * @since GemFire 5.5
  */
 public interface AuthInitialize extends CacheCallback {
@@ -46,6 +47,7 @@ public interface AuthInitialize extends CacheCallback {
    *
    * @deprecated since Geode 1.0, use init()
    */
+  @Deprecated
   public void init(LogWriter systemLogger, LogWriter securityLogger)
       throws AuthenticationFailedException;
 
@@ -53,8 +55,8 @@ public interface AuthInitialize extends CacheCallback {
    * @since Geode 1.0. implement this method instead of init with logwriters. Implementation should
    *        use log4j instead of these loggers.
    */
-  default public void init() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  public default void init() {
+    InternalCache cache = GemFireCacheImpl.getInstance();
     init(cache.getLogger(), cache.getSecurityLogger());
   }
 
@@ -83,6 +85,7 @@ public interface AuthInitialize extends CacheCallback {
    * @deprecated since Geode 1.0, use getCredentials(Properties). When using Integrated security,
    *             all members, peer/client will use the same credentials.
    */
+  @Deprecated
   public Properties getCredentials(Properties securityProps, DistributedMember server,
       boolean isPeer) throws AuthenticationFailedException;
 
@@ -93,7 +96,7 @@ public interface AuthInitialize extends CacheCallback {
    * @return the credentials to be used. It needs to contain "security-username" and
    *         "security-password"
    */
-  default public Properties getCredentials(Properties securityProps) {
+  default Properties getCredentials(Properties securityProps) {
     return getCredentials(securityProps, null, true);
   }
 }

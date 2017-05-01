@@ -51,6 +51,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
@@ -209,13 +210,13 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     AsyncInvocation<?> asyncCreate = vm0.invokeAsync(() -> {
       cll = new CacheLifecycleListener() {
         @Override
-        public void cacheCreated(GemFireCacheImpl cache) {
+        public void cacheCreated(InternalCache cache) {
           calledCreateCache.set(true);
           Awaitility.await().atMost(90, TimeUnit.SECONDS).until(() -> cache.isCacheAtShutdownAll());
         }
 
         @Override
-        public void cacheClosed(GemFireCacheImpl cache) {
+        public void cacheClosed(InternalCache cache) {
           calledCloseCache.set(true);
         }
       };
@@ -544,9 +545,6 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     assertEquals(vm0Buckets, getBucketList(vm0, "region"));
 
-    // checkRecoveredFromDisk(vm0, 0, true);
-    // checkRecoveredFromDisk(vm1, 0, false);
-
     checkData(vm0, 0, numBuckets, "a", "region");
     checkData(vm1, 0, numBuckets, "a", "region");
 
@@ -554,20 +552,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     checkData(vm0, numBuckets, 113, "b", "region");
   }
 
-
-  // public void testRepeat() throws Throwable {
-  // for (int i=0; i<10; i++) {
-  // System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> run #"+i);
-  // testShutdownAllWithMembersWaiting();
-  // tearDown();
-  // setUp();
-  // }
-  // }
-
   /**
    * Test for 43551. Do a shutdown all with some members waiting on recovery.
-   * 
-   * @throws Throwable
    */
   @Test
   public void testShutdownAllWithMembersWaiting() throws Throwable {
@@ -664,11 +650,9 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
   private SerializableRunnable getCreateDRRunnable(final String regionName,
       final String diskStoreName) {
-    SerializableRunnable createDR = new SerializableRunnable("create DR") {
-      Cache cache;
-
+    return new SerializableRunnable("create DR") {
       public void run() {
-        cache = getCache();
+        Cache cache = ShutdownAllDUnitTest.this.getCache();
 
         DiskStore ds = cache.findDiskStore(diskStoreName);
         if (ds == null) {
@@ -681,7 +665,6 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         cache.createRegion(regionName, af.create());
       }
     };
-    return createDR;
   }
 
   protected void addCacheServer(VM vm, final int port) {
@@ -723,8 +706,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
   private SerializableRunnable getCreatePRRunnable(final String regionName,
       final String diskStoreName, final int redundancy) {
-    SerializableRunnable createPR = new SerializableRunnable("create pr") {
-
+    return new SerializableRunnable("create pr") {
+      @Override
       public void run() {
         final CountDownLatch recoveryDone;
         if (redundancy > 0) {
@@ -741,7 +724,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
           recoveryDone = null;
         }
 
-        Cache cache = getCache();
+        Cache cache = ShutdownAllDUnitTest.this.getCache();
 
         if (diskStoreName != null) {
           DiskStore ds = cache.findDiskStore(diskStoreName);
@@ -772,7 +755,6 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         }
       }
     };
-    return createPR;
   }
 
   protected void createData(VM vm, final int startKey, final int endKey, final String value,
@@ -888,7 +870,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     public void afterUpdate(EntryEvent event) {
       try {
         latch.await();
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
       }
     }

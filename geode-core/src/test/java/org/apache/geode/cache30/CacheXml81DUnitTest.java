@@ -37,33 +37,29 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases should extend this
  * test case where {@link #getUseSchema()} will return true.
- * 
  *
  * @since GemFire 8.1
  */
 @Category(DistributedTest.class)
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
-  private static final long serialVersionUID = 1L;
 
-  public CacheXml81DUnitTest() {
-    super();
-  }
-
+  @Override
   protected String getGemFireVersion() {
     return CacheXml.VERSION_8_1;
   }
 
+  @Override
   protected boolean getUseSchema() {
     return true;
   }
 
   /**
-   * Test extensions to <code>cache<code> element.
+   * Test extensions to <code>cache</code> element.
    * 
    * @since GemFire 8.1
    */
   @Test
-  public void testCacheExtension() {
+  public void testCacheExtension() throws Exception {
     final CacheCreation cache = new CacheCreation();
     final MockCacheExtension extension = new MockCacheExtension("testCacheExtension");
     cache.getExtensionPoint().addExtension(extension);
@@ -88,7 +84,6 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(1, m.beforeCreateCounter.get());
     assertEquals(1, m.onCreateCounter.get());
     assertEquals(0, m.getXmlGeneratorCounter.get());
-
   }
 
   /**
@@ -97,7 +92,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * @since GemFire 8.1
    */
   @Test
-  public void testRegionExtension() {
+  public void testRegionExtension() throws Exception {
     final String regionName = "testRegionExtension";
     final CacheCreation cache = new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -128,7 +123,6 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(1, m.beforeCreateCounter.get());
     assertEquals(1, m.onCreateCounter.get());
     assertEquals(0, m.getXmlGeneratorCounter.get());
-
   }
 
   /**
@@ -138,7 +132,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * @since GemFire 8.2
    */
   @Test
-  public void testLocatorInException() {
+  public void testLocatorInException() throws Exception {
     final String regionName = "testRegionExtension";
     final CacheCreation cache = new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -153,8 +147,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
-    IgnoredException expectedException =
-        IgnoredException.addIgnoredException("While reading Cache XML file");
+    IgnoredException.addIgnoredException("While reading Cache XML file");
+
     try {
       testXml(cache);
       fail("Excepted CacheXmlException");
@@ -164,8 +158,6 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
         assertTrue(((SAXParseException) e.getCause()).getColumnNumber() > 0);
         assertEquals("Value is 'exception'.", e.getCause().getMessage());
       }
-    } finally {
-      expectedException.remove();
     }
   }
 

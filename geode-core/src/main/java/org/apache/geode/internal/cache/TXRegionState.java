@@ -97,7 +97,7 @@ public class TXRegionState {
 
   public TXEntryState createReadEntry(LocalRegion r, Object entryKey, RegionEntry re, Object vId,
       Object pendingValue) {
-    GemFireCacheImpl cache = r.getCache();
+    InternalCache cache = r.getCache();
     boolean isDistributed = false;
     if (cache.getTxManager().getTXState() != null) {
       isDistributed = cache.getTxManager().getTXState().isDistTx();

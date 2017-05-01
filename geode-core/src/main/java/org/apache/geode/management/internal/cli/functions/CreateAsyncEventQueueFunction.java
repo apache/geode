@@ -14,16 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-/**
- * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
- * queue on a member.
- * 
- * @since GemFire 8.0
- */
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -34,24 +29,33 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import joptsimple.internal.Strings;
 
+/**
+ * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
+ * queue on a member.
+ *
+ * @since GemFire 8.0
+ */
 public class CreateAsyncEventQueueFunction extends FunctionAdapter implements InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
+
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   @SuppressWarnings("deprecation")
   @Override
@@ -62,7 +66,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
     try {
       AsyncEventQueueFunctionArgs aeqArgs = (AsyncEventQueueFunctionArgs) context.getArguments();
 
-      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 

@@ -14,20 +14,30 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
-import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -37,13 +47,14 @@ import org.apache.geode.pdx.internal.PdxString;
  * clauses or index expressions to from clause iterators.
  *
  * @see QueryExecutionContext for extended version of this ONLY for querying.
- * 
  */
 public class ExecutionContext {
 
-  protected Object[] bindArguments;
+  Object[] bindArguments;
+
   private final Stack scopes = new Stack();
-  private final Cache cache;
+
+  private final InternalCache cache;
 
   /**
    * a Sequentially increasing number identifying a scope & also indicating whether a given scope
@@ -56,23 +67,22 @@ public class ExecutionContext {
    * Dependency graph. Maps CompiledValues in tree to the RuntimeIterators each node is dependent
    * on. This information is computed just before the query is evaluated. The information is good
    * for only one execution, since regions can be destroyed and re-created with different type
-   * constraints. Type of this map: map <CompiledValue, set <RuntimeIterator>>
+   * constraints. Type of this map: map &lt;CompiledValue, set &lt;RuntimeIterator&gt;&gt;
    */
-  Map dependencyGraph = new HashMap();
+  private Map dependencyGraph = new HashMap();
+
   /**
    * Map which stores the CompiledIteratorDef as the key & the value is the set of Independent
    * RuntimeIterators on which it is dependent upon. The idea is that this Map will identify the
-   * final Independent RuntimeIterator or Iterators , ie. those refering to a Region or
-   * BindArgument, on which the CompiledIteratorDef depends upon . TODO:Asif: For a single vale ,
-   * should we still use a Set?
-   * 
+   * final Independent RuntimeIterator or Iterators , ie. those referring to a Region or
+   * BindArgument, on which the CompiledIteratorDef depends upon .
    */
   private final Map itrDefToIndpndtRuntimeItrMap = new HashMap();
+
   /**
-   * Asif : This Map will store its Region Path String against an Independent RuntimeIterator An
-   * entry in this Map will be only for those RuntimeIteartors which have an underlying Region as
-   * its Collection Expression
-   * 
+   * This Map will store its Region Path String against an Independent RuntimeIterator An entry in
+   * this Map will be only for those RuntimeIterators which have an underlying Region as its
+   * Collection Expression
    */
   private final Map indpndtItrToRgnMap = new HashMap();
 
@@ -89,23 +99,13 @@ public class ExecutionContext {
    * 
    * @see org.apache.geode.cache.Region#query
    */
-  public ExecutionContext(Object[] bindArguments, Cache cache) {
-    this.bindArguments = bindArguments;
-    this.cache = cache;
-  }
-
-  public ExecutionContext(Object[] bindArguments, Cache cache, SelectResults results) {
-    this.bindArguments = bindArguments;
-    this.cache = cache;
-  }
-
-  public ExecutionContext(Object[] bindArguments, Cache cache, Query query) {
+  public ExecutionContext(Object[] bindArguments, InternalCache cache) {
     this.bindArguments = bindArguments;
     this.cache = cache;
   }
 
   public CachePerfStats getCachePerfStats() {
-    return ((GemFireCacheImpl) this.cache).getCachePerfStats();
+    return this.cache.getCachePerfStats();
   }
 
   /**
@@ -129,10 +129,8 @@ public class ExecutionContext {
     return ds;
   }
 
-  // TODO:ASIF:QUERY
   /**
    * Return true if given CompiledValue is dependent on any RuntimeIterator in current scope
-   * 
    */
   boolean isDependentOnCurrentScope(CompiledValue cv) {
     // return !getDependencySet(cv, true).isEmpty();
@@ -170,7 +168,7 @@ public class ExecutionContext {
     Set set = (Set) this.dependencyGraph.get(cv);
     if (set == null) {
       if (readOnly)
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
       set = new HashSet(1);
       this.dependencyGraph.put(cv, set);
     }
@@ -179,7 +177,7 @@ public class ExecutionContext {
 
   /**
    * Returns all dependencies in from this context which are reused during index update by new
-   * {@link ExecutionContext} for concurrent updates on indexes.
+   * ExecutionContext for concurrent updates on indexes.
    * 
    * @return All {@link AbstractCompiledValue} dependencies.
    */
@@ -198,10 +196,8 @@ public class ExecutionContext {
     return this.bindArguments[index - 1];
   }
 
-  // TODO:ASIF:Query
   /** bind a named iterator (to current scope) */
   public void bindIterator(RuntimeIterator itr) {
-    // int currScopeID = this.scopes.size();
     QScope currentScope = this.currentScope();
     int currScopeID = currentScope.getScopeID();
     itr.setScopeID(currScopeID);
@@ -212,10 +208,8 @@ public class ExecutionContext {
     CompiledValue value = resolveAsVariable(name);
     if (value != null)
       return value;
-    // attribute name or operation name (no args) of a variable in the current
-    // scope
-    // when there is no ambiguity, i.e. this property name belongs to only one
-    // variable in the scope
+    // attribute name or operation name (no args) of a variable in the current scope when there is
+    // no ambiguity, i.e. this property name belongs to only one variable in the scope
     value = resolveImplicitPath(name);
     if (value == null)
       // cannot be resolved
@@ -246,11 +240,9 @@ public class ExecutionContext {
   }
 
   /**
-   * 
-   * @return int indentifying the scope ID which can be assosciated with the scope
+   * @return the scope ID which can be associated with the scope
    */
-  int assosciateScopeID() {
-    // this.scopeIDMap.put(cs, Integer.valueOf(num));
+  int associateScopeID() {
     return ++this.scopeNum;
   }
 
@@ -271,11 +263,10 @@ public class ExecutionContext {
    * argument . Also the self independent Runtime Iterator present in the scope ( that is teh
    * RuntimeIterator same as the independent iterator passed as argument) is added at start of the
    * list. If an iterator is dependent on more than one independent iterator, it is not added to the
-   * List TODO:Asif If we are storing a single Iterator instead of Set , in the
-   * itrDefToIndpndtRuntimeItrMap , we need to take care of this function.
-   * 
-   * <P>
-   * author Asif
+   * List
+   * <p>
+   * TODO: If we are storing a single Iterator instead of Set , in the itrDefToIndpndtRuntimeItrMap
+   * , we need to take care of this function.
    * 
    * @param rIter Independent RuntimeIterator on which dependent iterators of current scope need to
    *        identified
@@ -297,27 +288,13 @@ public class ExecutionContext {
     return list;
   }
 
-  public List getAllIterators() {
-    int numScopes = scopes.size();
-    List iterators = new ArrayList();
-    for (int i = 1; i <= numScopes; i++) {
-      iterators.addAll(((QScope) scopes.get(numScopes - i)).getIterators());
-    }
-    return iterators;
-  }
-
   void setOneIndexLookup(boolean b) {
     QScope scope = currentScope();
     Support.Assert(scope != null, "must be called within valid scope");
     scope._oneIndexLookup = b;
   }
 
-
-  void setCurrent(RuntimeIterator iter, Object obj) {
-    currentScope().setCurrent(iter, obj);
-  }
-
-  public Cache getCache() {
+  public InternalCache getCache() {
     return this.cache;
   }
 
@@ -336,7 +313,6 @@ public class ExecutionContext {
    */
   RuntimeIterator resolveImplicitOperationName(String name, int numArgs, boolean mustBeMethod)
       throws AmbiguousNameException {
-    // System.out.println("In resolveImplicitOperationName");
     // iterate through all properties of iterator variables in scope
     // to see if there is a unique resolution
     RuntimeIterator oneUnknown = null;
@@ -353,8 +329,8 @@ public class ExecutionContext {
         if (scope.getLimit() == itr) {
           continue NEXT_SCOPE; // don't go any farther in this scope
         }
-        // Shobhit: If Element type is ObjectType then we don't need to
-        // apply reflection to find out field or method. This save lot of CPU time.
+        // If Element type is ObjectType then we don't need to apply reflection to find out field or
+        // method. This save lot of CPU time.
         if (!TypeUtils.OBJECT_TYPE.equals(itr.getElementType())
             && itr.containsProperty(name, numArgs, mustBeMethod)) {
           hits.add(itr);
@@ -368,14 +344,15 @@ public class ExecutionContext {
         }
       }
     }
-    if (hits.size() == 1)
+    if (hits.size() == 1) {
       return (RuntimeIterator) hits.get(0);
+    }
     if (hits.size() > 1) {
       // ambiguous
       if (mustBeMethod)
         throw new AmbiguousNameException(
             LocalizedStrings.ExecutionContext_METHOD_NAMED_0_WITH_1_ARGUMENTS_IS_AMBIGUOUS_BECAUSE_IT_CAN_APPLY_TO_MORE_THAN_ONE_VARIABLE_IN_SCOPE
-                .toLocalizedString(new Object[] {name, Integer.valueOf(numArgs)}));
+                .toLocalizedString(name, numArgs));
       throw new AmbiguousNameException(
           LocalizedStrings.ExecutionContext_ATTRIBUTE_NAMED_0_IS_AMBIGUOUS_BECAUSE_IT_CAN_APPLY_TO_MORE_THAN_ONE_VARIABLE_IN_SCOPE
               .toLocalizedString(name));
@@ -387,25 +364,13 @@ public class ExecutionContext {
     return oneUnknown;
   }
 
-  protected CompiledValue resolveScopeVariable(String name) {
-    CompiledValue value = null;
-    for (int i = scopes.size() - 1; i >= 0; i--) {
-      QScope scope = (QScope) scopes.get(i);
-      value = scope.resolve(name);
-      if (value != null)
-        break;
-    }
-    return value;
-  }
-
   /**
    * Tries to find for RuntimeIterator associated with specified expression
    */
   public RuntimeIterator findRuntimeIterator(CompiledValue expr) {
     // Check if expr is itself RuntimeIterator
     if (expr instanceof RuntimeIterator) {
-      RuntimeIterator rIter = (RuntimeIterator) expr;
-      return rIter;
+      return (RuntimeIterator) expr;
     }
     // Try to find RuntimeIterator
     return (RuntimeIterator) findIterator(expr);
@@ -427,9 +392,8 @@ public class ExecutionContext {
         CompiledOperation operation = (CompiledOperation) path;
         CompiledValue rec = operation.getReceiver(this);
         if (rec == null) {
-          RuntimeIterator rcvrItr = resolveImplicitOperationName(operation.getMethodName(),
+          return resolveImplicitOperationName(operation.getMethodName(),
               operation.getArguments().size(), true);
-          return rcvrItr;
         }
         return findIterator(rec);
       }
@@ -442,44 +406,29 @@ public class ExecutionContext {
         CompiledValue expr = resolve(((CompiledID) path).getId());
         return findIterator(expr);
       } // if we get these exceptions return null
-    } catch (TypeMismatchException e) {
-    } catch (NameResolutionException e) {
+    } catch (TypeMismatchException | NameResolutionException ignore) {
     }
     return null;
   }
 
-  int getScopeCount() {
-    return this.scopes.size();
-  }
-
   /**
-   * 
    * Calculates set of Runtime Iterators on which a given CompiledValue ultimately depends. The
    * independent iterators may belong to other scopes.
-   * 
-   * <P>
-   * author Asif/Ketan
-   * 
-   * @param cv
-   * @param set
+   * <p>
+   * This function will populate the set to its independent RuntimeIterators. However if the
+   * CompiledValue happens to be a CompiledIteratorDef & if it is independent of any other
+   * RuntimeIterators then no addition will be done in the Set.
+   * <p>
+   * TODO: the behavior of this function will change if we modify the computeDependency function of
+   * the CompiledIteratorDef as in that case the Set will be added with the self RuntimeIterator (
+   * if the CompiledIteratorDef is independent) which is not the case now.
+   * <p>
+   * TODO: If a CompiledIteratorDef has only one dependent RuntimeIterator should it still be stored
+   * in a Set or should it be a single value?
    */
-  // Ketan - Asif:This function will populate the set to its independent
-  // RuntimeIterators
-  // However if the CompiledValue happens to be a CompiledIteratorDef & if it is
-  // independent of any other RuntimeIterators then no adition will be done in
-  // the Set
-  // TODO: Asif : The behaviour of this function will change if we modify the
-  // computeDependency
-  // function of the CompiledIteratorDef as in that case the Set will be added
-  // with the self RuntimeIterator ( if the CompiledIteratorDef is independent)
-  // which is
-  // not the case now
-  // TODO:Asif : If a CompiledIteratorDef has only one dependent RuntimeIterator
-  // should it still be
-  // stored in a Set or should it be a single value?
-  public void computeUtlimateDependencies(CompiledValue cv, Set set) {
+  void computeUltimateDependencies(CompiledValue cv, Set set) {
     Set dependencySet = this.getDependencySet(cv, true /* readOnly */);
-    if (dependencySet != Collections.EMPTY_SET) {
+    if (dependencySet != Collections.emptySet()) {
       Iterator iter = dependencySet.iterator();
       RuntimeIterator rIter;
       while (iter.hasNext()) {
@@ -494,29 +443,25 @@ public class ExecutionContext {
   }
 
   /**
-   * Asif : This function populates the Map itrDefToIndpndtRuntimeItrMap. It creates a Set of
+   * This function populates the Map itrDefToIndpndtRuntimeItrMap. It creates a Set of
    * RuntimeIterators to which the current CompilediteratorDef is dependent upon. Also it sets the
    * index_internal_id for the RuntimeIterator, which is used for calculating the canonicalized
    * iterator definitions for identifying the available index.
    * 
    * @param itrDef CompiledIteratorDef object representing iterator in the query from clause
-   * @throws AmbiguousNameException
-   * @throws TypeMismatchException
    */
   public void addToIndependentRuntimeItrMap(CompiledIteratorDef itrDef)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     Set set = new HashSet();
-    this.computeUtlimateDependencies(itrDef, set);
+    this.computeUltimateDependencies(itrDef, set);
     RuntimeIterator itr = null;
     String rgnPath = null;
     // If the set is empty then add the self RuntimeIterator to the Map.
     if (set.isEmpty()) {
       itr = itrDef.getRuntimeIterator(this);
       set.add(itr);
-      // Asif : Since it is a an independent RuntimeIterator , check if its
-      // Collection Expr
-      // boils down to a Region. If it is , we need to store the QRegion in the
-      // Map
+      // Since it is a an independent RuntimeIterator , check if its Collection Expr boils down to a
+      // Region. If it is , we need to store the QRegion in the Map
       CompiledValue startVal =
           QueryUtils.obtainTheBottomMostCompiledValue(itrDef.getCollectionExpr());
       if (startVal.getType() == OQLLexerTokenTypes.RegionPath) {
@@ -532,12 +477,10 @@ public class ExecutionContext {
     }
     this.itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
     IndexManager mgr = null;
-    // Asif : Set the canonicalized index_internal_id if the condition is
-    // satisfied
+    // Set the canonicalized index_internal_id if the condition is satisfied
     if (set.size() == 1) {
       if (itr == null) {
         itr = (RuntimeIterator) set.iterator().next();
-        // if (itr.getScopeID() == this.getScopeCount()) {
         if (itr.getScopeID() == this.currentScope().getScopeID()) {
           rgnPath = (String) this.indpndtItrToRgnMap.get(itr);
         }
@@ -556,7 +499,6 @@ public class ExecutionContext {
     currItr.setIndexInternalID((mgr == null
         || (tempIndexID = mgr.getCanonicalizedIteratorName(itrDef.genFromClause(this))) == null)
             ? currItr.getInternalId() : tempIndexID);
-
   }
 
   public List getAllIndependentIteratorsOfCurrentScope() {
@@ -573,12 +515,11 @@ public class ExecutionContext {
   }
 
   /**
-   * Asif : This method returns the Region path for the independent RuntimeIterator if itr exists
-   * else returns null. It is the caller's responsibility to ensure that the passed Iterator is the
+   * This method returns the Region path for the independent RuntimeIterator if itr exists else
+   * returns null. It is the caller's responsibility to ensure that the passed Iterator is the
    * ultimate Independent Runtime Iterator or else the method may return null if the RunTimeIterator
    * is genuinely dependent on a Region iterator
    * 
-   * @param riter
    * @return String containing region path
    */
   String getRegionPathForIndependentRuntimeIterator(RuntimeIterator riter) {
@@ -588,22 +529,15 @@ public class ExecutionContext {
   /**
    * Populates the independent runtime iterator map for index creation purposes. This method does
    * not create any canonicalized index ids etc.
-   * <p>
-   * author Asif
-   * 
-   * @param itrDef
-   * @throws AmbiguousNameException
-   * @throws TypeMismatchException
    */
   public void addToIndependentRuntimeItrMapForIndexCreation(CompiledIteratorDef itrDef)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
 
     Set set = new HashSet();
-    this.computeUtlimateDependencies(itrDef, set);
-    RuntimeIterator itr = null;
+    this.computeUltimateDependencies(itrDef, set);
     // If the set is empty then add the self RuntimeIterator to the Map.
     if (set.isEmpty()) {
-      itr = itrDef.getRuntimeIterator(this);
+      RuntimeIterator itr = itrDef.getRuntimeIterator(this);
       set.add(itr);
     }
     this.itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
@@ -637,11 +571,7 @@ public class ExecutionContext {
     return this.pr;
   }
 
-  // General purpose caching methods for data that is only valid for one
-  // query execution
-  void cachePut(Object key, Object value) {
-    // throw new UnsupportedOperationException("Method should not have been called");
-  }
+  void cachePut(Object key, Object value) {}
 
   public Object cacheGet(Object key) {
     return null;
@@ -680,14 +610,6 @@ public class ExecutionContext {
   }
 
   public void setBucketList(List list) {
-    throw new UnsupportedOperationException("Method should not have been called");
-  }
-
-  public void addToSuccessfulBuckets(int bId) {
-    throw new UnsupportedOperationException("Method should not have been called");
-  }
-
-  public int[] getSuccessfulBuckets() {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 

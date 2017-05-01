@@ -41,6 +41,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -61,8 +62,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   private static final long serialVersionUID = 2241078661206355376L;
 
   private static final RegionAttributes defaultAttributes = new AttributesFactory().create();
-
-  /////////////////////// Instance Fields ///////////////////////
 
   /** The attributes' cache listener */
   private ArrayList cacheListeners;
@@ -288,8 +287,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     }
   }
 
-  ////////////////////// Instance Methods //////////////////////
-
   /**
    * Returns whether or not two objects are {@linkplain Object#equals equals} taking
    * <code>null</code> into account.
@@ -386,14 +383,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    * <code>RegionAttributes</code>.
    */
   public boolean sameAs(RegionAttributes other) {
-    // if (!equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
-    // throw new RuntimeException("cacheListeners not equal "
-    // + this.cacheListeners
-    // + " and "
-    // + Arrays.asList(other.getCacheListeners())
-    // + " this=" + this
-    // + " other=" + other);
-    // }
     if (!equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
       throw new RuntimeException(
           LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME
@@ -895,7 +884,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     setHasMulticastEnabled(true);
   }
 
-  /*
+  /**
    * @deprecated as of prPersistSprint1
    */
   @Deprecated
@@ -903,13 +892,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     return this.publisher;
   }
 
-  /*
+  /**
    * @deprecated as of prPersistSprint1
    */
   @Deprecated
   public void setPublisher(boolean v) {
-    // this.publisher = v;
-    // setHasPublisher(true);
+    // nothing
   }
 
   public boolean getEnableConflation() { // deprecated in 5.0
@@ -958,11 +946,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   public void setDiskWriteAttributes(DiskWriteAttributes attrs) {
     // not throw exception for mixed API, since it's internal
     this.diskWriteAttributes = attrs;
-    // Asif: Take the value of isSynchronous from it;
-    // Asif : Is this correct?
     this.isDiskSynchronous = attrs.isSynchronous();
     setHasDiskWriteAttributes(true);
   }
@@ -970,6 +957,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   public File[] getDiskDirs() {
     // not throw exception for mixed API, since it's internal
     return this.diskDirs;
@@ -978,6 +966,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   public int[] getDiskDirSizes() {
     // not throw exception for mixed API, since it's internal
     return this.diskSizes;
@@ -986,6 +975,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   public void setDiskDirs(File[] diskDirs) {
     // not throw exception for mixed API, since it's internal
     checkIfDirectoriesExist(diskDirs);
@@ -1008,12 +998,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
 
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
-    // Asif: If DiskWriteAttributes is set, the flag needs to be checked from DiskWriteAttribs
+    // If DiskWriteAttributes is set, the flag needs to be checked from DiskWriteAttribs
     // TODO: Should we set the correct value in the flag isDiskSynchronous
-    /*
-     * if(hasDiskWriteAttributes()) { return this.diskWriteAttributes.isSynchronous(); }else {
-     * return this.isDiskSynchronous; }
-     */
   }
 
   public void setDiskSynchronous(boolean isDiskSynchronous) {
@@ -1036,10 +1022,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     }
   }
 
-
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   public void setDiskDirsAndSize(File[] diskDirs, int[] sizes) {
     // not throw exception for mixed API, since it's internal
     checkIfDirectoriesExist(diskDirs);
@@ -1054,7 +1040,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     this.diskSizes = sizes;
     this.setHasDiskDirs(true);
   }
-
 
   private void verifyNonNegativeDirSize(int[] sizes) {
     for (int i = 0; i < sizes.length; i++) {
@@ -1126,7 +1111,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       if (setDefaultPool && this.requiresPoolName && !hasPoolName()) {
         String defaultPoolName = null;
         if (cache instanceof GemFireCacheImpl) {
-          GemFireCacheImpl gfc = (GemFireCacheImpl) cache;
+          InternalClientCache gfc = (InternalClientCache) cache;
           if (gfc.getDefaultPool() != null) {
             defaultPoolName = gfc.getDefaultPool().getName();
           }
@@ -1162,7 +1147,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
         if (!hasPoolName()) {
           String defaultPoolName = null;
           if (cache instanceof GemFireCacheImpl) {
-            GemFireCacheImpl gfc = (GemFireCacheImpl) cache;
+            InternalClientCache gfc = (InternalClientCache) cache;
             if (gfc.getDefaultPool() != null) {
               defaultPoolName = gfc.getDefaultPool().getName();
             }
@@ -1547,7 +1532,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
         setMulticastEnabled(parent.getMulticastEnabled());
       }
     }
-
   }
 
   public PartitionAttributes getPartitionAttributes() {
@@ -1569,6 +1553,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   public MembershipAttributes getMembershipAttributes() {
     return this.membershipAttributes;
   }
@@ -1576,6 +1561,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   public void setMembershipAttributes(MembershipAttributes pa) {
     this.membershipAttributes = pa;
     setHasMembershipAttributes(true);
@@ -1656,7 +1642,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
           && (getRegionTimeToLive().getTimeout() != 0 || getRegionIdleTimeout().getTimeout() != 0
               || getEntryTimeToLive().getTimeout() != 0 || getEntryIdleTimeout().getTimeout() != 0
               || getCustomEntryIdleTimeout() != null || getCustomEntryTimeToLive() != null)) {
-        // @todo we could do some more implementation work so that we would
+        // TODO: we could do some more implementation work so that we would
         // not need to enable stats unless entryIdleTimeout is enabled.
         // We need the stats in that case because we need a new type of RegionEntry
         // so we know that last time it was accessed. But for all the others we

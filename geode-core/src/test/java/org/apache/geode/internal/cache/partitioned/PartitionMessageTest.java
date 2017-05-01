@@ -59,7 +59,7 @@ public class PartitionMessageTest {
     when(msg.checkCacheClosing(dm)).thenReturn(false);
     when(msg.checkDSClosing(dm)).thenReturn(false);
     when(msg.getPartitionedRegion()).thenReturn(pr);
-    when(msg.getGemFireCacheImpl()).thenReturn(cache);
+    when(msg.getInternalCache()).thenReturn(cache);
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
 
@@ -100,7 +100,7 @@ public class PartitionMessageTest {
       DataLocationException, InterruptedException, IOException {
     txMgr = new TXManagerImpl(null, cache);
     when(msg.getPartitionedRegion()).thenReturn(pr);
-    when(msg.getGemFireCacheImpl()).thenReturn(cache);
+    when(msg.getInternalCache()).thenReturn(cache);
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
     when(msg.canParticipateInTransaction()).thenReturn(true);

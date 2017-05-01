@@ -14,32 +14,28 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.cache.operations.RemoveAllOperationContext;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -62,7 +58,7 @@ public class RemoveAllTest {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock
@@ -195,6 +191,5 @@ public class RemoveAllTest {
     }
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
-
 
 }

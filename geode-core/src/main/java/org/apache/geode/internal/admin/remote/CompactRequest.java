@@ -24,7 +24,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
@@ -33,14 +36,19 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
 
 /**
  * An instruction to all members with cache that they should compact their disk stores.
- *
  */
 public class CompactRequest extends CliLegacyMessage {
-  public CompactRequest() {}
+  private static final Logger logger = LogService.getLogger();
+
+  public CompactRequest() {
+    // do nothing
+  }
 
   public static Map<DistributedMember, Set<PersistentID>> send(DM dm) {
     Set recipients = dm.getOtherDistributionManagerIds();
@@ -61,7 +69,7 @@ public class CompactRequest extends CliLegacyMessage {
         throw e;
       }
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.warn(e);
     }
 
     return replyProcessor.results;
@@ -74,12 +82,12 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    HashSet<PersistentID> compactedStores = new HashSet<PersistentID>();
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    HashSet<PersistentID> compactedStores = new HashSet<>();
     if (cache != null && !cache.isClosed()) {
-      for (DiskStoreImpl store : cache.listDiskStoresIncludingRegionOwned()) {
+      for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
         if (store.forceCompaction()) {
-          compactedStores.add(store.getPersistentID());
+          compactedStores.add(((DiskStoreImpl) store).getPersistentID());
         }
       }
     }
@@ -87,6 +95,7 @@ public class CompactRequest extends CliLegacyMessage {
     return new CompactResponse(this.getSender(), compactedStores);
   }
 
+  @Override
   public int getDSFID() {
     return COMPACT_REQUEST;
   }
@@ -111,7 +120,7 @@ public class CompactRequest extends CliLegacyMessage {
     Map<DistributedMember, Set<PersistentID>> results =
         Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
-    public CompactReplyProcessor(DM dm, Collection initMembers) {
+    CompactReplyProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
 
@@ -128,14 +137,12 @@ public class CompactRequest extends CliLegacyMessage {
     @Override
     protected void process(DistributionMessage msg, boolean warn) {
       if (msg instanceof CompactResponse) {
-        final HashSet<PersistentID> persistentIds = ((CompactResponse) msg).getPersistentIds();
+        final Set<PersistentID> persistentIds = ((CompactResponse) msg).getPersistentIds();
         if (persistentIds != null && !persistentIds.isEmpty()) {
-          results.put(msg.getSender(), persistentIds);
+          this.results.put(msg.getSender(), persistentIds);
         }
       }
       super.process(msg, warn);
     }
-
-
   }
 }

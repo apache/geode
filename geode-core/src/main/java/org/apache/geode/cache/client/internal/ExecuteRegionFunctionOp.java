@@ -32,7 +32,6 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.FunctionStats;
@@ -479,13 +478,13 @@ public class ExecuteRegionFunctionOp {
     }
 
     private void addBytes(byte functionStateOrHasResult) {
-      if (GemFireCacheImpl
-          .getClientFunctionTimeout() == GemFireCacheImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
+      if (ConnectionImpl
+          .getClientFunctionTimeout() == ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
         getMessage().addBytesPart(new byte[] {functionStateOrHasResult});
       } else {
         byte[] bytes = new byte[5];
         bytes[0] = functionStateOrHasResult;
-        Part.encodeInt(GemFireCacheImpl.getClientFunctionTimeout(), bytes, 1);
+        Part.encodeInt(ConnectionImpl.getClientFunctionTimeout(), bytes, 1);
         getMessage().addBytesPart(bytes);
       }
     }

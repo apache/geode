@@ -12,18 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
-import org.apache.geode.cache.*; // import org.apache.geode.internal.*;
-import org.apache.geode.internal.cache.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import java.io.*; // import java.net.*;
-// import java.util.*;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A message that is sent in response to a {@link DurableClientInfoRequest}.
@@ -38,16 +38,15 @@ public class DurableClientInfoResponse extends AdminResponse {
   private boolean returnVal = false;
 
   /**
-   * Returns a <code>DurableClientInfoResponse</code> that will be returned to the specified
-   * recipient.
+   * Returns a {@code DurableClientInfoResponse} that will be returned to the specified recipient.
    */
   public static DurableClientInfoResponse create(DistributionManager dm,
       InternalDistributedMember recipient, DurableClientInfoRequest request) {
     DurableClientInfoResponse m = new DurableClientInfoResponse();
     m.setRecipient(recipient);
     try {
-      GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getInstanceCloseOk(dm.getSystem());
-      if (c.getCacheServers().size() > 0) {
+      InternalCache c = (InternalCache) CacheFactory.getInstanceCloseOk(dm.getSystem());
+      if (!c.getCacheServers().isEmpty()) {
 
         CacheServerImpl server = (CacheServerImpl) c.getCacheServers().iterator().next();
         switch (request.action) {
@@ -63,35 +62,34 @@ public class DurableClientInfoResponse extends AdminResponse {
           }
         }
       }
-    } catch (CacheClosedException ex) {
+    } catch (CacheClosedException ignore) {
       // do nothing
     }
     return m;
   }
 
-  public boolean getResultBoolean() {
+  boolean getResultBoolean() {
     return this.returnVal;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     out.writeBoolean(this.returnVal);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.returnVal = in.readBoolean();
   }
 
+  @Override
   public String toString() {
     return "DurableClientInfoResponse from " + this.getSender();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
-   */
+  @Override
   public int getDSFID() {
     return DURABLE_CLIENT_INFO_RESPONSE;
   }

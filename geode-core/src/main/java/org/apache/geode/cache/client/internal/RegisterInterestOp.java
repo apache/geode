@@ -14,22 +14,22 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 
 /**
  * Does a region registerInterest on a server
@@ -159,17 +159,15 @@ public class RegisterInterestOp {
 
     @Override
     protected Object processResponse(Message m, Connection con) throws Exception {
-      ChunkedMessage msg = (ChunkedMessage) m;
-      msg.readHeader();
-      switch (msg.getMessageType()) {
+      ChunkedMessage chunkedMessage = (ChunkedMessage) m;
+      chunkedMessage.readHeader();
+      switch (chunkedMessage.getMessageType()) {
         case MessageType.RESPONSE_FROM_PRIMARY: {
-          ArrayList serverKeys = new ArrayList();
-          VersionedObjectList serverEntries = null;
-          LocalRegion r = null;
+          LocalRegion localRegion = null;
 
           try {
-            r = (LocalRegion) GemFireCacheImpl.getInstance().getRegion(this.region);
-          } catch (Exception ex) {
+            localRegion = (LocalRegion) GemFireCacheImpl.getInstance().getRegion(this.region);
+          } catch (Exception ignore) {
             // ignore but read message
             // GemFireCacheImpl.getInstance().getLogger().config("hitesh error " + ex.getClass());
           }
@@ -179,12 +177,14 @@ public class RegisterInterestOp {
           listOfList.add(list);
 
           // Process the chunks
+          List serverKeys = new ArrayList();
+          VersionedObjectList serverEntries = null;
           do {
             // Read the chunk
-            msg.receiveChunk();
+            chunkedMessage.receiveChunk();
 
             // Deserialize the result
-            Part part = msg.getPart(0);
+            Part part = chunkedMessage.getPart(0);
 
             Object partObj = part.getObject();
             if (partObj instanceof Throwable) {
@@ -203,9 +203,9 @@ public class RegisterInterestOp {
                 list.clear();
                 list.add(partObj);
 
-                if (r != null) {
+                if (localRegion != null) {
                   try {
-                    r.refreshEntriesFromServerKeys(con, listOfList,
+                    localRegion.refreshEntriesFromServerKeys(con, listOfList,
                         InterestResultPolicy.KEYS_VALUES);
                   } catch (Exception ex) {
                     // GemFireCacheImpl.getInstance().getLogger().config("hitesh error2 " +
@@ -218,7 +218,7 @@ public class RegisterInterestOp {
               }
             }
 
-          } while (!msg.isLastChunk());
+          } while (!chunkedMessage.isLastChunk());
           if (serverEntries != null) {
             list.clear();
             list.add(serverEntries); // serverEntries will always be empty.
@@ -228,13 +228,13 @@ public class RegisterInterestOp {
         }
         case MessageType.RESPONSE_FROM_SECONDARY:
           // Read the chunk
-          msg.receiveChunk();
+          chunkedMessage.receiveChunk();
           return null;
         case MessageType.EXCEPTION:
           // Read the chunk
-          msg.receiveChunk();
+          chunkedMessage.receiveChunk();
           // Deserialize the result
-          Part part = msg.getPart(0);
+          Part part = chunkedMessage.getPart(0);
           // Get the exception toString part.
           // This was added for c++ thin client and not used in java
           // Part exceptionToStringPart = msg.getPart(1);
@@ -244,14 +244,14 @@ public class RegisterInterestOp {
         }
         case MessageType.REGISTER_INTEREST_DATA_ERROR:
           // Read the chunk
-          msg.receiveChunk();
+          chunkedMessage.receiveChunk();
 
           // Deserialize the result
-          String errorMessage = msg.getPart(0).getString();
+          String errorMessage = chunkedMessage.getPart(0).getString();
           String s = this + ": While performing a remote " + getOpName() + ": ";
           throw new ServerOperationException(s + errorMessage);
         default:
-          throw new InternalGemFireError("Unknown message type " + msg.getMessageType());
+          throw new InternalGemFireError("Unknown message type " + chunkedMessage.getMessageType());
       }
     }
 

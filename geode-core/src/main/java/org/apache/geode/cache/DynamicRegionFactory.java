@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache;
 
 import java.io.File;
@@ -22,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.geode.InternalGemFireError;
@@ -40,15 +40,14 @@ import org.apache.geode.internal.cache.DynamicRegionFactoryImpl;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.GemFireSecurityException;
-
 
 /**
  * DynamicRegionFactory provides a distributed region creation service. Any other member of the
@@ -65,12 +64,16 @@ import org.apache.geode.security.GemFireSecurityException;
  * <li>Before you've created a GemFire Cache in your application, add a line of code as follows:<br>
  * 
  * <pre>
- * <code>  DynamicRegionFactory factory = DynamicRegionFactory.get();
- *  factory.open(config);</code>
+ * {
+ *   DynamicRegionFactory factory = DynamicRegionFactory.get();
+ *   factory.open(config);
+ * }
  * </pre>
  * 
  * <pre>
- * <code>  DynamicRegionFactory myFactoryHandle = DynamicRegionFactory.get().open(config);</code>
+ * {
+ *   DynamicRegionFactory myFactoryHandle = DynamicRegionFactory.get().open(config);
+ * }
  * </pre>
  * 
  * or just use a dynamic-region-factory element in the cache.xml.
@@ -130,26 +133,31 @@ import org.apache.geode.security.GemFireSecurityException;
  * @since GemFire 4.3
  * @deprecated This class is deprecated. Use {@link FunctionService} to create regions on other
  *             members instead.
- *
  */
 @SuppressWarnings("deprecation")
 @Deprecated
 public abstract class DynamicRegionFactory {
 
   public static final String dynamicRegionListName = "__DynamicRegions";
+
   private Region dynamicRegionList = null;
+
   /**
    * This controls the delay introduced to try and avoid any race conditions between propagation of
    * newly created Dynamic Regions and the Entries put into them.
    */
   private static final long regionCreateSleepMillis =
-      Long.getLong("DynamicRegionFactory.msDelay", 250).longValue();
-  private static DynamicRegionFactory singleInstance = new DynamicRegionFactoryImpl();
-  GemFireCacheImpl c = null;
-  Config config = null;
+      Long.getLong("DynamicRegionFactory.msDelay", 250);
+
+  private static final DynamicRegionFactory singleInstance = new DynamicRegionFactoryImpl();
+
+  InternalCache cache = null;
+
+  private Config config = null;
 
   /** The region listeners registered on this DynamicRegionFactory */
-  private static volatile List regionListeners = Collections.EMPTY_LIST;
+  private static volatile List regionListeners = Collections.emptyList();
+
   private static final Object regionListenerLock = new Object();
 
   /**
@@ -174,9 +182,9 @@ public abstract class DynamicRegionFactory {
    * Closes the dynamic region factory, disabling any further creation or destruction of dynamic
    * regions in this cache.
    */
-  protected void _close() {
+  protected void doClose() {
     this.config = null;
-    this.c = null;
+    this.cache = null;
   }
 
   /**
@@ -191,7 +199,7 @@ public abstract class DynamicRegionFactory {
    * after their cache has been created.
    */
   public boolean isActive() {
-    return isOpen() && this.c != null;
+    return isOpen() && this.cache != null;
   }
 
   /**
@@ -217,24 +225,21 @@ public abstract class DynamicRegionFactory {
 
   /**
    * The method is for internal use only. It is called implicitly during cache creation.
+   * <p>
+   * This method is called internally during cache initialization at the correct time. Initialize
+   * the factory with a GemFire Cache. We create the metadata Region which holds all our dynamically
+   * created regions.
    * 
-   * @param theCache The GemFire <code>Cache</code>
-   * @throws CacheException
+   * @param theCache The GemFire {@code Cache}
    */
-
-  protected void _internalInit(GemFireCacheImpl theCache) throws CacheException {
-
+  protected void doInternalInit(InternalCache theCache) throws CacheException {
     if (isClosed()) {
       // DynamicRegions are not enabled in this vm. Just return.
       return;
     }
-    /**
-     * This method is called internally during cache initialization at the correct time. Initialize
-     * the factory with a GemFire Cache. We create the metadata Region which holds all our
-     * dynamically created regions.
-     */
+
     try {
-      this.c = theCache;
+      this.cache = theCache;
       this.dynamicRegionList = theCache.getRegion(dynamicRegionListName);
       final boolean isClient = this.config.getPoolName() != null;
       if (this.dynamicRegionList == null) {
@@ -276,7 +281,7 @@ public abstract class DynamicRegionFactory {
             af.setDataPolicy(DataPolicy.REPLICATE); // setMirrorType(MirrorType.KEYS_VALUES);
           }
 
-          for (GatewaySender gs : c.getGatewaySenders()) {
+          for (GatewaySender gs : this.cache.getGatewaySenders()) {
             if (!gs.isParallel())
               af.addGatewaySenderId(gs.getId());
           }
@@ -284,36 +289,31 @@ public abstract class DynamicRegionFactory {
         }
 
         try {
-          dynamicRegionList = theCache.createVMRegion(dynamicRegionListName, af.create(), ira);
+          this.dynamicRegionList = theCache.createVMRegion(dynamicRegionListName, af.create(), ira);
         } catch (IOException e) {
           // only if loading snapshot, not here
-          InternalGemFireError assErr = new InternalGemFireError(
-              LocalizedStrings.DynamicRegionFactory_UNEXPECTED_EXCEPTION.toLocalizedString());
-          assErr.initCause(e);
-          throw assErr;
+          throw new InternalGemFireError(
+              LocalizedStrings.DynamicRegionFactory_UNEXPECTED_EXCEPTION.toLocalizedString(), e);
         } catch (ClassNotFoundException e) {
           // only if loading snapshot, not here
-          InternalGemFireError assErr = new InternalGemFireError(
-              LocalizedStrings.DynamicRegionFactory_UNEXPECTED_EXCEPTION.toLocalizedString());
-          assErr.initCause(e);
-          throw assErr;
+          throw new InternalGemFireError(
+              LocalizedStrings.DynamicRegionFactory_UNEXPECTED_EXCEPTION.toLocalizedString(), e);
         }
         if (isClient) {
-          dynamicRegionList.registerInterest("ALL_KEYS");
+          this.dynamicRegionList.registerInterest("ALL_KEYS");
         }
         if (theCache.getLoggerI18n().fineEnabled()) {
-          theCache.getLoggerI18n().fine("Created dynamic region: " + dynamicRegionList);
+          theCache.getLoggerI18n().fine("Created dynamic region: " + this.dynamicRegionList);
         }
       } else {
         if (theCache.getLoggerI18n().fineEnabled()) {
-          theCache.getLoggerI18n().fine("Retrieved dynamic region: " + dynamicRegionList);
+          theCache.getLoggerI18n().fine("Retrieved dynamic region: " + this.dynamicRegionList);
         }
       }
 
       createDefinedDynamicRegions();
 
     } catch (CacheException e) {
-      //
       theCache.getLoggerI18n().warning(
           LocalizedStrings.DynamicRegionFactory_ERROR_INITIALIZING_DYNAMICREGIONFACTORY, e);
       throw e;
@@ -322,47 +322,44 @@ public abstract class DynamicRegionFactory {
 
   /**
    * This creates Dynamic Regions that already exist in other publishing processes
-   *
    */
   private void createDefinedDynamicRegions() throws CacheException {
-    // TODO: perhaps add some logic here to avoid the possiblity of synchronization issues . . . .
-    Set s = dynamicRegionList.entrySet(false);
+    // TODO: perhaps add some logic here to avoid the possibility of synchronization issues
+    Set set = this.dynamicRegionList.entrySet(false);
 
-    Iterator i = s.iterator();
-    TreeMap sorted = new TreeMap();
+    Iterator iterator = set.iterator();
+    SortedMap sorted = new TreeMap();
 
     // sort by region name before creating (bug 35528)
-    while (i.hasNext()) {
-      Region.Entry e = (Region.Entry) i.next();
+    while (iterator.hasNext()) {
+      Region.Entry e = (Region.Entry) iterator.next();
       DynamicRegionAttributes dda = (DynamicRegionAttributes) e.getValue();
-      sorted.put(dda.rootRegionName + "/" + dda.name, dda);
+      sorted.put(dda.rootRegionName + '/' + dda.name, dda);
     }
-    i = sorted.values().iterator();
+    iterator = sorted.values().iterator();
 
-    while (i.hasNext()) {
-      DynamicRegionAttributes dda = (DynamicRegionAttributes) i.next();
+    while (iterator.hasNext()) {
+      DynamicRegionAttributes dda = (DynamicRegionAttributes) iterator.next();
 
-      doBeforeRegionCreated(dda.rootRegionName, dda.name, null);
+      doBeforeRegionCreated(dda.rootRegionName, dda.name);
       Region region = createDynamicRegionImpl(dda.rootRegionName, dda.name, false);
       doAfterRegionCreated(region, false, false, null);
-
     }
-
   }
 
   /**
-   * Returns the <code>DynamicRegionFactory</code> singleton instance.
+   * Returns the {@code DynamicRegionFactory} singleton instance.
    * 
-   * @return the <code>DynamicRegionFactory</code> singleton instance
+   * @return the {@code DynamicRegionFactory} singleton instance
    */
   public static DynamicRegionFactory get() {
     return singleInstance;
   }
 
   /**
-   * Registers a <code>DynamicRegionListener</code> for callbacks.
+   * Registers a {@code DynamicRegionListener} for callbacks.
    * 
-   * @param listener The <code>DynamicRegionListener</code> to be registered
+   * @param listener The {@code DynamicRegionListener} to be registered
    */
   public void registerDynamicRegionListener(DynamicRegionListener listener) {
     synchronized (regionListenerLock) {
@@ -376,9 +373,9 @@ public abstract class DynamicRegionFactory {
   }
 
   /**
-   * Unregisters a <code>DynamicRegionListener</code> for callbacks.
+   * Unregisters a {@code DynamicRegionListener} for callbacks.
    * 
-   * @param listener The <code>DynamicRegionListener</code> to be unregistered
+   * @param listener The {@code DynamicRegionListener} to be unregistered
    */
   public void unregisterDynamicRegionListener(DynamicRegionListener listener) {
     synchronized (regionListenerLock) {
@@ -392,10 +389,9 @@ public abstract class DynamicRegionFactory {
     }
   }
 
-  private void doBeforeRegionCreated(String parentRegion, String regionName,
-      DistributedMember mbr) {
-    for (Iterator i = regionListeners.iterator(); i.hasNext();) {
-      DynamicRegionListener listener = (DynamicRegionListener) i.next();
+  private void doBeforeRegionCreated(String parentRegion, String regionName) {
+    for (Object regionListener : regionListeners) {
+      DynamicRegionListener listener = (DynamicRegionListener) regionListener;
       try {
         listener.beforeRegionCreate(parentRegion, regionName);
       } catch (VirtualMachineError err) {
@@ -410,7 +406,7 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.c.getLoggerI18n().warning(
+        this.cache.getLoggerI18n().warning(
             LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_BEFOREREGIONCREATED,
             listener, t);
       }
@@ -421,10 +417,10 @@ public abstract class DynamicRegionFactory {
       DistributedMember mbr) {
     RegionEvent event =
         new RegionEventImpl(region, Operation.REGION_CREATE, null, isOriginRemote, getMember(mbr));
-    for (Iterator i = regionListeners.iterator(); i.hasNext();) {
-      DynamicRegionListener listener = (DynamicRegionListener) i.next();
+    for (Object regionListener : regionListeners) {
+      DynamicRegionListener listener = (DynamicRegionListener) regionListener;
       try {
-        listener.afterRegionCreate(event /* region */ );
+        listener.afterRegionCreate(event /* region */);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -437,7 +433,7 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.c.getLoggerI18n().warning(
+        this.cache.getLoggerI18n().warning(
             LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_AFTERREGIONCREATED,
             listener, t);
       }
@@ -453,10 +449,10 @@ public abstract class DynamicRegionFactory {
       op = expiration ? Operation.REGION_EXPIRE_DESTROY : Operation.REGION_DESTROY;
     }
     RegionEvent event = new RegionEventImpl(region, op, null, isOriginRemote, getMember(mbr));
-    for (Iterator i = regionListeners.iterator(); i.hasNext();) {
-      DynamicRegionListener listener = (DynamicRegionListener) i.next();
+    for (Object regionListener : regionListeners) {
+      DynamicRegionListener listener = (DynamicRegionListener) regionListener;
       try {
-        listener.beforeRegionDestroy(event /* fullRegionName */ );
+        listener.beforeRegionDestroy(event /* fullRegionName */);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -469,7 +465,7 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.c.getLoggerI18n().warning(
+        this.cache.getLoggerI18n().warning(
             LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_BEFOREREGIONDESTROYED,
             listener, t);
       }
@@ -485,10 +481,10 @@ public abstract class DynamicRegionFactory {
       op = expiration ? Operation.REGION_EXPIRE_DESTROY : Operation.REGION_DESTROY;
     }
     RegionEvent event = new RegionEventImpl(region, op, null, isOriginRemote, getMember(mbr));
-    for (Iterator i = regionListeners.iterator(); i.hasNext();) {
-      DynamicRegionListener listener = (DynamicRegionListener) i.next();
+    for (Object regionListener : regionListeners) {
+      DynamicRegionListener listener = (DynamicRegionListener) regionListener;
       try {
-        listener.afterRegionDestroy(event /* fullRegionName */ );
+        listener.afterRegionDestroy(event /* fullRegionName */);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -501,7 +497,7 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.c.getLoggerI18n().warning(
+        this.cache.getLoggerI18n().warning(
             LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_AFTERREGIONDESTROYED,
             listener, t);
       }
@@ -511,27 +507,25 @@ public abstract class DynamicRegionFactory {
   /** return the argument, or if null the DistributedMember id of this vm */
   private DistributedMember getMember(DistributedMember mbr) {
     if (mbr == null) {
-      return InternalDistributedSystem.getAnyInstance().getDistributedMember();
+      return this.cache.getInternalDistributedSystem().getDistributedMember();
     } else {
       return null;
     }
   }
-
 
   /**
    * Creates the dynamic Region in the local cache and distributes the creation to other caches.
    * 
    * @param parentRegionName the new region is created as a subregion of the region having this path
    * @param regionName the name of the new subregion
-   * @return the <code>Region</code> created
-   * @throws CacheException
+   * @return the {@code Region} created
    */
   public Region createDynamicRegion(String parentRegionName, String regionName)
       throws CacheException {
     if (isClosed()) {
       throw new IllegalStateException("Dynamic region factory is closed");
     }
-    doBeforeRegionCreated(parentRegionName, regionName, null);
+    doBeforeRegionCreated(parentRegionName, regionName);
     Region region = createDynamicRegionImpl(parentRegionName, regionName, true);
     doAfterRegionCreated(region, false, false, null);
     return region;
@@ -540,13 +534,12 @@ public abstract class DynamicRegionFactory {
   /**
    * Destroys the dynamic Region in the local cache and distributes the destruction to other caches.
    * 
-   * @param fullRegionName The full path of the <code>Region</code> to be dynamically destroyed
-   * @throws CacheException
+   * @param fullRegionName The full path of the {@code Region} to be dynamically destroyed
    * @throws RegionDestroyedException if the dynamic region was never created or has already been
    *         destroyed
    */
   public void destroyDynamicRegion(String fullRegionName) throws CacheException {
-    if (!dynamicRegionList.containsKey(fullRegionName)) {
+    if (!this.dynamicRegionList.containsKey(fullRegionName)) {
       throw new RegionDestroyedException(
           LocalizedStrings.DynamicRegionFactory_DYNAMIC_REGION_0_HAS_NOT_BEEN_CREATED
               .toLocalizedString(fullRegionName),
@@ -557,7 +550,7 @@ public abstract class DynamicRegionFactory {
     }
 
     // Retrieve the region to destroy
-    Region region = c.getRegion(fullRegionName);
+    Region region = this.cache.getRegion(fullRegionName);
     if (region != null) {
       DistributedMember mbr = getMember(null);
       doBeforeRegionDestroyed(region, false, false, false, mbr);
@@ -575,15 +568,14 @@ public abstract class DynamicRegionFactory {
   private Region createDynamicRegionImpl(String parentRegionName, String newRegionName,
       boolean addEntry) throws CacheException {
 
-    Region parentRegion = c.getRegion(parentRegionName);
-    Region newRegion = null;
+    Region parentRegion = this.cache.getRegion(parentRegionName);
 
     if (parentRegion == null) {
       String errMsg =
           LocalizedStrings.DynamicRegionFactory_ERROR__COULD_NOT_FIND_A_REGION_NAMED___0_
               .toLocalizedString(parentRegionName);
       RegionDestroyedException e = new RegionDestroyedException(errMsg, parentRegionName);
-      c.getLoggerI18n().warning(
+      this.cache.getLoggerI18n().warning(
           LocalizedStrings.DynamicRegionFactory_ERROR__COULD_NOT_FIND_A_REGION_NAMED___0_,
           parentRegionName, e);
       throw e;
@@ -591,51 +583,46 @@ public abstract class DynamicRegionFactory {
 
     // Create RegionAttributes by inheriting from the parent
     RegionAttributes rra = parentRegion.getAttributes();
-    RegionAttributes newRegionAttributes = null;
 
     AttributesFactory af = new AttributesFactory(rra);
-    {
-      EvictionAttributes ev = rra.getEvictionAttributes();
-      if (ev != null && ev.getAlgorithm().isLRU()) {
-        EvictionAttributes rev = new EvictionAttributesImpl((EvictionAttributesImpl) ev);
-        af.setEvictionAttributes(rev);
-      }
+    EvictionAttributes ev = rra.getEvictionAttributes();
+    if (ev != null && ev.getAlgorithm().isLRU()) {
+      EvictionAttributes rev = new EvictionAttributesImpl((EvictionAttributesImpl) ev);
+      af.setEvictionAttributes(rev);
     }
 
     // for internal testing, until partitioned regions support subclasses or
     // DynamicRegion implementation is redone to not inherit attrs from parent
-    // regions [bruce]
+    // regions
     if (newRegionName.endsWith("_PRTEST_")) {
-      af.setPartitionAttributes((new PartitionAttributesFactory()).create());
+      af.setPartitionAttributes(new PartitionAttributesFactory().create());
     }
 
-    newRegionAttributes = af.create();
+    RegionAttributes newRegionAttributes = af.create();
 
+    Region newRegion;
     try {
       newRegion = parentRegion.createSubregion(newRegionName, newRegionAttributes);
-      c.getLoggerI18n().fine("Created dynamic region " + newRegion);
+      this.cache.getLoggerI18n().fine("Created dynamic region " + newRegion);
     } catch (RegionExistsException ex) {
       // a race condition exists that can cause this so just fine log it
-      c.getLoggerI18n().fine(
+      this.cache.getLoggerI18n().fine(
           "DynamicRegion " + newRegionName + " in parent " + parentRegionName + " already existed");
       newRegion = ex.getRegion();
-      // } catch ( CacheException e ) {
-      // c.getLoggerI18n().warning ( "Error creating new Dynamic Region '" + newRegionName, e );
-      // throw e;
     }
 
     if (addEntry) {
       DynamicRegionAttributes dra = new DynamicRegionAttributes();
       dra.name = newRegionName;
       dra.rootRegionName = parentRegion.getFullPath();
-      if (c.getLoggerI18n().fineEnabled()) {
-        c.getLoggerI18n()
+      if (this.cache.getLoggerI18n().fineEnabled()) {
+        this.cache.getLoggerI18n()
             .fine("Putting entry into dynamic region list at key: " + newRegion.getFullPath());
       }
-      dynamicRegionList.put(newRegion.getFullPath(), dra);
+      this.dynamicRegionList.put(newRegion.getFullPath(), dra);
     }
 
-    if (config.getRegisterInterest()) {
+    if (this.config.getRegisterInterest()) {
       ServerRegionProxy proxy = ((LocalRegion) newRegion).getServerProxy();
       if (proxy != null) {
         if (((Pool) proxy.getPool()).getSubscriptionEnabled()) {
@@ -643,7 +630,7 @@ public abstract class DynamicRegionFactory {
             newRegion.registerInterest("ALL_KEYS");
           } catch (GemFireSecurityException ex) {
             // Ignore security exceptions here
-            c.getSecurityLoggerI18n().warning(
+            this.cache.getSecurityLoggerI18n().warning(
                 LocalizedStrings.DynamicRegionFactory_EXCEPTION_WHEN_REGISTERING_INTEREST_FOR_ALL_KEYS_IN_DYNAMIC_REGION_0_1,
                 new Object[] {newRegion.getFullPath(), ex});
           }
@@ -654,13 +641,13 @@ public abstract class DynamicRegionFactory {
     if (regionCreateSleepMillis > 0) {
       try {
         Thread.sleep(regionCreateSleepMillis);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
       }
     }
 
-    if (c.getLoggerI18n().fineEnabled()) {
-      c.getLoggerI18n().fine("Created Dynamic Region " + newRegion.getFullPath());
+    if (this.cache.getLoggerI18n().fineEnabled()) {
+      this.cache.getLoggerI18n().fine("Created Dynamic Region " + newRegion.getFullPath());
     }
     return newRegion;
   }
@@ -668,30 +655,30 @@ public abstract class DynamicRegionFactory {
   private void destroyDynamicRegionImpl(String fullRegionName) throws CacheException {
     // Destroy the entry in the dynamicRegionList
     try {
-      if (c.getLoggerI18n().fineEnabled()) {
-        c.getLoggerI18n()
+      if (this.cache.getLoggerI18n().fineEnabled()) {
+        this.cache.getLoggerI18n()
             .fine("Destroying entry from dynamic region list at key: " + fullRegionName);
       }
-      dynamicRegionList.destroy(fullRegionName);
+      this.dynamicRegionList.destroy(fullRegionName);
     } catch (CacheException e) {
-      c.getLoggerI18n().warning(
+      this.cache.getLoggerI18n().warning(
           LocalizedStrings.DynamicRegionFactory_ERROR_DESTROYING_DYNAMIC_REGION__0, fullRegionName,
           e);
       throw e;
     }
 
-    if (c.getLoggerI18n().fineEnabled()) {
-      c.getLoggerI18n().fine("Destroyed Dynamic Region " + fullRegionName);
+    if (this.cache.getLoggerI18n().fineEnabled()) {
+      this.cache.getLoggerI18n().fine("Destroyed Dynamic Region " + fullRegionName);
     }
   }
 
   /**
    * Configuration for dynamic region factory. The default attributes are:
    * <ul>
-   * <li>diskDir: <code>null</code>
-   * <li>poolName: <code>null</code>
-   * <li>persistBackup: <code>true</code>
-   * <li>registerInterest: <code>true</code>
+   * <li>diskDir: {@code null}
+   * <li>poolName: {@code null}
+   * <li>persistBackup: {@code true}
+   * <li>registerInterest: {@code true}
    * </ul>
    * 
    * @since GemFire 4.3
@@ -795,8 +782,8 @@ public abstract class DynamicRegionFactory {
 
     /**
      * Returns the disk directory that the dynamic region factory data will be written to. Returns
-     * null if no directory has been specified. The diskDir is only used if
-     * <code>persistBackup</code> is true.
+     * null if no directory has been specified. The diskDir is only used if {@code persistBackup} is
+     * true.
      */
     public File getDiskDir() {
       return this.diskDir;
@@ -834,11 +821,11 @@ public abstract class DynamicRegionFactory {
     String newRegionName = dra.name;
 
     try {
-      doBeforeRegionCreated(parentRegionName, newRegionName, event.getDistributedMember());
+      doBeforeRegionCreated(parentRegionName, newRegionName);
       Region region = createDynamicRegionImpl(parentRegionName, newRegionName, false);
       doAfterRegionCreated(region, true, true, event.getDistributedMember());
     } catch (Exception e) {
-      c.getLoggerI18n().warning(
+      cache.getLoggerI18n().warning(
           LocalizedStrings.DynamicRegionFactory_ERROR_ATTEMPTING_TO_LOCALLY_CREATE_DYNAMIC_REGION__0,
           newRegionName, e);
     }
@@ -852,12 +839,12 @@ public abstract class DynamicRegionFactory {
     // "local" events. If this is a true local then c.getRegion will return
     // null and this code will do nothing.
     // When bug 35644 fixed the following "if" can be uncommented.
-    // // Ignore the callback if it originated in this process (because the region
-    // // will already have been destroyed)
-    // if ( !event.isOriginRemote() && !(event instanceof BridgeEntryEventImpl)) return;
+
+    // Ignore the callback if it originated in this process (because the region
+    // will already have been destroyed)
 
     String fullRegionName = (String) event.getKey();
-    Region drRegion = c.getRegion(fullRegionName);
+    Region drRegion = cache.getRegion(fullRegionName);
     if (drRegion != null) {
       try {
         doBeforeRegionDestroyed(drRegion, true, event.getOperation().isDistributed(),
@@ -866,49 +853,19 @@ public abstract class DynamicRegionFactory {
         doAfterRegionDestroyed(drRegion, true, event.getOperation().isDistributed(),
             event.getOperation().isExpiration(), event.getDistributedMember());
       } catch (Exception e) {
-        c.getLoggerI18n().warning(
+        cache.getLoggerI18n().warning(
             LocalizedStrings.DynamicRegionFactory_ERROR_ATTEMPTING_TO_LOCALLY_DESTROY_DYNAMIC_REGION__0,
             fullRegionName, e);
       }
     }
   }
 
-  // private class DRListener implements CacheListener {
-  // public void afterCreate(EntryEvent arg0) {
-  // buildDynamicRegion(arg0);
-  // }
-  //
-  // public void afterDestroy(EntryEvent arg0) {
-  // razeDynamicRegion(arg0);
-  // }
-  //
-  // public void afterInvalidate(EntryEvent arg0) {
-  // // Stub, nothing to do.
-  // }
-  //
-  // public void afterRegionDestroy(RegionEvent arg0) {
-  // // Stub, nothing to do.
-  // }
-  //
-  // public void afterRegionInvalidate(RegionEvent arg0) {
-  // // Stub, nothing to do.
-  // }
-  //
-  // public void afterUpdate(EntryEvent arg0) {
-  // // Stub, nothing to do.
-  // }
-  //
-  // public void close() {
-  // // Stub, nothing to do.
-  // }
-  // }
-
   // Introduced to keep symmetry with DistributedMetaRegion and potentially provide improved control
   // of
   // the meta data
   private class LocalMetaRegion extends LocalRegion {
     protected LocalMetaRegion(RegionAttributes attrs, InternalRegionArguments ira) {
-      super(dynamicRegionListName, attrs, null, DynamicRegionFactory.this.c, ira);
+      super(dynamicRegionListName, attrs, null, DynamicRegionFactory.this.cache, ira);
       Assert.assertTrue(attrs.getScope().isLocal());
     }
 
@@ -1003,9 +960,9 @@ public abstract class DynamicRegionFactory {
           if (!event.isBulkOpInProgress()) {
             try {
               entry.dispatchListenerEvents(event);
-            } catch (InterruptedException ie) {
+            } catch (InterruptedException ignore) {
               Thread.currentThread().interrupt();
-              stopper.checkCancelInProgress(null);
+              this.stopper.checkCancelInProgress(null);
             }
           }
         }
@@ -1017,7 +974,7 @@ public abstract class DynamicRegionFactory {
   // distribution and notification order on the BridgeServer
   private class DistributedMetaRegion extends DistributedRegion {
     protected DistributedMetaRegion(RegionAttributes attrs) {
-      super(dynamicRegionListName, attrs, null, DynamicRegionFactory.this.c,
+      super(dynamicRegionListName, attrs, null, DynamicRegionFactory.this.cache,
           new InternalRegionArguments());
     }
 
@@ -1115,9 +1072,9 @@ public abstract class DynamicRegionFactory {
           if (!event.isBulkOpInProgress()) {
             try {
               entry.dispatchListenerEvents(event);
-            } catch (InterruptedException ie) {
+            } catch (InterruptedException ignore) {
               Thread.currentThread().interrupt();
-              stopper.checkCancelInProgress(null);
+              this.stopper.checkCancelInProgress(null);
             }
           }
         }

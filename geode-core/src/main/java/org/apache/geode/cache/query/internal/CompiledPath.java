@@ -156,7 +156,7 @@ public class CompiledPath extends AbstractCompiledValue {
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     // Asif: Canonicalize the tail ID. If the tail ID contains
     // something like getX ,convert it into x.

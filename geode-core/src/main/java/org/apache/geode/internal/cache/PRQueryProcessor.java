@@ -14,13 +14,42 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.Integer.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.internal.CompiledSelect;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
+import org.apache.geode.cache.query.internal.NWayMergeResults;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
+import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.QueryObserver;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
@@ -30,32 +59,22 @@ import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.PRQueryRe
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
-
 
 /**
  * This class takes the responsibility of executing the query on a data store for the buckets
- * specified in bucketList. It contains a <code>PRQueryExecutor</code> thread-pool executor that
- * takes a <code>Callable</code> task identified by <code>PartitionedRegion</code>, queryString and
- * bucketId.
+ * specified in bucketList. It contains a {@code PRQueryExecutor} thread-pool executor that takes a
+ * {@code Callable} task identified by {@code PartitionedRegion}, queryString and bucketId.
  * 
  * The QueryTasks add results directly to a results queue. The BucketQueryResult is used not only to
  * indicate completion, and holds an exception if there one occurred while processing a query.
- *
  */
 public class PRQueryProcessor {
   private static final Logger logger = LogService.getLogger();
 
   final static int BUCKET_QUERY_TIMEOUT = 60;
 
-  public final static int NUM_THREADS = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PRQueryProcessor.numThreads", 1).intValue();
+  public final static int NUM_THREADS =
+      getInteger(DistributionConfig.GEMFIRE_PREFIX + "PRQueryProcessor.numThreads", 1);
 
   /* For Test purpose */
   public static int TEST_NUM_THREADS = 0;
@@ -69,14 +88,13 @@ public class PRQueryProcessor {
   private volatile ObjectType resultType = null;
 
   private boolean isIndexUsedForLocalQuery = false;
-  // private List _failedBuckets;
 
   public PRQueryProcessor(PartitionedRegionDataStore prDS, DefaultQuery query, Object[] parameters,
       List<Integer> buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
     this._prds = prDS;
     this._bucketsToQuery = buckets;
-    ((GemFireCacheImpl) prDS.partitionedRegion.getCache()).getLocalQueryService();
+    prDS.partitionedRegion.getCache().getLocalQueryService();
     this.query = query;
     this.parameters = parameters;
     PRQueryExecutor.initializeExecutorService();
@@ -104,7 +122,6 @@ public class PRQueryProcessor {
    * Executes a pre-compiled query on a data store. Adds result objects to resultQueue
    * 
    * @return boolean true if the result is a struct type
-   * @throws QueryException
    * @throws ForceReattemptException if query should be tried again
    */
   public boolean executeQuery(Collection<Collection> resultCollector)
@@ -115,7 +132,7 @@ public class PRQueryProcessor {
     // ((IndexTrackingQueryObserver)observer).setIndexInfo(resultCollector.getIndexInfoMap());
     // }
 
-    if (NUM_THREADS > 1 || this.TEST_NUM_THREADS > 1) {
+    if (NUM_THREADS > 1 || TEST_NUM_THREADS > 1) {
       executeWithThreadPool(resultCollector);
     } else {
       executeSequentially(resultCollector, this._bucketsToQuery);
@@ -139,7 +156,6 @@ public class PRQueryProcessor {
       try {
         futures = execService.invokeAll(callableTasks, 300, TimeUnit.SECONDS);
       } catch (RejectedExecutionException rejectedExecutionEx) {
-        // this._prds.partitionedRegion.checkReadiness();
         throw rejectedExecutionEx;
       }
 
@@ -166,7 +182,7 @@ public class PRQueryProcessor {
           } catch (TimeoutException e) {
             throw new InternalGemFireException(
                 LocalizedStrings.PRQueryProcessor_TIMED_OUT_WHILE_EXECUTING_QUERY_TIME_EXCEEDED_0
-                    .toLocalizedString(Integer.valueOf(BUCKET_QUERY_TIMEOUT)),
+                    .toLocalizedString(BUCKET_QUERY_TIMEOUT),
                 e);
           } catch (ExecutionException ee) {
             Throwable cause = ee.getCause();
@@ -217,8 +233,8 @@ public class PRQueryProcessor {
         if (pr.isLocallyDestroyed || pr.isClosed) {
           throw new RegionDestroyedException("PR destroyed during query", pr.getFullPath());
         } else {
-          throw new ForceReattemptException("Bucket id " + pr.bucketStringForLogs(bId.intValue())
-              + " not found on VM " + pr.getMyId());
+          throw new ForceReattemptException(
+              "Bucket id " + pr.bucketStringForLogs(bId) + " not found on VM " + pr.getMyId());
         }
       }
       bukRegion.waitForData();
@@ -254,7 +270,7 @@ public class PRQueryProcessor {
                 // Avoid if query is distinct as this Integer could be a region value.
                 if (!query.getSimpleSelect().isDistinct() && query.getSimpleSelect().isCount()
                     && r instanceof Integer) {
-                  if (((Integer) r).intValue() != 0) {
+                  if ((Integer) r != 0) {
                     rq.put(r);
                   }
                 } else {
@@ -268,7 +284,7 @@ public class PRQueryProcessor {
               }
             }
           }
-          rq.put(new EndOfBucket(bId.intValue()));
+          rq.put(new EndOfBucket(bId));
           this.incNumBucketsProcessed();
           return; // success
         }
@@ -298,8 +314,8 @@ public class PRQueryProcessor {
         throw new RegionDestroyedException("PR destroyed during query", pr.getFullPath());
       }
       pr.checkReadiness();
-      throw new ForceReattemptException("Bucket id " + pr.bucketStringForLogs(bId.intValue())
-          + " not found on VM " + pr.getMyId());
+      throw new ForceReattemptException(
+          "Bucket id " + pr.bucketStringForLogs(bId) + " not found on VM " + pr.getMyId());
     }
   }
 
@@ -342,9 +358,8 @@ public class PRQueryProcessor {
       }
     }
 
-    NWayMergeResults mergedResults = new NWayMergeResults(sortedResults, cs.isDistinct(), limit,
-        cs.getOrderByAttrs(), context, cs.getElementTypeForOrderByQueries());
-    return mergedResults;
+    return new NWayMergeResults(sortedResults, cs.isDistinct(), limit, cs.getOrderByAttrs(),
+        context, cs.getElementTypeForOrderByQueries());
 
   }
 
@@ -367,15 +382,10 @@ public class PRQueryProcessor {
       Object results = query.executeUsingContext(context);
 
       synchronized (resultCollector) {
-        // TODO:Asif: In what situation would the results object itself be undefined?
+        // TODO: In what situation would the results object itself be undefined?
         // The elements of the results can be undefined , but not the resultset itself
-        /*
-         * if (results == QueryService.UNDEFINED) {
-         * resultCollector.add(Collections.singleton(results)); } else {
-         */
         this.resultType = ((SelectResults) results).getCollectionType().getElementType();
-        resultCollector.add((SelectResults) results);
-        // }
+        resultCollector.add((Collection) results);
       }
       isIndexUsedForLocalQuery = ((QueryExecutionContext) context).isIndexUsed();
 
@@ -435,7 +445,7 @@ public class PRQueryProcessor {
 
     /**
      * Closes the executor service. This is called from
-     * {@link PartitionedRegion#afterRegionsClosedByCacheClose(GemFireCacheImpl)}
+     * {@link PartitionedRegion#afterRegionsClosedByCacheClose(InternalCache)}
      */
     static synchronized void shutdown() {
       if (execService != null) {
@@ -541,8 +551,7 @@ public class PRQueryProcessor {
           // ((IndexTrackingQueryObserver)observer).setIndexInfo(resultColl.getIndexInfoMap());
         }
 
-        final Integer bId = Integer.valueOf(this._bucketId);
-        List<Integer> bucketList = Collections.singletonList(bId);
+        List<Integer> bucketList = Collections.singletonList(this._bucketId);
         ExecutionContext context =
             new QueryExecutionContext(this.parameters, pr.getCache(), this.query);
         context.setBucketList(bucketList);
@@ -571,11 +580,6 @@ public class PRQueryProcessor {
       private Exception _ex = null;
       public boolean retry = false;
 
-      /**
-       * Constructor
-       * 
-       * @param bukId
-       */
       public BucketQueryResult(int bukId) {
         this._buk = bukId;
       }
@@ -593,7 +597,7 @@ public class PRQueryProcessor {
       }
 
       public Integer getBucketId() {
-        return Integer.valueOf(this._buk);
+        return valueOf(this._buk);
       }
 
       public boolean isReattemptNeeded() {

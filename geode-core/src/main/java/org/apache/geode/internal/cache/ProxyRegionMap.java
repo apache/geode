@@ -50,10 +50,8 @@ import org.apache.geode.internal.offheap.annotations.Released;
  * always empty.
  * 
  * @since GemFire 5.0
- * 
- * 
  */
-final class ProxyRegionMap implements RegionMap {
+class ProxyRegionMap implements RegionMap {
 
   protected ProxyRegionMap(LocalRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
@@ -280,8 +278,7 @@ final class ProxyRegionMap implements RegionMap {
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    this.owner.txApplyInvalidatePart2(markerEntry, key, didDestroy, true,
-        false /* Clear conflic occurred */);
+    this.owner.txApplyInvalidatePart2(markerEntry, key, didDestroy, true);
     if (this.owner.isInitialized()) {
       if (txEvent != null) {
         txEvent.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
@@ -318,7 +315,7 @@ final class ProxyRegionMap implements RegionMap {
       long tailKey) {
     Operation putOp = p_putOp.getCorrespondingCreateOp();
     long lastMod = owner.cacheTimeMillis();
-    this.owner.txApplyPutPart2(markerEntry, key, newValue, lastMod, true, didDestroy,
+    this.owner.txApplyPutPart2(markerEntry, key, lastMod, true, didDestroy,
         false /* Clear conflict occurred */);
     if (this.owner.isInitialized()) {
       if (txEvent != null) {
@@ -582,12 +579,6 @@ final class ProxyRegionMap implements RegionMap {
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.internal.cache.RegionEntry#getSerializedValueOnDisk(org.apache.geode.
-     * internal.cache.LocalRegion)
-     */
     public Object getSerializedValueOnDisk(LocalRegion localRegion) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0

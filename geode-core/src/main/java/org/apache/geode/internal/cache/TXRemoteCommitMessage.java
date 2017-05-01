@@ -40,16 +40,13 @@ import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationRes
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-/**
- * 
- *
- */
 public class TXRemoteCommitMessage extends TXMessage {
-
   private static final Logger logger = LogService.getLogger();
 
   /** for deserialization */
-  public TXRemoteCommitMessage() {}
+  public TXRemoteCommitMessage() {
+    // nothing
+  }
 
   public TXRemoteCommitMessage(int txUniqId, InternalDistributedMember onBehalfOfClientMember,
       ReplyProcessor21 processor) {
@@ -76,7 +73,7 @@ public class TXRemoteCommitMessage extends TXMessage {
 
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     TXManagerImpl txMgr = cache.getTXMgr();
 
     if (logger.isDebugEnabled()) {
@@ -124,8 +121,6 @@ public class TXRemoteCommitMessage extends TXMessage {
     return true;
   }
 
-
-
   /**
    * This message is used for the reply to a remote commit operation: a commit from a stub to the tx
    * host. This is the reply to a {@link TXRemoteCommitMessage}.
@@ -133,7 +128,9 @@ public class TXRemoteCommitMessage extends TXMessage {
    * @since GemFire 6.5
    */
   public static final class TXRemoteCommitReplyMessage extends ReplyMessage {
+
     private transient TXCommitMessage commitMessage;
+
     /*
      * Used on the fromData side to transfer the value bytes to the requesting thread
      */
@@ -142,7 +139,9 @@ public class TXRemoteCommitMessage extends TXMessage {
     /**
      * Empty constructor to conform to DataSerializable interface
      */
-    public TXRemoteCommitReplyMessage() {}
+    public TXRemoteCommitReplyMessage() {
+      // nothing
+    }
 
     public TXRemoteCommitReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
       fromData(in);
@@ -219,7 +218,7 @@ public class TXRemoteCommitMessage extends TXMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("TXRemoteCommitReplyMessage ").append("processorid=").append(this.processorId)
           .append(" reply to sender ").append(this.getSender());
       return sb.toString();

@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.cache.lru;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -36,7 +35,7 @@ public class OffHeapEvictor extends HeapEvictor {
 
   private long bytesToEvictWithEachBurst;
 
-  public OffHeapEvictor(Cache gemFireCache) {
+  public OffHeapEvictor(InternalCache gemFireCache) {
     super(gemFireCache);
     calculateEvictionBurst();
   }
@@ -46,7 +45,7 @@ public class OffHeapEvictor extends HeapEvictor {
         DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage",
         "0.4"));
 
-    MemoryAllocator allocator = ((GemFireCacheImpl) this.cache).getOffHeapStore();
+    MemoryAllocator allocator = this.cache.getOffHeapStore();
 
     /*
      * Bail if there is no off-heap memory to evict.

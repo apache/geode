@@ -75,7 +75,7 @@ public final class DistTXRollbackMessage extends TXMessage {
       logger.debug("Dist TX: Rollback: {}", txId);
     }
 
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     TXManagerImpl txMgr = cache.getTXMgr();
     final TXStateProxy txState = txMgr.getTXState();
     boolean rollbackSuccessful = false;
@@ -87,10 +87,6 @@ public final class DistTXRollbackMessage extends TXMessage {
               "DistTXRollbackMessage.operateOnTx: found a previously committed transaction:{}",
               txId);
         }
-        // TXCommitMessage cmsg = txMgr.getRecentlyCompletedMessage(txId);
-        // if (txMgr.isExceptionToken(cmsg)) {
-        // throw txMgr.getExceptionForToken(cmsg, txId);
-        // }
       } else if (txState != null) {
         // [DISTTX] TODO - Handle scenarios of no txState
         // if no TXState was created (e.g. due to only getEntry/size operations
@@ -219,7 +215,7 @@ public final class DistTXRollbackMessage extends TXMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("DistTXRollbackReplyMessage ").append("processorid=").append(this.processorId)
           .append(" reply to sender ").append(this.getSender());
       return sb.toString();
@@ -232,7 +228,6 @@ public final class DistTXRollbackMessage extends TXMessage {
 
   /**
    * A processor to capture the value returned by {@link DistTXRollbackReplyMessage}
-   * 
    */
   public static class DistTXRollbackResponse extends RemoteOperationResponse {
     private volatile Boolean rollbackState;
@@ -274,9 +269,6 @@ public final class DistTXRollbackMessage extends TXMessage {
       } catch (RemoteOperationException e) {
         final String msg = "DistTXRollbackResponse got RemoteOperationException; rethrowing";
         logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
         throw e;
       }
       return rollbackState;
@@ -354,7 +346,7 @@ public final class DistTXRollbackMessage extends TXMessage {
             (DistTxRollbackExceptionCollectingException) this.exception;
         return cce.getCacheClosedMembers();
       } else {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
       }
     }
 
@@ -364,7 +356,7 @@ public final class DistTXRollbackMessage extends TXMessage {
             (DistTxRollbackExceptionCollectingException) this.exception;
         return cce.getRegionDestroyedMembers(regionFullPath);
       } else {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
       }
     }
 
@@ -402,14 +394,12 @@ public final class DistTXRollbackMessage extends TXMessage {
     /**
      * Determine if the commit processing was incomplete, if so throw a detailed exception
      * indicating the source of the problem
-     * 
-     * @param msgMap
      */
     public void handlePotentialCommitFailure(
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
       if (fatalExceptions.size() > 0) {
-        StringBuffer errorMessage = new StringBuffer("Incomplete commit of transaction ").append(id)
-            .append(".  Caused by the following exceptions: ");
+        StringBuilder errorMessage = new StringBuilder("Incomplete commit of transaction ")
+            .append(id).append(".  Caused by the following exceptions: ");
         for (Iterator i = fatalExceptions.entrySet().iterator(); i.hasNext();) {
           Map.Entry me = (Map.Entry) i.next();
           DistributedMember mem = (DistributedMember) me.getKey();
@@ -443,16 +433,13 @@ public final class DistTXRollbackMessage extends TXMessage {
     public Set getRegionDestroyedMembers(String regionFullPath) {
       Set members = (Set) this.regionExceptions.get(regionFullPath);
       if (members == null) {
-        members = Collections.EMPTY_SET;
+        members = Collections.emptySet();
       }
       return members;
     }
 
     /**
      * Protected by (this)
-     * 
-     * @param member
-     * @param exceptions
      */
     public void addExceptionsFromMember(InternalDistributedMember member, Set exceptions) {
       for (Iterator iter = exceptions.iterator(); iter.hasNext();) {

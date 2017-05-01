@@ -122,7 +122,7 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

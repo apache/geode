@@ -185,7 +185,7 @@ public final class SizeMessage extends PartitionMessage {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; bucketIds=").append(this.bucketIds);
   }

@@ -158,7 +158,7 @@ public class VersionedStatsRegionEntryOffHeapStringKey2 extends VersionedStatsRe
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

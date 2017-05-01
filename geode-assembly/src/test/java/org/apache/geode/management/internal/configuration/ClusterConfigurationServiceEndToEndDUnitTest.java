@@ -47,7 +47,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
@@ -402,7 +402,7 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
         localProps.setProperty(LOCATORS, "localhost[" + locator1Port + "]");
         localProps.setProperty(NAME, "DataMember");
         getSystem(localProps);
-        Cache cache = getCache();
+        InternalCache cache = getCache();
         assertNotNull(cache);
         return getAllNormalMembers(cache);
       }
@@ -415,7 +415,7 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
     locatorAndMgr.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+        InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
         ShutdownAllRequest.send(cache.getInternalDistributedSystem().getDistributionManager(), -1);
         return null;
       }

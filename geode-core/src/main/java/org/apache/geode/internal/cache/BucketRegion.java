@@ -185,7 +185,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   static final boolean FORCE_LOCAL_LISTENERS_INVOCATION = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "BucketRegion.alwaysFireLocalListeners");
-  // gemfire.BucktRegion.alwaysFireLocalListeners=true
 
   private volatile AtomicLong5 eventSeqNum = null;
 
@@ -194,7 +193,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   public BucketRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      GemFireCacheImpl cache, InternalRegionArguments internalRegionArgs) {
+      InternalCache cache, InternalRegionArguments internalRegionArgs) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs);
     if (PartitionedRegion.DISABLE_SECONDARY_BUCKET_ACK) {
       Assert.assertTrue(attrs.getScope().isDistributedNoAck());
@@ -270,7 +269,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected DiskStoreImpl findDiskStore(RegionAttributes ra,
+  protected DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
       InternalRegionArguments internalRegionArgs) {
     return internalRegionArgs.getPartitionedRegion().getDiskStore();
   }
@@ -927,8 +926,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void basicInvalidatePart2(final RegionEntry re, final EntryEventImpl event, boolean clearConflict,
-      boolean invokeCallbacks) {
+  void basicInvalidatePart2(final RegionEntry regionEntry, final EntryEventImpl event,
+      boolean conflictWithClear, boolean invokeCallbacks) {
     // Assumed this is called with the entry synchronized
     long token = -1;
     InvalidateOperation op = null;
@@ -936,7 +935,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     try {
       if (!event.isOriginRemote()) {
         if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
-          VersionTag v = re.generateVersionTag(null, false, this, event);
+          VersionTag v = regionEntry.generateVersionTag(null, false, this, event);
           if (logger.isDebugEnabled() && v != null) {
             logger.debug("generated version tag {} in region {}", v, this.getName());
           }
@@ -954,8 +953,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         op = new InvalidateOperation(event);
         token = op.startOperation();
       }
-      super.basicInvalidatePart2(re, event, clearConflict /* Clear conflict occurred */,
-          invokeCallbacks);
+      super.basicInvalidatePart2(regionEntry, event,
+          conflictWithClear /* Clear conflict occurred */, invokeCallbacks);
     } finally {
       if (op != null) {
         op.endOperation(token);
@@ -1018,8 +1017,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  final void performExpiryTimeout(ExpiryTask p_task) throws CacheException {
-    ExpiryTask task = p_task;
+  final void performExpiryTimeout(ExpiryTask expiryTask) throws CacheException {
+    ExpiryTask task = expiryTask;
     boolean isEvictDestroy = isEntryEvictDestroyEnabled();
     // Fix for bug 43805 - get the primary lock before
     // synchronizing on pendingSecondaryExpires, to match the lock
@@ -1382,13 +1381,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   /**
    * is the current thread involved in destroying the PR that owns this region?
    */
-  private final boolean isInDestroyingThread() {
+  private boolean isInDestroyingThread() {
     return this.partitionedRegion.locallyDestroyingThread == Thread.currentThread();
   }
-  // public int getSerialNumber() {
-  // String s = "This should never be called on " + getClass();
-  // throw new UnsupportedOperationException(s);
-  // }
 
   @Override
   public void fillInProfile(Profile profile) {
@@ -2110,10 +2105,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       // counters to 0.
       oldMemValue = this.bytesInMemory.getAndSet(0);
     }
-    // Gemfire PRs don't support clear. allowing it via a hack for tests
-    else if (LocalRegion.simulateClearForTests) {
-      oldMemValue = this.bytesInMemory.getAndSet(0);
-    } else {
+
+    else {
       throw new InternalGemFireError(
           "Trying to clear a bucket region that was not destroyed or in initialization.");
     }
@@ -2124,14 +2117,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  public int calculateValueSize(Object val) {
+  public int calculateValueSize(Object value) {
     // Only needed by BucketRegion
-    return calcMemSize(val);
+    return calcMemSize(value);
   }
 
   @Override
-  public int calculateRegionEntryValueSize(RegionEntry re) {
-    return calcMemSize(re._getValue()); // OFFHEAP _getValue ok
+  public int calculateRegionEntryValueSize(RegionEntry regionEntry) {
+    return calcMemSize(regionEntry._getValue()); // OFFHEAP _getValue ok
   }
 
   @Override
@@ -2181,7 +2174,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   @Override
   public void initialCriticalMembers(boolean localHeapIsCritical,
-      Set<InternalDistributedMember> critialMembers) {
+      Set<InternalDistributedMember> criticalMembers) {
     // The owner Partitioned Region handles critical threshold events
   }
 

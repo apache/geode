@@ -71,7 +71,7 @@ public class VersionedStatsRegionEntryHeapObjectKey extends VersionedStatsRegion
     this.value = v;
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

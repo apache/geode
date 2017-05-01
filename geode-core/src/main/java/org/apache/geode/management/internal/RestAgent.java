@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal;
 
 import java.net.UnknownHostException;
@@ -29,9 +28,9 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -60,15 +59,14 @@ public class RestAgent {
     return this.running;
   }
 
-  private boolean isManagementRestServiceRunning(GemFireCacheImpl cache) {
+  private boolean isManagementRestServiceRunning(InternalCache cache) {
     final SystemManagementService managementService =
         (SystemManagementService) ManagementService.getManagementService(cache);
     return (managementService.getManagementAgent() != null
         && managementService.getManagementAgent().isHttpServiceRunning());
-
   }
 
-  public synchronized void start(GemFireCacheImpl cache) {
+  public synchronized void start(InternalCache cache) {
     if (!this.running && this.config.getHttpServicePort() != 0
         && !isManagementRestServiceRunning(cache)) {
       try {
@@ -84,7 +82,6 @@ public class RestAgent {
         logger.debug(e.getMessage(), e);
       }
     }
-
   }
 
   public synchronized void stop() {
@@ -141,7 +138,7 @@ public class RestAgent {
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar);
 
         if (logger.isDebugEnabled()) {
-          logger.info("Starting HTTP embedded server on port ({}) at bind-address ({})...",
+          logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
               ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(),
               httpServiceBindAddress);
         }
@@ -212,9 +209,8 @@ public class RestAgent {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting creation of  __ParameterizedQueries__ region");
       }
-      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
       if (cache != null) {
-        // cache.getCacheConfig().setPdxReadSerialized(true);
         final InternalRegionArguments regionArguments = new InternalRegionArguments();
         regionArguments.setIsUsedForMetaRegion(true);
         final AttributesFactory<String, String> attributesFactory =

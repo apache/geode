@@ -26,7 +26,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
@@ -93,7 +92,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
       // Only notify the type registry if this is a WAN gateway queue
       if (!isAsyncEventQueue()) {
-        ((GemFireCacheImpl) getCache()).getPdxRegistry().gatewaySenderStarted(this);
+        getCache().getPdxRegistry().gatewaySenderStarted(this);
       }
       new UpdateAttributesProcessor(this).distribute(false);
 
@@ -178,12 +177,12 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("SerialGatewaySender{");
-    sb.append("id=" + getId());
-    sb.append(",remoteDsId=" + getRemoteDSId());
-    sb.append(",isRunning =" + isRunning());
-    sb.append(",isPrimary =" + isPrimary());
+    sb.append("id=").append(getId());
+    sb.append(",remoteDsId=").append(getRemoteDSId());
+    sb.append(",isRunning =").append(isRunning());
+    sb.append(",isPrimary =").append(isPrimary());
     sb.append("}");
     return sb.toString();
   }

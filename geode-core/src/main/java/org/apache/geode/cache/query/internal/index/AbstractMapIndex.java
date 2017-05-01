@@ -26,6 +26,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -43,7 +44,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 
 public abstract class AbstractMapIndex extends AbstractIndex {
-  final protected boolean isAllKeys;
+  final boolean isAllKeys;
 
   final String[] patternStr;
 
@@ -187,7 +188,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     public long getNumberOfValues(Object key) {
       long numValues = 0;
       for (Object ind : mapKeyToValueIndex.values()) {
-        numValues += ((AbstractIndex) ind).getStatistics().getNumberOfValues(key);
+        numValues += ((Index) ind).getStatistics().getNumberOfValues(key);
       }
       return numValues;
     }
@@ -199,13 +200,12 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       return this.vsdStats.getReadLockCount();
     }
 
-
     public void close() {
       this.vsdStats.close();
     }
 
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("No Keys = ").append(getNumberOfKeys()).append("\n");
       sb.append("No Map Index Keys = ").append(getNumberOfMapIndexKeys()).append("\n");
       sb.append("No Values = ").append(getNumberOfValues()).append("\n");
@@ -222,8 +222,8 @@ public abstract class AbstractMapIndex extends AbstractIndex {
   }
 
   @Override
-  void instantiateEvaluator(IndexCreationHelper ich) {
-    this.evaluator = new IMQEvaluator(ich);
+  void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
+    this.evaluator = new IMQEvaluator(indexCreationHelper);
   }
 
   @Override
@@ -375,7 +375,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       if (condnExpr instanceof MapIndexable) {
         MapIndexable mi = (MapIndexable) condnExpr;
         CompiledValue recvr = mi.getRecieverSansIndexArgs();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         recvr.generateCanonicalizedExpression(sb, context);
         sb.append('[').append(']');
         return sb.toString().equals(this.patternStr[0]);

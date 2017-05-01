@@ -28,10 +28,12 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInitializationException;
 
 public class CheckTypeRegistryState extends HighPriorityDistributionMessage
     implements MessageWithReply {
+
   private int processorId;
 
   public CheckTypeRegistryState() {
@@ -68,7 +70,7 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
   protected void process(DistributionManager dm) {
     ReplyException e = null;
     try {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null && !cache.isClosed()) {
         TypeRegistry pdxRegistry = cache.getPdxRegistry();
         if (pdxRegistry != null) {

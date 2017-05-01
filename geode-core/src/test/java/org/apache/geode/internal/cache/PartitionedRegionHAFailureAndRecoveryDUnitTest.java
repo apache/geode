@@ -124,8 +124,8 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
       private static final long serialVersionUID = 1L;
 
       public void run() {
-        Cache c = getCache();
-        Region rootReg = PartitionedRegionHelper.getPRRoot(c);
+        InternalCache cache = (InternalCache) getCache();
+        Region rootReg = PartitionedRegionHelper.getPRRoot(cache);
         rootReg.getAttributesMutator()
             .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
       }
@@ -144,8 +144,8 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
 
           public void run() {
             try {
-              Cache c = getCache();
-              Region rootReg = PartitionedRegionHelper.getPRRoot(c);
+              InternalCache cache = getCache();
+              Region rootReg = PartitionedRegionHelper.getPRRoot(cache);
               CacheListener[] cls = rootReg.getAttributes().getCacheListeners();
               assertEquals(2, cls.length);
               CertifiableTestCacheListener ctcl = (CertifiableTestCacheListener) cls[1];
@@ -256,7 +256,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     SerializableRunnable validator =
         new CacheSerializableRunnable("validateNodeFailMetaDataCleanUp") {
           public void run2() throws CacheException {
-            Cache cache = getCache();
+            InternalCache cache = getCache();
             Region rootReg = PartitionedRegionHelper.getPRRoot(cache);
             CacheListener[] cls = rootReg.getAttributes().getCacheListeners();
             assertEquals(2, cls.length);

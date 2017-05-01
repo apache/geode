@@ -12,11 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.geode.cache.LowMemoryException;
@@ -30,16 +28,12 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SetUtils;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- * 
- *
- */
 public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
   private final PartitionedRegion pr;
@@ -332,16 +326,9 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     return buf.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.
-   * cache.execute.Function, java.util.Set)
-   */
   @Override
   public void validateExecution(Function function, Set targetMembers) {
-    GemFireCacheImpl cache = pr.getGemFireCache();
+    InternalCache cache = pr.getGemFireCache();
     if (cache != null && cache.getTxManager().getTXState() != null) {
       if (targetMembers.size() > 1) {
         throw new TransactionException(
@@ -356,7 +343,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
         } else if (!target.equals(funcTarget)) {
           throw new TransactionDataRebalancedException(
               LocalizedStrings.PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1
-                  .toLocalizedString(new Object[] {target, funcTarget}));
+                  .toLocalizedString(target, funcTarget));
         }
       }
     }

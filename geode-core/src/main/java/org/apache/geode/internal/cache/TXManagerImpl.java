@@ -12,16 +12,52 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.locks.LockSupport;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.TransactionInDoubtException;
+import org.apache.geode.cache.TransactionListener;
+import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.TXManagerCancelledException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -32,30 +68,14 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.locks.LockSupport;
 
 /**
- * <p>
  * The internal implementation of the {@link CacheTransactionManager} interface returned by
- * {@link GemFireCacheImpl#getCacheTransactionManager}. Internal operations
+ * {@link InternalCache#getCacheTransactionManager}. Internal operations
  * 
- * </code>TransactionListener</code> invocation, Region synchronization, transaction statistics and
+ * {@code TransactionListener} invocation, Region synchronization, transaction statistics and
  * 
  * transaction logging are handled here
- * 
  *
  * @since GemFire 4.0
  * 
@@ -67,12 +87,14 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   // Thread specific context container
   private final ThreadLocal<TXStateProxy> txContext;
+
   private static TXManagerImpl currentInstance = null;
+
   // The unique transaction ID for this Manager
   private final AtomicInteger uniqId;
 
   private final DM dm;
-  private final Cache cache;
+  private final InternalCache cache;
 
   // The DistributionMemberID used to construct TXId's
   private final InternalDistributedMember distributionMgrId;
@@ -86,8 +108,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public static final int NOTX = -1;
 
-  private final ArrayList<TransactionListener> txListeners = new ArrayList<TransactionListener>(8);
+  private final List<TransactionListener> txListeners = new ArrayList<>(8);
+
   public TransactionWriter writer = null;
+
   private volatile boolean closed = false;
 
   private final Map<TXId, TXStateProxy> hostedTXStates;
@@ -95,7 +119,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * the number of client initiated transactions to store for client failover
    */
-  public final static int FAILOVER_TX_MAP_SIZE =
+  public static final int FAILOVER_TX_MAP_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "transactionFailoverMapSize", 1000);
 
   /**
@@ -106,6 +130,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   @SuppressWarnings("unchecked")
   private Map<TXId, TXCommitMessage> failoverMap =
       Collections.synchronizedMap(new LinkedHashMap<TXId, TXCommitMessage>() {
+        // TODO: inner class is serializable but outer class is not
         private static final long serialVersionUID = -4156018226167594134L;
 
         protected boolean removeEldestEntry(Entry eldest) {
@@ -114,7 +139,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
                 eldest.getKey(), (size() > FAILOVER_TX_MAP_SIZE));
           }
           return size() > FAILOVER_TX_MAP_SIZE;
-        };
+        }
       });
 
   /**
@@ -126,8 +151,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * this keeps track of all the transactions that were initiated locally.
    */
-  private ConcurrentMap<TXId, TXStateProxy> localTxMap =
-      new ConcurrentHashMap<TXId, TXStateProxy>();
+  private ConcurrentMap<TXId, TXStateProxy> localTxMap = new ConcurrentHashMap<>();
 
   /**
    * the time in minutes after which any suspended transaction are rolled back. default is 30
@@ -152,27 +176,24 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * Constructor that implements the {@link CacheTransactionManager} interface. Only only one
    * instance per {@link org.apache.geode.cache.Cache}
-   *
-   * @param cachePerfStats
    */
-  public TXManagerImpl(CachePerfStats cachePerfStats, Cache cache) {
+  public TXManagerImpl(CachePerfStats cachePerfStats, InternalCache cache) {
     this.cache = cache;
     this.dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
     this.distributionMgrId = this.dm.getDistributionManagerId();
     this.uniqId = new AtomicInteger(0);
     this.cachePerfStats = cachePerfStats;
-    this.hostedTXStates = new HashMap<TXId, TXStateProxy>();
-    this.txContext = new ThreadLocal<TXStateProxy>();
-    this.isTXDistributed = new ThreadLocal<Boolean>();
+    this.hostedTXStates = new HashMap<>();
+    this.txContext = new ThreadLocal<>();
+    this.isTXDistributed = new ThreadLocal<>();
     this.transactionTimeToLive = Integer
         .getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
     currentInstance = this;
   }
 
-  final Cache getCache() {
+  InternalCache getCache() {
     return this.cache;
   }
-
 
   /**
    * Get the TransactionWriter for the cache
@@ -180,21 +201,19 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return the current TransactionWriter
    * @see TransactionWriter
    */
-  public final TransactionWriter getWriter() {
+  public TransactionWriter getWriter() {
     return writer;
   }
 
-
-  public final void setWriter(TransactionWriter writer) {
-    if (((GemFireCacheImpl) this.cache).isClient()) {
+  public void setWriter(TransactionWriter writer) {
+    if (this.cache.isClient()) {
       throw new IllegalStateException(
           LocalizedStrings.TXManager_NO_WRITER_ON_CLIENT.toLocalizedString());
     }
     this.writer = writer;
   }
 
-
-  public final TransactionListener getListener() {
+  public TransactionListener getListener() {
     synchronized (this.txListeners) {
       if (this.txListeners.isEmpty()) {
         return null;
@@ -280,7 +299,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  final CachePerfStats getCachePerfStats() {
+  CachePerfStats getCachePerfStats() {
     return this.cachePerfStats;
   }
 
@@ -396,7 +415,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     noteCommitSuccess(opStart, lifeTime, tx);
   }
 
-  final void noteCommitFailure(long opStart, long lifeTime, TXStateInterface tx) {
+  void noteCommitFailure(long opStart, long lifeTime, TXStateInterface tx) {
     long opEnd = CachePerfStats.getStatTime();
     this.cachePerfStats.txFailure(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
@@ -428,7 +447,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  final void noteCommitSuccess(long opStart, long lifeTime, TXStateInterface tx) {
+  void noteCommitSuccess(long opStart, long lifeTime, TXStateInterface tx) {
     long opEnd = CachePerfStats.getStatTime();
     this.cachePerfStats.txSuccess(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
@@ -497,7 +516,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     noteRollbackSuccess(opStart, lifeTime, tx);
   }
 
-  final void noteRollbackSuccess(long opStart, long lifeTime, TXStateInterface tx) {
+  void noteRollbackSuccess(long opStart, long lifeTime, TXStateInterface tx) {
     long opEnd = CachePerfStats.getStatTime();
     this.cachePerfStats.txRollback(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
@@ -597,7 +616,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     return retVal;
   }
 
-  public final void setTXState(TXStateProxy val) {
+  public void setTXState(TXStateProxy val) {
     txContext.set(val);
   }
 
@@ -625,11 +644,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     for (TXStateProxy proxy : this.localTxMap.values()) {
       proxy.close();
     }
-    {
-      TransactionListener[] listeners = getListeners();
-      for (int i = 0; i < listeners.length; i++) {
-        closeListener(listeners[i]);
-      }
+    TransactionListener[] listeners = getListeners();
+    for (int i = 0; i < listeners.length; i++) {
+      closeListener(listeners[i]);
     }
   }
 
@@ -660,7 +677,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return the state of the transaction or null. Pass this value to {@link TXManagerImpl#resume}
    *         to reactivate the suspended transaction.
    */
-  public final TXStateProxy internalSuspend() {
+  public TXStateProxy internalSuspend() {
     TXStateProxy result = getTXState();
     if (result != null) {
       result.suspend();
@@ -691,25 +708,25 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * @deprecated use internalResume instead
    */
-  public final void resume(TXStateProxy tx) {
+  @Deprecated
+  public void resume(TXStateProxy tx) {
     internalResume(tx);
   }
 
-  public final boolean isClosed() {
+  public boolean isClosed() {
     return this.closed;
   }
 
-  private final void checkClosed() {
+  private void checkClosed() {
     cache.getCancelCriterion().checkCancelInProgress(null);
     if (this.closed) {
       throw new TXManagerCancelledException("This transaction manager is closed.");
     }
   }
 
-  final DM getDM() {
+  DM getDM() {
     return this.dm;
   }
-
 
   public static int getCurrentTXUniqueId() {
     if (currentInstance == null) {
@@ -718,9 +735,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     return currentInstance.getMyTXUniqueId();
   }
 
-
-
-  public final static TXStateProxy getCurrentTXState() {
+  public static TXStateProxy getCurrentTXState() {
     if (currentInstance == null) {
       return null;
     }
@@ -747,9 +762,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * on the txState, on which this thread operates. Some messages like SizeMessage should not create
    * a new txState.
    * 
-   * @param msg
    * @return {@link TXStateProxy} the txProxy for the transactional message
-   * @throws InterruptedException
    */
   public TXStateProxy masqueradeAs(TransactionMessage msg) throws InterruptedException {
     if (msg.getTXUniqId() == NOTX || !msg.canParticipateInTransaction()) {
@@ -828,11 +841,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * on the txState, on which this thread operates. Some messages like SizeMessage should not create
    * a new txState.
    * 
-   * @param msg
-   * @param memberId
    * @param probeOnly - do not masquerade; just look up the TX state
    * @return {@link TXStateProxy} the txProxy for the transactional message
-   * @throws InterruptedException
    */
   public TXStateProxy masqueradeAs(Message msg, InternalDistributedMember memberId,
       boolean probeOnly) throws InterruptedException {
@@ -846,8 +856,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       synchronized (this.hostedTXStates) {
         val = this.hostedTXStates.get(key);
         if (val == null) {
-          // [sjigyasu] TODO: Conditionally create object based on distributed or non-distributed tx
-          // mode
+          // TODO: Conditionally create object based on distributed or non-distributed tx mode
           if (msg instanceof TransactionMessage
               && ((TransactionMessage) msg).isTransactionDistributed()) {
             val = new DistTXStateProxyImplOnDatanode(this, key, memberId);
@@ -894,8 +903,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Remove the association created by {@link #masqueradeAs(TransactionMessage)}
-   * 
-   * @param tx
    */
   public void unmasquerade(TXStateProxy tx) {
     if (tx != null) {
@@ -907,7 +914,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * Cleanup the remote txState after commit and rollback
    * 
-   * @param txId
    * @return the TXStateProxy
    */
   public TXStateProxy removeHostedTXState(TXId txId) {
@@ -942,7 +948,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * Used to verify if a transaction with a given id is hosted by this txManager.
    * 
-   * @param txId
    * @return true if the transaction is in progress, false otherwise
    */
   public boolean isHostedTxInProgress(TXId txId) {
@@ -1104,7 +1109,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * If the given transaction is already being completed by another thread this will wait for that
    * completion to finish and will ensure that the result is saved in the client failover map.
    * 
-   * @param txId
    * @return true if a wait was performed
    */
   public boolean waitForCompletingTransaction(TXId txId) {
@@ -1132,7 +1136,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * Returns the TXCommitMessage for a transaction that has been successfully completed.
    * 
-   * @param txId
    * @return the commit message or an exception token e.g {@link TXCommitMessage#CMT_CONFLICT_MSG}
    *         if the transaction threw an exception
    * @see #isExceptionToken(TXCommitMessage)
@@ -1142,7 +1145,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   /**
-   * @param msg
    * @return true if msg is an exception token, false otherwise
    */
   public boolean isExceptionToken(TXCommitMessage msg) {
@@ -1158,7 +1160,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * during transaction execution.
    * 
    * @param msg the token that represents the exception
-   * @param txId
    * @return the exception
    */
   public RuntimeException getExceptionForToken(TXCommitMessage msg, TXId txId) {
@@ -1209,13 +1210,12 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
     @Override
     protected void process(DistributionManager dm) {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
         TXManagerImpl mgr = cache.getTXMgr();
         mgr.removeTransactions(this.txIds, false);
       }
     }
-
   }
 
   private ConcurrentMap<TransactionId, TXStateProxy> suspendedTXs =
@@ -1290,8 +1290,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     SystemTimerTask task = this.expiryTasks.remove(txProxy.getTransactionId());
     if (task != null) {
       if (task.cancel()) {
-        GemFireCacheImpl cache = (GemFireCacheImpl) this.cache;
-        cache.purgeCCPTimer();
+        this.cache.purgeCCPTimer();
       }
     }
   }
@@ -1300,8 +1299,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * this map keeps track of all the threads that are waiting in
    * {@link #tryResume(TransactionId, long, TimeUnit)} for a particular transactionId
    */
-  private ConcurrentMap<TransactionId, Queue<Thread>> waitMap =
-      new ConcurrentHashMap<TransactionId, Queue<Thread>>();
+  private ConcurrentMap<TransactionId, Queue<Thread>> waitMap = new ConcurrentHashMap<>();
 
   public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit) {
     if (transactionId == null || getTXState() != null || !exists(transactionId)) {
@@ -1383,11 +1381,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * schedules the transaction to expire after {@link #suspendedTXTimeout}
    * 
-   * @param txId
    * @param expiryTimeUnit the time unit to use when scheduling the expiration
    */
   private void scheduleExpiry(TransactionId txId, TimeUnit expiryTimeUnit) {
-    final GemFireCacheImpl cache = (GemFireCacheImpl) this.cache;
     if (suspendedTXTimeout < 0) {
       if (logger.isDebugEnabled()) {
         logger.debug("TX: transaction: {} not scheduled to expire", txId);
@@ -1452,9 +1448,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
   private static class RefCountMapEntry
       implements HashEntry<AbstractRegionEntry, RefCountMapEntry> {
+
     private final AbstractRegionEntry key;
+
     private HashEntry<AbstractRegionEntry, RefCountMapEntry> next;
+
     private volatile int refCount;
+
     private static final AtomicIntegerFieldUpdater<RefCountMapEntry> refCountUpdater =
         AtomicIntegerFieldUpdater.newUpdater(RefCountMapEntry.class, "refCount");
 
@@ -1561,7 +1561,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         }
       };
 
-  public static final void incRefCount(AbstractRegionEntry re) {
+  public static void incRefCount(AbstractRegionEntry re) {
     TXManagerImpl mgr = currentInstance;
     if (mgr != null) {
       mgr.refCountMap.create(re, incCallback, null, null, true);
@@ -1571,7 +1571,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * Return true if refCount went to zero.
    */
-  public static final boolean decRefCount(AbstractRegionEntry re) {
+  public static boolean decRefCount(AbstractRegionEntry re) {
     TXManagerImpl mgr = currentInstance;
     if (mgr != null) {
       return mgr.refCountMap.removeConditionally(re, decCallback, null, null) != null;
@@ -1628,9 +1628,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         }
       };
       try {
-        ((GemFireCacheImpl) this.cache).getCCPTimer().schedule(task, timeout);
+        this.cache.getCCPTimer().schedule(task, timeout);
       } catch (IllegalStateException ise) {
-        if (!((GemFireCacheImpl) this.cache).isClosed()) {
+        if (!this.cache.isClosed()) {
           throw ise;
         }
         // task not able to be scheduled due to cache is closing,
@@ -1716,7 +1716,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           LocalizedStrings.TXManagerImpl_CANNOT_CHANGE_TRANSACTION_MODE_WHILE_TRANSACTIONS_ARE_IN_PROGRESS
               .toLocalizedString());
     } else {
-      isTXDistributed.set(new Boolean(flag));
+      isTXDistributed.set(flag);
     }
   }
 
@@ -1726,14 +1726,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * default value of this property.
    */
   public boolean isDistributed() {
-
     Boolean value = isTXDistributed.get();
     // This can be null if not set in setDistributed().
     if (value == null) {
       InternalDistributedSystem ids = (InternalDistributedSystem) cache.getDistributedSystem();
       return ids.getOriginalConfig().getDistributedTransactions();
     } else {
-      return value.booleanValue();
+      return value;
     }
   }
 

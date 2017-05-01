@@ -96,7 +96,7 @@ public class VMThinLRURegionEntryHeapStringKey2 extends VMThinLRURegionEntryHeap
     this.value = v;
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

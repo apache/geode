@@ -14,36 +14,32 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.Arrays;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.util.LogFilter;
 import org.apache.geode.management.internal.cli.util.LogSizer;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.Arrays;
 
 public class SizeExportLogsFunction extends ExportLogsFunction implements Function, InternalEntity {
   private static final Logger LOGGER = LogService.getLogger();
   private static final long serialVersionUID = 1L;
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   @Override
   public void execute(final FunctionContext context) {
     try {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       Args args = (Args) context.getArguments();
       long diskAvailable = config.getLogFile().getUsableSpace();

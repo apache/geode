@@ -28,8 +28,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.util.Gateway;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
@@ -44,6 +44,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -148,12 +149,6 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
                 .toString(new Object[] {sp.Id, sp.manualStart, sender.isManualStart()}));
       }
     }
-    /*
-     * if(sp.dispatcherThreads != sender.getDispatcherThreads()) { throw new IllegalStateException(
-     * LocalizedStrings.
-     * GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_WITH_DISPATCHER_THREAD_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_WITH_DISPATCHER_THREAD_2
-     * .toString(new Object[] { sp.Id, sp.dispatcherThreads, sender.getDispatcherThreads() })); }
-     */
 
     if (!sp.isParallel) {
       if (sp.orderPolicy != sender.getOrderPolicy()) {
@@ -232,9 +227,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
    * if there are no other primary senders then this sender should volunteer for primary. 2. If this
    * sender is primary and its policy is secondary then this sender should release the lock so that
    * other primary sender which s waiting on lock will get the lock.
-   * 
    */
-
   @Override
   public void profileUpdated(Profile profile) {
     if (profile instanceof GatewaySenderProfile) {
@@ -299,8 +292,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
   }
 
   public void initDLockService() {
-    InternalDistributedSystem ds =
-        ((GemFireCacheImpl) this.sender.getCache()).getInternalDistributedSystem();
+    InternalDistributedSystem ds = this.sender.getCache().getInternalDistributedSystem();
     String dlsName = getDLockServiceName();
     this.lockService = DistributedLockService.getServiceNamed(dlsName);
     if (this.lockService == null) {
@@ -560,8 +552,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       this.isDiskSynchronous = in.readBoolean();
       this.dispatcherThreads = in.readInt();
       if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.CURRENT) < 0) {
-        org.apache.geode.cache.util.Gateway.OrderPolicy oldOrderPolicy =
-            DataSerializer.readObject(in);
+        Gateway.OrderPolicy oldOrderPolicy = DataSerializer.readObject(in);
         if (oldOrderPolicy != null) {
           if (oldOrderPolicy.name().equals(OrderPolicy.KEY.name())) {
             this.orderPolicy = OrderPolicy.KEY;
@@ -604,14 +595,12 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.CURRENT) < 0
           && this.orderPolicy != null) {
         String orderPolicyName = this.orderPolicy.name();
-        if (orderPolicyName.equals(org.apache.geode.cache.util.Gateway.OrderPolicy.KEY.name())) {
-          DataSerializer.writeObject(org.apache.geode.cache.util.Gateway.OrderPolicy.KEY, out);
-        } else if (orderPolicyName
-            .equals(org.apache.geode.cache.util.Gateway.OrderPolicy.THREAD.name())) {
-          DataSerializer.writeObject(org.apache.geode.cache.util.Gateway.OrderPolicy.THREAD, out);
+        if (orderPolicyName.equals(Gateway.OrderPolicy.KEY.name())) {
+          DataSerializer.writeObject(Gateway.OrderPolicy.KEY, out);
+        } else if (orderPolicyName.equals(Gateway.OrderPolicy.THREAD.name())) {
+          DataSerializer.writeObject(Gateway.OrderPolicy.THREAD, out);
         } else {
-          DataSerializer.writeObject(org.apache.geode.cache.util.Gateway.OrderPolicy.PARTITION,
-              out);
+          DataSerializer.writeObject(Gateway.OrderPolicy.PARTITION, out);
         }
       } else {
         DataSerializer.writeObject(orderPolicy, out);
@@ -699,10 +688,9 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     @Override
     public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
-      Cache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
-        AbstractGatewaySender sender =
-            (AbstractGatewaySender) ((GemFireCacheImpl) cache).getGatewaySender(adviseePath);
+        AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(adviseePath);
         handleDistributionAdvisee(sender, removeProfile, exchangeProfiles, replyProfiles);
       }
     }
@@ -714,7 +702,6 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       sb.append("; remoteDSName=" + this.remoteDSId);
       sb.append("; isRunning=" + this.isRunning);
       sb.append("; isPrimary=" + this.isPrimary);
-
     }
   }
 

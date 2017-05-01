@@ -140,11 +140,11 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     protected HashMap subregionSerialNumbers;
 
     protected boolean notifyOfRegionDeparture;
+
     /**
      * true if need to automatically recreate region, and mark destruction as a reinitialization
      */
     protected transient LocalRegion lockRoot = null; // used for early destroy
-    // lock acquisition
 
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
@@ -158,9 +158,8 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     }
 
     protected RegionEventImpl createRegionEvent(DistributedRegion rgn) {
-      RegionEventImpl event = new RegionEventImpl(rgn, getOperation(), this.callbackArg,
-          true /* originRemote */, getSender());
-      return event;
+      return new RegionEventImpl(rgn, getOperation(), this.callbackArg, true /* originRemote */,
+          getSender());
     }
 
     private Runnable destroyOp(final DistributionManager dm, final LocalRegion lclRgn,
@@ -183,12 +182,12 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                 advisee =
                     PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(),
                         regionPath, waitForBucketInitializationToComplete);
-              } catch (PRLocallyDestroyedException e) {
+              } catch (PRLocallyDestroyedException ignore) {
                 // region not found - it's been destroyed
-              } catch (RegionDestroyedException e) {
+              } catch (RegionDestroyedException ignore) {
                 // ditto
               } catch (PartitionedRegionException e) {
-                if (e.getMessage().indexOf("destroyed") == -1) {
+                if (!e.getMessage().contains("destroyed")) {
                   throw e;
                 }
                 // region failed registration & is unusable
@@ -228,11 +227,11 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
             }
 
             doRegionDestroy(event);
-          } catch (RegionDestroyedException e) {
+          } catch (RegionDestroyedException ignore) {
             logger.debug("{} Region destroyed: nothing to do", this);
-          } catch (CancelException e) {
+          } catch (CancelException ignore) {
             logger.debug("{} Cancelled: nothing to do", this);
-          } catch (EntryNotFoundException e) {
+          } catch (EntryNotFoundException ignore) {
             logger.debug("{} Entry not found, nothing to do", this);
           } catch (VirtualMachineError err) {
             SystemFailure.initiateFailure(err);
@@ -292,7 +291,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
         // pool, the entry
         // update is allowed to complete.
         dm.getWaitingThreadPool().execute(destroyOp(dm, lclRgn, sendReply));
-      } catch (RejectedExecutionException e) {
+      } catch (RejectedExecutionException ignore) {
         // rejected while trying to execute destroy thread
         // must be shutting down, just quit
       }
@@ -303,19 +302,19 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
       // shared region, since another cache may
       // have already destroyed it in shared memory, in which our listeners
       // still need to be called and java region object cleaned up.
-      GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getInstance(sys);
+      InternalCache cache = (InternalCache) CacheFactory.getInstance(sys);
 
       // only get the region while holding the appropriate destroy lock.
       // this prevents us from getting a "stale" region
       if (getOperation().isDistributed()) {
         String rootName = GemFireCacheImpl.parsePath(path)[0];
-        this.lockRoot = (LocalRegion) c.getRegion(rootName);
+        this.lockRoot = (LocalRegion) cache.getRegion(rootName);
         if (this.lockRoot == null)
           return null;
         this.lockRoot.acquireDestroyLock();
       }
 
-      return (LocalRegion) c.getRegion(path);
+      return (LocalRegion) cache.getRegion(path);
     }
 
     private void disableRegionDepartureNotification() {
@@ -411,15 +410,15 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           rgn.basicDestroyRegion(ev, false /* cacheWrite */, false /* lock */,
               true/* cacheCallbacks */);
         }
-      } catch (CacheWriterException e) {
+      } catch (CacheWriterException ignore) {
         throw new Error(
             LocalizedStrings.DestroyRegionOperation_CACHEWRITER_SHOULD_NOT_HAVE_BEEN_CALLED
                 .toLocalizedString());
-      } catch (TimeoutException e) {
+      } catch (TimeoutException ignore) {
         throw new Error(
             LocalizedStrings.DestroyRegionOperation_DISTRIBUTEDLOCK_SHOULD_NOT_HAVE_BEEN_ACQUIRED
                 .toLocalizedString());
-      } catch (RejectedExecutionException e) {
+      } catch (RejectedExecutionException ignore) {
         // rejected while trying to execute recreate thread
         // must be shutting down, so what we were trying to do must not be
         // important anymore, so just quit
@@ -468,13 +467,13 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
   }
 
   public static final class DestroyRegionWithContextMessage extends DestroyRegionMessage {
+
     protected transient Object context;
 
     @Override
     final public RegionEventImpl createRegionEvent(DistributedRegion rgn) {
-      ClientRegionEventImpl event = new ClientRegionEventImpl(rgn, getOperation(), this.callbackArg,
+      return new ClientRegionEventImpl(rgn, getOperation(), this.callbackArg,
           true /* originRemote */, getSender(), (ClientProxyMembershipID) this.context);
-      return event;
     }
 
     @Override

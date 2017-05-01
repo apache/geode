@@ -14,20 +14,34 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.parse.*;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.MapType;
+import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- */
 public class CompiledIteratorDef extends AbstractCompiledValue {
   private static final Logger logger = LogService.getLogger();
 
@@ -83,17 +97,16 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       }
     }
     rIter = new RuntimeIterator(this, type);
-    // Rahul : generate from clause should take care of bucket region substitution if
+    // generate from clause should take care of bucket region substitution if
     // necessary and then set the definition.
     String fromClause = genFromClause(context);
     rIter.setDefinition(fromClause);
-    /**
-     * Asif : If the type of RunTimeIterator is still ObjectType & if the RuneTimeIterator is
-     * independent of any iterator of the scopes less than or equal to its own scope, we can
-     * evaluate the collection via RuntimeIterator. This will initialize the Collection of
-     * RuntimeIterator , which is OK. The code in RuntimeIterator will be rectified such that the
-     * ElementType of that RuntimeIterator is taken from the collection
-     * 
+    /*
+     * If the type of RunTimeIterator is still ObjectType & if the RuneTimeIterator is independent
+     * of any iterator of the scopes less than or equal to its own scope, we can evaluate the
+     * collection via RuntimeIterator. This will initialize the Collection of RuntimeIterator ,
+     * which is OK. The code in RuntimeIterator will be rectified such that the ElementType of that
+     * RuntimeIterator is taken from the collection
      */
     if (type.equals(TypeUtils.OBJECT_TYPE)
         && !this.isDependentOnAnyIteratorOfScopeLessThanItsOwn(context)) {
@@ -174,8 +187,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     // PR bucketRegion substitution should have already happened
     // at the expression evaluation level
 
-    SelectResults sr = prepareIteratorDef(coll, this.elementType, context);
-    return sr;
+    return prepareIteratorDef(coll, this.elementType, context);
   }
 
   public int getType() {
@@ -200,22 +212,11 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   }
 
   /**
-   * TODO:Asif : We need to implement the belwo method of computeDependencies Once we come to
-   * implement changes for partitioned region querying, as in that case if first iterator itself is
-   * a Select Query , then ideally we cannot call that CompiledIteratorDef independent ( which will
-   * be the case at present). When we use this commented function we will also need to take care of
+   * TODO: We need to implement the belwo method of computeDependencies Once we come to implement
+   * changes for partitioned region querying, as in that case if first iterator itself is a Select
+   * Query , then ideally we cannot call that CompiledIteratorDef independent ( which will be the
+   * case at present). When we use this commented function we will also need to take care of
    * correctly implementing the function isDependentOnCurrentScope etc functions.
-   * 
-   * public Set computeDependencies(ExecutionContext context) throws TypeMismatchException,
-   * AmbiguousNameException { //Asif : If a CompiledIteratorDef has a collection expression which
-   * boils down to //a CompiledRegion or CompiledBindArgumnet , then its dependency is empty . In
-   * such cases // we will assume that the current CompiledIteratorDef has a dependency on itself.
-   * // This will be required once we start the changes for partitionedRegion Querying //But when we
-   * are doing check of whether the CompiledIteratorDef is dependent on its // own RuntimeIterator
-   * we will still return false. Set set = this.collectionExpr.computeDependencies(context); Set
-   * retSet = null; if(set.isEmpty()){ retSet =
-   * context.addDependency(this,this.getRuntimeIterator(context)); }else { retSet =
-   * context.addDependencies(this, set); } return retSet; }
    */
   @Override
   public Set computeDependencies(ExecutionContext context)
@@ -223,7 +224,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     return context.addDependencies(this, this.collectionExpr.computeDependencies(context));
   }
 
-  // @todo ericz this method is overly complex, duplicating logic already
+  // TODO: this method is overly complex, duplicating logic already
   // in query evaluation itself. It is overly complex ==> It will not be
   // necessary once we have full typing support.
   // There is a limitation here that it assumes that the collectionExpr is some
@@ -296,7 +297,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       res.setModifiable(false);
       return res;
     }
-    // @todo primitive arrays?
+    // TODO: primitive arrays?
     if (obj instanceof Map) {
       if (elementType.equals(TypeUtils.OBJECT_TYPE)) { // if we don't have more
         // specific type info,
@@ -325,29 +326,22 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
 
   String genFromClause(ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
-    StringBuffer sbuff = new StringBuffer();
+    StringBuilder sbuff = new StringBuilder();
     collectionExpr.generateCanonicalizedExpression(sbuff, context);
     return sbuff.toString();
-  }
-
-  boolean isDependentOnAnyIterator(ExecutionContext context) {
-    return context.isDependentOnAnyIterator(this);
   }
 
   /**
    * Checks if the iterator in question is dependent on any other RuntimeIterator of its own or
    * lesser scope.
-   * 
-   * @param context
    */
   boolean isDependentOnAnyIteratorOfScopeLessThanItsOwn(ExecutionContext context) {
-    // Asif : Get the list of all iterators on which the colelction expression
+    // Get the list of all iterators on which the colelction expression
     // is ultimately dependent on
-    // Set indpRitrs = new HashSet();
-    // context.computeUtlimateDependencies(this, indpRitrs);
-    // Asif:If dependent on self then also assume it to be dependent
+
+    // If dependent on self then also assume it to be dependent
     boolean isDep = false;
-    // Asif : Get the list of all iterators on which the colelction expression
+    // Get the list of all iterators on which the colelction expression
     // is dependent on
     Set dependencySet = context.getDependencySet(this, true);
     Iterator itr = dependencySet.iterator();
@@ -360,6 +354,5 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       }
     }
     return isDep;
-
   }
 }

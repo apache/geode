@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -39,7 +40,7 @@ import static org.junit.Assert.assertNotNull;
 public class HARegionQueueStatsJUnitTest {
 
   /** The cache instance */
-  protected Cache cache = null;
+  protected InternalCache cache = null;
 
   /**
    * Create the cache in setup. Currently the HA related stats are active under fine logging only.
@@ -67,8 +68,8 @@ public class HARegionQueueStatsJUnitTest {
    * @return the cache instance
    * @throws CacheException - thrown if any exception occurs in cache creation
    */
-  private Cache createCache() throws CacheException {
-    return new CacheFactory().set(MCAST_PORT, "0").create();
+  private InternalCache createCache() throws CacheException {
+    return (InternalCache) new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   /**

@@ -479,7 +479,7 @@ public class CompiledComparison extends AbstractCompiledValue
       }
     }
     if (conditioningNeeded) {
-      return QueryUtils.getconditionedIndexResults(set, indexInfo, context, indexFieldsSize,
+      return QueryUtils.getConditionedIndexResults(set, indexInfo, context, indexFieldsSize,
           completeExpansionNeeded, iterOperands, indpndntItr);
     } else {
       return set;
@@ -566,7 +566,7 @@ public class CompiledComparison extends AbstractCompiledValue
       } finally {
         observer.afterIndexLookup(data);
       }
-      return QueryUtils.getconditionedRelationshipIndexResultsExpandedToTopOrCGJLevel(data,
+      return QueryUtils.getConditionedRelationshipIndexResultsExpandedToTopOrCGJLevel(data,
           indxInfo, context, completeExpansionNeeded, iterOperands, indpdntItrs);
     } else {
       // Asif . We are in this block , this itself guarantees that this

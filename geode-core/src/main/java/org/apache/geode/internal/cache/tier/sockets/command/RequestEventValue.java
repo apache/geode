@@ -16,10 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;

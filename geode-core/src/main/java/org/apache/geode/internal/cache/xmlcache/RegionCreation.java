@@ -46,7 +46,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
@@ -58,17 +58,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * {@link Region} interface so that this class must be updated when {@link Region} is modified. This
  * class is public for testing purposes.
  *
- *
  * @since GemFire 3.0
  */
 public class RegionCreation implements Region, Extensible<Region<?, ?>> {
-
-  // /** An <code>AttributesFactory</code> for creating default
-  // * <code>RegionAttribute</code>s */
-  // private static final AttributesFactory defaultFactory =
-  // new AttributesFactory();
-
-  /////////////////////// Instance Fields ///////////////////////
 
   /** The name of this region */
   private final String name;
@@ -115,8 +107,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   private final SimpleExtensionPoint<Region<?, ?>> extensionPoint =
       new SimpleExtensionPoint<Region<?, ?>>(this, this);
 
-  /////////////////////// Constructors ///////////////////////
-
   /**
    * Creates a new <code>RegionCreation</code> with the given name and with the default
    * <code>RegionAttributes</code>.
@@ -145,8 +135,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   public RegionCreation(CacheCreation cache, String name) {
     this(cache, null, name, null);
   }
-
-  ////////////////////// Instance Methods //////////////////////
 
   public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
     return this.values.put(key, value);
@@ -252,7 +240,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     extensionPoint.beforeCreate(cache);
 
     try {
-      root = ((GemFireCacheImpl) cache).basicCreateRegion(this.name,
+      root = ((InternalCache) cache).basicCreateRegion(this.name,
           new AttributesFactory(this.attrs).create());
     } catch (RegionExistsException ex) {
       root = ex.getRegion();
@@ -635,8 +623,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     return this.fullPath;
   }
 
-  ////////// Inherited methods that don't do anything //////////
-
   public Region getParentRegion() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
@@ -664,7 +650,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   public void localInvalidateRegion(Object aCallbackArgument) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
-
 
   public void destroyRegion() throws CacheWriterException, TimeoutException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
@@ -736,7 +721,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-
   public Object destroy(Object key)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
@@ -753,7 +737,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   public void localDestroy(Object key, Object callbackArgument) throws EntryNotFoundException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-
   }
 
   public Set keys() {
@@ -831,7 +814,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   public void clear() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-
   }
 
   public boolean isEmpty() {
@@ -899,39 +881,18 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
-   */
   public Object putIfAbsent(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
-   */
   public boolean remove(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
-   */
   public Object replace(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
-   * java.lang.Object)
-   */
   public boolean replace(Object key, Object oldValue, Object newValue) {
     throw new UnsupportedOperationException();
   }

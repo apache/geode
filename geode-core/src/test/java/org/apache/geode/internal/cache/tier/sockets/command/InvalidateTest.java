@@ -15,10 +15,10 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,16 +29,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.cache.operations.InvalidateOperationContext;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
@@ -63,7 +60,7 @@ public class InvalidateTest {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Message errorResponseMessage;
   @Mock
@@ -102,7 +99,6 @@ public class InvalidateTest {
     when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
     when(this.message.getPart(eq(2))).thenReturn(this.eventPart);
     when(this.message.getPart(eq(3))).thenReturn(this.callbackArgPart);
-
 
     when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
 

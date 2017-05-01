@@ -24,17 +24,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySenderFlushedCoordinator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -61,13 +56,16 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HasCachePerfStats;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySenderFlushedCoordinator;
 import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -292,7 +290,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     this.getSenderAdvisor().setIsPrimary(isPrimary);
   }
 
-  public Cache getCache() {
+  public InternalCache getCache() {
     return this.cache;
   }
 
@@ -520,7 +518,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       this.getLifeCycleLock().writeLock().lock();
       // first, check if this sender is attached to any region. If so, throw
       // GatewaySenderException
-      Set<LocalRegion> regions = ((GemFireCacheImpl) this.cache).getApplicationRegions();
+      Set<LocalRegion> regions = this.cache.getApplicationRegions();
       Iterator regionItr = regions.iterator();
       while (regionItr.hasNext()) {
         LocalRegion region = (LocalRegion) regionItr.next();
@@ -541,7 +539,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       }
 
       // remove the sender from the cache
-      ((GemFireCacheImpl) this.cache).removeGatewaySender(this);
+      this.cache.removeGatewaySender(this);
 
       // destroy the region underneath the sender's queue
       if (initiator) {
@@ -816,7 +814,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return true;
   }
 
-
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,
       List<Integer> allRemoteDSIds) {
 
@@ -981,7 +978,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
-
   /**
    * During sender is getting started, if there are any cache operation on queue then that event
    * will be stored in temp queue. Once sender is started, these event from tmp queue will be added
@@ -1100,8 +1096,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     boolean gotLock = false;
     try {
       // Obtain the distributed lock
-      gotLock = ((GemFireCacheImpl) getCache()).getGatewaySenderLockService()
-          .lock(META_DATA_REGION_NAME, -1, -1);
+      gotLock = getCache().getGatewaySenderLockService().lock(META_DATA_REGION_NAME, -1, -1);
       if (!gotLock) {
         throw new IllegalStateException(
             LocalizedStrings.AbstractGatewaySender_FAILED_TO_LOCK_META_REGION_0
@@ -1143,7 +1138,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     } finally {
       // Unlock the lock if necessary
       if (gotLock) {
-        ((GemFireCacheImpl) getCache()).getGatewaySenderLockService().unlock(META_DATA_REGION_NAME);
+        getCache().getGatewaySenderLockService().unlock(META_DATA_REGION_NAME);
         if (isDebugEnabled) {
           logger.debug("{}: Unlocked the metadata region", this);
         }
@@ -1161,7 +1156,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
   @SuppressWarnings({"rawtypes", "unchecked", "deprecation"})
   private static synchronized Region<String, Integer> initializeEventIdIndexMetaDataRegion(
       AbstractGatewaySender sender) {
-    final Cache cache = sender.getCache();
+    final InternalCache cache = sender.getCache();
     Region<String, Integer> region = cache.getRegion(META_DATA_REGION_NAME);
     if (region == null) {
       // Create region attributes (must be done this way to use InternalRegionArguments)
@@ -1183,7 +1178,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
       // Create the region
       try {
-        region = ((GemFireCacheImpl) cache).createVMRegion(META_DATA_REGION_NAME, ra, ira);
+        region = cache.createVMRegion(META_DATA_REGION_NAME, ra, ira);
       } catch (RegionExistsException e) {
         region = cache.getRegion(META_DATA_REGION_NAME);
       } catch (Exception e) {
@@ -1215,7 +1210,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       return true;
     }
   }
-
 
   public int getTmpQueuedEventSize() {
     if (tmpQueuedEvents != null) {
@@ -1300,8 +1294,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
    * allows us to defer creation of the GatewaySenderEventImpl until we are ready to actually
    * enqueue it. The caller is responsible for giving us an EntryEventImpl that we own and that we
    * will release. This is done by making a copy/clone of the original event. This fixes bug 52029.
-   * 
-   *
    */
   public static class TmpQueueEvent implements Releasable {
     private final EnumListenerEvent operation;

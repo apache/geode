@@ -26,8 +26,6 @@ import org.apache.geode.internal.cache.persistence.BackupInspector;
  * oplogs that still need to be backed up, along with the lists of oplog files that should be
  * deleted when the oplog is backed up. See
  * {@link DiskStoreImpl#startBackup(File, BackupInspector, org.apache.geode.internal.cache.persistence.RestoreScript)}
- * 
- * 
  */
 public class DiskStoreBackup {
 

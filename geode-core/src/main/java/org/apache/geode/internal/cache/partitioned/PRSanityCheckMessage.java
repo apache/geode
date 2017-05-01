@@ -68,7 +68,7 @@ public final class PRSanityCheckMessage extends PartitionMessage {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append(" regionName=").append(this.regionName);
   }

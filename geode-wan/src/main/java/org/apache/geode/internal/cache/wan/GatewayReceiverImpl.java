@@ -23,16 +23,15 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -65,12 +64,12 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   private CacheServer receiver;
 
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
 
-  public GatewayReceiverImpl(Cache cache, int startPort, int endPort, int timeBetPings,
+  public GatewayReceiverImpl(InternalCache cache, int startPort, int endPort, int timeBetPings,
       int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
       boolean manualStart) {
-    this.cache = (GemFireCacheImpl) cache;
+    this.cache = cache;
 
     /*
      * If user has set hostNameForSenders then it should take precedence over bindAddress. If user
@@ -151,17 +150,17 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       receiver.setMaximumTimeBetweenPings(timeBetPings);
       receiver.setHostnameForClients(host);
       receiver.setBindAddress(bindAdd);
-      receiver.setGroups(new String[] {GatewayReceiverImpl.RECEIVER_GROUP});
+      receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
       ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
       try {
-        ((CacheServerImpl) receiver).start();
+        receiver.start();
         started = true;
       } catch (BindException be) {
         if (be.getCause() != null
             && be.getCause().getMessage().contains("assign requested address")) {
           throw new GatewayReceiverException(
               LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                  .toLocalizedString(new Object[] {bindAdd, Integer.valueOf(this.port)}));
+                  .toLocalizedString(new Object[] {bindAdd, this.port}));
         }
         // ignore as this port might have been used by other threads.
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use,
@@ -208,11 +207,6 @@ public class GatewayReceiverImpl implements GatewayReceiver {
           LocalizedStrings.GatewayReceiver_IS_NOT_RUNNING.toLocalizedString());
     }
     receiver.stop();
-
-    // InternalDistributedSystem system = ((GemFireCacheImpl) this.cache)
-    // .getDistributedSystem();
-    // system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_STOP, this);
-
   }
 
   public String getHost() {
@@ -237,7 +231,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
         .append("; maximumTimeBetweenPings=").append(getMaximumTimeBetweenPings())
         .append("; socketBufferSize=").append(getSocketBufferSize()).append("; isManualStart=")
         .append(isManualStart()).append("; group=")
-        .append(Arrays.toString(new String[] {GatewayReceiverImpl.RECEIVER_GROUP})).append("]")
+        .append(Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP})).append("]")
         .toString();
   }
 

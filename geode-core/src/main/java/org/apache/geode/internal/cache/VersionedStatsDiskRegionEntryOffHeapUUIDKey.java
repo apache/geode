@@ -135,7 +135,7 @@ public class VersionedStatsDiskRegionEntryOffHeapUUIDKey
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

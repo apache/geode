@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -27,7 +26,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -50,14 +48,11 @@ import org.apache.geode.internal.logging.LogService;
 public class FindDurableQueueProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();
 
-  ////////// Public static entry point /////////
-
   final ArrayList durableLocations = new ArrayList();
 
-  // @todo gregp: add javadocs
   public static ArrayList sendAndFind(ServerLocator locator, ClientProxyMembershipID proxyId,
       DM dm) {
-    Set members = ((ControllerAdvisor) locator.getDistributionAdvisor()).adviseBridgeServers();
+    Set members = ((GridAdvisor) locator.getDistributionAdvisor()).adviseBridgeServers();
     if (members.contains(dm.getId())) {
       // Don't send message to local server, see #50534.
       Set remoteMembers = new HashSet(members);
@@ -80,9 +75,9 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
   private static void findLocalDurableQueues(ClientProxyMembershipID proxyId,
       ArrayList<ServerLocation> matches) {
-    Cache c = GemFireCacheImpl.getInstance();
-    if (c != null) {
-      List l = c.getCacheServers();
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    if (cache != null) {
+      List l = cache.getCacheServers();
       if (l != null) {
         Iterator i = l.iterator();
         while (i.hasNext()) {
@@ -95,9 +90,6 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
       }
     }
   }
-
-
-  //////////// Instance methods //////////////
 
   @Override
   public void process(DistributionMessage msg) {
@@ -112,16 +104,12 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     super.process(msg);
   }
 
-
   /**
    * Creates a new instance of FindDurableQueueProcessor
    */
   private FindDurableQueueProcessor(DM dm, Set members) {
     super(dm, members);
   }
-
-
-  /////////////// Inner message classes //////////////////
 
   public static class FindDurableQueueMessage extends PooledDistributionMessage
       implements MessageWithReply {
@@ -149,13 +137,11 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
       return this.proxyId;
     }
 
-
     @Override
     protected void process(final DistributionManager dm) {
       ArrayList<ServerLocation> matches = new ArrayList<ServerLocation>();
       try {
         findLocalDurableQueues(proxyId, matches);
-
 
       } finally {
         FindDurableQueueReply reply = new FindDurableQueueReply();
@@ -169,7 +155,6 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
           dm.putOutgoing(reply);
         }
       }
-
     }
 
     public int getDSFID() {
@@ -205,7 +190,6 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     }
   }
 
-
   public static class FindDurableQueueReply extends ReplyMessage {
     protected ArrayList matches = null;
 
@@ -239,4 +223,3 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     }
   }
 }
-

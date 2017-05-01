@@ -78,29 +78,20 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    */
   private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
 
-  // private final BlockingQueue<EventID> eventSeqNumQueueWithEventId = new
-  // LinkedBlockingQueue<EventID>();
-
   private long lastKeyRecovered;
 
-  private AtomicLong latestQueuedKey = new AtomicLong();
+  private final AtomicLong latestQueuedKey = new AtomicLong();
 
-  private AtomicLong latestAcknowledgedKey = new AtomicLong();
+  private final AtomicLong latestAcknowledgedKey = new AtomicLong();
 
-  /**
-   * @param regionName
-   * @param attrs
-   * @param parentRegion
-   * @param cache
-   * @param internalRegionArgs
-   */
   public BucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      GemFireCacheImpl cache, InternalRegionArguments internalRegionArgs) {
+      InternalCache cache, InternalRegionArguments internalRegionArgs) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs);
     this.keySet();
-    indexes = new ConcurrentHashMap<Object, Long>();
+    this.indexes = new ConcurrentHashMap<Object, Long>();
   }
 
+  @Override
   protected void cleanUpDestroyedTokensAndMarkGIIComplete(
       InitialImageOperation.GIIStatus giiStatus) {
     // Load events from temp queued events
@@ -559,9 +550,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       logger.debug(" destroying primary key {}", key);
     }
     @Released
-    EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key, null);
+    EntryEventImpl event = newDestroyEntryEvent(key, null);
     try {
-      event.setEventId(new EventID(cache.getSystem()));
+      event.setEventId(new EventID(cache.getInternalDistributedSystem()));
       event.setRegion(this);
       basicDestroy(event, true, null);
       setLatestAcknowledgedKey((Long) key);
@@ -588,6 +579,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
 
     this.notifyEntriesRemoved();
+  }
+
+  public EntryEventImpl newDestroyEntryEvent(Object key, Object aCallbackArgument) {
+    return getPartitionedRegion().newDestroyEntryEvent(key, aCallbackArgument);
   }
 
   public boolean isReadyForPeek() {

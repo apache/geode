@@ -12,10 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.Cache;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.springframework.shell.core.CommandMarker;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -23,6 +28,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -30,12 +36,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
-import org.springframework.shell.core.CommandMarker;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality
@@ -126,8 +126,8 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     return (getGfsh() != null);
   }
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
+  protected InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   protected static Gfsh getGfsh() {
@@ -135,7 +135,7 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
   }
 
   @SuppressWarnings("deprecated")
-  protected DistributedMember getMember(final Cache cache, final String memberName) {
+  protected DistributedMember getMember(final InternalCache cache, final String memberName) {
     for (final DistributedMember member : getMembers(cache)) {
       if (memberName.equalsIgnoreCase(member.getName())
           || memberName.equalsIgnoreCase(member.getId())) {
@@ -149,15 +149,14 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
 
   /**
    * Gets all members in the GemFire distributed system/cache.
-   * </p>
-   * 
+   *
    * @param cache the GemFire cache.
    * @return all members in the GemFire distributed system/cache.
-   * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.cache.Cache)
+   * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.internal.cache.InternalCache)
    * @deprecated use CliUtil.getAllMembers(org.apache.geode.cache.Cache) instead
    */
   @Deprecated
-  protected Set<DistributedMember> getMembers(final Cache cache) {
+  protected Set<DistributedMember> getMembers(final InternalCache cache) {
     Set<DistributedMember> members = new HashSet<DistributedMember>(cache.getMembers());
     members.add(cache.getDistributedSystem().getDistributedMember());
     return members;

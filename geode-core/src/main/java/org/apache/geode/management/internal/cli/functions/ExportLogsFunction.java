@@ -15,27 +15,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
-import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
-import org.apache.geode.management.internal.cli.util.LogExporter;
-import org.apache.geode.management.internal.cli.util.LogFilter;
-import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,6 +26,29 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
+import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
+import org.apache.geode.management.internal.cli.util.LogExporter;
+import org.apache.geode.management.internal.cli.util.LogFilter;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+
 /**
  * this function extracts the logs using a LogExporter which creates a zip file, and then writes the
  * zip file bytes into a replicated region, this in effect, "stream" the zip file bytes to the
@@ -55,21 +57,21 @@ import java.util.Arrays;
  * The function only extracts .log and .gfs files under server's working directory
  */
 public class ExportLogsFunction implements Function, InternalEntity {
+  private static final Logger logger = LogService.getLogger();
 
   public static final String EXPORT_LOGS_REGION = "__exportLogsRegion";
 
-  private static final Logger LOGGER = LogService.getLogger();
   private static final long serialVersionUID = 1L;
   private static final int BUFFER_SIZE = 1024;
 
   @Override
   public void execute(final FunctionContext context) {
     try {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
       String memberId = cache.getDistributedSystem().getMemberId();
-      LOGGER.info("ExportLogsFunction started for member {}", memberId);
+      logger.info("ExportLogsFunction started for member {}", memberId);
 
       Region exportLogsRegion = createOrGetExistingExportLogsRegion(false, cache);
 
@@ -95,7 +97,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
         return;
       }
 
-      LOGGER.info("Streaming zipped file: " + exportedZipFile.toString());
+      logger.info("Streaming zipped file: " + exportedZipFile.toString());
       try (FileInputStream inputStream = new FileInputStream(exportedZipFile.toFile())) {
         byte[] buffer = new byte[BUFFER_SIZE];
 
@@ -113,13 +115,13 @@ public class ExportLogsFunction implements Function, InternalEntity {
 
     } catch (Exception e) {
       e.printStackTrace();
-      LOGGER.error(e);
+      logger.error(e);
       context.getResultSender().sendException(e);
     }
   }
 
   public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember,
-      GemFireCacheImpl cache) throws IOException, ClassNotFoundException {
+      InternalCache cache) throws IOException, ClassNotFoundException {
 
     Region exportLogsRegion = cache.getRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
@@ -140,8 +142,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
     return exportLogsRegion;
   }
 
-  public static void destroyExportLogsRegion(GemFireCacheImpl cache) {
-
+  public static void destroyExportLogsRegion(InternalCache cache) {
     Region exportLogsRegion = cache.getRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
       return;

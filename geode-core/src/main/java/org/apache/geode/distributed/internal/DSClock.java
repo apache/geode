@@ -18,6 +18,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.LogService;
@@ -203,12 +204,10 @@ public class DSClock implements CacheTime {
 
   /**
    * Cancel the previous slow down task (If it exists) and schedule a new one.
-   * 
-   * @param offset
    */
   private void cancelAndScheduleNewCacheTimerTask(long offset) {
 
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
 
     if (cache != null && !cache.isClosed()) {
       if (this.cacheTimeTask != null) {
@@ -288,7 +287,7 @@ public class DSClock implements CacheTime {
 
     @Override
     public boolean cancel() {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null && !cache.isClosed()) {
         suspendCacheTimeMillis(false);
       }

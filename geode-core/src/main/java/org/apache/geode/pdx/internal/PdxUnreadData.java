@@ -14,15 +14,13 @@
  */
 package org.apache.geode.pdx.internal;
 
-import java.nio.ByteBuffer;
-
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.pdx.PdxFieldAlreadyExistsException;
 import org.apache.geode.pdx.PdxUnreadFields;
 
 /**
- * 
  * @since GemFire 6.6
  */
 public class PdxUnreadData implements PdxUnreadFields {
@@ -31,6 +29,7 @@ public class PdxUnreadData implements PdxUnreadFields {
    * This is the original type of the blob that we deserialized and did not read some of its fields.
    */
   private UnreadPdxType unreadType;
+
   private byte[][] unreadData;
 
   public PdxUnreadData() {
@@ -104,10 +103,10 @@ public class PdxUnreadData implements PdxUnreadFields {
     // This method is only called by CopyHelper which is public and does not require that a Cache
     // exists.
     // So we need to call getInstance instead of getExisting.
-    GemFireCacheImpl gfc = GemFireCacheImpl.getInstance();
-    if (gfc == null)
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    if (cache == null)
       return;
-    TypeRegistry tr = gfc.getPdxRegistry();
+    TypeRegistry tr = cache.getPdxRegistry();
     PdxUnreadData ud = tr.getUnreadData(o);
     if (ud != null && !ud.isEmpty()) {
       tr.putUnreadData(copy, ud);

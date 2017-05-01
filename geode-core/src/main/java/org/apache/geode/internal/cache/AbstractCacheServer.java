@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
@@ -27,10 +31,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
 
 /**
  * Abstract class that contains common code that all true implementations of {@link CacheServer} can

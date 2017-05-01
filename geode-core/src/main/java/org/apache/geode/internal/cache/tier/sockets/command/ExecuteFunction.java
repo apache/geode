@@ -26,9 +26,8 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
@@ -155,7 +154,7 @@ public class ExecuteFunction extends BaseCommand {
           logger.debug("Executing Function on Server: " + servConn.toString() + "with context :"
               + context.toString());
         }
-        GemFireCacheImpl cache = (GemFireCacheImpl) servConn.getCache();
+        InternalCache cache = servConn.getCache();
         HeapMemoryMonitor hmm =
             ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
         if (functionObject.optimizeForWrite() && cache != null && hmm.getState().isCritical()

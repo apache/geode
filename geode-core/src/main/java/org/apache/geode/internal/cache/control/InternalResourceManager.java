@@ -14,6 +14,23 @@
  */
 package org.apache.geode.internal.cache.control;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
@@ -27,7 +44,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
@@ -36,16 +53,11 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Implementation of ResourceManager with additional internal-only methods. TODO: cleanup raw and
- * typed collections
- * 
+ * Implementation of ResourceManager with additional internal-only methods.
+ * <p>
+ * TODO: cleanup raw and typed collections
  */
 public class InternalResourceManager implements ResourceManager {
   private static final Logger logger = LogService.getLogger();
@@ -56,12 +68,12 @@ public class InternalResourceManager implements ResourceManager {
   public enum ResourceType {
     HEAP_MEMORY(0x1), OFFHEAP_MEMORY(0x2), MEMORY(0x3), ALL(0xFFFFFFFF);
 
-    int id;
+    final int id;
 
-    private ResourceType(final int id) {
+    ResourceType(final int id) {
       this.id = id;
     }
-  };
+  }
 
   private Map<ResourceType, Set<ResourceListener>> listeners =
       new HashMap<ResourceType, Set<ResourceListener>>();
@@ -73,7 +85,7 @@ public class InternalResourceManager implements ResourceManager {
   private final Set<RebalanceOperation> inProgressOperations = new HashSet<RebalanceOperation>();
   private final Object inProgressOperationsLock = new Object();
 
-  final GemFireCacheImpl cache;
+  final InternalCache cache;
 
   private LoadProbe loadProbe;
 
@@ -93,11 +105,11 @@ public class InternalResourceManager implements ResourceManager {
     return (InternalResourceManager) cache.getResourceManager();
   }
 
-  public static InternalResourceManager createResourceManager(final GemFireCacheImpl cache) {
+  public static InternalResourceManager createResourceManager(final InternalCache cache) {
     return new InternalResourceManager(cache);
   }
 
-  private InternalResourceManager(GemFireCacheImpl cache) {
+  private InternalResourceManager(InternalCache cache) {
     this.cache = cache;
     this.resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
     this.stats = new ResourceManagerStats(cache.getDistributedSystem());
@@ -118,9 +130,8 @@ public class InternalResourceManager implements ResourceManager {
         return thread;
       }
     };
-    int nThreads = MAX_RESOURCE_MANAGER_EXE_THREADS;
 
-    this.scheduledExecutor = new ScheduledThreadPoolExecutor(nThreads, tf);
+    this.scheduledExecutor = new ScheduledThreadPoolExecutor(MAX_RESOURCE_MANAGER_EXE_THREADS, tf);
 
     // Initialize the load probe
     try {
@@ -281,7 +292,7 @@ public class InternalResourceManager implements ResourceManager {
   void runWithNotifyExecutor(Runnable runnable) {
     try {
       this.notifyExecutor.execute(runnable);
-    } catch (RejectedExecutionException e) {
+    } catch (RejectedExecutionException ignore) {
       if (!isClosed()) {
         this.cache.getLoggerI18n()
             .warning(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS);

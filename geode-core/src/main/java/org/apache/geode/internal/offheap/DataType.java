@@ -27,6 +27,7 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 
@@ -200,7 +201,7 @@ public class DataType implements DSCODE {
         case PDX: {
           int typeId = in.readInt();
           try {
-            GemFireCacheImpl gfc = GemFireCacheImpl
+            InternalCache gfc = GemFireCacheImpl
                 .getForPdx("PDX registry is unavailable because the Cache has been closed.");
             PdxType pdxType = gfc.getPdxRegistry().getType(typeId);
             if (pdxType == null) { // fix 52164
@@ -216,7 +217,7 @@ public class DataType implements DSCODE {
           int tmp = InternalDataSerializer.readArrayLength(in);
           int enumId = (dsId << 24) | (tmp & 0xFFFFFF);
           try {
-            GemFireCacheImpl gfc = GemFireCacheImpl
+            InternalCache gfc = GemFireCacheImpl
                 .getForPdx("PDX registry is unavailable because the Cache has been closed.");
             EnumInfo enumInfo = gfc.getPdxRegistry().getEnumInfoById(enumId);
             return "PdxRegistry/java.lang.Enum:" + enumInfo.getClassName();
@@ -244,10 +245,8 @@ public class DataType implements DSCODE {
       }
       return "Unknown header byte: " + header;
     } catch (IOException e) {
-      // return "IOException for header byte: " + header;
       throw new Error(e);
     } catch (ClassNotFoundException e) {
-      // return "IOException for header byte: " + header;
       throw new Error(e);
     }
   }

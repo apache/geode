@@ -124,7 +124,7 @@ public class VMThinLRURegionEntryOffHeapLongKey extends VMThinLRURegionEntryOffH
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

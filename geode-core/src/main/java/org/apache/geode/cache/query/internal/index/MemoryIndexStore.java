@@ -14,11 +14,11 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -40,6 +39,7 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
@@ -59,16 +59,19 @@ public class MemoryIndexStore implements IndexStore {
       new ConcurrentSkipListMap(TypeUtils.getExtendedNumericComparator());
 
   // number of keys
-  protected volatile AtomicInteger numIndexKeys = new AtomicInteger(0);
+  private final AtomicInteger numIndexKeys = new AtomicInteger(0);
 
   // Map for RegionEntries=>value of indexedExpression (reverse map)
   private ConcurrentMap entryToValuesMap;
 
-  private InternalIndexStatistics internalIndexStats;
+  private final InternalIndexStatistics internalIndexStats;
 
-  private Cache cache;
-  private Region region;
+  private final InternalCache cache;
+
+  private final Region region;
+
   private boolean indexOnRegionKeys;
+
   private boolean indexOnValues;
 
   // Used as a place holder for an indexkey collection for when a thread is about to change
@@ -78,13 +81,14 @@ public class MemoryIndexStore implements IndexStore {
   // while the other would execute a remove on the index elem.
   // both would complete but the remove would have been lost because we had already added it to the
   // new collection
-  private Object TRANSITIONING_TOKEN = new IndexElemArray(1);
+  private final Object TRANSITIONING_TOKEN = new IndexElemArray(1);
 
-  public MemoryIndexStore(Region region, InternalIndexStatistics internalIndexStats) {
+  MemoryIndexStore(Region region, InternalIndexStatistics internalIndexStats) {
     this(region, internalIndexStats, GemFireCacheImpl.getInstance());
   }
 
-  public MemoryIndexStore(Region region, InternalIndexStatistics internalIndexStats, Cache cache) {
+  private MemoryIndexStore(Region region, InternalIndexStatistics internalIndexStats,
+      InternalCache cache) {
     this.region = region;
     RegionAttributes ra = region.getAttributes();
     // Initialize the reverse-map if in-place modification is set by the
@@ -98,7 +102,7 @@ public class MemoryIndexStore implements IndexStore {
   }
 
   @Override
-  public void updateMapping(Object newKey, Object oldKey, RegionEntry entry, Object oldValue)
+  public void updateMapping(Object indexKey, Object oldKey, RegionEntry re, Object oldValue)
       throws IMQException {
     try {
 
@@ -109,38 +113,39 @@ public class MemoryIndexStore implements IndexStore {
       // Check if reverse-map is present.
       if (IndexManager.isObjectModificationInplace()) {
         // If reverse map get the old index key from reverse map.
-        if (this.entryToValuesMap.containsKey(entry)) {
-          oldKey = this.entryToValuesMap.get(entry);
+        if (this.entryToValuesMap.containsKey(re)) {
+          oldKey = this.entryToValuesMap.get(re);
         }
       } else {
         // Check if the old value and new value same.
         // If they are same, that means the value got updated in place.
         // In the absence of reverse-map find the old index key from
         // forward map.
-        if (oldValue != null && oldValue == getTargetObjectInVM(entry)) {
-          oldKey = getOldKey(newKey, entry);
+        if (oldValue != null && oldValue == getTargetObjectInVM(re)) {
+          oldKey = getOldKey(indexKey, re);
         }
       }
 
       // No need to update the map if new and old index key are same.
-      if (oldKey != null && oldKey.equals(TypeUtils.indexKeyFor(newKey))) {
+      if (oldKey != null && oldKey.equals(TypeUtils.indexKeyFor(indexKey))) {
         return;
       }
 
       boolean retry = false;
-      newKey = TypeUtils.indexKeyFor(newKey);
-      if (newKey.equals(QueryService.UNDEFINED)) {
-        Object targetObject = getTargetObjectForUpdate(entry);
+      indexKey = TypeUtils.indexKeyFor(indexKey);
+      if (indexKey.equals(QueryService.UNDEFINED)) {
+        Object targetObject = getTargetObjectForUpdate(re);
         if (Token.isInvalidOrRemoved(targetObject)) {
           if (oldKey != null) {
-            basicRemoveMapping(oldKey, entry, false);
+            basicRemoveMapping(oldKey, re, false);
           }
           return;
         }
       }
+
       do {
         retry = false;
-        Object regionEntries = this.valueToEntriesMap.putIfAbsent(newKey, entry);
+        Object regionEntries = this.valueToEntriesMap.putIfAbsent(indexKey, re);
         if (regionEntries == TRANSITIONING_TOKEN) {
           retry = true;
           continue;
@@ -153,8 +158,8 @@ public class MemoryIndexStore implements IndexStore {
             DefaultQuery.testHook.doTestHook("BEGIN_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY");
           }
           elemArray.add(regionEntries);
-          elemArray.add(entry);
-          if (!this.valueToEntriesMap.replace(newKey, regionEntries, elemArray)) {
+          elemArray.add(re);
+          if (!this.valueToEntriesMap.replace(indexKey, regionEntries, elemArray)) {
             retry = true;
           }
           if (DefaultQuery.testHook != null) {
@@ -168,9 +173,9 @@ public class MemoryIndexStore implements IndexStore {
           // ConcurrentHashSet when set size becomes zero during
           // basicRemoveMapping();
           synchronized (regionEntries) {
-            ((IndexConcurrentHashSet) regionEntries).add(entry);
+            ((IndexConcurrentHashSet) regionEntries).add(re);
           }
-          if (regionEntries != this.valueToEntriesMap.get(newKey)) {
+          if (regionEntries != this.valueToEntriesMap.get(indexKey)) {
             retry = true;
           }
         } else {
@@ -192,15 +197,15 @@ public class MemoryIndexStore implements IndexStore {
               // captured
               // by our instance of the elem array, or the remove operations will need to do a
               // retry?
-              if (!this.valueToEntriesMap.replace(newKey, regionEntries, TRANSITIONING_TOKEN)) {
+              if (!this.valueToEntriesMap.replace(indexKey, regionEntries, TRANSITIONING_TOKEN)) {
                 retry = true;
               } else {
                 if (DefaultQuery.testHook != null) {
                   DefaultQuery.testHook.doTestHook("TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN");
                 }
-                set.add(entry);
+                set.add(re);
                 set.addAll(elemArray);
-                if (!this.valueToEntriesMap.replace(newKey, TRANSITIONING_TOKEN, set)) {
+                if (!this.valueToEntriesMap.replace(indexKey, TRANSITIONING_TOKEN, set)) {
                   // This should never happen. If we see this in the log, then something is wrong
                   // with the TRANSITIONING TOKEN and synchronization of changing collection types
                   // we should then just go from RE to CHS and completely remove the Elem Array.
@@ -215,8 +220,8 @@ public class MemoryIndexStore implements IndexStore {
                 }
               }
             } else {
-              elemArray.add(entry);
-              if (regionEntries != this.valueToEntriesMap.get(newKey)) {
+              elemArray.add(re);
+              if (regionEntries != this.valueToEntriesMap.get(indexKey)) {
                 retry = true;
               }
             }
@@ -229,16 +234,16 @@ public class MemoryIndexStore implements IndexStore {
           // remove from forward map in case of update
           // oldKey is not null only for an update
           if (oldKey != null) {
-            basicRemoveMapping(oldKey, entry, false);
+            basicRemoveMapping(oldKey, re, false);
           }
 
           if (IndexManager.isObjectModificationInplace()) {
-            this.entryToValuesMap.put(entry, newKey);
+            this.entryToValuesMap.put(re, indexKey);
           }
         }
       } while (retry);
     } catch (TypeMismatchException ex) {
-      throw new IMQException("Could not add object of type " + newKey.getClass().getName(), ex);
+      throw new IMQException("Could not add object of type " + indexKey.getClass().getName(), ex);
     }
     internalIndexStats.incNumValues(1);
   }
@@ -251,8 +256,8 @@ public class MemoryIndexStore implements IndexStore {
    */
   private Object getOldKey(Object newKey, RegionEntry entry) throws TypeMismatchException {
     for (Object mapEntry : valueToEntriesMap.entrySet()) {
-      Object regionEntries = ((SimpleImmutableEntry) mapEntry).getValue();
-      Object indexKey = ((SimpleImmutableEntry) mapEntry).getKey();
+      Object regionEntries = ((Entry) mapEntry).getValue();
+      Object indexKey = ((Entry) mapEntry).getKey();
       // if more than one index key maps to the same RegionEntry that
       // means there has been an in-place modification
       if (TypeUtils.compare(indexKey, newKey, CompiledComparison.TOK_NE).equals(Boolean.TRUE)) {
@@ -270,34 +275,34 @@ public class MemoryIndexStore implements IndexStore {
   }
 
   @Override
-  public void addMapping(Object newKey, RegionEntry entry) throws IMQException {
+  public void addMapping(Object indexKey, RegionEntry re) throws IMQException {
     // for add, oldkey is null
-    updateMapping(newKey, null, entry, null);
+    updateMapping(indexKey, null, re, null);
   }
 
   @Override
-  public void removeMapping(Object key, RegionEntry entry) throws IMQException {
+  public void removeMapping(Object indexKey, RegionEntry re) throws IMQException {
     // Remove from forward map
-    boolean found = basicRemoveMapping(key, entry, true);
+    boolean found = basicRemoveMapping(indexKey, re, true);
     // Remove from reverse map.
     // We do NOT need to synchronize here as different RegionEntries will be
     // operating concurrently i.e. different keys in entryToValuesMap which
     // is a concurrent map.
     if (found && IndexManager.isObjectModificationInplace()) {
-      this.entryToValuesMap.remove(entry);
+      this.entryToValuesMap.remove(re);
     }
   }
 
-  protected boolean basicRemoveMapping(Object key, RegionEntry entry, boolean findOldKey)
+  private boolean basicRemoveMapping(Object key, RegionEntry entry, boolean findOldKey)
       throws IMQException {
     boolean found = false;
     boolean possiblyAlreadyRemoved = false;
     try {
-      boolean retry = false;
       Object newKey = convertToIndexKey(key, entry);
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook("ATTEMPT_REMOVE");
       }
+      boolean retry = false;
       do {
         retry = false;
         Object regionEntries = this.valueToEntriesMap.get(newKey);
@@ -309,7 +314,7 @@ public class MemoryIndexStore implements IndexStore {
           continue;
         } else if (regionEntries != null) {
           if (regionEntries instanceof RegionEntry) {
-            found = (regionEntries == entry);
+            found = regionEntries == entry;
             if (found) {
               if (this.valueToEntriesMap.remove(newKey, regionEntries)) {
                 numIndexKeys.decrementAndGet();
@@ -364,7 +369,7 @@ public class MemoryIndexStore implements IndexStore {
     if (found) {
       // Update stats if entry was actually removed
       internalIndexStats.incNumValues(-1);
-    } else if ((!found && !possiblyAlreadyRemoved) && !IndexManager.isObjectModificationInplace()
+    } else if (!found && !possiblyAlreadyRemoved && !IndexManager.isObjectModificationInplace()
         && key != null) {
       // if there is an inplace-modification find old key by iterating
       // over fwd map and then remove the mapping
@@ -376,12 +381,6 @@ public class MemoryIndexStore implements IndexStore {
           throw new IMQException("Could not find old key: " + key.getClass().getName(), e);
         }
       }
-      // The entry might have been already removed by other thread
-      // if still not found
-      // if (!found) {
-      // throw new IMQException("index maintenance error: "
-      // + "entry not found for " + key + " entry: " + entry);
-      // }
     }
     return found;
   }
@@ -396,14 +395,6 @@ public class MemoryIndexStore implements IndexStore {
     return newKey;
   }
 
-  /**
-   * Convert a RegionEntry or THashSet<RegionEntry> to be consistently a Collection
-   */
-  /*
-   * private Collection regionEntryCollection(Object regionEntries) { if (regionEntries instanceof
-   * RegionEntry) { return Collections.singleton(regionEntries); } return (Collection)
-   * regionEntries; }
-   */
   @Override
   public CloseableIterator<IndexStoreEntry> get(Object indexKey) {
     return new MemoryIndexStoreIterator(
@@ -493,7 +484,7 @@ public class MemoryIndexStore implements IndexStore {
         if (o instanceof CachedDeserializable) {
           return ((CachedDeserializable) o).getDeserializedValue(this.region, entry);
         }
-      } catch (EntryDestroyedException ede) {
+      } catch (EntryDestroyedException ignore) {
         return null;
       }
       return o;
@@ -503,6 +494,7 @@ public class MemoryIndexStore implements IndexStore {
     return new CachedEntryWrapper(((LocalRegion) this.region).new NonTXEntry(entry));
   }
 
+  @Override
   public Object getTargetObjectInVM(RegionEntry entry) {
     if (indexOnValues) {
       Object o = entry.getValueInVM((LocalRegion) this.region);
@@ -523,7 +515,7 @@ public class MemoryIndexStore implements IndexStore {
     return ((LocalRegion) this.region).new NonTXEntry(entry);
   }
 
-  public Object getTargetObjectForUpdate(RegionEntry entry) {
+  private Object getTargetObjectForUpdate(RegionEntry entry) {
     if (indexOnValues) {
       Object o = entry.getValue((LocalRegion) this.region);
       try {
@@ -557,7 +549,7 @@ public class MemoryIndexStore implements IndexStore {
   public int size(Object key) {
     Object obj = valueToEntriesMap.get(key);
     if (obj != null) {
-      return (obj instanceof RegionEntry) ? 1 : ((Collection) obj).size();
+      return obj instanceof RegionEntry ? 1 : ((Collection) obj).size();
     } else {
       return 0;
     }
@@ -576,15 +568,14 @@ public class MemoryIndexStore implements IndexStore {
     final Map map;
     Object indexKey;
     Collection keysToRemove;
-
-    protected Iterator<Map.Entry> mapIterator;
-    protected Iterator valuesIterator;
-    protected Object currKey;
-    protected Object currValue; // RegionEntry
+    Iterator<Map.Entry> mapIterator;
+    Iterator valuesIterator;
+    Object currKey;
+    Object currValue; // RegionEntry
     final long iteratorStartTime;
-    protected MemoryIndexStoreEntry currentEntry;
+    MemoryIndexStoreEntry currentEntry;
 
-    private MemoryIndexStoreIterator(Map submap, Object indexKey, Collection keysToRemove) {
+    MemoryIndexStoreIterator(Map submap, Object indexKey, Collection keysToRemove) {
       this(submap, indexKey, keysToRemove, GemFireCacheImpl.getInstance().cacheTimeMillis());
     }
 

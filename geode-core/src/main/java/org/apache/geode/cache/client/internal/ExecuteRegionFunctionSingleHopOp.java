@@ -33,7 +33,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
@@ -68,7 +68,7 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (function.isHA()) {
       maxRetryAttempts = mRetryAttempts;
     }
-    ClientMetadataService cms = ((GemFireCacheImpl) region.getCache()).getClientMetadataService();
+    ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -114,7 +114,7 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (isHA) {
       maxRetryAttempts = mRetryAttempts;
     }
-    ClientMetadataService cms = ((GemFireCacheImpl) region.getCache()).getClientMetadataService();
+    ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -243,7 +243,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       }
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
-      getMessage().addBytesPart(new byte[] {allBuckets ? (byte) 1 : (byte) 0});
+      getMessage().addBytesPart(new byte[] {(byte) (allBuckets ? 1 : 0)});
       getMessage().addIntPart(routingObjects.size());
       for (Object key : routingObjects) {
         if (allBuckets) {
@@ -284,7 +284,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       getMessage().addStringOrObjPart(functionId);
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
-      getMessage().addBytesPart(new byte[] {allBuckets ? (byte) 1 : (byte) 0});
+      getMessage().addBytesPart(new byte[] {(byte) (allBuckets ? 1 : 0)});
       getMessage().addIntPart(routingObjects.size());
       for (Object key : routingObjects) {
         if (allBuckets) {
@@ -307,13 +307,13 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
 
     private void addBytes(byte functionState) {
-      if (GemFireCacheImpl
-          .getClientFunctionTimeout() == GemFireCacheImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
+      if (ConnectionImpl
+          .getClientFunctionTimeout() == ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
         getMessage().addBytesPart(new byte[] {functionState});
       } else {
         byte[] bytes = new byte[5];
         bytes[0] = functionState;
-        Part.encodeInt(GemFireCacheImpl.getClientFunctionTimeout(), bytes, 1);
+        Part.encodeInt(ConnectionImpl.getClientFunctionTimeout(), bytes, 1);
         getMessage().addBytesPart(bytes);
       }
     }
@@ -336,7 +336,7 @@ public class ExecuteRegionFunctionSingleHopOp {
               Object resultResponse = executeFunctionResponseMsg.getPart(0).getObject();
               Object result;
               if (resultResponse instanceof ArrayList) {
-                result = ((ArrayList) resultResponse).get(0);
+                result = ((List) resultResponse).get(0);
               } else {
                 result = resultResponse;
               }
@@ -344,13 +344,12 @@ public class ExecuteRegionFunctionSingleHopOp {
                 FunctionException ex = ((FunctionException) result);
                 if (isDebugEnabled) {
                   logger.debug(
-                      "ExecuteRegionFunctionSingleHopOpImpl#processResponse: received Exception. {}",
+                      "ExecuteRegionFunctionSingleHopOpImpl#processResponse: received Exception.",
                       ex.getCause());
                 }
                 if (ex instanceof InternalFunctionException) {
                   Throwable cause = ex.getCause();
-                  DistributedMember memberID =
-                      (DistributedMember) ((ArrayList) resultResponse).get(1);
+                  DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
                   this.resultCollector.addResult(memberID, cause);
                   FunctionStats
                       .getFunctionStats(this.functionId, this.executor.getRegion().getSystem())
@@ -374,8 +373,7 @@ public class ExecuteRegionFunctionSingleHopOp {
                     new InternalFunctionInvocationTargetException(
                         ((CacheClosedException) result).getMessage());
                 if (resultResponse instanceof ArrayList) {
-                  DistributedMember memberID =
-                      (DistributedMember) ((ArrayList) resultResponse).get(1);
+                  DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
                   this.failedNodes.add(memberID.getId());
                 }
                 exception = new FunctionException(fite);
@@ -383,8 +381,7 @@ public class ExecuteRegionFunctionSingleHopOp {
                 String s = "While performing a remote " + getOpName();
                 exception = new ServerOperationException(s, (Throwable) result);
               } else {
-                DistributedMember memberID =
-                    (DistributedMember) ((ArrayList) resultResponse).get(1);
+                DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
                 this.resultCollector.addResult(memberID, result);
                 FunctionStats
                     .getFunctionStats(this.functionId, this.executor.getRegion().getSystem())

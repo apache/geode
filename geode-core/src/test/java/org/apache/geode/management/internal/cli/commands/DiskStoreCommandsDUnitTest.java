@@ -60,6 +60,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
@@ -96,7 +97,7 @@ import java.util.concurrent.TimeUnit;
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the
  * disk store commands that are part of Gfsh.
  * </p>
- * 
+ *
  * @see org.apache.geode.management.internal.cli.commands.DiskStoreCommands
  * @see org.junit.Assert
  * @see org.junit.Test
@@ -202,7 +203,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         regionFactory.setScope(Scope.DISTRIBUTED_ACK);
         try {
           regionFactory.create(regionName);
-        } catch (DistributedSystemDisconnectedException e) {
+        } catch (DistributedSystemDisconnectedException ignore) {
           // okay to ignore
         }
       }
@@ -215,7 +216,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
           public boolean done() {
             Cache cache = getCache();
             PersistentMemberManager memberManager =
-                ((GemFireCacheImpl) cache).getPersistentMemberManager();
+                ((InternalCache) cache).getPersistentMemberManager();
             return !memberManager.getWaitingRegions().isEmpty();
           }
 
@@ -840,13 +841,13 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         Cache cache = getCache();
         assertNotNull(cache);
 
-        GemFireCacheImpl gfc = (GemFireCacheImpl) cache;
-        Collection<DiskStoreImpl> diskStoreList = gfc.listDiskStores();
+        InternalCache internalCache = (InternalCache) cache;
+        Collection<DiskStore> diskStoreList = internalCache.listDiskStores();
         assertNotNull(diskStoreList);
         assertFalse(diskStoreList.isEmpty());
         assertTrue(diskStoreList.size() == 1);
 
-        for (DiskStoreImpl diskStore : diskStoreList) {
+        for (DiskStore diskStore : diskStoreList) {
           assertTrue(diskStore.getName().equals(diskStoreName));
           break;
         }
@@ -892,8 +893,8 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);
-        GemFireCacheImpl gfc = (GemFireCacheImpl) cache;
-        Collection<DiskStoreImpl> diskStores = gfc.listDiskStores();
+        InternalCache internalCache = (InternalCache) cache;
+        Collection<DiskStore> diskStores = internalCache.listDiskStores();
         assertNotNull(diskStores);
         assertTrue(diskStores.isEmpty());
         return null;
@@ -905,7 +906,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
   /**
    * 1) Create a disk-store in a member, get the disk-dirs. 2) Close the member. 3) Execute the
    * command. 4) Restart the member. 5) Check if the disk-store is altered.
-   * 
+   *
    * @throws IOException
    * @throws ClassNotFoundException
    */

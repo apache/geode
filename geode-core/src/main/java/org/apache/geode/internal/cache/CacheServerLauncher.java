@@ -15,6 +15,26 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintStream;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -28,25 +48,16 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.process.StartupStatusListener;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.JavaCommandBuilder;
 
-import java.io.*;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
-
 /**
  * Launcher program to start a cache server.
- *
  *
  * @since GemFire 2.0.2
  */
@@ -669,7 +680,7 @@ public class CacheServerLauncher {
     // redirect output to the log file
     OSProcess.redirectOutput(system.getConfig().getLogFile());
 
-    Cache cache = this.createCache(system, options);
+    InternalCache cache = createCache(system, options);
     cache.setIsServer(true);
     startAdditionalServices(cache, options);
 
@@ -678,7 +689,7 @@ public class CacheServerLauncher {
     clearLogListener();
 
     if (ASSIGN_BUCKETS) {
-      for (PartitionedRegion region : ((GemFireCacheImpl) cache).getPartitionedRegions()) {
+      for (PartitionedRegion region : cache.getPartitionedRegions()) {
         PartitionRegionHelper.assignBucketsToPartitions(region);
       }
     }
@@ -823,9 +834,9 @@ public class CacheServerLauncher {
     return -1.0f;
   }
 
-  protected Cache createCache(InternalDistributedSystem system, Map<String, Object> options)
+  protected InternalCache createCache(InternalDistributedSystem system, Map<String, Object> options)
       throws IOException {
-    Cache cache = CacheFactory.create(system);
+    InternalCache cache = (InternalCache) CacheFactory.create(system);
 
     float threshold = getCriticalHeapPercent(options);
     if (threshold > 0.0f) {

@@ -87,7 +87,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   private AtomicBoolean mustEvict = new AtomicBoolean(false);
 
-  protected final Cache cache;
+  protected final InternalCache cache;
 
   private final ArrayList<Integer> testTaskSetSizes = new ArrayList<>();
   public volatile int testAbortAfterLoopCount = Integer.MAX_VALUE;
@@ -96,7 +96,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
 
-  public HeapEvictor(Cache gemFireCache) {
+  public HeapEvictor(InternalCache gemFireCache) {
     this.cache = gemFireCache;
     initializeEvictorThreadPool();
   }
@@ -169,8 +169,8 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     return allRegionList;
   }
 
-  public GemFireCacheImpl getGemFireCache() {
-    return (GemFireCacheImpl) this.cache;
+  public InternalCache getGemFireCache() {
+    return (InternalCache) this.cache;
   }
 
   private void initializeEvictorThreadPool() {

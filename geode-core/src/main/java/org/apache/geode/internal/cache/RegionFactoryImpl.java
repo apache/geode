@@ -14,33 +14,29 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.File;
-import java.util.Properties;
-
-import org.apache.geode.CancelException;
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.client.ClientNotReadyException;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 
 /**
- * <code>RegionFactoryImpl</code> extends RegionFactory adding {@link RegionShortcut} support.
+ * {@code RegionFactoryImpl} extends RegionFactory adding {@link RegionShortcut} support.
  * 
  * @since GemFire 6.5
  */
-
 public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
-  public RegionFactoryImpl(GemFireCacheImpl cache) {
+  public RegionFactoryImpl(InternalCache cache) {
     super(cache);
   }
 
-  public RegionFactoryImpl(GemFireCacheImpl cache, RegionShortcut pra) {
+  public RegionFactoryImpl(InternalCache cache, RegionShortcut pra) {
     super(cache, pra);
   }
 
-  public RegionFactoryImpl(GemFireCacheImpl cache, RegionAttributes ra) {
+  public RegionFactoryImpl(InternalCache cache, RegionAttributes ra) {
     super(cache, ra);
   }
 
-  public RegionFactoryImpl(GemFireCacheImpl cache, String regionAttributesId) {
+  public RegionFactoryImpl(InternalCache cache, String regionAttributesId) {
     super(cache, regionAttributesId);
   }
 

@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -37,7 +38,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class BlockingHARegionJUnitTest {
 
-  private static Cache cache = null;
+  private static InternalCache cache = null;
 
   /** boolean to record an exception occurence in another thread **/
   private static volatile boolean exceptionOccurred = false;
@@ -53,7 +54,7 @@ public class BlockingHARegionJUnitTest {
     if (cache != null) {
       cache.close(); // fault tolerance
     }
-    cache = CacheFactory.create(DistributedSystem.connect(props));
+    cache = (InternalCache) CacheFactory.create(DistributedSystem.connect(props));
   }
 
   /**

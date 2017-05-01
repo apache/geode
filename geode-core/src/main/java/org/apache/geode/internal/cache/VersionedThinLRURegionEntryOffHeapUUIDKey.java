@@ -16,10 +16,12 @@ package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -131,7 +133,7 @@ public class VersionedThinLRURegionEntryOffHeapUUIDKey extends VersionedThinLRUR
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

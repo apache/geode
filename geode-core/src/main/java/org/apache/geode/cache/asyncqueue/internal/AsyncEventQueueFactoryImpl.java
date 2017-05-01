@@ -152,44 +152,12 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
         logger.debug("Creating GatewaySender that underlies the AsyncEventQueue");
       }
 
-      // TODO: Suranjan .separate asynceventqueue from gatewaysender
-      // GatewaySenderFactory senderFactory = this.cache.createGatewaySenderFactory();
-      // senderFactory.setMaximumQueueMemory(attrs.getMaximumQueueMemory());
-      // senderFactory.setBatchSize(attrs.getBatchSize());
-      // senderFactory.setBatchTimeInterval(attrs.getBatchTimeInterval());
-      // if (attrs.isPersistenceEnabled()) {
-      // senderFactory.setPersistenceEnabled(true);
-      // }
-      // senderFactory.setDiskStoreName(attrs.getDiskStoreName());
-      // senderFactory.setDiskSynchronous(attrs.isDiskSynchronous());
-      // senderFactory.setBatchConflationEnabled(attrs.isBatchConflationEnabled());
-      // senderFactory.setParallel(attrs.isParallel());
-      // senderFactory.setDispatcherThreads(attrs.getDispatcherThreads());
-      // if OrderPolicy is not null, set it, otherwise, let the default OrderPolicy take the charge
-      // if (attrs.getOrderPolicy() != null) {
-      // senderFactory.setOrderPolicy(attrs.getOrderPolicy());
-      // }
-      // for (GatewayEventFilter filter : attrs.eventFilters) {
-      // senderFactory.addGatewayEventFilter(filter);
-      // }
-      // senderFactory.setGatewayEventSubstitutionFilter(attrs.getGatewayEventSubstitutionFilter());
-      // Type cast to GatewaySenderFactory implementation impl to add the async event listener
-      // and set the isForInternalUse to true. These methods are not exposed on GatewaySenderFactory
-      // GatewaySenderFactory factoryImpl = (GatewaySenderFactoryImpl) senderFactory;
-      // senderFactory.setForInternalUse(true);
-      // senderFactory.addAsyncEventListener(listener);
-      // senderFactory.setBucketSorted(attrs.isBucketSorted());
-      // add member id to differentiate between this region and the redundant bucket
-      // region created for this queue.
-      // GatewaySender sender =
-      // senderFactory.create(
-      // AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
       addAsyncEventListener(listener);
       GatewaySender sender =
           create(AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
       AsyncEventQueueImpl queue = new AsyncEventQueueImpl(sender, listener);
       asyncEventQueue = queue;
-      ((GemFireCacheImpl) cache).addAsyncEventQueue(queue);
+      this.cache.addAsyncEventQueue(queue);
     } else if (this.cache instanceof CacheCreation) {
       asyncEventQueue = new AsyncEventQueueCreation(asyncQueueId, attrs, listener);
       ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
@@ -220,7 +188,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new ParallelAsyncEventQueueImpl(this.cache, this.attrs);
-        ((GemFireCacheImpl) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
@@ -229,19 +197,12 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
         ((CacheCreation) this.cache).addGatewaySender(sender);
       }
     } else {
-      // if (this.attrs.getOrderPolicy() != null) {
-      // if (this.attrs.getDispatcherThreads() == GatewaySender.DEFAULT_DISPATCHER_THREADS) {
-      // throw new AsyncEventQueueConfigurationException(
-      // LocalizedStrings.AsyncEventQueue_INVALID_ORDER_POLICY_CONCURRENCY_0
-      // .toLocalizedString(id));
-      // }
-      // }
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new SerialAsyncEventQueueImpl(this.cache, this.attrs);
-        ((GemFireCacheImpl) this.cache).addGatewaySender(sender);
+        this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }

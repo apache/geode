@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -29,6 +28,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
@@ -48,6 +48,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
@@ -96,7 +97,6 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
       CreateRegionReplyProcessor replyProc = new CreateRegionReplyProcessor(recps);
 
-
       boolean useMcast = false; // multicast is disabled for this message for now
       CreateRegionMessage msg = getCreateRegionMessage(recps, replyProc, useMcast);
 
@@ -118,10 +118,6 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // This isn't right. We should disable region creation in general, not just
         // the remote case here...
         // // Similarly, don't allow new regions to be created if the cache is closing
-        // GemFireCache cache = (GemFireCache)this.newRegion.getCache();
-        // if (cache.isClosing()) {
-        // throw new CacheClosedException("Cannot create a region when the cache is closing");
-        // }
         try {
           replyProc.waitForRepliesUninterruptibly();
           if (!replyProc.needRetry()) {
@@ -166,15 +162,13 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     return recps;
   }
 
-
-
   public InitialImageAdvice getInitialImageAdvice(InitialImageAdvice previousAdvice) {
     return newRegion.getCacheDistributionAdvisor().adviseInitialImage(previousAdvice);
   }
 
   private Set getAdvice() {
     if (this.newRegion instanceof BucketRegion) {
-      return ((BucketRegion) this.newRegion).getBucketAdvisor().adviseProfileExchange();
+      return ((Bucket) this.newRegion).getBucketAdvisor().adviseProfileExchange();
     } else {
       DistributionAdvisee rgn = this.newRegion.getParentAdvisee();
       DistributionAdvisor advisor = rgn.getDistributionAdvisor();
@@ -195,7 +189,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
   }
 
   public void setOnline(InternalDistributedMember target) {
-
+    // nothing
   }
 
   class CreateRegionReplyProcessor extends ReplyProcessor21 {
@@ -319,6 +313,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     protected String regionPath;
     protected CacheProfile profile;
     protected int processorId;
+
     private transient boolean incompatible = false;
     private transient ReplyException replyException;
     private transient CacheProfile replyProfile;
@@ -326,7 +321,6 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     private transient Object eventState;
     protected transient boolean severeAlertCompatible;
     private transient boolean skippedCompatibilityChecks;
-
 
     @Override
     public int getProcessorId() {
@@ -354,7 +348,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // get the region from the path, but do NOT wait on initialization,
         // otherwise we could have a distributed deadlock
 
-        GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
+        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
 
         // Fix for bug 42051 - Discover any regions that are in the process
         // of being destroyed
@@ -389,15 +383,15 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             }
           }
         }
-      } catch (PRLocallyDestroyedException fre) {
+      } catch (PRLocallyDestroyedException ignore) {
         if (logger.isDebugEnabled()) {
           logger.debug("<Region Locally Destroyed> {}", this);
         }
-      } catch (RegionDestroyedException e) {
+      } catch (RegionDestroyedException ignore) {
         if (logger.isDebugEnabled()) {
           logger.debug("<RegionDestroyed> {}", this);
         }
-      } catch (CancelException e) {
+      } catch (CancelException ignore) {
         if (logger.isDebugEnabled()) {
           logger.debug("<CancelException> {}", this);
         }
@@ -445,8 +439,6 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         dm.putOutgoing(replyMsg);
         if (lclRgn instanceof PartitionedRegion)
           ((PartitionedRegion) lclRgn).sendIndexCreationMsg(this.getSender());
-
-
       }
     }
 
@@ -549,15 +541,13 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           && this.concurrencyChecksEnabled != otherCCEnabled) {
         result =
             LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_CCENABLED_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_CCENABLED_2
-                .toLocalizedString(
-                    new Object[] {regionPath, Boolean.valueOf(this.concurrencyChecksEnabled), myId,
-                        Boolean.valueOf(otherCCEnabled)});
+                .toLocalizedString(regionPath, this.concurrencyChecksEnabled, myId, otherCCEnabled);
       }
 
       Set<String> otherGatewaySenderIds = ((LocalRegion) rgn).getGatewaySenderIds();
       Set<String> myGatewaySenderIds = profile.gatewaySenderIds;
       if (!otherGatewaySenderIds.equals(myGatewaySenderIds)) {
-        if (!rgn.getFullPath().contains(DynamicRegionFactoryImpl.dynamicRegionListName)) {
+        if (!rgn.getFullPath().contains(DynamicRegionFactory.dynamicRegionListName)) {
           result =
               LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_GATEWAY_SENDER_IDS_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_GATEWAY_SENDER_IDS
                   .toLocalizedString(this.regionPath, myGatewaySenderIds, otherGatewaySenderIds);
@@ -588,8 +578,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         if (profile.scope != otherScope) {
           result =
               LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_SCOPE_BECAUSE_ANOTHER_CACHE_HAS_SAME_REGION_WITH_2_SCOPE
-                  .toLocalizedString(
-                      new Object[] {this.regionPath, profile.scope, myId, otherScope});
+                  .toLocalizedString(this.regionPath, profile.scope, myId, otherScope);
         }
       }
 
@@ -605,8 +594,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           && profile.isOffHeap != otherIsOffHeap) {
         result =
             LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3
-                .toLocalizedString(
-                    new Object[] {this.regionPath, profile.isOffHeap, myId, otherIsOffHeap});
+                .toLocalizedString(this.regionPath, profile.isOffHeap, myId, otherIsOffHeap);
       }
 
       String cspResult = null;
@@ -651,47 +639,6 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         logger.debug("CreateRegionProcessor.checkCompatibility: this={}; other={}; result={}", rgn,
             profile, result);
       }
-
-      // if (profile.membershipAttributes != null) {
-      // // check to see if:
-      // // 1. we do not have DataPolicy that will take queued msgs
-      // // 2. the profile has queuing turned on
-      // // 3. we are playing one of the queued roles
-      // if (!rgn.getAttributes().getDataPolicy().withQueuedMessages()) {
-      // if (profile.membershipAttributes.getLossAction().isAllAccessWithQueuing()) {
-      // Set myRoles = rgn.getSystem().getDistributedMember().getRoles();
-      // if (!myRoles.isEmpty()) {
-      // Set intersection = new HashSet(myRoles);
-      // intersection.retainAll(profile.membershipAttributes.getRequiredRoles());
-      // if (!intersection.isEmpty()) {
-      // result = "Cannot create region " + regionPath
-      // + " with queuing because the region already exists"
-      // + " with a data-policy " + rgn.getAttributes().getDataPolicy()
-      // + " that does not allow queued messages with the roles "
-      // + intersection;
-      // }
-      // }
-      // }
-      // }
-      // } else {
-      // // see if we are queuing on this region
-      // MembershipAttributes ra = rgn.getMembershipAttributes();
-      // if (ra != null && ra.hasRequiredRoles()
-      // && ra.getLossAction().isAllAccessWithQueuing()) {
-      // // we are queuing so make sure this other guy allows queued messages
-      // // if he is playing a role we queue for.
-      // if (!profile.dataPolicy.withQueuedMessages()) {
-      // Set intersection = new HashSet(ra.getRequiredRoles());
-      // intersection.retainAll(profile.getDistributedMember().getRoles());
-      // if (!intersection.isEmpty()) {
-      // result = "Cannot create region " + regionPath
-      // + " with a data-policy " + profile.dataPolicy
-      // + " that does not allow queued messages because the region"
-      // + " already exists with queuing enabled for roles " + intersection;
-      // }
-      // }
-      // }
-      // }
 
       return result;
     }
@@ -808,16 +755,16 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
-      buff.append("CreateRegionMessage (region='");
-      buff.append(this.regionPath);
-      buff.append("'; processorId=");
-      buff.append(this.processorId);
-      buff.append("; concurrencyChecksEnabled=").append(this.concurrencyChecksEnabled);
-      buff.append("; profile=");
-      buff.append(this.profile);
-      buff.append(")");
-      return buff.toString();
+      StringBuilder sb = new StringBuilder();
+      sb.append("CreateRegionMessage (region='");
+      sb.append(this.regionPath);
+      sb.append("'; processorId=");
+      sb.append(this.processorId);
+      sb.append("; concurrencyChecksEnabled=").append(this.concurrencyChecksEnabled);
+      sb.append("; profile=");
+      sb.append(this.profile);
+      sb.append(")");
+      return sb.toString();
     }
   }
 
@@ -848,8 +795,6 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       if (in.readBoolean()) {
-        // this.profile = new CacheProfile();
-        // this.profile.fromData(in);
         this.profile = (CacheProfile) DataSerializer.readObject(in);
       }
       int size = in.readInt();
@@ -879,7 +824,6 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       super.toData(out);
       out.writeBoolean(this.profile != null);
       if (this.profile != null) {
-        // this.profile.toData(out);
         DataSerializer.writeObject(this.profile, out);
       }
       if (this.bucketProfiles == null) {
@@ -914,7 +858,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("CreateRegionReplyMessage");
       buff.append("(sender=").append(getSender());
       buff.append("; processorId=");

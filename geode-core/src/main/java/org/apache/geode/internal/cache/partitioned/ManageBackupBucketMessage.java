@@ -192,9 +192,10 @@ public final class ManageBackupBucketMessage extends PartitionMessage {
    * Assists the toString method in reporting the contents of this message
    * 
    * @see PartitionMessage#toString()
+   * @param buff
    */
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; bucketId=").append(this.bucketId);
     buff.append("; isRebalance=").append(this.isRebalance);

@@ -12,35 +12,44 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
+
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.CacheClientStatus;
+import org.apache.geode.internal.cache.IncomingGatewayStatus;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.TXId;
+import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.net.InetAddress;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * Class <code>ClientHealthMonitor</code> is a server-side singleton that monitors the health of
  * clients by looking at their heartbeats. If too much time elapses between heartbeats, the monitor
  * determines that the client is dead and interrupts its threads.
- * 
- * 
+ *
  * @since GemFire 4.2.3
  */
 public class ClientHealthMonitor {
@@ -69,7 +78,7 @@ public class ClientHealthMonitor {
   /**
    * THe GemFire <code>Cache</code>
    */
-  final protected Cache _cache;
+  private final InternalCache _cache;
 
   /**
    * A thread that validates client connections
@@ -123,7 +132,7 @@ public class ClientHealthMonitor {
    *        client has died and interrupting its sockets.
    * @return The singleton <code>ClientHealthMonitor</code> instance
    */
-  public static ClientHealthMonitor getInstance(Cache cache, int maximumTimeBetweenPings,
+  public static ClientHealthMonitor getInstance(InternalCache cache, int maximumTimeBetweenPings,
       CacheClientNotifierStats stats) {
     createInstance(cache, maximumTimeBetweenPings, stats);
     return _instance;
@@ -305,7 +314,7 @@ public class ClientHealthMonitor {
               scheduledToBeRemovedTx.removeAll(txids);
           }
         };
-        ((GemFireCacheImpl) this._cache).getCCPTimer().schedule(task, timeout);
+        this._cache.getCCPTimer().schedule(task, timeout);
       }
     }
   }
@@ -384,55 +393,6 @@ public class ClientHealthMonitor {
     }
   }
 
-  // /**
-  // * Returns modifiable map (changes do not effect this class) of memberId
-  // * to connection count.
-  // */
-  // public Map getConnectedClients() {
-  // Map map = new HashMap(); // KEY=memberId, VALUE=connectionCount (Integer)
-  // synchronized (_clientThreadsLock) {
-  // Iterator connectedClients = this._clientThreads.entrySet().iterator();
-  // while (connectedClients.hasNext()) {
-  // Map.Entry entry = (Map.Entry) connectedClients.next();
-  // String memberId = (String) entry.getKey();// memberId includes FQDN
-  // Set connections = (Set) entry.getValue();
-  // int socketPort = 0;
-  // InetAddress socketAddress = null;
-  // ///*
-  // Iterator serverConnections = connections.iterator();
-  // // Get data from one.
-  // while (serverConnections.hasNext()) {
-  // ServerConnection sc = (ServerConnection) serverConnections.next();
-  // socketPort = sc.getSocketPort();
-  // socketAddress = sc.getSocketAddress();
-  // break;
-  // }
-  // //*/
-  // int connectionCount = connections.size();
-  // String clientString = null;
-  // if (socketAddress == null) {
-  // clientString = "client member id=" + memberId;
-  // } else {
-  // clientString = "host name=" + socketAddress.toString() + " host ip=" +
-  // socketAddress.getHostAddress() + " client port=" + socketPort + " client
-  // member id=" + memberId;
-  // }
-  // map.put(memberId, new Object[] {clientString, new
-  // Integer(connectionCount)});
-  // /* Note: all client addresses are same...
-  // Iterator serverThreads = ((Set) entry.getValue()).iterator();
-  // while (serverThreads.hasNext()) {
-  // ServerConnection connection = (ServerConnection) serverThreads.next();
-  // InetAddress clientAddress = connection.getClientAddress();
-  // logger.severe("getConnectedClients: memberId=" + memberId +
-  // " clientAddress=" + clientAddress + " FQDN=" +
-  // clientAddress.getCanonicalHostName());
-  // }*/
-  // }
-  // }
-  // return map;
-  // }
-
   /**
    * Returns modifiable map (changes do not effect this class) of client membershipID to connection
    * count. This is different from the map contained in this class as here the key is client
@@ -442,7 +402,6 @@ public class ClientHealthMonitor {
    * @param filterProxies Set identifying the Connection proxies which should be fetched. These
    *        ConnectionProxies may be from same client member or different. If it is null this would
    *        mean to fetch the Connections of all the ConnectionProxy objects.
-   * 
    */
   public Map getConnectedClients(Set filterProxies) {
     Map map = new HashMap(); // KEY=proxyID, VALUE=connectionCount (Integer)
@@ -677,7 +636,6 @@ public class ClientHealthMonitor {
     return this._clientHeartbeats;
   }
 
-
   /**
    * Shuts down the singleton <code>CacheClientNotifier</code> instance.
    */
@@ -693,10 +651,9 @@ public class ClientHealthMonitor {
    * 
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
-   *        client has died and interrupting its sockets.
    */
-  protected static synchronized void createInstance(Cache cache, int maximumTimeBetweenPings,
-      CacheClientNotifierStats stats) {
+  protected static synchronized void createInstance(InternalCache cache,
+      int maximumTimeBetweenPings, CacheClientNotifierStats stats) {
     refCount++;
     if (_instance != null) {
       return;
@@ -710,9 +667,8 @@ public class ClientHealthMonitor {
    * 
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
-   *        client has died and interrupting its sockets.
    */
-  private ClientHealthMonitor(Cache cache, int maximumTimeBetweenPings,
+  private ClientHealthMonitor(InternalCache cache, int maximumTimeBetweenPings,
       CacheClientNotifierStats stats) {
     // Set the Cache
     this._cache = cache;

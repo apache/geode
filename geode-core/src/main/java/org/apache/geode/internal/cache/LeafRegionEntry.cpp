@@ -254,7 +254,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     this.value = v;
   }
 #endif
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
   protected boolean compareAndSetLastModifiedField(long expectedValue, long newValue) {
@@ -499,7 +499,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     }
   }
   @Override
-  protected final void setLastModifiedAndAccessedTimes(long lastAccessed) {
+  protected final void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
     _setLastModified(lastModified);
     if (!DISABLE_ACCESS_TIME_UPDATE_ON_PUT) { 
       setLastAccessed(lastAccessed);

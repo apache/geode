@@ -26,10 +26,10 @@ import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.internal.cli.CliUtil;
 
@@ -41,9 +41,7 @@ public class BeanUtilFuncs {
   /**
    * returns the tail of the log file
    * 
-   * @param logFile
    * @return tail of the log file
-   * @throws IOException
    */
   public static String tailSystemLog(File logFile, final int numLines) throws IOException {
     if (logFile == null || logFile.equals(new File(""))) {
@@ -107,11 +105,8 @@ public class BeanUtilFuncs {
     return returnStr.toString();
   }
 
-
   /**
-   * @param sc
    * @return tail of log
-   * @throws IOException
    */
   public static String tailSystemLog(DistributionConfig sc, final int numLines) throws IOException {
     File logFile = sc.getLogFile();
@@ -128,7 +123,7 @@ public class BeanUtilFuncs {
     DistributedMember memberFound = null;
 
     if (memberNameOrId != null) {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
       Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
       for (DistributedMember member : memberSet) {
         if (memberNameOrId.equals(member.getId()) || memberNameOrId.equals(member.getName())) {
@@ -141,12 +136,8 @@ public class BeanUtilFuncs {
   }
 
   public static GemFireProperties initGemfireProperties(DistributionConfig config) {
-
-    // **TODO **/
     String memberGroups = "";
-    // **TODO **/
     String configFile = null;
-    // ** TODO **//
     String includeFile = null;
 
     GemFireProperties gemFirePropertyData = new GemFireProperties();
@@ -329,9 +320,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setSSLDefaultAlias(config.getSSLDefaultAlias());
 
     return gemFirePropertyData;
-
   }
-
 
   /**
    * Compresses a given String. It is encoded using ISO-8859-1, So any decompression of the
@@ -339,7 +328,6 @@ public class BeanUtilFuncs {
    * 
    * @param str String to be compressed.
    * @return compressed bytes
-   * @throws IOException
    */
   public static byte[] compress(String str) throws IOException {
     if (str == null || str.length() == 0) {
@@ -356,7 +344,6 @@ public class BeanUtilFuncs {
   /**
    * @param bytes bytes to be decompressed
    * @return a decompressed String
-   * @throws IOException
    */
   public static String decompress(byte[] bytes) throws IOException {
     if (bytes == null || bytes.length == 0) {

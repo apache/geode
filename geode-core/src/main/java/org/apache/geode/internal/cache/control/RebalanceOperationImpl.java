@@ -12,8 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.control;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
@@ -23,37 +37,28 @@ import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Implements <code>RebalanceOperation</code> for rebalancing Cache resources.
- * 
+ * Implements {@code RebalanceOperation} for rebalancing Cache resources.
  */
 @SuppressWarnings("synthetic-access")
 public class RebalanceOperationImpl implements RebalanceOperation {
-
   private static final Logger logger = LogService.getLogger();
 
   private final boolean simulation;
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
   private List<Future<RebalanceResults>> futureList = new ArrayList<Future<RebalanceResults>>();
   private int pendingTasks;
   private final AtomicBoolean cancelled = new AtomicBoolean();
   private final Object futureLock = new Object();
   private RegionFilter filter;
 
-  RebalanceOperationImpl(GemFireCacheImpl cache, boolean simulation, RegionFilter filter) {
+  RebalanceOperationImpl(InternalCache cache, boolean simulation, RegionFilter filter) {
     this.simulation = simulation;
     this.cache = cache;
     this.filter = filter;
@@ -97,7 +102,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
               this.futureList.add(submitRebalanceTask(prOp, start));
             }
           }
-        } catch (RegionDestroyedException e) {
+        } catch (RegionDestroyedException ignore) {
           // ignore, go on to the next region
         }
       }

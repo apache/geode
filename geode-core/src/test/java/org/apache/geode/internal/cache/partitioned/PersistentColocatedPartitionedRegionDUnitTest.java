@@ -1492,7 +1492,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     Set<Integer> vm2PrimaryBuckets = getPrimaryBucketList(vm2, PR_REGION_NAME);
     assertEquals(vm2PrimaryBuckets, getPrimaryBucketList(vm2, "region2"));
 
-
     closeCache(vm2);
     // Make sure the other members notice that vm2 has gone
     // TODO use a callback for this.
@@ -1512,8 +1511,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     vm1.invoke(createChildPR);
     waitForBucketRecovery(vm0, vm0Buckets);
     waitForBucketRecovery(vm1, vm1Buckets);
-
-
 
     checkData(vm0, 0, NUM_BUCKETS, "a");
 

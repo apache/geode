@@ -43,8 +43,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.partitioned.PutMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -77,6 +75,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * The unique transaction Id on the sending member, used to construct a TXId on the receiving side
    */
   private int txUniqId = TXManagerImpl.NOTX;
+
   private InternalDistributedMember txMemberId = null;
 
   protected transient short flags;
@@ -84,8 +83,9 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /* TODO [DISTTX] Convert into flag */
   protected boolean isTransactionDistributed = false;
 
-  public RemoteOperationMessage() {}
-
+  public RemoteOperationMessage() {
+    // do nothing
+  }
 
   public RemoteOperationMessage(InternalDistributedMember recipient, String regionPath,
       ReplyProcessor21 processor) {
@@ -93,7 +93,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     setRecipient(recipient);
     this.regionPath = regionPath;
     this.processorId = processor == null ? 0 : processor.getProcessorId();
-    if (processor != null && this.isSevereAlertCompatible()) {
+    if (processor != null && isSevereAlertCompatible()) {
       processor.enableSevereAlertProcessing();
     }
     this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
@@ -108,7 +108,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     setRecipients(recipients);
     this.regionPath = regionPath;
     this.processorId = processor == null ? 0 : processor.getProcessorId();
-    if (processor != null && this.isSevereAlertCompatible()) {
+    if (processor != null && isSevereAlertCompatible()) {
       processor.enableSevereAlertProcessing();
     }
     this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
@@ -121,8 +121,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   /**
    * Copy constructor that initializes the fields declared in this class
-   * 
-   * @param other
    */
   public RemoteOperationMessage(RemoteOperationMessage other) {
     this.regionPath = other.regionPath;
@@ -152,7 +150,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * @return the full path of the region
    */
-  public final String getRegionPath() {
+  public String getRegionPath() {
     return regionPath;
   }
 
@@ -161,30 +159,15 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    *         is required.
    */
   @Override
-  public final int getProcessorId() {
+  public int getProcessorId() {
     return this.processorId;
   }
-
-  /**
-   * @param processorId1 the {@link org.apache.geode.distributed.internal.ReplyProcessor21} id
-   *        associated with the message, null if no acknowlegement is required.
-   */
-  public final void registerProcessor(int processorId1) {
-    this.processorId = processorId1;
-  }
-
-  public void setCacheOpRecipients(Collection cacheOpRecipients) {
-    // TODO need to implement this for other remote ops
-    assert this instanceof RemotePutMessage;
-  }
-
 
   /**
    * check to see if the cache is closing
    */
   public boolean checkCacheClosing(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    // return (cache != null && cache.isClosed());
+    InternalCache cache = GemFireCacheImpl.getInstance();
     return cache == null || cache.isClosed();
   }
 
@@ -218,14 +201,14 @@ public abstract class RemoteOperationMessage extends DistributionMessage
             .toLocalizedString(dm.getId()));
         return;
       }
-      GemFireCacheImpl gfc = getCache(dm);
-      r = getRegionByPath(gfc);
+      InternalCache cache = getCache(dm);
+      r = getRegionByPath(cache);
       if (r == null && failIfRegionMissing()) {
         // if the distributed system is disconnecting, don't send a reply saying
         // the partitioned region can't be found (bug 36585)
         thr = new RegionDestroyedException(
-            LocalizedStrings.RemoteOperationMessage_0_COULD_NOT_FIND_REGION_1.toLocalizedString(
-                new Object[] {dm.getDistributionManagerId(), regionPath}),
+            LocalizedStrings.RemoteOperationMessage_0_COULD_NOT_FIND_REGION_1
+                .toLocalizedString(dm.getDistributionManagerId(), regionPath),
             regionPath);
         return; // reply sent in finally block below
       }
@@ -233,7 +216,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       thr = UNHANDLED_EXCEPTION;
 
       // [bruce] r might be null here, so we have to go to the cache instance to get the txmgr
-      TXManagerImpl txMgr = getTXManager(gfc);
+      TXManagerImpl txMgr = getTXManager(cache);
       TXStateProxy tx = txMgr.masqueradeAs(this);
       if (tx == null) {
         sendReply = operateOnRegion(dm, r, startTime);
@@ -315,16 +298,16 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     }
   }
 
-  TXManagerImpl getTXManager(GemFireCacheImpl cache) {
+  TXManagerImpl getTXManager(InternalCache cache) {
     return cache.getTxManager();
   }
 
-  LocalRegion getRegionByPath(GemFireCacheImpl gfc) {
-    return gfc.getRegionByPathForProcessing(this.regionPath);
+  LocalRegion getRegionByPath(InternalCache internalCache) {
+    return internalCache.getRegionByPathForProcessing(this.regionPath);
   }
 
-  GemFireCacheImpl getCache(final DistributionManager dm) {
-    return (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
+  InternalCache getCache(final DistributionManager dm) {
+    return (InternalCache) CacheFactory.getInstance(dm.getSystem());
   }
 
   /**
@@ -441,7 +424,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     }
   }
 
-  protected final InternalDistributedMember getTXMemberId() {
+  protected InternalDistributedMember getTXMemberId() {
     return txMemberId;
   }
 
@@ -502,12 +485,11 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * @return the txUniqId
    */
-  public final int getTXUniqId() {
+  public int getTXUniqId() {
     return txUniqId;
   }
 
-
-  public final InternalDistributedMember getMemberToMasqueradeAs() {
+  public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
     }
@@ -583,15 +565,15 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         if (removeMember(id, true)) {
           this.prce = new ForceReattemptException(
               LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                  .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}));
+                  .toLocalizedString(id, crashed));
         }
         checkIfDone();
       } else {
         Exception e = new Exception(
             LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID.toLocalizedString());
         logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0,
-            Boolean.valueOf(crashed)), e);
+            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0, crashed),
+            e);
       }
     }
 
@@ -599,9 +581,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
      * Waits for the response from the {@link RemoteOperationMessage}'s recipient
      * 
      * @throws CacheException if the recipient threw a cache exception during message processing
-     * @throws PrimaryBucketException
      */
-    final public void waitForCacheException()
+    public void waitForCacheException()
         throws CacheException, RemoteOperationException, PrimaryBucketException {
       try {
         waitForRepliesUninterruptibly();
@@ -630,8 +611,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
           throw new PrimaryBucketException(
               LocalizedStrings.PartitionMessage_PEER_FAILED_PRIMARY_TEST.toLocalizedString(), t);
         } else if (t instanceof RegionDestroyedException) {
-          RegionDestroyedException rde = (RegionDestroyedException) t;
-          throw rde;
+          throw (RegionDestroyedException) t;
         } else if (t instanceof CancelException) {
           if (logger.isDebugEnabled()) {
             logger.debug(
@@ -677,7 +657,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * For Distributed Tx
    */
   private void setIfTransactionDistributed() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       if (cache.getTxManager() != null) {
         this.isTransactionDistributed = cache.getTxManager().isDistributed();

@@ -14,15 +14,13 @@
  */
 package org.apache.geode.pdx.internal;
 
-import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
-import org.apache.geode.pdx.PdxUnreadFields;
 
 /**
  * PdxInstances created with this factory can never be deserialized but you can access their fields
@@ -32,26 +30,27 @@ import org.apache.geode.pdx.PdxUnreadFields;
  * PdxType is expensive since it can never figure out it is already defined without doing an
  * expensive check in the type registry. We should optimize this before making this a public
  * feature.
- *
  */
 public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   private final PdxWriterImpl writer;
+
   private boolean created = false;
 
   private PdxInstanceFactoryImpl(String name, boolean expectDomainClass) {
-    PdxOutputStream os = new PdxOutputStream();
-    PdxType pt = new PdxType(name, expectDomainClass);
-    GemFireCacheImpl gfc = GemFireCacheImpl
+    PdxOutputStream pdxOutputStream = new PdxOutputStream();
+    PdxType pdxType = new PdxType(name, expectDomainClass);
+    InternalCache internalCache = GemFireCacheImpl
         .getForPdx("PDX registry is unavailable because the Cache has been closed.");
-    TypeRegistry tr = gfc.getPdxRegistry();
-    this.writer = new PdxWriterImpl(pt, tr, os);
+    TypeRegistry pdxRegistry = internalCache.getPdxRegistry();
+    this.writer = new PdxWriterImpl(pdxType, pdxRegistry, pdxOutputStream);
   }
 
   public static PdxInstanceFactory newCreator(String name, boolean expectDomainClass) {
     return new PdxInstanceFactoryImpl(name, expectDomainClass);
   }
 
+  @Override
   public PdxInstance create() {
     if (this.created) {
       throw new IllegalStateException("The create method can only be called once.");
@@ -61,135 +60,149 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
     return this.writer.makePdxInstance();
   }
 
+  @Override
   public PdxInstanceFactory writeChar(String fieldName, char value) {
     this.writer.writeChar(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeBoolean(String fieldName, boolean value) {
     this.writer.writeBoolean(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeByte(String fieldName, byte value) {
     this.writer.writeByte(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeShort(String fieldName, short value) {
     this.writer.writeShort(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeInt(String fieldName, int value) {
     this.writer.writeInt(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeLong(String fieldName, long value) {
     this.writer.writeLong(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeFloat(String fieldName, float value) {
     this.writer.writeFloat(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeDouble(String fieldName, double value) {
     this.writer.writeDouble(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeDate(String fieldName, Date date) {
-    this.writer.writeDate(fieldName, date);
+  @Override
+  public PdxInstanceFactory writeDate(String fieldName, Date value) {
+    this.writer.writeDate(fieldName, value);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeString(String fieldName, String value) {
     this.writer.writeString(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeObject(String fieldName, Object object) {
-    return writeObject(fieldName, object, false);
+  @Override
+  public PdxInstanceFactory writeObject(String fieldName, Object value) {
+    return writeObject(fieldName, value, false);
   }
 
-  public PdxInstanceFactory writeBooleanArray(String fieldName, boolean[] array) {
-    this.writer.writeBooleanArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeBooleanArray(String fieldName, boolean[] value) {
+    this.writer.writeBooleanArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeCharArray(String fieldName, char[] array) {
-    this.writer.writeCharArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeCharArray(String fieldName, char[] value) {
+    this.writer.writeCharArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeByteArray(String fieldName, byte[] array) {
-    this.writer.writeByteArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeByteArray(String fieldName, byte[] value) {
+    this.writer.writeByteArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeShortArray(String fieldName, short[] array) {
-    this.writer.writeShortArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeShortArray(String fieldName, short[] value) {
+    this.writer.writeShortArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeIntArray(String fieldName, int[] array) {
-    this.writer.writeIntArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeIntArray(String fieldName, int[] value) {
+    this.writer.writeIntArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeLongArray(String fieldName, long[] array) {
-    this.writer.writeLongArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeLongArray(String fieldName, long[] value) {
+    this.writer.writeLongArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeFloatArray(String fieldName, float[] array) {
-    this.writer.writeFloatArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeFloatArray(String fieldName, float[] value) {
+    this.writer.writeFloatArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeDoubleArray(String fieldName, double[] array) {
-    this.writer.writeDoubleArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeDoubleArray(String fieldName, double[] value) {
+    this.writer.writeDoubleArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeStringArray(String fieldName, String[] array) {
-    this.writer.writeStringArray(fieldName, array);
+  @Override
+  public PdxInstanceFactory writeStringArray(String fieldName, String[] value) {
+    this.writer.writeStringArray(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeObjectArray(String fieldName, Object[] array) {
-    return writeObjectArray(fieldName, array, false);
+  @Override
+  public PdxInstanceFactory writeObjectArray(String fieldName, Object[] value) {
+    return writeObjectArray(fieldName, value, false);
   }
 
-  public PdxInstanceFactory writeUnreadFields(PdxUnreadFields unread) {
-    this.writer.writeUnreadFields(unread);
+  @Override
+  public PdxInstanceFactory writeArrayOfByteArrays(String fieldName, byte[][] value) {
+    this.writer.writeArrayOfByteArrays(fieldName, value);
     return this;
   }
 
-  public PdxInstanceFactory writeRaw(PdxField field, ByteBuffer rawData) {
-    this.writer.writeRawField(field, ByteSourceFactory.create(rawData));
-    return this;
-  }
-
-
-  public PdxInstanceFactory writeArrayOfByteArrays(String fieldName, byte[][] array) {
-    this.writer.writeArrayOfByteArrays(fieldName, array);
-    return this;
-  }
-
+  @Override
   public <CT, VT extends CT> PdxInstanceFactory writeField(String fieldName, VT fieldValue,
       Class<CT> fieldType) {
     return writeField(fieldName, fieldValue, fieldType, false);
   }
 
+  @Override
   public PdxInstanceFactory markIdentityField(String fieldName) {
     this.writer.markIdentityField(fieldName);
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeObject(String fieldName, Object value, boolean checkPortability) {
     if (InternalDataSerializer.is662SerializationEnabled()) {
       boolean alreadyInProgress = InternalDataSerializer.isPdxSerializationInProgress();
@@ -210,6 +223,7 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
     return this;
   }
 
+  @Override
   public PdxInstanceFactory writeObjectArray(String fieldName, Object[] value,
       boolean checkPortability) {
     if (InternalDataSerializer.is662SerializationEnabled()) {
@@ -230,6 +244,7 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
     return this;
   }
 
+  @Override
   public <CT, VT extends CT> PdxInstanceFactory writeField(String fieldName, VT fieldValue,
       Class<CT> fieldType, boolean checkPortability) {
     if (InternalDataSerializer.is662SerializationEnabled()) {
@@ -251,14 +266,14 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
   }
 
   public static PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal,
-      GemFireCacheImpl gfc) {
+      InternalCache internalCache) {
     if (className == null) {
       throw new IllegalArgumentException("className must not be null");
     }
     if (enumName == null) {
       throw new IllegalArgumentException("enumName must not be null");
     }
-    TypeRegistry tr = gfc.getPdxRegistry();
+    TypeRegistry tr = internalCache.getPdxRegistry();
     EnumInfo ei = new EnumInfo(className, enumName, enumOrdinal);
     return ei.getPdxInstance(tr.defineEnum(ei));
   }

@@ -14,27 +14,25 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
-import org.apache.geode.cache.Cache;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.RegionMXBean;
@@ -49,18 +47,9 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.Set;
 
 @Category(DistributedTest.class)
 public class CliUtilDUnitTest extends JUnit4CacheTestCase {
-
-  public CliUtilDUnitTest() {
-    super();
-  }
 
   public static final String COMMON_REGION = "region1";
   public static final String COMMON_REGION_GROUP1 = "region_group1";
@@ -78,7 +67,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
   public static final String GROUP1 = "group1";
   public static final String GROUP2 = "group2";
 
-
   private static final long serialVersionUID = 1L;
 
   @Override
@@ -86,14 +74,12 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     destroySetup();
   }
 
-
   protected final void destroySetup() {
     disconnectAllFromDS();
   }
 
   @SuppressWarnings("serial")
   void setupMembersWithIdsAndGroups() {
-
     final VM vm1 = Host.getHost(0).getVM(0);
     final VM vm2 = Host.getHost(0).getVM(1);
     final VM vm3 = Host.getHost(0).getVM(2);
@@ -106,9 +92,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
         createRegion(REGION_MEMBER1_GROUP1);
         createRegion(COMMON_REGION_GROUP1);
         createRegion(COMMON_REGION);
-        // registerFunction();
       }
-
     });
 
     vm2.invoke(new SerializableRunnable() {
@@ -118,7 +102,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
         createRegion(REGION_MEMBER2_GROUP1);
         createRegion(COMMON_REGION_GROUP1);
         createRegion(COMMON_REGION);
-        // registerFunction();
       }
     });
 
@@ -129,7 +112,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
         createRegion(REGION_MEMBER1_GROUP2);
         createRegion(COMMON_REGION_GROUP2);
         createRegion(COMMON_REGION);
-        // registerFunction();
       }
     });
 
@@ -140,7 +122,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
         createRegion(REGION_MEMBER2_GROUP2);
         createRegion(COMMON_REGION_GROUP2);
         createRegion(COMMON_REGION);
-        // registerFunction();
       }
     });
 
@@ -150,7 +131,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
         startManager();
       }
     });
-
   }
 
   private void startManager() {
@@ -205,11 +185,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     LogWriterUtils.getLogWriter().info("Manager federation is complete");
   }
 
-  private void registerFunction() {
-    Function funct = new DunitFunction("DunitFunction");
-    FunctionService.registerFunction(funct);
-  }
-
   @SuppressWarnings("rawtypes")
   private Region createRegion(String regionName) {
     RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
@@ -237,13 +212,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(service.getMemberMXBean());
   }
 
-  @Test
-  public void testFileToBytes() {
-
-    // CliUtil.filesToBytes(fileNames)
-
-  }
-
   @SuppressWarnings("serial")
   @Test
   public void testCliUtilMethods() {
@@ -262,7 +230,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     final String id = (String) vm1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Cache cache = getCache();
+        InternalCache cache = getCache();
         return cache.getDistributedSystem().getDistributedMember().getId();
       }
     });
@@ -290,9 +258,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
         getRegionAssociatedMembers();
       }
     });
-
   }
-
 
   public void verifyFindAllMatchingMembers() {
     try {
@@ -302,7 +268,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
       assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
       assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
 
-
       set = CliUtil.findMembersOrThrow("group1,group2", null);
       assertNotNull(set);
       assertEquals(4, set.size());
@@ -311,12 +276,10 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
       assertEquals(true, containsMember(set, MEMBER_1_GROUP2));
       assertEquals(true, containsMember(set, MEMBER_2_GROUP2));
 
-
       set = CliUtil.findMembersOrThrow(null, MEMBER_1_GROUP1);
       assertNotNull(set);
       assertEquals(1, set.size());
       assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
-
 
       set = CliUtil.findMembersOrThrow(null, "member1_group1,member2_group2");
       assertNotNull(set);
@@ -337,24 +300,20 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     return returnValue;
   }
 
-
   public void getDistributedMemberByNameOrId(String name, String id) {
-
     DistributedMember member = CliUtil.getDistributedMemberByNameOrId(name);
     assertNotNull(member);
 
     member = CliUtil.getDistributedMemberByNameOrId(id);
     assertNotNull(member);
-
   }
-
 
   public void verifyExecuteFunction() {
     DunitFunction function = new DunitFunction("myfunction");
     Set<DistributedMember> set;
     try {
       @SuppressWarnings("rawtypes")
-      Region region1 = CacheFactory.getAnyInstance().getRegion(COMMON_REGION);
+      Region region1 = getCache().getRegion(COMMON_REGION);
       region1.clear();
       set = CliUtil.findMembersOrThrow(GROUP1, null);
       assertEquals(2, set.size());
@@ -370,20 +329,12 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-
   public void getRegionAssociatedMembers() {
-
     String region_group1 = "/region_group1";
     String region1 = "/region1";
     String region_member2_group1 = "/region_member2_group1";
 
-    /*
-     * String region_member1_group1 ="/region_member1_group1"; String region_member1_group2
-     * ="/region_member1_group2"; String region_member2_group2 ="/region_member2_group2"; String
-     * region_group2 ="/region_group2";
-     */
-
-    Cache cache = getCache();
+    InternalCache cache = getCache();
 
     Set<DistributedMember> set = CliUtil.getRegionAssociatedMembers(region1, cache, true);
     assertNotNull(set);
@@ -394,7 +345,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     assertEquals(true, containsMember(set, MEMBER_2_GROUP2));
 
     /*
-     * "FIXME - Abhishek" This is failing because last param is not considered in method set =
+     * TODO: This is failing because last param is not considered in method set =
      * CliUtil.getRegionAssociatedMembers(region1, cache, false); assertNotNull(set);
      * assertIndexDetailsEquals(1, set.size());
      */
@@ -409,7 +360,6 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(set);
     assertEquals(1, set.size());
     assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
-
   }
 
   public static class DunitFunction extends FunctionAdapter {
@@ -424,7 +374,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void execute(FunctionContext context) {
       Object object = context.getArguments();
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
       @SuppressWarnings("rawtypes")
       Region region = cache.getRegion(COMMON_REGION);
       String id = cache.getDistributedSystem().getDistributedMember().getName();
@@ -440,4 +390,3 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
   }
 
 }
-

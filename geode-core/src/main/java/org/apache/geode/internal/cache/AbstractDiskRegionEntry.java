@@ -16,13 +16,7 @@ package org.apache.geode.internal.cache;
 
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
-import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.offheap.annotations.Retained;
 
-/**
- * 
- *
- */
 public abstract class AbstractDiskRegionEntry extends AbstractRegionEntry implements DiskEntry {
   protected AbstractDiskRegionEntry(RegionEntryContext context, Object value) {
     super(context, value);

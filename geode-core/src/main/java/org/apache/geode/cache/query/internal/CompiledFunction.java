@@ -18,8 +18,6 @@ package org.apache.geode.cache.query.internal;
 import java.util.*;
 import org.apache.geode.cache.query.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.internal.PdxString;
-
 
 
 /**
@@ -89,7 +87,7 @@ public class CompiledFunction extends AbstractCompiledValue {
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, ')');
     int len = this._args.length;

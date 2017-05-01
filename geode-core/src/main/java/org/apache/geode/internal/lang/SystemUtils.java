@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.lang;
 
 import java.io.File;
@@ -49,6 +48,8 @@ public class SystemUtils {
   public static final String WINDOWS_OS_NAME = "Windows";
   public static final String SOLARIS_OS_NAME = "SunOS";
 
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
   /**
    * Utility method to determine whether the installed Java Runtime Environment (JRE) is minimally
    * at the specified, expected version. Typically, Java versions are of the form "1.6.0_31"... In
@@ -83,7 +84,7 @@ public class SystemUtils {
         '0', actualVersionDigits.length());
 
     try {
-      return (Long.parseLong(actualVersionDigits) >= Long.parseLong(expectedVersionDigits));
+      return Long.parseLong(actualVersionDigits) >= Long.parseLong(expectedVersionDigits);
     } catch (NumberFormatException ignore) {
       return false;
     }
@@ -126,7 +127,7 @@ public class SystemUtils {
   // @see java.lang.System#getProperty(String) with 'java.vm.vendor'.
   private static boolean isJvmVendor(final String expectedJvmVendorName) {
     String jvmVendor = System.getProperty("java.vm.vendor");
-    return (jvmVendor != null && jvmVendor.contains(expectedJvmVendorName));
+    return jvmVendor != null && jvmVendor.contains(expectedJvmVendorName);
   }
 
   /**
@@ -164,10 +165,12 @@ public class SystemUtils {
     return isJVM(ORACLE_JROCKIT_JVM_NAME);
   }
 
-  // @see java.lang.System#getProperty(String) with "java.vm.name".
+  /**
+   * Returns true if the expectedJvmName matches {@code System.getProperty("java.vm.name")}.
+   */
   private static boolean isJVM(final String expectedJvmName) {
     String jvmName = System.getProperty("java.vm.name");
-    return (jvmName != null && jvmName.contains(expectedJvmName));
+    return jvmName != null && jvmName.contains(expectedJvmName);
   }
 
   /**
@@ -220,11 +223,10 @@ public class SystemUtils {
   /**
    * Returns true if the specified location is in the JVM classpath. This may ignore additions to
    * the classpath that are not reflected by the value in
-   * <code>System.getProperty("java.class.path")</code>.
+   * {@code System.getProperty("java.class.path")}.
    * 
    * @param location the directory or jar name to test for
    * @return true if location is in the JVM classpath
-   * @throws MalformedURLException
    */
   public static boolean isInClassPath(String location) throws MalformedURLException {
     return isInClassPath(new File(location).toURI().toURL());
@@ -233,11 +235,10 @@ public class SystemUtils {
   /**
    * Returns true if the specified location is in the JVM classpath. This may ignore additions to
    * the classpath that are not reflected by the value in
-   * <code>System.getProperty("java.class.path")</code>.
+   * {@code System.getProperty("java.class.path")}.
    * 
    * @param location the directory or jar URL to test for
    * @return true if location is in the JVM classpath
-   * @throws MalformedURLException
    */
   public static boolean isInClassPath(URL location) throws MalformedURLException {
     String classPath = getClassPath();
@@ -252,44 +253,52 @@ public class SystemUtils {
   }
 
   /**
-   * Returns the value of {code System.getProperty("os.name")}.
+   * Returns the value of {@code System.getProperty("os.name")}.
    */
   public static String getOsName() {
     return System.getProperty("os.name");
   }
 
   /**
-   * Returns the value of {code System.getProperty("os.version")}.
+   * Returns the value of {@code System.getProperty("os.version")}.
    */
   public static String getOsVersion() {
     return System.getProperty("os.version");
   }
 
   /**
-   * Returns the value of {code System.getProperty("os.arch")}.
+   * Returns the value of {@code System.getProperty("os.arch")}.
    */
   public static String getOsArchitecture() {
     return System.getProperty("os.arch");
   }
 
   /**
-   * Returns the value of {code System.getProperty("java.class.path")}.
+   * Returns the value of {@code System.getProperty("java.class.path")}.
    */
   public static String getClassPath() {
     return System.getProperty("java.class.path");
   }
 
   /**
-   * Returns the value of {code System.getProperty("sun.boot.class.path")}.
+   * Returns the value of {@code System.getProperty("sun.boot.class.path")}.
    */
   public static String getBootClassPath() {
     return System.getProperty("sun.boot.class.path");
   }
 
-  // @see java.lang.System#getProperty(String) with "os.name".
+  /**
+   * Returns true if expectedOsName matches {@code System.getProperty("os.name")}.
+   */
   private static boolean isOS(final String expectedOsName) {
     String osName = getOsName();
-    return (osName != null && osName.contains(expectedOsName));
+    return osName != null && osName.contains(expectedOsName);
   }
 
+  /**
+   * Returns the value of {@code System.getProperty("line.separator")}.
+   */
+  public static String getLineSeparator() {
+    return LINE_SEPARATOR;
+  }
 }

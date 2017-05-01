@@ -21,18 +21,17 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.RestAgent;
 
 /**
  * The FindRestEnabledServersFunction class is a gemfire function that gives details about REST
  * enabled gemfire servers.
- * <p/>
  *
  * @since GemFire 8.1
  */
-
 public class FindRestEnabledServersFunction extends FunctionAdapter implements InternalEntity {
+  private static final long serialVersionUID = 7851518767859544678L;
 
   /**
    * This property defines internal function that will get executed on each node to fetch active
@@ -40,20 +39,17 @@ public class FindRestEnabledServersFunction extends FunctionAdapter implements I
    */
   public static final String FIND_REST_ENABLED_SERVERS_FUNCTION_ID =
       FindRestEnabledServersFunction.class.getName();
-  private static final long serialVersionUID = 7851518767859544678L;
-
 
   public void execute(FunctionContext context) {
-
     try {
-      GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
       DistributionConfig config = InternalDistributedSystem.getAnyInstance().getConfig();
 
       String bindAddress = RestAgent.getBindAddressForHttpService(config);
 
       final String protocolType = config.getHttpServiceSSLEnabled() ? "https" : "http";
 
-      if (c.isRESTServiceRunning()) {
+      if (cache.isRESTServiceRunning()) {
         context.getResultSender()
             .lastResult(protocolType + "://" + bindAddress + ":" + config.getHttpServicePort());
 
@@ -62,7 +58,6 @@ public class FindRestEnabledServersFunction extends FunctionAdapter implements I
       }
     } catch (CacheClosedException ex) {
       context.getResultSender().lastResult("");
-
     }
   }
 

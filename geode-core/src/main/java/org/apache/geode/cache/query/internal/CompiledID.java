@@ -82,7 +82,7 @@ public class CompiledID extends AbstractCompiledValue {
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     // The compiled ID can be an iterator variable or it can be a path variable.
     // So first resolve the type of variable using ExecutionContext

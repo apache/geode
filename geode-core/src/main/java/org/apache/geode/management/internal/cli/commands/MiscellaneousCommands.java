@@ -14,9 +14,44 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
+
+import javax.management.ObjectName;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -30,7 +65,9 @@ import org.apache.geode.distributed.internal.deadlock.Dependency;
 import org.apache.geode.distributed.internal.deadlock.DependencyGraph;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -70,49 +107,15 @@ import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.zip.DataFormatException;
-import java.util.zip.GZIPInputStream;
-import javax.management.ObjectName;
 
 /**
  * @since GemFire 7.0
  */
 public class MiscellaneousCommands implements CommandMarker {
+
   public static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
   public final static String DEFAULT_TIME_OUT = "10";
   private final static Logger logger = LogService.getLogger();
@@ -123,6 +126,9 @@ public class MiscellaneousCommands implements CommandMarker {
     return Gfsh.getCurrentInstance();
   }
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   public void shutdownNode(final long timeout, final Set<DistributedMember> includeMembers)
       throws TimeoutException, InterruptedException, ExecutionException {
@@ -145,7 +151,6 @@ public class MiscellaneousCommands implements CommandMarker {
           }
           return "SUCCESS";
         }
-
       };
 
       Future<String> result = exec.submit(shutdownNodes);
@@ -163,9 +168,7 @@ public class MiscellaneousCommands implements CommandMarker {
     } finally {
       exec.shutdownNow();
     }
-
   }
-
 
   @CliCommand(value = CliStrings.SHUTDOWN, help = CliStrings.SHUTDOWN__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_LIFECYCLE},
@@ -185,7 +188,7 @@ public class MiscellaneousCommands implements CommandMarker {
       // convert to mili-seconds
       long timeout = userSpecifiedTimeout * 1000;
 
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       int numDataNodes = CliUtil.getAllNormalMembers(cache).size();
 
@@ -199,9 +202,7 @@ public class MiscellaneousCommands implements CommandMarker {
         return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN__MSG__NO_DATA_NODE_FOUND);
       }
 
-      GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
-      String managerName =
-          gemFireCache.getJmxManagerAdvisor().getDistributionManager().getId().getId();
+      String managerName = cache.getJmxManagerAdvisor().getDistributionManager().getId().getId();
 
       final DistributedMember manager = CliUtil.getDistributedMemberByNameOrId(managerName);
 
@@ -251,7 +252,6 @@ public class MiscellaneousCommands implements CommandMarker {
 
     // @TODO. List all the nodes which could be successfully shutdown
     return ResultBuilder.createInfoResult("Shutdown is triggered");
-
   }
 
   /**
@@ -269,10 +269,8 @@ public class MiscellaneousCommands implements CommandMarker {
 
     long timeElapsed = shutDownTimeEnd - shutDownTimeStart;
 
-    if (timeElapsed > timeout || Boolean.getBoolean("ThrowTimeoutException")) { // The second check
-      // for
-      // ThrowTimeoutException
-      // is a test hook
+    if (timeElapsed > timeout || Boolean.getBoolean("ThrowTimeoutException")) {
+      // The second check for ThrowTimeoutException is a test hook
       throw new TimeoutException();
     }
     return timeElapsed;
@@ -310,7 +308,7 @@ public class MiscellaneousCommands implements CommandMarker {
       @CliOption(key = CliStrings.GC__MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__MEMBER__HELP) String memberId) {
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     Result result = null;
     CompositeResultData gcResultTable = ResultBuilder.createCompositeResultData();
     TabularResultData resultTable = gcResultTable.addSection().addTable("Table1");
@@ -324,25 +322,24 @@ public class MiscellaneousCommands implements CommandMarker {
             .createGemFireErrorResult(memberId + CliStrings.GC__MSG__MEMBER_NOT_FOUND);
       }
       dsMembers.add(member);
-      result = executeAndBuildResult(cache, resultTable, dsMembers);
+      result = executeAndBuildResult(resultTable, dsMembers);
     } else if (groups != null && groups.length > 0) {
       for (String group : groups) {
         dsMembers.addAll(cache.getDistributedSystem().getGroupMembers(group));
       }
-      result = executeAndBuildResult(cache, resultTable, dsMembers);
+      result = executeAndBuildResult(resultTable, dsMembers);
 
     } else {
       // gc on entire cluster
       // exclude locators
       dsMembers = CliUtil.getAllNormalMembers(cache);
-      result = executeAndBuildResult(cache, resultTable, dsMembers);
+      result = executeAndBuildResult(resultTable, dsMembers);
 
     }
     return result;
   }
 
-  Result executeAndBuildResult(Cache cache, TabularResultData resultTable,
-      Set<DistributedMember> dsMembers) {
+  Result executeAndBuildResult(TabularResultData resultTable, Set<DistributedMember> dsMembers) {
     try {
       List<?> resultList = null;
       Function garbageCollectionFunction = new GarbageCollectionFunction();
@@ -390,7 +387,6 @@ public class MiscellaneousCommands implements CommandMarker {
     table.accumulate(CliStrings.GC__MSG__HEAP_SIZE_AFTER_GC, heapSizeAfter);
     table.accumulate(CliStrings.GC__MSG__TOTAL_TIME_IN_GC, timeTaken);
   }
-
 
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
@@ -568,7 +564,7 @@ public class MiscellaneousCommands implements CommandMarker {
         return ResultBuilder
             .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".txt"));
       }
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       Set<DistributedMember> allMembers = CliUtil.getAllMembers(cache);
       GemFireDeadlockDetector gfeDeadLockDetector = new GemFireDeadlockDetector(allMembers);
@@ -617,7 +613,7 @@ public class MiscellaneousCommands implements CommandMarker {
           help = CliStrings.SHOW_LOG_LINE_NUM_HELP, mandatory = false) int numberOfLines) {
     Result result = null;
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
       MemberMXBean bean = null;
@@ -651,7 +647,6 @@ public class MiscellaneousCommands implements CommandMarker {
               ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
                   .addLine(memberNameOrId + CliStrings.SHOW_LOG_MSG_MEMBER_NOT_FOUND);
           return (ResultBuilder.buildResult(errorResultData));
-
         }
 
         result = ResultBuilder.buildResult(resultData);
@@ -660,7 +655,6 @@ public class MiscellaneousCommands implements CommandMarker {
             ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
                 .addLine(memberNameOrId + CliStrings.SHOW_LOG_MSG_MEMBER_NOT_FOUND);
         return (ResultBuilder.buildResult(errorResultData));
-
       }
 
     } catch (Exception e) {
@@ -670,11 +664,8 @@ public class MiscellaneousCommands implements CommandMarker {
     return result;
   }
 
-  /****
+  /**
    * Current implementation supports writing it to a file and returning the location of the file
-   *
-   * @param memberNameOrId
-   * @return Stack Trace
    */
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
@@ -706,9 +697,8 @@ public class MiscellaneousCommands implements CommandMarker {
             CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
       }
 
-      Cache cache = CacheFactory.getAnyInstance();
-      GemFireCacheImpl gfeCacheImpl = (GemFireCacheImpl) cache;
-      InternalDistributedSystem ads = gfeCacheImpl.getSystem();
+      InternalCache cache = getCache();
+      InternalDistributedSystem ads = cache.getInternalDistributedSystem();
 
       InfoResultData resultData = ResultBuilder.createInfoResultData();
 
@@ -778,7 +768,6 @@ public class MiscellaneousCommands implements CommandMarker {
    * @throws IOException
    */
   private String writeStacksToFile(Map<String, byte[]> dumps, String fileName) throws IOException {
-
     String filePath = null;
     OutputStream os = null;
     PrintWriter ps = null;
@@ -897,17 +886,15 @@ public class MiscellaneousCommands implements CommandMarker {
     return result;
   }
 
-  /****
+  /**
    * Gets the system wide metrics
    *
-   * @param export_to_report_to
    * @return ResultData with required System wide statistics or ErrorResultData if DS MBean is not
    *         found to gather metrics
-   * @throws Exception
    */
   private ResultData getSystemWideMetrics(String export_to_report_to, String[] categoriesArr)
       throws Exception {
-    final Cache cache = CacheFactory.getAnyInstance();
+    final InternalCache cache = getCache();
     final ManagementService managmentService = ManagementService.getManagementService(cache);
     DistributedSystemMXBean dsMxBean = managmentService.getDistributedSystemMXBean();
     StringBuilder csvBuilder = null;
@@ -1001,14 +988,11 @@ public class MiscellaneousCommands implements CommandMarker {
           CliStrings.format(CliStrings.SHOW_METRICS__ERROR, "Distributed System MBean not found");
       return ResultBuilder.createErrorResultData().addLine(errorMessage);
     }
-
   }
 
-  /***
+  /**
    * Gets the Cluster wide metrics for a given member
    *
-   * @param distributedMember
-   * @param export_to_report_to
    * @return ResultData with required Member statistics or ErrorResultData if MemberMbean is not
    *         found to gather metrics
    * @throws ResultDataException if building result fails
@@ -1016,7 +1000,7 @@ public class MiscellaneousCommands implements CommandMarker {
   private ResultData getMemberMetrics(DistributedMember distributedMember,
       String export_to_report_to, String[] categoriesArr, int cacheServerPort)
       throws ResultDataException {
-    final Cache cache = CacheFactory.getAnyInstance();
+    final InternalCache cache = getCache();
     final SystemManagementService managementService =
         (SystemManagementService) ManagementService.getManagementService(cache);
 
@@ -1086,7 +1070,7 @@ public class MiscellaneousCommands implements CommandMarker {
         }
       }
 
-      /****
+      /*
        * Member Metrics
        */
       // member, jvm, region, serialization, communication, function, transaction, diskstore, lock,
@@ -1100,7 +1084,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "maximumHeapSize", memberMxBean.getMaximumHeapSize(),
             csvBuilder);
       }
-      /****
+      /*
        * JVM Metrics
        */
       if (categoriesMap.get("jvm").booleanValue()) {
@@ -1111,7 +1095,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "totalFileDescriptorOpen",
             memberMxBean.getTotalFileDescriptorOpen(), csvBuilder);
       }
-      /***
+      /*
        * Member wide region metrics
        */
       if (categoriesMap.get("region").booleanValue()) {
@@ -1170,10 +1154,9 @@ public class MiscellaneousCommands implements CommandMarker {
             memberMxBean.getCacheListenerCallsAvgLatency(), csvBuilder);
         writeToTableAndCsv(metricsTable, "", "totalLoadsCompleted",
             memberMxBean.getTotalLoadsCompleted(), csvBuilder);
-
       }
 
-      /******
+      /*
        * SERIALIZATION
        */
       if (categoriesMap.get("serialization").booleanValue()) {
@@ -1193,9 +1176,8 @@ public class MiscellaneousCommands implements CommandMarker {
             memberMxBean.getPDXDeserializationRate(), csvBuilder);
       }
 
-      /***
+      /*
        * Communication Metrics
-       *
        */
       if (categoriesMap.get("communication").booleanValue()) {
         writeToTableAndCsv(metricsTable, "communication", "bytesSentRate",
@@ -1209,12 +1191,10 @@ public class MiscellaneousCommands implements CommandMarker {
         String[] connectedGatewaySenders = memberMxBean.listConnectedGatewaySenders();
         writeToTableAndCsv(metricsTable, "", "connectedGatewaySenders", connectedGatewaySenders,
             csvBuilder);
-
       }
 
-      /***
+      /*
        * Member wide function metrics
-       *
        */
       if (categoriesMap.get("function").booleanValue()) {
         writeToTableAndCsv(metricsTable, "function", "numRunningFunctions",
@@ -1228,7 +1208,7 @@ public class MiscellaneousCommands implements CommandMarker {
         // memberMxBean.getFuncExecutionQueueSize(), csvBuilder);
       }
 
-      /***
+      /*
        * totalTransactionsCount currentTransactionalThreadIds transactionCommitsAvgLatency
        * transactionCommittedTotalCount transactionRolledBackTotalCount transactionCommitsRate
        */
@@ -1245,7 +1225,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "transactionCommitsRate",
             memberMxBean.getTransactionCommitsRate(), csvBuilder);
       }
-      /***
+      /*
        * Member wide disk metrics
        */
       if (categoriesMap.get("diskstore").booleanValue()) {
@@ -1263,7 +1243,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "totalBackupInProgress",
             memberMxBean.getTotalBackupInProgress(), csvBuilder);
       }
-      /***
+      /*
        * Member wide Lock
        */
       if (categoriesMap.get("lock").booleanValue()) {
@@ -1276,7 +1256,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "requestQueues", memberMxBean.getLockRequestQueues(),
             csvBuilder);
       }
-      /****
+      /*
        * Eviction
        */
       if (categoriesMap.get("eviction").booleanValue()) {
@@ -1285,7 +1265,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "lruDestroyRate", memberMxBean.getLruDestroyRate(),
             csvBuilder);
       }
-      /***
+      /*
        * Distribution
        */
       if (categoriesMap.get("distribution").booleanValue()) {
@@ -1297,7 +1277,7 @@ public class MiscellaneousCommands implements CommandMarker {
             memberMxBean.getInitialImageKeysReceived(), csvBuilder);
       }
 
-      /***
+      /*
        * OffHeap
        */
       if (categoriesMap.get("offheap").booleanValue()) {
@@ -1315,7 +1295,7 @@ public class MiscellaneousCommands implements CommandMarker {
             memberMxBean.getOffHeapCompactionTime(), csvBuilder);
       }
 
-      /***
+      /*
        * CacheServer stats
        */
       if (csMxBean != null) {
@@ -1345,7 +1325,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "putRequestRate", csMxBean.getPutRequestRate(),
             csvBuilder);
 
-        /*****
+        /*
          * Notification
          */
         writeToTableAndCsv(metricsTable, "notification", "numClientNotificationRequests",
@@ -1355,7 +1335,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "clientNotificationAvgLatency",
             csMxBean.getClientNotificationAvgLatency(), csvBuilder);
 
-        /***
+        /*
          * Query
          */
         writeToTableAndCsv(metricsTable, "query", "activeCQCount", csMxBean.getActiveCQCount(),
@@ -1369,7 +1349,6 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "index list", indexList, csvBuilder);
         writeToTableAndCsv(metricsTable, "", "totalIndexMaintenanceTime",
             csMxBean.getTotalIndexMaintenanceTime(), csvBuilder);
-
       }
 
       if (export_to_report_to != null && !export_to_report_to.isEmpty()) {
@@ -1386,17 +1365,16 @@ public class MiscellaneousCommands implements CommandMarker {
     }
   }
 
-  /****
+  /**
    * Gets the Cluster-wide metrics for a region
    *
-   * @param regionName
    * @return ResultData containing the table
    * @throws ResultDataException if building result fails
    */
   private ResultData getDistributedRegionMetrics(String regionName, String export_to_report_to,
       String[] categoriesArr) throws ResultDataException {
 
-    final Cache cache = CacheFactory.getAnyInstance();
+    final InternalCache cache = getCache();
     final ManagementService managementService = ManagementService.getManagementService(cache);
 
     DistributedRegionMXBean regionMxBean = managementService.getDistributedRegionMXBean(regionName);
@@ -1444,7 +1422,7 @@ public class MiscellaneousCommands implements CommandMarker {
           return ResultBuilder.createErrorResultData().addLine(sb.toString());
         }
       }
-      /***
+      /*
        * General System metrics
        */
       // cluster, region, partition , diskstore, callback, eviction
@@ -1471,7 +1449,6 @@ public class MiscellaneousCommands implements CommandMarker {
             csvBuilder);
         writeToTableAndCsv(metricsTable, "", "putAllRate", regionMxBean.getPutAllRate(),
             csvBuilder);
-
       }
 
       if (categoriesMap.get("partition").booleanValue()) {
@@ -1495,7 +1472,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "averageBucketSize", regionMxBean.getAvgBucketSize(),
             csvBuilder);
       }
-      /*****
+      /*
        * Disk store
        */
       if (categoriesMap.get("diskstore").booleanValue()) {
@@ -1511,7 +1488,7 @@ public class MiscellaneousCommands implements CommandMarker {
             csvBuilder);
 
       }
-      /*****
+      /*
        * LISTENER
        */
       if (categoriesMap.get("callback").booleanValue()) {
@@ -1521,7 +1498,7 @@ public class MiscellaneousCommands implements CommandMarker {
             regionMxBean.getCacheListenerCallsAvgLatency(), csvBuilder);
       }
 
-      /****
+      /*
        * Eviction
        */
       if (categoriesMap.get("eviction").booleanValue()) {
@@ -1546,12 +1523,9 @@ public class MiscellaneousCommands implements CommandMarker {
     }
   }
 
-  /***
+  /**
    * Gets the metrics of region on a given member
    *
-   * @param regionName
-   * @param distributedMember
-   * @param export_to_report_to
    * @return ResultData with required Region statistics or ErrorResultData if Region MBean is not
    *         found to gather metrics
    * @throws ResultDataException if building result fails
@@ -1560,7 +1534,7 @@ public class MiscellaneousCommands implements CommandMarker {
       DistributedMember distributedMember, String export_to_report_to, String[] categoriesArr)
       throws ResultDataException {
 
-    final Cache cache = CacheFactory.getAnyInstance();
+    final InternalCache cache = getCache();
     final SystemManagementService managementService =
         (SystemManagementService) ManagementService.getManagementService(cache);
 
@@ -1587,7 +1561,7 @@ public class MiscellaneousCommands implements CommandMarker {
         csvBuilder.append('\n');
       }
 
-      /****
+      /*
        * Region Metrics
        */
       Map<String, Boolean> categoriesMap = getRegionMetricsCategories();
@@ -1657,10 +1631,8 @@ public class MiscellaneousCommands implements CommandMarker {
             regionMxBean.getNumBucketsWithoutRedundancy(), csvBuilder);
         writeToTableAndCsv(metricsTable, "", "totalBucketSize", regionMxBean.getTotalBucketSize(),
             csvBuilder);
-        // writeToTableAndCsv(metricsTable, "", "averageBucketSize",
-        // regionMxBean.getAvgBucketSize(), csvBuilder);
       }
-      /*****
+      /*
        * Disk store
        */
       if (categoriesMap.get("diskstore").booleanValue()) {
@@ -1675,7 +1647,7 @@ public class MiscellaneousCommands implements CommandMarker {
         writeToTableAndCsv(metricsTable, "", "diskTaskWaiting", regionMxBean.getDiskTaskWaiting(),
             csvBuilder);
       }
-      /*****
+      /*
        * LISTENER
        */
       if (categoriesMap.get("callback").booleanValue()) {
@@ -1685,7 +1657,7 @@ public class MiscellaneousCommands implements CommandMarker {
             regionMxBean.getCacheListenerCallsAvgLatency(), csvBuilder);
       }
 
-      /****
+      /*
        * Eviction
        */
       if (categoriesMap.get("eviction").booleanValue()) {
@@ -1708,18 +1680,10 @@ public class MiscellaneousCommands implements CommandMarker {
       erd.addLine(errorMessage);
       return erd;
     }
-
   }
-
 
   /***
    * Writes an entry to a TabularResultData and writes a comma separated entry to a string builder
-   *
-   * @param metricsTable
-   * @param type
-   * @param metricName
-   * @param metricValue
-   * @param csvBuilder
    */
   private void writeToTableAndCsv(TabularResultData metricsTable, String type, String metricName,
       long metricValue, StringBuilder csvBuilder) {
@@ -1737,14 +1701,6 @@ public class MiscellaneousCommands implements CommandMarker {
     }
   }
 
-  /***
-   *
-   * @param metricsTable
-   * @param type
-   * @param metricName
-   * @param metricValue
-   * @param csvBuilder
-   */
   private void writeToTableAndCsv(TabularResultData metricsTable, String type, String metricName,
       double metricValue, StringBuilder csvBuilder) {
     metricsTable.accumulate(CliStrings.SHOW_METRICS__TYPE__HEADER, type);
@@ -1769,7 +1725,7 @@ public class MiscellaneousCommands implements CommandMarker {
     return categoriesSet;
   }
 
-  /****
+  /**
    * Defines and returns map of categories for System metrics.
    *
    * @return map with categories for system metrics and display flag set to true
@@ -1783,7 +1739,7 @@ public class MiscellaneousCommands implements CommandMarker {
     return categories;
   }
 
-  /****
+  /**
    * Defines and returns map of categories for Region Metrics
    *
    * @return map with categories for region metrics and display flag set to true
@@ -1802,7 +1758,7 @@ public class MiscellaneousCommands implements CommandMarker {
     return categories;
   }
 
-  /****
+  /**
    * Defines and returns map of categories for system-wide region metrics
    *
    * @return map with categories for system wide region metrics and display flag set to true
@@ -1813,7 +1769,7 @@ public class MiscellaneousCommands implements CommandMarker {
     return categories;
   }
 
-  /*****
+  /**
    * Defines and returns map of categories for member metrics
    *
    * @return map with categories for member metrics and display flag set to true
@@ -1835,11 +1791,9 @@ public class MiscellaneousCommands implements CommandMarker {
     return categories;
   }
 
-  /***
+  /**
    * Converts an array of strings to a String delimited by a new line character for display purposes
    *
-   * @param names
-   * @param startIndex
    * @return a String delimited by a new line character for display purposes
    */
   private String formatNames(String[] names, int startIndex) {
@@ -1867,14 +1821,8 @@ public class MiscellaneousCommands implements CommandMarker {
     }
   }
 
-  /***
+  /**
    * Writes to a TabularResultData and also appends a CSV string to a String builder
-   *
-   * @param metricsTable
-   * @param type
-   * @param metricName
-   * @param metricValue
-   * @param csvBuilder
    */
   private void writeToTableAndCsv(TabularResultData metricsTable, String type, String metricName,
       String metricValue, StringBuilder csvBuilder) {
@@ -1891,7 +1839,6 @@ public class MiscellaneousCommands implements CommandMarker {
       csvBuilder.append('\n');
     }
   }
-
 
   @CliCommand(value = CliStrings.CHANGE_LOGLEVEL, help = CliStrings.CHANGE_LOGLEVEL__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_LOGS},
@@ -1911,7 +1858,7 @@ public class MiscellaneousCommands implements CommandMarker {
             .createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER);
       }
 
-      Cache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       LogWriter logger = cache.getLogger();
 
       Set<DistributedMember> dsMembers = new HashSet<DistributedMember>();
@@ -2007,7 +1954,6 @@ public class MiscellaneousCommands implements CommandMarker {
       return ResultBuilder.createInfoResult("");
     }
   }
-
 
   @CliAvailabilityIndicator({CliStrings.SHUTDOWN, CliStrings.GC, CliStrings.SHOW_DEADLOCK,
       CliStrings.SHOW_METRICS, CliStrings.SHOW_LOG, CliStrings.EXPORT_STACKTRACE,

@@ -12,20 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal.index;
 
-import org.apache.geode.*;
-// import org.apache.geode.cache.query.*;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * IndexStats tracks statistics about query index use.
  */
 public class IndexStats {
-
-  ////////////////// Static fields ///////////////////////////
 
   private static final StatisticsType type;
 
@@ -43,8 +43,6 @@ public class IndexStats {
 
   /** The Statistics object that we delegate most behavior to */
   private final Statistics stats;
-
-  //////////////////////// Static methods ////////////////////////
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -84,8 +82,6 @@ public class IndexStats {
     numBucketIndexesId = type.nameToId("numBucketIndexes");
   }
 
-  //////////////////////// Constructors ////////////////////////
-
   /**
    * Creates a new <code>CachePerfStats</code> and registers itself with the given statistics
    * factory.
@@ -93,8 +89,6 @@ public class IndexStats {
   public IndexStats(StatisticsFactory factory, String indexName) {
     stats = factory.createAtomicStatistics(type, indexName);
   }
-
-  ////////////////////// Accessing Stats //////////////////////
 
   public long getNumberOfKeys() {
     return stats.getLong(numKeysId);
@@ -131,8 +125,6 @@ public class IndexStats {
   public int getNumberOfBucketIndexes() {
     return stats.getInt(numBucketIndexesId);
   }
-
-  ////////////////////// Updating Stats //////////////////////
 
   public void incNumUpdates() {
     this.stats.incLong(numUpdatesId, 1);
@@ -189,11 +181,10 @@ public class IndexStats {
   public void incNumBucketIndexes(int delta) {
     this.stats.incInt(numBucketIndexesId, delta);
   }
-  ////// Special Instance Methods /////
 
   /**
-   * Closes these stats so that they can not longer be used. The stats are closed when the
-   * {@linkplain org.apache.geode.internal.cache.GemFireCacheImpl#close cache} is closed.
+   * Closes these stats so that they can not longer be used. The stats are closed when the cache is
+   * closed.
    *
    * @since GemFire 3.5
    */
@@ -210,7 +201,6 @@ public class IndexStats {
     return this.stats.isClosed();
   }
 
-
   /**
    * Returns the Statistics instance that stores the cache perf stats.
    * 
@@ -220,4 +210,3 @@ public class IndexStats {
     return this.stats;
   }
 }
-

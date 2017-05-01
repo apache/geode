@@ -12,16 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * PrimaryIndexCreationHelper.java
- *
- * Created on March 20, 2005, 7:21 PM
- */
 package org.apache.geode.cache.query.internal.index;
 
 import java.util.List;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.internal.CompiledIteratorDef;
@@ -29,12 +23,10 @@ import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- * 
- */
 public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
 
   ExecutionContext context = null;
@@ -42,8 +34,8 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
   final Region region;
 
   public PrimaryKeyIndexCreationHelper(String fromClause, String indexedExpression,
-      String projectionAttributes, Cache cache, ExecutionContext externalContext, IndexManager imgr)
-      throws IndexInvalidException {
+      String projectionAttributes, InternalCache cache, ExecutionContext externalContext,
+      IndexManager imgr) throws IndexInvalidException {
     super(fromClause, projectionAttributes, cache);
     if (externalContext == null) {
       context = new ExecutionContext(null, cache);
@@ -76,7 +68,7 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
       String definition = rIter.getDefinition();
       this.canonicalizedIteratorDefinitions = new String[1];
       this.canonicalizedIteratorDefinitions[0] = definition;
-      // Asif: Bind the Index_Internal_ID to the RuntimeIterator
+      // Bind the Index_Internal_ID to the RuntimeIterator
       PartitionedRegion pr = this.context.getPartitionedRegion();
       this.canonicalizedIteratorNames = new String[1];
       String name = null;
@@ -88,7 +80,7 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
       rIter.setIndexInternalID(name);
       this.canonicalizedIteratorNames = new String[1];
       this.canonicalizedIteratorNames[0] = name;
-      this.fromClause = new StringBuffer(definition).append(' ').append(name).toString();
+      this.fromClause = new StringBuilder(definition).append(' ').append(name).toString();
       context.bindIterator(rIter);
     } catch (IndexInvalidException e) {
       throw e; // propagate
@@ -110,11 +102,10 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
           LocalizedStrings.PrimaryKeyIndexCreationHelper_INVALID_INDEXED_EXPRESSOION_0
               .toLocalizedString(indexedExpression));
     try {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       expr.generateCanonicalizedExpression(sb, context);
       this.indexedExpression = sb.toString();
     } catch (Exception e) {
-      // e.printStackTrace();
       throw new IndexInvalidException(
           LocalizedStrings.PrimaryKeyIndexCreationHelper_INVALID_INDEXED_EXPRESSOION_0_N_1
               .toLocalizedString(new Object[] {indexedExpression, e.getMessage()}));

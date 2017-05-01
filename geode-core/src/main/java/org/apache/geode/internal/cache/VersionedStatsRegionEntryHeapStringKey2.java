@@ -100,7 +100,7 @@ public class VersionedStatsRegionEntryHeapStringKey2 extends VersionedStatsRegio
     this.value = v;
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

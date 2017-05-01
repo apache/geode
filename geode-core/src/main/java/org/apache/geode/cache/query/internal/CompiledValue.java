@@ -27,56 +27,51 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Class Description
- * 
- * @version $Revision: 1.1 $
- */
 public interface CompiledValue {
 
-  // extra node types: use negative numbers so they don't collide with token
-  // types
-  public final static int COMPARISON = -1;
-  public final static int FUNCTION = -2;
-  public final static int JUNCTION = -3;
-  public final static int LITERAL = -4;
-  public final static int PATH = -5;
-  public final static int CONSTRUCTION = -6;
-  public final static int GROUPJUNCTION = -7;
-  public final static int ALLGROUPJUNCTION = -8;
-  public final static int COMPOSITEGROUPJUNCTION = -10;
-  public final static int RANGEJUNCTION = -11;
-  public final static int NOTEQUALCONDITIONEVALUATOR = -12;
-  public final static int SINGLECONDNEVALUATOR = -13;
-  public final static int DOUBLECONDNRANGEJUNCTIONEVALUATOR = -14;
-  public final static int LIKE = -15;
-  public final static int FIELD = -16;
-  public final static int GROUP_BY_SELECT = -17;
-  public static final int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
-  public static final String INDX_THRESHOLD_PROP_STR =
-      DistributionConfig.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
-  public static final String INDEX_INFO = "index_info";
-  public static final int indexThresholdSize =
-      Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT).intValue();
-  public static final String RESULT_TYPE = "result_type";
-  public static final String PROJ_ATTRIB = "projection";
-  public static final String ORDERBY_ATTRIB = "orderby";
-  public static final IndexInfo[] NO_INDEXES_IDENTIFIER = new IndexInfo[0];
-  public static final String RESULT_LIMIT = "limit";
-  public static final String CAN_APPLY_LIMIT_AT_INDEX = "can_apply_limit_at_index";
-  public static final String CAN_APPLY_ORDER_BY_AT_INDEX = "can_apply_orderby_at_index";
-  public static final String PREF_INDEX_COND = "preferred_index_condition";
-  public static final String QUERY_INDEX_HINTS = "query_index_hints";
-  public static final CompiledValue MAP_INDEX_ALL_KEYS = new AbstractCompiledValue() {
+  // extra node types: use negative numbers so they don't collide with token types
+  int COMPARISON = -1;
+  int FUNCTION = -2;
+  int JUNCTION = -3;
+  int LITERAL = -4;
+  int PATH = -5;
+  int CONSTRUCTION = -6;
+  int GROUPJUNCTION = -7;
+  int ALLGROUPJUNCTION = -8;
+  int COMPOSITEGROUPJUNCTION = -10;
+  int RANGEJUNCTION = -11;
+  int NOTEQUALCONDITIONEVALUATOR = -12;
+  int SINGLECONDNEVALUATOR = -13;
+  int DOUBLECONDNRANGEJUNCTIONEVALUATOR = -14;
+  int LIKE = -15;
+  int FIELD = -16;
+  int GROUP_BY_SELECT = -17;
+  int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
+  String INDX_THRESHOLD_PROP_STR = DistributionConfig.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
+  String INDEX_INFO = "index_info";
+  int indexThresholdSize =
+      Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT);
+  String RESULT_TYPE = "result_type";
+  String PROJ_ATTRIB = "projection";
+  String ORDERBY_ATTRIB = "orderby";
+  IndexInfo[] NO_INDEXES_IDENTIFIER = new IndexInfo[0];
+  String RESULT_LIMIT = "limit";
+  String CAN_APPLY_LIMIT_AT_INDEX = "can_apply_limit_at_index";
+  String CAN_APPLY_ORDER_BY_AT_INDEX = "can_apply_orderby_at_index";
+  String PREF_INDEX_COND = "preferred_index_condition";
+  String QUERY_INDEX_HINTS = "query_index_hints";
 
+  CompiledValue MAP_INDEX_ALL_KEYS = new AbstractCompiledValue() {
     @Override
-    public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+    public void generateCanonicalizedExpression(StringBuilder clauseBuffer,
+        ExecutionContext context)
         throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
       throw new QueryInvalidException(
           "* cannot be used with index operator. To use as key for map lookup, "
               + "it should be enclosed in ' '");
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) {
       throw new QueryInvalidException(
           "* cannot be used with index operator. To use as key for map lookup, "
@@ -88,39 +83,39 @@ public interface CompiledValue {
       return super.getReceiver();
     }
 
+    @Override
     public int getType() {
       return OQLLexerTokenTypes.TOK_STAR;
     }
-
   };
 
-  public int getType();
+  int getType();
 
-  public ObjectType getTypecast();
+  ObjectType getTypecast();
 
-  public Object evaluate(ExecutionContext context) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
+  Object evaluate(ExecutionContext context) throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException;
 
-  // returns null if N/A
-  public List getPathOnIterator(RuntimeIterator itr, ExecutionContext context)
+  /**
+   * returns null if N/A
+   */
+  List getPathOnIterator(RuntimeIterator itr, ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException;
 
-  public PlanInfo getPlanInfo(ExecutionContext context) throws FunctionDomainException,
+  PlanInfo getPlanInfo(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
-  public Set computeDependencies(ExecutionContext context)
+  Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException;
 
-  public boolean isDependentOnIterator(RuntimeIterator itr, ExecutionContext context);
+  boolean isDependentOnIterator(RuntimeIterator itr, ExecutionContext context);
 
-  public boolean isDependentOnCurrentScope(ExecutionContext context);
+  boolean isDependentOnCurrentScope(ExecutionContext context);
 
   /**
    * general-purpose visitor (will be used for extracting region path)
    */
-  // public boolean visit(QVisitor visitor);
-  // Asif :Function for generating from clause
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
 
   /**
@@ -128,18 +123,17 @@ public interface CompiledValue {
    * object (CompiledRegion). The default implementation is provided in the AbstractCompiledValue &
    * overridden in the CompiledSelect as it can contain multiple iterators
    */
-  public void getRegionsInQuery(Set regionNames, Object[] parameters);
+  void getRegionsInQuery(Set regionNames, Object[] parameters);
 
   /** Get the CompiledValues that this owns */
-  public List getChildren();
+  List getChildren();
 
-  public void visitNodes(NodeVisitor visitor);
+  void visitNodes(NodeVisitor visitor);
 
-  public static interface NodeVisitor {
+  interface NodeVisitor {
     /** @return true to continue or false to stop */
-    public boolean visit(CompiledValue node);
+    boolean visit(CompiledValue node);
   }
 
-  public CompiledValue getReceiver();
-
+  CompiledValue getReceiver();
 }

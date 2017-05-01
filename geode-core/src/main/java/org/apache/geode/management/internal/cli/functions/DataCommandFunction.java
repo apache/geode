@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.json.JSONArray;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -59,6 +58,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
@@ -88,6 +88,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
+
   private boolean optimizeForWrite = false;
 
   protected static final String SELECT_STEP_DISPLAY = "SELECT_DISPLAY";
@@ -105,7 +106,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   }
 
   @Override
-
   public boolean hasResult() {
     return true;
   }
@@ -116,14 +116,13 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     return false;
   }
 
-  @Override
   /**
    * Read only function
    */
+  @Override
   public boolean optimizeForWrite() {
     return optimizeForWrite;
   }
-
 
   public void setOptimizeForWrite(boolean optimizeForWrite) {
     this.optimizeForWrite = optimizeForWrite;
@@ -132,7 +131,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   @Override
   public void execute(FunctionContext functionContext) {
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       DataCommandRequest request = (DataCommandRequest) functionContext.getArguments();
       if (logger.isDebugEnabled()) {
         logger.debug("Executing function : \n{}\n on member {}", request,
@@ -162,7 +161,9 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     }
   }
 
-
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   public DataCommandResult remove(DataCommandRequest request) {
     String key = request.getKey();
@@ -189,7 +190,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     boolean recursive = request.isRecursive();
     return locateEntry(key, keyClass, valueClass, regionName, recursive);
   }
-
 
   public DataCommandResult put(DataCommandRequest request) {
     String key = request.getKey();
@@ -223,8 +223,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings("rawtypes")
   private DataCommandResult select(Object principal, String queryString) {
-
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     AtomicInteger nestedObjectCount = new AtomicInteger(0);
     if (queryString != null && !queryString.isEmpty()) {
       QueryService qs = cache.getQueryService();
@@ -362,7 +361,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         if (JsonUtil.isPrimitiveOrWrapper(value.getClass())) {
           jsonObject.put(fields[i], value);
         } else {
-          // jsonObject.put(fields[i], value.getClass().getCanonicalName());
           jsonObject.put(fields[i], toJson(value));
         }
       } else {
@@ -376,7 +374,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   public DataCommandResult remove(String key, String keyClass, String regionName,
       String removeAllKeys) {
 
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
 
     if (regionName == null || regionName.isEmpty()) {
       return DataCommandResult.createRemoveResult(key, null, null,
@@ -441,7 +439,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   public DataCommandResult get(Object principal, String key, String keyClass, String valueClass,
       String regionName, Boolean loadOnCacheMiss) {
 
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
 
     if (regionName == null || regionName.isEmpty()) {
       return DataCommandResult.createGetResult(key, null, null,
@@ -474,8 +472,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
       // TODO determine whether the following conditional logic (assigned to 'doGet') is safer or
       // necessary
-      // boolean doGet = (Boolean.TRUE.equals(loadOnCacheMiss) &&
-      // region.getAttributes().getCacheLoader() != null);
       boolean doGet = Boolean.TRUE.equals(loadOnCacheMiss);
 
       if (doGet || region.containsKey(keyObject)) {
@@ -512,7 +508,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   public DataCommandResult locateEntry(String key, String keyClass, String valueClass,
       String regionPath, boolean recursive) {
 
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
 
     if (regionPath == null || regionPath.isEmpty()) {
       return DataCommandResult.createLocateEntryResult(key, null, null,
@@ -617,7 +613,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       return DataCommandResult.createLocateEntryInfoResult(key, null, null,
           CliStrings.LOCATE_ENTRY__MSG__KEY_NOT_FOUND_REGION, false);
     }
-
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -639,7 +634,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           false);
     }
 
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     Region region = cache.getRegion(regionName);
     if (region == null) {
       return DataCommandResult.createPutResult(key, null, null,
@@ -812,8 +807,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     return v;
   }
 
-
-  // Copied from RegionUtil of old Gfsh
   /**
    * Returns a sorted list of all region full paths found in the specified cache.
    * 
@@ -822,7 +815,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
    * @return Returns a sorted list of all region paths defined in the distributed system.
    */
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public static List getAllRegionPaths(Cache cache, boolean recursive) {
+  public static List getAllRegionPaths(InternalCache cache, boolean recursive) {
     ArrayList list = new ArrayList();
     if (cache == null) {
       return list;
@@ -908,7 +901,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     }
   }
 
-
   public static class SelectMoveStep extends CLIMultiStepHelper.RemoteStep {
 
     private static final long serialVersionUID = 1L;
@@ -956,13 +948,8 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
             SELECT_STEP_END);
     }
 
-    /*
-     * private int getLimit(CompiledValue compiledQuery) { return compiledQuery instanceof
-     * CompiledSelect ? ((CompiledSelect)compiledQuery).getLimitValue(): -1; }
-     */
-
     public DataCommandResult _select(String query) {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
       DataCommandResult dataResult = null;
 
       if (query == null || query.isEmpty()) {
@@ -971,7 +958,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         return dataResult;
       }
 
-      // String query = querySB.toString().trim();
       Object array[] = DataCommands.replaceGfshEnvVar(query, CommandExecutionContext.getShellEnv());
       query = (String) array[1];
       query = addLimit(query);
@@ -1080,7 +1066,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     return CommandExecutionContext.getShellFetchSize();
   }
 
-
   public static String getLogMessage(QueryObserver observer, long startTime, String query) {
     String usedIndexesString = null;
     String rowCountString = null;
@@ -1114,13 +1099,9 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           + observer.getClass().getName() + ")";
     }
 
-    /*
-     * if (resultSize != -1){ rowCountString = " rowCount = " + resultSize + ";"; }
-     */
     return "Query Executed" + (startTime > 0L ? " in " + time + " ms;" : ";")
         + (rowCountString != null ? rowCountString : "")
-        + (usedIndexesString != null ? usedIndexesString : "")
-    /* + " \"" + query + "\"" */;
+        + (usedIndexesString != null ? usedIndexesString : "");
   }
 
 }

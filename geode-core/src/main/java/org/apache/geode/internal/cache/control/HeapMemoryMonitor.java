@@ -14,17 +14,33 @@
  */
 package org.apache.geode.internal.cache.control;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.ListenerNotFoundException;
+import javax.management.Notification;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationListener;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.internal.SetUtils;
-import org.apache.geode.internal.statistics.StatisticsImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
@@ -32,19 +48,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationListener;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.*;
+import org.apache.geode.internal.statistics.GemFireStatSampler;
+import org.apache.geode.internal.statistics.LocalStatListener;
+import org.apache.geode.internal.statistics.StatisticsImpl;
 
 /**
  * Allows for the setting of eviction and critical thresholds. These thresholds are compared against
@@ -67,8 +73,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       DistributionConfig.GEMFIRE_PREFIX + "heapPollerInterval";
 
   // Internal for polling the JVM for changes in heap memory usage.
-  private static final int POLLER_INTERVAL =
-      Integer.getInteger(POLLER_INTERVAL_PROP, 500).intValue();
+  private static final int POLLER_INTERVAL = Integer.getInteger(POLLER_INTERVAL_PROP, 500);
 
   // This holds a new event as it transitions from updateStateAndSendEvent(...) to fillInProfile()
   private ThreadLocal<MemoryEvent> upcomingEvent = new ThreadLocal<MemoryEvent>();
@@ -153,13 +158,11 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
   private final InternalResourceManager resourceManager;
   private final ResourceAdvisor resourceAdvisor;
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
   private final ResourceManagerStats stats;
 
   private static boolean testDisableMemoryUpdates = false;
   private static long testBytesUsedForThresholdSet = -1;
-
-
 
   /**
    * Determines if the name of the memory pool MXBean provided matches a list of known tenured pool
@@ -189,7 +192,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         || (HEAP_POOL != null && name.equals(HEAP_POOL));
   }
 
-  HeapMemoryMonitor(final InternalResourceManager resourceManager, final GemFireCacheImpl cache,
+  HeapMemoryMonitor(final InternalResourceManager resourceManager, final InternalCache cache,
       final ResourceManagerStats stats) {
     this.resourceManager = resourceManager;
     this.resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
@@ -273,9 +276,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       try {
         emitter.removeNotificationListener(this, null, null);
         this.cache.getLoggerI18n().fine("Removed Memory MXBean notification listener" + this);
-      } catch (ListenerNotFoundException e) {
-        this.cache.getLoggerI18n().fine(
-            "This instance '" + toString() + "' was not registered as a Memory MXBean listener");
+      } catch (ListenerNotFoundException ignore) {
+        logger.debug("This instance '{}' was not registered as a Memory MXBean listener", this);
       }
 
       // Stop the stats listener
@@ -574,7 +576,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     final long usageThreshold = memoryPoolMXBean.getUsageThreshold();
     this.cache.getLoggerI18n().info(
         LocalizedStrings.HeapMemoryMonitor_OVERRIDDING_MEMORYPOOLMXBEAN_HEAP_0_NAME_1,
-        new Object[] {Long.valueOf(usageThreshold), memoryPoolMXBean.getName()});
+        new Object[] {usageThreshold, memoryPoolMXBean.getName()});
 
     MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
     NotificationEmitter emitter = (NotificationEmitter) mbean;
@@ -783,12 +785,12 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
           HeapMemoryMonitor.this.cache.getLoggerI18n().fine(
               "StatSampler scheduled a " + "handleNotification call with " + usedBytes + " bytes");
         }
-      } catch (RejectedExecutionException e) {
+      } catch (RejectedExecutionException ignore) {
         if (!HeapMemoryMonitor.this.resourceManager.isClosed()) {
-          HeapMemoryMonitor.this.cache.getLoggerI18n()
-              .warning(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS);
+          logger.warn(LocalizedMessage
+              .create(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS));
         }
-      } catch (CacheClosedException e) {
+      } catch (CacheClosedException ignore) {
         // nothing to do
       }
     }
@@ -803,7 +805,6 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
   /**
    * Polls the heap if stat sampling is disabled.
-   * 
    */
   class HeapPoller implements Runnable {
     @SuppressWarnings("synthetic-access")
@@ -839,9 +840,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
       this.thresholds = newThresholds;
       StringBuilder builder = new StringBuilder("In testing, the following values were set");
-      builder.append(" maxMemoryBytes:" + newThresholds.getMaxMemoryBytes());
-      builder.append(" criticalThresholdBytes:" + newThresholds.getCriticalThresholdBytes());
-      builder.append(" evictionThresholdBytes:" + newThresholds.getEvictionThresholdBytes());
+      builder.append(" maxMemoryBytes:").append(newThresholds.getMaxMemoryBytes());
+      builder.append(" criticalThresholdBytes:").append(newThresholds.getCriticalThresholdBytes());
+      builder.append(" evictionThresholdBytes:").append(newThresholds.getEvictionThresholdBytes());
       this.cache.getLoggerI18n().fine(builder.toString());
     }
   }

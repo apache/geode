@@ -23,14 +23,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
@@ -50,12 +51,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.EnumListenerEvent;
-import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.logging.LogService;
@@ -63,23 +61,19 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInitializationException;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
-import org.apache.logging.log4j.Logger;
 
-/**
- *
- */
 public class PeerTypeRegistration implements TypeRegistration {
   private static final Logger logger = LogService.getLogger();
 
-  /**
-   * 
-   */
   private static final int MAX_TRANSACTION_FAILURES = 10;
+
   public static final String LOCK_SERVICE_NAME = "__PDX";
+
   /**
    * The region name. Public for tests only.
    */
   public static final String REGION_NAME = "PdxTypes";
+
   public static final String REGION_FULL_PATH = "/" + REGION_NAME;
   public static final int PLACE_HOLDER_FOR_TYPE_ID = 0xFFFFFF;
   public static final int PLACE_HOLDER_FOR_DS_ID = 0xFF000000;
@@ -88,7 +82,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private final int maxTypeId;
   private volatile DistributedLockService dls;
   private final Object dlsLock = new Object();
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
 
   /**
    * The region where the PDX metadata is stored. Because this region is transactional for our
@@ -104,16 +98,17 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private Map<PdxType, Integer> typeToId =
       Collections.synchronizedMap(new HashMap<PdxType, Integer>());
+
   private Map<EnumInfo, EnumId> enumToId =
       Collections.synchronizedMap(new HashMap<EnumInfo, EnumId>());
+
   private final Map<String, Set<PdxType>> classToType =
       new CopyOnWriteHashMap<String, Set<PdxType>>();
 
   private volatile boolean typeRegistryInUse = false;
 
-  public PeerTypeRegistration(GemFireCacheImpl cache) {
+  public PeerTypeRegistration(InternalCache cache) {
     this.cache = cache;
-
 
     int distributedSystemId =
         cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId();
@@ -378,7 +373,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     verifyConfiguration();
     Integer existingId = typeToId.get(newType);
     if (existingId != null) {
-      return existingId.intValue();
+      return existingId;
     }
     lock();
     try {
@@ -392,8 +387,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
       updateIdToTypeRegion(newType);
 
-      typeToId.put(newType, Integer.valueOf(id));
-      // this.cache.getLogger().info("Defining: " + newType, new RuntimeException("STACK"));
+      typeToId.put(newType, id);
 
       return newType.getTypeId();
     } finally {
@@ -411,11 +405,11 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   private void updateRegion(Object k, Object v) {
     Region<Object, Object> r = getIdToType();
-    Cache c = (Cache) r.getRegionService();
+    InternalCache cache = (InternalCache) r.getRegionService();
 
     checkDistributedTypeRegistryState();
 
-    TXManagerImpl txManager = (TXManagerImpl) c.getCacheTransactionManager();
+    TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
     TXStateProxy currentState = suspendTX();
     boolean state = useUDPMessagingIfNecessary();
     try {
@@ -459,7 +453,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     } finally {
       resumeTX(currentState);
     }
-
   }
 
   public void addRemoteType(int typeId, PdxType type) {
@@ -537,10 +530,10 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   public boolean hasPersistentRegions() {
-    Collection<DiskStoreImpl> diskStores = cache.listDiskStoresIncludingRegionOwned();
+    Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
     boolean hasPersistentRegions = false;
-    for (DiskStoreImpl store : diskStores) {
-      hasPersistentRegions |= store.hasPersistedData();
+    for (DiskStore store : diskStores) {
+      hasPersistentRegions |= ((DiskStoreImpl) store).hasPersistedData();
     }
     return hasPersistentRegions;
   }
@@ -574,7 +567,7 @@ public class PeerTypeRegistration implements TypeRegistration {
         } else {
           PdxType foundType = (PdxType) v;
           Integer id = (Integer) k;
-          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
+          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == this.dsId) {
             totalPdxTypeIdInDS++;
           }
@@ -633,10 +626,9 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   private TXStateProxy suspendTX() {
-    Cache c = (Cache) getIdToType().getRegionService();
-    TXManagerImpl txManager = (TXManagerImpl) c.getCacheTransactionManager();
-    TXStateProxy currentState = txManager.internalSuspend();
-    return currentState;
+    InternalCache cache = (InternalCache) getIdToType().getRegionService();
+    TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
+    return txManager.internalSuspend();
   }
 
   private void resumeTX(TXStateProxy state) {
@@ -756,11 +748,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     return enums;
   }
 
-
   /**
    * adds a PdxType for a field to a {@code className => Set<PdxType>} map
-   * 
-   * @param type
    */
   private void updateClassToTypeMap(PdxType type) {
     if (type != null) {
@@ -790,14 +779,14 @@ public class PeerTypeRegistration implements TypeRegistration {
     return null;
   }
 
-  /*
+  /**
    * For testing purpose
    */
   public Map<String, Set<PdxType>> getClassToType() {
     return classToType;
   }
 
-  /*
+  /**
    * test hook
    */
   @Override
@@ -823,7 +812,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   public static int getPdxRegistrySize() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getExisting();
+    InternalCache cache = GemFireCacheImpl.getExisting();
     if (cache == null) {
       return 0;
     }

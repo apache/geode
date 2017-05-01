@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.ha.HARegionQueue.MapWrapper;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -54,7 +56,7 @@ public class HARQAddOperationJUnitTest {
   private static final Logger logger = LogService.getLogger();
 
   /** The cache instance */
-  protected Cache cache = null;
+  protected InternalCache cache = null;
 
   /** Logger for this test */
   protected LogWriter logWriter = null;
@@ -92,8 +94,8 @@ public class HARQAddOperationJUnitTest {
   /**
    * Creates the cache instance for the test
    */
-  private Cache createCache() throws CacheException {
-    return new CacheFactory().set(MCAST_PORT, "0").create();
+  private InternalCache createCache() throws CacheException {
+    return (InternalCache) new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   /**

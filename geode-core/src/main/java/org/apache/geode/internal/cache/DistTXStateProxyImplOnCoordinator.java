@@ -65,9 +65,9 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#commit()
-   * 
+   *
    * [DISTTX] TODO Catch all exceptions in precommit and rollback and make sure these messages reach
    * all
    */
@@ -295,7 +295,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
     /*
      * [DISTTX] TODO Write similar method to take out exception
-     * 
+     *
      * [DISTTX] TODO Handle Reliable regions
      */
     // if (this.hasReliableRegions) {
@@ -551,7 +551,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
     /*
      * [DISTTX] TODO Write similar method to take out exception
-     * 
+     *
      * [DISTTX] TODO Handle Reliable regions
      */
     // if (this.hasReliableRegions) {
@@ -566,7 +566,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
   /*
    * Handle response of precommit reply
-   * 
+   *
    * Go over list of region versions for this target and fill map
    */
   private void populateEntryEventMap(DistributedMember target,
@@ -728,7 +728,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
     /*
      * [DISTTX] TODO Write similar method to take out exception
-     * 
+     *
      * [DISTTX] TODO Handle Reliable regions
      */
     // if (this.hasReliableRegions) {
@@ -756,7 +756,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       super.postPutAll(putallOp, successfulPuts, region);
     } else {
       region.getCancelCriterion().checkCancelInProgress(null); // fix for bug
-                                                               // #43651
+      // #43651
 
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -835,7 +835,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       super.postRemoveAll(op, successfulOps, region);
     } else {
       region.getCancelCriterion().checkCancelInProgress(null); // fix for bug
-                                                               // #43651
+      // #43651
       if (logger.isDebugEnabled()) {
         logger.debug(
             "DistTXStateProxyImplOnCoordinator.postRemoveAll "

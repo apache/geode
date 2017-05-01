@@ -14,18 +14,12 @@
  */
 package org.apache.geode.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
@@ -48,14 +42,12 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
 
-  public CacheXml70GatewayDUnitTest() {
-    super();
-  }
-
+  @Override
   protected String getGemFireVersion() {
     return CacheXml.VERSION_7_0;
   }
@@ -64,7 +56,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
    * Added to test the scenario of defect #50600.
    */
   @Test
-  public void testAsyncEventQueueWithGatewayEventFilter() {
+  public void testAsyncEventQueueWithGatewayEventFilter() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -128,7 +120,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testParallelGatewaySender() throws CacheException {
+  public void testParallelGatewaySender() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -166,7 +158,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testSerialGatewaySender() throws CacheException {
+  public void testSerialGatewaySender() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
@@ -206,18 +198,23 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   public static class MyGatewayEventFilter implements GatewayEventFilter, Declarable {
+    @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {}
 
+    @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
       return true;
     }
 
+    @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
       return true;
     }
 
+    @Override
     public void close() {}
 
+    @Override
     public void init(Properties properties) {}
   }
 

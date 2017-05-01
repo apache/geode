@@ -55,6 +55,7 @@ import org.apache.geode.internal.admin.remote.PrepareRevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -97,10 +98,6 @@ import org.apache.geode.management.internal.cli.json.TypedJson;
  *
  * Operation strategy is not fixed. Some of the operations operate on local proxies. Some uses admin
  * messaging for distributed message.
- *
- *
- *
- *
  */
 public class DistributedSystemBridge {
 
@@ -154,7 +151,7 @@ public class DistributedSystemBridge {
   /**
    * Cache instance
    */
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
 
   /**
    * private instance of SystemManagementService
@@ -193,14 +190,11 @@ public class DistributedSystemBridge {
 
   private GatewayReceiverClusterStatsMonitor receiverMonitor;
 
-
   /**
    * Distributed System level listener to listen on all the member level notifications It will then
    * send the notification up the JMX layer in the name of DistributedSystemMBean.
    */
   private DistributedSystemNotifListener distListener;
-
-
 
   /**
    * Static reference to the platform mbean server
@@ -223,7 +217,6 @@ public class DistributedSystemBridge {
    */
   private int queryCollectionsDepth = TypedJson.DEFAULT_COLLECTION_ELEMENT_LIMIT;
 
-
   /**
    * Helper method to get a member bean reference given a member name or id
    *
@@ -237,7 +230,6 @@ public class DistributedSystemBridge {
     } catch (ManagementException mx) {
       return null;
     }
-
   }
 
   /**
@@ -254,7 +246,7 @@ public class DistributedSystemBridge {
     this.mapOfGatewaySenders = new ConcurrentHashMap<ObjectName, GatewaySenderMXBean>();
     this.service = service;
     this.cache = GemFireCacheImpl.getInstance();
-    this.system = (InternalDistributedSystem) cache.getDistributedSystem();
+    this.system = cache.getInternalDistributedSystem();
     this.dm = system.getDistributionManager();
     this.alertLevel = ManagementConstants.DEFAULT_ALERT_LEVEL;
     this.thisMemberName = MBeanJMXAdapter.getMemberMBeanName(system.getDistributedMember());
@@ -263,7 +255,6 @@ public class DistributedSystemBridge {
 
     initClusterMonitors();
   }
-
 
   private void initClusterMonitors() {
     this.memberMBeanMonitor = new MemberClusterStatsMonitor();
@@ -305,9 +296,7 @@ public class DistributedSystemBridge {
       }
 
       logger.info(LocalizedMessage.create(ManagementStrings.INSTANCE_NOT_FOUND, objectName));
-
     }
-
   }
 
   public void updateMember(ObjectName objectName, FederationComponent newState,
@@ -329,7 +318,6 @@ public class DistributedSystemBridge {
       FederationComponent oldState) {
     receiverMonitor.aggregate(newState, oldState);
   }
-
 
   /**
    * Removed the proxy from the map.
@@ -353,7 +341,6 @@ public class DistributedSystemBridge {
       if (mapOfMembers.values().size() == 0) {
         memberSetSize = 0;
         return true;
-
       }
     }
     updateMember(objectName, null, oldState);
@@ -406,7 +393,6 @@ public class DistributedSystemBridge {
       if (mapOfServers.values().size() == 0) {
         serverSetSize = 0;
         return true;
-
       }
     }
     updateCacheServer(objectName, null, oldState);
@@ -444,7 +430,6 @@ public class DistributedSystemBridge {
       if (mapOfGatewaySenders.values().size() == 0) {
         gatewaySenderSetSize = 0;
         return true;
-
       }
     }
     updateGatewaySender(objectName, null, oldState);
@@ -482,7 +467,6 @@ public class DistributedSystemBridge {
       if (mapOfGatewayReceivers.values().size() == 0) {
         gatewayReceiverSetSize = 0;
         return true;
-
       }
     }
     updateGatewayReceiver(objectName, null, oldState);
@@ -512,7 +496,6 @@ public class DistributedSystemBridge {
         if (baselineDirPath != null) {
           baselineDir = new File(baselineDirPath);
         }
-
 
         DM dm = cache.getDistributionManager();
         Set<PersistentID> missingMembers = MissingPersistentIDsRequest.send(dm);
@@ -558,7 +541,6 @@ public class DistributedSystemBridge {
               setOfMissingDiskStr[j] = id.getDirectory();
               j++;
             }
-
           }
         }
 
@@ -576,7 +558,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return Minimum level for alerts to be delivered to listeners. Should be one of: WARNING,
    *         ERROR, SEVERE, OFF. It is not case-sensitive.
    */
@@ -616,7 +597,6 @@ public class DistributedSystemBridge {
       throw new Exception("Unknown log-level \"" + alertLevel
           + "\". Valid levels are: WARNING, ERROR, SEVERE, NONE");
     }
-
   }
 
   /**
@@ -637,7 +617,6 @@ public class DistributedSystemBridge {
       return listOfServer.toArray(members);
     }
     return ManagementConstants.NO_DATA_STRING;
-
   }
 
   /**
@@ -676,7 +655,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return a list of Gateway Senders
    */
   public String[] listGatwaySenders() {
@@ -711,7 +689,6 @@ public class DistributedSystemBridge {
     if (bean != null) {
       return bean;
     } else {
-
       throw new Exception(ManagementStrings.INVALID_MEMBER_NAME_OR_ID.toLocalizedString(member));
     }
   }
@@ -727,7 +704,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return the list of all locators present in the system
    */
   public String[] listLocators() {
@@ -750,7 +726,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @param member name or id of the member
    * @return GemFire configuration data
    */
@@ -774,7 +749,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return Lists all the members disk stores
    */
   public Map<String, String[]> getMemberDiskstoreMap() {
@@ -785,7 +759,6 @@ public class DistributedSystemBridge {
       while (memberIterator.hasNext()) {
         MemberMXBean bean = memberIterator.next();
         mapOfDisks.put(bean.getMember(), bean.getDiskStores());
-
       }
 
       return mapOfDisks;
@@ -794,19 +767,15 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @param member name or id of the member
    * @return for how long the member is up.
    */
   public long getMemberUpTime(String member) throws Exception {
     MemberMXBean bean = validateMember(member);
     return bean.getMemberUpTime();
-
   }
 
-
   /**
-   *
    * @return list of members visible to the Managing node and which can be manageable.
    */
   public String[] getMembers() {
@@ -876,7 +845,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return list of groups visible to the Manager node
    */
   public String[] getGroups() {
@@ -909,7 +877,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @param member name or id of the member
    * @return basic Opertaing metrics for a given member.
    */
@@ -919,7 +886,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return a list of region names hosted on the system
    */
   public String[] listAllRegions() {
@@ -938,7 +904,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return a list of region names hosted on the system
    */
   public String[] listAllRegionPaths() {
@@ -959,10 +924,8 @@ public class DistributedSystemBridge {
 
 
   /**
-   *
    * @return the set of members successfully shutdown
    */
-
   @SuppressWarnings("unchecked")
   public String[] shutDownAllMembers() throws Exception {
     try {
@@ -1069,7 +1032,6 @@ public class DistributedSystemBridge {
   }
 
   public ObjectName fetchDistributedRegionObjectName(String regionPath) throws Exception {
-
     ObjectName distributedRegionMBeanName =
         MBeanJMXAdapter.getDistributedRegionMbeanName(regionPath);
 
@@ -1078,11 +1040,9 @@ public class DistributedSystemBridge {
     } else {
       throw new Exception(ManagementStrings.DISTRIBUTED_REGION_MBEAN_NOT_FOUND_IN_DS.toString());
     }
-
   }
 
   public ObjectName fetchRegionObjectName(String member, String regionPath) throws Exception {
-
     validateMember(member);
 
     ObjectName distributedRegionMBeanName =
@@ -1120,7 +1080,6 @@ public class DistributedSystemBridge {
   }
 
   public ObjectName[] listDistributedRegionObjectNames() {
-
     List<ObjectName> list = new ArrayList<ObjectName>();
     Iterator<ObjectName> it = distrRegionMap.keySet().iterator();
     while (it.hasNext()) {
@@ -1131,7 +1090,6 @@ public class DistributedSystemBridge {
   }
 
   public ObjectName fetchCacheServerObjectName(String member, int port) throws Exception {
-
     validateMember(member);
     ObjectName serverName = MBeanJMXAdapter.getClientServiceMBeanName(port, member);
 
@@ -1145,12 +1103,10 @@ public class DistributedSystemBridge {
       } else {
         throw new Exception(ManagementStrings.CACHE_SERVER_MBEAN_NOT_FOUND_IN_DS.toString());
       }
-
     }
   }
 
   public ObjectName fetchDiskStoreObjectName(String member, String diskStore) throws Exception {
-
     validateMember(member);
     ObjectName diskStoreName = MBeanJMXAdapter.getDiskStoreMBeanName(member, diskStore);
 
@@ -1166,7 +1122,6 @@ public class DistributedSystemBridge {
     } else {
       throw new Exception(ManagementStrings.DISK_STORE_MBEAN_NOT_FOUND_IN_DS.toString());
     }
-
   }
 
   public ObjectName fetchDistributedLockServiceObjectName(String lockServiceName) throws Exception {
@@ -1181,7 +1136,6 @@ public class DistributedSystemBridge {
   }
 
   public ObjectName fetchGatewayReceiverObjectName(String member) throws Exception {
-
     validateMember(member);
     ObjectName receiverName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
     GatewayReceiverMXBean bean =
@@ -1198,11 +1152,9 @@ public class DistributedSystemBridge {
             ManagementStrings.GATEWAY_RECEIVER_MBEAN_NOT_FOUND_IN_SYSTEM.toString());
       }
     }
-
   }
 
   public ObjectName fetchGatewaySenderObjectName(String member, String senderId) throws Exception {
-
     validateMember(member);
 
     ObjectName senderName = MBeanJMXAdapter.getGatewaySenderMBeanName(member, senderId);
@@ -1219,11 +1171,9 @@ public class DistributedSystemBridge {
         throw new Exception(ManagementStrings.GATEWAY_SENDER_MBEAN_NOT_FOUND_IN_SYSTEM.toString());
       }
     }
-
   }
 
   public ObjectName fetchLockServiceObjectName(String member, String lockService) throws Exception {
-
     validateMember(member);
 
     ObjectName lockServiceName = MBeanJMXAdapter.getLockServiceMBeanName(member, lockService);
@@ -1257,13 +1207,10 @@ public class DistributedSystemBridge {
   }
 
   public ObjectName[] listGatewaySenderObjectNames(String member) throws Exception {
-
     validateMember(member);
     DistributedMember distributedMember = BeanUtilFuncs.getDistributedMemberByNameOrId(member);
 
-
     List<ObjectName> listName = null;
-
 
     ObjectName pattern = new ObjectName(ManagementConstants.GATEWAY_SENDER_PATTERN);
 
@@ -1285,8 +1232,6 @@ public class DistributedSystemBridge {
     return ManagementConstants.NO_DATA_OBJECTNAME;
   }
 
-  /** Statistics Attributes **/
-
   /**
    * We have to iterate through the Cache servers to get Unique Client list across system. Stats
    * will give duplicate client numbers;
@@ -1294,7 +1239,6 @@ public class DistributedSystemBridge {
    * @return total number of client vm connected to the system
    */
   public int getNumClients() {
-
     if (mapOfServers.keySet().size() > 0) {
       Set<String> uniqueClientSet = new HashSet<String>();
       Iterator<CacheServerMXBean> it = mapOfServers.values().iterator();
@@ -1312,7 +1256,6 @@ public class DistributedSystemBridge {
             uniqueClientSet.add(client);
           }
         }
-
       }
       return uniqueClientSet.size();
     }
@@ -1320,7 +1263,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total number of query running
    */
   public long getActiveCQCount() {
@@ -1328,7 +1270,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return average query request rate
    */
   public float getQueryRequestRate() {
@@ -1336,7 +1277,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return rate of disk reads
    */
   public float getDiskReadsRate() {
@@ -1344,7 +1284,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return rate of disk writes
    */
   public float getDiskWritesRate() {
@@ -1352,7 +1291,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return disk flush avg latency
    */
   public long getDiskFlushAvgLatency() {
@@ -1372,7 +1310,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return average events received rate across system
    */
   public float getGatewayReceiverEventsReceivedRate() {
@@ -1380,26 +1317,21 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return Average number of batches of events removed from the event queue and sent per second
    */
   public long getGatewaySenderAverageDistributionTimePerBatch() {
     return MetricsCalculator.getAverage(
         senderMonitor.getGatewaySenderAverageDistributionTimePerBatch(), gatewaySenderSetSize);
-
   }
 
   /**
-   *
    * @return average gateway sender batch dispatch rate
    */
   public float getGatewaySenderBatchesDispatchedRate() {
     return senderMonitor.getGatewaySenderBatchesDispatchedRate();
-
   }
 
   /**
-   *
    * @return event queue size
    */
   public int getGatewaySenderEventQueueSize() {
@@ -1407,7 +1339,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return events queued rate
    */
   public float getGatewaySenderEventsQueuedRate() {
@@ -1415,7 +1346,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total batches redistributed
    */
   public int getGatewaySenderTotalBatchesRedistributed() {
@@ -1423,16 +1353,13 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total number of events conflated
    */
   public int getGatewaySenderTotalEventsConflated() {
     return senderMonitor.getGatewaySenderTotalEventsConflated();
   }
 
-
   /**
-   *
    * @return the total count of disk stores present in the system
    */
   public int getSystemDiskStoreCount() {
@@ -1440,7 +1367,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total number of disk back up going on across system
    */
   public int getTotalBackupInProgress() {
@@ -1448,18 +1374,15 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total heap size occupied by the DS
    */
   public long getTotalHeapSize() {
     return memberMBeanMonitor.getTotalHeapSize();
   }
 
-
   public long getOffHeapFreeSize() {
     return memberMBeanMonitor.getOffHeapFreeMemory();
   }
-
 
   public long getOffHeapUsedSize() {
     return memberMBeanMonitor.getOffHeapUsedMemory();
@@ -1474,7 +1397,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total hit count across DS
    */
   public int getTotalHitCount() {
@@ -1482,7 +1404,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total miss count across the system
    */
   public int getTotalMissCount() {
@@ -1490,7 +1411,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return number of regions
    */
   public int getTotalRegionCount() {
@@ -1498,7 +1418,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return total number of region entries
    */
   public long getTotalRegionEntryCount() {
@@ -1514,7 +1433,6 @@ public class DistributedSystemBridge {
   }
 
   /**
-   *
    * @return Number of Initial image operations that are in progress across system
    */
   public int getNumInitialImagesInProgress() {
@@ -1535,7 +1453,6 @@ public class DistributedSystemBridge {
 
   public float getAverageReads() {
     return memberMBeanMonitor.getAverageReads();
-
   }
 
   public float getAverageWrites() {
@@ -1576,12 +1493,10 @@ public class DistributedSystemBridge {
     return Collections.emptyMap();
   }
 
-
   public String queryData(String query, String members, int limit) throws Exception {
     Object result = QueryDataFunction.queryData(query, members, limit, false, queryResultSetLimit,
         queryCollectionsDepth);
     return (String) result;
-
   }
 
   public byte[] queryDataForCompressedResult(String query, String members, int limit)
@@ -1589,9 +1504,7 @@ public class DistributedSystemBridge {
     Object result = QueryDataFunction.queryData(query, members, limit, true, queryResultSetLimit,
         queryCollectionsDepth);
     return (byte[]) result;
-
   }
-
 
   public int getQueryResultSetLimit() {
     return queryResultSetLimit;
@@ -1609,20 +1522,15 @@ public class DistributedSystemBridge {
     this.queryCollectionsDepth = queryCollectionsDepth;
   }
 
-
   /**
    * User defined notification handler
-   *
-   *
    */
   private class DistributedSystemNotifListener implements NotificationListener {
 
     @Override
     public void handleNotification(Notification notification, Object handback) {
-
       notification.setSequenceNumber(SequenceNumber.next());
       systemLevelNotifEmitter.sendNotification(notification);
-
     }
   }
 
@@ -1737,7 +1645,6 @@ public class DistributedSystemBridge {
         return;
       }
     }
-
   }
 
   public void updateLockService(ObjectName proxyName, FederationComponent oldValue,
@@ -1748,31 +1655,25 @@ public class DistributedSystemBridge {
   }
 
   public void memberDeparted(InternalDistributedMember id, boolean crashed) {
-
     Notification notification = new Notification(JMXNotificationType.CACHE_MEMBER_DEPARTED,
         MBeanJMXAdapter.getMemberNameOrId(id), SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.CACHE_MEMBER_DEPARTED_PREFIX + MBeanJMXAdapter.getMemberNameOrId(id)
             + " has crashed = " + crashed);
     systemLevelNotifEmitter.sendNotification(notification);
-
   }
 
   public void memberJoined(InternalDistributedMember id) {
-
     Notification notification = new Notification(JMXNotificationType.CACHE_MEMBER_JOINED,
         MBeanJMXAdapter.getMemberNameOrId(id), SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.CACHE_MEMBER_JOINED_PREFIX + MBeanJMXAdapter.getMemberNameOrId(id));
     systemLevelNotifEmitter.sendNotification(notification);
-
   }
 
   public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected) {
-
     Notification notification = new Notification(JMXNotificationType.CACHE_MEMBER_SUSPECT,
         MBeanJMXAdapter.getMemberNameOrId(id), SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.CACHE_MEMBER_SUSPECT_PREFIX + MBeanJMXAdapter.getMemberNameOrId(id)
             + " By : " + whoSuspected.getName());
     systemLevelNotifEmitter.sendNotification(notification);
-
   }
 }

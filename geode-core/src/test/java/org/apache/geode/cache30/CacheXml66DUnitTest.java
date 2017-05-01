@@ -143,37 +143,18 @@ import org.apache.geode.util.test.TestUtil;
  */
 public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
-  //////// Constructors
-
-  public CacheXml66DUnitTest() {
-    super();
-  }
-
-  // ////// Helper methods
-
+  @Override
   protected abstract String getGemFireVersion();
 
+  private static final String ALIAS1;
 
-  private final static String ALIAS1;
-
-  private final static String ALIAS2;
+  private static final String ALIAS2;
 
   static {
     String tmp_alias1 = "localhost";
     String tmp_alias2 = "localhost";
-    // try {
-    // tmp_alias1 = getServerHostName(Host.getHost(0));
-    // InetSocketAddress addr = createINSA(tmp_alias1, 10000);
-    // tmp_alias2 = addr.getHostName();
-    // }
-    // catch (IllegalArgumentException suppress) {
-    // // The runnables dont have a Host object initialized, but they dont need
-    // // access to the aliases so its ok to suppress this.
-    // }
-    // finally {
     ALIAS1 = tmp_alias1;
     ALIAS2 = tmp_alias2;
-    // }
   }
 
   private static InetSocketAddress createINSA(String host, int port) {
@@ -181,19 +162,16 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       InetAddress hostAddr = InetAddress.getByName(host);
       return new InetSocketAddress(hostAddr, port);
     } catch (UnknownHostException cause) {
-      IllegalArgumentException ex = new IllegalArgumentException("Unknown host " + host);
-      ex.initCause(cause);
-      throw ex;
+      throw new IllegalArgumentException("Unknown host " + host, cause);
     }
   }
-
 
   /**
    * test for checking default value of PR_Single_Hop feature. Test for checking default value of
    * multiuser-authentication attribute.
    */
   @Test
-  public void testDefaultConnectionPool() throws CacheException {
+  public void testDefaultConnectionPool() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
     PoolFactory f = cache.createPoolFactory();
@@ -235,7 +213,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testDiskStore() throws CacheException {
+  public void testDiskStore() throws Exception {
     CacheCreation cache = new CacheCreation();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File[] dirs1 = new File[] {new File("").getAbsoluteFile()};
@@ -277,7 +255,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * test for enabling PRsingleHop feature. Test for enabling multiuser-authentication attribute.
    */
   @Test
-  public void testExplicitConnectionPool() throws CacheException {
+  public void testExplicitConnectionPool() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
     PoolFactory f = cache.createPoolFactory();
@@ -322,7 +300,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(12350, cp.getPingInterval());
     assertEquals(12351, cp.getStatisticInterval());
     assertEquals("mygroup", cp.getServerGroup());
-    // commented this out until queues are implemented
+    // TODO: commented this out until queues are implemented
     // assertIndexDetailsEquals(true, cp.getQueueEnabled());
     assertEquals(12345, cp.getSubscriptionRedundancy());
     assertEquals(12345, cp.getSubscriptionMessageTrackingTimeout());
@@ -331,7 +309,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testDiskStoreValidation() throws CacheException {
+  public void testDiskStoreValidation() throws Exception {
     CacheCreation cache = new CacheCreation();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     DiskStore ds1 = dsf.create(getUniqueName());
@@ -343,23 +321,16 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     RegionCreation root;
     try {
       root = (RegionCreation) cache.createRegion("root", attrs);
+      fail("Expected IllegalStateException to be thrown");
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage().contains(
           LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString()));
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
     }
 
     EvictionAttributes ea =
         EvictionAttributes.createLRUEntryAttributes(1000, EvictionAction.OVERFLOW_TO_DISK);
     attrs.setEvictionAttributes(ea);
-    try {
-      root = (RegionCreation) cache.createRegion("root", attrs);
-    } catch (IllegalStateException e) {
-      Assert.fail("With eviction of overflow to disk, region can specify disk store name", e);
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
-    }
+    root = (RegionCreation) cache.createRegion("root", attrs);
 
     File dir = new File("testDiskStoreValidation");
     dir.mkdir();
@@ -371,12 +342,11 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       factory.setDiskDirs(dirs2);
       factory.setDiskStoreName(getUniqueName());
       RegionAttributes ra = factory.create();
+      fail("Expected IllegalStateException to be thrown");
     } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains(
-          LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1.toLocalizedString(
-              new Object[] {"setDiskDirs or setDiskWriteAttributes", getUniqueName()})));
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
+      assertTrue(e.getMessage()
+          .contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
+              .toLocalizedString("setDiskDirs or setDiskWriteAttributes", getUniqueName())));
     }
 
     try {
@@ -384,31 +354,23 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       factory.setDiskStoreName(getUniqueName());
       factory.setDiskDirs(dirs2);
       RegionAttributes ra = factory.create();
+      fail("Expected IllegalStateException to be thrown");
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage()
           .contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"setDiskDirs", getUniqueName()})));
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
+              .toLocalizedString("setDiskDirs", getUniqueName())));
     }
 
     testXml(cache);
   }
 
   @Test
-  public void testDiskStoreFactory() throws CacheException {
+  public void testDiskStoreFactory() throws Exception {
     CacheCreation cache = new CacheCreation();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
 
-    DiskStore ds1;
-    try {
-      dsf.setDiskDirs(new File[] {new File("non_exist_dir")});
-      ds1 = dsf.create(getUniqueName());
-      // NOT required any more as we create the disk store directory during disk-store creation
-      // fail("Expected IllegalStateException");
-    } catch (IllegalArgumentException e) {
-      // got expected exception
-    }
+    dsf.setDiskDirs(new File[] {new File("non_exist_dir")});
+    DiskStore ds1 = dsf.create(getUniqueName());
 
     dsf.setDiskDirs(new File[] {new File(".")});
     ds1 = dsf.create(getUniqueName());
@@ -420,12 +382,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     AttributesFactory factory = new AttributesFactory(attrs);
     RegionAttributes ra = factory.create();
 
-    RegionCreation root;
-    try {
-      root = (RegionCreation) cache.createRegion("root", ra);
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
-    }
+    RegionCreation root = (RegionCreation) cache.createRegion("root", ra);
 
     factory = new AttributesFactory();
     factory.setDiskStoreName(getUniqueName());
@@ -434,12 +391,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     ra = factory.create();
 
-    RegionCreation root2;
-    try {
-      root2 = (RegionCreation) cache.createRegion("root2", ra);
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
-    }
+    RegionCreation root2 = (RegionCreation) cache.createRegion("root2", ra);
 
     factory = new AttributesFactory();
     factory.setDiskStoreName(null);
@@ -448,18 +400,13 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     ra = factory.create();
 
-    RegionCreation root3;
-    try {
-      root3 = (RegionCreation) cache.createRegion("root3", ra);
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
-    }
+    RegionCreation root3 = (RegionCreation) cache.createRegion("root3", ra);
 
     testXml(cache);
   }
 
   @Test
-  public void testRedefineOfDefaultDiskStore() throws CacheException {
+  public void testRedefineOfDefaultDiskStore() throws Exception {
     CacheCreation cache = new CacheCreation();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setAutoCompact(!DiskStoreFactory.DEFAULT_AUTO_COMPACT);
@@ -471,12 +418,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     AttributesFactory factory = new AttributesFactory(attrs);
     RegionAttributes ra = factory.create();
 
-    RegionCreation root;
-    try {
-      root = (RegionCreation) cache.createRegion("root", ra);
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
-    }
+    RegionCreation root = (RegionCreation) cache.createRegion("root", ra);
 
     testXml(cache);
 
@@ -492,7 +434,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Make sure you can create a persistent partitioned region from xml.
    */
   @Test
-  public void testPersistentPartition() throws CacheException {
+  public void testPersistentPartition() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
@@ -516,7 +458,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testBridgeAttributesRelatedToHAOverFlow65() throws CacheException {
+  public void testBridgeAttributesRelatedToHAOverFlow65() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
@@ -536,9 +478,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage()
           .contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"setOverflowDirectory", getUniqueName()})));
-    } catch (Exception ex) {
-      Assert.fail("Unexpected exception", ex);
+              .toLocalizedString("setOverflowDirectory", getUniqueName())));
     }
 
     cache.getLogger().config("Eviction disk store : " + csc.getDiskStoreName());
@@ -559,7 +499,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testClientSubscriptionQueueUsingDefaultDS() throws CacheException {
+  public void testClientSubscriptionQueueUsingDefaultDS() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
@@ -591,10 +531,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Tests that a region created with a named attributes set programmatically for delta propogation
    * has the correct attributes.
-   * 
    */
   @Test
-  public void testTransactionWriter() throws CacheException {
+  public void testTransactionWriter() throws Exception {
     CacheCreation creation = new CacheCreation();
     CacheTransactionManagerCreation ctmc = new CacheTransactionManagerCreation();
     ctmc.setWriter(new TestTransactionWriter());
@@ -610,12 +549,11 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         tw instanceof TestTransactionWriter);
   }
 
-
   /**
    * Tests that a region created with a named attributes with diskstore
    */
   @Test
-  public void testDiskStoreInTemplates() throws CacheException {
+  public void testDiskStoreInTemplates() throws Exception {
     File dir = new File("west");
     dir.mkdir();
     dir.deleteOnExit();
@@ -680,7 +618,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testBackupFiles() throws CacheException {
+  public void testBackupFiles() throws Exception {
     CacheCreation cache = new CacheCreation();
     File backup1 = new File("/back/me/up");
     File backup2 = new File("/me/too/please");
@@ -692,7 +630,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testClientCache() throws CacheException {
+  public void testClientCache() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     cache.setCopyOnRead(true);
     testXml(cache);
@@ -706,7 +644,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testNormalCache() throws CacheException {
+  public void testNormalCache() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setCopyOnRead(true);
     testXml(cache);
@@ -720,7 +658,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION() throws CacheException {
+  public void testPARTITION() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("partition", "PARTITION");
     testXml(cache);
@@ -734,7 +672,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_REDUNDANT() throws CacheException {
+  public void testPARTITION_REDUNDANT() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("rpartition", "PARTITION_REDUNDANT");
     testXml(cache);
@@ -748,7 +686,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_PERSISTENT() throws CacheException {
+  public void testPARTITION_PERSISTENT() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("ppartition", "PARTITION_PERSISTENT");
     testXml(cache);
@@ -762,7 +700,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_REDUNDANT_PERSISTENT() throws CacheException {
+  public void testPARTITION_REDUNDANT_PERSISTENT() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("prpartition", "PARTITION_REDUNDANT_PERSISTENT");
@@ -777,7 +715,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_OVERFLOW() throws CacheException {
+  public void testPARTITION_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     ResourceManagerCreation rmc = new ResourceManagerCreation();
     rmc.setEvictionHeapPercentage(55.0f);
@@ -800,7 +738,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_REDUNDANT_OVERFLOW() throws CacheException {
+  public void testPARTITION_REDUNDANT_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("rpartitionoverflow", "PARTITION_REDUNDANT_OVERFLOW");
@@ -819,7 +757,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_PERSISTENT_OVERFLOW() throws CacheException {
+  public void testPARTITION_PERSISTENT_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     ResourceManagerCreation rmc = new ResourceManagerCreation();
     rmc.setCriticalHeapPercentage(80.0f);
@@ -841,7 +779,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_REDUNDANT_PERSISTENT_OVERFLOW() throws CacheException {
+  public void testPARTITION_REDUNDANT_PERSISTENT_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     ResourceManagerCreation rmc = new ResourceManagerCreation();
     rmc.setEvictionHeapPercentage(0.0f); // test bug 42130
@@ -862,7 +800,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_HEAP_LRU() throws CacheException {
+  public void testPARTITION_HEAP_LRU() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("partitionlru", "PARTITION_HEAP_LRU");
     testXml(cache);
@@ -879,7 +817,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_REDUNDANT_HEAP_LRU() throws CacheException {
+  public void testPARTITION_REDUNDANT_HEAP_LRU() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("rpartitionlru", "PARTITION_REDUNDANT_HEAP_LRU");
@@ -897,7 +835,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testREPLICATE() throws CacheException {
+  public void testREPLICATE() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("replicate", "REPLICATE");
     testXml(cache);
@@ -910,7 +848,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testREPLICATE_PERSISTENT() throws CacheException {
+  public void testREPLICATE_PERSISTENT() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("preplicate", "REPLICATE_PERSISTENT");
     testXml(cache);
@@ -923,7 +861,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testREPLICATE_OVERFLOW() throws CacheException {
+  public void testREPLICATE_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("replicateoverflow", "REPLICATE_OVERFLOW");
@@ -941,7 +879,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testREPLICATE_PERSISTENT_OVERFLOW() throws CacheException {
+  public void testREPLICATE_PERSISTENT_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("preplicateoverflow", "REPLICATE_PERSISTENT_OVERFLOW");
@@ -959,7 +897,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testREPLICATE_HEAP_LRU() throws CacheException, IOException {
+  public void testREPLICATE_HEAP_LRU() throws Exception, IOException {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("replicatelru", "REPLICATE_HEAP_LRU");
     testXml(cache);
@@ -976,7 +914,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testLOCAL() throws CacheException {
+  public void testLOCAL() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("local", "LOCAL");
     testXml(cache);
@@ -989,7 +927,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testLOCAL_PERSISTENT() throws CacheException {
+  public void testLOCAL_PERSISTENT() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("plocal", "LOCAL_PERSISTENT");
     testXml(cache);
@@ -1002,7 +940,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testLOCAL_HEAP_LRU() throws CacheException {
+  public void testLOCAL_HEAP_LRU() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("locallru", "LOCAL_HEAP_LRU");
     testXml(cache);
@@ -1018,7 +956,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testLOCAL_OVERFLOW() throws CacheException {
+  public void testLOCAL_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("localoverflow", "LOCAL_OVERFLOW");
     testXml(cache);
@@ -1035,7 +973,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testLOCAL_PERSISTENT_OVERFLOW() throws CacheException {
+  public void testLOCAL_PERSISTENT_OVERFLOW() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("cpolocal", "LOCAL_PERSISTENT_OVERFLOW");
@@ -1053,7 +991,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_PROXY() throws CacheException {
+  public void testPARTITION_PROXY() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("partitionProxy", "PARTITION_PROXY");
     testXml(cache);
@@ -1068,7 +1006,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPARTITION_PROXY_REDUNDANT() throws CacheException {
+  public void testPARTITION_PROXY_REDUNDANT() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("rpartitionProxy", "PARTITION_PROXY_REDUNDANT");
@@ -1084,7 +1022,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testREPLICATE_PROXY() throws CacheException {
+  public void testREPLICATE_PROXY() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("replicateProxy", "REPLICATE_PROXY");
     testXml(cache);
@@ -1097,7 +1035,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPROXY() throws CacheException {
+  public void testPROXY() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("proxy", "PROXY");
     testXml(cache);
@@ -1112,7 +1050,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testCACHING_PROXY() throws CacheException {
+  public void testCACHING_PROXY() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("cproxy", "CACHING_PROXY");
     testXml(cache);
@@ -1127,7 +1065,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testCACHING_PROXY_HEAP_LRU() throws CacheException {
+  public void testCACHING_PROXY_HEAP_LRU() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("cproxylru", "CACHING_PROXY_HEAP_LRU");
@@ -1146,7 +1084,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testCACHING_PROXY_OVERFLOW() throws CacheException {
+  public void testCACHING_PROXY_OVERFLOW() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("cproxyoverflow", "CACHING_PROXY_OVERFLOW");
@@ -1166,7 +1104,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testClientLOCAL() throws CacheException {
+  public void testClientLOCAL() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("local", "LOCAL");
     testXml(cache);
@@ -1181,7 +1119,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testClientLOCAL_HEAP_LRU() throws CacheException {
+  public void testClientLOCAL_HEAP_LRU() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("locallru", "LOCAL_HEAP_LRU");
     testXml(cache);
@@ -1199,7 +1137,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testClientLOCAL_OVERFLOW() throws CacheException {
+  public void testClientLOCAL_OVERFLOW() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("localoverflow", "LOCAL_OVERFLOW");
     testXml(cache);
@@ -1218,7 +1156,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testClientLOCAL_PERSISTENT() throws CacheException {
+  public void testClientLOCAL_PERSISTENT() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("cplocal", "LOCAL_PERSISTENT");
     testXml(cache);
@@ -1233,7 +1171,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testClientLOCAL_PERSISTENT_OVERFLOW() throws CacheException {
+  public void testClientLOCAL_PERSISTENT_OVERFLOW() throws Exception {
     ClientCacheCreation cache = new ClientCacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("cpolocal", "LOCAL_PERSISTENT_OVERFLOW");
@@ -1252,15 +1190,12 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
 
-
-
   /**
    * Tests that a partitioned region is created with FixedPartitionAttributes set programatically
    * and correct cache.xml is generated with the same FixedPartitionAttributes
-   * 
    */
   @Test
-  public void testFixedPartitioning() throws CacheException {
+  public void testFixedPartitioning() throws Exception {
 
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation();
@@ -1296,7 +1231,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testFixedPartitioning_colocation_WithAttributes() throws CacheException {
+  public void testFixedPartitioning_colocation_WithAttributes() throws Exception {
     CacheCreation cache = new CacheCreation();
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes.createFixedPartition("Q1");
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes.createFixedPartition("Q2", true);
@@ -1335,6 +1270,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       orderRegion = cache.getRegion("Order");
       validateAttributes(orderRegion, fpattrsList, resolver, true);
     } catch (Exception illegal) {
+      // TODO: clean this expected exception up
       if (!((illegal instanceof IllegalStateException) && (illegal.getMessage()
           .contains("can not be specified in PartitionAttributesFactory")))) {
         Assert.fail("Expected IllegalStateException ", illegal);
@@ -1398,12 +1334,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         }
       }
     }
-
   }
 
-
   @Test
-  public void testPdxDefaults() {
+  public void testPdxDefaults() throws Exception {
     CacheCreation creation = new CacheCreation();
     testXml(creation);
 
@@ -1419,7 +1353,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPdxAttributes() {
+  public void testPdxAttributes() throws Exception {
     CacheCreation creation = new CacheCreation();
     creation.setPdxPersistent(true);
     creation.setPdxReadSerialized(true);
@@ -1507,7 +1441,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testTXManagerOnClientCache() {
+  public void testTXManagerOnClientCache() throws Exception {
     ClientCacheCreation cc = new ClientCacheCreation();
     // CacheCreation cc = new CacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
@@ -1527,7 +1461,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testNoTXWriterOnClient() {
+  public void testNoTXWriterOnClient() throws Exception {
     // test writer is not created
     ClientCacheCreation cc = new ClientCacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
@@ -1556,10 +1490,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Tests that a region created with a named attributes set programmatically for delta propogation
    * has the correct attributes.
-   * 
    */
   @Test
-  public void testRegionAttributesForRegionEntryCloning() throws CacheException {
+  public void testRegionAttributesForRegionEntryCloning() throws Exception {
     final String rNameBase = getUniqueName();
     final String r1 = rNameBase + "1";
 
@@ -1606,10 +1539,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Tests that a region created with a named attributes set programatically for recovery-delay has
    * the correct attributes.
-   * 
    */
   @Test
-  public void testRecoveryDelayAttributes() throws CacheException {
+  public void testRecoveryDelayAttributes() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -1652,10 +1584,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Tests that a region created with a named attributes set programmatically for recovery-delay has
    * the correct attributes.
-   * 
    */
   @Test
-  public void testDefaultRecoveryDelayAttributes() throws CacheException {
+  public void testDefaultRecoveryDelayAttributes() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -1695,8 +1626,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Test the ResourceManager element's critical-heap-percentage and eviction-heap-percentage
    * attributes
-   * 
-   * @throws Exception
    */
   @Test
   public void testResourceManagerThresholds() throws Exception {
@@ -1846,7 +1775,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testSerializationRegistration() {
+  public void testSerializationRegistration() throws Exception {
     CacheCreation cc = new CacheCreation();
     SerializerCreation sc = new SerializerCreation();
 
@@ -1897,10 +1826,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Tests that a region created with a named attributes set programmatically for partition-resolver
    * has the correct attributes.
-   * 
    */
   @Test
-  public void testPartitionedRegionAttributesForCustomPartitioning() throws CacheException {
+  public void testPartitionedRegionAttributesForCustomPartitioning() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -1948,10 +1876,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Tests that a cache created with FunctionService and registered FabricFunction has correct
    * registered Function
-   * 
    */
   @Test
-  public void testCacheCreationWithFuntionService() throws CacheException {
+  public void testCacheCreationWithFuntionService() throws Exception {
     CacheCreation cache = new CacheCreation();
     FunctionServiceCreation fsc = new FunctionServiceCreation();
     TestFunction function1 = new TestFunction(true, TestFunction.TEST_FUNCTION2);
@@ -1976,10 +1903,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * Tests that a Partitioned Region can be created with a named attributes set programmatically for
    * ExpirationAttributes
-   * 
    */
   @Test
-  public void testPartitionedRegionAttributesForExpiration() throws CacheException {
+  public void testPartitionedRegionAttributesForExpiration() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setStatisticsEnabled(true);
@@ -2036,17 +1962,14 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     assertEquals(regionAttrs.getEntryIdleTimeout().getTimeout(), expiration.getTimeout());
     assertEquals(regionAttrs.getEntryTimeToLive().getTimeout(), expiration.getTimeout());
-
   }
-
 
   /**
    * Tests that a Partitioned Region can be created with a named attributes set programmatically for
    * ExpirationAttributes
-   * 
    */
   @Test
-  public void testPartitionedRegionAttributesForEviction() throws CacheException {
+  public void testPartitionedRegionAttributesForEviction() throws Exception {
     final int redundantCopies = 1;
     CacheCreation cache = new CacheCreation();
     if (getGemFireVersion().equals(CacheXml.VERSION_6_0)) {
@@ -2074,7 +1997,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     AttributesFactory fac = new AttributesFactory(attrs);
 
-    // TODO mthomas 01/20/09 Move test back to using LRUHeap when config issues have settled
+    // TODO: Move test back to using LRUHeap when config issues have settled
     // if (getGemFireVersion().equals(CacheXml.GEMFIRE_6_0)) {
     // fac.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null,
     // EvictionAction.OVERFLOW_TO_DISK));
@@ -2088,11 +2011,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setSynchronous(true);
-    /*
-     * fac.setDiskWriteAttributes(dwaf.create()); File[] diskDirs = new File[1]; diskDirs[0] = new
-     * File("overflowDir/" + "_" + OSProcess.getId()); diskDirs[0].mkdirs();
-     * fac.setDiskDirs(diskDirs);
-     */
 
     fac.setPartitionAttributes(paf.create());
     rootAttrs = fac.create();
@@ -2129,7 +2047,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     assertEquals(regionAttrs.getEntryIdleTimeout().getTimeout(), expiration.getTimeout());
     assertEquals(regionAttrs.getEntryTimeToLive().getTimeout(), expiration.getTimeout());
-    // TODO mthomas 01/20/09 Move test back to using LRUHeap when config issues have settled
+    // TODO: Move test back to using LRUHeap when config issues have settled
     // if (getGemFireVersion().equals(CacheXml.GEMFIRE_6_0)) {
     // assertIndexDetailsEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_HEAP);
     // } else {
@@ -2139,7 +2057,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPartitionedRegionAttributesForCoLocation() {
+  public void testPartitionedRegionAttributesForCoLocation() throws Exception {
     closeCache();
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation custAttrs = new RegionAttributesCreation(cache);
@@ -2170,11 +2088,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertNotNull(order);
     String coLocatedRegion = order.getAttributes().getPartitionAttributes().getColocatedWith();
     assertEquals("Customer", coLocatedRegion);
-
   }
 
   @Test
-  public void testPartitionedRegionAttributesForCoLocation2() {
+  public void testPartitionedRegionAttributesForCoLocation2() throws Exception {
     closeCache();
     setXmlFile(findFile("coLocation.xml"));
     Cache c = getCache();
@@ -2187,11 +2104,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertTrue(cust.getAttributes().getPartitionAttributes().getColocatedWith() == null);
     assertTrue(
         order.getAttributes().getPartitionAttributes().getColocatedWith().equals("Customer"));
-
   }
 
   @Test
-  public void testPartitionedRegionAttributesForMemLruWithoutMaxMem() throws CacheException {
+  public void testPartitionedRegionAttributesForMemLruWithoutMaxMem() throws Exception {
     final int redundantCopies = 1;
     CacheCreation cache = new CacheCreation();
 
@@ -2207,7 +2123,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         EvictionAttributes.createLRUMemoryAttributes(null, EvictionAction.LOCAL_DESTROY));
     fac.setPartitionAttributes(paf.create());
     cache.createRegion("parRoot", fac.create());
-
 
     testXml(cache);
 
@@ -2225,14 +2140,13 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(pa.getLocalMaxMemory(), 100);
     assertEquals(pa.getTotalMaxMemory(), 500);
 
-
     assertEquals(ea.getAlgorithm(), EvictionAlgorithm.LRU_MEMORY);
     assertEquals(ea.getAction(), EvictionAction.LOCAL_DESTROY);
     assertEquals(ea.getMaximum(), pa.getLocalMaxMemory());
   }
 
   @Test
-  public void testPartitionedRegionAttributesForMemLruWithMaxMem() throws CacheException {
+  public void testPartitionedRegionAttributesForMemLruWithMaxMem() throws Exception {
     final int redundantCopies = 1;
     final int maxMem = 25;
     CacheCreation cache = new CacheCreation();
@@ -2250,7 +2164,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     fac.setPartitionAttributes(paf.create());
     cache.createRegion("parRoot", fac.create());
 
-
     testXml(cache);
 
     Cache c = getCache();
@@ -2267,7 +2180,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(pa.getLocalMaxMemory(), 100);
     assertEquals(pa.getTotalMaxMemory(), 500);
 
-
     assertEquals(ea.getAlgorithm(), EvictionAlgorithm.LRU_MEMORY);
     assertEquals(ea.getAction(), EvictionAction.LOCAL_DESTROY);
     assertNotSame(ea.getMaximum(), maxMem);
@@ -2275,7 +2187,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testReplicatedRegionAttributesForMemLruWithoutMaxMem() throws CacheException {
+  public void testReplicatedRegionAttributesForMemLruWithoutMaxMem() throws Exception {
     final int redundantCopies = 1;
     CacheCreation cache = new CacheCreation();
 
@@ -2284,7 +2196,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     fac.setEvictionAttributes(
         EvictionAttributes.createLRUMemoryAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
     cache.createRegion("parRoot", fac.create());
-
 
     testXml(cache);
 
@@ -2303,7 +2214,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testReplicatedRegionAttributesForMemLruWithMaxMem() throws CacheException {
+  public void testReplicatedRegionAttributesForMemLruWithMaxMem() throws Exception {
     final int redundantCopies = 1;
     final int maxMem = 25;
     CacheCreation cache = new CacheCreation();
@@ -2313,8 +2224,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     fac.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(maxMem, null,
         EvictionAction.OVERFLOW_TO_DISK));
     cache.createRegion("parRoot", fac.create());
-
-
 
     testXml(cache);
 
@@ -2335,7 +2244,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests the groups subelement on bridge-server.
    */
   @Test
-  public void testDefaultCacheServerGroups() throws CacheException {
+  public void testDefaultCacheServerGroups() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2349,7 +2258,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testOneCacheServerGroups() throws CacheException {
+  public void testOneCacheServerGroups() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2364,7 +2273,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testTwoCacheServerGroups() throws CacheException {
+  public void testTwoCacheServerGroups() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2379,7 +2288,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testDefaultCacheServerBindAddress() throws CacheException {
+  public void testDefaultCacheServerBindAddress() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2392,7 +2301,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testCacheServerBindAddress() throws CacheException {
+  public void testCacheServerBindAddress() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2407,7 +2316,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testCacheServerHostnameForClients() throws CacheException {
+  public void testCacheServerHostnameForClients() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2424,7 +2333,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testTwoConnectionPools() throws CacheException {
+  public void testTwoConnectionPools() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
     PoolFactory f = cache.createPoolFactory();
@@ -2462,7 +2371,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testNoConnectionPools() throws CacheException {
+  public void testNoConnectionPools() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setPoolName("mypool");
@@ -2480,7 +2389,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testAlreadyExistingPool() throws CacheException {
+  public void testAlreadyExistingPool() throws Exception {
     getSystem();
     PoolFactoryImpl f = (PoolFactoryImpl) PoolManager.createFactory();
     f.setStartDisabled(true).addLocator(ALIAS2, 12345).create("mypool");
@@ -2503,7 +2412,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testDynamicRegionFactoryConnectionPool() throws CacheException, IOException {
+  public void testDynamicRegionFactoryConnectionPool() throws Exception, IOException {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("SocketTimeoutException");
     IgnoredException.addIgnoredException("ServerConnectivityException");
@@ -2544,15 +2453,14 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests the client subscription attributes (<code>eviction-policy</code>, <code>capacity</code>
-   * and <code>overflow-directory</code>) related to client subscription config in gemfire
-   * cache-server framework
+   * Tests the client subscription attributes ({@code eviction-policy}, {@code capacity} and
+   * {@code overflow-directory}) related to client subscription config in gemfire cache-server
+   * framework
    *
-   * @throws CacheException
    * @since GemFire 5.7
    */
   @Test
-  public void testBridgeAttributesRelatedToHAOverFlow() throws CacheException {
+  public void testBridgeAttributesRelatedToHAOverFlow() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
@@ -2579,7 +2487,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testBridgeLoadProbe() {
+  public void testBridgeLoadProbe() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer server = cache.addCacheServer();
     server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2593,7 +2501,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testLoadPollInterval() {
+  public void testLoadPollInterval() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer server = cache.addCacheServer();
     server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -2607,71 +2515,85 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   public static class MyLoadProbe extends ServerLoadProbeAdapter implements Declarable {
+    @Override
     public ServerLoad getLoad(ServerMetrics metrics) {
       return null;
     }
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public boolean equals(Object o) {
       return o instanceof MyLoadProbe;
     }
   }
 
-  static public class Expiry1 implements CustomExpiry, Declarable {
+  public static class Expiry1 implements CustomExpiry, Declarable {
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public void close() {}
   }
 
-  static public class Expiry2 implements CustomExpiry, Declarable {
+  public static class Expiry2 implements CustomExpiry, Declarable {
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public void close() {}
   }
 
-  static public class Expiry3 implements CustomExpiry, Declarable {
+  public static class Expiry3 implements CustomExpiry, Declarable {
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public void close() {}
   }
 
-  static public class Expiry4 implements CustomExpiry, Declarable {
+  public static class Expiry4 implements CustomExpiry, Declarable {
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public void close() {}
   }
 
-  static public class Expiry5 implements CustomExpiry, Declarable2 {
+  public static class Expiry5 implements CustomExpiry, Declarable2 {
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public void close() {}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
-     */
+    @Override
     public Properties getConfig() {
       Properties p = new Properties();
       p.put("prop1", "val1");
@@ -2684,7 +2606,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Test both customEntryIdleTime and customEntryTimeToLife
    */
   @Test
-  public void testCustomEntryXml() {
+  public void testCustomEntryXml() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -2729,7 +2651,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testPreloadDataPolicy() throws CacheException {
+  public void testPreloadDataPolicy() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     {
@@ -2772,7 +2694,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     }
 
     testXml(cache);
-
   }
 
   /**
@@ -2781,8 +2702,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 5.7
    */
   @Test
-  public void testEnableSubscriptionConflationAttribute() throws CacheException {
-
+  public void testEnableSubscriptionConflationAttribute() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEnableSubscriptionConflation(true);
@@ -2795,7 +2715,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that a region created with a named attributes has the correct attributes.
    */
   @Test
-  public void testPartitionedRegionXML() throws CacheException {
+  public void testPartitionedRegionXML() throws Exception {
     setXmlFile(findFile("partitionedRegion51.xml"));
     final String regionName = "pRoot";
 
@@ -2809,6 +2729,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     CacheSerializableRunnable init =
         new CacheSerializableRunnable("initUsingPartitionedRegionXML") {
+          @Override
           public void run2() throws CacheException {
             final Cache c;
             try {
@@ -2838,9 +2759,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     vm0.invoke(init);
     vm1.invoke(init);
     vm0.invoke(new CacheSerializableRunnable("putUsingPartitionedRegionXML1") {
+      @Override
       public void run2() throws CacheException {
         final String val = "prValue0";
-        final Integer key = new Integer(10);
+        final Integer key = 10;
         Cache c = getCache();
         Region r = c.getRegion(regionName);
         assertNotNull(r);
@@ -2849,9 +2771,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       }
     });
     vm1.invoke(new CacheSerializableRunnable("putUsingPartitionedRegionXML2") {
+      @Override
       public void run2() throws CacheException {
         final String val = "prValue1";
-        final Integer key = new Integer(14);
+        final Integer key = 14;
         Cache c = getCache();
         Region r = c.getRegion(regionName);
         assertNotNull(r);
@@ -2862,15 +2785,13 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests the <code>message-sync-interval</code> attribute of attribute is related to HA of
+   * Tests the {@code message-sync-interval} attribute of attribute is related to HA of
    * client-queues in gemfire ca framework. This attribute is the frequency at which a messent by
    * the primary cache-server node to all the secondary cache-server nodes to remove the events
    * which have already been dispatched from the queue
-   *
-   * @throws CacheException
    */
   @Test
-  public void testMessageSyncInterval() throws CacheException {
+  public void testMessageSyncInterval() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setMessageSyncInterval(123);
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -2883,14 +2804,11 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests the bridge-server attributes (<code>maximum-message-count</code> and
-   * <code>message-time-to-live</code>) related to HA of client-queues in gemfire cache-server
-   * framework
-   * 
-   * @throws CacheException
+   * Tests the bridge-server attributes ({@code maximum-message-count} and
+   * {@code message-time-to-live}) related to HA of client-queues in gemfire cache-server framework
    */
   @Test
-  public void testBridgeAttributesRelatedToClientQueuesHA() throws CacheException {
+  public void testBridgeAttributesRelatedToClientQueuesHA() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
@@ -2915,11 +2833,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * This tests currently fails due to (what seem to me as) limitations in the XML generator and the
    * comparison of the XML. I have run this test by hand and looked at the generated XML and there
    * were no significant problems, however because of the limitations, I am disabling this test, but
-   * leaving the functionality for future comparisons (by hand of course). -- Mitch Thomas
-   * 01/18/2006
+   * leaving the functionality for future comparisons (by hand of course).
    */
   @Test
-  public void testPartitionedRegionInstantiation() throws CacheException {
+  public void testPartitionedRegionInstantiation() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -2931,12 +2848,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests the bridge-server attributes (<code>max-threads</code>
-   * 
-   * @throws CacheException
+   * Tests the bridge-server attributes ({@code max-threads}
    */
   @Test
-  public void testBridgeMaxThreads() throws CacheException {
+  public void testBridgeMaxThreads() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     CacheServer bs = cache.addCacheServer();
@@ -2953,7 +2868,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that loading cache XML with multi-cast set will set the multi-cast
    */
   @Test
-  public void testRegionMulticastSetViaCacheXml() throws CacheException {
+  public void testRegionMulticastSetViaCacheXml() throws Exception {
     final String rNameBase = getUniqueName();
     final String r1 = rNameBase + "1";
     final String r2 = rNameBase + "2";
@@ -3018,10 +2933,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testRollOplogs() throws CacheException {
+  public void testRollOplogs() throws Exception {
     CacheCreation cache = new CacheCreation();
     // Set properties for Asynch writes
-
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -3050,10 +2964,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testMaxOplogSize() throws CacheException {
+  public void testMaxOplogSize() throws Exception {
     CacheCreation cache = new CacheCreation();
     // Set properties for Asynch writes
-
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -3082,7 +2995,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testDataPolicy() throws CacheException {
+  public void testDataPolicy() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     {
@@ -3126,6 +3039,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   protected Properties xmlProps = null;
 
+  @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
     if (this.xmlProps != null) {
@@ -3201,7 +3115,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 5.0
    */
   @Test
-  public void testMultipleCacheListener() throws CacheException {
+  public void testMultipleCacheListener() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -3247,12 +3161,14 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * A <code>CacheListener</code> that is <code>Declarable</code>, but not <code>Declarable2</code>.
+   * A {@code CacheListener} that is {@code Declarable}, but not {@code Declarable2}.
    */
   public static class MySecondTestCacheListener extends TestCacheListener implements Declarable {
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public boolean equals(Object o) {
       return o instanceof MySecondTestCacheListener;
     }
@@ -3269,7 +3185,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     factory.setEvictionAttributes(ev);
     // RegionAttributes atts = factory.create();
     createRegion(name, factory.create());
-    finishCacheXml(getUniqueName(), getUseSchema(), getGemFireVersion());
+    finishCacheXml(this.temporaryFolder.getRoot(), getUniqueName(), getUseSchema(),
+        getGemFireVersion());
     Region r = getRootRegion().getSubregion(name);
 
     EvictionAttributes hlea = r.getAttributes().getEvictionAttributes();
@@ -3282,7 +3199,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 5.0
    */
   @Test
-  public void testMultipleTXListener() throws CacheException {
+  public void testMultipleTXListener() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     TransactionListener l1 = new MyTestTransactionListener();
@@ -3317,20 +3234,21 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * A <code>TransactionListener</code> that is <code>Declarable</code>, but not
-   * <code>Declarable2</code>.
+   * A {@code TransactionListener} that is {@code Declarable}, but not {@code Declarable2}.
    */
   public static class MySecondTestTransactionListener extends TestTransactionListener
       implements Declarable {
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public boolean equals(Object o) {
       return o instanceof MySecondTestTransactionListener;
     }
   }
 
-  public void setBridgeAttributes(CacheServer bridge1) {
+  private void setBridgeAttributes(CacheServer bridge1) {
     bridge1.setPort(0);
     bridge1.setMaxConnections(100);
     bridge1.setMaximumTimeBetweenPings(12345);
@@ -3342,7 +3260,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that named region attributes are registered when the cache is created.
    */
   @Test
-  public void testRegisteringNamedRegionAttributes() {
+  public void testRegisteringNamedRegionAttributes() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs;
 
@@ -3372,7 +3290,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that a region created with a named attributes has the correct attributes.
    */
   @Test
-  public void testNamedAttributes() throws CacheException {
+  public void testNamedAttributes() throws Exception {
     setXmlFile(findFile("namedAttributes.xml"));
 
     Class keyConstraint = String.class;
@@ -3416,7 +3334,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * unknown named region attributes throws an {@link IllegalStateException}.
    */
   @Test
-  public void testUnknownNamedAttributes() {
+  public void testUnknownNamedAttributes() throws Exception {
     setXmlFile(findFile("unknownNamedAttributes.xml"));
 
     IgnoredException expectedException = IgnoredException.addIgnoredException(
@@ -3434,11 +3352,11 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests to make sure that we cannot create the same region multiple times in a
-   * <code>cache.xml</code> file.
+   * Tests to make sure that we cannot create the same region multiple times in a {@code cache.xml}
+   * file.
    */
   @Test
-  public void testCreateSameRegionTwice() throws CacheException {
+  public void testCreateSameRegionTwice() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     String name = "root";
@@ -3475,10 +3393,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   /**
    * Tests to make sure that we cannot create the same subregion multiple times in a
-   * <code>cache.xml</code> file.
+   * {@code cache.xml} file.
    */
   @Test
-  public void testCreateSameSubregionTwice() throws CacheException {
+  public void testCreateSameSubregionTwice() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     String name = this.getUniqueName();
@@ -3516,8 +3434,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Generates XML from the given <code>CacheCreation</code> and returns an <code>InputStream</code>
-   * for reading that XML.
+   * Generates XML from the given {@code CacheCreation} and returns an {@code InputStream} for
+   * reading that XML.
    */
   public InputStream generate(CacheCreation creation) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -3537,7 +3455,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that loading cache XML effects mutable cache attributes.
    */
   @Test
-  public void testModifyCacheAttributes() throws CacheException {
+  public void testModifyCacheAttributes() throws Exception {
     boolean copyOnRead1 = false;
     boolean isServer1 = true;
     int lockLease1 = 123;
@@ -3586,7 +3504,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that loading cache XML can create a region.
    */
   @Test
-  public void testAddRegionViaCacheXml() throws CacheException {
+  public void testAddRegionViaCacheXml() throws Exception {
     CacheCreation creation = new CacheCreation();
 
     testXml(creation);
@@ -3648,7 +3566,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that loading cache XML can modify a region.
    */
   @Test
-  public void testModifyRegionViaCacheXml() throws CacheException {
+  public void testModifyRegionViaCacheXml() throws Exception {
     CacheCreation creation = new CacheCreation();
 
     int timeout1a = 123;
@@ -3713,7 +3631,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests that loading cache XML can add/update entries to a region.
    */
   @Test
-  public void testAddEntriesViaCacheXml() throws CacheException {
+  public void testAddEntriesViaCacheXml() throws Exception {
     String key1 = "KEY1";
     String value1 = "VALUE1";
 
@@ -3751,50 +3669,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(2, root.entrySet(false).size());
     assertEquals(value2, root.get(key1));
     assertEquals(value3, root.get(key2));
-
-  }
-
-  // this tests an aspect of the CapacityController interface, which is no longer
-  // available as of 5.0
-  // public void testHeapLRUCapacityController() throws Exception {
-  // final String name = getUniqueName();
-  // beginCacheXml();
-  // AttributesFactory factory = new AttributesFactory();
-  // factory.setScope(Scope.LOCAL);
-  // factory.setCapacityController(new HeapLRUCapacityController(42, 32,
-  // LRUAlgorithm.OVERFLOW_TO_DISK));
-  // createRegion(name, factory.create());
-  // finishCacheXml(getUniqueName());
-  //
-  // Region r = getRootRegion().getSubregion(name);
-  //
-  // HeapLRUCapacityController hlcc = (HeapLRUCapacityController)
-  // r.getAttributes().getCapacityController();
-  // assertIndexDetailsEquals(hlcc.getEvictionAction(), LRUAlgorithm.OVERFLOW_TO_DISK);
-  //
-  // Properties p = hlcc.getProperties();
-  // assertIndexDetailsEquals(42,
-  // Integer.parseInt(p.getProperty(HeapLRUCapacityController.HEAP_PERCENTAGE)));
-  // assertIndexDetailsEquals(32,
-  // Long.parseLong(p.getProperty(HeapLRUCapacityController.EVICTOR_INTERVAL)));
-  // assertIndexDetailsEquals(LRUAlgorithm.OVERFLOW_TO_DISK,
-  // p.getProperty(HeapLRUCapacityController.EVICTION_ACTION));
-  // }
-  /**
-   * Test Publisher region attribute
-   * 
-   * @since GemFire 4.2.3
-   * @deprecated as of GemFire 6.5.
-   */
-  @Test
-  public void testPublisherAttribute() throws CacheException {
-
-    // CacheCreation cache = new CacheCreation();
-    // RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    // attrs.setPublisher(true);
-    // cache.createRegion("root", attrs);
-    // testXml(cache);
-    // assertIndexDetailsEquals(true, cache.getRegion("root").getAttributes().getPublisher());
   }
 
   /**
@@ -3803,8 +3677,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.2
    */
   @Test
-  public void testEnableBridgeConflationAttribute() throws CacheException {
-
+  public void testEnableBridgeConflationAttribute() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEnableBridgeConflation(true);
@@ -3819,8 +3692,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.2
    */
   @Test
-  public void testEnableAsyncConflationAttribute() throws CacheException {
-
+  public void testEnableAsyncConflationAttribute() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEnableAsyncConflation(true);
@@ -3833,7 +3705,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.3
    */
   @Test
-  public void testDynamicRegionFactoryDefault() throws CacheException {
+  public void testDynamicRegionFactoryDefault() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config());
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -3849,11 +3721,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     if (dr != null) {
       dr.localDestroyRegion();
     }
-
   }
 
   @Test
-  public void testDynamicRegionFactoryNonDefault() throws CacheException {
+  public void testDynamicRegionFactoryNonDefault() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setDynamicRegionFactoryConfig(
         new DynamicRegionFactory.Config((File) null, null, false, false));
@@ -3870,14 +3741,13 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     if (dr != null) {
       dr.localDestroyRegion();
     }
-
   }
 
   /**
    * @since GemFire 4.3
    */
   @Test
-  public void testDynamicRegionFactoryDiskDir() throws CacheException {
+  public void testDynamicRegionFactoryDiskDir() throws Exception {
     CacheCreation cache = new CacheCreation();
     File f = new File("diskDir");
     f.mkdirs();
@@ -3901,7 +3771,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.0
    */
   @Test
-  public void testServer() {
+  public void testServer() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setIsServer(true);
     assertTrue(cache.isServer());
@@ -3915,7 +3785,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.0
    */
   @Test
-  public void testBridgeServers() {
+  public void testBridgeServers() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     CacheServer bridge1 = cache.addCacheServer();
@@ -3931,8 +3801,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests the is-lock-grantor attribute in xml.
    */
   @Test
-  public void testIsLockGrantorAttribute() throws CacheException {
-
+  public void testIsLockGrantorAttribute() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -3952,7 +3821,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.0
    */
   @Test
-  public void testTransactionListener() {
+  public void testTransactionListener() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     txMgrCreation.setListener(new MyTestTransactionListener());
@@ -3966,7 +3835,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.0
    */
   @Test
-  public void testCacheTransactionManager() {
+  public void testCacheTransactionManager() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     cache.addCacheTransactionManagerCreation(txMgrCreation);
@@ -3979,7 +3848,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 4.1
    */
   @Test
-  public void testConstrainedValues() throws CacheException {
+  public void testConstrainedValues() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setValueConstraint(String.class);
@@ -3993,7 +3862,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests creating a cache with a non-existent XML file
    */
   @Test
-  public void testNonExistentFile() throws IOException {
+  public void testNonExistentFile() throws Exception {
     // System.out.println("testNonExistentFile - start: " + System.currentTimeMillis());
     File nonExistent = new File(this.getName() + ".xml");
     nonExistent.delete();
@@ -4020,7 +3889,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests creating a cache with a XML file that is a directory
    */
   @Test
-  public void testXmlFileIsDirectory() {
+  public void testXmlFileIsDirectory() throws Exception {
     File dir = new File(this.getName() + "dir");
     dir.mkdirs();
     dir.deleteOnExit();
@@ -4043,7 +3912,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests creating a cache with the default lock-timeout, lock-lease, and search-timeout.
    */
   @Test
-  public void testDefaultCache() {
+  public void testDefaultCache() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     testXml(cache);
@@ -4053,7 +3922,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests creating a cache with non-default lock-timeout, lock-lease, and search-timeout.
    */
   @Test
-  public void testNonDefaultCache() {
+  public void testNonDefaultCache() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setLockTimeout(42);
     cache.setLockLease(43);
@@ -4070,7 +3939,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests creating a cache with entries defined in the root region
    */
   @Test
-  public void testEntriesInRootRegion() throws CacheException {
+  public void testEntriesInRootRegion() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root =
         (RegionCreation) cache.createRegion("root", new RegionAttributesCreation(cache));
@@ -4085,7 +3954,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests creating a cache whose keys are constrained
    */
   @Test
-  public void testConstrainedKeys() throws CacheException {
+  public void testConstrainedKeys() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setKeyConstraint(String.class);
@@ -4098,7 +3967,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests creating a cache with a various {@link ExpirationAttributes}.
    */
   @Test
-  public void testExpirationAttriubutes() throws CacheException {
+  public void testExpirationAttriubutes() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setStatisticsEnabled(true);
@@ -4132,7 +4001,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests a cache loader an interesting combination of declarables
    */
   @Test
-  public void testCacheLoaderWithDeclarables() throws CacheException {
+  public void testCacheLoaderWithDeclarables() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -4148,7 +4017,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests a cache writer with no parameters
    */
   @Test
-  public void testCacheWriter() throws CacheException {
+  public void testCacheWriter() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -4164,7 +4033,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests a cache listener with no parameters
    */
   @Test
-  public void testCacheListener() throws CacheException {
+  public void testCacheListener() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -4180,7 +4049,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests a region with non-default region attributes
    */
   @Test
-  public void testNonDefaultRegionAttributes() throws CacheException {
+  public void testNonDefaultRegionAttributes() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -4199,7 +4068,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing a malformed XML file
    */
   @Test
-  public void testMalformed() {
+  public void testMalformed() throws Exception {
     setXmlFile(findFile("malformed.xml"));
 
     IgnoredException expectedException =
@@ -4219,7 +4088,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing an XML file with a bad integer
    */
   @Test
-  public void testBadInt() {
+  public void testBadInt() throws Exception {
     setXmlFile(findFile("badInt.xml"));
 
     IgnoredException expectedException =
@@ -4242,7 +4111,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing an XML file with a bad float
    */
   @Test
-  public void testBadFloat() {
+  public void testBadFloat() throws Exception {
     setXmlFile(findFile("badFloat.xml"));
 
     IgnoredException expectedException =
@@ -4262,7 +4131,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing an XML file with a bad scope. This error should be caught by the XML parser.
    */
   @Test
-  public void testBadScope() {
+  public void testBadScope() throws Exception {
     setXmlFile(findFile("badScope.xml"));
 
     IgnoredException expectedException =
@@ -4282,7 +4151,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing an XML file with a non-existent key constraint class.
    */
   @Test
-  public void testBadKeyConstraintClass() {
+  public void testBadKeyConstraintClass() throws Exception {
     setXmlFile(findFile("badKeyConstraintClass.xml"));
 
     IgnoredException expectedException =
@@ -4302,7 +4171,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing an XML file that specifies a cache listener that is not {@link Declarable}.
    */
   @Test
-  public void testCallbackNotDeclarable() {
+  public void testCallbackNotDeclarable() throws Exception {
     setXmlFile(findFile("callbackNotDeclarable.xml"));
 
     IgnoredException expectedException =
@@ -4313,11 +4182,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     } catch (CacheXmlException ex) {
       Throwable cause = ex.getCause();
-      assertNull(/*
-                  * "Didn't expect a cause of " + cause + " (a " + cause.getClass().getName() + ")"
-                  * + " from " + ex,
-                  */
-          cause);
+      assertNull(cause);
     } finally {
       expectedException.remove();
     }
@@ -4328,7 +4193,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * {@linkplain AssertionError exception}.
    */
   @Test
-  public void testCallbackWithException() {
+  public void testCallbackWithException() throws Exception {
     setXmlFile(findFile("callbackWithException.xml"));
 
     IgnoredException expectedException =
@@ -4348,11 +4213,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests parsing an XML file that specifies a cache listener that is not a
-   * <code>CacheLoader</code>.
+   * Tests parsing an XML file that specifies a cache listener that is not a {@code CacheLoader}.
    */
   @Test
-  public void testLoaderNotLoader() {
+  public void testLoaderNotLoader() throws Exception {
     setXmlFile(findFile("loaderNotLoader.xml"));
 
     IgnoredException expectedException =
@@ -4373,7 +4237,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests nested regions
    */
   @Test
-  public void testNestedRegions() throws CacheException {
+  public void testNestedRegions() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -4416,7 +4280,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests whether or not XML attributes can appear in any order. See bug 30050.
    */
   @Test
-  public void testAttributesUnordered() {
+  public void testAttributesUnordered() throws Exception {
     setXmlFile(findFile("attributesUnordered.xml"));
     getCache();
   }
@@ -4425,7 +4289,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests disk directories
    */
   @Test
-  public void testDiskDirs() throws CacheException {
+  public void testDiskDirs() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -4445,10 +4309,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests the <code>overflowThreshold</code> and <code>persistBackup</code> related attributes
+   * Tests the {@code overflowThreshold} and {@code persistBackup} related attributes
    */
   @Test
-  public void testOverflowAndBackup() throws CacheException {
+  public void testOverflowAndBackup() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -4461,13 +4325,12 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests <code>DiskWriteAttributes</code>
+   * Tests {@code DiskWriteAttributes}
    */
   @Test
-  public void testDiskWriteAttributes() throws CacheException {
+  public void testDiskWriteAttributes() throws Exception {
     CacheCreation cache = new CacheCreation();
     // Set properties for Asynch writes
-
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
@@ -4500,7 +4363,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * @since GemFire 3.2.1
    */
   @Test
-  @Ignore
+  @Ignore // TODO: why is testExampleCacheXmlFile @Ignored?
   public void testExampleCacheXmlFile() throws Exception {
     // Check for old example files
     String dirName = "examples_" + this.getGemFireVersion();
@@ -4512,6 +4375,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     }
     if (dir != null && dir.exists()) {
       File[] xmlFiles = dir.listFiles(new FilenameFilter() {
+        @Override
         public boolean accept(File dir, String name) {
           return name.endsWith(".xml");
         }
@@ -4558,10 +4422,12 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public static class EvictionObjectSizer implements ObjectSizer, Declarable2 {
     Properties props = new Properties();
 
+    @Override
     public int sizeof(Object o) {
       return 1;
     }
 
+    @Override
     public Properties getConfig() {
       if (null == this.props) {
         this.props = new Properties();
@@ -4570,10 +4436,12 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       return this.props;
     }
 
+    @Override
     public void init(Properties props) {
       this.props = props;
     }
 
+    @Override
     public boolean equals(Object obj) {
       if (obj == this) {
         return true;
@@ -4612,17 +4480,14 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
 
-  //////////////////////// Inner Classes ////////////////////////
-
   /**
    * A cache listener that is not {@link Declarable}
    *
    * @see #testCallbackNotDeclarable()
    */
   public static class NotDeclarableCacheListener extends TestCacheListener {
-
+    // empty
   }
-
 
   public static class AssertionError extends RuntimeException {
     public AssertionError() {
@@ -4642,53 +4507,56 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     }
   }
 
-
   /**
-   * A <code>CacheListener</code> that is <code>Declarable</code>, but not <code>Declarable2</code>.
+   * A {@code CacheListener} that is {@code Declarable}, but not {@code Declarable2}.
    */
   public static class MyTestCacheListener extends TestCacheListener implements Declarable {
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public boolean equals(Object o) {
       return o instanceof MyTestCacheListener;
     }
   }
 
   /**
-   * A <code>CacheWriter</code> that is <code>Declarable</code>, but not <code>Declarable2</code>.
+   * A {@code CacheWriter} that is {@code Declarable}, but not {@code Declarable2}.
    */
   public static class MyTestCacheWriter extends TestCacheWriter implements Declarable {
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public boolean equals(Object o) {
       return o instanceof MyTestCacheWriter;
     }
   }
 
   /**
-   * A <code>TransactionListener</code> that is <code>Declarable</code>, but not
-   * <code>Declarable2</code>.
+   * A {@code TransactionListener} that is {@code Declarable}, but not {@code Declarable2}.
    */
   public static class MyTestTransactionListener extends TestTransactionListener
       implements Declarable {
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public boolean equals(Object o) {
       return o instanceof MyTestTransactionListener;
     }
   }
 
-
   /**
-   * A <code>CacheLoader</code> that is <code>Declarable</code> and has some interesting parameters.
+   * A {@code CacheLoader} that is {@code Declarable} and has some interesting parameters.
    */
   public static class CacheLoaderWithDeclarables implements CacheLoader, Declarable2 {
 
     /** This loader's properties */
-    private Properties props;
+    private final Properties props;
 
     /** Was this declarable initialized */
     private boolean initialized = false;
@@ -4703,7 +4571,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     }
 
     /**
-     * Returns whether or not this <code>Declarable</code> was initialized.
+     * Returns whether or not this {@code Declarable} was initialized.
      */
     public boolean isInitialized() {
       return this.initialized;

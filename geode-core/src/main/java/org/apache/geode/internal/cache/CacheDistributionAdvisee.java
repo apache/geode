@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -39,7 +38,7 @@ public interface CacheDistributionAdvisee extends DistributionAdvisee {
    * 
    * @return the Cache
    */
-  public Cache getCache();
+  public InternalCache getCache();
 
   /**
    * Returns the <code>RegionAttributes</code> associated with this advisee.

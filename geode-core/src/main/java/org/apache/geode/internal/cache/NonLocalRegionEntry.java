@@ -349,13 +349,6 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
             .toLocalizedString());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.internal.cache.RegionEntry#getSerializedValueOnDisk(org.apache.geode.internal.
-   * cache.LocalRegion)
-   */
   public Object getSerializedValueOnDisk(LocalRegion localRegion) {
     throw new UnsupportedOperationException(
         LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY

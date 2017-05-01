@@ -67,12 +67,15 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.LonerDistributionManager;
+import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessage;
@@ -83,10 +86,11 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.ArrayUtils;
 
@@ -375,9 +379,9 @@ public class AcceptorImpl extends Acceptor implements Runnable {
             .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY);
       }
 
-      final GemFireCacheImpl gc;
+      final InternalCache gc;
       if (getCachedRegionHelper() != null) {
-        gc = (GemFireCacheImpl) getCachedRegionHelper().getCache();
+        gc = getCachedRegionHelper().getCache();
       } else {
         gc = null;
       }
@@ -655,8 +659,7 @@ public class AcceptorImpl extends Acceptor implements Runnable {
               + this.localPort + " local port: " + this.serverSock.getLocalPort());
       this.selectorThread.start();
     }
-    GemFireCacheImpl myCache = (GemFireCacheImpl) cache;
-    Set<PartitionedRegion> prs = myCache.getPartitionedRegions();
+    Set<PartitionedRegion> prs = this.cache.getPartitionedRegions();
     for (PartitionedRegion pr : prs) {
       Map<Integer, BucketAdvisor.BucketProfile> profiles =
           new HashMap<Integer, BucketAdvisor.BucketProfile>();
@@ -957,7 +960,7 @@ public class AcceptorImpl extends Acceptor implements Runnable {
         {
           SystemFailure.checkFailure();
           // this.cache.getDistributedSystem().getCancelCriterion().checkCancelInProgress(null);
-          if (((GemFireCacheImpl) this.cache).isClosed()) { // bug 38834
+          if (this.cache.isClosed()) { // bug 38834
             break; // TODO should just ask cache's CancelCriterion
           }
           if (this.cache.getCancelCriterion().isCancelInProgress()) {
@@ -1559,9 +1562,8 @@ public class AcceptorImpl extends Acceptor implements Runnable {
   }
 
   private void notifyCacheMembersOfClose() {
-    GemFireCacheImpl myCache = (GemFireCacheImpl) cache;
-    if (!myCache.forcedDisconnect()) {
-      for (PartitionedRegion pr : myCache.getPartitionedRegions()) {
+    if (!this.cache.forcedDisconnect()) {
+      for (PartitionedRegion pr : this.cache.getPartitionedRegions()) {
         Map<Integer, BucketAdvisor.BucketProfile> profiles = new HashMap<>();
         // get all local real bucket advisors
         Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();

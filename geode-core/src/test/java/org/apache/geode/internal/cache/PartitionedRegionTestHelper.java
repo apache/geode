@@ -37,7 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 public class PartitionedRegionTestHelper
 
 {
-  static Cache cache = null;
+  static InternalCache cache = null;
 
   /**
    * This method creates a partitioned region with all the default values. The cache created is a
@@ -194,18 +194,18 @@ public class PartitionedRegionTestHelper
    * 
    * @return
    */
-  public static synchronized Cache createCache() {
+  public static synchronized InternalCache createCache() {
     if (cache == null) {
       Properties dsp = new Properties();
       dsp.setProperty(MCAST_PORT, "0");
       dsp.setProperty(LOCATORS, "");
       DistributedSystem sys = DistributedSystem.connect(dsp);
       try {
-        cache = CacheFactory.create(sys);
+        cache = (InternalCache) CacheFactory.create(sys);
       } catch (CacheExistsException exp) {
-        cache = CacheFactory.getInstance(sys);
+        cache = (InternalCache) CacheFactory.getInstance(sys);
       } catch (RegionExistsException rex) {
-        cache = CacheFactory.getInstance(sys);
+        cache = (InternalCache) CacheFactory.getInstance(sys);
       }
     }
     return cache;

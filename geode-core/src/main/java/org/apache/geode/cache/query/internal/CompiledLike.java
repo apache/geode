@@ -16,6 +16,8 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -27,43 +29,40 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
-/**
- * 
- *
- */
 public class CompiledLike extends CompiledComparison {
 
-  final static int WILDCARD_PERCENT = 0;
+  private static final Logger logger = LogService.getLogger();
 
-  final static int WILDCARD_UNDERSCORE = 1;
+  private static final int WILDCARD_PERCENT = 0;
 
-  private Object wildcardTypeKey = new Object();
+  private static final int WILDCARD_UNDERSCORE = 1;
 
-  private Object wildcardPositionKey = new Object();
+  private final Object wildcardTypeKey = new Object();
 
-  private Object patternLengthKey = new Object();
+  private final Object wildcardPositionKey = new Object();
 
-  final static String LOWEST_STRING = "";
+  private final Object patternLengthKey = new Object();
 
-  final static char BOUNDARY_CHAR = (char) 255;
+  static final String LOWEST_STRING = "";
 
-  final static char UNDERSCORE = '_';
+  private static final char BOUNDARY_CHAR = (char) 255;
 
-  final static char PERCENT = '%';
+  private static final char UNDERSCORE = '_';
 
-  final static char BACKSLASH = '\\';
+  private static final char PERCENT = '%';
+
+  private static final char BACKSLASH = '\\';
 
   private final CompiledValue var;
 
-  private Object isIndexEvaluatedKey = new Object();
+  private final Object isIndexEvaluatedKey = new Object();
 
-  // private final CompiledBindArgument bindArg;
   private final CompiledValue bindArg;
 
-  public CompiledLike(CompiledValue var, CompiledValue pattern) {
+  CompiledLike(CompiledValue var, CompiledValue pattern) {
     super(var, pattern, OQLLexerTokenTypes.TOK_EQ);
     this.var = var;
     this.bindArg = pattern;
@@ -122,13 +121,7 @@ public class CompiledLike extends CompiledComparison {
   /**
    * Expands the CompiledLike operands based on sargability into multiple CompiledComparisons
    * 
-   * @param context
    * @return The generated CompiledComparisons
-   * @throws AmbiguousNameException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws FunctionDomainException
-   * @throws QueryInvocationTargetException
    */
   CompiledComparison[] getExpandedOperandsWithIndexInfoSetIfAny(ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException,
@@ -159,9 +152,8 @@ public class CompiledLike extends CompiledComparison {
       }
     }
     if (IndexManager.testHook != null) {
-      if (GemFireCacheImpl.getInstance().getLogger().fineEnabled()) {
-        GemFireCacheImpl.getInstance().getLogger()
-            .fine("IndexManager TestHook is set in getExpandedOperandsWithIndexInfoSetIfAny.");
+      if (logger.isDebugEnabled()) {
+        logger.debug("IndexManager TestHook is set in getExpandedOperandsWithIndexInfoSetIfAny.");
       }
       IndexManager.testHook.hook(12);
     }
@@ -199,13 +191,10 @@ public class CompiledLike extends CompiledComparison {
     return result;
   }
 
-
   /**
    * Breaks down the like predicate (if sargable) into 2 or 3 CompiledComparisons based on the
    * presence of wildcard
    * 
-   * @param var
-   * @param pattern
    * @return The generated CompiledComparisons
    */
   CompiledComparison[] getRangeIfSargable(ExecutionContext context, CompiledValue var,
@@ -285,7 +274,7 @@ public class CompiledLike extends CompiledComparison {
   }
 
   private String getRegexPattern(String pattern) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean prevMetaChar = false;
     int len = pattern.length();
 
@@ -376,7 +365,6 @@ public class CompiledLike extends CompiledComparison {
    * Checks if index can be used for Strings with wildcards. Two wild cards are supported % and _.
    * The wildcard could be at any index position of the string.
    * 
-   * @param buffer
    * @return position of wildcard if sargable otherwise -1
    */
   int checkIfSargableAndRemoveEscapeChars(ExecutionContext context, StringBuffer buffer) {
@@ -405,22 +393,6 @@ public class CompiledLike extends CompiledComparison {
     return wildcardPosition;
   }
 
-  /*
-   * @Override public Object evaluate(ExecutionContext context) throws FunctionDomainException,
-   * TypeMismatchException, NameResolutionException, QueryInvocationTargetException { CompiledValue
-   * iterEvaluator = (CompiledValue)context.cacheGet(this.bindArg); if(iterEvaluator == null) {
-   * String pattern = (String)this.bindArg.evaluate(context); CompiledComparison[] cvs =
-   * getRangeIfSargable(this.var, pattern);
-   * 
-   * for (CompiledComparison cp : cvs) { cp.computeDependencies(context);
-   * 
-   * } if(cvs.length ==2 ) { iterEvaluator = new CompiledJunction(cvs,
-   * OQLLexerTokenTypes.LITERAL_and); }else { iterEvaluator = cvs[0]; }
-   * context.cachePut(this.bindArg, iterEvaluator);
-   * 
-   * } return iterEvaluator.evaluate(context); }
-   */
-
   @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
@@ -436,8 +408,6 @@ public class CompiledLike extends CompiledComparison {
             "Null values are not supported with LIKE predicate.");
       }
       pattern = Pattern.compile(getRegexPattern(strPattern), Pattern.MULTILINE | Pattern.DOTALL);
-      // GemFireCacheImpl.getInstance().getLogger().fine("### DEBUG : string :" + strPattern + "
-      // pattern :" + pattern.toString());
       context.cachePut(this.bindArg, pattern);
     }
     Object value = this.var.evaluate(context);

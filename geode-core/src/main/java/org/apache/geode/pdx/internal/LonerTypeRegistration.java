@@ -17,22 +17,19 @@ package org.apache.geode.pdx.internal;
 import java.util.Map;
 
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A type registration that is used for loners. In the loner case, we'll try to be helpful and not
  * decide what type registration to give the user until they actually use it.
- *
  */
 public class LonerTypeRegistration implements TypeRegistration {
 
   private volatile TypeRegistration delegate = null;
 
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
 
-
-  public LonerTypeRegistration(GemFireCacheImpl cache) {
+  public LonerTypeRegistration(InternalCache cache) {
     this.cache = cache;
   }
 
@@ -104,10 +101,9 @@ public class LonerTypeRegistration implements TypeRegistration {
    * Check to see if the current member is a loner and we can't tell if the user wants a peer or a
    * client type registry.
    * 
-   * @param cache
    * @return true if this member is a loner and we can't determine what type of registry they want.
    */
-  public static boolean isIndeterminateLoner(GemFireCacheImpl cache) {
+  public static boolean isIndeterminateLoner(InternalCache cache) {
     boolean isLoner = cache.getInternalDistributedSystem().isLoner();
     boolean pdxConfigured = cache.getPdxPersistent();
     return isLoner && !pdxConfigured/* && !hasGateways */;

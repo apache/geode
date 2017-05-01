@@ -44,8 +44,9 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   protected void process(DistributionManager dm) {
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if (cache != null && !cache.isClosed()) { // will be null if not initialized
+      InternalCache cache = GemFireCacheImpl.getInstance();
+      // will be null if not initialized
+      if (cache != null && !cache.isClosed()) {
         operateOnCache(cache);
       }
     } finally {
@@ -55,16 +56,16 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
       reply.setRecipient(getSender());
       try {
         dm.putOutgoing(reply);
-      } catch (CancelException e) {
+      } catch (CancelException ignore) {
         // can't send a reply, so ignore the exception
       }
     }
   }
 
-  private void operateOnCache(GemFireCacheImpl cache) {
+  private void operateOnCache(InternalCache cache) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    for (DistributedRegion r : this.getDistributedRegions(cache)) {
+    for (DistributedRegion r : getDistributedRegions(cache)) {
       CacheDistributionAdvisor cda = (CacheDistributionAdvisor) r.getDistributionAdvisor();
       CacheDistributionAdvisor.CacheProfile cp =
           (CacheDistributionAdvisor.CacheProfile) cda.getProfile(getSender());
@@ -91,16 +92,16 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   }
 
   /** set the hasCacheServer flags for all regions in this cache */
-  public void operateOnLocalCache(GemFireCacheImpl cache) {
+  public void operateOnLocalCache(InternalCache cache) {
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
-      for (LocalRegion r : this.getAllRegions(cache)) {
+      for (LocalRegion r : getAllRegions(cache)) {
         FilterProfile fp = r.getFilterProfile();
         if (fp != null) {
           fp.getLocalProfile().hasCacheServer = true;
         }
       }
-      for (PartitionedRegion r : this.getPartitionedRegions(cache)) {
+      for (PartitionedRegion r : getPartitionedRegions(cache)) {
         FilterProfile fp = r.getFilterProfile();
         if (fp != null) {
           fp.getLocalProfile().hasCacheServer = true;
@@ -112,13 +113,13 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   }
 
 
-  private Set<LocalRegion> getAllRegions(GemFireCacheImpl gfc) {
-    return gfc.getAllRegions();
+  private Set<LocalRegion> getAllRegions(InternalCache internalCache) {
+    return internalCache.getAllRegions();
   }
 
-  private Set<DistributedRegion> getDistributedRegions(GemFireCacheImpl gfc) {
-    Set<DistributedRegion> result = new HashSet();
-    for (LocalRegion r : gfc.getAllRegions()) {
+  private Set<DistributedRegion> getDistributedRegions(InternalCache internalCache) {
+    Set<DistributedRegion> result = new HashSet<>();
+    for (LocalRegion r : internalCache.getAllRegions()) {
       if (r instanceof DistributedRegion) {
         result.add((DistributedRegion) r);
       }
@@ -126,14 +127,14 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
     return result;
   }
 
-  private Set<PartitionedRegion> getPartitionedRegions(GemFireCacheImpl gfc) {
-    Set<PartitionedRegion> result = new HashSet(gfc.getPartitionedRegions());
-    return result;
+  private Set<PartitionedRegion> getPartitionedRegions(InternalCache internalCache) {
+    return (Set<PartitionedRegion>) new HashSet(internalCache.getPartitionedRegions());
   }
 
   /** for deserialization only */
   public AddCacheServerProfileMessage() {}
 
+  @Override
   public int getDSFID() {
     return ADD_CACHESERVER_PROFILE_UPDATE;
   }

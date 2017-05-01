@@ -14,6 +14,30 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheClosedException;
@@ -42,16 +66,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Specialized {@link CacheDistributionAdvisor} for {@link BucketRegion BucketRegions}. The
@@ -1452,7 +1466,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         for (;;) {
           // bail out if the system starts closing
           this.getAdvisee().getCancelCriterion().checkCancelInProgress(null);
-          final GemFireCacheImpl cache = (GemFireCacheImpl) getBucket().getCache();
+          final InternalCache cache = getBucket().getCache();
           if (cache != null && cache.isCacheAtShutdownAll()) {
             throw new CacheClosedException("Cache is shutting down");
           }
@@ -1727,9 +1741,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   @Override
   protected Profile instantiateProfile(InternalDistributedMember memberId, int version) {
     if (!this.pRegion.isShadowPR()) {
-      GemFireCacheImpl c = getProxyBucketRegion().getCache();
+      InternalCache cache = getProxyBucketRegion().getCache();
       List servers = null;
-      servers = c.getCacheServers();
+      servers = cache.getCacheServers();
 
       HashSet<BucketServerLocation66> serverLocations = new HashSet<BucketServerLocation66>();
       for (Object object : servers) {

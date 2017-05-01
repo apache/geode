@@ -12,33 +12,70 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * IndexManager.java
- *
- * Created on February 15, 2005, 11:49 AM
- */
 package org.apache.geode.cache.query.internal.index;
+
+import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.IndexMaintenanceException;
+import org.apache.geode.cache.query.IndexNameConflictException;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.CompiledPath;
+import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.MapIndexable;
+import org.apache.geode.cache.query.internal.NullToken;
+import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.QueryObserver;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.HasCachePerfStats;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.logging.log4j.Logger;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
-
-/**
- */
 public class IndexManager {
   private static final Logger logger = LogService.getLogger();
 
@@ -69,8 +106,7 @@ public class IndexManager {
 
   // Threshold for Queue.
   private final int INDEX_MAINTENANCE_BUFFER =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", -1)
-          .intValue();
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", -1);
 
   public static boolean JOIN_OPTIMIZATION =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "index.DisableJoinOptimization");
@@ -91,18 +127,14 @@ public class IndexManager {
    * without this the old-values are not removed from the index-maps thus resulting in inconsistent
    * results.
    */
-  public static final boolean INPLACE_OBJECT_MODIFICATION = Boolean
-      .valueOf(System.getProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "index.INPLACE_OBJECT_MODIFICATION", "false"))
-      .booleanValue();
+  public static final boolean INPLACE_OBJECT_MODIFICATION = Boolean.valueOf(System.getProperty(
+      DistributionConfig.GEMFIRE_PREFIX + "index.INPLACE_OBJECT_MODIFICATION", "false"));
 
   /**
    * System property to turn-off the compact-index support.
    */
-  public static final boolean RANGEINDEX_ONLY = Boolean
-      .valueOf(
-          System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "index.RANGEINDEX_ONLY", "false"))
-      .booleanValue();
+  public static final boolean RANGEINDEX_ONLY = Boolean.valueOf(
+      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "index.RANGEINDEX_ONLY", "false"));
 
   /** For test purpose only */
   public static boolean TEST_RANGEINDEX_ONLY = false;
@@ -149,7 +181,6 @@ public class IndexManager {
    * This is a fix for #47475
    * 
    * @param operationTime the last modified time from version tag
-   * @param currentCacheTime
    */
   public static boolean setIndexBufferTime(long operationTime, long currentCacheTime) {
     long timeDifference = currentCacheTime - operationTime;
@@ -179,20 +210,12 @@ public class IndexManager {
    * underneath could change.
    * 
    * Small amounts of false positives are ok as it will have a slight impact on performance
-   * 
-   * @param queryStartTime
-   * @param lastModifiedTime
    */
   public static boolean needsRecalculation(long queryStartTime, long lastModifiedTime) {
     return ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION
         && queryStartTime <= SAFE_QUERY_TIME.get() - queryStartTime + lastModifiedTime;
   }
 
-  /**
-   * 
-   * @param value
-   * @param newValue
-   */
   private static boolean setNewLargestValue(AtomicLong value, long newValue) {
     boolean done = false;
     while (!done) {
@@ -253,7 +276,7 @@ public class IndexManager {
     DefaultQuery.setPdxReadSerialized(this.region.getCache(), true);
 
     TXStateProxy tx = null;
-    if (!((GemFireCacheImpl) this.region.getCache()).isClient()) {
+    if (!((InternalCache) this.region.getCache()).isClient()) {
       tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).internalSuspend();
     }
 
@@ -278,13 +301,14 @@ public class IndexManager {
       }
       if (indexType != IndexType.PRIMARY_KEY) {
         helper = new FunctionalIndexCreationHelper(origFromClause, origIndexedExpression,
-            projectionAttributes, imports, region.getCache(), externalContext, this);
+            projectionAttributes, imports, (InternalCache) region.getCache(), externalContext,
+            this);
         // Asif: For now support Map index as non compact .expand later
         // The limitation for compact range index also apply to hash index for now
         isCompactOrHash = shouldCreateCompactIndex((FunctionalIndexCreationHelper) helper);
       } else if (indexType == IndexType.PRIMARY_KEY) {
         helper = new PrimaryKeyIndexCreationHelper(origFromClause, origIndexedExpression,
-            projectionAttributes, region.getCache(), externalContext, this);
+            projectionAttributes, (InternalCache) region.getCache(), externalContext, this);
       } else {
         throw new AssertionError("Don't know how to set helper for " + indexType);
       }
@@ -356,7 +380,7 @@ public class IndexManager {
           if (!(oldIndex instanceof Index)) {
             // Some other thread is creating the same index.
             // Wait for index to be initialized from other thread.
-            ((FutureTask) oldIndex).get();
+            ((Future) oldIndex).get();
           }
 
           // The Index is successfully created, throw appropriate error message
@@ -370,7 +394,7 @@ public class IndexManager {
                 LocalizedStrings.IndexManager_SIMILAR_INDEX_EXISTS.toLocalizedString());
           }
         }
-      } catch (InterruptedException ie) {
+      } catch (InterruptedException ignored) {
         interrupted = true;
       } catch (ExecutionException ee) {
         Throwable c = ee.getCause();
@@ -504,9 +528,6 @@ public class IndexManager {
    * @param indexedExpression the indexedExpression for the index
    * @param context ExecutionContext
    * @return the sole index of the region with these parameters, or null if there isn't one
-   * @throws NameResolutionException
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
    */
   public IndexData getIndex(IndexType indexType, String[] definitions,
       CompiledValue indexedExpression, ExecutionContext context)
@@ -514,7 +535,7 @@ public class IndexManager {
     IndexData indxData = null;
     int qItrSize = definitions.length;
     Iterator it = this.indexes.values().iterator();
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     indexedExpression.generateCanonicalizedExpression(sb, context);
     String indexExprStr = sb.toString();
     while (it.hasNext()) {
@@ -569,9 +590,6 @@ public class IndexManager {
    *        created
    * @param context ExecutionContext object
    * @return IndexData object
-   * @throws NameResolutionException
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
    */
   public IndexData getBestMatchIndex(IndexType indexType, String[] definitions,
       CompiledValue indexedExpression, ExecutionContext context)
@@ -584,7 +602,7 @@ public class IndexManager {
     int qItrSize = definitions.length;
     int bestIndexMatchLevel = qItrSize;
     Iterator iter = this.indexes.values().iterator();
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     indexedExpression.generateCanonicalizedExpression(sb, context);
     String indexExprStr = sb.toString();
     PartitionedIndex prIndex = null;
@@ -632,7 +650,7 @@ public class IndexManager {
             }
 
             prIndex.verifyAndCreateMissingIndex(context.getBucketList());
-          } catch (Exception ex) {
+          } catch (Exception ignored) {
             // Index is not there on all buckets.
             // ignore this index.
             prIndex.releaseIndexReadLockForRemove();
@@ -784,9 +802,8 @@ public class IndexManager {
       Index index = (Index) ind;
 
       // Check if indexType needs to be matched.
-      if (indexType == null) { // No type check.
-        list.add(index);
-      } else if (index.getType() == indexType) {
+      if (indexType == null || index.getType() == indexType) {
+        // No type check.
         list.add(index);
       }
     }
@@ -802,7 +819,6 @@ public class IndexManager {
     return getIndexes(null);
   }
 
-  // @todo need more specific list of exceptions
   /**
    * Remove the specified index.
    * 
@@ -858,8 +874,6 @@ public class IndexManager {
    * Index Initialization query on the region & before doing this it makes theexisting data maps
    * null. This is needed so that index does not miss any entry being put in the region when the
    * Region.clear is in progress
-   * 
-   * @throws QueryException
    */
   public void rerunIndexCreationQuery() throws QueryException {
     try {
@@ -954,7 +968,6 @@ public class IndexManager {
     updateIndexes(entry, action, opCode, false);
   }
 
-  // @todo need more specific list of exceptions
   /**
    * Callback for IndexManager to update indexes Called from AbstractRegionMap.
    * 
@@ -962,7 +975,6 @@ public class IndexManager {
    * @param action action to be taken (IndexManager.ADD_ENTRY, IndexManager.UPDATE_ENTRY,
    *        IndexManager.REMOVE_ENTRY)
    * @param opCode one of IndexProtocol.OTHER_OP, BEFORE_UPDATE_OP, AFTER_UPDATE_OP.
-   * @throws org.apache.geode.cache.query.IndexMaintenanceException
    */
   public void updateIndexes(RegionEntry entry, int action, int opCode,
       boolean isDiskRecoveryInProgress) throws QueryException {
@@ -992,7 +1004,7 @@ public class IndexManager {
     final long startPA = getCachePerfStats().startIndexUpdate();
     DefaultQuery.setPdxReadSerialized(this.region.getCache(), true);
     TXStateProxy tx = null;
-    if (!((GemFireCacheImpl) this.region.getCache()).isClient()) {
+    if (!((InternalCache) this.region.getCache()).isClient()) {
       tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).internalSuspend();
     }
 
@@ -1084,7 +1096,7 @@ public class IndexManager {
 
             if (((AbstractIndex) index).isPopulated() && index.getType() != IndexType.PRIMARY_KEY) {
               if (logger.isDebugEnabled()) {
-                logger.debug("Updating index: {}{} value: ", index.getName(),
+                logger.debug("Updating index: {}{} value: {}", index.getName(),
                     this.region.getFullPath(), entry.getKey());
               }
               start = ((AbstractIndex) index).updateIndexUpdateStats();
@@ -1154,7 +1166,7 @@ public class IndexManager {
         boolean interrupted = Thread.interrupted();
         try {
           indexes.wait();
-        } catch (InterruptedException ie) {
+        } catch (InterruptedException ignored) {
           interrupted = true;
         } finally {
           if (interrupted) {
@@ -1233,7 +1245,7 @@ public class IndexManager {
         boolean interrupted = Thread.interrupted();
         try {
           this.indexes.wait();
-        } catch (InterruptedException ie) {
+        } catch (InterruptedException ignored) {
           interrupted = true;
         } finally {
           if (interrupted) {
@@ -1263,7 +1275,7 @@ public class IndexManager {
   }
 
   private CachePerfStats getCachePerfStats() {
-    return ((LocalRegion) this.region).getCachePerfStats();
+    return ((HasCachePerfStats) this.region).getCachePerfStats();
   }
 
   /**
@@ -1280,7 +1292,6 @@ public class IndexManager {
    * {@link PartitionedIndex}.
    * 
    * @param prRegion the partition region that this bucket belongs to
-   * @throws QueryException
    */
   public void removeBucketIndexes(PartitionedRegion prRegion) throws QueryException {
     IndexManager parentManager = prRegion.getIndexManager();
@@ -1298,7 +1309,7 @@ public class IndexManager {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Iterator iter = this.indexes.values().iterator();
     while (iter.hasNext()) {
       Object ind = iter.next();
@@ -1307,7 +1318,7 @@ public class IndexManager {
       if (ind instanceof FutureTask) {
         continue;
       }
-      sb.append(((Index) ind).toString()).append('\n');
+      sb.append(ind).append(getLineSeparator());
     }
     return sb.toString();
   }
@@ -1340,7 +1351,7 @@ public class IndexManager {
     String str = null;
     synchronized (canonicalizedIteratorNameMap) {
       if ((str = (String) this.canonicalizedIteratorNameMap.get(definition)) == null) {
-        str = new StringBuffer("index_iter").append(this.getIncrementedCounter()).toString();
+        str = new StringBuilder("index_iter").append(this.getIncrementedCounter()).toString();
         String temp;
         if ((temp =
             (String) this.canonicalizedIteratorNameMap.putIfAbsent(definition, str)) != null) {
@@ -1365,7 +1376,6 @@ public class IndexManager {
    * Asif : Given a definition returns the canonicalized iterator name for the definition. If the
    * definition does not exist , null is returned
    * 
-   * @param definition
    * @return String
    */
   public String getCanonicalizedIteratorName(String definition) {
@@ -1384,9 +1394,6 @@ public class IndexManager {
 
     /**
      * Creates instance of IndexUpdaterThread
-     * 
-     * @param updateThreshold
-     * @param threadName
      */
     IndexUpdaterThread(ThreadGroup group, int updateThreshold, String threadName) {
       super(group, threadName);
@@ -1403,9 +1410,9 @@ public class IndexManager {
 
     public void addTask(int action, RegionEntry entry, int opCode) {
       Object[] task = new Object[3];
-      task[0] = Integer.valueOf(action);
+      task[0] = action;
       task[1] = entry;
-      task[2] = Integer.valueOf(opCode); // !!!:ezoerner:20081029 change to valueOf jdk 1.5+
+      task[2] = opCode;
       pendingTasks.add(task);
     }
 
@@ -1454,9 +1461,9 @@ public class IndexManager {
     }
 
     private void updateIndexes(Object[] task) {
-      int action = ((Integer) task[0]).intValue();
+      int action = (Integer) task[0];
       RegionEntry entry = (RegionEntry) task[1];
-      int opCode = ((Integer) task[2]).intValue();
+      int opCode = (Integer) task[2];
       // System.out.println("entry = "+entry.getKey());
       if (entry != null || action == RECREATE_INDEX) {
         try {
@@ -1535,6 +1542,7 @@ public class IndexManager {
 
     @Override
     public boolean equals(Object other) {
+      // TODO: equals should check the class of its parameter
       if (other == null) {
         return false;
       }
@@ -1549,6 +1557,7 @@ public class IndexManager {
       }
 
       String[] indexDefinitions = this.helper.getCanonicalizedIteratorDefinitions();
+      // TODO: avoid object creation in equals
       int[] mapping = new int[indexDefinitions.length];
       // compare index based on its type, expression and definition.
       if (compareIndexData(this.indexType, indexDefinitions,

@@ -14,6 +14,15 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheRuntimeException;
@@ -22,15 +31,8 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.*;
-
-// import org.apache.geode.internal.*;
 
 /**
  * This class is an implementation of the {@link CacheInfo} interface.
@@ -54,14 +56,14 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
   /** Is this is a cache server? */
   private boolean isServer;
 
-  public RemoteCacheInfo(GemFireCacheImpl c) {
-    this.name = c.getName();
-    this.id = System.identityHashCode(c);
-    this.closed = c.isClosed();
-    this.lockTimeout = c.getLockTimeout();
-    this.lockLease = c.getLockLease();
-    this.searchTimeout = c.getSearchTimeout();
-    this.upTime = c.getUpTime();
+  public RemoteCacheInfo(InternalCache internalCache) {
+    this.name = internalCache.getName();
+    this.id = System.identityHashCode(internalCache);
+    this.closed = internalCache.isClosed();
+    this.lockTimeout = internalCache.getLockTimeout();
+    this.lockLease = internalCache.getLockLease();
+    this.searchTimeout = internalCache.getSearchTimeout();
+    this.upTime = internalCache.getUpTime();
     if (this.closed) {
       this.rootRegionNames = null;
       this.perfStats = null;
@@ -71,16 +73,15 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
       try {
         final Set roots;
         if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
-          roots = c.rootRegions();
+          roots = internalCache.rootRegions();
         } else {
-          roots = c.rootRegions(true);
+          roots = internalCache.rootRegions(true);
         }
 
         String[] rootNames = new String[roots.size()];
         int idx = 0;
-        Iterator it = roots.iterator();
-        while (it.hasNext()) {
-          Region r = (Region) it.next();
+        for (Object root : roots) {
+          Region r = (Region) root;
           rootNames[idx] = r.getName();
           idx++;
         }
@@ -88,28 +89,30 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
       } catch (CacheRuntimeException ignore) {
         this.rootRegionNames = null;
       }
-      this.perfStats = new RemoteStatResource(c.getCachePerfStats().getStats());
+      this.perfStats = new RemoteStatResource(internalCache.getCachePerfStats().getStats());
 
       // Note that since this is only a snapshot, so no synchronization
       // on allBridgeServersLock is needed.
-      Collection bridges = c.getCacheServers();
+      Collection<CacheServer> bridges = internalCache.getCacheServers();
       this.bridgeServerIds = new int[bridges.size()];
-      Iterator iter = bridges.iterator();
+      Iterator<CacheServer> iter = bridges.iterator();
       for (int i = 0; iter.hasNext(); i++) {
-        CacheServer bridge = (CacheServer) iter.next();
+        CacheServer bridge = iter.next();
         this.bridgeServerIds[i] = System.identityHashCode(bridge);
       }
 
-      this.isServer = c.isServer();
+      this.isServer = internalCache.isServer();
     }
   }
 
   /**
    * For use only by DataExternalizable mechanism
    */
-  public RemoteCacheInfo() {}
+  public RemoteCacheInfo() {
+    // do nothing
+  }
 
-
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     out.writeInt(this.id);
@@ -124,6 +127,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     out.writeBoolean(this.isServer);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this.id = in.readInt();
@@ -139,34 +143,42 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
   }
 
   // CacheInfo interface methods
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public int getId() {
     return this.id;
   }
 
+  @Override
   public boolean isClosed() {
     return this.closed;
   }
 
+  @Override
   public int getLockTimeout() {
     return this.lockTimeout;
   }
 
+  @Override
   public int getLockLease() {
     return this.lockLease;
   }
 
+  @Override
   public int getSearchTimeout() {
     return this.searchTimeout;
   }
 
+  @Override
   public int getUpTime() {
     return this.upTime;
   }
 
+  @Override
   public synchronized Set getRootRegionNames() {
     if (this.rootRegionNames == null) {
       return null;
@@ -175,19 +187,23 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     }
   }
 
+  @Override
   public StatResource getPerfStats() {
     return this.perfStats;
   }
 
+  @Override
   public synchronized void setClosed() {
     this.closed = true;
     this.rootRegionNames = null;
   }
 
+  @Override
   public int[] getBridgeServerIds() {
     return this.bridgeServerIds;
   }
 
+  @Override
   public boolean isServer() {
     return this.isServer;
   }
@@ -203,6 +219,6 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
   @Override
   public String toString() {
     return LocalizedStrings.RemoteCacheInfo_INFORMATION_ABOUT_THE_CACHE_0_WITH_1_BRIDGE_SERVERS
-        .toLocalizedString(new Object[] {this.name, Integer.valueOf(this.bridgeServerIds.length)});
+        .toLocalizedString(this.name, this.bridgeServerIds.length);
   }
 }

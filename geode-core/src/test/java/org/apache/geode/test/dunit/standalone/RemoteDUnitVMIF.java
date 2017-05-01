@@ -21,12 +21,12 @@ import hydra.MethExecutorResult;
 
 public interface RemoteDUnitVMIF extends Remote {
 
-  MethExecutorResult executeMethodOnObject(Object o, String methodName) throws RemoteException;
+  MethExecutorResult executeMethodOnObject(Object target, String methodName) throws RemoteException;
 
-  MethExecutorResult executeMethodOnObject(Object o, String methodName, Object[] args)
+  MethExecutorResult executeMethodOnObject(Object target, String methodName, Object[] args)
       throws RemoteException;
 
-  MethExecutorResult executeMethodOnClass(String name, String methodName, Object[] args)
+  MethExecutorResult executeMethodOnClass(String className, String methodName, Object[] args)
       throws RemoteException;
 
   void shutDownVM() throws RemoteException;

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.cache.query.internal.index;
 
 import static org.junit.Assert.assertEquals;
@@ -52,15 +49,13 @@ import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class RangeIndexAPIJUnitTest {
+
   private Region region = null;
 
   @Before
-  public void setUp() throws java.lang.Exception {
+  public void setUp() throws Exception {
     CacheUtils.startCache();
     IndexManager.ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION = false;
     region = CacheUtils.createRegion("portfolios", Portfolio.class);
@@ -77,7 +72,7 @@ public class RangeIndexAPIJUnitTest {
   }
 
   @After
-  public void tearDown() throws java.lang.Exception {
+  public void tearDown() throws Exception {
     IndexManager.ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION = true;
     CacheUtils.closeCache();
   }
@@ -132,8 +127,6 @@ public class RangeIndexAPIJUnitTest {
    * of RangeJunctionCondnEvaluator. Such null or undefined conditions are treated as separate
    * filter operands. This test checks the query method of Index which takes a set of keys which
    * need to be removed from the set
-   * 
-   * @throws Exception
    */
   @Test
   public void testQueryMethod_2() throws Exception {

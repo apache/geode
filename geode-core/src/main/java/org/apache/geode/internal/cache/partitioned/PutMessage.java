@@ -44,7 +44,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.CachedDeserializable;
-import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -58,7 +57,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RemotePutMessage;
-import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -67,7 +65,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.geode.internal.util.BlobHelper;
 
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
@@ -826,7 +823,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
 
 
   @Override
-  protected final void appendFields(StringBuffer buff) {
+  protected final void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(getKey()).append("; value=");
     // buff.append(getValBytes());

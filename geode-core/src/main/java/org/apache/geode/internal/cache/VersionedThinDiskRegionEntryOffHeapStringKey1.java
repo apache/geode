@@ -148,7 +148,7 @@ public class VersionedThinDiskRegionEntryOffHeapStringKey1
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -31,12 +28,13 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
@@ -58,7 +56,6 @@ import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.geode.i18n.StringId;
 
 public class GatewayReceiverCommand extends BaseCommand {
 
@@ -71,8 +68,8 @@ public class GatewayReceiverCommand extends BaseCommand {
   private GatewayReceiverCommand() {}
 
   private void handleRegionNull(ServerConnection servConn, String regionName, int batchId) {
-    GemFireCacheImpl gfc = (GemFireCacheImpl) servConn.getCachedRegionHelper().getCache();
-    if (gfc != null && gfc.isCacheAtShutdownAll()) {
+    InternalCache cache = servConn.getCachedRegionHelper().getCache();
+    if (cache != null && cache.isCacheAtShutdownAll()) {
       throw new CacheClosedException("Shutdown occurred during message processing");
     } else {
       String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_CREATE_REQUEST_0
@@ -808,12 +805,10 @@ public class GatewayReceiverCommand extends BaseCommand {
     if (key instanceof EnumId) {
       EnumId enumId = (EnumId) key;
       value = BlobHelper.deserializeBlob((byte[]) value);
-      ((GemFireCacheImpl) crHelper.getCache()).getPdxRegistry().addRemoteEnum(enumId.intValue(),
-          (EnumInfo) value);
+      crHelper.getCache().getPdxRegistry().addRemoteEnum(enumId.intValue(), (EnumInfo) value);
     } else {
       value = BlobHelper.deserializeBlob((byte[]) value);
-      ((GemFireCacheImpl) crHelper.getCache()).getPdxRegistry().addRemoteType((int) key,
-          (PdxType) value);
+      crHelper.getCache().getPdxRegistry().addRemoteType((int) key, (PdxType) value);
     }
     return true;
   }
@@ -867,7 +862,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             servConn.getName()), be);
       }
     }
-
   }
 
   private static void writeFatalException(Message origMsg, Throwable exception,

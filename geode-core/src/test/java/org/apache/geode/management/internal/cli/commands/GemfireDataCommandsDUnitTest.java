@@ -14,17 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotEquals;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertNotSame;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -43,6 +54,7 @@ import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -74,21 +86,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
@@ -133,7 +130,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   final static int COUNT = 5;
 
   public String getMemberId() {
-    Cache cache = getCache();
+    InternalCache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
@@ -148,7 +145,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
-        Cache cache = getCache();
+        InternalCache cache = getCache();
         RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
         Region dataRegion = regionFactory.create(DATA_REGION_NAME);
         assertNotNull(dataRegion);
@@ -185,7 +182,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
     vm2.invoke(new SerializableRunnable() {
       public void run() {
-        Cache cache = getCache();
+        InternalCache cache = getCache();
         RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
         Region dataRegion = regionFactory.create(DATA_REGION_NAME);
         assertNotNull(dataRegion);
@@ -231,7 +228,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     SerializableRunnable checkRegionMBeans = new SerializableRunnable() {
       @Override
       public void run() {
-        Cache cache = getCache();
+        InternalCache cache = getCache();
         final ManagementService service = ManagementService.getManagementService(cache);
 
         final WaitCriterion waitForMaangerMBean = new WaitCriterion() {
@@ -396,7 +393,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
   private void doQueryRegionsAssociatedMembers(String queryTemplate, int expectedMembers,
       boolean returnAll, String... regions) {
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
 
     String query = queryTemplate;
     int i = 1;
@@ -618,8 +615,8 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     testGetPutLocateEntryFromShellAndGemfire(doubleKey, doubleValue, Double.class, true, true);
   }
 
-  private void testGetPutLocateEntryFromShellAndGemfire(final Object key, final Object value,
-      Class klass, boolean addRegionPath, boolean expResult) {
+  private void testGetPutLocateEntryFromShellAndGemfire(final Serializable key,
+      final Serializable value, Class klass, boolean addRegionPath, boolean expResult) {
 
     final VM vm1 = Host.getHost(0).getVM(1);
 
@@ -1045,7 +1042,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
     vm1.invoke(checkPutIfAbsentKeys);
     vm2.invoke(checkPutIfAbsentKeys);
-
   }
 
   @Category(FlakyTest.class) // GEODE-1496 (http)
@@ -1194,7 +1190,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       validateResult(cmdResult, true);
       validateLocationsResult(cmdResult, 6); // 3 Regions X 2 members = 6
     }
-
   }
 
   @Test
@@ -1533,7 +1528,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       command = command + " " + "--key=" + keyJson + " --value=" + valueJson + " --region="
           + DATA_REGION_NAME_PATH;
       command = command + " --key-class=" + Key1.class.getCanonicalName() + " --value-class="
-          + Value2.class.getCanonicalName();;
+          + Value2.class.getCanonicalName();
       CommandResult cmdResult = executeCommand(command);
       printCommandOutput(cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -1563,7 +1558,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       command = command + " " + "--key=" + keyJson + " --value=" + valueJson + " --region="
           + DATA_REGION_NAME_PATH;
       command = command + " --key-class=" + Key1.class.getCanonicalName() + " --value-class="
-          + Car.class.getCanonicalName();;
+          + Car.class.getCanonicalName();
       CommandResult cmdResult = executeCommand(command);
       printCommandOutput(cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -1775,14 +1770,14 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
         }
       });
 
-      /**
+      /*
        * Add CacheListener
        */
 
       manager.invoke(addCacheListenerInvocations(regionName));
       vm1.invoke(addCacheListenerInvocations(regionName));
 
-      /**
+      /*
        * Import the data
        */
 
@@ -1799,7 +1794,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       getLogWriter().info(resultAsString);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
-      /**
+      /*
        * Validate the region entries after import They must match the entries before export
        */
 
@@ -1812,14 +1807,14 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
         }
       });
 
-      /**
+      /*
        * Verify callbacks were not invoked
        */
 
       manager.invoke(verifyCacheListenerInvocations(regionName, false));
       vm1.invoke(verifyCacheListenerInvocations(regionName, false));
 
-      /**
+      /*
        * Import the data with invokeCallbacks=true
        */
 
@@ -1842,7 +1837,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       commandResultToString(cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
-      /**
+      /*
        * Verify callbacks were invoked
        */
 
@@ -2272,7 +2267,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   }
 
   public void waitForListClientMbean(final String regionName) {
-
     final VM manager = Host.getHost(0).getVM(0);
 
     manager.invoke(new SerializableRunnable() {
@@ -2332,7 +2326,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testRegionsViaMbeanAndFunctions() {
-
     setupForGetPutRemoveLocateEntry("tesSimplePut");
     waitForListClientMbean(DATA_REGION_NAME_PATH);
     final VM manager = Host.getHost(0).getVM(0);
@@ -2360,7 +2353,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
     String memSizeFromFunctionCall = (String) manager.invoke(new SerializableCallable() {
       public Object call() {
-        Cache cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = GemFireCacheImpl.getInstance();
         CliUtil.getMembersForeRegionViaFunction(cache, DATA_REGION_NAME_PATH, true);
         return ""
             + CliUtil.getMembersForeRegionViaFunction(cache, DATA_REGION_NAME_PATH, true).size();
@@ -2403,7 +2396,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
     String memSizeFromFunctionCall = (String) manager.invoke(new SerializableCallable() {
       public Object call() {
-        Cache cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = GemFireCacheImpl.getInstance();
         return ""
             + CliUtil.getMembersForeRegionViaFunction(cache, REBALANCE_REGION_NAME, true).size();
       }

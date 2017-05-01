@@ -51,7 +51,7 @@ public class TXManagerImplTest {
 
   @Before
   public void setUp() {
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     dm = mock(DistributionManager.class);
     txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache);
     txid = new TXId(null, 0);

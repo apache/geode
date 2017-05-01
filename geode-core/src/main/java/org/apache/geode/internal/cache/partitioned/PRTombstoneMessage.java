@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -113,7 +112,7 @@ public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; keys=").append(this.keys.size());
     buff.append("; eventID=").append(this.eventID);

@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
@@ -62,7 +60,7 @@ public class ShowMissingDiskStoresFunction extends FunctionAdapter implements In
           }
         }
         // Missing colocated regions
-        Set<PartitionedRegion> prs = ((GemFireCacheImpl) cache).getPartitionedRegions();
+        Set<PartitionedRegion> prs = cache.getPartitionedRegions();
         for (PartitionedRegion pr : prs) {
           List<String> missingChildRegions = pr.getMissingColocatedChildren();
           for (String child : missingChildRegions) {
@@ -96,4 +94,3 @@ public class ShowMissingDiskStoresFunction extends FunctionAdapter implements In
     return getClass().getName();
   }
 }
-

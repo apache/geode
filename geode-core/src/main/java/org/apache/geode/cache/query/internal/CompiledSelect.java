@@ -45,15 +45,11 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
-/**
- * Class Description
- * 
- * @version $Revision: 1.2 $
- */
 public class CompiledSelect extends AbstractCompiledValue {
 
   protected List<CompiledSortCriterion> orderByAttrs; // order by attributes: list of CompiledValue
@@ -63,9 +59,9 @@ public class CompiledSelect extends AbstractCompiledValue {
   // 0 is projection name, 1 is the CompiledValue for the expression
   private boolean distinct;
   private boolean count;
-  // Asif: limits the SelectResults by the number specified.
+  // limits the SelectResults by the number specified.
   private CompiledValue limit;
-  // Shobhit: counts the no of results satisfying where condition for
+  // counts the no of results satisfying where condition for
   // count(*) non-distinct queries where no indexes are used.
   private int countStartQueryResult = 0;
 
@@ -177,7 +173,7 @@ public class CompiledSelect extends AbstractCompiledValue {
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     // bind iterators in new scope in order to determine dependencies
-    context.cachePut(scopeID, context.assosciateScopeID());
+    context.cachePut(scopeID, context.associateScopeID());
     context.newScope((Integer) context.cacheGet(scopeID));
     context.pushExecCache((Integer) context.cacheGet(scopeID));
     try {
@@ -240,11 +236,6 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   /**
    * Transforms the group by clause into distinct order by clause, if possible
-   * 
-   * @param context
-   * @throws AmbiguousNameException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
    */
   private void transformGroupByIfPossible(ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
@@ -268,8 +259,8 @@ public class CompiledSelect extends AbstractCompiledValue {
       }
 
       boolean shouldTransform = true;
-      StringBuffer lhsBuffer = new StringBuffer();
-      StringBuffer rhsBuffer = new StringBuffer();
+      StringBuilder lhsBuffer = new StringBuilder();
+      StringBuilder rhsBuffer = new StringBuilder();
 
       outer: for (int i = 0; i < projAttribs.size(); ++i) {
         Object[] prj = (Object[]) TypeUtils.checkCast(projAttribs.get(i), Object[].class);
@@ -336,7 +327,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       while (iter.hasNext()) {
         CompiledSortCriterion csc = iter.next();
 
-        // Asif: Ideally for replicated regions, the requirement that
+        // Ideally for replicated regions, the requirement that
         // projected columns should
         // contain order by fields ( directly or derivable on it),
         // is not needed. But for PR , the query gathers only projected
@@ -354,9 +345,8 @@ public class CompiledSelect extends AbstractCompiledValue {
     }
   }
 
-
   private void evalCanonicalizedExpressionForCSC(CompiledSortCriterion csc,
-      ExecutionContext context, StringBuffer buffer)
+      ExecutionContext context, StringBuilder buffer)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     csc.getExpr().generateCanonicalizedExpression(buffer, context);
   }
@@ -370,7 +360,7 @@ public class CompiledSelect extends AbstractCompiledValue {
    * 
    * @return the empty result set of the appropriate type
    */
-  public SelectResults getEmptyResultSet(Object[] parameters, Cache cache, Query query)
+  public SelectResults getEmptyResultSet(Object[] parameters, InternalCache cache, Query query)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     ExecutionContext context = new QueryExecutionContext(parameters, cache, query);
@@ -420,10 +410,10 @@ public class CompiledSelect extends AbstractCompiledValue {
         CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
-        // Asif . Ideally the function below should always be called after binding has occurred
-        // So that the interal ID gets set during binding to the scope. If not so then chances
-        // are that internal_id is still null causing index_interanl_id to be null.
-        // Though in our case it may not be an issue as the compute depedency phase must have
+        // Ideally the function below should always be called after binding has occurred
+        // So that the internal ID gets set during binding to the scope. If not so then chances
+        // are that internal_id is still null causing index_internal_id to be null.
+        // Though in our case it may not be an issue as the compute dependency phase must have
         // already set the index id
       }
       Integer limitValue = evaluateLimitValue(context, this.limit);
@@ -453,7 +443,7 @@ public class CompiledSelect extends AbstractCompiledValue {
             throw new TypeMismatchException(
                 LocalizedStrings.CompiledSelect_THE_WHERE_CLAUSE_WAS_TYPE_0_INSTEAD_OF_BOOLEAN
                     .toLocalizedString(b.getClass().getName()));
-          } else if (((Boolean) b).booleanValue()) {
+          } else if ((Boolean) b) {
             result = doIterationEvaluate(context, false);
           } else {
             result = prepareEmptyResultSet(context, false);
@@ -466,7 +456,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           // If order by clause is defined, then the first column should be the preferred index
           if (this.orderByAttrs != null && numInd == 1) {
             CompiledSortCriterion csc = (CompiledSortCriterion) orderByAttrs.get(0);
-            StringBuffer preferredIndexCondn = new StringBuffer();
+            StringBuilder preferredIndexCondn = new StringBuilder();
             this.evalCanonicalizedExpressionForCSC(csc, context, preferredIndexCondn);
             context.cachePut(PREF_INDEX_COND, preferredIndexCondn.toString());
           }
@@ -497,9 +487,9 @@ public class CompiledSelect extends AbstractCompiledValue {
                   && ((Filter) this.whereClause).isLimitApplicableAtIndexLevel(context)) {
                 context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, Boolean.TRUE);
               }
-              StringBuffer temp = null;
+              StringBuilder temp = null;
               if (this.orderByAttrs != null) {
-                temp = new StringBuffer();
+                temp = new StringBuilder();
                 CompiledSortCriterion csc = (CompiledSortCriterion) this.orderByAttrs.get(0);
                 this.evalCanonicalizedExpressionForCSC(csc, context, temp);
               }
@@ -562,7 +552,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           }
         }
       }
-      // TODO:Asif: It does not appear that results would be null ever.
+      // TODO: It does not appear that results would be null ever.
       // if (result == null) { return QueryService.UNDEFINED; }
       assert result != null;
       // drop duplicates if this is DISTINCT
@@ -617,7 +607,7 @@ public class CompiledSelect extends AbstractCompiledValue {
             result = countResult;
 
           } else {
-            ((ResultsBag) res).addAndGetOccurence(countStartQueryResult);
+            ((Bag) res).addAndGetOccurence(countStartQueryResult);
           }
         }
       }
@@ -632,9 +622,6 @@ public class CompiledSelect extends AbstractCompiledValue {
    * The index is locked during query to prevent it from being removed by another thread. So we have
    * to release the lock only after whole query is finished as one query can use an index multiple
    * times.
-   * 
-   * 
-   * @param planInfo
    */
   private void releaseReadLockOnUsedIndex(PlanInfo planInfo) {
     List inds = planInfo.indexes;
@@ -649,12 +636,9 @@ public class CompiledSelect extends AbstractCompiledValue {
     }
   }
 
-
   /**
-   * Retruns the size of region iterator for count(*) on a region without whereclause.
+   * Returns the size of region iterator for count(*) on a region without whereclause.
    * 
-   * @param collExpr
-   * @throws RegionNotFoundException
    * @since GemFire 6.6.2
    */
   private int getRegionIteratorSize(ExecutionContext context, CompiledValue collExpr)
@@ -693,7 +677,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
     SelectResults results = prepareEmptyResultSet(context, false);
 
-    // TODO:Asif: SELF : Work on limit implementation on bulk get
+    // TODO: SELF : Work on limit implementation on bulk get
     // check for bulk get optimization
     if (evaluateWhereClause) {
       List tmpResults = optimizeBulkGet(context);
@@ -713,13 +697,13 @@ public class CompiledSelect extends AbstractCompiledValue {
     int numElementsInResult = 0;
     try {
       doNestedIterations(0, results, context, evaluateWhereClause, numElementsInResult);
-    } catch (CompiledSelect.NullIteratorException cnie) {
+    } catch (CompiledSelect.NullIteratorException ignore) {
       return null;
     }
     return results;
   }
 
-  // @todo make this more general to work for any kind of map, not just regions
+  // TODO: make this more general to work for any kind of map, not just regions
   /**
    * Check for the bulk-get pattern and if it applies do an optimized execution. The pattern is:
    * SELECT ?? FROM <Region>.entrySet e WHERE e.key IN <Collection>.
@@ -790,11 +774,11 @@ public class CompiledSelect extends AbstractCompiledValue {
         if (result == null) {
           addToResults = false;
         } else if (result instanceof Boolean) {
-          addToResults = ((Boolean) result).booleanValue();
+          addToResults = (Boolean) result;
         } else if (result == QueryService.UNDEFINED) {
           // add UNDEFINED to results only for NOT EQUALS queries
           if (this.whereClause.getType() == COMPARISON) {
-            int operator = ((CompiledComparison) this.whereClause).getOperator();
+            int operator = ((Filter) this.whereClause).getOperator();
             if ((operator != TOK_NE && operator != TOK_NE_ALT)) {
               addToResults = false;
             }
@@ -810,12 +794,12 @@ public class CompiledSelect extends AbstractCompiledValue {
       if (addToResults) {
         int occurence =
             applyProjectionAndAddToResultSet(context, results, this.orderByAttrs == null);
-        // Asif: If the occurence is greater than 1, then only in case of
+        // If the occurence is greater than 1, then only in case of
         // non distinct query should it be treated as contributing to size
         // else duplication will be eliminated when making it distinct using
         // ResultsCollectionWrapper and we will fall short of limit
         if (occurence == 1 || (occurence > 1 && !this.distinct)) {
-          // Asif: (Unique i.e first time occurence) or subsequent occurence
+          // (Unique i.e first time occurence) or subsequent occurence
           // for non distinct query
           ++numElementsInResult;
         }
@@ -871,7 +855,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       NameResolutionException, QueryInvocationTargetException {
     List iterators = context.getCurrentIterators();
     if (projAttrs == null && (this.orderByAttrs == null || ignoreOrderBy)) {
-      // Asif : If the projection attribute is null( ie.e specified as *) &
+      // If the projection attribute is null( ie.e specified as *) &
       // there is only one
       // Runtime Iteratir we can return the set as it is.But if the proejction
       // attribute is null & multiple Iterators are defined we need to rectify
@@ -909,7 +893,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           }
           int occurence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
           if (occurence == 1 || (occurence > 1 && !this.distinct)) {
-            // Asif: (Unique i.e first time occurence) or subsequent occurence
+            // (Unique i.e first time occurence) or subsequent occurence
             // for non distinct query
             ++numElementsAdded;
           }
@@ -925,7 +909,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           rIter.setCurrent(resultsIter.next());
           int occurence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
           if (occurence == 1 || (occurence > 1 && !this.distinct)) {
-            // Asif: (Unique i.e first time occurence) or subsequent occurence
+            // (Unique i.e first time occurence) or subsequent occurence
             // for non distinct query
             ++numElementsAdded;
           }
@@ -941,7 +925,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   private SelectResults prepareEmptyResultSet(ExecutionContext context, boolean ignoreOrderBy)
       throws TypeMismatchException, AmbiguousNameException {
-    // Asif:if no projection attributes or '*'as projection attribute
+    // if no projection attributes or '*'as projection attribute
     // & more than one/RunTimeIterator then create a StrcutSet.
     // If attribute is null or '*' & only one RuntimeIterator then create a
     // ResultSet.
@@ -969,7 +953,7 @@ public class CompiledSelect extends AbstractCompiledValue {
                     context)
                 : new OrderByComparator(this.orderByAttrs, (StructTypeImpl) elementType, context);
             results = this.distinct ? new SortedStructSet(comparator, (StructTypeImpl) elementType)
-                : new SortedStructBag(comparator, (StructTypeImpl) elementType, nullValuesAtStart);
+                : new SortedStructBag(comparator, (StructType) elementType, nullValuesAtStart);
 
           }
         } else {
@@ -1018,7 +1002,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   protected ObjectType prepareResultType(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException {
-    // Asif:if no projection attributes or '*'as projection attribute
+    // if no projection attributes or '*'as projection attribute
     // & more than one/RunTimeIterator then create a StrcutSet.
     // If attribute is null or '*' & only one RuntimeIterator then create a
     // ResultSet.
@@ -1069,22 +1053,9 @@ public class CompiledSelect extends AbstractCompiledValue {
     return elementType;
   }
 
-  /*
-   * private SelectResults prepareEmptySelectResults(ObjectType elementType, boolean isSorted,
-   * ExecutionContext context) { if (elementType.isStructType()) { if (isSorted) { // sorted struct
-   * return prepareEmptySortedStructSet((StructTypeImpl)elementType); } else { // unsorted struct
-   * return new StructBag((StructType)elementType, context.getCachePerfStats()); } } else { //
-   * non-struct if (isSorted) { // sorted non-struct return
-   * prepareEmptySortedResultSet(elementType); } else { // unsorted non-struct return new
-   * ResultsBag(elementType, context.getCachePerfStats()); } } }
-   */
-
-
-
   /**
-   * Asif: This function should be used to create a StructType for those queries which have * as
+   * This function should be used to create a StructType for those queries which have * as
    * projection attribute (implying null projection attribute) & multiple from clauses
-   * 
    */
   private StructTypeImpl createStructTypeForNullProjection(List currentIterators,
       ExecutionContext context) {
@@ -1112,23 +1083,22 @@ public class CompiledSelect extends AbstractCompiledValue {
       RuntimeIterator rit = context.findRuntimeIterator(cv);
       List pathOnItr = cv.getPathOnIterator(rit, context);
       if (pathOnItr != null) {
-        String path[] = (String[]) pathOnItr.toArray(new String[0]);
+        String path[] = (String[]) pathOnItr.toArray(new String[pathOnItr.size()]);
         ObjectType ot[] = PathUtils.calculateTypesAlongPath(rit.getElementType(), path);
         retType = ot[ot.length - 1];
       }
-    } catch (NameNotFoundException e) {
+    } catch (NameNotFoundException ignore) {
       // Unable to determine the type Of attribute.It will default to
       // ObjectType
     }
     return retType;
   }
 
-
   // resultSet could be a set or a bag (we have set constructor, or there
   // could be a distinct subquery)
   // in future, it would be good to simplify this to always work with a bag
   // (converting all sets to bags) until the end when we enforce distinct
-  // Asif: The number returned indicates the occurence of the data in the SelectResults
+  // The number returned indicates the occurence of the data in the SelectResults
   // Thus if the SelectResults is of type ResultsSet or StructSet
   // then 1 will indicate that data was added to the results & that was the
   // first occurence. For this 0 will indicate that the data was not added
@@ -1137,8 +1107,6 @@ public class CompiledSelect extends AbstractCompiledValue {
   // indicate the occurence. Thus 1 will indicate it being added for first time
   // Currently orderBy is present only for StructSet & ResultSet which are
   // unique object holders. So the occurence for them can be either 0 or 1 only
-
-
 
   private int applyProjectionAndAddToResultSet(ExecutionContext context, SelectResults resultSet,
       boolean ignoreOrderBy) throws FunctionDomainException, TypeMismatchException,
@@ -1149,7 +1117,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     ObjectType elementType = resultSet.getCollectionType().getElementType();
     boolean isStruct = elementType != null && elementType.isStructType();
 
-    // TODO : Asif : Optimize this condition in some clean way
+    // TODO: Optimize this condition in some clean way
     boolean isLinkedStructure =
         resultSet instanceof Ordered && ((Ordered) resultSet).dataPreordered();
 
@@ -1209,7 +1177,7 @@ public class CompiledSelect extends AbstractCompiledValue {
                 comparator.addEvaluatedSortCriteria(values, context);
                 occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
               }
-              // Asif: TODO:Instead of a normal Map containing which holds
+              // TODO:Instead of a normal Map containing which holds
               // StructImpl object
               // use a THashObject with Object[] array hashing stragtegy as we
               // are unnnecessarily
@@ -1274,11 +1242,9 @@ public class CompiledSelect extends AbstractCompiledValue {
                     if (!e.isDestroyed()) {
                       try {
                         values[0] = new CqEntry(e.getKey(), e.getValue());
-                      } catch (EntryDestroyedException ede) {
-                        // Even though isDestory() check is made, the entry
-                        // could
-                        // throw EntryDestroyedException if the value becomes
-                        // null.
+                      } catch (EntryDestroyedException ignore) {
+                        // Even though isDestory() check is made, the entry could throw
+                        // EntryDestroyedException if the value becomes null.
                         add = false;
                       }
                     } else {
@@ -1321,7 +1287,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         if (distinct) {
           if (isStruct) {
             comparator.addEvaluatedSortCriteria(values, context);
-            // Asif: Occurence field is used to identify the corrcet number of
+            // Occurence field is used to identify the corrcet number of
             // iterations
             // required to implement the limit based on the presence or absence
             // of distinct clause
@@ -1401,23 +1367,15 @@ public class CompiledSelect extends AbstractCompiledValue {
       } else if (type == METHOD_INV) {
         name = ((CompiledOperation) projExpr).getMethodName();
       } else {
-        name = new StringBuffer("field$").append(context.nextFieldNum()).toString();
+        name = new StringBuilder("field$").append(context.nextFieldNum()).toString();
         // name = projExpr.toString();
       }
     }
     return name;
   }
 
-
   /**
    * Optimized evaluate for CQ execution.
-   * 
-   * @param context
-   * @return boolean
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   public boolean evaluateCq(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
@@ -1456,7 +1414,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       } else if (b == QueryService.UNDEFINED) {
         // add UNDEFINED to results only for NOT EQUALS queries
         if (this.whereClause.getType() == COMPARISON) {
-          int operator = ((CompiledComparison) this.whereClause).getOperator();
+          int operator = ((Filter) this.whereClause).getOperator();
           if ((operator != TOK_NE && operator != TOK_NE_ALT)) {
             return false;
           } else {
@@ -1466,7 +1424,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           return false;
         }
       } else {
-        return (((Boolean) b).booleanValue());
+        return (Boolean) b;
       }
     } finally {
       context.popExecCache();

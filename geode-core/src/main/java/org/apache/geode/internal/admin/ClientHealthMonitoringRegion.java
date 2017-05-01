@@ -22,53 +22,53 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is an admin (meta) region used by the client health monitoring service to publish the client
  * health details to the cache-server.
- * 
  */
-
 public class ClientHealthMonitoringRegion {
-  public final static String ADMIN_REGION_NAME = "__ADMIN_CLIENT_HEALTH_MONITORING__";
 
-  public final static int ADMIN_REGION_EXPIRY_INTERVAL = 20;
+  static final String ADMIN_REGION_NAME = "__ADMIN_CLIENT_HEALTH_MONITORING__";
+
+  static final int ADMIN_REGION_EXPIRY_INTERVAL = 20;
 
   /**
    * Instance for current cache
-   * 
-   * @guarded.By ClientHealthMonitoringRegion.class
+   * <p>
+   * GuardedBy ClientHealthMonitoringRegion.class
    */
-  static Region currentInstance;
+  private static Region currentInstance;
 
   /**
    * This is an accessor method used to get the reference of this region. If this region is not yet
    * initialized, then it attempts to create it.
    * 
-   * @param c the Cache we are currently using
+   * @param cache the Cache we are currently using
    * @return ClientHealthMonitoringRegion reference.
    */
-  public static synchronized Region getInstance(GemFireCacheImpl c) {
-    if (currentInstance != null && currentInstance.getCache() == c && !c.isClosed()) {
+  public static synchronized Region getInstance(InternalCache cache) {
+    if (currentInstance != null && currentInstance.getCache() == cache && !cache.isClosed()) {
       return currentInstance;
     }
-    if (c == null || c.isClosed()) {
+    if (cache == null || cache.isClosed()) {
       return null; // give up
     }
-    initialize(c);
+    initialize(cache);
     return currentInstance;
   }
 
   /**
    * This method creates the client health monitoring region.
-   * 
+   * <p>
+   * GuardedBy ClientHealthMonitoringRegion.class
+   *
    * @param cache The current GemFire Cache
-   * @guarded.By ClientHealthMonitoringRegion.class
    */
-  private static void initialize(GemFireCacheImpl cache) {
+  private static void initialize(InternalCache cache) {
     try {
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.LOCAL);

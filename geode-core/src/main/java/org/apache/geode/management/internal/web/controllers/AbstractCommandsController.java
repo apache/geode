@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
 import javax.management.JMX;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -32,7 +33,20 @@ import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
 
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -50,18 +64,6 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
 import org.apache.geode.security.NotAuthorizedException;
-
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common
@@ -89,21 +91,23 @@ public abstract class AbstractCommandsController {
 
   private Class accessControlKlass;
 
+  private InternalCache getCache() {
+    return GemFireCacheImpl.getInstance();
+  }
 
   // Convert a predefined exception to an HTTP Status code
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Not authenticated") // 401
   @ExceptionHandler(org.apache.geode.security.AuthenticationFailedException.class)
   public void authenticate() {
-
+    // nothing
   }
 
   // Convert a predefined exception to an HTTP Status code
   @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Access Denied") // 403
   @ExceptionHandler(java.lang.SecurityException.class)
   public void authorize() {
-
+    // nothing
   }
-
 
   /**
    * Asserts the argument is valid, as determined by the caller passing the result of an evaluated
@@ -449,8 +453,8 @@ public abstract class AbstractCommandsController {
    */
   protected synchronized MemberMXBean getManagingMemberMXBean() {
     if (managingMemberMXBeanProxy == null) {
-      SystemManagementService service = (SystemManagementService) ManagementService
-          .getExistingManagementService(GemFireCacheImpl.getInstance());
+      SystemManagementService service =
+          (SystemManagementService) ManagementService.getExistingManagementService(getCache());
       MBeanServer mbs = getMBeanServer();
 
       final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(mbs,

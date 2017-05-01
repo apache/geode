@@ -54,8 +54,6 @@ import org.apache.geode.redis.GeodeRedisServer;
  * because some keys for Redis represented as a {@link Region} in {@link GeodeRedisServer} come with
  * additional state. Therefore getting, creating, or destroying a {@link Region} needs to be
  * synchronized, which is done away with and abstracted by this class.
- * 
- *
  */
 public class RegionProvider implements Closeable {
 

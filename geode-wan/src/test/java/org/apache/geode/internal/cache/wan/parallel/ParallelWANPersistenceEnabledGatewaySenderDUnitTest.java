@@ -1606,6 +1606,11 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     }
   }
 
+  /**
+   * setIgnoreQueue has lots of callers by reflection
+   * <p>
+   * TODO: add DistributedRestoreSystemProperties Rule and delete this mess and make constant final
+   */
   public static void setIgnoreQueue(boolean shouldIgnore) {
     ColocationHelper.IGNORE_UNRECOVERED_QUEUE = shouldIgnore;
   }

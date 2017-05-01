@@ -289,7 +289,7 @@ public class CompiledOperation extends AbstractCompiledValue {
 
   // Asif :Function for generating from clause
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     // Asif: if the method name starts with getABC & argument list is empty
     // then canonicalize it to aBC

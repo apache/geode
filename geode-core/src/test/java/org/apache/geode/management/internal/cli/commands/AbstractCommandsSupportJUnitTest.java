@@ -23,17 +23,18 @@ import java.util.Set;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.cli.CliMetaData;
@@ -45,8 +46,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * The AbstractCommandsSupportJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the AbstractCommandsSupport class for implementing GemFire shell (Gfsh)
  * commands.
- * </p>
- * 
+ *
  * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
@@ -64,6 +64,7 @@ public class AbstractCommandsSupportJUnitTest {
   public void setup() {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
+    mockContext.setThreadingPolicy(new Synchroniser());
   }
 
   @After
@@ -72,7 +73,7 @@ public class AbstractCommandsSupportJUnitTest {
     mockContext = null;
   }
 
-  private AbstractCommandsSupport createAbstractCommandsSupport(final Cache cache) {
+  private AbstractCommandsSupport createAbstractCommandsSupport(final InternalCache cache) {
     return new TestCommands(cache);
   }
 
@@ -150,7 +151,7 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test
   public void testGetMemberWithMatchingMemberId() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final DistributedSystem mockDistributedSystem =
         mockContext.mock(DistributedSystem.class, "DistributedSystem");
@@ -177,7 +178,7 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test
   public void testGetMemberWithMatchingMemberName() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final DistributedSystem mockDistributedSystem =
         mockContext.mock(DistributedSystem.class, "DistributedSystem");
@@ -204,7 +205,7 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test
   public void testGetMemberWithMatchingMemberNameCaseInsensitive() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final DistributedSystem mockDistributedSystem =
         mockContext.mock(DistributedSystem.class, "DistributedSystem");
@@ -231,7 +232,7 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test(expected = MemberNotFoundException.class)
   public void testGetMemberThrowsMemberNotFoundException() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final DistributedSystem mockDistributedSystem =
         mockContext.mock(DistributedSystem.class, "DistributedSystem");
@@ -264,7 +265,7 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test
   public void testGetMembers() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final DistributedSystem mockDistributedSystem =
         mockContext.mock(DistributedSystem.class, "DistributedSystem");
@@ -297,7 +298,7 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test
   public void testGetMembersContainsOnlySelf() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final DistributedSystem mockDistributedSystem =
         mockContext.mock(DistributedSystem.class, "DistributedSystem");
@@ -341,7 +342,7 @@ public class AbstractCommandsSupportJUnitTest {
       });
 
       final AbstractCommandsSupport commands =
-          createAbstractCommandsSupport(mockContext.mock(Cache.class));
+          createAbstractCommandsSupport(mockContext.mock(InternalCache.class));
 
       assertFalse(FunctionService.isRegistered("testRegister"));
       assertSame(mockFunction, commands.register(mockFunction));
@@ -370,7 +371,7 @@ public class AbstractCommandsSupportJUnitTest {
       });
 
       final AbstractCommandsSupport commands =
-          createAbstractCommandsSupport(mockContext.mock(Cache.class));
+          createAbstractCommandsSupport(mockContext.mock(InternalCache.class));
 
       FunctionService.registerFunction(registeredFunction);
 
@@ -414,15 +415,15 @@ public class AbstractCommandsSupportJUnitTest {
 
   private static class TestCommands extends AbstractCommandsSupport {
 
-    private final Cache cache;
+    private final InternalCache cache;
 
-    protected TestCommands(final Cache cache) {
-      assert cache != null : "The Cache cannot be null!";
+    protected TestCommands(final InternalCache cache) {
+      assert cache != null : "The InternalCache cannot be null!";
       this.cache = cache;
     }
 
     @Override
-    protected Cache getCache() {
+    protected InternalCache getCache() {
       return this.cache;
     }
   }

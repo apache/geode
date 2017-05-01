@@ -42,14 +42,14 @@ public interface IndexProtocol extends Index {
 
   boolean addIndexMapping(RegionEntry entry) throws IMQException;
 
-  boolean addAllIndexMappings(Collection c) throws IMQException;
+  boolean addAllIndexMappings(Collection<RegionEntry> c) throws IMQException;
 
   /**
    * @param opCode one of OTHER_OP, BEFORE_UPDATE_OP, AFTER_UPDATE_OP.
    */
   boolean removeIndexMapping(RegionEntry entry, int opCode) throws IMQException;
 
-  boolean removeAllIndexMappings(Collection c) throws IMQException;
+  boolean removeAllIndexMappings(Collection<RegionEntry> c) throws IMQException;
 
   boolean clear() throws QueryException;
 

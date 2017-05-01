@@ -14,14 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static junit.framework.TestCase.assertNotNull;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -58,20 +55,15 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.Random;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class BackupJUnitTest {
-  protected static GemFireCacheImpl cache = null;
-  protected static File TMP_DIR;
-  protected static File cacheXmlFile;
 
-  protected static DistributedSystem ds = null;
-  protected static Properties props = new Properties();
+  protected GemFireCacheImpl cache = null;
+  private File tmpDir;
+  protected File cacheXmlFile;
 
-  static {
-  }
+  protected DistributedSystem ds = null;
+  protected Properties props = new Properties();
 
   private File backupDir;
   private File[] diskDirs;
@@ -83,11 +75,11 @@ public class BackupJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    if (TMP_DIR == null) {
+    if (tmpDir == null) {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");
       String tmpDirName = System.getProperty("java.io.tmpdir");
-      TMP_DIR = tmpDirName == null ? new File("") : new File(tmpDirName);
+      tmpDir = new File(tmpDirName == null ? "" : tmpDirName);
       try {
         URL url = BackupJUnitTest.class.getResource("BackupJUnitTest.cache.xml");
         cacheXmlFile = new File(url.toURI().getPath());
@@ -100,12 +92,12 @@ public class BackupJUnitTest {
 
     createCache();
 
-    backupDir = new File(TMP_DIR, getName() + "backup_Dir");
+    backupDir = new File(tmpDir, getName() + "backup_Dir");
     backupDir.mkdir();
     diskDirs = new File[2];
-    diskDirs[0] = new File(TMP_DIR, getName() + "_diskDir1");
+    diskDirs[0] = new File(tmpDir, getName() + "_diskDir1");
     diskDirs[0].mkdir();
-    diskDirs[1] = new File(TMP_DIR, getName() + "_diskDir2");
+    diskDirs[1] = new File(tmpDir, getName() + "_diskDir2");
     diskDirs[1].mkdir();
   }
 
@@ -134,8 +126,7 @@ public class BackupJUnitTest {
     backupAndRecover(new RegionCreator() {
       public Region createRegion() {
         DiskStoreImpl ds = createDiskStore();
-        Region region = BackupJUnitTest.this.createRegion();
-        return region;
+        return BackupJUnitTest.this.createRegion();
       }
     });
   }
@@ -151,8 +142,7 @@ public class BackupJUnitTest {
         DiskWriteAttributesFactory daf = new DiskWriteAttributesFactory();
         daf.setMaxOplogSize(1);
         rf.setDiskWriteAttributes(daf.create());
-        Region region = rf.create("region");
-        return region;
+        return rf.create("region");
       }
     });
   }
@@ -189,7 +179,7 @@ public class BackupJUnitTest {
     // restore the deleted entry.
     region.put(2047, getBytes(2047));
 
-    for (DiskStoreImpl store : cache.listDiskStoresIncludingRegionOwned()) {
+    for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
       store.flush();
     }
 
@@ -400,7 +390,7 @@ public class BackupJUnitTest {
     while ((line = br.readLine()) != null) {
       System.out.println("OUTPUT:" + line);
       // TODO validate output
-    } ;
+    }
 
     int result = process.waitFor();
     boolean isWindows = script.getName().endsWith("bat");
@@ -420,8 +410,7 @@ public class BackupJUnitTest {
     RegionFactory rf = new RegionFactory();
     rf.setDiskStoreName("diskStore");
     rf.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-    Region region = rf.create("region");
-    return region;
+    return rf.create("region");
   }
 
   private Region createOverflowRegion() {
@@ -430,12 +419,11 @@ public class BackupJUnitTest {
     rf.setEvictionAttributes(
         EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
     rf.setDataPolicy(DataPolicy.NORMAL);
-    Region region = rf.create("region");
-    return region;
+    return rf.create("region");
   }
 
   private DiskStore findDiskStore() {
-    return this.cache.findDiskStore("diskStore");
+    return cache.findDiskStore("diskStore");
   }
 
   private DiskStoreImpl createDiskStore() {
@@ -443,12 +431,11 @@ public class BackupJUnitTest {
     dsf.setDiskDirs(diskDirs);
     dsf.setMaxOplogSize(1);
     String name = "diskStore";
-    DiskStoreImpl ds = (DiskStoreImpl) dsf.create(name);
-    return ds;
+    return (DiskStoreImpl) dsf.create(name);
   }
 
-  private static interface RegionCreator {
-    public Region createRegion();
+  private interface RegionCreator {
+    Region createRegion();
   }
 
 }

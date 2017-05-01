@@ -206,7 +206,7 @@ public final class ProxyBucketRegion implements Bucket {
         + getPartitionedRegion().getBucketName(this.bid);
   }
 
-  public GemFireCacheImpl getCache() {
+  public InternalCache getCache() {
     return this.partitionedRegion.getCache();
   }
 

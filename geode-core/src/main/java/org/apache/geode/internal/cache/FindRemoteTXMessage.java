@@ -50,9 +50,12 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
   private static final Logger logger = LogService.getLogger();
 
   private TXId txId;
+
   private int processorId;
 
-  public FindRemoteTXMessage() {}
+  public FindRemoteTXMessage() {
+    // do nothing
+  }
 
   public FindRemoteTXMessage(TXId txid, int processorId, Set recipients) {
     super();
@@ -93,8 +96,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
         logger.debug("processing {}", this);
       }
       FindRemoteTXMessageReply reply = new FindRemoteTXMessageReply();
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();// .getExisting("Looking up
-                                                              // CacheTransactionManager");
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
         TXManagerImpl mgr = (TXManagerImpl) cache.getCacheTransactionManager();
         mgr.waitForCompletingTransaction(txId); // in case there is a lost commit going on
@@ -147,10 +149,8 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
 
   @Override
   public String toString() {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     String className = getClass().getName();
-    // className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); //
-    // partition.<foo> more generic version
     buff.append(className.substring(
         className.indexOf(PartitionMessage.PN_TOKEN) + PartitionMessage.PN_TOKEN.length())); // partition.<foo>
     buff.append("(txId=").append(this.txId).append("; sender=").append(getSender())
@@ -172,7 +172,6 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     this.txId = DataSerializer.readObject(in);
     this.processorId = in.readInt();
   }
-
 
   public static class FindRemoteTXMessageReplyProcessor extends ReplyProcessor21 {
 
@@ -234,8 +233,6 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
   public boolean sendViaUDP() {
     return true;
   }
-
-
 
   /**
    * Reply message for {@link FindRemoteTXMessage}. Reply is a boolean to indicate if the recipient

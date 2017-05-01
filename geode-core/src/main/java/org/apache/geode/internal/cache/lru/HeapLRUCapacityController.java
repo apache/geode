@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.lru;
 
+import java.util.Properties;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
@@ -23,21 +25,20 @@ import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.Properties;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * A <code>HeapLRUCapacityController</code> controls the contents of {@link Region} based on the
  * percentage of memory that is currently being used. If the percentage of memory in use exceeds the
  * given percentage, then the least recently used entry of the region is evicted.
- * 
- * <P>
- * 
+ * <p>
  * For heap regions: GemStone has found that the <code>HeapLRUCapacityController</code> has the most
  * effect on a VM that is lauched with both the <code>-Xmx</code> and <code>-Xms</code> switches
  * used. Many virtual machine implementations have additional VM switches to control the behavior of
@@ -46,8 +47,7 @@ import java.util.Properties;
  * <A href="http://java.sun.com/docs/hotspot/gc/index.html">HotSpot</a> VM, the
  * <code>-XX:+UseConcMarkSweepGC</code> and <code>-XX:+UseParNewGC</code> options improve the
  * behavior of the <code>HeapLRUCapacityController</code>.
- * 
- * 
+ *
  * @since GemFire 3.2
  */
 @SuppressWarnings("synthetic-access")
@@ -268,7 +268,7 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
        * greater than the overflow threshold, then we evict the LRU entry.
        */
       public boolean mustEvict(LRUStatistics stats, Region region, int delta) {
-        final GemFireCacheImpl cache = (GemFireCacheImpl) region.getRegionService();
+        final InternalCache cache = (InternalCache) region.getRegionService();
         InternalResourceManager resourceManager = cache.getInternalResourceManager();
         boolean offheap = region.getAttributes().getOffHeap();
         final boolean monitorStateIsEviction =

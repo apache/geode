@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -30,23 +31,15 @@ import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.ManagementStrings;
 
-
-/**
- * 
- *
- */
 public class LocatorMBeanBridge {
   private static final Logger logger = LogService.getLogger();
 
   private Locator loc;
 
-  private InternalDistributedSystem system;
-
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
 
   public LocatorMBeanBridge(Locator loc) {
     this.loc = loc;
-    this.system = (InternalDistributedSystem) loc.getDistributedSystem();
     this.cache = GemFireCacheImpl.getInstance();
   }
 
@@ -54,26 +47,21 @@ public class LocatorMBeanBridge {
     return loc.getBindAddress().getCanonicalHostName();
   }
 
-
   public String getHostnameForClients() {
     return loc.getHostnameForClients();
   }
-
 
   public String viewLog() {
     return fetchLog(loc.getLogFile(), ManagementConstants.DEFAULT_SHOW_LOG_LINES);
   }
 
-
   public int getPort() {
     return loc.getPort();
   }
 
-
   public boolean isPeerLocator() {
     return true;
   }
-
 
   public boolean isServerLocator() {
     return true;
@@ -114,11 +102,9 @@ public class LocatorMBeanBridge {
   }
 
   /**
-   * 
    * @return log of the locator.
    */
   private String fetchLog(File logFile, int numLines) {
-
     if (numLines > ManagementConstants.MAX_SHOW_LOG_LINES) {
       numLines = ManagementConstants.MAX_SHOW_LOG_LINES;
     }
@@ -127,7 +113,6 @@ public class LocatorMBeanBridge {
     }
     String mainTail = null;
     try {
-      InternalDistributedSystem sys = system;
       mainTail = BeanUtilFuncs.tailSystemLog(logFile, numLines);
       if (mainTail == null) {
         mainTail =

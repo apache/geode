@@ -16,6 +16,18 @@ package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.util.Properties;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -24,16 +36,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.net.SocketCreator;
-
-import java.io.*;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * MigrationClient is used to retrieve all of the data for a region from a MigrationServer. First
@@ -49,30 +51,29 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
  * The region should be defined in the cache-xml file, and must also be defined in the server's
  * cache-xml file.
  * <p>
- * <p>
  * Typically, the cache-xml file will be exactly the same as the one used by the MigrationServer
- * with different disk-dirs settings. When Region entries are transfered from the server to the
+ * with different disk-dirs settings. When Region entries are transferred from the server to the
  * client, they are then stored in new files in these directories.
  * 
  * @since GemFire 6.0.1
- *
  */
 public class MigrationClient {
-  final static boolean VERBOSE = MigrationServer.VERBOSE;
+  private static final boolean VERBOSE = MigrationServer.VERBOSE;
 
-  final static int VERSION = 551; // version for backward communications compatibility
+  // version for backward communications compatibility
+  private static final int VERSION = 551;
 
-  protected static final int CODE_ERROR = MigrationServer.CODE_ERROR;
-  protected static final int CODE_ENTRY =
-      MigrationServer.CODE_ENTRY; /* serialized key, serialized value */
-  protected static final int CODE_COMPLETED = MigrationServer.CODE_COMPLETED;
+  private static final int CODE_ERROR = MigrationServer.CODE_ERROR;
+
+  /* serialized key, serialized value */
+  private static final int CODE_ENTRY = MigrationServer.CODE_ENTRY;
+
+  private static final int CODE_COMPLETED = MigrationServer.CODE_COMPLETED;
 
   public static void main(String[] args) throws Exception {
     int argIdx = 0;
-    String cacheXmlFileName = null;
-    String regionName = null;
-    String bindAddressName = null;
-    int serverPort = 10533;
+    String cacheXmlFileName;
+    String regionName;
 
     if (args.length > argIdx + 1) {
       regionName = args[argIdx++];
@@ -82,9 +83,11 @@ public class MigrationClient {
           .println("MigrationClient regionName [cache-xml-file] [server-port] [server-address]");
       return;
     }
+    int serverPort = 10533;
     if (args.length > argIdx) {
       serverPort = Integer.parseInt(args[argIdx++]);
     }
+    String bindAddressName = null;
     if (args.length > argIdx) {
       bindAddressName = args[argIdx++];
     }
@@ -101,18 +104,15 @@ public class MigrationClient {
     instance.getRegion(regionName);
   }
 
-
-  private InetAddress serverAddress;
-  private int port;
+  private final InetAddress serverAddress;
+  private final int port;
   private DistributedSystem distributedSystem;
   private File cacheXmlFile;
   private Cache cache;
-
   private Socket server;
   private int serverVersion;
   private DataInputStream dis;
   private DataOutputStream dos;
-
 
   /**
    * Create a MigrationClient to be used with a DistributedSystem and Cache that are created using
@@ -121,13 +121,13 @@ public class MigrationClient {
    * @param bindAddressName the server's address
    * @param serverPort the server's port
    */
-  public MigrationClient(String bindAddressName, int serverPort) {
+  private MigrationClient(String bindAddressName, int serverPort) {
     this.port = serverPort;
     try {
       this.serverAddress = InetAddress.getByName(bindAddressName);
-    } catch (IOException e) {
+    } catch (IOException ignore) {
       throw new IllegalArgumentException(
-          "Error - bind address cannot be resolved: '" + bindAddressName + "'");
+          "Error - bind address cannot be resolved: '" + bindAddressName + '\'');
     }
   }
 
@@ -143,7 +143,8 @@ public class MigrationClient {
     this.cacheXmlFile = new File(cacheXmlFileName);
     if (!this.cacheXmlFile.exists()) {
       // in 6.x this should be localizable
-      System.err.println("Warning - file not found in local directory: '" + cacheXmlFileName + "'");
+      System.err
+          .println("Warning - file not found in local directory: '" + cacheXmlFileName + '\'');
     }
   }
 
@@ -166,7 +167,6 @@ public class MigrationClient {
     }
     this.distributedSystem = DistributedSystem.connect(dsProps);
   }
-
 
   /**
    * create the cache to be used by this migration server
@@ -191,8 +191,7 @@ public class MigrationClient {
 
   public Region getRegion(String regionName) throws IOException, ClassNotFoundException {
     initDSAndCache();
-    Region region = null;
-    region = this.cache.getRegion(regionName);
+    Region region = this.cache.getRegion(regionName);
     try {
       connectToServer();
       if (this.serverVersion != VERSION) {
@@ -209,7 +208,7 @@ public class MigrationClient {
         int responseCode = -1;
         try {
           responseCode = this.dis.readShort();
-        } catch (EOFException e) {
+        } catch (EOFException ignore) {
         }
         switch (responseCode) {
           case -1:
@@ -219,11 +218,11 @@ public class MigrationClient {
             break;
           case CODE_ERROR:
             String errorString = this.dis.readUTF();
-            System.err.println("Server responded with error: '" + errorString + "'");
+            System.err.println("Server responded with error: '" + errorString + '\'');
             throw new IOException(errorString);
           case CODE_ENTRY:
-            Object key = (new ObjectInputStream(server.getInputStream())).readObject();
-            Object value = (new ObjectInputStream(server.getInputStream())).readObject();
+            Object key = new ObjectInputStream(this.server.getInputStream()).readObject();
+            Object value = new ObjectInputStream(this.server.getInputStream()).readObject();
             if (VERBOSE) {
               System.out.println("received " + key);
             }
@@ -232,13 +231,12 @@ public class MigrationClient {
         }
       }
     } finally {
-      if (server != null && !server.isClosed()) {
-        server.close();
+      if (this.server != null && !this.server.isClosed()) {
+        this.server.close();
       }
     }
     return region;
   }
-
 
   private void connectToServer() throws IOException {
     this.server = new Socket();

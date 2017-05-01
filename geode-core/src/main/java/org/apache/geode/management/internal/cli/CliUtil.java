@@ -14,30 +14,6 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.MembersForRegionFunction;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResultException;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -66,15 +42,40 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.functions.MembersForRegionFunction;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+
 /**
  * This class contains utility methods used by classes used to build the Command Line Interface
  * (CLI).
  *
- *
  * @since GemFire 7.0
  */
 public class CliUtil {
+
   public static final String GFSHVM_IDENTIFIER = "gfsh";
+
   public static boolean isGfshVM = Boolean.getBoolean(GFSHVM_IDENTIFIER);
 
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
@@ -123,10 +124,10 @@ public class CliUtil {
     return null;
   }
 
-  public static Cache getCacheIfExists() {
-    Cache cache;
+  public static InternalCache getCacheIfExists() {
+    InternalCache cache;
     try {
-      cache = CacheFactory.getAnyInstance();
+      cache = getInternalCache();
     } catch (CacheClosedException e) {
       // ignore & return null
       cache = null;
@@ -146,8 +147,8 @@ public class CliUtil {
         throw new FileNotFoundException("Could not find " + file.getCanonicalPath());
       }
 
-      if (file.isDirectory()) { // TODO - Abhishek: (1) No recursive search yet. (2) Do we need to
-                                // check/limit size of the files too?
+      if (file.isDirectory()) {
+        // TODO: (1) No recursive search yet. (2) Do we need to check/limit size of the files too?
         File[] childrenFiles = file.listFiles(JAR_FILE_FILTER);
         for (int j = 0; j < childrenFiles.length; j++) {
           // 1. add name of the file as bytes at even index
@@ -221,15 +222,17 @@ public class CliUtil {
     }
   }
 
-
-
   public static boolean isValidFileName(String filePath, String extension) {
     boolean isValid = true;
     return isValid;
   }
 
+  private static InternalCache getInternalCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
   public static Set<String> getAllRegionNames() {
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getInternalCache();
     Set<String> regionNames = new HashSet<String>();
     Set<Region<?, ?>> rootRegions = cache.rootRegions();
 
@@ -278,8 +281,6 @@ public class CliUtil {
     return sb.toString();
   }
 
-
-
   public static Set<DistributedMember> findMembersOrThrow(final String groups, final String members)
       throws CommandResultException {
 
@@ -307,7 +308,7 @@ public class CliUtil {
    */
   public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
       String[] members) {
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getInternalCache();
     Set<DistributedMember> allMembers = getAllMembers(cache);
 
     return findMembers(allMembers, groups, members);
@@ -318,7 +319,7 @@ public class CliUtil {
    * locators.
    */
   public static Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getInternalCache();
     Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
 
     return findMembers(allNormalMembers, groups, members);
@@ -367,7 +368,7 @@ public class CliUtil {
     DistributedMember memberFound = null;
 
     if (memberNameOrId != null) {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getInternalCache();
       Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
       for (DistributedMember member : memberSet) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
@@ -442,7 +443,6 @@ public class CliUtil {
     @Override
     public boolean accept(File pathname) {
       String name = pathname.getName();
-
       return name.endsWith(extensionWithDot);
     }
   }
@@ -493,10 +493,6 @@ public class CliUtil {
     private final int dataLength;
     private final byte[] data;
 
-    /**
-     * @param dataLength
-     * @param data
-     */
     public DeflaterInflaterData(int dataLength, byte[] data) {
       this.dataLength = dataLength;
       this.data = data;
@@ -565,20 +561,24 @@ public class CliUtil {
 
   /**
    * Returns a set of all the members of the distributed system excluding locators.
+   * 
+   * @param cache
    */
   @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllNormalMembers(Cache cache) {
-    return new HashSet<DistributedMember>(((InternalDistributedSystem) cache.getDistributedSystem())
+  public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
+    return new HashSet<DistributedMember>(cache.getInternalDistributedSystem()
         .getDistributionManager().getNormalDistributionManagerIds());
   }
 
   /**
    * Returns a set of all the members of the distributed system including locators.
+   * 
+   * @param cache
    */
   @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllMembers(Cache cache) {
-    return new HashSet<DistributedMember>(((InternalDistributedSystem) cache.getDistributedSystem())
-        .getDistributionManager().getDistributionManagerIds());
+  public static Set<DistributedMember> getAllMembers(InternalCache cache) {
+    return new HashSet<DistributedMember>(
+        cache.getInternalDistributedSystem().getDistributionManager().getDistributionManagerIds());
   }
 
   @SuppressWarnings("unchecked")
@@ -590,11 +590,12 @@ public class CliUtil {
   /**
    * Returns a set of all the members of the distributed system for the given groups.
    */
-  public static Set<DistributedMember> getDistributedMembersByGroup(Cache cache, String[] groups) {
+  public static Set<DistributedMember> getDistributedMembersByGroup(InternalCache cache,
+      String[] groups) {
     Set<DistributedMember> groupMembers = new HashSet<DistributedMember>();
     for (String group : groups) {
-      groupMembers.addAll(((InternalDistributedSystem) cache.getDistributedSystem())
-          .getDistributionManager().getGroupMembers(group));
+      groupMembers.addAll(
+          cache.getInternalDistributedSystem().getDistributionManager().getGroupMembers(group));
     }
     return groupMembers;
   }
@@ -652,13 +653,13 @@ public class CliUtil {
    * find.
    *
    * @param region region path for which members that have this region are required
-   * @param cache Cache instance to use to find members
+   * @param cache cache instance to use to find members
    * @param returnAll whether to return all members or only the first member we find. Returns all
    *        when <code>true</code>
    * @return a Set of DistributedMember for members that have the specified <code>region</code>.
    */
   public static Set<DistributedMember> getRegionAssociatedMembers(final String region,
-      final Cache cache, boolean returnAll) {
+      final InternalCache cache, boolean returnAll) {
     if (region == null || region.isEmpty()) {
       return null;
     }
@@ -742,20 +743,16 @@ public class CliUtil {
   /**
    * Resolves file system path relative to Gfsh. If the pathname is not specified, then pathname is
    * returned.
-   * <p/>
    *
    * @param pathname a String value specifying the file system pathname to resolve.
    * @return a String specifying a path relative to Gfsh.
    */
-  // Moved form LauncherLifeCycleCommands
   public static String resolvePathname(final String pathname) {
     return (StringUtils.isBlank(pathname) ? pathname
         : IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(pathname)));
   }
 
-
   public static void runLessCommandAsExternalViewer(Result commandResult, boolean isError) {
-
     StringBuilder sb = new StringBuilder();
     String NEW_LINE = System.getProperty("line.separator");
 
@@ -784,7 +781,6 @@ public class CliUtil {
       if (file != null)
         file.delete();
     }
-
   }
 
   public static String getClientIdFromCacheClientProxy(CacheClientProxy p) {
@@ -797,7 +793,7 @@ public class CliUtil {
     return buffer.toString();
   }
 
-  public static Set<DistributedMember> getMembersForeRegionViaFunction(Cache cache,
+  public static Set<DistributedMember> getMembersForeRegionViaFunction(InternalCache cache,
       String regionPath, boolean returnAll) {
     try {
       Set<DistributedMember> regionMembers = new HashSet<DistributedMember>();

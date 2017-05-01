@@ -20,12 +20,12 @@ import java.util.Properties;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.LeaseExpiredException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * <code>RegionFactory</code> is used to create {@link Region regions} in a {@link Cache cache}.
+ * {@code RegionFactory} is used to create {@link Region regions} in a {@link Cache cache}.
  * Instances of this interface can be created:
  * <ul>
  * <li>using a {@link RegionShortcut shortcut} by calling
@@ -63,17 +63,16 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 5.0
  */
-
 public class RegionFactory<K, V> {
   private final AttributesFactory<K, V> attrsFactory;
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
 
   /**
    * For internal use only.
    * 
    * @since GemFire 6.5
    */
-  protected RegionFactory(GemFireCacheImpl cache) {
+  protected RegionFactory(InternalCache cache) {
     this.cache = cache;
     this.attrsFactory = new AttributesFactory<K, V>();
   }
@@ -83,7 +82,7 @@ public class RegionFactory<K, V> {
    * 
    * @since GemFire 6.5
    */
-  protected RegionFactory(GemFireCacheImpl cache, RegionShortcut pra) {
+  protected RegionFactory(InternalCache cache, RegionShortcut pra) {
     this.cache = cache;
     RegionAttributes ra = cache.getRegionAttributes(pra.toString());
     if (ra == null) {
@@ -97,7 +96,7 @@ public class RegionFactory<K, V> {
    * 
    * @since GemFire 6.5
    */
-  protected RegionFactory(GemFireCacheImpl cache, RegionAttributes ra) {
+  protected RegionFactory(InternalCache cache, RegionAttributes ra) {
     this.cache = cache;
     this.attrsFactory = new AttributesFactory<K, V>(ra);
   }
@@ -107,7 +106,7 @@ public class RegionFactory<K, V> {
    * 
    * @since GemFire 6.5
    */
-  protected RegionFactory(GemFireCacheImpl cache, String regionAttributesId) {
+  protected RegionFactory(InternalCache cache, String regionAttributesId) {
     this.cache = cache;
     RegionAttributes<K, V> ra = getCache().getRegionAttributes(regionAttributesId);
     if (ra == null) {
@@ -127,7 +126,7 @@ public class RegionFactory<K, V> {
    */
   @Deprecated
   public RegionFactory() throws CacheWriterException, RegionExistsException, TimeoutException {
-    this((GemFireCacheImpl) new CacheFactory().create());
+    this((InternalCache) new CacheFactory().create());
   }
 
   /**
@@ -142,7 +141,7 @@ public class RegionFactory<K, V> {
   @Deprecated
   public RegionFactory(RegionAttributes<K, V> regionAttributes)
       throws CacheWriterException, RegionExistsException, TimeoutException {
-    this((GemFireCacheImpl) new CacheFactory().create(), regionAttributes);
+    this((InternalCache) new CacheFactory().create(), regionAttributes);
   }
 
   /**
@@ -160,7 +159,7 @@ public class RegionFactory<K, V> {
   @Deprecated
   public RegionFactory(String regionAttributesId)
       throws CacheWriterException, RegionExistsException, TimeoutException {
-    this((GemFireCacheImpl) new CacheFactory().create(), regionAttributesId);
+    this((InternalCache) new CacheFactory().create(), regionAttributesId);
   }
 
   /**
@@ -170,7 +169,7 @@ public class RegionFactory<K, V> {
    * used.
    *
    * @param distributedSystemProperties an instance of Properties containing
-   *        <code>DistributedSystem</code configuration
+   *        {@code DistributedSystem} configuration
    * @throws CacheException if unable to connect the DistributedSystem or create a Cache
    * @deprecated as of 6.5 use {@link CacheFactory#CacheFactory(Properties)} and
    *             {@link Cache#createRegionFactory()} instead.
@@ -178,7 +177,7 @@ public class RegionFactory<K, V> {
   @Deprecated
   public RegionFactory(Properties distributedSystemProperties)
       throws CacheWriterException, RegionExistsException, TimeoutException {
-    this((GemFireCacheImpl) new CacheFactory(distributedSystemProperties).create());
+    this((InternalCache) new CacheFactory(distributedSystemProperties).create());
   }
 
   /**
@@ -198,8 +197,7 @@ public class RegionFactory<K, V> {
   public RegionFactory(Properties distributedSystemProperties,
       RegionAttributes<K, V> regionAttributes)
       throws CacheWriterException, RegionExistsException, TimeoutException {
-    this((GemFireCacheImpl) new CacheFactory(distributedSystemProperties).create(),
-        regionAttributes);
+    this((InternalCache) new CacheFactory(distributedSystemProperties).create(), regionAttributes);
   }
 
   /**
@@ -222,19 +220,19 @@ public class RegionFactory<K, V> {
   @Deprecated
   public RegionFactory(Properties distributedSystemProperties, String regionAttributesId)
       throws CacheWriterException, RegionExistsException, TimeoutException {
-    this((GemFireCacheImpl) new CacheFactory(distributedSystemProperties).create(),
+    this((InternalCache) new CacheFactory(distributedSystemProperties).create(),
         regionAttributesId);
   }
 
   /**
    * Returns the cache used by this factory.
    */
-  private synchronized GemFireCacheImpl getCache() {
+  private synchronized InternalCache getCache() {
     return this.cache;
   }
 
   /**
-   * Sets the cache loader for the next <code>RegionAttributes</code> created.
+   * Sets the cache loader for the next {@code RegionAttributes} created.
    *
    * @param cacheLoader the cache loader or null if no loader
    * @return a reference to this RegionFactory object
@@ -247,7 +245,7 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the cache writer for the next <code>RegionAttributes</code> created.
+   * Sets the cache writer for the next {@code RegionAttributes} created.
    *
    * @param cacheWriter the cache writer or null if no cache writer
    * @return a reference to this RegionFactory object
@@ -263,7 +261,7 @@ public class RegionFactory<K, V> {
    * 
    * @param aListener the cache listener to add
    * @return a reference to this RegionFactory object
-   * @throws IllegalArgumentException if <code>aListener</code> is null
+   * @throws IllegalArgumentException if {@code aListener} is null
    * @see AttributesFactory#addCacheListener
    */
   public RegionFactory<K, V> addCacheListener(CacheListener<K, V> aListener) {
@@ -273,11 +271,11 @@ public class RegionFactory<K, V> {
 
   /**
    * Removes all cache listeners and then adds each listener in the specified array. for the next
-   * <code>RegionAttributes</code> created.
+   * {@code RegionAttributes} created.
    * 
    * @param newListeners a possibly null or empty array of listeners to add to this factory.
    * @return a reference to this RegionFactory object
-   * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
+   * @throws IllegalArgumentException if the {@code newListeners} array has a null element
    * @see AttributesFactory#initCacheListeners
    */
   public RegionFactory<K, V> initCacheListeners(CacheListener<K, V>[] newListeners) {
@@ -298,8 +296,8 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets the idleTimeout expiration attributes for region entries for the next
-   * <code>RegionAttributes</code> created. Note that the XML element that corresponds to this
-   * method "entry-idle-time", does not include "out" in its name.
+   * {@code RegionAttributes} created. Note that the XML element that corresponds to this method
+   * "entry-idle-time", does not include "out" in its name.
    *
    * @param idleTimeout the idleTimeout ExpirationAttributes for entries in this region
    * @return a reference to this RegionFactory object
@@ -312,7 +310,7 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the custom idleTimeout for the next <code>RegionAttributes</code> created.
+   * Sets the custom idleTimeout for the next {@code RegionAttributes} created.
    * 
    * @param custom the custom method
    * @return the receiver
@@ -325,7 +323,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets the timeToLive expiration attributes for region entries for the next
-   * <code>RegionAttributes</code> created.
+   * {@code RegionAttributes} created.
    *
    * @param timeToLive the timeToLive ExpirationAttributes for entries in this region
    * @return a reference to this RegionFactory object
@@ -338,8 +336,7 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the custom timeToLive expiration method for the next <code>RegionAttributes</code>
-   * created.
+   * Sets the custom timeToLive expiration method for the next {@code RegionAttributes} created.
    * 
    * @param custom the custom method
    * @return the receiver
@@ -352,8 +349,8 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets the idleTimeout expiration attributes for the region itself for the next
-   * <code>RegionAttributes</code> created. Note that the XML element that corresponds to this
-   * method "region-idle-time", does not include "out" in its name.
+   * {@code RegionAttributes} created. Note that the XML element that corresponds to this method
+   * "region-idle-time", does not include "out" in its name.
    *
    * @param idleTimeout the ExpirationAttributes for this region idleTimeout
    * @return a reference to this RegionFactory object
@@ -367,7 +364,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets the timeToLive expiration attributes for the region itself for the next
-   * <code>RegionAttributes</code> created.
+   * {@code RegionAttributes} created.
    *
    * @param timeToLive the ExpirationAttributes for this region timeToLive
    * @return a reference to this RegionFactory object
@@ -380,7 +377,7 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the scope for the next <code>RegionAttributes</code> created.
+   * Sets the scope for the next {@code RegionAttributes} created.
    *
    * @param scopeType the type of Scope to use for the region
    * @return a reference to this RegionFactory object
@@ -393,7 +390,7 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the data policy for the next <code>RegionAttributes</code> created.
+   * Sets the data policy for the next {@code RegionAttributes} created.
    *
    * @param dataPolicy The type of mirroring to use for the region
    * @return a reference to this RegionFactory object
@@ -436,15 +433,14 @@ public class RegionFactory<K, V> {
    * Sets the pool name attribute. This causes regions that use these attributes to be a client
    * region which communicates with the servers that the connection pool communicates with.
    * <p>
-   * If this attribute is set to <code>null</code> or <code>""</code> then the connection pool is
-   * disabled causing regions that use these attributes to be communicate with peers instead of
-   * servers.
+   * If this attribute is set to {@code null} or {@code ""} then the connection pool is disabled
+   * causing regions that use these attributes to be communicate with peers instead of servers.
    * <p>
    * The named connection pool must exist on the cache at the time these attributes are used to
    * create a region. See {@link PoolManager#createFactory} for how to create a connection pool.
    * 
-   * @param poolName the name of the connection pool to use; if <code>null</code> or <code>""</code>
-   *        then the connection pool attribute is disabled for regions using these attributes.
+   * @param poolName the name of the connection pool to use; if {@code null} or {@code ""} then the
+   *        connection pool attribute is disabled for regions using these attributes.
    * @return a reference to this RegionFactory object
    * @throws IllegalStateException if a cache loader or cache writer has already been set.
    * @since GemFire 5.7
@@ -491,14 +487,13 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the key constraint for the next <code>RegionAttributes</code> created. Keys in the region
-   * will be constrained to this class (or subclass). Any attempt to store a key of an incompatible
-   * type in the region will cause a <code>ClassCastException</code> to be thrown.
+   * Sets the key constraint for the next {@code RegionAttributes} created. Keys in the region will
+   * be constrained to this class (or subclass). Any attempt to store a key of an incompatible type
+   * in the region will cause a {@code ClassCastException} to be thrown.
    *
    * @param keyConstraint The Class to constrain the keys to, or null if no constraint
    * @return a reference to this RegionFactory object
-   * @throws IllegalArgumentException if <code>keyConstraint</code> is a class denoting a primitive
-   *         type
+   * @throws IllegalArgumentException if {@code keyConstraint} is a class denoting a primitive type
    * @see AttributesFactory#setKeyConstraint
    */
   public RegionFactory<K, V> setKeyConstraint(Class<K> keyConstraint) {
@@ -507,14 +502,14 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the value constraint for the next <code>RegionAttributes</code> created. Values in the
-   * region will be constrained to this class (or subclass). Any attempt to store a value of an
-   * incompatible type in the region will cause a <code>ClassCastException</code> to be thrown.
+   * Sets the value constraint for the next {@code RegionAttributes} created. Values in the region
+   * will be constrained to this class (or subclass). Any attempt to store a value of an
+   * incompatible type in the region will cause a {@code ClassCastException} to be thrown.
    *
    * @param valueConstraint The Class to constrain the values to, or null if no constraint
    * @return a reference to this RegionFactory object
-   * @throws IllegalArgumentException if <code>valueConstraint</code> is a class denoting a
-   *         primitive type
+   * @throws IllegalArgumentException if {@code valueConstraint} is a class denoting a primitive
+   *         type
    * @see AttributesFactory#setValueConstraint
    */
   public RegionFactory<K, V> setValueConstraint(Class<V> valueConstraint) {
@@ -523,8 +518,8 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the entry initial capacity for the next <code>RegionAttributes</code> created. This value
-   * is used in initializing the map that holds the entries.
+   * Sets the entry initial capacity for the next {@code RegionAttributes} created. This value is
+   * used in initializing the map that holds the entries.
    *
    * @param initialCapacity the initial capacity of the entry map
    * @return a reference to this RegionFactory object
@@ -538,8 +533,8 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the entry load factor for the next <code>RegionAttributes</code> created. This value is
-   * used in initializing the map that holds the entries.
+   * Sets the entry load factor for the next {@code RegionAttributes} created. This value is used in
+   * initializing the map that holds the entries.
    *
    * @param loadFactor the load factor of the entry map
    * @return a reference to this RegionFactory object
@@ -553,8 +548,8 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the concurrency level tof the next <code>RegionAttributes</code> created. This value is
-   * used in initializing the map that holds the entries.
+   * Sets the concurrency level tof the next {@code RegionAttributes} created. This value is used in
+   * initializing the map that holds the entries.
    *
    * @param concurrencyLevel the concurrency level of the entry map
    * @return a reference to this RegionFactory object
@@ -655,8 +650,8 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the <code>PartitionAttributes</code> that describe how the region is partitioned among
-   * members of the distributed system.
+   * Sets the {@code PartitionAttributes} that describe how the region is partitioned among members
+   * of the distributed system.
    *
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setPartitionAttributes
@@ -667,14 +662,15 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Sets the <code>MembershipAttributes</code> that describe the membership roles required for
-   * reliable access to the region.
+   * Sets the {@code MembershipAttributes} that describe the membership roles required for reliable
+   * access to the region.
    *
    * @param ra the MembershipAttributes to use
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setMembershipAttributes
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   public RegionFactory<K, V> setMembershipAttributes(MembershipAttributes ra) {
     this.attrsFactory.setMembershipAttributes(ra);
     return this;
@@ -787,7 +783,6 @@ public class RegionFactory<K, V> {
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
    * 
-   * @param cloningEnable
    * @return a reference to this RegionFactory object
    * @since GemFire 6.1
    * @see AttributesFactory#setCloningEnabled
@@ -800,7 +795,6 @@ public class RegionFactory<K, V> {
   /**
    * Adds a gatewaySenderId to the RegionAttributes
    * 
-   * @param gatewaySenderId
    * @return a reference to this RegionFactory object
    * @since GemFire 7.0
    * @see AttributesFactory#addGatewaySenderId(String)

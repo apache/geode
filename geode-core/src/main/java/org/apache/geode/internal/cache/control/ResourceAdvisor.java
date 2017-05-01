@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.control;
 
 import java.io.DataInput;
@@ -37,6 +36,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
@@ -82,18 +82,12 @@ public class ResourceAdvisor extends DistributionAdvisor {
       this.profiles = new ResourceManagerProfile[] {profile};
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.
-     * distributed.internal.DistributionManager)
-     */
     @Override
     protected void process(DistributionManager dm) {
       Throwable thr = null;
       ResourceManagerProfile p = null;
       try {
-        final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        final InternalCache cache = GemFireCacheImpl.getInstance();
         if (cache != null && !cache.isClosed()) {
           final ResourceAdvisor ra = cache.getInternalResourceManager().getResourceAdvisor();
           if (this.profiles != null) {
@@ -110,7 +104,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
             logger.debug("No cache: {}", this);
           }
         }
-      } catch (CancelException e) {
+      } catch (CancelException ignore) {
         if (logger.isDebugEnabled()) {
           logger.debug("Cache closed: {}", this);
         }
@@ -137,11 +131,6 @@ public class ResourceAdvisor extends DistributionAdvisor {
       }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
-     */
     @Override
     public int getDSFID() {
       return RESOURCE_PROFILE_MESSAGE;
@@ -184,7 +173,6 @@ public class ResourceAdvisor extends DistributionAdvisor {
      * @param irm The resource manager which is requesting distribution
      * @param recips The recipients of the message
      * @param profile Profile to send in this message
-     * @throws ReplyException
      */
     public static void send(final InternalResourceManager irm,
         Set<InternalDistributedMember> recips, ResourceManagerProfile profile) {
@@ -235,7 +223,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
   }
 
   private InternalResourceManager getResourceManager() {
-    return ((GemFireCacheImpl) getAdvisee()).getInternalResourceManager(false);
+    return ((InternalCache) getAdvisee()).getInternalResourceManager(false);
   }
 
   @SuppressWarnings("synthetic-access")
@@ -288,7 +276,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
   @Override
   public String toString() {
-    return new StringBuilder().append("ResourceAdvisor for ResourceManager " + getAdvisee())
+    return new StringBuilder().append("ResourceAdvisor for ResourceManager ").append(getAdvisee())
         .toString();
   }
 

@@ -153,7 +153,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
   }
 
   private void clearAllPartitionedRegion(PartitionedRegion pr) {
-    Cache cache = pr.getCache();
+    InternalCache cache = pr.getCache();
     Region allPR = PartitionedRegionHelper.getPRRoot(cache);
     allPR.clear();
   }

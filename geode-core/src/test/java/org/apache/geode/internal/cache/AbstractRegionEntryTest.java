@@ -92,7 +92,7 @@ public class AbstractRegionEntryTest {
     }
 
     @Override
-    protected long getlastModifiedField() {
+    protected long getLastModifiedField() {
       return 0;
     }
 

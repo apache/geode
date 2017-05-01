@@ -12,10 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal.index;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import static org.apache.geode.internal.lang.SystemUtils.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,14 +24,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -63,12 +62,13 @@ import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.Support;
 import org.apache.geode.cache.query.internal.index.HashIndex.IMQEvaluator.HashIndexComparator;
 import org.apache.geode.cache.query.internal.index.IndexStore.IndexStoreEntry;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
@@ -82,11 +82,10 @@ import org.apache.geode.internal.offheap.StoredObject;
  * called explicitly with createHashIndex It requires the indexed expression be a path expression
  * and the from clause has only one iterator. This implies there is only one value in the index for
  * each region entry.
- * 
+ * <p>
  * This index does not support the storage of projection attributes.
- * 
+ * <p>
  * Currently this implementation only supports an index on a region path.
- * 
  */
 public class HashIndex extends AbstractIndex {
   private static final Logger logger = LogService.getLogger();
@@ -118,7 +117,7 @@ public class HashIndex extends AbstractIndex {
 
   /**
    * Create a HashIndex that can be used when executing queries.
-   * 
+   *
    * @param indexName the name of this index, used for statistics collection
    * @param indexedExpression the expression to index on, a function dependent on region entries
    *        individually, limited to a path expression.
@@ -149,7 +148,7 @@ public class HashIndex extends AbstractIndex {
 
   /**
    * Get the index type
-   * 
+   *
    * @return the type of index
    */
   public IndexType getType() {
@@ -178,14 +177,10 @@ public class HashIndex extends AbstractIndex {
   /**
    * Add/Updates the index forward and reverse map. If index key for a RegionEntry is found same as
    * previous key no update is performed.
-   * 
+   *
    * This also updates the {@link IndexStatistics} numKeys and numValues as and when appropriate.
    * One thing to notice though is no increment in numValues is performed if old key and new index
    * key are found equal using {@link Object#equals(Object)}.
-   * 
-   * @param key
-   * @param entry
-   * @throws IMQException
    */
   private void basicAddMapping(Object key, RegionEntry entry) throws IMQException {
 
@@ -288,11 +283,10 @@ public class HashIndex extends AbstractIndex {
    * inserted for the RegionEntry. In case of update only forward map is cleared of old key and NO
    * update is performed on reverse map as that has already been done during
    * {@link HashIndex#basicAddMapping(Object, RegionEntry)}.
-   * 
+   *
    * @param key - Index key.
    * @param entry RegionEntry for which is being updated by user.
    * @param updateReverseMap true only when RegionEntry is invalidated/destroyed.
-   * @throws IMQException
    */
   private void basicRemoveMapping(Object key, RegionEntry entry, boolean updateReverseMap)
       throws IMQException {
@@ -359,6 +353,7 @@ public class HashIndex extends AbstractIndex {
         outerEntry = (Map.Entry) outer.next();
         // }
         outerKey = outerEntry.getKey();
+        // TODO: eliminate use of labels
         inner: while (!incrementInner || inner.hasNext()) {
           if (incrementInner) {
             innerEntry = inner.next();
@@ -410,16 +405,8 @@ public class HashIndex extends AbstractIndex {
    * used. Like, if condition is "p.ID = e.ID", {@link IndexInfo} will contain Left as p.ID, Right
    * as e.ID and operator as TOK_EQ. This method will evaluate p.ID OR e.ID based on if it is inner
    * or outer RegionEntry, and verify the p.ID = e.ID.
-   * 
-   * @param entry
-   * @param context
-   * @param indexInfo
-   * @param keyVal
+   *
    * @return true if entry value and index value are consistent.
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   private boolean verifyInnerAndOuterEntryValues(RegionEntry entry, ExecutionContext context,
       IndexInfo indexInfo, Object keyVal) throws FunctionDomainException, TypeMismatchException,
@@ -431,57 +418,6 @@ public class HashIndex extends AbstractIndex {
       runtimeItr.setCurrent(getTargetObject(entry));
     }
     return evaluateEntry(indexInfo, context, keyVal);
-  }
-
-  // TODO:Decsribe & test the function
-  /**
-   * @param outerEntries is a Set<RegionEntry>
-   * @param innerEntries is a Set<RegionEntry>
-   * @param key
-   * @throws QueryInvocationTargetException
-   * @throws NameResolutionException
-   * @throws TypeMismatchException
-   * @throws FunctionDomainException
-   */
-  private void populateListForEquiJoin(List list, Collection outerEntries, Collection innerEntries,
-      ExecutionContext context, Object key) throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException {
-
-    Assert.assertTrue((outerEntries != null && innerEntries != null),
-        "OuterEntries or InnerEntries must not be null");
-
-    Object values[][] = new Object[2][];
-    int j = 0;
-    Iterator itr = null;
-    while (j < 2) {
-      if (j == 0) {
-        itr = outerEntries.iterator();
-      } else {
-        itr = innerEntries.iterator();
-      }
-      // TODO :Asif Identify appropriate size of the List
-
-      // extract the values from the RegionEntries
-      List dummy = new ArrayList();
-      RegionEntry re = null;
-      while (itr.hasNext()) {
-        re = (RegionEntry) itr.next();
-        // Bug#41010: We need to verify if Inner and Outer Entries
-        // are consistent with index key values.
-        boolean ok = true;
-        if (re.isUpdateInProgress()) {
-          IndexInfo[] indexInfo = (IndexInfo[]) context.cacheGet(CompiledValue.INDEX_INFO);
-          IndexInfo indInfo = (j == 0) ? indexInfo[0] : indexInfo[1];
-
-          ok = verifyInnerAndOuterEntryValues(re, context, indInfo, key);
-        }
-        if (ok) {
-          dummy.add(getTargetObject(re));
-        }
-      }
-      dummy.toArray(values[j++] = new Object[dummy.size()]);
-    }
-    list.add(values);
   }
 
   public int getSizeEstimate(Object key, int operator, int matchLevel)
@@ -534,21 +470,17 @@ public class HashIndex extends AbstractIndex {
     int limit = -1;
 
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
-    if (applyLimit != null && applyLimit.booleanValue()) {
-      limit = ((Integer) context.cacheGet(CompiledValue.RESULT_LIMIT)).intValue();
+    if (applyLimit != null && applyLimit) {
+      limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
     }
 
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
     boolean applyOrderBy = false;
-    boolean asc = true;
     List orderByAttrs = null;
-    boolean multiColOrderBy = false;
-    if (orderByClause != null && orderByClause.booleanValue()) {
+    if (orderByClause != null && orderByClause) {
       orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
       CompiledSortCriterion csc = (CompiledSortCriterion) orderByAttrs.get(0);
-      asc = !csc.getCriterion();
       applyOrderBy = true;
-      multiColOrderBy = orderByAttrs.size() > 1;
     }
     evaluate(key, operator, results, iterOps, runtimeItr, context, keysToRemove, projAttrib,
         intermediateResults, isIntersection, limit, applyOrderBy, orderByAttrs);
@@ -623,8 +555,8 @@ public class HashIndex extends AbstractIndex {
   }
 
   @Override
-  void instantiateEvaluator(IndexCreationHelper ich) {
-    this.evaluator = new IMQEvaluator(ich);
+  void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
+    this.evaluator = new IMQEvaluator(indexCreationHelper);
     this.entriesSet.setEvaluator((HashIndex.IMQEvaluator) evaluator);
     this.comparator = ((IMQEvaluator) evaluator).comparator;
   }
@@ -747,18 +679,11 @@ public class HashIndex extends AbstractIndex {
    * This evaluates the left and right side of a where condition for which this Index was used.
    * Like, if condition is "ID > 1", {@link IndexInfo} will contain Left as ID, Right as '1' and
    * operator as TOK_GT. This method will evaluate ID from region entry value and verify the ID > 1.
-   * 
+   *
    * Note: IndexInfo is created for each query separately based on the condition being evaluated
    * using the Index.
-   * 
-   * @param indexInfo
-   * @param context
-   * @param keyVal
+   *
    * @return true if RegionEntry value satisfies the where condition (contained in IndexInfo).
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   private boolean evaluateEntry(IndexInfo indexInfo, ExecutionContext context, Object keyVal)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -787,7 +712,7 @@ public class HashIndex extends AbstractIndex {
     if (left == null && right == null) {
       return Boolean.TRUE;
     } else {
-      return ((Boolean) TypeUtils.compare(left, right, operator)).booleanValue();
+      return (Boolean) TypeUtils.compare(left, right, operator);
     }
   }
 
@@ -797,7 +722,8 @@ public class HashIndex extends AbstractIndex {
    */
   private Object getTargetObject(RegionEntry entry) {
     if (this.indexOnValues) {
-      Object o = entry.getValue((LocalRegion) getRegion()); // OFFHEAP: incrc, deserialize, decrc
+      // OFFHEAP: incrc, deserialize, decrc
+      Object o = entry.getValue((LocalRegion) getRegion());
       try {
         if (o == Token.INVALID) {
           return null;
@@ -805,7 +731,7 @@ public class HashIndex extends AbstractIndex {
         if (o instanceof CachedDeserializable) {
           return ((CachedDeserializable) o).getDeserializedForReading();
         }
-      } catch (EntryDestroyedException ede) {
+      } catch (EntryDestroyedException ignored) {
         return null;
       }
       return o;
@@ -829,7 +755,7 @@ public class HashIndex extends AbstractIndex {
         } else if (o instanceof CachedDeserializable) {
           o = ((CachedDeserializable) o).getDeserializedForReading();
         }
-      } catch (EntryDestroyedException ede) {
+      } catch (EntryDestroyedException ignored) {
         return Token.INVALID;
       }
       return o;
@@ -861,61 +787,33 @@ public class HashIndex extends AbstractIndex {
   }
 
   public String dump() {
-    StringBuffer sb = new StringBuffer(toString()).append(" {\n");
-    // sb.append("Null Values\n");
-    // Iterator nI = nullMappedEntries.iterator();
-    // while (nI.hasNext()) {
-    // RegionEntry e = (RegionEntry) nI.next();
-    // Object value = getTargetObject(e);
-    // sb.append(" RegionEntry.key = ").append(e.getKey());
-    // sb.append(" Value.type = ").append(value.getClass().getName());
-    // if (value instanceof Collection) {
-    // sb.append(" Value.size = ").append(((Collection) value).size());
-    // }
-    // sb.append("\n");
-    // }
-    // sb.append(" -----------------------------------------------\n");
-    // sb.append("Undefined Values\n");
-    // Iterator uI = undefinedMappedEntries.iterator();
-    // while (uI.hasNext()) {
-    // RegionEntry e = (RegionEntry) uI.next();
-    // Object value = getTargetObject(e);
-    // sb.append(" RegionEntry.key = ").append(e.getKey());
-    // sb.append(" Value.type = ").append(value.getClass().getName());
-    // if (value instanceof Collection) {
-    // sb.append(" Value.size = ").append(((Collection) value).size());
-    // }
-    // sb.append("\n");
-    // }
-    sb.append(" -----------------------------------------------\n");
-    Iterator i1 = this.entriesSet.iterator();
-    while (i1.hasNext()) {
-      Map.Entry indexEntry = (Map.Entry) i1.next();
-      sb.append(" Key = " + indexEntry.getKey()).append("\n");
-      sb.append(" Value Type = ").append(" " + indexEntry.getValue().getClass().getName())
-          .append("\n");
+    StringBuilder sb = new StringBuilder(toString()).append(" {").append(getLineSeparator());
+    sb.append(" -----------------------------------------------").append(getLineSeparator());
+    for (Object anEntriesSet : this.entriesSet) {
+      Entry indexEntry = (Entry) anEntriesSet;
+      sb.append(" Key = ").append(indexEntry.getKey()).append(getLineSeparator());
+      sb.append(" Value Type = ").append(' ').append(indexEntry.getValue().getClass().getName())
+          .append(getLineSeparator());
       if (indexEntry.getValue() instanceof Collection) {
-        sb.append(" Value Size = ").append(" " + ((Collection) indexEntry.getValue()).size())
-            .append("\n");
+        sb.append(" Value Size = ").append(' ').append(((Collection) indexEntry.getValue()).size())
+            .append(getLineSeparator());
       } else if (indexEntry.getValue() instanceof RegionEntry) {
-        sb.append(" Value Size = ").append(" " + 1).append("\n");
+        sb.append(" Value Size = ").append(" " + 1).append(getLineSeparator());
       } else {
         throw new AssertionError("value instance of " + indexEntry.getValue().getClass().getName());
       }
       Collection entrySet = regionEntryCollection(indexEntry.getValue());
-      Iterator i2 = entrySet.iterator();
-      while (i2.hasNext()) {
-        RegionEntry e = (RegionEntry) i2.next();
+      for (Object anEntrySet : entrySet) {
+        RegionEntry e = (RegionEntry) anEntrySet;
         Object value = getTargetObject(e);
         sb.append("  RegionEntry.key = ").append(e.getKey());
         sb.append("  Value.type = ").append(value.getClass().getName());
         if (value instanceof Collection) {
           sb.append("  Value.size = ").append(((Collection) value).size());
         }
-        sb.append("\n");
-        // sb.append(" Value.type = ").append(value).append("\n");
+        sb.append(getLineSeparator());
       }
-      sb.append(" -----------------------------------------------\n");
+      sb.append(" -----------------------------------------------").append(getLineSeparator());
     }
     sb.append("}// Index ").append(getName()).append(" end");
     return sb.toString();
@@ -1038,21 +936,21 @@ public class HashIndex extends AbstractIndex {
     }
 
     public String toString() {
-      StringBuffer sb = new StringBuffer();
-      sb.append("No Keys = ").append(getNumberOfKeys()).append("\n");
-      sb.append("No Values = ").append(getNumberOfValues()).append("\n");
-      sb.append("No Uses = ").append(getTotalUses()).append("\n");
-      sb.append("No Updates = ").append(getNumUpdates()).append("\n");
-      sb.append("Total Update time = ").append(getTotalUpdateTime()).append("\n");
+      StringBuilder sb = new StringBuilder();
+      sb.append("No Keys = ").append(getNumberOfKeys()).append(getLineSeparator());
+      sb.append("No Values = ").append(getNumberOfValues()).append(getLineSeparator());
+      sb.append("No Uses = ").append(getTotalUses()).append(getLineSeparator());
+      sb.append("No Updates = ").append(getNumUpdates()).append(getLineSeparator());
+      sb.append("Total Update time = ").append(getTotalUpdateTime()).append(getLineSeparator());
       return sb.toString();
     }
   }
 
   class IMQEvaluator implements IndexedExpressionEvaluator {
-    private Cache cache;
+    private final InternalCache cache;
     private List fromIterators = null;
     private CompiledValue indexedExpr = null;
-    final private String[] canonicalIterNames;
+    private final String[] canonicalIterNames;
     private ObjectType indexResultSetType = null;
     private Region rgn = null;
     private Map dependencyGraph = null;
@@ -1098,7 +996,7 @@ public class HashIndex extends AbstractIndex {
       this.canonicalIterNames = ((FunctionalIndexCreationHelper) helper).canonicalizedIteratorNames;
       this.rgn = helper.getRegion();
 
-      // The modified iterators for optmizing Index cxreation
+      // The modified iterators for optimizing Index creation
       isFirstItrOnEntry = ((FunctionalIndexCreationHelper) helper).isFirstIteratorRegionEntry;
       additionalProj = ((FunctionalIndexCreationHelper) helper).additionalProj;
       Object params1[] = {new QRegion(rgn, false)};
@@ -1173,7 +1071,7 @@ public class HashIndex extends AbstractIndex {
 
     /**
      * This function is used for creating Index data at the start
-     * 
+     *
      */
     public void initializeIndex(boolean loadEntries) throws IMQException {
       this.initEntriesUpdated = 0;
@@ -1278,7 +1176,6 @@ public class HashIndex extends AbstractIndex {
 
     /**
      * @param add true if adding to index, false if removing
-     * @param context
      */
     private void doNestedIterations(int level, boolean add, ExecutionContext context)
         throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
@@ -1302,7 +1199,6 @@ public class HashIndex extends AbstractIndex {
 
     /**
      * @param add true if adding, false if removing from index
-     * @param context
      */
     private void applyProjection(boolean add, ExecutionContext context)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -1375,33 +1271,30 @@ public class HashIndex extends AbstractIndex {
       Object params[] = {dQRegion};
       ExecutionContext context = new ExecutionContext(params, this.cache);
       context.newScope(IndexCreationHelper.INDEX_QUERY_SCOPE_ID);
-      try {
-        if (this.dependencyGraph != null) {
-          context.setDependencyGraph(dependencyGraph);
-        }
-        for (int i = 0; i < this.iteratorSize; i++) {
-          CompiledIteratorDef iterDef = (CompiledIteratorDef) fromIterators.get(i);
-          // We are re-using the same ExecutionContext on every evaluate -- this
-          // is not how ExecutionContext was intended to be used.
-          // Asif: Compute the dependency only once. The call to methods of this
-          // class are thread safe as for update lock on Index is taken .
-          if (this.dependencyGraph == null) {
-            iterDef.computeDependencies(context);
-          }
-          RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
-          context.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
-          context.bindIterator(rIter);
-        }
-        // Save the dependency graph for future updates.
-        if (dependencyGraph == null) {
-          dependencyGraph = context.getDependencyGraph();
-        }
 
-        Support.Assert(this.indexResultSetType != null,
-            "IMQEvaluator::evaluate:The StrcutType should have been initialized during index creation");
-      } finally {
-
+      if (this.dependencyGraph != null) {
+        context.setDependencyGraph(dependencyGraph);
       }
+      for (int i = 0; i < this.iteratorSize; i++) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) fromIterators.get(i);
+        // We are re-using the same ExecutionContext on every evaluate -- this
+        // is not how ExecutionContext was intended to be used.
+        // Asif: Compute the dependency only once. The call to methods of this
+        // class are thread safe as for update lock on Index is taken .
+        if (this.dependencyGraph == null) {
+          iterDef.computeDependencies(context);
+        }
+        RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
+        context.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
+        context.bindIterator(rIter);
+      }
+      // Save the dependency graph for future updates.
+      if (dependencyGraph == null) {
+        dependencyGraph = context.getDependencyGraph();
+      }
+
+      Support.Assert(this.indexResultSetType != null,
+          "IMQEvaluator::evaluate:The StructType should have been initialized during index creation");
       return context;
     }
 

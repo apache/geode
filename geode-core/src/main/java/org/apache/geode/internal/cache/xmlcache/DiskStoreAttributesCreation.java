@@ -33,7 +33,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * @since GemFire prPersistSprint2
  */
 public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttributes
-    implements Serializable {
+    implements Serializable, DiskStore {
 
   /**
    * An <code>AttributesFactory</code> for creating default <code>RegionAttribute</code>s

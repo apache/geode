@@ -19,6 +19,7 @@ import java.util.Date;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxFieldDoesNotExistException;
 import org.apache.geode.pdx.PdxFieldTypeMismatchException;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -80,9 +81,9 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
       if (getPdxType().getHasDeletedField()) {
         // Need a new type that does not have the deleted field
         PdxType pt = new PdxType(getPdxType().getClassName(), !getPdxType().getNoDomainClass());
-        GemFireCacheImpl gfc = GemFireCacheImpl
+        InternalCache cache = GemFireCacheImpl
             .getForPdx("PDX registry is unavailable because the Cache has been closed.");
-        TypeRegistry tr = gfc.getPdxRegistry();
+        TypeRegistry tr = cache.getPdxRegistry();
         writer = new PdxWriterImpl(pt, tr, os);
       } else {
         writer = new PdxWriterImpl(getPdxType(), os);

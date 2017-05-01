@@ -120,7 +120,7 @@ public class VMThinRegionEntryOffHeapObjectKey extends VMThinRegionEntryOffHeap 
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

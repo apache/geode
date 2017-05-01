@@ -1283,11 +1283,10 @@ public class CachePerfStats {
   public void incDeltaFullValuesRequested() {
     stats.incInt(deltaFullValuesRequestedId, 1);
   }
-  ////// Special Instance Methods /////
 
   /**
-   * Closes these stats so that they can not longer be used. The stats are closed when the
-   * {@linkplain GemFireCacheImpl#close cache} is closed.
+   * Closes these stats so that they can not longer be used. The stats are closed when the cache is
+   * closed.
    *
    * @since GemFire 3.5
    */

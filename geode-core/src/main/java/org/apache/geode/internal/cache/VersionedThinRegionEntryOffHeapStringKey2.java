@@ -156,7 +156,7 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

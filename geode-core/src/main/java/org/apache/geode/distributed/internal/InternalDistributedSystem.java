@@ -80,6 +80,7 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
@@ -1311,7 +1312,7 @@ public class InternalDistributedSystem extends DistributedSystem
           //
           // However, make sure cache is completely closed before starting
           // the distributed system close.
-          GemFireCacheImpl currentCache = GemFireCacheImpl.getInstance();
+          InternalCache currentCache = GemFireCacheImpl.getInstance();
           if (currentCache != null && !currentCache.isClosed()) {
             disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
                                                         // closing the cache
@@ -1541,7 +1542,7 @@ public class InternalDistributedSystem extends DistributedSystem
     StringTokenizer st = new StringTokenizer(locators, ",");
     while (st.hasMoreTokens()) {
       String l = st.nextToken();
-      StringBuffer canonical = new StringBuffer();
+      StringBuilder canonical = new StringBuilder();
       DistributionLocatorId locId = new DistributionLocatorId(l);
       String addr = locId.getBindAddress();
       if (addr != null && addr.trim().length() > 0) {
@@ -1555,7 +1556,7 @@ public class InternalDistributedSystem extends DistributedSystem
       sorted.add(canonical.toString());
     }
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (Iterator iter = sorted.iterator(); iter.hasNext();) {
       sb.append((String) iter.next());
       if (iter.hasNext()) {
@@ -1678,7 +1679,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("Connected ");
     String name = this.getName();
     if (name != null && !name.equals("")) {
@@ -2481,7 +2482,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * 
    * @param oldCache cache that has apparently failed
    */
-  public boolean tryReconnect(boolean forcedDisconnect, String reason, GemFireCacheImpl oldCache) {
+  public boolean tryReconnect(boolean forcedDisconnect, String reason, InternalCache oldCache) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (this.isReconnectingDS && forcedDisconnect) {
       return false;
@@ -2490,7 +2491,7 @@ public class InternalDistributedSystem extends DistributedSystem
                                         // cache
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
-        synchronized (reconnectLock) {
+        synchronized (this.reconnectLock) {
           if (!forcedDisconnect && !oldCache.isClosed()
               && oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
             if (isDebugEnabled) {
@@ -2503,7 +2504,7 @@ public class InternalDistributedSystem extends DistributedSystem
             logger.debug("tryReconnect: forcedDisconnect={}", forcedDisconnect);
           }
           if (forcedDisconnect) {
-            if (config.getDisableAutoReconnect()) {
+            if (this.config.getDisableAutoReconnect()) {
               if (isDebugEnabled) {
                 logger.debug("tryReconnect: auto reconnect after forced disconnect is disabled");
               }
@@ -2511,7 +2512,7 @@ public class InternalDistributedSystem extends DistributedSystem
             }
           }
           reconnect(forcedDisconnect, reason);
-          return (this.reconnectDS != null && this.reconnectDS.isConnected());
+          return this.reconnectDS != null && this.reconnectDS.isConnected();
         } // synchronized reconnectLock
       } // synchronized cache
     } // synchronized CacheFactory.class
@@ -2557,7 +2558,7 @@ public class InternalDistributedSystem extends DistributedSystem
     String cacheXML = null;
     List<CacheServerCreation> cacheServerCreation = null;
 
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       cacheXML = cache.getCacheConfig().getCacheXMLDescription();
       cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
@@ -2827,7 +2828,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * after an auto-reconnect we may need to recreate a cache server and start it
    */
   public void createAndStartCacheServers(List<CacheServerCreation> cacheServerCreation,
-      GemFireCacheImpl cache) {
+      InternalCache cache) {
 
     List<CacheServer> servers = cache.getCacheServers();
 
@@ -2861,11 +2862,11 @@ public class InternalDistributedSystem extends DistributedSystem
    * 
    * @param propsToCheck the Properties instance to compare with the existing Properties
    *
-   * @throws java.lang.IllegalStateException when the configuration is not the same other returns
+   * @throws IllegalStateException when the configuration is not the same other returns
    */
   public void validateSameProperties(Properties propsToCheck, boolean isConnected) {
     if (!this.sameAs(propsToCheck, isConnected)) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
 
       DistributionConfig wanted = DistributionConfigImpl.produce(propsToCheck);
 

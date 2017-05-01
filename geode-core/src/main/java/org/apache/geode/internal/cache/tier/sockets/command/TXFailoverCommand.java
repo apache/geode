@@ -14,20 +14,25 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.WaitForViewInstallation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.FindRemoteTXMessage;
 import org.apache.geode.internal.cache.FindRemoteTXMessage.FindRemoteTXMessageReplyProcessor;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PeerTXStateStub;
+import org.apache.geode.internal.cache.TXId;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-
-import java.io.IOException;
 
 /**
  * Used for bootstrapping txState/PeerTXStateStub on the server. This command is send when in client
@@ -91,7 +96,7 @@ public class TXFailoverCommand extends BaseCommand {
         // bug #42228 and bug #43504 - this cannot return until the current view
         // has been installed by all members, so that dlocks are released and
         // the same keys can be used in a new transaction by the same client thread
-        GemFireCacheImpl cache = (GemFireCacheImpl) servConn.getCache();
+        InternalCache cache = servConn.getCache();
         try {
           WaitForViewInstallation.send((DistributionManager) cache.getDistributionManager());
         } catch (InterruptedException e) {

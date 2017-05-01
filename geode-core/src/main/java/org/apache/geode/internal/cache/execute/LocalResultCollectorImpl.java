@@ -24,10 +24,9 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-public final class LocalResultCollectorImpl implements LocalResultCollector {
+public class LocalResultCollectorImpl implements LocalResultCollector {
 
   private final ResultCollector userRC;
 

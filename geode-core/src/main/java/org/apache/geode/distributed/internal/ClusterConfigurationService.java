@@ -14,26 +14,56 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
@@ -51,44 +81,18 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 public class ClusterConfigurationService {
-
   private static final Logger logger = LogService.getLogger();
 
   /**
    * Name of the directory where the shared configuration artifacts are stored
    */
   public static final String CLUSTER_CONFIG_ARTIFACTS_DIR_NAME = "cluster_config";
+
   private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
+
   public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
 
   public static final String CLUSTER_CONFIG = "cluster";
@@ -101,7 +105,7 @@ public class ClusterConfigurationService {
   /**
    * Name of the lock for locking the shared configuration
    */
-  public static final String SHARED_CONFIG_LOCK_NAME = "__CLUSTER_CONFIG_LOCK";
+  private static final String SHARED_CONFIG_LOCK_NAME = "__CLUSTER_CONFIG_LOCK";
 
   /**
    * Name of the region which is used to store the configuration information
@@ -114,11 +118,11 @@ public class ClusterConfigurationService {
   private final Set<PersistentMemberPattern> newerSharedConfigurationLocatorInfo = new HashSet<>();
   private final AtomicReference<SharedConfigurationStatus> status = new AtomicReference<>();
 
-  private GemFireCacheImpl cache;
+  private final InternalCache cache;
   private final DistributedLockService sharedConfigLockingService;
 
-  public ClusterConfigurationService(Cache cache) throws IOException {
-    this.cache = (GemFireCacheImpl) cache;
+  public ClusterConfigurationService(InternalCache cache) throws IOException {
+    this.cache = cache;
     Properties properties = cache.getDistributedSystem().getProperties();
     // resolve the cluster config dir
     String clusterConfigRootDir = properties.getProperty(CLUSTER_CONFIGURATION_DIR);
@@ -137,10 +141,11 @@ public class ClusterConfigurationService {
     String configDiskDirName =
         CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName();
 
-    configDirPath = FilenameUtils.concat(clusterConfigRootDir, CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
-    configDiskDirPath = FilenameUtils.concat(clusterConfigRootDir, configDiskDirName);
-    sharedConfigLockingService = getSharedConfigLockService(cache.getDistributedSystem());
-    status.set(SharedConfigurationStatus.NOT_STARTED);
+    this.configDirPath =
+        FilenameUtils.concat(clusterConfigRootDir, CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
+    this.configDiskDirPath = FilenameUtils.concat(clusterConfigRootDir, configDiskDirName);
+    this.sharedConfigLockingService = getSharedConfigLockService(cache.getDistributedSystem());
+    this.status.set(SharedConfigurationStatus.NOT_STARTED);
   }
 
   /**
@@ -154,7 +159,7 @@ public class ClusterConfigurationService {
         sharedConfigDls = DLockService.create(SHARED_CONFIG_LOCK_SERVICE_NAME,
             (InternalDistributedSystem) ds, true, true);
       }
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignore) {
       return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     }
     return sharedConfigDls;
@@ -172,7 +177,7 @@ public class ClusterConfigurationService {
         groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
       }
       for (String group : groups) {
-        Configuration configuration = (Configuration) configRegion.get(group);
+        Configuration configuration = configRegion.get(group);
         if (configuration == null) {
           configuration = new Configuration(group);
         }
@@ -189,7 +194,7 @@ public class ClusterConfigurationService {
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           configRegion.put(group, configuration);
         } catch (Exception e) {
-          logger.error("error updating cluster configuration for group " + group, e);
+          logger.error("error updating cluster configuration for group {}", group, e);
         }
       }
     } finally {
@@ -210,7 +215,7 @@ public class ClusterConfigurationService {
         groups = groupSet.toArray(new String[groupSet.size()]);
       }
       for (String group : groups) {
-        Configuration configuration = (Configuration) configRegion.get(group);
+        Configuration configuration = configRegion.get(group);
         if (configuration != null) {
           String xmlContent = configuration.getCacheXmlContent();
           try {
@@ -221,7 +226,7 @@ public class ClusterConfigurationService {
               configRegion.put(group, configuration);
             }
           } catch (Exception e) {
-            logger.error("error updating cluster configuration for group " + group, e);
+            logger.error("error updating cluster configuration for group {}", group, e);
           }
         }
       }
@@ -230,8 +235,10 @@ public class ClusterConfigurationService {
     }
   }
 
-  // we don't need to trigger the change listener for this modification, so it's ok to
-  // operate on the original configuration object
+  /**
+   * we don't need to trigger the change listener for this modification, so it's ok to operate on
+   * the original configuration object
+   */
   public void modifyXmlAndProperties(Properties properties, XmlEntity xmlEntity, String[] groups) {
     lockSharedConfiguration();
     try {
@@ -260,7 +267,7 @@ public class ClusterConfigurationService {
             // Change the xml content of the configuration and put it the config region
             configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           } catch (Exception e) {
-            logger.error("error updating cluster configuration for group " + group, e);
+            logger.error("error updating cluster configuration for group {}", group, e);
           }
         }
 
@@ -274,7 +281,6 @@ public class ClusterConfigurationService {
     }
   }
 
-
   /**
    * Add jar information into the shared configuration and save the jars in the file system used
    * when deploying jars
@@ -282,8 +288,8 @@ public class ClusterConfigurationService {
    * @return true on success
    */
   public boolean addJarsToThisLocator(String[] jarNames, byte[][] jarBytes, String[] groups) {
-    boolean success = true;
     lockSharedConfiguration();
+    boolean success = true;
     try {
       if (groups == null) {
         groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
@@ -297,11 +303,11 @@ public class ClusterConfigurationService {
           createConfigDirIfNecessary(group);
         }
 
-        String groupDir = FilenameUtils.concat(configDirPath, group);
+        String groupDir = FilenameUtils.concat(this.configDirPath, group);
         for (int i = 0; i < jarNames.length; i++) {
           String filePath = FilenameUtils.concat(groupDir, jarNames[i]);
-          File jarFile = new File(filePath);
           try {
+            File jarFile = new File(filePath);
             FileUtils.writeByteArrayToFile(jarFile, jarBytes[i]);
           } catch (IOException e) {
             logger.info(e);
@@ -333,8 +339,8 @@ public class ClusterConfigurationService {
    * @return true on success.
    */
   public boolean removeJars(final String[] jarNames, String[] groups) {
-    boolean success = true;
     lockSharedConfiguration();
+    boolean success = true;
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
       if (groups == null) {
@@ -360,10 +366,10 @@ public class ClusterConfigurationService {
 
   /**
    * read the jar bytes in the file system
+   * <p>
+   * used when creating cluster config response and used when uploading the jars to another locator
    */
-  // used when creating cluster config response
-  // and used when uploading the jars to another locator
-  public byte[] getJarBytesFromThisLocator(String group, String jarName) throws Exception {
+  public byte[] getJarBytesFromThisLocator(String group, String jarName) throws IOException {
     Configuration configuration = getConfiguration(group);
 
     File jar = getPathToJarOnThisLocator(group, jarName).toFile();
@@ -376,10 +382,11 @@ public class ClusterConfigurationService {
   }
 
   // used in the cluster config change listener when jarnames are changed in the internal region
-  public void downloadJarFromOtherLocators(String groupName, String jarName) throws Exception {
+  public void downloadJarFromOtherLocators(String groupName, String jarName)
+      throws IllegalStateException, IOException {
     logger.info("Getting Jar files from other locators");
-    DM dm = cache.getDistributionManager();
-    DistributedMember me = cache.getMyId();
+    DM dm = this.cache.getDistributionManager();
+    DistributedMember me = this.cache.getMyId();
     Set<DistributedMember> locators =
         new HashSet<>(dm.getAllHostedLocatorsWithSharedConfiguration().keySet());
     locators.remove(me);
@@ -396,7 +403,7 @@ public class ClusterConfigurationService {
   }
 
   // used when creating cluster config response
-  public Map<String, byte[]> getAllJarsFromThisLocator(Set<String> groups) throws Exception {
+  public Map<String, byte[]> getAllJarsFromThisLocator(Set<String> groups) throws IOException {
     Map<String, byte[]> jarNamesToJarBytes = new HashMap<>();
 
     for (String group : groups) {
@@ -421,8 +428,10 @@ public class ClusterConfigurationService {
    * @param loadSharedConfigFromDir when set to true, loads the configuration from the share_config
    *        directory
    */
-  public void initSharedConfiguration(boolean loadSharedConfigFromDir) throws Exception {
-    status.set(SharedConfigurationStatus.STARTED);
+  void initSharedConfiguration(boolean loadSharedConfigFromDir)
+      throws CacheLoaderException, TimeoutException, IllegalStateException, IOException,
+      TransformerException, SAXException, ParserConfigurationException {
+    this.status.set(SharedConfigurationStatus.STARTED);
     Region<String, Configuration> configRegion = this.getConfigurationRegion();
     lockSharedConfiguration();
     try {
@@ -434,12 +443,12 @@ public class ClusterConfigurationService {
         persistSecuritySettings(configRegion);
         // for those groups that have jar files, need to download the jars from other locators
         // if it doesn't exist yet
-        Set<String> groups = configRegion.keySet();
-        for (String group : groups) {
-          Configuration config = configRegion.get(group);
+        for (Entry<String, Configuration> stringConfigurationEntry : configRegion.entrySet()) {
+          Configuration config = stringConfigurationEntry.getValue();
           for (String jar : config.getJarNames()) {
-            if (!(getPathToJarOnThisLocator(group, jar).toFile()).exists()) {
-              downloadJarFromOtherLocators(group, jar);
+            if (!getPathToJarOnThisLocator(stringConfigurationEntry.getKey(), jar).toFile()
+                .exists()) {
+              downloadJarFromOtherLocators(stringConfigurationEntry.getKey(), jar);
             }
           }
         }
@@ -448,11 +457,11 @@ public class ClusterConfigurationService {
       unlockSharedConfiguration();
     }
 
-    status.set(SharedConfigurationStatus.RUNNING);
+    this.status.set(SharedConfigurationStatus.RUNNING);
   }
 
   private void persistSecuritySettings(final Region<String, Configuration> configRegion) {
-    Properties securityProps = cache.getDistributedSystem().getSecurityProperties();
+    Properties securityProps = this.cache.getDistributedSystem().getSecurityProperties();
 
     Configuration clusterPropertiesConfig =
         configRegion.get(ClusterConfigurationService.CLUSTER_CONFIG);
@@ -476,13 +485,13 @@ public class ClusterConfigurationService {
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the
    * requested shared configuration This method locks the ClusterConfigurationService
    */
-  public ConfigurationResponse createConfigurationReponse(final ConfigurationRequest configRequest)
-      throws Exception {
+  public ConfigurationResponse createConfigurationResponse(final ConfigurationRequest configRequest)
+      throws LeaseExpiredException, IOException {
 
     ConfigurationResponse configResponse = new ConfigurationResponse();
 
     for (int i = 0; i < configRequest.getNumAttempts(); i++) {
-      boolean isLocked = sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
+      boolean isLocked = this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
       try {
         if (isLocked) {
           Set<String> groups = configRequest.getGroups();
@@ -504,7 +513,7 @@ public class ClusterConfigurationService {
           return configResponse;
         }
       } finally {
-        sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
+        this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
       }
 
     }
@@ -519,16 +528,16 @@ public class ClusterConfigurationService {
    * @return {@link SharedConfigurationStatusResponse} containing the
    *         {@link SharedConfigurationStatus}
    */
-  public SharedConfigurationStatusResponse createStatusResponse() {
+  SharedConfigurationStatusResponse createStatusResponse() {
     SharedConfigurationStatusResponse response = new SharedConfigurationStatusResponse();
     response.setStatus(getStatus());
-    response.addWaitingLocatorInfo(newerSharedConfigurationLocatorInfo);
+    response.addWaitingLocatorInfo(this.newerSharedConfigurationLocatorInfo);
     return response;
   }
 
   /**
    * For tests only. TODO: clean this up and remove from production code
-   * <p/>
+   * <p>
    * Throws {@code AssertionError} wrapping any exception thrown by operation.
    */
   public void destroySharedConfiguration() {
@@ -540,25 +549,24 @@ public class ClusterConfigurationService {
       DiskStore configDiskStore = this.cache.findDiskStore(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
       if (configDiskStore != null) {
         configDiskStore.destroy();
-        File file = new File(configDiskDirPath);
+        File file = new File(this.configDiskDirPath);
         FileUtils.deleteDirectory(file);
       }
-      FileUtils.deleteDirectory(new File(configDirPath));
+      FileUtils.deleteDirectory(new File(this.configDirPath));
     } catch (Exception exception) {
       throw new AssertionError(exception);
     }
   }
 
   public Path getPathToJarOnThisLocator(String groupName, String jarName) {
-    return new File(configDirPath).toPath().resolve(groupName).resolve(jarName);
+    return new File(this.configDirPath).toPath().resolve(groupName).resolve(jarName);
   }
 
   public Configuration getConfiguration(String groupName) {
-    Configuration configuration = getConfigurationRegion().get(groupName);
-    return configuration;
+    return getConfigurationRegion().get(groupName);
   }
 
-  public Map<String, Configuration> getEntireConfiguration() throws Exception {
+  public Map<String, Configuration> getEntireConfiguration() {
     Set<String> keys = getConfigurationRegion().keySet();
     return getConfigurationRegion().getAll(keys);
   }
@@ -581,7 +589,7 @@ public class ClusterConfigurationService {
   public SharedConfigurationStatus getStatus() {
     SharedConfigurationStatus scStatus = this.status.get();
     if (scStatus == SharedConfigurationStatus.STARTED) {
-      PersistentMemberManager pmm = cache.getPersistentMemberManager();
+      PersistentMemberManager pmm = this.cache.getPersistentMemberManager();
       Map<String, Set<PersistentMemberID>> waitingRegions = pmm.getWaitingRegions();
       if (!waitingRegions.isEmpty()) {
         this.status.compareAndSet(SharedConfigurationStatus.STARTED,
@@ -589,7 +597,7 @@ public class ClusterConfigurationService {
         Set<PersistentMemberID> persMemIds =
             waitingRegions.get(Region.SEPARATOR_CHAR + CONFIG_REGION_NAME);
         for (PersistentMemberID persMemId : persMemIds) {
-          newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persMemId));
+          this.newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persMemId));
         }
       }
     }
@@ -599,18 +607,19 @@ public class ClusterConfigurationService {
   /**
    * Loads the internal region with the configuration in the configDirPath
    */
-  public void loadSharedConfigurationFromDisk() throws Exception {
+  public void loadSharedConfigurationFromDisk()
+      throws SAXException, ParserConfigurationException, TransformerException, IOException {
     lockSharedConfiguration();
     File[] groupNames =
-        new File(configDirPath).listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
-    Map<String, Configuration> sharedConfiguration = new HashMap<String, Configuration>();
+        new File(this.configDirPath).listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
 
     try {
+      Map<String, Configuration> sharedConfiguration = new HashMap<>();
       for (File groupName : groupNames) {
         Configuration configuration = readConfiguration(groupName);
         sharedConfiguration.put(groupName.getName(), configuration);
       }
-      Region clusterRegion = getConfigurationRegion();
+      Region<String, Configuration> clusterRegion = getConfigurationRegion();
       clusterRegion.clear();
       clusterRegion.putAll(sharedConfiguration);
 
@@ -624,12 +633,12 @@ public class ClusterConfigurationService {
   }
 
   public void renameExistingSharedConfigDirectory() {
-    File configDirFile = new File(configDirPath);
+    File configDirFile = new File(this.configDirPath);
     if (configDirFile.exists()) {
       String configDirFileName2 = CLUSTER_CONFIG_ARTIFACTS_DIR_NAME
-          + new SimpleDateFormat("yyyyMMddhhmm").format(new Date()) + "." + System.nanoTime();
-      File configDirFile2 = new File(configDirFile.getParent(), configDirFileName2);
+          + new SimpleDateFormat("yyyyMMddhhmm").format(new Date()) + '.' + System.nanoTime();
       try {
+        File configDirFile2 = new File(configDirFile.getParent(), configDirFileName2);
         FileUtils.moveDirectory(configDirFile, configDirFile2);
       } catch (IOException e) {
         logger.info(e);
@@ -639,7 +648,7 @@ public class ClusterConfigurationService {
 
 
   // Write the content of xml and properties into the file system for exporting purpose
-  public void writeConfigToFile(final Configuration configuration) throws Exception {
+  public void writeConfigToFile(final Configuration configuration) throws IOException {
     File configDir = createConfigDirIfNecessary(configuration.getConfigName());
 
     File propsFile = new File(configDir, configuration.getPropertiesFileName());
@@ -651,14 +660,14 @@ public class ClusterConfigurationService {
     FileUtils.writeStringToFile(xmlFile, configuration.getCacheXmlContent(), "UTF-8");
   }
 
+  // TODO: return value is never used
   private boolean lockSharedConfiguration() {
-    return sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, -1, -1);
+    return this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, -1, -1);
   }
 
   private void unlockSharedConfiguration() {
-    sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
+    this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
   }
-
 
   private byte[] downloadJarFromLocator(DistributedMember locator, String groupName,
       String jarName) {
@@ -679,24 +688,24 @@ public class ClusterConfigurationService {
    * @return {@link Region} ConfigurationRegion, this should never be null
    */
   private Region<String, Configuration> getConfigurationRegion() {
-    Region<String, Configuration> configRegion = cache.getRegion(CONFIG_REGION_NAME);
+    Region<String, Configuration> configRegion = this.cache.getRegion(CONFIG_REGION_NAME);
 
     try {
       if (configRegion == null) {
-        File diskDir = new File(configDiskDirPath);
+        File diskDir = new File(this.configDiskDirPath);
 
         if (!diskDir.exists()) {
           if (!diskDir.mkdirs()) {
-            throw new IOException("Cannot create directory at " + configDiskDirPath);
+            // TODO: throw caught by containing try statement
+            throw new IOException("Cannot create directory at " + this.configDiskDirPath);
           }
         }
 
         File[] diskDirs = {diskDir};
-        cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
+        this.cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
             .setMaxOplogSize(10).create(CLUSTER_CONFIG_DISK_STORE_NAME);
 
-        AttributesFactory<String, Configuration> regionAttrsFactory =
-            new AttributesFactory<String, Configuration>();
+        AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
         regionAttrsFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
         regionAttrsFactory.setCacheListener(new ConfigurationChangeListener(this));
         regionAttrsFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
@@ -705,15 +714,16 @@ public class ClusterConfigurationService {
         internalArgs.setIsUsedForMetaRegion(true);
         internalArgs.setMetaRegionWithTransactions(false);
 
-        configRegion =
-            cache.createVMRegion(CONFIG_REGION_NAME, regionAttrsFactory.create(), internalArgs);
+        configRegion = this.cache.createVMRegion(CONFIG_REGION_NAME, regionAttrsFactory.create(),
+            internalArgs);
       }
 
     } catch (CancelException e) {
       if (configRegion == null) {
         this.status.set(SharedConfigurationStatus.STOPPED);
       }
-      throw e; // CONFIG: don't rethrow as Exception, keep it a subclass of CancelException
+      // CONFIG: don't rethrow as Exception, keep it a subclass of CancelException
+      throw e;
 
     } catch (Exception e) {
       if (configRegion == null) {
@@ -750,7 +760,7 @@ public class ClusterConfigurationService {
   /**
    * Creates a directory for this configuration if it doesn't already exist.
    */
-  private File createConfigDirIfNecessary(final String configName) throws Exception {
+  private File createConfigDirIfNecessary(final String configName) throws IOException {
     File clusterConfigDir = new File(getSharedConfigurationDirPath());
     if (!clusterConfigDir.exists()) {
       if (!clusterConfigDir.mkdirs()) {
@@ -769,20 +779,4 @@ public class ClusterConfigurationService {
     return configDir;
   }
 
-  // check if it's ok from populate the properties from one member to another
-  public static boolean isMisConfigured(Properties fromProps, Properties toProps, String key) {
-    String fromPropValue = fromProps.getProperty(key);
-    String toPropValue = toProps.getProperty(key);
-
-    // if this to prop is not specified, this is always OK.
-    if (org.apache.commons.lang.StringUtils.isBlank(toPropValue))
-      return false;
-
-    // to props is not blank, but from props is blank, NOT OK.
-    if (org.apache.commons.lang.StringUtils.isBlank(fromPropValue))
-      return true;
-
-    // at this point check for eqality
-    return !fromPropValue.equals(toPropValue);
-  }
 }

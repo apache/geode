@@ -30,16 +30,13 @@ import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEn
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
-/**
- * 
- *
- */
 public class DistTxEntryEvent extends EntryEventImpl {
 
   protected static final byte HAS_PUTALL_OP = 0x1;
@@ -100,7 +97,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
     String regionName = DataSerializer.readString(in);
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     this.region = (LocalRegion) cache.getRegion(regionName);
     this.op = Operation.fromOrdinal(in.readByte());
     Object key = DataSerializer.readObject(in);

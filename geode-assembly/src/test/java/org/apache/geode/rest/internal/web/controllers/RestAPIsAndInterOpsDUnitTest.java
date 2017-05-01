@@ -65,6 +65,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -176,8 +177,8 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     props.setProperty(HTTP_SERVICE_PORT, String.valueOf(restServicerPort));
 
     DistributedSystem ds = getSystem(props);
-    Cache cache = CacheFactory.create(ds);
-    ((GemFireCacheImpl) cache).setReadSerialized(true);
+    InternalCache cache = (InternalCache) CacheFactory.create(ds);
+    cache.setReadSerialized(true);
     AttributesFactory factory = new AttributesFactory();
 
     factory.setEnableBridgeConflation(true);
@@ -475,7 +476,7 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
      * ResponseEntity<String> result = RestTestUtils.getRestTemplate().exchange( restEndpoint +
      * "/People/1?op=cas", HttpMethod.PUT, entity, String.class); } } catch
      * (HttpClientErrorException e) {
-     * 
+     *
      * fail("Caught HttpClientErrorException while doing put with op=cas"); }catch
      * (HttpServerErrorException se) {
      * fail("Caught HttpServerErrorException while doing put with op=cas"); }
@@ -747,10 +748,7 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
   /**
    * InterOps Test between REST-client, Peer Cache Client and Client Cache
-   *
-   * @throws Exception
    */
-
   @Test
   public void testInterOpsWithReplicatedRegion() throws Exception {
 

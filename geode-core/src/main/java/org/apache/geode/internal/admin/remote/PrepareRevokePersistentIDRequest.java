@@ -19,6 +19,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.persistence.RevokeFailedException;
 import org.apache.geode.distributed.internal.DM;
@@ -26,23 +28,27 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * An instruction to all members that they should forget about the persistent member described by
  * this pattern. TODO prpersist - This extends AdminRequest, but it doesn't work with most of the
  * admin paradigm, which is a request response to a single member. Maybe we need to a new base
  * class.
- *
  */
 public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
-  PersistentMemberPattern pattern;
+  private static final Logger logger = LogService.getLogger();
+
+  private PersistentMemberPattern pattern;
+
   private boolean cancel;
 
   public PrepareRevokePersistentIDRequest() {
-
+    // do nothing
   }
 
   public PrepareRevokePersistentIDRequest(PersistentMemberPattern pattern, boolean cancel) {
@@ -77,7 +83,7 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
       }
       throw e;
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.warn(e);
     }
     request.setSender(dm.getId());
     request.createResponse((DistributionManager) dm);
@@ -85,16 +91,16 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
       PersistentMemberManager mm = cache.getPersistentMemberManager();
-      if (cancel) {
-        mm.cancelRevoke(pattern);
+      if (this.cancel) {
+        mm.cancelRevoke(this.pattern);
       } else {
-        if (!mm.prepareRevoke(pattern, dm, getSender())) {
+        if (!mm.prepareRevoke(this.pattern, dm, getSender())) {
           throw new RevokeFailedException(
               LocalizedStrings.RevokeFailedException_Member_0_is_already_running_1
-                  .toLocalizedString(dm.getId(), pattern));
+                  .toLocalizedString(dm.getId(), this.pattern));
         }
       }
     }
@@ -102,6 +108,7 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
     return new RevokePersistentIDResponse(this.getSender());
   }
 
+  @Override
   public int getDSFID() {
     return PREPARE_REVOKE_PERSISTENT_ID_REQUEST;
   }
@@ -109,16 +116,15 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    pattern = new PersistentMemberPattern();
-    InternalDataSerializer.invokeFromData(pattern, in);
-    cancel = in.readBoolean();
+    this.pattern = new PersistentMemberPattern();
+    InternalDataSerializer.invokeFromData(this.pattern, in);
+    this.cancel = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    InternalDataSerializer.invokeToData(pattern, out);
-    out.writeBoolean(cancel);
+    InternalDataSerializer.invokeToData(this.pattern, out);
+    out.writeBoolean(this.cancel);
   }
-
 }

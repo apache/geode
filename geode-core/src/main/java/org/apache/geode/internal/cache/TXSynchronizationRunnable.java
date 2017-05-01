@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -26,7 +25,6 @@ import org.apache.geode.internal.logging.LogService;
  * behavior.
  * 
  * @since GemFire 6.6
- *
  */
 public class TXSynchronizationRunnable implements Runnable {
   private static final Logger logger = LogService.getLogger();
@@ -55,7 +53,7 @@ public class TXSynchronizationRunnable implements Runnable {
         }
         this.firstRunnableCompleted = true;
         this.firstRunnable = null;
-        this.firstRunnableSync.notify();
+        this.firstRunnableSync.notifyAll();
       }
     }
     synchronized (this.secondRunnableSync) {
@@ -68,11 +66,11 @@ public class TXSynchronizationRunnable implements Runnable {
             logger.trace("waiting for afterCompletion notification");
           }
           this.secondRunnableSync.wait(1000);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
           // eat the interrupt and check for exit conditions
         }
         if (this.secondRunnable == null) {
-          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+          InternalCache cache = GemFireCacheImpl.getInstance();
           if (cache == null || cache.getCancelCriterion().isCancelInProgress()) {
             return;
           }
@@ -91,7 +89,7 @@ public class TXSynchronizationRunnable implements Runnable {
         }
         this.secondRunnableCompleted = true;
         this.secondRunnable = null;
-        this.secondRunnableSync.notify();
+        this.secondRunnableSync.notifyAll();
       }
     }
   }
@@ -104,12 +102,12 @@ public class TXSynchronizationRunnable implements Runnable {
       while (!this.firstRunnableCompleted) {
         try {
           this.firstRunnableSync.wait(1000);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
           // eat the interrupt and check for exit conditions
         }
         // we really need the Cache Server's cancel criterion here, not the cache's
         // but who knows how to get it?
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = GemFireCacheImpl.getInstance();
         if (cache == null) {
           return;
         }
@@ -121,22 +119,20 @@ public class TXSynchronizationRunnable implements Runnable {
   /**
    * run the afterCompletion portion of synchronization. This method schedules execution of the
    * given runnable and then waits for it to finish running
-   * 
-   * @param r
    */
   public void runSecondRunnable(Runnable r) {
     synchronized (this.secondRunnableSync) {
       this.secondRunnable = r;
-      this.secondRunnableSync.notify();
+      this.secondRunnableSync.notifyAll();
       while (!this.secondRunnableCompleted && !this.abort) {
         try {
           this.secondRunnableSync.wait(1000);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
           // eat the interrupt and check for exit conditions
         }
         // we really need the Cache Server's cancel criterion here, not the cache's
         // but who knows how to get it?
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = GemFireCacheImpl.getInstance();
         if (cache == null) {
           return;
         }

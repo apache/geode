@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.ByteArrayInputStream;
@@ -39,11 +38,14 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.DynamicRegionFactory;
@@ -80,8 +82,8 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterProfile;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InterestRegistrationEventImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.StateFlushOperation;
@@ -102,15 +104,11 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AccessControl;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
 
 /**
  * Class <code>CacheClientProxy</code> represents the server side of the {@link CacheClientUpdater}.
  * It queues messages to be sent from the server to the client. It then reads those messages from
  * the queue and sends them to the client.
- *
  *
  * @since GemFire 4.2
  */
@@ -153,7 +151,7 @@ public class CacheClientProxy implements ClientSession {
   /**
    * The GemFire cache
    */
-  protected final GemFireCacheImpl _cache;
+  protected final InternalCache _cache;
 
   /**
    * The list of keys that the client represented by this proxy is interested in (stored by region)
@@ -345,7 +343,7 @@ public class CacheClientProxy implements ClientSession {
       Version clientVersion, long acceptorId, boolean notifyBySubscription) throws CacheException {
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
-    this._cache = (GemFireCacheImpl) ccn.getCache();
+    this._cache = ccn.getCache();
     this._maximumMessageCount = ccn.getMaximumMessageCount();
     this._messageTimeToLive = ccn.getMessageTimeToLive();
     this._acceptorId = acceptorId;
@@ -620,7 +618,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @return the GemFire cache
    */
-  public GemFireCacheImpl getCache() {
+  public InternalCache getCache() {
     return this._cache;
   }
 
@@ -2344,7 +2342,7 @@ public class CacheClientProxy implements ClientSession {
       return this._proxy;
     }
 
-    private GemFireCacheImpl getCache() {
+    private InternalCache getCache() {
       return getProxy().getCache();
     }
 
@@ -2410,10 +2408,6 @@ public class CacheClientProxy implements ClientSession {
             Thread.sleep(500);
           } catch (InterruptedException e) {
             interrupted = true;
-            /*
-             * GemFireCache c = (GemFireCache)_cache;
-             * c.getDistributedSystem().getCancelCriterion().checkCancelInProgress(e);
-             */
           } catch (CancelException e) {
             break;
           } catch (CacheException e) {

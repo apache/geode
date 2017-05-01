@@ -200,10 +200,11 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
    * Assists the toString method in reporting the contents of this message
    * 
    * @see PartitionMessage#toString()
+   * @param buff
    */
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(getKey());
     buff.append("; op=").append(this.op);

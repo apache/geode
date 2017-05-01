@@ -86,7 +86,7 @@ public class VersionedThinRegionEntryHeapStringKey1 extends VersionedThinRegionE
     this.value = v;
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

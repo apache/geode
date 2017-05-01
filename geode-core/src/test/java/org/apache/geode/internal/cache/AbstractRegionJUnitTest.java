@@ -45,6 +45,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
@@ -78,7 +79,7 @@ public class AbstractRegionJUnitTest {
   private static class MockRegion extends AbstractRegion {
 
     /**
-     * @see AbstractRegion#AbstractRegion(GemFireCacheImpl, int, boolean, long, long)
+     * @see AbstractRegion#AbstractRegion(InternalCache, int, boolean, long, long)
      */
     @SuppressWarnings("deprecation")
     private MockRegion(GemFireCacheImpl cache, int serialNumber, boolean isPdxTypeRegion,
@@ -474,7 +475,7 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
-    protected DistributedMember getMyId() {
+    protected InternalDistributedMember getMyId() {
       throw new UnsupportedOperationException();
     }
 

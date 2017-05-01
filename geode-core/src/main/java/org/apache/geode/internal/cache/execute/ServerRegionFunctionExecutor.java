@@ -12,8 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.execute;
+
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
@@ -26,28 +29,23 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 /**
- *
  * Executes Function with FunctionService#onRegion(Region region) in client server mode.
  * 
  * @see FunctionService#onRegion(Region) *
  * @since GemFire 5.8 LA
- *
  */
 public class ServerRegionFunctionExecutor extends AbstractExecution {
   private static final Logger logger = LogService.getLogger();
 
-  final private LocalRegion region;
+  private final LocalRegion region;
   private boolean executeOnBucketSet = false;
 
   public ServerRegionFunctionExecutor(Region r, ProxyCache proxyCache) {
@@ -288,11 +286,12 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       }
       return srp;
     } else {
-      StringBuffer message = new StringBuffer();
+      StringBuilder message = new StringBuilder();
       message.append(srp).append(": ");
-      message.append(
-          "No available connection was found. Server Region Proxy is not available for this region "
-              + region.getName());
+      message
+          .append(
+              "No available connection was found. Server Region Proxy is not available for this region ")
+          .append(region.getName());
       throw new FunctionException(message.toString());
     }
   }
@@ -340,23 +339,15 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     return new ServerRegionFunctionExecutor(this, argument);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.
-   * cache.execute.Function, java.util.Set)
-   */
   @Override
   public void validateExecution(Function function, Set targetMembers) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null && cache.getTxManager().getTXState() != null) {
       TXStateProxyImpl tx = (TXStateProxyImpl) cache.getTxManager().getTXState();
       tx.getRealDeal(null, region);
       tx.incOperationCount();
     }
   }
-
 
   @Override
   public ResultCollector execute(final String functionName) {
@@ -472,6 +463,4 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public boolean getExecuteOnBucketSetFlag() {
     return this.executeOnBucketSet;
   }
-
-
 }

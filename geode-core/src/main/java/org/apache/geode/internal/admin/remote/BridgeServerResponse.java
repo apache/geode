@@ -14,15 +14,18 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import java.io.*;
-import java.util.*;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A message that is sent in response to a {@link BridgeServerResponse}. It perform an operation on
@@ -38,17 +41,15 @@ public final class BridgeServerResponse extends AdminResponse {
   /** An exception thrown while performing the operation */
   private Exception exception;
 
-  ////////////////////// Static Methods //////////////////////
-
   /**
-   * Creates a <code>BridgeServerResponse</code> in response to the given request.
+   * Creates a {@code BridgeServerResponse} in response to the given request.
    */
   static BridgeServerResponse create(DistributionManager dm, BridgeServerRequest request) {
     BridgeServerResponse m = new BridgeServerResponse();
     m.setRecipient(request.getSender());
 
     try {
-      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getInstanceCloseOk(dm.getSystem());
+      InternalCache cache = (InternalCache) CacheFactory.getInstanceCloseOk(dm.getSystem());
 
       if (request.getCacheId() != System.identityHashCode(cache)) {
         m.bridgeInfo = null;
@@ -66,8 +67,8 @@ public final class BridgeServerResponse extends AdminResponse {
             int id = request.getBridgeId();
             // Note that since this is only an informational request
             // it is not necessary to synchronize on allBridgeServersLock
-            for (Iterator iter = cache.getCacheServers().iterator(); iter.hasNext();) {
-              CacheServerImpl bridge = (CacheServerImpl) iter.next();
+            for (CacheServer cacheServer : cache.getCacheServers()) {
+              CacheServerImpl bridge = (CacheServerImpl) cacheServer;
               if (System.identityHashCode(bridge) == id) {
                 m.bridgeInfo = new RemoteBridgeServer(bridge);
                 break;
@@ -81,8 +82,8 @@ public final class BridgeServerResponse extends AdminResponse {
 
           case BridgeServerRequest.START_OPERATION: {
             RemoteBridgeServer config = request.getBridgeInfo();
-            for (Iterator iter = cache.getCacheServers().iterator(); iter.hasNext();) {
-              CacheServerImpl bridge = (CacheServerImpl) iter.next();
+            for (CacheServer cacheServer : cache.getCacheServers()) {
+              CacheServerImpl bridge = (CacheServerImpl) cacheServer;
               if (System.identityHashCode(bridge) == config.getId()) {
                 bridge.configureFrom(config);
                 bridge.start();
@@ -98,8 +99,8 @@ public final class BridgeServerResponse extends AdminResponse {
 
           case BridgeServerRequest.STOP_OPERATION: {
             RemoteBridgeServer config = request.getBridgeInfo();
-            for (Iterator iter = cache.getCacheServers().iterator(); iter.hasNext();) {
-              CacheServerImpl bridge = (CacheServerImpl) iter.next();
+            for (CacheServer cacheServer : cache.getCacheServers()) {
+              CacheServerImpl bridge = (CacheServerImpl) cacheServer;
               if (System.identityHashCode(bridge) == config.getId()) {
                 bridge.stop();
                 m.bridgeInfo = new RemoteBridgeServer(bridge);
@@ -115,10 +116,9 @@ public final class BridgeServerResponse extends AdminResponse {
           default:
             Assert.assertTrue(false, "Unknown bridge server operation: " + operation);
         }
-
       }
 
-    } catch (CancelException ex) {
+    } catch (CancelException ignore) {
       m.bridgeInfo = null;
 
     } catch (Exception ex) {
@@ -128,12 +128,10 @@ public final class BridgeServerResponse extends AdminResponse {
     return m;
   }
 
-  ////////////////////// Instance Methods //////////////////////
-
   /**
    * Returns information about the bridge operated on
    */
-  public RemoteBridgeServer getBridgeInfo() {
+  RemoteBridgeServer getBridgeInfo() {
     return this.bridgeInfo;
   }
 
@@ -144,6 +142,7 @@ public final class BridgeServerResponse extends AdminResponse {
     return this.exception;
   }
 
+  @Override
   public int getDSFID() {
     return BRIDGE_SERVER_RESPONSE;
   }
@@ -158,8 +157,7 @@ public final class BridgeServerResponse extends AdminResponse {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.bridgeInfo = (RemoteBridgeServer) DataSerializer.readObject(in);
-    this.exception = (Exception) DataSerializer.readObject(in);
+    this.bridgeInfo = DataSerializer.readObject(in);
+    this.exception = DataSerializer.readObject(in);
   }
-
 }

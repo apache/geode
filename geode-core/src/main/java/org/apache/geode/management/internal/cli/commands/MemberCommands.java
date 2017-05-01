@@ -20,12 +20,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.geode.cache.Cache;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -44,17 +49,11 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-/***
- *
- *
+/**
  * @since GemFire 7.0
  */
 public class MemberCommands implements CommandMarker {
+
   private Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
   }
@@ -73,7 +72,7 @@ public class MemberCommands implements CommandMarker {
     // TODO: Add the code for identifying the system services
     try {
       Set<DistributedMember> memberSet = new TreeSet<DistributedMember>();
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       // default get all the members in the DS
       if (group.isEmpty()) {
@@ -105,6 +104,10 @@ public class MemberCommands implements CommandMarker {
     return result;
   }
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
   @CliCommand(value = {CliStrings.DESCRIBE_MEMBER}, help = CliStrings.DESCRIBE_MEMBER__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
@@ -118,9 +121,10 @@ public class MemberCommands implements CommandMarker {
           CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
 
       if (memberToBeDescribed != null) {
-        // Abhishek - This information should be available through the MBeans too. We might not need
+        // This information should be available through the MBeans too. We might not need
         // the function.
-        // Sourabh - Yes, but then the command is subject to Mbean availability, which would be
+
+        // Yes, but then the command is subject to Mbean availability, which would be
         // affected once MBean filters are used.
 
         ResultCollector<?, ?> rc =
@@ -149,12 +153,12 @@ public class MemberCommands implements CommandMarker {
           section.addData("Groups", memberInformation.getGroups());
           section.addData("Used Heap", memberInformation.getHeapUsage() + "M");
           section.addData("Max Heap", memberInformation.getMaxHeapSize() + "M");
-          {
-            String offHeapMemorySize = memberInformation.getOffHeapMemorySize();
-            if (offHeapMemorySize != null && !offHeapMemorySize.isEmpty()) {
-              section.addData("Off Heap Size", offHeapMemorySize);
-            }
+
+          String offHeapMemorySize = memberInformation.getOffHeapMemorySize();
+          if (offHeapMemorySize != null && !offHeapMemorySize.isEmpty()) {
+            section.addData("Off Heap Size", offHeapMemorySize);
           }
+
           section.addData("Working Dir", memberInformation.getWorkingDirPath());
           section.addData("Log file", memberInformation.getLogFilePath());
 

@@ -14,6 +14,18 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
@@ -24,7 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.ColocationHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -33,15 +45,17 @@ import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.apache.geode.internal.cache.partitioned.MoveBucketMessage.MoveBucketResponse;
 import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
-import org.apache.geode.internal.cache.partitioned.rebalance.*;
+import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator;
+import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorImpl;
+import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorWrapper;
+import org.apache.geode.internal.cache.partitioned.rebalance.ParallelBucketOperator;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
 import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
+import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
+import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class performs a rebalance on a single partitioned region.
@@ -62,8 +76,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 
  * There is also a FPRDirector that creates buckets and moves primaries for fixed partititioned
  * regions.
- * 
- *
  */
 @SuppressWarnings("synthetic-access")
 public class PartitionedRegionRebalanceOp {
@@ -179,8 +191,7 @@ public class PartitionedRegionRebalanceOp {
       leaderRegion.getRegionAdvisor().addMembershipListener(listener);
       PartitionedRegionLoadModel model = null;
 
-
-      GemFireCacheImpl cache = (GemFireCacheImpl) leaderRegion.getCache();
+      InternalCache cache = leaderRegion.getCache();
       Map<PartitionedRegion, InternalPRInfo> detailsMap = fetchDetails(cache);
       BucketOperatorWrapper serialOperator = getBucketOperator(detailsMap);
       ParallelBucketOperator parallelOperator = new ParallelBucketOperator(MAX_PARALLEL_OPERATIONS,
@@ -324,7 +335,7 @@ public class PartitionedRegionRebalanceOp {
     }
 
     long start = System.nanoTime();
-    GemFireCacheImpl cache = (GemFireCacheImpl) leaderRegion.getCache();
+    InternalCache cache = leaderRegion.getCache();
     InternalResourceManager resourceManager =
         InternalResourceManager.getInternalResourceManager(cache);
     InternalResourceManager.getResourceObserver().recoveryStarted(targetRegion);
@@ -387,7 +398,7 @@ public class PartitionedRegionRebalanceOp {
     }
   }
 
-  private Map<PartitionedRegion, InternalPRInfo> fetchDetails(GemFireCacheImpl cache) {
+  private Map<PartitionedRegion, InternalPRInfo> fetchDetails(InternalCache cache) {
     LoadProbe probe = cache.getInternalResourceManager().getLoadProbe();
     Map<PartitionedRegion, InternalPRInfo> detailsMap =
         new LinkedHashMap<PartitionedRegion, InternalPRInfo>(colocatedRegions.size());

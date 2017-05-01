@@ -45,24 +45,33 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.util.concurrent.Future;
+
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.hll.HyperLogLogPlus;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
-
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.LogWriter;
-import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -142,7 +151,7 @@ public class GeodeRedisServer {
   private static Thread mainThread = null;
 
   /**
-   * The default Redis port as specified by their protocol, {@value #DEFAULT_REDIS_SERVER_PORT}
+   * The default Redis port as specified by their protocol, {@code DEFAULT_REDIS_SERVER_PORT}
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
 
@@ -213,25 +222,25 @@ public class GeodeRedisServer {
 
   /**
    * The field that defines the name of the {@link Region} which holds all of the strings. The
-   * current value of this field is {@value #STRING_REGION}.
+   * current value of this field is {@code STRING_REGION}.
    */
   public static final String STRING_REGION = "ReDiS_StRiNgS";
 
   /**
    * The field that defines the name of the {@link Region} which holds all of the HyperLogLogs. The
-   * current value of this field is {@value #HLL_REGION}.
+   * current value of this field is {@code HLL_REGION}.
    */
   public static final String HLL_REGION = "ReDiS_HlL";
 
   /**
    * The field that defines the name of the {@link Region} which holds all of the Redis meta data.
-   * The current value of this field is {@value #REDIS_META_DATA_REGION}.
+   * The current value of this field is {@code REDIS_META_DATA_REGION}.
    */
   public static final String REDIS_META_DATA_REGION = "__ReDiS_MeTa_DaTa";
 
   /**
    * The system property name used to set the default {@link Region} creation type. The property
-   * name is {@value #DEFAULT_REGION_SYS_PROP_NAME} and the acceptable values are types defined by
+   * name is {@code DEFAULT_REGION_SYS_PROP_NAME} and the acceptable values are types defined by
    * {@link RegionShortcut}, i.e. "PARTITION" would be used for {@link RegionShortcut#PARTITION}.
    */
   public static final String DEFAULT_REGION_SYS_PROP_NAME = "gemfireredis.regiontype";
@@ -290,7 +299,7 @@ public class GeodeRedisServer {
   }
 
   /**
-   * Constructor for {@link GeodeRedisServer} that will start the server on the given port and bind
+   * Constructor for {@code GeodeRedisServer} that will start the server on the given port and bind
    * to the first non-loopback address
    * 
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
@@ -301,7 +310,7 @@ public class GeodeRedisServer {
   }
 
   /**
-   * Constructor for {@link GeodeRedisServer} that will start the server and bind to the given
+   * Constructor for {@code GeodeRedisServer} that will start the server and bind to the given
    * address and port
    * 
    * @param bindAddress The address to which the server will attempt to bind to
@@ -312,9 +321,8 @@ public class GeodeRedisServer {
     this(bindAddress, port, null);
   }
 
-
   /**
-   * Constructor for {@link GeodeRedisServer} that will start the server and bind to the given
+   * Constructor for {@code GeodeRedisServer} that will start the server and bind to the given
    * address and port. Keep in mind that the log level configuration will only be set if a
    * {@link Cache} does not already exist, if one already exists then setting that property will
    * have no effect.
@@ -367,7 +375,7 @@ public class GeodeRedisServer {
   }
 
   /**
-   * This is function to call on a {@link GeodeRedisServer} instance to start it running
+   * This is function to call on a {@code GeodeRedisServer} instance to start it running
    */
   public synchronized void start() {
     if (!started) {
@@ -386,24 +394,24 @@ public class GeodeRedisServer {
 
   /**
    * Initializes the {@link Cache}, and creates Redis necessities Region and protects declares that
-   * {@link Region} to be protected. Also, every {@link GeodeRedisServer} will check for entries
+   * {@link Region} to be protected. Also, every {@code GeodeRedisServer} will check for entries
    * already in the meta data Region.
    */
   private void startGemFire() {
-    Cache c = GemFireCacheImpl.getInstance();
-    if (c == null) {
+    Cache cache = GemFireCacheImpl.getInstance();
+    if (cache == null) {
       synchronized (GeodeRedisServer.class) {
-        c = GemFireCacheImpl.getInstance();
-        if (c == null) {
+        cache = GemFireCacheImpl.getInstance();
+        if (cache == null) {
           CacheFactory cacheFactory = new CacheFactory();
           if (logLevel != null)
             cacheFactory.set(LOG_LEVEL, logLevel);
-          c = cacheFactory.create();
+          cache = cacheFactory.create();
         }
       }
     }
-    this.cache = c;
-    this.logger = c.getLogger();
+    this.cache = cache;
+    this.logger = cache.getLogger();
   }
 
   private void initializeRedis() {
@@ -412,7 +420,7 @@ public class GeodeRedisServer {
 
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
       Region<String, RedisDataType> redisMetaData;
-      GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
+      InternalCache gemFireCache = (InternalCache) cache;
       try {
         if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
           RegionFactory<ByteArrayWrapper, ByteArrayWrapper> regionFactory =
@@ -611,7 +619,7 @@ public class GeodeRedisServer {
   }
 
   /**
-   * Shutdown method for {@link GeodeRedisServer}. This closes the {@link Cache}, interrupts all
+   * Shutdown method for {@code GeodeRedisServer}. This closes the {@link Cache}, interrupts all
    * execution and forcefully closes all connections.
    */
   public synchronized void shutdown() {
@@ -637,7 +645,7 @@ public class GeodeRedisServer {
   }
 
   /**
-   * Static main method that allows the {@link GeodeRedisServer} to be started from the command
+   * Static main method that allows the {@code GeodeRedisServer} to be started from the command
    * line. The supported command line arguments are
    * <p>
    * -port= <br>

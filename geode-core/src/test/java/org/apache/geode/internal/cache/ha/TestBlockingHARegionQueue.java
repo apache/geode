@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -43,7 +44,7 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
 
   boolean takeWhenPeekInProgress = false;
 
-  public TestBlockingHARegionQueue(String regionName, Cache cache)
+  public TestBlockingHARegionQueue(String regionName, InternalCache cache)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     super(regionName, cache);
   }

@@ -155,7 +155,7 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

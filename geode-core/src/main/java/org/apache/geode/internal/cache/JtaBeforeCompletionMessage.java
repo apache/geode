@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache;
 
 import java.util.Collections;
@@ -31,13 +28,12 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- */
 public class JtaBeforeCompletionMessage extends TXMessage {
   private static final Logger logger = LogService.getLogger();
 
-  public JtaBeforeCompletionMessage() {}
+  public JtaBeforeCompletionMessage() {
+    // do nothing
+  }
 
   public JtaBeforeCompletionMessage(int txUniqId, InternalDistributedMember onBehalfOfClientMember,
       ReplyProcessor21 processor) {
@@ -58,15 +54,9 @@ public class JtaBeforeCompletionMessage extends TXMessage {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.internal.cache.TXMessage#operateOnTx(org.apache.geode.internal.cache.TXId)
-   */
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     TXManagerImpl txMgr = cache.getTXMgr();
     if (logger.isDebugEnabled()) {
       logger.debug("JTA: Calling beforeCompletion for :{}", txId);
@@ -75,11 +65,6 @@ public class JtaBeforeCompletionMessage extends TXMessage {
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
-   */
   public int getDSFID() {
     return JTA_BEFORE_COMPLETION_MESSAGE;
   }

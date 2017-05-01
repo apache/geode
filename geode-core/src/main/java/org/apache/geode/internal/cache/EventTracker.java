@@ -12,10 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -31,14 +41,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * EventTracker tracks the last sequence number for a particular memberID:threadID. It is used to
@@ -86,11 +88,10 @@ public class EventTracker {
    */
   private volatile InternalDistributedMember initialImageProvider;
 
-
   /**
    * The cache associated with this tracker
    */
-  GemFireCacheImpl cache;
+  InternalCache cache;
 
   /**
    * The name of this tracker
@@ -110,12 +111,12 @@ public class EventTracker {
   /**
    * Initialize the EventTracker's timer task. This is stored in the cache for tracking and shutdown
    * purposes
-   * 
+   *
    * @param cache the cache to schedule tasks with
    */
-  public static ExpiryTask startTrackerServices(GemFireCacheImpl cache) {
+  public static ExpiryTask startTrackerServices(InternalCache cache) {
     long expiryTime = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "messageTrackingTimeout",
-        PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT / 3).longValue();
+        PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT / 3);
     ExpiryTask result = new ExpiryTask(cache, expiryTime);
     cache.getCCPTimer().scheduleAtFixedRate(result, expiryTime, expiryTime);
     // schedule(result, expiryTime);
@@ -124,10 +125,10 @@ public class EventTracker {
 
   /**
    * Terminate the tracker's timer task
-   * 
+   *
    * @param cache the cache holding the tracker task
    */
-  public static void stopTrackerServices(GemFireCacheImpl cache) {
+  public static void stopTrackerServices(InternalCache cache) {
     cache.getEventTrackerTask().cancel();
   }
 
@@ -507,8 +508,6 @@ public class EventTracker {
   }
 
   /**
-   * @param event
-   * @param eventID
    * @return true if the event should not be tracked, false otherwise
    */
   private boolean ignoreEvent(InternalCacheEvent event, EventID eventID) {
@@ -675,17 +674,21 @@ public class EventTracker {
      * Whether this object was removed by the cleanup thread.
      */
     public boolean removed;
+
     /**
      * public for tests only
      */
     public Map<EventID, VersionTag> entryVersionTags = new HashMap<EventID, VersionTag>();
+
     /** millisecond timestamp */
     transient long endOfLifeTimer;
 
     /**
      * creates a new instance to save status of a putAllOperation
      */
-    BulkOpHolder() {}
+    BulkOpHolder() {
+      // do nothing
+    }
 
     public void putVersionTag(EventID eventId, VersionTag versionTag) {
       entryVersionTags.put(eventId, versionTag);
@@ -699,13 +702,13 @@ public class EventTracker {
     }
   }
 
-  static class ExpiryTask extends SystemTimerTask {
+  public static class ExpiryTask extends SystemTimerTask {
 
-    GemFireCacheImpl cache;
+    InternalCache cache;
     long expiryTime;
     List trackers = new LinkedList();
 
-    public ExpiryTask(GemFireCacheImpl cache, long expiryTime) {
+    public ExpiryTask(InternalCache cache, long expiryTime) {
       this.cache = cache;
       this.expiryTime = expiryTime;
     }

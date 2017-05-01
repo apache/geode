@@ -28,6 +28,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.Logger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
@@ -48,6 +49,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.Filter;
 import org.apache.geode.internal.lang.ObjectUtils;
@@ -55,6 +57,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -82,6 +85,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
   public void setup() {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
+    mockContext.setThreadingPolicy(new Synchroniser());
   }
 
   @After
@@ -484,8 +488,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
+    final InternalDistributedMember mockMember =
+        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
 
     final DiskStore mockDiskStore =
         createMockDiskStore(diskStoreId, diskStoreName, true, false,
@@ -614,8 +618,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
+    final InternalDistributedMember mockMember =
+        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
 
     final FunctionContext mockFunctionContext =
         mockContext.mock(FunctionContext.class, "FunctionContext");
@@ -657,8 +661,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
+    final InternalDistributedMember mockMember =
+        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
 
     final FunctionContext mockFunctionContext =
         mockContext.mock(FunctionContext.class, "FunctionContext");
@@ -692,13 +696,12 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
   @Test
   public void testExecuteWithDiskDirsAndDiskSizesMismatch() throws Exception {
-    logger.info("<ExpectedException action=add>" + IllegalStateException.class.getName()
-        + "</ExpectedException>");
+    IgnoredException ignoredException =
+        IgnoredException.addIgnoredException(IllegalStateException.class.getName());
     try {
       doTestExecuteWithDiskDirsAndDiskSizesMismatch();
     } finally {
-      logger.info("<ExpectedException action=remove>" + IllegalStateException.class.getName()
-          + "</ExpectedException>");
+      ignoredException.remove();
     }
   }
 
@@ -711,8 +714,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
+    final InternalDistributedMember mockMember =
+        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
 
     final DiskStore mockDiskStore =
         createMockDiskStore(diskStoreId, diskStoreName, false, true, 70, 8192000l, 1000, 300l, 8192,

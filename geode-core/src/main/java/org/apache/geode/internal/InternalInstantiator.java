@@ -33,9 +33,11 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
@@ -46,7 +48,6 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.i18n.StringId;
 
 /**
  * Contains the implementation of {@link org.apache.geode.Instantiator} registration and
@@ -84,7 +85,7 @@ public class InternalInstantiator {
   /////////////////////// Static Methods ///////////////////////
 
   /**
-   * Registers an <code>Instantiator</code> with the data serialization framework.
+   * Registers an {@code Instantiator} with the data serialization framework.
    */
   public static void register(Instantiator instantiator, boolean distribute) {
     // [sumedh] Skip the checkForThread() check if the instantiation has not
@@ -99,7 +100,7 @@ public class InternalInstantiator {
   }
 
   /**
-   * Actually registers an <code>Instantiator</code> with the data serialization framework.
+   * Actually registers an {@code Instantiator} with the data serialization framework.
    *
    * @param instantiator
    * @param distribute
@@ -161,7 +162,7 @@ public class InternalInstantiator {
       // if instantiator is getting registered for first time
       // its EventID will be null, so generate a new event id
       // the the distributed system is connected
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null && instantiator.getEventId() == null) {
         instantiator.setEventId(new EventID(cache.getDistributedSystem()));
       }
@@ -204,7 +205,7 @@ public class InternalInstantiator {
    * Sets the EventID to the instantiator if distributed system is created
    */
   public static EventID generateEventId() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       // A cache has not yet created
       return null;
@@ -232,8 +233,6 @@ public class InternalInstantiator {
 
   /**
    * Sends Instantiator registration message to all cache clients
-   *
-   * @param instantiator
    */
   private static void sendRegistrationMessageToClients(Instantiator instantiator) {
     Cache cache = GemFireCacheImpl.getInstance();
@@ -267,7 +266,7 @@ public class InternalInstantiator {
   }
 
   /**
-   * Creates a new <code>Instantiator</code> with the given class and id and
+   * Creates a new {@code Instantiator} with the given class and id and
    * {@linkplain #register(Instantiator, boolean) registers} it with the data serialization
    * framework.
    *
@@ -284,7 +283,7 @@ public class InternalInstantiator {
   }
 
   /**
-   * Creates a new <code>Instantiator</code> with the given class and id and
+   * Creates a new {@code Instantiator} with the given class and id and
    * {@linkplain #register(Instantiator, boolean) registers} it with the data serialization
    * framework.
    *
@@ -303,7 +302,7 @@ public class InternalInstantiator {
   }
 
   /**
-   * Lazily creates a new <code>Instantiator</code> with the given class and id.
+   * Lazily creates a new {@code Instantiator} with the given class and id.
    * 
    * @throws IllegalArgumentException The instantiator cannot be created
    * @throws IllegalStateException The instantiator cannot be registered
@@ -318,7 +317,7 @@ public class InternalInstantiator {
   }
 
   /**
-   * Lazily creates a new <code>Instantiator</code> with the given class and id.
+   * Lazily creates a new {@code Instantiator} with the given class and id.
    * 
    * This method is only called when server connection and CacheClientUpdaterThread
    * 
@@ -377,7 +376,7 @@ public class InternalInstantiator {
         instantiatedClass =
             InternalDataSerializer.getCachedClass(holder.getInstantiatedClassName());
       } catch (ClassNotFoundException cnfe) {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = GemFireCacheImpl.getInstance();
         if (cache != null && cache.getLoggerI18n() != null && cache.getLoggerI18n().infoEnabled()) {
           cache.getLoggerI18n().info(
               LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0,
@@ -454,11 +453,11 @@ public class InternalInstantiator {
   }
 
   /**
-   * Unregisters the given class with the given class id with the <code>Instantiator</code>.
+   * Unregisters the given class with the given class id with the {@code Instantiator}.
    *
-   * @throws IllegalArgumentException If <code>c</code> was not previously registered with id
-   *         <code>classId</code>.
-   * @throws NullPointerException If <code>c</code> is <code>null</code>
+   * @throws IllegalArgumentException If {@code c} was not previously registered with id
+   *         {@code classId}.
+   * @throws NullPointerException If {@code c} is {@code null}
    */
   public static synchronized void unregister(Class c, int classId) {
     if (c == null) {
@@ -489,7 +488,7 @@ public class InternalInstantiator {
   /**
    * Returns the class id for the given class.
    *
-   * @return <code>0</code> if the class has not be registered
+   * @return {@code 0} if the class has not be registered
    *
    * @see DataSerializer#writeObject(Object, DataOutput)
    */
@@ -554,7 +553,7 @@ public class InternalInstantiator {
             instantiator = (Instantiator) idsToInstantiators.get(classId);
           }
         } catch (ClassNotFoundException cnfe) {
-          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+          InternalCache cache = GemFireCacheImpl.getInstance();
           if (cache != null && cache.getLoggerI18n() != null
               && cache.getLoggerI18n().infoEnabled()) {
             cache.getLoggerI18n().info(
@@ -585,11 +584,11 @@ public class InternalInstantiator {
   }
 
   /**
-   * Reflectively instantiates an instance of <code>Instantiator</code>.
+   * Reflectively instantiates an instance of {@code Instantiator}.
    *
-   * @param instantiatorClass The implementation of <code>Instantiator</code> to instantiate
-   * @param instantiatedClass The implementation of <code>DataSerialization</code> that will be
-   *        produced by the <code>Instantiator</code>
+   * @param instantiatorClass The implementation of {@code Instantiator} to instantiate
+   * @param instantiatedClass The implementation of {@code DataSerialization} that will be produced
+   *        by the {@code Instantiator}
    *
    * @throws IllegalArgumentException If the class can't be instantiated
    */
@@ -680,7 +679,7 @@ public class InternalInstantiator {
             idsToHolders.remove(holder.getId());
           }
         } catch (ClassNotFoundException cnfe) {
-          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+          InternalCache cache = GemFireCacheImpl.getInstance();
           if (cache != null && cache.getLoggerI18n() != null
               && cache.getLoggerI18n().infoEnabled()) {
             cache.getLoggerI18n().info(
@@ -716,8 +715,8 @@ public class InternalInstantiator {
   /////////////////////// Inner Classes ///////////////////////
 
   /**
-   * A marker object for <Code>Instantiator</code>s that have not been registered. Using this marker
-   * object allows us to asynchronously send <Code>Instantiator</code> registration updates. If the
+   * A marker object for {@code Instantiator}s that have not been registered. Using this marker
+   * object allows us to asynchronously send {@code Instantiator} registration updates. If the
    * serialized bytes arrive at a VM before the registration message does, the deserializer will
    * wait an amount of time for the registration message to arrive.
    */
@@ -727,7 +726,7 @@ public class InternalInstantiator {
     private volatile Instantiator instantiator = null;
 
     /**
-     * Creates a new <code>Marker</code> whose {@link #getInstantiator} method will wait for the
+     * Creates a new {@code Marker} whose {@link #getInstantiator} method will wait for the
      * instantiator to be registered.
      */
     Marker() {
@@ -737,7 +736,7 @@ public class InternalInstantiator {
     /**
      * Returns the instantiator associated with this marker. If the instantiator has not been
      * registered yet, then this method will wait until the instantiator is registered. If this
-     * method has to wait for too long, then <code>null</code> is returned.
+     * method has to wait for too long, then {@code null} is returned.
      */
     Instantiator getInstantiator() {
       synchronized (this) {
@@ -811,11 +810,11 @@ public class InternalInstantiator {
 
   /**
    * A distribution message that alerts other members of the distributed cache of a new
-   * <code>Instantiator</code> being registered.
+   * {@code Instantiator} being registered.
    */
   public static class RegistrationMessage extends SerialDistributionMessage {
     /**
-     * The <code>Instantiator</code> class that was registered
+     * The {@code Instantiator} class that was registered
      */
     protected Class instantiatorClass;
 
@@ -823,12 +822,12 @@ public class InternalInstantiator {
     protected Class instantiatedClass;
 
     /**
-     * The id of the <codE>Instantiator</code> that was registered
+     * The id of the {@code Instantiator} that was registered
      */
     protected int id;
 
     /**
-     * The eventId of the <codE>Instantiator</code> that was registered
+     * The eventId of the {@code Instantiator} that was registered
      */
     protected EventID eventId;
 
@@ -838,7 +837,7 @@ public class InternalInstantiator {
     protected transient StringBuffer fromDataProblems;
 
     /**
-     * The name of the <code>Instantiator</code> class that was registered
+     * The name of the {@code Instantiator} class that was registered
      */
     protected String instantiatorClassName;
 
@@ -846,15 +845,15 @@ public class InternalInstantiator {
     protected String instantiatedClassName;
 
     /**
-     * Constructor for <code>DataSerializable</code>
+     * Constructor for {@code DataSerializable}
      */
     public RegistrationMessage() {
 
     }
 
     /**
-     * Creates a new <code>RegistrationMessage</code> that broadcasts that the given
-     * <code>Instantiator</code> was registered.
+     * Creates a new {@code RegistrationMessage} that broadcasts that the given {@code Instantiator}
+     * was registered.
      */
     public RegistrationMessage(Instantiator s) {
       this.instantiatorClass = s.getClass();
@@ -951,7 +950,7 @@ public class InternalInstantiator {
   }
   /**
    * A distribution message that alerts other members of the distributed cache of a new
-   * <code>Instantiator</code> being registered.
+   * {@code Instantiator} being registered.
    *
    *
    * @since GemFire 5.0
@@ -961,15 +960,15 @@ public class InternalInstantiator {
     private transient ClientProxyMembershipID context;
 
     /**
-     * Constructor for <code>RegistrationConetxtMessage</code>
+     * Constructor for {@code RegistrationConetxtMessage}
      */
     public RegistrationContextMessage() {
 
     }
 
     /**
-     * Creates a new <code>RegistrationContextMessage</code> that broadcasts that the given
-     * <code>Instantiator</code> was registered.
+     * Creates a new {@code RegistrationContextMessage} that broadcasts that the given
+     * {@code Instantiator} was registered.
      */
     public RegistrationContextMessage(Instantiator s) {
       this.instantiatorClass = s.getClass();

@@ -57,7 +57,7 @@ public class CompiledLiteral extends AbstractCompiledValue {
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException {
     if (_obj == null) {
       clauseBuffer.insert(0, "null");

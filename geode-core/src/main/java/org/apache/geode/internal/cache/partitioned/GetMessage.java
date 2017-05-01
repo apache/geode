@@ -219,7 +219,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(this.key).append("; callback arg=").append(this.cbArg)
         .append("; context=").append(this.context);

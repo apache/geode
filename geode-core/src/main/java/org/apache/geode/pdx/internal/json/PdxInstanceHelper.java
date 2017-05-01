@@ -20,13 +20,13 @@ import java.math.BigInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 
-/*
+/**
  * This class is intermediate class to create PdxInstance.
  */
 public class PdxInstanceHelper implements JSONToPdxMapper {
@@ -37,15 +37,19 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
   PdxInstance m_pdxInstance;
   String m_PdxName;// when pdx is member, else null if part of lists
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
   public PdxInstanceHelper(String className, JSONToPdxMapper parent) {
-    GemFireCacheImpl gci = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     if (logger.isTraceEnabled()) {
       logger.trace("ClassName {}", className);
     }
     m_PdxName = className;
     m_parent = parent;
-    m_pdxInstanceFactory =
-        (PdxInstanceFactoryImpl) gci.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
+    m_pdxInstanceFactory = (PdxInstanceFactoryImpl) cache
+        .createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
   }
 
   public JSONToPdxMapper getParent() {

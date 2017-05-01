@@ -22,8 +22,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /*
@@ -36,8 +35,12 @@ public class PdxListHelper {
   PdxListHelper m_parent;
   List list = new LinkedList();
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
   public PdxListHelper(PdxListHelper parent, String name) {
-    GemFireCacheImpl gci = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     m_name = name;
     if (logger.isTraceEnabled()) {
       logger.trace("PdxListHelper name: {}", name);
@@ -155,7 +158,6 @@ public class PdxListHelper {
     if (logger.isTraceEnabled()) {
       logger.trace("addObjectField fieldName: {}", fieldName);
     }
-    // dpi.setPdxFieldName(fieldName);
     list.add(dpi.getPdxInstance());
   }
 

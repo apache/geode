@@ -14,6 +14,24 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
@@ -30,15 +48,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
 
 /**
  * Tombstones are region entries that have been destroyed but are held for future concurrency
@@ -46,7 +55,6 @@ import java.util.function.Predicate;
  * possibility of concurrent modification conflicts.
  * <p>
  * The cache holds a tombstone service that is responsible for tracking and timing out tombstones.
- * 
  */
 public class TombstoneService {
   private static final Logger logger = LogService.getLogger();
@@ -61,7 +69,7 @@ public class TombstoneService {
    * The default is 600,000 milliseconds (10 minutes).
    */
   public static long REPLICATE_TOMBSTONE_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-timeout", 600000L).longValue();
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-timeout", 600000L);
 
   /**
    * The default tombstone expiration period in millis for non-replicate/partition regions. This
@@ -111,13 +119,11 @@ public class TombstoneService {
   private final ReplicateTombstoneSweeper replicatedTombstoneSweeper;
   private final NonReplicateTombstoneSweeper nonReplicatedTombstoneSweeper;
 
-  public static TombstoneService initialize(GemFireCacheImpl cache) {
-    TombstoneService instance = new TombstoneService(cache);
-    // cache.getResourceManager().addResourceListener(instance); experimental
-    return instance;
+  public static TombstoneService initialize(InternalCache cache) {
+    return new TombstoneService(cache);
   }
 
-  private TombstoneService(GemFireCacheImpl cache) {
+  private TombstoneService(InternalCache cache) {
     this.replicatedTombstoneSweeper =
         new ReplicateTombstoneSweeper(cache, cache.getCachePerfStats(), cache.getCancelCriterion(),
             cache.getDistributionManager().getWaitingThreadPool());
@@ -165,11 +171,8 @@ public class TombstoneService {
     }
   }
 
-
   /**
    * remove all tombstones for the given region. Do this when the region is cleared or destroyed.
-   * 
-   * @param r
    */
   public void unscheduleTombstones(LocalRegion r) {
     getSweeper(r).unscheduleTombstones(r);
@@ -225,7 +228,7 @@ public class TombstoneService {
             destroyingMember = myId;
           }
           Long maxReclaimedRV = regionGCVersions.get(destroyingMember);
-          if (maxReclaimedRV != null && t.getRegionVersion() <= maxReclaimedRV.longValue()) {
+          if (maxReclaimedRV != null && t.getRegionVersion() <= maxReclaimedRV) {
             removals.add(t);
             return true;
           }
@@ -303,7 +306,6 @@ public class TombstoneService {
   /**
    * For test purposes only, force the expiration of a number of tombstones for replicated regions.
    * 
-   * @throws InterruptedException
    * @return true if the expiration occurred
    */
   public boolean forceBatchExpirationForTests(int count) throws InterruptedException {
@@ -847,7 +849,7 @@ public class TombstoneService {
       }
       try {
         this.sweeperThread.join(100);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
       }
     }
@@ -892,7 +894,7 @@ public class TombstoneService {
           checkOldestUnexpired(now);
           purgeObsoleteTombstones(now);
           doSleep();
-        } catch (CancelException e) {
+        } catch (CancelException ignore) {
           break;
         } catch (VirtualMachineError err) { // GemStoneAddition
           SystemFailure.initiateFailure(err);
@@ -926,7 +928,7 @@ public class TombstoneService {
         }
         try {
           this.wait(sleepTime);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
       }
     }
@@ -945,7 +947,6 @@ public class TombstoneService {
         return;
       }
       lastPurgeTimestamp = now;
-      long start = now;
       // see if any have been superseded
       boolean removedObsoleteTombstone = removeIf(tombstone -> {
         if (tombstone.region.getRegionMap().isTombstoneNotNeeded(tombstone.entry,
@@ -960,7 +961,7 @@ public class TombstoneService {
       if (removedObsoleteTombstone) {
         sleepTime = 0;
       } else {
-        long elapsed = getNow() - start;
+        long elapsed = getNow() - now;
         sleepTime -= elapsed;
         if (sleepTime <= 0) {
           minimumPurgeTime = elapsed;
@@ -991,7 +992,7 @@ public class TombstoneService {
             try {
               tombstones.remove();
               expireTombstone(oldest);
-            } catch (CancelException e) {
+            } catch (CancelException ignore) {
               // nothing needed
             } catch (Exception e) {
               logger.warn(

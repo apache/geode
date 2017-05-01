@@ -12,28 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- * 
- */
 package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
@@ -50,23 +45,19 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.DiskStoreAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
 
-  public CacheXml80DUnitTest() {
-    super();
-  }
-
+  @Override
   protected String getGemFireVersion() {
     return CacheXml.VERSION_8_0;
   }
 
   @SuppressWarnings("rawtypes")
   @Test
-  public void testCompressor() {
+  public void testCompressor() throws Exception {
     final String regionName = "testCompressor";
 
     final CacheCreation cache = new CacheCreation();
@@ -86,7 +77,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     regionAfter.localDestroyRegion();
   }
 
-  /*
+  /**
    * Tests xml creation for indexes First creates 3 indexes and makes sure the cache creates all 3
    * Creates a 4th through the api and writes out the xml Restarts the cache with the new xml Makes
    * sure the new cache has the 4 indexes
@@ -113,23 +104,20 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     c.getQueryService().createIndex("crIndex2", "r.CR_ID_2", "/replicated r");
     c.getQueryService().createIndex("rIndex", "r.R_ID", "/replicated r, r.positions.values rv");
 
-    File dir = new File("XML_" + this.getGemFireVersion());
+    File dir = new File(this.temporaryFolder.getRoot(), "XML_" + this.getGemFireVersion());
     dir.mkdirs();
-    File file = new File(dir, "actual-" + this.getUniqueName() + ".xml");
-    try {
-      PrintWriter pw = new PrintWriter(new FileWriter(file), true);
-      CacheXmlGenerator.generate(c, pw, this.getUseSchema(), this.getGemFireVersion());
-      pw.close();
-    } catch (IOException ex) {
-      Assert.fail("IOException during cache.xml generation to " + file, ex);
-    }
+    File file = new File(dir, "actual-" + getUniqueName() + ".xml");
+
+    PrintWriter pw = new PrintWriter(new FileWriter(file), true);
+    CacheXmlGenerator.generate(c, pw, getUseSchema(), getGemFireVersion());
+    pw.close();
 
     // Get index info before closing cache.
     indexes = qs.getIndexes();
 
     c.close();
     GemFireCacheImpl.testCacheXml = file;
-    assert (c.isClosed());
+    assertTrue(c.isClosed());
 
     c = getCache();
     qs = c.getQueryService();
@@ -184,7 +172,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
   }
 
   @Test
-  public void testCacheServerDisableTcpNoDelay() throws CacheException {
+  public void testCacheServerDisableTcpNoDelay() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     CacheServer cs = cache.addCacheServer();
@@ -196,9 +184,8 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     testXml(cache);
   }
 
-
   @Test
-  public void testCacheServerEnableTcpNoDelay() throws CacheException {
+  public void testCacheServerEnableTcpNoDelay() throws Exception {
     CacheCreation cache = new CacheCreation();
 
     CacheServer cs = cache.addCacheServer();
@@ -211,9 +198,8 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
   }
 
   @Test
-  public void testDiskUsage() {
+  public void testDiskUsage() throws Exception {
     CacheCreation cache = new CacheCreation();
-
 
     DiskStoreAttributesCreation disk = new DiskStoreAttributesCreation();
     disk.setDiskUsageWarningPercentage(97);
@@ -233,28 +219,26 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     return observer.isIndexesUsed && observer.indexName.equals(indexName);
   }
 
-  private class QueryObserverImpl extends QueryObserverAdapter {
+  private static class QueryObserverImpl extends QueryObserverAdapter {
 
     boolean isIndexesUsed = false;
 
-    ArrayList<String> indexesUsed = new ArrayList<String>();
+    List<String> indexesUsed = new ArrayList<String>();
 
     String indexName;
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexName = index.getName();
       indexesUsed.add(index.getName());
 
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;
       }
-    }
-
-    public int numIndexesUsed() {
-      return indexesUsed.size();
     }
 
     public void reset() {
@@ -264,7 +248,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     }
   }
 
-  private class TestObject {
+  private static class TestObject {
     public int CR_ID;
     public int CR_ID_2;
     public int R_ID;
@@ -282,24 +266,8 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
       positions.put(ID, "TEST_STRING");
     }
 
-    public int getCR_ID() {
-      return CR_ID;
-    }
-
-    public int getCR_ID_2() {
-      return CR_ID_2;
-    }
-
-    public int getR_ID() {
-      return R_ID;
-    }
-
     public int ID() {
       return ID;
-    }
-
-    public int getHASH_ID() {
-      return HASH_ID;
     }
   }
 }

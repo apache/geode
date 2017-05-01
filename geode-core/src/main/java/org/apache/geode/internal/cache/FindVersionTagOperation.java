@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -38,9 +35,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- */
 public class FindVersionTagOperation {
   private static final Logger logger = LogService.getLogger();
 
@@ -94,7 +88,6 @@ public class FindVersionTagOperation {
     public boolean stillWaiting() {
       return this.versionTag == null && super.stillWaiting();
     }
-
   }
 
   /**
@@ -124,12 +117,6 @@ public class FindVersionTagOperation {
     /** for deserialization */
     public FindVersionTagMessage() {}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.
-     * distributed.internal.DistributionManager)
-     */
     @Override
     protected void process(DistributionManager dm) {
       VersionTag result = null;
@@ -169,7 +156,7 @@ public class FindVersionTagOperation {
     }
 
     private LocalRegion findRegion() {
-      GemFireCacheImpl cache = null;
+      InternalCache cache;
       try {
         cache = GemFireCacheImpl.getInstance();
         if (cache != null) {

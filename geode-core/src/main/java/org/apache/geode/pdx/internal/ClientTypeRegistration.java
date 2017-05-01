@@ -36,7 +36,7 @@ import org.apache.geode.cache.client.internal.GetPDXTypeByIdOp;
 import org.apache.geode.cache.client.internal.GetPDXTypesOp;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.logging.LogService;
 
@@ -44,9 +44,9 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
 
-  public ClientTypeRegistration(GemFireCacheImpl cache) {
+  public ClientTypeRegistration(InternalCache cache) {
     this.cache = cache;
   }
 

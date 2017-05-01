@@ -14,9 +14,29 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionResolver;
@@ -30,7 +50,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.security.IntegratedSecurityService;
@@ -63,31 +83,12 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 /**
  * @since GemFire 7.0
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
+
   public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS =
       new TreeSet<RegionShortcut>();
 
@@ -108,6 +109,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
   }
 
+  /**
+   * TODO: method createRegion is too complex to analyze
+   */
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
@@ -229,7 +233,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       if (regionShortcut != null && useAttributesFrom != null) {
         throw new IllegalArgumentException(
@@ -285,7 +289,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         String cacheLoaderClass =
             cacheLoader != null ? cacheLoader : regionAttributesResult.getCacheLoaderClass();
         String cacheWriterClass =
-            cacheWriter != null ? cacheWriter : regionAttributesResult.getCacheWriterClass();;
+            cacheWriter != null ? cacheWriter : regionAttributesResult.getCacheWriterClass();
 
         regionFunctionArgs = new RegionFunctionArgs(regionPath, useAttributesFrom, skipIfExists,
             keyConstraint, valueConstraint, statisticsEnabled, entryIdle, entryTTL, regionIdle,
@@ -375,7 +379,6 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     } catch (RuntimeException e) {
       LogWrapper.getInstance().info(e.getMessage(), e);
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
-
     }
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
@@ -385,11 +388,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return result;
   }
 
-
-  public boolean verifyDistributedRegionMbean(Cache cache, String regionName) {
-    GemFireCacheImpl gemfireCache = (GemFireCacheImpl) cache;
+  public boolean verifyDistributedRegionMbean(InternalCache cache, String regionName) {
     int federationInterval =
-        gemfireCache.getInternalDistributedSystem().getConfig().getJmxManagerUpdateRate();
+        cache.getInternalDistributedSystem().getConfig().getJmxManagerUpdateRate();
     long timeEnd = System.currentTimeMillis() + federationInterval + 50;
 
     for (; System.currentTimeMillis() <= timeEnd;) {
@@ -479,7 +480,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     this.securityService.authorizeRegionManage(regionPath);
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       if (groups != null) {
         validateGroups(cache, groups);
@@ -616,7 +617,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return result;
   }
 
-  private static boolean regionExists(Cache cache, String regionPath) {
+  private static boolean regionExists(InternalCache cache, String regionPath) {
     boolean regionFound = false;
     if (regionPath != null && !Region.SEPARATOR.equals(regionPath)) {
       ManagementService managementService = ManagementService.getExistingManagementService(cache);
@@ -633,7 +634,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return regionFound;
   }
 
-  private void validateRegionPathAndParent(Cache cache, String regionPath) {
+  private void validateRegionPathAndParent(InternalCache cache, String regionPath) {
     if (regionPath == null || "".equals(regionPath)) {
       throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
     }
@@ -649,8 +650,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     }
   }
 
-
-  private void validateGroups(Cache cache, String[] groups) {
+  private void validateGroups(InternalCache cache, String[] groups) {
     if (groups != null && groups.length != 0) {
       Set<String> existingGroups = new HashSet<String>();
       Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
@@ -669,7 +669,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     }
   }
 
-  private void validateRegionFunctionArgs(Cache cache, RegionFunctionArgs regionFunctionArgs) {
+  private void validateRegionFunctionArgs(InternalCache cache,
+      RegionFunctionArgs regionFunctionArgs) {
     if (regionFunctionArgs.getRegionPath() == null) {
       throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
     }
@@ -751,16 +752,6 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                 new Object[] {prRedundantCopies}));
         }
       }
-      // Validation for the following is not known yet
-      // if (partitionArgs.isSetPRTotalNumBuckets()) {
-      // int prTotalNumBuckets = partitionArgs.getPrTotalNumBuckets();
-      // }
-      // if (partitionArgs.isSetPRStartupRecoveryDelay()) {
-      // long prStartupRecoveryDelay = partitionArgs.getPrStartupRecoveryDelay();
-      // }
-      // if (partitionArgs.isSetPRRecoveryDelay()) {
-      // long prRecoveryDelay = partitionArgs.getPrRecoveryDelay();
-      // }
     }
 
     String keyConstraint = regionFunctionArgs.getKeyConstraint();
@@ -918,7 +909,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     }
   }
 
-  private boolean diskStoreExists(Cache cache, String diskStoreName) {
+  private boolean diskStoreExists(InternalCache cache, String diskStoreName) {
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
     Map<String, String[]> diskstore = dsMXBean.listMemberDiskstore();
@@ -935,9 +926,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return false;
   }
 
-  private static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(Cache cache,
-      String regionPath) {
-    if (!isClusterwideSameConfig(cache, regionPath)) {
+  private static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(
+      InternalCache cache, String regionPath) {
+    if (!isClusterWideSameConfig(cache, regionPath)) {
       throw new IllegalStateException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FORM_REGIONS_EXISTS_BUT_DIFFERENT_SCOPE_OR_DATAPOLICY_USE_DESCRIBE_REGION_FOR_0,
           regionPath));
@@ -990,7 +981,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return attributes;
   }
 
-  private static boolean isClusterwideSameConfig(Cache cache, String regionPath) {
+  private static boolean isClusterWideSameConfig(InternalCache cache, String regionPath) {
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
 
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
@@ -1053,7 +1044,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
       String message = "";
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       ManagementService managementService = ManagementService.getExistingManagementService(cache);
       String regionPathToUse = regionPath;
 
@@ -1076,7 +1067,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
       List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
       message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED,
-          new Object[] {regionPath, /* subRegionMessage */""});
+          new Object[] {regionPath, ""});
 
       // Only if there is an error is this set to false
       boolean isRegionDestroyed = true;
@@ -1121,7 +1112,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return result;
   }
 
-  private Set<DistributedMember> findMembersForRegion(Cache cache,
+  private Set<DistributedMember> findMembersForRegion(InternalCache cache,
       ManagementService managementService, String regionPath) {
     Set<DistributedMember> membersList = new HashSet<>();
     Set<String> regionMemberIds = new HashSet<>();
@@ -1181,7 +1172,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return membersList;
   }
 
-  private Set<DistributedMember> getMembersByIds(Cache cache, Set<String> memberIds) {
+  private Set<DistributedMember> getMembersByIds(InternalCache cache, Set<String> memberIds) {
     Set<DistributedMember> foundMembers = Collections.emptySet();
     if (memberIds != null && !memberIds.isEmpty()) {
       foundMembers = new HashSet<DistributedMember>();
@@ -1203,7 +1194,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       CliStrings.DESTROY_REGION})
   public boolean isRegionCommandAvailable() {
     boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected //TODO - Abhishek: make this better
+    if (CliUtil.isGfshVM()) { // in gfsh check if connected //TODO: make this better
       isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
     }
     return isAvailable;

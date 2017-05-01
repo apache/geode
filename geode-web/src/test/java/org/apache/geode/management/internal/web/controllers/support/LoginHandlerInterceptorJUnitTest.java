@@ -14,13 +14,17 @@
  */
 package org.apache.geode.management.internal.web.controllers.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import edu.umd.cs.mtc.MultithreadedTestCase;
+import edu.umd.cs.mtc.TestFramework;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -30,13 +34,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import edu.umd.cs.mtc.MultithreadedTestCase;
-import edu.umd.cs.mtc.TestFramework;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract and

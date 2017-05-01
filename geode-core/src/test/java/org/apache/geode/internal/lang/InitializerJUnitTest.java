@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
@@ -46,6 +47,7 @@ public class InitializerJUnitTest {
   public void setUp() {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
+    mockContext.setThreadingPolicy(new Synchroniser());
   }
 
   @After

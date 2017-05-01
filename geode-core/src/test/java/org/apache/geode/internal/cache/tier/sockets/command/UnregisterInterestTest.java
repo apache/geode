@@ -14,7 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
@@ -31,9 +34,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
@@ -42,7 +45,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -53,6 +55,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @PrepareForTest({CacheClientNotifier.class})
 @Category(UnitTest.class)
 public class UnregisterInterestTest {
+
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
   private static final Object CALLBACK_ARG = "arg";
@@ -69,7 +72,7 @@ public class UnregisterInterestTest {
   @Mock
   private LocalRegion region;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private CacheServerStats cacheServerStats;
   @Mock
@@ -131,7 +134,6 @@ public class UnregisterInterestTest {
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
     when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
     when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
-
 
     when(this.valuePart.getObject()).thenReturn(CALLBACK_ARG);
 

@@ -80,14 +80,14 @@ public class FunctionJUnitTest {
     ExecutionContext context = null;
     for (int i = 0; i < 6; i++) {
       CompiledValue cf = new CompiledFunction(cvArr[i], OQLLexerTokenTypes.LITERAL_nvl);
-      StringBuffer clauseBuffer = new StringBuffer();
+      StringBuilder clauseBuffer = new StringBuilder();
       cf.generateCanonicalizedExpression(clauseBuffer, context);
       if (!clauseBuffer.toString().equals("NVL" + canonicalizedArgs[i])) {
         fail("Canonicalization not done properly");
       }
 
       cf = new CompiledFunction(cvArr[i], OQLLexerTokenTypes.LITERAL_element);
-      clauseBuffer = new StringBuffer();
+      clauseBuffer = new StringBuilder();
       cf.generateCanonicalizedExpression(clauseBuffer, context);
       if (!clauseBuffer.toString().equals("ELEMENT" + canonicalizedArgs[i])) {
         fail("Canonicalization not done properly");

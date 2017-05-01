@@ -12,26 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
-import org.apache.geode.cache.query.types.CollectionType;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.tier.Command;
-import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.*;
-import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.cache.operations.QueryOperationContext;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.cache.query.QueryInvalidException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.geode.cache.operations.QueryOperationContext;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.AuthorizeRequest;
 
 public class Query651 extends BaseCommandQuery {
 
@@ -92,7 +92,7 @@ public class Query651 extends BaseCommandQuery {
     try {
       // Create query
       QueryService queryService =
-          ((GemFireCacheImpl) servConn.getCachedRegionHelper().getCache()).getLocalQueryService();
+          servConn.getCachedRegionHelper().getCache().getLocalQueryService();
       org.apache.geode.cache.query.Query query = null;
 
       if (queryParams != null) {
@@ -138,6 +138,4 @@ public class Query651 extends BaseCommandQuery {
   protected CollectionType getCollectionType(SelectResults selectResults) {
     return new CollectionTypeImpl(List.class, selectResults.getCollectionType().getElementType());
   }
-
-
 }

@@ -14,6 +14,34 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import static org.apache.geode.internal.lang.SystemUtils.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.JMRuntimeException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.CacheClosedException;
@@ -26,11 +54,26 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DLockStats;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DirectoryHolder;
+import org.apache.geode.internal.cache.DiskDirectoryStats;
+import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.DiskStoreStats;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
@@ -48,46 +91,45 @@ import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.HostStatHelper;
+import org.apache.geode.internal.statistics.StatSamplerStats;
+import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
-import org.apache.geode.internal.statistics.StatSamplerStats;
-import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.management.*;
+import org.apache.geode.management.DependenciesNotFoundException;
+import org.apache.geode.management.DiskBackupResult;
+import org.apache.geode.management.GemFireProperties;
+import org.apache.geode.management.JVMMetrics;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.OSMetrics;
 import org.apache.geode.management.cli.CommandService;
 import org.apache.geode.management.cli.CommandServiceException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.beans.stats.*;
+import org.apache.geode.management.internal.beans.stats.AggregateRegionStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.GCStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.MemberLevelDiskMonitor;
+import org.apache.geode.management.internal.beans.stats.StatType;
+import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
+import org.apache.geode.management.internal.beans.stats.StatsKey;
+import org.apache.geode.management.internal.beans.stats.StatsLatency;
+import org.apache.geode.management.internal.beans.stats.StatsRate;
+import org.apache.geode.management.internal.beans.stats.VMStatsMonitor;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.remote.MemberCommandService;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.logging.log4j.Logger;
-
-import javax.management.JMRuntimeException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.io.File;
-import java.io.IOException;
-import java.lang.management.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and Distributed System
- * 
- * 
  */
 public class MemberMBeanBridge {
 
@@ -106,7 +148,7 @@ public class MemberMBeanBridge {
   private static TimeUnit nanoSeconds = TimeUnit.NANOSECONDS;
 
   /** Cache Instance **/
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
 
   /** Distribution Config **/
   private DistributionConfig config;
@@ -128,6 +170,7 @@ public class MemberMBeanBridge {
    * Command Service
    */
   private CommandService commandService;
+
   private String commandServiceInitError;
 
   /**
@@ -148,9 +191,7 @@ public class MemberMBeanBridge {
   /**
    * Reference to JDK bean OperatingSystemMXBean
    */
-
   private OperatingSystemMXBean osBean;
-
 
   /**
    * Host name of the member
@@ -186,7 +227,6 @@ public class MemberMBeanBridge {
   private MemberLevelDiskMonitor diskMonitor;
 
   private AggregateRegionStatsMonitor regionMonitor;
-
 
   private StatsRate createsRate;
 
@@ -266,8 +306,6 @@ public class MemberMBeanBridge {
 
   private MBeanStatsMonitor systemStatsMonitor;
 
-
-
   private float instCreatesRate = 0;
 
   private float instGetsRate = 0;
@@ -289,7 +327,7 @@ public class MemberMBeanBridge {
 
   private ResourceManagerStats resourceManagerStats;
 
-  public MemberMBeanBridge(GemFireCacheImpl cache, SystemManagementService service) {
+  public MemberMBeanBridge(InternalCache cache, SystemManagementService service) {
     this.cache = cache;
     this.service = service;
 
@@ -302,7 +340,6 @@ public class MemberMBeanBridge {
       this.redundancyZone = distManager
           .getRedundancyZone(cache.getInternalDistributedSystem().getDistributedMember());
     }
-
 
     this.sampler = system.getStatSampler();
 
@@ -319,16 +356,9 @@ public class MemberMBeanBridge {
       logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
     } catch (DependenciesNotFoundException e) {
       commandServiceInitError = e.getMessage();
-      if (CacheServerLauncher.isDedicatedCacheServer) {
-        // log as error for dedicated cache server - launched through script
-        // LOG:CONFIG:
-        logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}",
-            e.getMessage());
-      } else {
-        // LOG:CONFIG:
-        logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}",
-            e.getMessage());
-      }
+      // log as error for dedicated cache server - launched through script
+      // LOG:CONFIG:
+      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
     }
 
     intitGemfireProperties();
@@ -336,7 +366,7 @@ public class MemberMBeanBridge {
     try {
       InetAddress addr = SocketCreator.getLocalHost();
       this.hostname = addr.getHostName();
-    } catch (UnknownHostException ex) {
+    } catch (UnknownHostException ignore) {
       this.hostname = ManagementConstants.DEFAULT_HOST_NAME;
     }
 
@@ -358,7 +388,6 @@ public class MemberMBeanBridge {
 
     this.runtimeMXBean = ManagementFactory.getRuntimeMXBean();
     this.osBean = ManagementFactory.getOperatingSystemMXBean();
-
 
     // Initialize all the Stats Monitors
     this.monitor =
@@ -387,13 +416,11 @@ public class MemberMBeanBridge {
       }
     }
 
-
     QueryDataFunction qDataFunction = new QueryDataFunction();
     FunctionService.registerFunction(qDataFunction);
 
     this.resourceManagerStats = cache.getInternalResourceManager().getStats();
   }
-
 
   public MemberMBeanBridge() {
     this.monitor =
@@ -412,7 +439,7 @@ public class MemberMBeanBridge {
   }
 
   public MemberMBeanBridge init() {
-    CachePerfStats cachePerfStats = ((GemFireCacheImpl) cache).getCachePerfStats();
+    CachePerfStats cachePerfStats = this.cache.getCachePerfStats();
     addCacheStats(cachePerfStats);
     addFunctionStats(system.getFunctionServiceStats());
 
@@ -440,7 +467,7 @@ public class MemberMBeanBridge {
       }
     }
 
-    MemoryAllocator allocator = ((GemFireCacheImpl) cache).getOffHeapStore();
+    MemoryAllocator allocator = this.cache.getOffHeapStore();
     if ((null != allocator)) {
       OffHeapMemoryStats offHeapStats = allocator.getStats();
 
@@ -546,7 +573,6 @@ public class MemberMBeanBridge {
         removeDirectoryStats(dh.getDiskDirectoryStats());
       }
     }
-
   }
 
   public void removePartionRegionStats(PartitionedRegionStats parStats) {
@@ -561,14 +587,12 @@ public class MemberMBeanBridge {
     regionMonitor.removeDirectoryStatistics(diskDirStats.getStats());
   }
 
-
   public void addLockServiceStats(DLockService lock) {
     if (!lockStatsAdded) {
       DLockStats stats = (DLockStats) lock.getStats();
       addLockServiceStats(stats);
       lockStatsAdded = true;
     }
-
   }
 
   public void addLockServiceStats(DLockStats stats) {
@@ -577,7 +601,6 @@ public class MemberMBeanBridge {
 
   public void addSystemStats() {
     GemFireStatSampler sampler = system.getStatSampler();
-
 
     ProcessStats processStats = sampler.getProcessStats();
 
@@ -604,8 +627,6 @@ public class MemberMBeanBridge {
       if (vmHeapStats != null) {
         vmStatsMonitor.addStatisticsToMonitor(vmHeapStats);
       }
-
-      // vmStatsMonitor.addStatisticsToMonitor(vm50.getVMNonHeapStats());
 
       StatisticsType gcType = VMStats50.getGCType();
       if (gcType != null) {
@@ -646,7 +667,6 @@ public class MemberMBeanBridge {
   }
 
   private void initializeStats() {
-
     createsRate = new StatsRate(StatsKey.CREATES, StatType.INT_TYPE, monitor);
     bytesReceivedRate = new StatsRate(StatsKey.RECEIVED_BYTES, StatType.LONG_TYPE, monitor);
     bytesSentRate = new StatsRate(StatsKey.SENT_BYTES, StatType.LONG_TYPE, monitor);
@@ -689,7 +709,6 @@ public class MemberMBeanBridge {
     netLoadsAverageLatency = new StatsAverageLatency(StatsKey.NET_LOADS_COMPLETED,
         StatType.INT_TYPE, StatsKey.NET_LOADS_TIME, monitor);
 
-
     netSearchAverageLatency = new StatsAverageLatency(StatsKey.NET_SEARCH_COMPLETED,
         StatType.INT_TYPE, StatsKey.NET_SEARCH_TIME, monitor);
 
@@ -721,7 +740,6 @@ public class MemberMBeanBridge {
     pdxDeserializationRate =
         new StatsRate(StatsKey.PDX_INSTANCE_DESERIALIZATIONS, StatType.INT_TYPE, monitor);
 
-
     lruDestroyRate = new StatsRate(StatsKey.LRU_DESTROYS, StatType.LONG_TYPE, regionMonitor);
 
     lruEvictionRate = new StatsRate(StatsKey.LRU_EVICTIONS, StatType.LONG_TYPE, regionMonitor);
@@ -731,15 +749,12 @@ public class MemberMBeanBridge {
     if (gemFirePropertyData == null) {
       this.gemFirePropertyData = BeanUtilFuncs.initGemfireProperties(config);
     }
-
   }
-
 
   /**
    * @return Some basic JVM metrics at the particular instance
    */
   public JVMMetrics fetchJVMMetrics() {
-
     long gcCount = getGCStatistic(StatsKey.VM_GC_STATS_COLLECTIONS).longValue();
     long gcTimeMillis = getGCStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME).longValue();
 
@@ -780,23 +795,21 @@ public class MemberMBeanBridge {
       int availableProcessors = osBean.getAvailableProcessors();
       double systemLoadAverage = osBean.getSystemLoadAverage();
 
-
       openFileDescriptorCount = getVMStatistic(StatsKey.VM_STATS_OPEN_FDS).longValue();
       processCpuTime = getVMStatistic(StatsKey.VM_PROCESS_CPU_TIME).longValue();
 
       try {
         maxFileDescriptorCount =
             (Long) mbeanServer.getAttribute(osObjectName, "MaxFileDescriptorCount");
-      } catch (Exception e) {
+      } catch (Exception ignore) {
         maxFileDescriptorCount = -1;
       }
       try {
         committedVirtualMemorySize =
             (Long) mbeanServer.getAttribute(osObjectName, "CommittedVirtualMemorySize");
-      } catch (Exception e) {
+      } catch (Exception ignore) {
         committedVirtualMemorySize = -1;
       }
-
 
       // If Linux System type exists
       if (PureJavaMode.osStatsAreAvailable() && HostStatHelper.isLinux() && systemStat != null) {
@@ -804,23 +817,23 @@ public class MemberMBeanBridge {
         try {
           totalPhysicalMemorySize =
               systemStat.get(StatsKey.LINUX_SYSTEM_PHYSICAL_MEMORY).longValue();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
           totalPhysicalMemorySize = -1;
         }
         try {
           freePhysicalMemorySize = systemStat.get(StatsKey.LINUX_SYSTEM_FREE_MEMORY).longValue();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
           freePhysicalMemorySize = -1;
         }
         try {
           totalSwapSpaceSize = systemStat.get(StatsKey.LINUX_SYSTEM_TOTAL_SWAP_SIZE).longValue();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
           totalSwapSpaceSize = -1;
         }
 
         try {
           freeSwapSpaceSize = systemStat.get(StatsKey.LINUX_SYSTEM_FREE_SWAP_SIZE).longValue();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
           freeSwapSpaceSize = -1;
         }
 
@@ -840,14 +853,11 @@ public class MemberMBeanBridge {
       if (logger.isTraceEnabled()) {
         logger.trace(ex.getMessage(), ex);
       }
-
     }
     return metrics;
-
   }
 
   /**
-   * 
    * @return GemFire Properties
    */
   public GemFireProperties getGemFireProperty() {
@@ -872,15 +882,12 @@ public class MemberMBeanBridge {
    * @return a list of compacted Disk stores
    */
   public String[] compactAllDiskStores() {
-
-    GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
     List<String> compactedStores = new ArrayList<String>();
 
     if (cache != null && !cache.isClosed()) {
-      for (DiskStoreImpl store : cacheImpl.listDiskStoresIncludingRegionOwned()) {
+      for (DiskStore store : this.cache.listDiskStoresIncludingRegionOwned()) {
         if (store.forceCompaction()) {
-          compactedStores.add(store.getPersistentID().getDirectory());
-
+          compactedStores.add(((DiskStoreImpl) store).getPersistentID().getDirectory());
         }
       }
     }
@@ -895,30 +902,26 @@ public class MemberMBeanBridge {
    * @return list all the disk Stores name at cache level
    */
   public String[] listDiskStores(boolean includeRegionOwned) {
-    GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
     String[] retStr = null;
-    Collection<DiskStoreImpl> diskCollection = null;
+    Collection<DiskStore> diskCollection = null;
     if (includeRegionOwned) {
-      diskCollection = cacheImpl.listDiskStoresIncludingRegionOwned();
+      diskCollection = this.cache.listDiskStoresIncludingRegionOwned();
     } else {
-      diskCollection = cacheImpl.listDiskStores();
+      diskCollection = this.cache.listDiskStores();
     }
     if (diskCollection != null && diskCollection.size() > 0) {
       retStr = new String[diskCollection.size()];
-      Iterator<DiskStoreImpl> it = diskCollection.iterator();
+      Iterator<DiskStore> it = diskCollection.iterator();
       int i = 0;
       while (it.hasNext()) {
         retStr[i] = it.next().getName();
         i++;
-
       }
     }
     return retStr;
-
   }
 
   /**
-   * 
    * @return list of disk stores which defaults includeRegionOwned = true;
    */
   public String[] getDiskStores() {
@@ -926,11 +929,9 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return log of the member.
    */
   public String fetchLog(int numLines) {
-
     if (numLines > ManagementConstants.MAX_SHOW_LOG_LINES) {
       numLines = ManagementConstants.MAX_SHOW_LOG_LINES;
     }
@@ -965,13 +966,14 @@ public class MemberMBeanBridge {
       return LocalizedStrings.SystemMemberImpl_NO_LOG_FILE_CONFIGURED_LOG_MESSAGES_WILL_BE_DIRECTED_TO_STDOUT
           .toLocalizedString();
     } else {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       if (mainTail != null) {
         result.append(mainTail);
       }
       if (childTail != null) {
-        result.append(
-            "\n" + LocalizedStrings.SystemMemberImpl_TAIL_OF_CHILD_LOG.toLocalizedString() + "\n");
+        result.append(getLineSeparator())
+            .append(LocalizedStrings.SystemMemberImpl_TAIL_OF_CHILD_LOG.toLocalizedString())
+            .append(getLineSeparator());
         result.append(childTail);
       }
       return result.toString();
@@ -985,7 +987,6 @@ public class MemberMBeanBridge {
    * before deciding to shut itself down
    */
   public void shutDownMember() {
-
     final InternalDistributedSystem ids = dm.getSystem();
     if (ids.isConnected()) {
       Thread t = new Thread(new Runnable() {
@@ -993,7 +994,7 @@ public class MemberMBeanBridge {
           try {
             // Allow the Function call to exit
             Thread.sleep(1000);
-          } catch (InterruptedException e) {
+          } catch (InterruptedException ignore) {
           }
           ConnectionTable.threadWantsSharedResources();
           if (ids.isConnected()) {
@@ -1004,25 +1005,20 @@ public class MemberMBeanBridge {
       t.setDaemon(false);
       t.start();
     }
-
   }
 
   /**
    * backs up all the disk to the targeted directory
    * 
    * @param targetDirPath path of the directory where back up is to be taken
-   * @return array of DiskBackup results which might get aggregated at Managing node
-   * 
-   *         Check the validity of this mbean call. When does it make sense to backup a single
-   *         member of a gemfire system in isolation of the other members?
+   * @return array of DiskBackup results which might get aggregated at Managing node Check the
+   *         validity of this mbean call. When does it make sense to backup a single member of a
+   *         gemfire system in isolation of the other members?
    */
   public DiskBackupResult[] backupMember(String targetDirPath) {
-
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-
     if (cache != null) {
-      Collection<DiskStoreImpl> diskStores = cache.listDiskStoresIncludingRegionOwned();
-      for (DiskStoreImpl store : diskStores) {
+      Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
+      for (DiskStore store : diskStores) {
         store.flush();
       }
     }
@@ -1031,11 +1027,9 @@ public class MemberMBeanBridge {
     File targetDir = new File(targetDirPath);
 
     if (cache == null) {
-
       return null;
 
     } else {
-
       try {
         BackupManager manager =
             cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
@@ -1068,7 +1062,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return The name for this member.
    */
   public String getName() {
@@ -1076,7 +1069,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return The ID for this member.
    */
   public String getId() {
@@ -1084,7 +1076,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return The name of the member if it's been set, otherwise the ID of the member
    */
   public String getMember() {
@@ -1102,7 +1093,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return classPath of the VM
    */
   public String getClassPath() {
@@ -1110,7 +1100,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return Connected gateway receivers
    */
   public String[] listConnectedGatewayReceivers() {
@@ -1128,7 +1117,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return Connected gateway senders
    */
   public String[] listConnectedGatewaySenders() {
@@ -1146,7 +1134,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return approximate usage of CPUs
    */
   public float getCpuUsage() {
@@ -1154,7 +1141,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return current time of the system
    */
   public long getCurrentTime() {
@@ -1175,19 +1161,15 @@ public class MemberMBeanBridge {
   /**
    * Gets a String describing the GemFire member's status. A GemFire member includes, but is not
    * limited to: Locators, Managers, Cache Servers and so on.
-   * </p>
-   * 
+   *
    * @return String description of the GemFire member's status.
    * @see #isLocator()
    * @see #isServer()
    */
   public String status() {
-    // if (isLocator()) {
     if (LocatorLauncher.getInstance() != null) {
       return LocatorLauncher.getLocatorState().toJson();
-    }
-    // else if (isServer()) {
-    else if (ServerLauncher.getInstance() != null) {
+    } else if (ServerLauncher.getInstance() != null) {
       return ServerLauncher.getServerState().toJson();
     }
 
@@ -1196,17 +1178,14 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return total heap usage in bytes
    */
   public long getTotalBytesInUse() {
     MemoryUsage memHeap = memoryMXBean.getHeapMemoryUsage();
-    long bytesUsed = memHeap.getUsed();
-    return bytesUsed;
+    return memHeap.getUsed();
   }
 
   /**
-   * 
    * @return Number of availabe CPUs
    */
   public int getAvailableCpus() {
@@ -1215,7 +1194,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return JVM thread list
    */
   public String[] fetchJvmThreads() {
@@ -1235,7 +1213,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return list of regions
    */
   public String[] getListOfRegions() {
@@ -1253,7 +1230,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return configuration data lock lease
    */
   public long getLockLease() {
@@ -1261,13 +1237,11 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return configuration data lock time out
    */
   public long getLockTimeout() {
     return cache.getLockTimeout();
   }
-
 
   /**
    * @return the duration for which the member is up
@@ -1301,7 +1275,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return true if this members has a gateway receiver
    */
   public boolean hasGatewayReceiver() {
@@ -1309,7 +1282,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return true if member has Gateway senders
    */
   public boolean hasGatewaySender() {
@@ -1317,7 +1289,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return true if member contains one locator. From 7.0 only locator can be hosted in a JVM
    */
   public boolean isLocator() {
@@ -1325,18 +1296,15 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return true if the Federating Manager Thread is running
    */
   public boolean isManager() {
-    GemFireCacheImpl existingCache = GemFireCacheImpl.getInstance();
-    if (existingCache == null || existingCache.isClosed()) {
+    if (this.cache == null || this.cache.isClosed()) {
       return false;
     }
     try {
-      boolean isManager = service.isManager();
-      return isManager;
-    } catch (Exception e) {
+      return service.isManager();
+    } catch (Exception ignore) {
       return false;
     }
   }
@@ -1348,27 +1316,22 @@ public class MemberMBeanBridge {
    * @return true if the manager has been created.
    */
   public boolean isManagerCreated() {
-    GemFireCacheImpl existingCache = GemFireCacheImpl.getInstance();
-    if (existingCache == null || existingCache.isClosed()) {
+    if (this.cache == null || this.cache.isClosed()) {
       return false;
     }
     try {
       return service.isManagerCreated();
-    } catch (Exception e) {
+    } catch (Exception ignore) {
       return false;
     }
   }
 
   /**
-   * 
    * @return true if member has a server
    */
   public boolean isServer() {
     return cache.isServer();
   }
-
-  /** Statistics Related Attributes **/
-  /*********************************************************************************************************/
 
   public int getInitialImageKeysReceived() {
     return getMemberLevelStatistic(StatsKey.GET_INITIAL_IMAGE_KEYS_RECEIVED).intValue();
@@ -1496,7 +1459,6 @@ public class MemberMBeanBridge {
 
   public int getTotalHitCount() {
     return getMemberLevelStatistic(StatsKey.GETS).intValue() - getTotalMissCount();
-
   }
 
   public float getLruDestroyRate() {
@@ -1562,7 +1524,6 @@ public class MemberMBeanBridge {
   public int getTotalTransactionsCount() {
     return getMemberLevelStatistic(StatsKey.TRANSACTION_COMMITS).intValue()
         + getMemberLevelStatistic(StatsKey.TRANSACTION_ROLLBACKS).intValue();
-
   }
 
   public long getTransactionCommitsAvgLatency() {
@@ -1660,7 +1621,6 @@ public class MemberMBeanBridge {
     return regionMonitor.getDiskSpace();
   }
 
-
   public float getAverageReads() {
     return instGetsRate;
   }
@@ -1690,7 +1650,6 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return max limit of FD ..Ulimit
    */
   public long getFileDescriptorLimit() {
@@ -1701,14 +1660,13 @@ public class MemberMBeanBridge {
     try {
       maxFileDescriptorCount =
           (Long) mbeanServer.getAttribute(osObjectName, "MaxFileDescriptorCount");
-    } catch (Exception e) {
+    } catch (Exception ignore) {
       maxFileDescriptorCount = -1;
     }
     return maxFileDescriptorCount;
   }
 
   /**
-   * 
    * @return count of currently opened FDs
    */
   public long getTotalFileDescriptorOpen() {
@@ -1729,11 +1687,17 @@ public class MemberMBeanBridge {
     return objects;
   }
 
+  /**
+   * @deprecated Please use {@link #getOffHeapFreeMemory()} instead.
+   */
   @Deprecated
   public long getOffHeapFreeSize() {
     return getOffHeapFreeMemory();
   }
 
+  /**
+   * @deprecated Please use {@link #getOffHeapUsedMemory()} instead.
+   */
   @Deprecated
   public long getOffHeapUsedSize() {
     return getOffHeapUsedMemory();
@@ -1810,7 +1774,6 @@ public class MemberMBeanBridge {
   }
 
   public int getHostCpuUsage() {
-
     if (systemStat != null) {
       return systemStat.get(StatsKey.SYSTEM_CPU_ACTIVE).intValue();
     } else {
@@ -1818,11 +1781,9 @@ public class MemberMBeanBridge {
     }
   }
 
-
   public boolean isCacheServer() {
     return cacheServer;
   }
-
 
   public void setCacheServer(boolean cacheServer) {
     this.cacheServer = cacheServer;
@@ -1836,21 +1797,17 @@ public class MemberMBeanBridge {
     return resourceManagerStats.getRebalancesInProgress();
   }
 
-
   public int getReplyWaitsInProgress() {
     return getMemberLevelStatistic(StatsKey.REPLY_WAITS_IN_PROGRESS).intValue();
   }
-
 
   public int getReplyWaitsCompleted() {
     return getMemberLevelStatistic(StatsKey.REPLY_WAITS_COMPLETED).intValue();
   }
 
-
   public int getVisibleNodes() {
     return getMemberLevelStatistic(StatsKey.NODES).intValue();
   }
-
 
   public long getMaxMemory() {
     Runtime rt = Runtime.getRuntime();

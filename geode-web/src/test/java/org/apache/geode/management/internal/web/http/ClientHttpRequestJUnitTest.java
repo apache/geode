@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
@@ -59,6 +60,7 @@ public class ClientHttpRequestJUnitTest extends AbstractWebTestCase {
   public void setUp() {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
+    mockContext.setThreadingPolicy(new Synchroniser());
   }
 
   @After

@@ -125,7 +125,7 @@ public class VMStatsDiskRegionEntryOffHeapLongKey extends VMStatsDiskRegionEntry
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

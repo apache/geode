@@ -50,10 +50,6 @@ import org.apache.geode.internal.cache.execute.MultiRegionFunctionContextImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- * 
- * 
- */
 public class MemberFunctionStreamingMessage extends DistributionMessage
     implements TransactionMessage, MessageWithReply {
 
@@ -72,6 +68,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   private int processorId;
 
   private int txUniqId = TXManagerImpl.NOTX;
+
   private InternalDistributedMember txMemberId = null;
 
   private boolean isFnSerializationReqd;
@@ -79,8 +76,6 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   private Set<String> regionPathSet;
 
   private boolean isReExecute;
-
-  // private final Object lastResultLock = new Object();
 
   private static final short IS_REEXECUTE = UNRESERVED_FLAGS_START;
 
@@ -124,7 +119,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     if (this.txUniqId == TXManagerImpl.NOTX) {
       return null;
     } else {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         // ignore and return, we are shutting down!
         return null;
@@ -134,9 +129,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     }
   }
 
-  private void cleanupTransasction(TXStateProxy tx) {
+  private void cleanupTransaction(TXStateProxy tx) {
     if (this.txUniqId != TXManagerImpl.NOTX) {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         // ignore and return, we are shutting down!
         return;
@@ -167,7 +162,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       ResultSender resultSender = new MemberFunctionResultSender(dm, this, this.functionObject);
       Set<Region> regions = new HashSet<Region>();
       if (this.regionPathSet != null) {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = GemFireCacheImpl.getInstance();
         for (String regionPath : this.regionPathSet) {
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
             thr =
@@ -180,7 +175,6 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       }
       FunctionContextImpl context = new MultiRegionFunctionContextImpl(this.functionObject.getId(),
           this.args, resultSender, regions, isReExecute);
-
 
       long start = stats.startTime();
       stats.startFunctionExecution(this.functionObject.hasResult());
@@ -235,7 +229,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       SystemFailure.checkFailure();
       thr = t;
     } finally {
-      cleanupTransasction(tx);
+      cleanupTransaction(tx);
       if (thr != null) {
         rex = new ReplyException(thr);
         replyWithException(dm, rex);
@@ -268,7 +262,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     if ((flags & HAS_TX_ID) != 0)
       this.txUniqId = in.readInt();
     if ((flags & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.txMemberId = DataSerializer.readObject(in);
     }
 
     Object object = DataSerializer.readObject(in);
@@ -358,8 +352,8 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   /**
    * check to see if the cache is closing
    */
-  final public boolean checkCacheClosing(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  private boolean checkCacheClosing(DistributionManager dm) {
+    InternalCache cache = GemFireCacheImpl.getInstance();
     return (cache == null || cache.getCancelCriterion().isCancelInProgress());
   }
 
@@ -368,25 +362,15 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
    * 
    * @return true if the distributed system is closing
    */
-  final public boolean checkDSClosing(DistributionManager dm) {
+  private boolean checkDSClosing(DistributionManager dm) {
     InternalDistributedSystem ds = dm.getSystem();
     return (ds == null || ds.isDisconnecting());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.cache.TransactionMessage#canStartRemoteTransaction()
-   */
   public boolean canStartRemoteTransaction() {
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.cache.TransactionMessage#getTXUniqId()
-   */
   public int getTXUniqId() {
     return this.txUniqId;
   }
@@ -400,7 +384,6 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   public InternalDistributedMember getTXOriginatorClient() {
-    // TODO Auto-generated method stub
     return null;
   }
 

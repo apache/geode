@@ -24,7 +24,7 @@ import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -34,11 +34,14 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  * 
  * @since GemFire 8.0
  */
-
 public class DestroyDiskStoreFunction extends FunctionAdapter implements InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
+
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -49,7 +52,7 @@ public class DestroyDiskStoreFunction extends FunctionAdapter implements Interna
       final Object[] args = (Object[]) context.getArguments();
       final String diskStoreName = (String) args[0];
 
-      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 

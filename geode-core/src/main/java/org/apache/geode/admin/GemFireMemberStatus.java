@@ -14,6 +14,16 @@
  */
 package org.apache.geode.admin;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.PoolManager;
@@ -24,17 +34,18 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.CacheClientStatus;
+import org.apache.geode.internal.cache.HARegion;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionStatus;
+import org.apache.geode.internal.cache.RegionStatus;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.util.*;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Class <code>GemFireMemberStatus</code> provides the status of a specific GemFire member VM. This
@@ -528,7 +539,7 @@ public class GemFireMemberStatus implements Serializable {
       // Get Client Health Stats
       // Assert.assertTrue(cache != null); (cannot be null)
       Region clientHealthMonitoringRegion =
-          ClientHealthMonitoringRegion.getInstance((GemFireCacheImpl) cache);
+          ClientHealthMonitoringRegion.getInstance((InternalCache) cache);
       if (clientHealthMonitoringRegion != null) {
         String[] clients = (String[]) clientHealthMonitoringRegion.keySet().toArray(new String[0]);
         for (int i = 0; i < clients.length; i++) {

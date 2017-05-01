@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -26,23 +25,23 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * TXRegionLockRequest represents all the locks that need to be made for a single region.
  *
- * 
  * @since GemFire 4.0
- * 
  */
-public class TXRegionLockRequestImpl
-    implements org.apache.geode.internal.cache.locks.TXRegionLockRequest {
+public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   private static final long serialVersionUID = 5840033961584078082L;
   private static final Logger logger = LogService.getLogger();
 
   private transient LocalRegion r;
+
   private String regionPath;
+
   private Set<Object> entryKeys;
 
   public TXRegionLockRequestImpl() {
@@ -93,26 +92,26 @@ public class TXRegionLockRequestImpl
     this.entryKeys.add(key);
   }
 
-  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionPath = DataSerializer.readString(in);
 
-    final GemFireCacheImpl cache = getCache(false);
+    final InternalCache cache = getCache(false);
     try {
       final int size = InternalDataSerializer.readArrayLength(in);
       if (cache != null && size > 0) {
         this.r = (LocalRegion) cache.getRegion(this.regionPath);
       }
       this.entryKeys = readEntryKeySet(size, in);
-    } catch (CacheClosedException cce) {
+    } catch (CacheClosedException ignore) {
       // don't throw in deserialization
       this.entryKeys = null;
     }
   }
 
-  private final Set<Object> readEntryKeySet(final int size, final DataInput in)
+  private Set<Object> readEntryKeySet(final int size, final DataInput in)
       throws IOException, ClassNotFoundException {
 
-    if (logger.isDebugEnabled()) {
+    if (logger.isTraceEnabled()) {
       logger.trace(LogMarker.SERIALIZER, "Reading HashSet with size {}", size);
     }
 
@@ -135,21 +134,21 @@ public class TXRegionLockRequestImpl
     InternalDataSerializer.writeSet(this.entryKeys, out);
   }
 
-  public static final TXRegionLockRequestImpl createFromData(DataInput in)
+  public static TXRegionLockRequestImpl createFromData(DataInput in)
       throws IOException, ClassNotFoundException {
     TXRegionLockRequestImpl result = new TXRegionLockRequestImpl();
     InternalDataSerializer.invokeFromData(result, in);
     return result;
   }
 
-  public final String getRegionFullPath() {
+  public String getRegionFullPath() {
     if (this.regionPath == null) {
       this.regionPath = this.r.getFullPath();
     }
     return this.regionPath;
   }
 
-  public final Set<Object> getKeys() {
+  public Set<Object> getKeys() {
     if (this.entryKeys == null) {
       // check for cache closed/closing
       getCache(true);
@@ -157,8 +156,8 @@ public class TXRegionLockRequestImpl
     return this.entryKeys;
   }
 
-  private final GemFireCacheImpl getCache(boolean throwIfClosing) {
-    final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  private InternalCache getCache(boolean throwIfClosing) {
+    final InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
       if (throwIfClosing) {
         cache.getCancelCriterion().checkCancelInProgress(null);
@@ -175,7 +174,7 @@ public class TXRegionLockRequestImpl
    * Only safe to call in the vm that creates this request. Once it is serialized this method will
    * return null.
    */
-  public final LocalRegion getLocalRegion() {
+  public LocalRegion getLocalRegion() {
     return this.r;
   }
 

@@ -31,16 +31,16 @@ import org.apache.geode.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionO
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * A single client to server connection.
@@ -49,10 +49,11 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * server connection at the same time.
  * 
  * @since GemFire 5.7
- *
  */
 public class ConnectionImpl implements Connection {
 
+  // TODO: DEFAULT_CLIENT_FUNCTION_TIMEOUT should be private
+  public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
   private static Logger logger = LogService.getLogger();
 
   /**
@@ -61,17 +62,21 @@ public class ConnectionImpl implements Connection {
    */
   private static boolean TEST_DURABLE_CLIENT_CRASH = false;
 
+  // TODO: clientFunctionTimeout is not thread-safe and should be non-static
+  private static int clientFunctionTimeout;
+
   private Socket theSocket;
   private ByteBuffer commBuffer;
   private ByteBuffer commBufferForAsyncRead;
-  // private int handShakeTimeout = AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS;
   private ServerQueueStatus status;
   private volatile boolean connectFinished;
   private final AtomicBoolean destroyed = new AtomicBoolean();
   private Endpoint endpoint;
-  private short wanSiteVersion = -1;// In Gateway communication version of connected wan site
-                                    // will be stored after successful handshake
-  // private final CancelCriterion cancelCriterion;
+
+  // In Gateway communication version of connected wan site will be stored after successful
+  // handshake
+  private short wanSiteVersion = -1;
+
   private final InternalDistributedSystem ds;
 
   private OutputStream out;
@@ -82,8 +87,14 @@ public class ConnectionImpl implements Connection {
   private HandShake handShake;
 
   public ConnectionImpl(InternalDistributedSystem ds, CancelCriterion cancelCriterion) {
-    // this.cancelCriterion = cancelCriterion;
     this.ds = ds;
+    int time = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT",
+        DEFAULT_CLIENT_FUNCTION_TIMEOUT);
+    clientFunctionTimeout = time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+  }
+
+  public static int getClientFunctionTimeout() {
+    return clientFunctionTimeout;
   }
 
   public ServerQueueStatus connect(EndpointManager endpointManager, ServerLocation location,
@@ -149,9 +160,7 @@ public class ConnectionImpl implements Connection {
     commBuffer = null;
     try {
       theSocket.close();
-    } catch (IOException e) {
-      // ignore
-    } catch (RuntimeException e) {
+    } catch (IOException | RuntimeException ignore) {
       // ignore
     }
   }
@@ -256,7 +265,7 @@ public class ConnectionImpl implements Connection {
       if (op instanceof ExecuteFunctionOpImpl || op instanceof ExecuteRegionFunctionOpImpl
           || op instanceof ExecuteRegionFunctionSingleHopOpImpl) {
         int earliertimeout = this.getSocket().getSoTimeout();
-        this.getSocket().setSoTimeout(GemFireCacheImpl.getClientFunctionTimeout());
+        this.getSocket().setSoTimeout(getClientFunctionTimeout());
         try {
           result = op.attempt(this);
         } finally {

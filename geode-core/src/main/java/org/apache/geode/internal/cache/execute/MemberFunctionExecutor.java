@@ -36,11 +36,10 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- */
 public class MemberFunctionExecutor extends AbstractExecution {
 
   protected InternalDistributedSystem ds;
@@ -131,7 +130,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
       final FunctionContext context = new FunctionContextImpl(function.getId(),
           getArgumentsForMember(localVM.getId()), resultSender);
       boolean isTx = false;
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
         isTx = cache.getTxManager().getTXState() == null ? false : true;
       }
@@ -156,13 +155,9 @@ public class MemberFunctionExecutor extends AbstractExecution {
     return localRC;
   }
 
-  /**
-   * @param function
-   * @param dest
-   */
   @Override
   public void validateExecution(final Function function, final Set dest) {
-    final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    final InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null && cache.getTxManager().getTXState() != null) {
       if (dest.size() > 1) {
         throw new TransactionException(

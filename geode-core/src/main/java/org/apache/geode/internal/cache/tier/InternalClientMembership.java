@@ -28,6 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.logging.log4j.Logger;
 
@@ -41,7 +42,6 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -291,7 +291,7 @@ public final class InternalClientMembership {
 
   public static Map getClientQueueSizes() {
     Map clientQueueSizes = new HashMap();
-    GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+    InternalCache c = (InternalCache) CacheFactory.getAnyInstance();
     if (c == null) // Add a NULL Check
       return clientQueueSizes;
 

@@ -14,10 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -66,7 +63,7 @@ public class ContainsKeyTest {
     Region region = mock(LocalRegion.class);
     when(region.containsKey(isA(String.class))).thenReturn(true);
 
-    Cache cache = mock(Cache.class);
+    InternalCache cache = mock(InternalCache.class);
     when(cache.getRegion(isA(String.class))).thenReturn(region);
 
     CacheServerStats cacheServerStats = mock(CacheServerStats.class);

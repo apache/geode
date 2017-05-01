@@ -48,12 +48,10 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-/**
- * 
- */
 public class DistTXCommitMessage extends TXMessage {
 
   private static final Logger logger = LogService.getLogger();
+
   protected ArrayList<ArrayList<DistTxThinEntryState>> entryStateList = null;
 
   /** for deserialization */
@@ -75,7 +73,7 @@ public class DistTXCommitMessage extends TXMessage {
       logger.debug("DistTXCommitMessage.operateOnTx: Tx {}", txId);
     }
 
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     TXManagerImpl txMgr = cache.getTXMgr();
     final TXStateProxy txStateProxy = txMgr.getTXState();
     TXCommitMessage cmsg = null;
@@ -256,7 +254,7 @@ public class DistTXCommitMessage extends TXMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("DistTXCommitPhaseTwoReplyMessage ").append("processorid=").append(this.processorId)
           .append(" reply to sender ").append(this.getSender());
       return sb.toString();
@@ -339,7 +337,7 @@ public class DistTXCommitMessage extends TXMessage {
             (DistTxCommitExceptionCollectingException) this.exception;
         return cce.getCacheClosedMembers();
       } else {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
       }
     }
 
@@ -349,7 +347,7 @@ public class DistTXCommitMessage extends TXMessage {
             (DistTxCommitExceptionCollectingException) this.exception;
         return cce.getRegionDestroyedMembers(regionFullPath);
       } else {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
       }
     }
 
@@ -387,14 +385,12 @@ public class DistTXCommitMessage extends TXMessage {
     /**
      * Determine if the commit processing was incomplete, if so throw a detailed exception
      * indicating the source of the problem
-     * 
-     * @param msgMap
      */
     public void handlePotentialCommitFailure(
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
       if (fatalExceptions.size() > 0) {
-        StringBuffer errorMessage = new StringBuffer("Incomplete commit of transaction ").append(id)
-            .append(".  Caused by the following exceptions: ");
+        StringBuilder errorMessage = new StringBuilder("Incomplete commit of transaction ")
+            .append(id).append(".  Caused by the following exceptions: ");
         for (Iterator i = fatalExceptions.entrySet().iterator(); i.hasNext();) {
           Map.Entry me = (Map.Entry) i.next();
           DistributedMember mem = (DistributedMember) me.getKey();
@@ -428,16 +424,13 @@ public class DistTXCommitMessage extends TXMessage {
     public Set getRegionDestroyedMembers(String regionFullPath) {
       Set members = (Set) this.regionExceptions.get(regionFullPath);
       if (members == null) {
-        members = Collections.EMPTY_SET;
+        members = Collections.emptySet();
       }
       return members;
     }
 
     /**
      * Protected by (this)
-     * 
-     * @param member
-     * @param exceptions
      */
     public void addExceptionsFromMember(InternalDistributedMember member, Set exceptions) {
       for (Iterator iter = exceptions.iterator(); iter.hasNext();) {

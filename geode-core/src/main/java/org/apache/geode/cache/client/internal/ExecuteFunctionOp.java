@@ -23,7 +23,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.InternalFunctionException;
@@ -500,8 +499,8 @@ public class ExecuteFunctionOp {
     }
 
     private void addBytes(byte isReexecute, byte fnStateOrHasResult) {
-      if (GemFireCacheImpl
-          .getClientFunctionTimeout() == GemFireCacheImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
+      if (ConnectionImpl
+          .getClientFunctionTimeout() == ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
         if (isReexecute == 1) {
           getMessage().addBytesPart(
               new byte[] {AbstractExecution.getReexecuteFunctionState(fnStateOrHasResult)});
@@ -515,7 +514,7 @@ public class ExecuteFunctionOp {
         } else {
           bytes[0] = fnStateOrHasResult;
         }
-        Part.encodeInt(GemFireCacheImpl.getClientFunctionTimeout(), bytes, 1);
+        Part.encodeInt(ConnectionImpl.getClientFunctionTimeout(), bytes, 1);
         getMessage().addBytesPart(bytes);
       }
     }

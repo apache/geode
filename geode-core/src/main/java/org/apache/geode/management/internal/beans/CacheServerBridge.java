@@ -28,11 +28,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CqClosedException;
 import org.apache.geode.cache.query.CqException;
-import org.apache.geode.cache.query.CqQuery;
-import org.apache.geode.cache.query.CqState;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
@@ -45,7 +42,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
@@ -70,8 +67,6 @@ import org.apache.geode.management.membership.ClientMembershipListener;
 /**
  * Represents the GemFire CacheServer . Provides data and notifications about server,
  * subscriptions,durable queues and indices
- * 
- * 
  */
 public class CacheServerBridge extends ServerBridge {
 
@@ -79,7 +74,7 @@ public class CacheServerBridge extends ServerBridge {
 
   private CacheServer cacheServer;
 
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
 
   private QueryService qs;
 
@@ -106,7 +101,7 @@ public class CacheServerBridge extends ServerBridge {
     }
   }
 
-  public CacheServerBridge(CacheServer cacheServer, GemFireCacheImpl cache) {
+  public CacheServerBridge(CacheServer cacheServer, InternalCache cache) {
     super(cacheServer);
     this.cacheServer = cacheServer;
     this.cache = cache;
@@ -306,7 +301,6 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   /**
-   * 
    * @return a list of client Ids connected to this particular server instance
    */
   public String[] listClientIds() throws Exception {
@@ -323,9 +317,7 @@ public class CacheServerBridge extends ServerBridge {
     } else {
       return new String[0];
     }
-
   }
-
 
   private Map<String, ClientConnInfo> getUniqueClientIds() {
     Map<String, ClientConnInfo> uniqueIds = null;
@@ -401,7 +393,7 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   public Version getClientVersion(ClientConnInfo connInfo) {
-    GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
 
     if (cache.getCacheServers().size() == 0) {
       return null;
@@ -496,8 +488,7 @@ public class CacheServerBridge extends ServerBridge {
 
     ClientHealthStatus status = new ClientHealthStatus();
 
-    Region clientHealthMonitoringRegion =
-        ClientHealthMonitoringRegion.getInstance((GemFireCacheImpl) cache);
+    Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(this.cache);
     String clientName = proxyId.getDSMembership();
     status.setClientId(connInfo.toString());
     status.setName(clientName);
@@ -530,7 +521,6 @@ public class CacheServerBridge extends ServerBridge {
     return status;
   }
 
-
   /**
    * closes a continuous query and releases all the resources associated with it.
    * 
@@ -550,7 +540,6 @@ public class CacheServerBridge extends ServerBridge {
           } catch (CqException e) {
             throw new Exception(e.getMessage());
           }
-
         }
       }
     }
@@ -576,7 +565,6 @@ public class CacheServerBridge extends ServerBridge {
         }
       }
     }
-
   }
 
   /**
@@ -627,11 +615,9 @@ public class CacheServerBridge extends ServerBridge {
     }
   }
 
-
   public int getIndexCount() {
     return qs.getIndexes().size();
   }
-
 
   public int getNumClientNotificationRequests() {
     return getStatistic(StatsKey.NUM_CLIENT_NOTIFICATION_REQUEST).intValue();
@@ -640,7 +626,6 @@ public class CacheServerBridge extends ServerBridge {
   public long getClientNotificationAvgLatency() {
     return clientNotificatioAvgLatency.getAverageLatency();
   }
-
 
   public float getClientNotificationRate() {
     return clientNotificationRate.getRate();
@@ -653,7 +638,6 @@ public class CacheServerBridge extends ServerBridge {
   public long getTotalIndexMaintenanceTime() {
     return memberMBeanBridge.getTotalIndexMaintenanceTime();
   }
-
 
   public long getActiveCQCount() {
     CqService cqService = cache.getCqService();
@@ -710,9 +694,7 @@ public class CacheServerBridge extends ServerBridge {
     }
   }
 
-
   private ClientQueueDetail getClientQueueDetail(CacheClientProxy p) {
-
     ClientQueueDetail queueDetail = new ClientQueueDetail();
     ClientProxyMembershipID proxyID = p.getProxyID();
 
@@ -737,13 +719,7 @@ public class CacheServerBridge extends ServerBridge {
     return queueDetail;
   }
 
-  /**
-   * 
-   * @param clientId
-   * @return stats for a given client ID
-   */
   public ClientQueueDetail getClientQueueDetail(String clientId) throws Exception {
-
     try {
       if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
         Collection<CacheClientProxy> clientProxies =
@@ -755,7 +731,6 @@ public class CacheServerBridge extends ServerBridge {
             return queueDetail;
           }
         }
-
       }
     } catch (Exception e) {
       throw new Exception(e.getMessage());

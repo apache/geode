@@ -89,16 +89,8 @@ public final class HARegion extends DistributedRegion {
 
   private volatile HARegionQueue owningQueue;
 
-  // private Map giiProviderStates;
-
-  /**
-   * @param regionName
-   * @param attrs
-   * @param parentRegion
-   * @param cache
-   */
   private HARegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      GemFireCacheImpl cache) {
+      InternalCache cache) {
     super(regionName, attrs, parentRegion, cache,
         new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
             .setSnapshotInputStream(null).setImageTarget(null));
@@ -163,7 +155,7 @@ public final class HARegion extends DistributedRegion {
     ExpirationAttributes oldAttrs = getEntryTimeToLive();
     this.entryTimeToLive = timeToLive.getTimeout();
     this.entryTimeToLiveExpirationAction = timeToLive.getAction();
-    setEntryTimeToLiveAtts();
+    setEntryTimeToLiveAttributes();
     updateEntryExpiryPossible();
     timeToLiveChanged(oldAttrs);
     return oldAttrs;
@@ -256,7 +248,7 @@ public final class HARegion extends DistributedRegion {
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  public static HARegion getInstance(String regionName, GemFireCacheImpl cache, HARegionQueue hrq,
+  public static HARegion getInstance(String regionName, InternalCache cache, HARegionQueue hrq,
       RegionAttributes ra)
       throws TimeoutException, RegionExistsException, IOException, ClassNotFoundException {
 
@@ -441,9 +433,9 @@ public final class HARegion extends DistributedRegion {
   }
 
   @Override
-  public void fillInProfile(Profile p) {
-    super.fillInProfile(p);
-    HARegionAdvisor.HAProfile h = (HARegionAdvisor.HAProfile) p;
+  public void fillInProfile(Profile profile) {
+    super.fillInProfile(profile);
+    HARegionAdvisor.HAProfile h = (HARegionAdvisor.HAProfile) profile;
     // dunit tests create HARegions without encapsulating them in queues
     if (this.owningQueue != null) {
       h.isPrimary = this.owningQueue.isPrimary();

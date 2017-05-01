@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.configuration.functions;
 
 import org.apache.geode.cache.execute.Function;
@@ -21,13 +20,14 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 public class RecreateCacheFunction implements Function, InternalEntity {
   @Override
   public void execute(FunctionContext context) {
     CliFunctionResult result = null;
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     DistributedSystem ds = cache.getDistributedSystem();
     CacheConfig cacheConfig = cache.getCacheConfig();
     try {

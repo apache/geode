@@ -16,28 +16,20 @@ package org.apache.geode.pdx.internal.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
-import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 
-/*
+/**
  * This class is intermediate class to create PdxInstance.
  */
 public class PdxInstanceSortedHelper implements JSONToPdxMapper {
@@ -48,8 +40,11 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
   PdxInstance m_pdxInstance;
   String m_PdxName;// when pdx is member, else null if part of lists
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
   public PdxInstanceSortedHelper(String className, JSONToPdxMapper parent) {
-    GemFireCacheImpl gci = (GemFireCacheImpl) CacheFactory.getAnyInstance();
     if (logger.isTraceEnabled()) {
       logger.trace("ClassName {}", className);
     }
@@ -57,21 +52,11 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     m_parent = parent;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#getParent()
-   */
   @Override
   public JSONToPdxMapper getParent() {
     return m_parent;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#setPdxFieldName(java.lang.String)
-   */
   @Override
   public void setPdxFieldName(String name) {
     if (logger.isTraceEnabled()) {
@@ -104,12 +89,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addStringField(java.lang.String,
-   * java.lang.String)
-   */
   @Override
   public void addStringField(String fieldName, String value) {
     if (logger.isTraceEnabled()) {
@@ -118,11 +97,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.STRING));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addByteField(java.lang.String, byte)
-   */
   @Override
   public void addByteField(String fieldName, byte value) {
     if (logger.isTraceEnabled()) {
@@ -131,11 +105,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.BYTE));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addShortField(java.lang.String, short)
-   */
   @Override
   public void addShortField(String fieldName, short value) {
     if (logger.isTraceEnabled()) {
@@ -144,11 +113,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.SHORT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addIntField(java.lang.String, int)
-   */
   @Override
   public void addIntField(String fieldName, int value) {
     if (logger.isTraceEnabled()) {
@@ -157,11 +121,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.INT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addLongField(java.lang.String, long)
-   */
   @Override
   public void addLongField(String fieldName, long value) {
     if (logger.isTraceEnabled()) {
@@ -170,12 +129,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.LONG));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addBigDecimalField(java.lang.String,
-   * java.math.BigDecimal)
-   */
   @Override
   public void addBigDecimalField(String fieldName, BigDecimal value) {
     if (logger.isTraceEnabled()) {
@@ -184,12 +137,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.OBJECT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addBigIntegerField(java.lang.String,
-   * java.math.BigInteger)
-   */
   @Override
   public void addBigIntegerField(String fieldName, BigInteger value) {
     if (logger.isTraceEnabled()) {
@@ -198,12 +145,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.OBJECT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addBooleanField(java.lang.String,
-   * boolean)
-   */
   @Override
   public void addBooleanField(String fieldName, boolean value) {
     if (logger.isTraceEnabled()) {
@@ -212,11 +153,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.BOOLEAN));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addFloatField(java.lang.String, float)
-   */
   @Override
   public void addFloatField(String fieldName, float value) {
     if (logger.isTraceEnabled()) {
@@ -225,12 +161,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.FLOAT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addDoubleField(java.lang.String,
-   * double)
-   */
   @Override
   public void addDoubleField(String fieldName, double value) {
     if (logger.isTraceEnabled()) {
@@ -239,11 +169,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, value, FieldType.DOUBLE));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addNullField(java.lang.String)
-   */
   @Override
   public void addNullField(String fieldName) {
     if (logger.isTraceEnabled()) {
@@ -252,12 +177,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, null, FieldType.OBJECT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addListField(java.lang.String,
-   * org.apache.geode.pdx.internal.json.PdxListHelper)
-   */
   @Override
   public void addListField(String fieldName, PdxListHelper list) {
     if (logger.isTraceEnabled()) {
@@ -267,11 +186,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, list.getList(), FieldType.OBJECT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#endListField(java.lang.String)
-   */
   @Override
   public void endListField(String fieldName) {
     if (logger.isTraceEnabled()) {
@@ -279,12 +193,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#addObjectField(java.lang.String,
-   * org.apache.geode.pdx.PdxInstance)
-   */
   @Override
   public void addObjectField(String fieldName, Object member) {
     if (logger.isTraceEnabled()) {
@@ -296,11 +204,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     fieldList.add(new JSONFieldHolder(fieldName, member, FieldType.OBJECT));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#endObjectField(java.lang.String)
-   */
   @Override
   public void endObjectField(String fieldName) {
     if (logger.isTraceEnabled()) {
@@ -352,30 +255,18 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     }
   }
 
-
-  static PdxInstanceFactory createPdxInstanceFactory() {
-    GemFireCacheImpl gci = (GemFireCacheImpl) CacheFactory.getAnyInstance();
-    return gci.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
+  private PdxInstanceFactory createPdxInstanceFactory() {
+    InternalCache cache = getCache();
+    return cache.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#getPdxInstance()
-   */
   @Override
   public PdxInstance getPdxInstance() {
     return m_pdxInstance;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.pdx.internal.json.JSONToPdxMapper#getPdxFieldName()
-   */
   @Override
   public String getPdxFieldName() {
-    // return m_fieldName != null ? m_fieldName : "emptyclassname"; //when object is just like { }
     return m_PdxName;
   }
 }

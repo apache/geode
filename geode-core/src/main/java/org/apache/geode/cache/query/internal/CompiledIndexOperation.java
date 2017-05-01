@@ -142,7 +142,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
 
   // Asif :Function for generating canonicalized expression
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     // Asif: The canonicalization of Index operator will be of
     // the form IterX.getPositions[IterY.a.b.c]

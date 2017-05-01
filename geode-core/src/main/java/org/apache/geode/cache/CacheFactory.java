@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache;
 
 import java.util.Properties;
@@ -23,14 +22,15 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire
@@ -87,8 +87,6 @@ import org.apache.geode.security.SecurityManager;
  * explicitly control the individual region attributes can do this declaratively in XML or using
  * APIs.
  *
- *
- *
  * @since GemFire 3.0
  */
 public class CacheFactory {
@@ -135,32 +133,29 @@ public class CacheFactory {
   }
 
   /**
-   * Creates a new cache that uses the specified <code>system</code>.
-   *
+   * Creates a new cache that uses the specified {@code system}.
    * <p>
-   *
-   * The <code>system</code> can specify a
+   * The {@code system} can specify a
    * <A href="../distributed/DistributedSystem.html#cache-xml-file">"cache-xml-file"</a> property
    * which will cause this creation to also create the regions, objects, and attributes declared in
-   * the file. The contents of the file must comply with the <code>"doc-files/cache8_0.dtd"></code>
-   * file. Note that when parsing the XML file {@link Declarable} classes are loaded using the
-   * current thread's {@linkplain Thread#getContextClassLoader context class loader}.
+   * the file. The contents of the file must comply with the {@code "doc-files/cache8_0.dtd">} file.
+   * Note that when parsing the XML file {@link Declarable} classes are loaded using the current
+   * thread's {@linkplain Thread#getContextClassLoader context class loader}.
    *
-   * @param system a <code>DistributedSystem</code> obtained by calling
+   * @param system a {@code DistributedSystem} obtained by calling
    *        {@link DistributedSystem#connect}.
    *
-   * @return a <code>Cache</code> that uses the specified <code>system</code> for distribution.
+   * @return a {@code Cache} that uses the specified {@code system} for distribution.
    *
-   * @throws IllegalArgumentException If <code>system</code> is not
-   *         {@link DistributedSystem#isConnected connected}.
+   * @throws IllegalArgumentException If {@code system} is not {@link DistributedSystem#isConnected
+   *         connected}.
    * @throws CacheExistsException If an open cache already exists.
    * @throws CacheXmlException If a problem occurs while parsing the declarative caching XML file.
    * @throws TimeoutException If a {@link Region#put(Object, Object)} times out while initializing
    *         the cache.
-   * @throws CacheWriterException If a <code>CacheWriterException</code> is thrown while
-   *         initializing the cache.
-   * @throws GatewayException If a <code>GatewayException</code> is thrown while initializing the
+   * @throws CacheWriterException If a {@code CacheWriterException} is thrown while initializing the
    *         cache.
+   * @throws GatewayException If a {@code GatewayException} is thrown while initializing the cache.
    * @throws RegionExistsException If the declarative caching XML file describes a region that
    *         already exists (including the root region).
    * @deprecated as of 6.5 use {@link #CacheFactory(Properties)} instead.
@@ -191,10 +186,9 @@ public class CacheFactory {
    * @throws CacheXmlException If a problem occurs while parsing the declarative caching XML file.
    * @throws TimeoutException If a {@link Region#put(Object, Object)} times out while initializing
    *         the cache.
-   * @throws CacheWriterException If a <code>CacheWriterException</code> is thrown while
-   *         initializing the cache.
-   * @throws GatewayException If a <code>GatewayException</code> is thrown while initializing the
+   * @throws CacheWriterException If a {@code CacheWriterException} is thrown while initializing the
    *         cache.
+   * @throws GatewayException If a {@code GatewayException} is thrown while initializing the cache.
    * @throws RegionExistsException If the declarative caching XML file describes a region that
    *         already exists (including the root region).
    * @throws IllegalStateException if cache already exists and is not compatible with the new
@@ -222,7 +216,7 @@ public class CacheFactory {
   /**
    * Gets the instance of {@link Cache} produced by an earlier call to {@link #create()}.
    * 
-   * @param system the <code>DistributedSystem</code> the cache was created with.
+   * @param system the {@code DistributedSystem} the cache was created with.
    * @return the {@link Cache} associated with the specified system.
    * @throws CacheClosedException if a cache has not been created or the created one is
    *         {@link Cache#isClosed closed}
@@ -235,7 +229,7 @@ public class CacheFactory {
    * Gets the instance of {@link Cache} produced by an earlier call to {@link #create()} even if it
    * has been closed.
    * 
-   * @param system the <code>DistributedSystem</code> the cache was created with.
+   * @param system the {@code DistributedSystem} the cache was created with.
    * @return the {@link Cache} associated with the specified system.
    * @throws CacheClosedException if a cache has not been created
    * @since GemFire 3.5
@@ -245,7 +239,6 @@ public class CacheFactory {
   }
 
   private static Cache basicGetInstance(DistributedSystem system, boolean closeOk) {
-
     // Avoid synchronization if this is an initialization thread to avoid
     // deadlock when messaging returns to this VM
     final int initReq = LocalRegion.threadInitLevelRequirement();
@@ -260,7 +253,7 @@ public class CacheFactory {
   }
 
   private static Cache basicGetInstancePart2(DistributedSystem system, boolean closeOk) {
-    GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
+    InternalCache instance = GemFireCacheImpl.getInstance();
     if (instance == null) {
       throw new CacheClosedException(
           LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
@@ -286,7 +279,7 @@ public class CacheFactory {
    *         {@link Cache#isClosed closed}
    */
   public static synchronized Cache getAnyInstance() {
-    GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
+    InternalCache instance = GemFireCacheImpl.getInstance();
     if (instance == null) {
       throw new CacheClosedException(
           LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
@@ -299,7 +292,7 @@ public class CacheFactory {
   /**
    * Returns the version of the cache implementation.
    * 
-   * @return the version of the cache implementation as a <code>String</code>
+   * @return the version of the cache implementation as a {@code String}
    */
   public static String getVersion() {
     return GemFireVersion.getGemFireVersion();
@@ -335,7 +328,6 @@ public class CacheFactory {
    * object provided this way is expected to be initialized already. We are not calling the init
    * method on this object
    *
-   * @param securityManager
    * @return this CacheFactory
    */
   public CacheFactory setSecurityManager(SecurityManager securityManager) {
@@ -351,7 +343,6 @@ public class CacheFactory {
    * object provided this way is expected to be initialized already. We are not calling the init
    * method on this object
    * 
-   * @param postProcessor
    * @return this CacheFactory
    */
   public CacheFactory setPostProcessor(PostProcessor postProcessor) {
@@ -393,8 +384,8 @@ public class CacheFactory {
   /**
    * Control whether the type metadata for PDX objects is persisted to disk. The default for this
    * setting is false. If you are using persistent regions with PDX then you must set this to true.
-   * If you are using a <code>GatewaySender</code> or <code>AsyncEventQueue</code> with PDX then you
-   * should set this to true.
+   * If you are using a {@code GatewaySender} or {@code AsyncEventQueue} with PDX then you should
+   * set this to true.
    * 
    * @param isPersistent true if the metadata should be persistent
    * @return this CacheFactory
@@ -410,12 +401,12 @@ public class CacheFactory {
    * preserve unread fields be including their data during serialization. But if you configure the
    * cache to ignore unread fields then their data will be lost during serialization.
    * <P>
-   * You should only set this attribute to <code>true</code> if you know this member will only be
-   * reading cache data. In this use case you do not need to pay the cost of preserving the unread
-   * fields since you will never be reserializing pdx data.
+   * You should only set this attribute to {@code true} if you know this member will only be reading
+   * cache data. In this use case you do not need to pay the cost of preserving the unread fields
+   * since you will never be reserializing pdx data.
    * 
-   * @param ignore <code>true</code> if fields not read during pdx deserialization should be
-   *        ignored; <code>false</code>, the default, if they should be preserved.
+   * @param ignore {@code true} if fields not read during pdx deserialization should be ignored;
+   *        {@code false}, the default, if they should be preserved.
    * @return this CacheFactory
    * @since GemFire 6.6
    */
@@ -424,4 +415,3 @@ public class CacheFactory {
     return this;
   }
 }
-

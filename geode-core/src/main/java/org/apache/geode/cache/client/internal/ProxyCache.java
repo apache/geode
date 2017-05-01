@@ -15,6 +15,13 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
@@ -23,17 +30,10 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.ProxyQueryService;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * A wrapper class over an actual Cache instance. This is used when the multiuser-authentication
@@ -50,17 +50,24 @@ import java.util.Set;
  */
 public class ProxyCache implements RegionService {
 
-  private final GemFireCacheImpl cache;
+  /**
+   * package-private to avoid synthetic accessor
+   * <p>
+   * TODO: if this is only in inside client then this should be InternalClientCache
+   */
+  final InternalCache cache;
+
   private UserAttributes userAttributes;
   private ProxyQueryService proxyQueryService;
   private boolean isClosed = false;
   private final Stopper stopper = new Stopper();
 
-  public ProxyCache(Properties properties, GemFireCacheImpl cache, PoolImpl pool) {
+  public ProxyCache(Properties properties, InternalCache cache, PoolImpl pool) {
     this.userAttributes = new UserAttributes(properties, pool);
     this.cache = cache;
   }
 
+  @Override
   public void close() {
     close(false);
   }
@@ -76,18 +83,16 @@ public class ProxyCache implements RegionService {
         this.proxyQueryService.closeCqs(keepAlive);
       }
       UserAttributes.userAttributes.set(this.userAttributes);
-      Iterator<ServerLocation> iter = this.userAttributes.getServerToId().keySet().iterator();
-      while (iter.hasNext()) {
-        ProxyCacheCloseOp.executeOn(iter.next(), (PoolImpl) this.userAttributes.getPool(),
+      for (final ServerLocation serverLocation : this.userAttributes.getServerToId().keySet()) {
+        ProxyCacheCloseOp.executeOn(serverLocation, (ExecutablePool) this.userAttributes.getPool(),
             this.userAttributes.getCredentials(), keepAlive);
       }
-      ArrayList<ProxyCache> proxyCache =
-          ((PoolImpl) this.userAttributes.getPool()).getProxyCacheList();
+      List<ProxyCache> proxyCache = ((PoolImpl) this.userAttributes.getPool()).getProxyCacheList();
       synchronized (proxyCache) {
         proxyCache.remove(this);
       }
     } finally {
-      // @todo I think some NPE will be caused by this code.
+      // TODO: I think some NPE will be caused by this code.
       // It would be safer to not null things out.
       // It is really bad that we null out and then set isClosed true.
       this.isClosed = true;
@@ -98,28 +103,19 @@ public class ProxyCache implements RegionService {
     }
   }
 
-  // TODO remove this method
-  public String getName() {
-    return this.cache.getName();
-  }
-
+  @Override
   public QueryService getQueryService() {
     preOp();
     if (this.proxyQueryService == null) {
       this.proxyQueryService =
-          new ProxyQueryService(this, userAttributes.getPool().getQueryService());
+          new ProxyQueryService(this, this.userAttributes.getPool().getQueryService());
     }
     return this.proxyQueryService;
   }
 
+  @Override
   public <K, V> Region<K, V> getRegion(String path) {
     preOp();
-    // TODO Auto-generated method stub
-    // ProxyRegion region = this.proxyRegionList.get(path);
-    // if (region != null) {
-    // return region;
-    // }
-    // else {
     if (this.cache.getRegion(path) == null) {
       return null;
     } else {
@@ -129,9 +125,9 @@ public class ProxyCache implements RegionService {
       }
       return new ProxyRegion(this, this.cache.getRegion(path));
     }
-    // }
   }
 
+  @Override
   public boolean isClosed() {
     return this.isClosed;
   }
@@ -170,11 +166,6 @@ public class ProxyCache implements RegionService {
   }
 
   protected class Stopper extends CancelCriterion {
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.CancelCriterion#cancelInProgress()
-     */
     @Override
     public String cancelInProgress() {
       String reason = cache.getCancelCriterion().cancelInProgress();
@@ -187,11 +178,6 @@ public class ProxyCache implements RegionService {
       return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
-     */
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
       String reason = cancelInProgress();
@@ -209,7 +195,7 @@ public class ProxyCache implements RegionService {
 
       try {
         return new CacheClosedException(reason, e);
-      } catch (IllegalStateException e2) {
+      } catch (IllegalStateException ignore) {
         // Bug 39496 (Jrockit related) Give up. The following
         // error is not entirely sane but gives the correct general picture.
         return new CacheClosedException(reason);
@@ -217,6 +203,7 @@ public class ProxyCache implements RegionService {
     }
   }
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return this.stopper;
   }
@@ -233,14 +220,16 @@ public class ProxyCache implements RegionService {
     return Collections.unmodifiableSet(rootRegions);
   }
 
+  @Override
   public PdxInstanceFactory createPdxInstanceFactory(String className) {
     return PdxInstanceFactoryImpl.newCreator(className, true);
   }
 
-  public PdxInstanceFactory createPdxInstanceFactory(String className, boolean b) {
-    return PdxInstanceFactoryImpl.newCreator(className, b);
+  public PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass) {
+    return PdxInstanceFactoryImpl.newCreator(className, expectDomainClass);
   }
 
+  @Override
   public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal) {
     return PdxInstanceFactoryImpl.createPdxEnum(className, enumName, enumOrdinal, this.cache);
   }

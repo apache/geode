@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -124,7 +125,7 @@ public class VMStatsLRURegionEntryOffHeapIntKey extends VMStatsLRURegionEntryOff
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

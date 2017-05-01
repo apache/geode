@@ -315,7 +315,7 @@ public final class DumpB2NRegion extends PartitionMessage {
    * StringBuffer)
    */
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append(" bucketId=").append(this.bucketId).append(" primaryInfoOnly=")
         .append(this.onlyReturnPrimaryInfo);

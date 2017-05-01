@@ -14,21 +14,28 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+
 public class DestroyLuceneIndexMessage extends PooledDistributionMessage
     implements MessageWithReply {
+
+  private static final Logger logger = LogService.getLogger();
 
   private int processorId;
 
@@ -36,10 +43,10 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
 
   private String indexName;
 
-  private static final Logger logger = LogService.getLogger();
-
   /* For serialization */
-  public DestroyLuceneIndexMessage() {}
+  public DestroyLuceneIndexMessage() {
+    // nothing
+  }
 
   protected DestroyLuceneIndexMessage(Collection recipients, int processorId, String regionPath,
       String indexName) {
@@ -59,7 +66,7 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
             + "; indexName=" + this.indexName);
       }
       try {
-        Cache cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = GemFireCacheImpl.getInstance();
         LuceneServiceImpl impl = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
         impl.destroyIndex(this.indexName, this.regionPath, false);
         if (logger.isDebugEnabled()) {

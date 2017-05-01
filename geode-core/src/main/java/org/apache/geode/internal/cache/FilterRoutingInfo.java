@@ -14,18 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataSerializable;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -37,6 +25,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.ObjToByteArraySerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataSerializable;
 
 /**
  * This class is used to hold the information about the servers and their Filters (CQs and Interest
@@ -217,7 +217,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
   /** DataSerializable methods */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     DistributedMember myID = null;
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       myID = cache.getMyId();
     }
@@ -250,7 +250,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
     DistributedMember myID = null;
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       myID = cache.getMyId();
     }
@@ -303,7 +303,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
     public boolean longIDs;
 
-    public static final long serialVersionUID = 0;
+    private static final long serialVersionUID = 0;
 
     /** Map holding Cq filterID and CqEvent Type */
     private HashMap<Long, Integer> cqs;
@@ -383,20 +383,19 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
           Map.Entry e = (Map.Entry) it.next();
           // most cq IDs and all event types are small ints, so we use an optimized
           // write that serializes 7 bits at a time in a compact form
-          InternalDataSerializer.writeUnsignedVL(((Long) e.getKey()).longValue(), hdos);
-          InternalDataSerializer.writeUnsignedVL(((Integer) e.getValue()).intValue(), hdos);
+          InternalDataSerializer.writeUnsignedVL((Long) e.getKey(), hdos);
+          InternalDataSerializer.writeUnsignedVL((Integer) e.getValue(), hdos);
         }
       }
       InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
       InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
       if (out instanceof HeapDataOutputStream) {
-        ((HeapDataOutputStream) out).writeAsSerializedByteArray(hdos);
+        ((ObjToByteArraySerializer) out).writeAsSerializedByteArray(hdos);
       } else {
         byte[] myData = hdos.toByteArray();
         DataSerializer.writeByteArray(myData, out);
       }
     }
-
 
     public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       if (OLD_MEMBERS_OPTIMIZED) {
@@ -422,14 +421,14 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
             Map.Entry e = (Map.Entry) it.next();
             // most cq IDs and all event types are small ints, so we use an optimized
             // write that serializes 7 bits at a time in a compact form
-            InternalDataSerializer.writeUnsignedVL(((Long) e.getKey()).longValue(), hdos);
-            InternalDataSerializer.writeUnsignedVL(((Integer) e.getValue()).intValue(), hdos);
+            InternalDataSerializer.writeUnsignedVL((Long) e.getKey(), hdos);
+            InternalDataSerializer.writeUnsignedVL((Integer) e.getValue(), hdos);
           }
         }
         InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
         InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
         if (out instanceof HeapDataOutputStream) {
-          ((HeapDataOutputStream) out).writeAsSerializedByteArray(hdos);
+          ((ObjToByteArraySerializer) out).writeAsSerializedByteArray(hdos);
         } else {
           byte[] myData = hdos.toByteArray();
           DataSerializer.writeByteArray(myData, out);
@@ -494,7 +493,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
           this.cqs = new HashMap(numEntries);
           for (int i = 0; i < numEntries; i++) {
             Long key = InternalDataSerializer.readUnsignedVL(dis);
-            Integer value = Integer.valueOf((int) InternalDataSerializer.readUnsignedVL(dis));
+            Integer value = (int) InternalDataSerializer.readUnsignedVL(dis);
             this.cqs.put(key, value);
           }
         }
@@ -506,10 +505,9 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       }
     }
 
-
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       if (this.interestedClients != null && this.interestedClients.size() > 0) {
         sb.append("interestedClients:");
         sb.append(this.interestedClients);
@@ -533,4 +531,3 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
   }
 
 }
-

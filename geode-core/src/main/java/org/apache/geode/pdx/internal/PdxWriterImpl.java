@@ -14,6 +14,11 @@
  */
 package org.apache.geode.pdx.internal;
 
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Date;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSCODE;
@@ -21,13 +26,15 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
-import org.apache.geode.pdx.*;
+import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.PdxFieldAlreadyExistsException;
+import org.apache.geode.pdx.PdxFieldDoesNotExistException;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.PdxUnreadFields;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
-
-import java.io.DataOutput;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Date;
 
 /**
  * A new instance of this class is created for each (nested) instance of {@link PdxSerializable}.
@@ -47,6 +54,7 @@ public class PdxWriterImpl implements PdxWriter {
    * tr is no longer final because it is initialized late when using a PdxSerializer.
    */
   private TypeRegistry tr;
+
   private final Object pdx;
   private final PdxOutputStream os;
   private final AutoClassInfo aci;
@@ -55,16 +63,20 @@ public class PdxWriterImpl implements PdxWriter {
    * Offsets to the variable length fields.
    */
   private int[] vlfOffsets;
+
   /**
    * The number of variable length fields that need an offset. The first VLF does not need an
    * offset.
    */
   private int vlfCount = 0;
+
   private boolean hasSeenFirstVlf = false;
+
   /**
    * The offset into the hdos to the header.
    */
   protected final int headerOffset;
+
   private PdxUnreadData unreadData;
 
   private PdxType existingType;
@@ -80,6 +92,7 @@ public class PdxWriterImpl implements PdxWriter {
    */
   private static final boolean sysPropDoExtraPdxValidation =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validatePdxWriters");
+
   private boolean doExtraValidation = sysPropDoExtraPdxValidation;
 
   public PdxWriterImpl(TypeRegistry tr, Object pdx, PdxOutputStream out) {
@@ -543,7 +556,6 @@ public class PdxWriterImpl implements PdxWriter {
   }
 
   /**
-   * 
    * @return the offset to the byte of the first field
    */
   private int getBaseOffset() {
@@ -561,11 +573,7 @@ public class PdxWriterImpl implements PdxWriter {
     int fieldDataSize = getCurrentOffset();
     // Take the list of offsets and append it in reverse order.
     byte sizeOfOffset = getSizeOfOffset(this.vlfCount, fieldDataSize);
-    // System.out.println("Size of each offset: " + sizeOfOffset +
-    // " byte(s), curPos: " + this.curPos + ", numOfOffsets: " +
-    // this.offsetIndex);
     for (int i = (this.vlfCount - 1); i >= 0; i--) {
-      // System.out.println("offset[" + i + "]: " + this.offsets[i]);
       switch (sizeOfOffset) {
         case 1:
           this.os.write((byte) this.vlfOffsets[i]);
@@ -611,7 +619,6 @@ public class PdxWriterImpl implements PdxWriter {
   public byte[] toByteArray() {
     return this.os.toByteArray();
   }
-
 
   private void markVariableField() {
     if (!this.hasSeenFirstVlf) {
@@ -828,7 +835,6 @@ public class PdxWriterImpl implements PdxWriter {
         throw new InternalGemFireException("Unhandled field type " + f.getFieldType());
     }
   }
-
 
   private HeapDataOutputStream.LongUpdater lu;
 

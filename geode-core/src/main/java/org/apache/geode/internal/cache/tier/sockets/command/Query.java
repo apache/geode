@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -29,7 +26,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -65,7 +61,6 @@ public class Query extends BaseCommandQuery {
       servConn.setRequestSpecificTimeout(timeout);
     }
 
-
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received query request from {} queryString: {}", servConn.getName(),
           servConn.getSocketString(), queryString);
@@ -73,7 +68,7 @@ public class Query extends BaseCommandQuery {
     try {
       // Create query
       QueryService queryService =
-          ((GemFireCacheImpl) servConn.getCachedRegionHelper().getCache()).getLocalQueryService();
+          servConn.getCachedRegionHelper().getCache().getLocalQueryService();
       org.apache.geode.cache.query.Query query = queryService.newQuery(queryString);
       Set regionNames = ((DefaultQuery) query).getRegionsInQuery(null);
 

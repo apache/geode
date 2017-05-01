@@ -169,7 +169,7 @@ public final class DestroyPartitionedRegionMessage extends PartitionMessage {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; cbArg=").append(this.cbArg).append("; op=").append(this.op);
     buff.append("; prSerial=" + prSerial);

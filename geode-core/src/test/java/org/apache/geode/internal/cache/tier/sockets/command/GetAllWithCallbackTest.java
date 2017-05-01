@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,13 +28,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.operations.GetOperationContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
@@ -47,6 +44,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GetAllWithCallbackTest {
+
   private static final String REGION_NAME = "region1";
   private static final Object[] KEYS = new Object[] {"key1", "key2", "key3"};
 
@@ -59,7 +57,7 @@ public class GetAllWithCallbackTest {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private LocalRegion region;
   @Mock

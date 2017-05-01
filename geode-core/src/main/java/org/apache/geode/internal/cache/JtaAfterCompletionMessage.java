@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -35,9 +32,6 @@ import org.apache.geode.internal.cache.TXRemoteCommitMessage.RemoteCommitRespons
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.TXRemoteCommitReplyMessage;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- */
 public class JtaAfterCompletionMessage extends TXMessage {
 
   private static final Logger logger = LogService.getLogger();
@@ -78,12 +72,6 @@ public class JtaAfterCompletionMessage extends TXMessage {
     return response;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.internal.cache.TXMessage#operateOnTx(org.apache.geode.internal.cache.TXId)
-   */
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
     TXManagerImpl txMgr = GemFireCacheImpl.getInstance().getTXMgr();
@@ -99,20 +87,10 @@ public class JtaAfterCompletionMessage extends TXMessage {
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
-   */
   public int getDSFID() {
     return JTA_AFTER_COMPLETION_MESSAGE;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.cache.TXMessage#toData(java.io.DataOutput)
-   */
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
@@ -120,11 +98,6 @@ public class JtaAfterCompletionMessage extends TXMessage {
     out.writeInt(this.processorType);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.cache.TXMessage#fromData(java.io.DataInput)
-   */
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);

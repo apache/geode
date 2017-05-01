@@ -24,12 +24,11 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
-
 public abstract class ListExecutor extends AbstractExecutor {
 
   protected static final int LIST_EMPTY_SIZE = 2;
 
-  protected static enum ListDirection {
+  protected enum ListDirection {
     LEFT, RIGHT
   };
 
@@ -76,7 +75,7 @@ public abstract class ListExecutor extends AbstractExecutor {
       index += pushType == ListDirection.LEFT ? -1 : 1; // Subtract index if left push, add if right
                                                         // push
 
-    /**
+    /*
      * Multi push command
      * 
      * For every element that needs to be added
@@ -86,7 +85,7 @@ public abstract class ListExecutor extends AbstractExecutor {
       byte[] value = commandElems.get(i);
       ByteArrayWrapper wrapper = new ByteArrayWrapper(value);
 
-      /**
+      /*
        * 
        * First, use the start index to attempt to insert the value into the Region
        * 
@@ -101,7 +100,7 @@ public abstract class ListExecutor extends AbstractExecutor {
         }
       } while (oldValue != null);
 
-      /**
+      /*
        * 
        * Next, update the index in the meta data region. Keep trying to replace the existing index
        * unless the index is further out than previously inserted, that's ok. Example below:

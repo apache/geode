@@ -39,20 +39,20 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- * 
- *
- */
 public abstract class TXMessage extends SerialDistributionMessage
     implements MessageWithReply, TransactionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
   private int processorId;
+
   private int txUniqId;
+
   private InternalDistributedMember txMemberId = null;
 
-  public TXMessage() {}
+  public TXMessage() {
+    // nothing
+  }
 
   public TXMessage(int txUniqueId, InternalDistributedMember onBehalfOfMember,
       ReplyProcessor21 processor) {
@@ -73,7 +73,7 @@ public abstract class TXMessage extends SerialDistributionMessage
       if (logger.isDebugEnabled()) {
         logger.debug("processing {}", this);
       }
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = GemFireCacheImpl.getInstance();
       if (checkCacheClosing(cache) || checkDSClosing(cache.getInternalDistributedSystem())) {
         thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
             .toLocalizedString(dm.getId()));
@@ -130,7 +130,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     return distributedSystem == null || distributedSystem.isDisconnecting();
   }
 
-  private boolean checkCacheClosing(GemFireCacheImpl cache) {
+  private boolean checkCacheClosing(InternalCache cache) {
     return cache == null || cache.isClosed();
   }
 
@@ -160,7 +160,7 @@ public abstract class TXMessage extends SerialDistributionMessage
    * Transaction operations override this method to do actual work
    * 
    * @param txId The transaction Id to operate on
-   * @return true if {@link TXMessage} should send a reply false otherwise
+   * @return true if TXMessage should send a reply false otherwise
    */
   protected abstract boolean operateOnTx(TXId txId, DistributionManager dm)
       throws RemoteOperationException;
@@ -191,7 +191,6 @@ public abstract class TXMessage extends SerialDistributionMessage
     }
     return txMemberId;
   }
-
 
   @Override
   public int getProcessorId() {

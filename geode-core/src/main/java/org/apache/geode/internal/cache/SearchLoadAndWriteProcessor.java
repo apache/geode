@@ -12,16 +12,56 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
-/* enumerate each imported class because conflict with dl.u.c.TimeoutException */
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.ProcessorKeeper21;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -31,19 +71,9 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.util.*;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-
 
 /**
  * Implementation for distributed search, load and write operations in the GemFire system. Provides
@@ -54,18 +84,15 @@ import java.util.concurrent.locks.Lock;
  * times.netLoad happens as a one phase operation in all cases except where the scope is GLOBAL At
  * the receiving end, the request is converted into an appropriate message whose process method
  * responds to the request.
- *
  */
-
 public class SearchLoadAndWriteProcessor implements MembershipListener {
   private static final Logger logger = LogService.getLogger();
 
   public static final int SMALL_BLOB_SIZE =
-      Integer.getInteger("DistributionManager.OptimizedUpdateByteLimit", 2000).intValue();
+      Integer.getInteger("DistributionManager.OptimizedUpdateByteLimit", 2000);
 
   static final long RETRY_TIME =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "search-retry-interval", 2000).longValue();
-
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "search-retry-interval", 2000);
 
   private volatile InternalDistributedMember selectedNode;
   private boolean selectedNodeDead = false;
@@ -200,7 +227,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     } finally {
       if (event != listenerEvent) {
         if (listenerEvent instanceof EntryEventImpl) {
-          ((EntryEventImpl) listenerEvent).release();
+          ((Releasable) listenerEvent).release();
         }
       }
     }
@@ -334,7 +361,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         if (this.advisor != null) {
           this.advisor.removeMembershipListener(this);
         }
-      } catch (IllegalArgumentException e) {
+      } catch (IllegalArgumentException ignore) {
       } finally {
         getProcessorKeeper().remove(this.processorId);
       }
@@ -343,13 +370,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   void remove() {
     getProcessorKeeper().remove(this.processorId);
-
   }
 
-
-
   void initialize(LocalRegion theRegion, Object theKey, Object theCallbackArg) {
-
     this.region = theRegion;
     this.regionName = theRegion.getFullPath();
     this.key = theKey;
@@ -358,10 +381,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     Scope scope = attrs.getScope();
     if (scope.isDistributed()) {
       this.advisor = ((CacheDistributionAdvisee) this.region).getCacheDistributionAdvisor();
-      this.distributionManager = ((CacheDistributionAdvisee) theRegion).getDistributionManager();
+      this.distributionManager = theRegion.getDistributionManager();
       this.timeout = getSearchTimeout();
       this.advisor.addMembershipListener(this);
-
     }
   }
 
@@ -369,7 +391,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     this.key = key;
   }
 
-  /************** Protected Methods ********************/
   protected void setSelectedNode(InternalDistributedMember selectedNode) {
     this.selectedNode = selectedNode;
     this.selectedNodeDead = false;
@@ -383,18 +404,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     return this.key;
   }
 
-  /************** Package Methods **********************/
-
   InternalDistributedMember getSelectedNode() {
     return this.selectedNode;
   }
 
-  /************** Private Methods **********************/
   /**
    * Even though SearchLoadAndWriteProcessor may be in invoked in the context of a local region,
    * most of the services it provides are relevant to distribution only. The 3 services it provides
    * are netSearch, netLoad, netWrite
-   *
    */
   private SearchLoadAndWriteProcessor() {
     resetResults();
@@ -409,7 +426,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     this.remoteGetInProgress = false;
     this.responseQueue = null;
   }
-
 
   /**
    * If we have a local cache loader and the region is not global, then invoke the loader If the
@@ -614,7 +630,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                       .toLocalizedString(key));
             }
             break;
-          } catch (InterruptedException e) {
+          } catch (InterruptedException ignore) {
             interrupted = true;
             region.getCancelCriterion().checkCancelInProgress(null);
             // continue;
@@ -871,7 +887,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     } finally {
       if (event != pevent) {
         if (event instanceof EntryEventImpl) {
-          ((EntryEventImpl) event).release();
+          ((Releasable) event).release();
         }
       }
     }
@@ -1005,7 +1021,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             this.remoteGetInProgress = true;
             setSelectedNode(sender);
             return; // sendValueRequest does the rest of the work
-          } catch (RejectedExecutionException ex) {
+          } catch (RejectedExecutionException ignore) {
             // just fall through since we must be shutting down.
           }
         }
@@ -1195,7 +1211,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           if (waitTimeMs <= 0) {
             throw new TimeoutException(
                 LocalizedStrings.SearchLoadAndWriteProcessor_TIMED_OUT_WHILE_DOING_NETSEARCHNETLOADNETWRITE_PROCESSORID_0_KEY_IS_1
-                    .toLocalizedString(new Object[] {Integer.valueOf(this.processorId), this.key}));
+                    .toLocalizedString(new Object[] {this.processorId, this.key}));
           }
 
           boolean interrupted = Thread.interrupted();
@@ -1229,14 +1245,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                 sb.append(" msRemaining=").append(waitTimeMs);
               }
               if (lastNS != 0) {
-                sb.append(" lastNotifySpot=" + lastNS);
+                sb.append(" lastNotifySpot=").append(lastNS);
               }
               throw new TimeoutException(
                   LocalizedStrings.SearchLoadAndWriteProcessor_TIMEOUT_DURING_NETSEARCHNETLOADNETWRITE_DETAILS_0
                       .toLocalizedString(sb));
             }
             return;
-          } catch (InterruptedException e) {
+          } catch (InterruptedException ignore) {
             interrupted = true;
             region.getCancelCriterion().checkCancelInProgress(null);
             // keep waiting until we are done
@@ -1305,14 +1321,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     DiskRegion dr = rgn.getDiskRegion();
     if (dr != null) {
       dr.setClearCountReference();
-    } ;
+    }
   }
 
   protected static void removeClearCountReference(LocalRegion rgn) {
     DiskRegion dr = rgn.getDiskRegion();
     if (dr != null) {
       dr.removeClearCountReference();
-    } ;
+    }
   }
 
   /**
@@ -1325,12 +1341,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     nMsg.initialize(this, theRegionName, theKey, theTimeoutMs, theTtl, theIdleTime);
     nMsg.doGet((DistributionManager) this.distributionManager);
   }
-
-  /*****************************************************************************
-   * INNER CLASSES
-   *****************************************************************************/
-
-
 
   /**
    * A QueryMessage is broadcast to every node that has the region defined, to find out who has a
@@ -1368,7 +1378,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     private static final short HAS_IDLE_TIME = (HAS_TTL << 1);
     private static final short ALWAYS_SEND_RESULT = (HAS_IDLE_TIME << 1);
 
-    public QueryMessage() {};
+    public QueryMessage() {
+      // do nothing
+    }
 
     /**
      * Using a new or pooled message instance, create and send the query to all nodes.
@@ -1492,8 +1504,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       try {
         // check to see if we would have to wait on initialization latch (if global)
         // if so abort and reply with null
-        GemFireCacheImpl gfc = (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
-        if (gfc.isGlobalRegionInitializing(this.regionName)) {
+        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        if (cache.isGlobalRegionInitializing(this.regionName)) {
           replyWithNull(dm);
           if (logger.isDebugEnabled()) {
             logger.debug("Global Region not initialized yet");
@@ -1512,31 +1524,28 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             if (entry != null) {
               synchronized (entry) {
                 assert region.isInitialized();
-                {
-                  if (dm.cacheTimeMillis() - startTime < timeoutMs) {
-                    o = region.getNoLRU(this.key, false, true, true); // OFFHEAP: incrc, copy bytes,
-                                                                      // decrc
-                    if (o != null && !Token.isInvalid(o) && !Token.isRemoved(o)
-                        && !region.isExpiredWithRegardTo(this.key, this.ttl, this.idleTime)) {
-                      isPresent = true;
-                      VersionStamp stamp = entry.getVersionStamp();
-                      if (stamp != null && stamp.hasValidVersion()) {
-                        tag = stamp.asVersionTag();
-                      }
-                      long lastModified = entry.getLastModified();
-                      lastModifiedCacheTime = lastModified;
-                      isSer = o instanceof CachedDeserializable;
-                      if (isSer) {
-                        o = ((CachedDeserializable) o).getSerializedValue();
-                      }
-                      if (isPresent && (this.alwaysSendResult
-                          || (ObjectSizer.DEFAULT.sizeof(o) < SMALL_BLOB_SIZE))) {
-                        sendResult = true;
-                      }
+                if (dm.cacheTimeMillis() - startTime < timeoutMs) {
+                  o = region.getNoLRU(this.key, false, true, true); // OFFHEAP: incrc, copy bytes,
+                                                                    // decrc
+                  if (o != null && !Token.isInvalid(o) && !Token.isRemoved(o)
+                      && !region.isExpiredWithRegardTo(this.key, this.ttl, this.idleTime)) {
+                    isPresent = true;
+                    VersionStamp stamp = entry.getVersionStamp();
+                    if (stamp != null && stamp.hasValidVersion()) {
+                      tag = stamp.asVersionTag();
                     }
-                  } else {
-                    requestorTimedOut = true;
+                    lastModifiedCacheTime = entry.getLastModified();
+                    isSer = o instanceof CachedDeserializable;
+                    if (isSer) {
+                      o = ((CachedDeserializable) o).getSerializedValue();
+                    }
+                    if (isPresent && (this.alwaysSendResult
+                        || (ObjectSizer.DEFAULT.sizeof(o) < SMALL_BLOB_SIZE))) {
+                      sendResult = true;
+                    }
                   }
+                } else {
+                  requestorTimedOut = true;
                 }
               }
             } else if (logger.isDebugEnabled()) {
@@ -1549,10 +1558,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         ResponseMessage.sendMessage(this.key, this.getSender(), processorId,
             (sendResult ? o : null), lastModifiedCacheTime, isPresent, isSer, requestorTimedOut, dm,
             tag);
-      } catch (RegionDestroyedException rde) {
+      } catch (RegionDestroyedException ignore) {
         logger.debug("Region Destroyed Exception in QueryMessage doGet, null");
         replyWithNull(dm);
-      } catch (CancelException cce) {
+      } catch (CancelException ignore) {
         logger.debug("CacheClosedException in QueryMessage doGet, null");
         replyWithNull(dm);
       } catch (VirtualMachineError err) {
@@ -1577,13 +1586,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     private void replyWithNull(DistributionManager dm) {
       ResponseMessage.sendMessage(this.key, this.getSender(), processorId, null, 0, false, false,
           false, dm, null);
-
     }
-
   }
-
-  /********************* ResponseMessage ***************************************/
-
 
   /**
    * The ResponseMessage is a reply to a QueryMessage, and contains the object's value, if it is
@@ -1604,7 +1608,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     /** is the value present */
     private boolean isPresent;
-
 
     /** Is blob serialized? */
     private boolean isSerialized;
@@ -1865,11 +1868,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                                                                            // bytes, decrc
                 if (eov != null) {
                   if (eov == Token.INVALID || eov == Token.LOCAL_INVALID) {
-                    // ebv = null; (redundant assignment)
+                    // nothing?
                   } else if (dm.cacheTimeMillis() - startTime < timeoutMs) {
                     if (!region.isExpiredWithRegardTo(this.key, this.ttl, this.idleTime)) {
-                      long lastModified = entry.getLastModified();
-                      lastModifiedCacheTime = lastModified;
+                      lastModifiedCacheTime = entry.getLastModified();
                       if (eov instanceof CachedDeserializable) {
                         CachedDeserializable cd = (CachedDeserializable) eov;
                         if (!cd.isSerialized()) {
@@ -1911,10 +1913,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         NetSearchReplyMessage.sendMessage(NetSearchRequestMessage.this.getSender(), processorId,
             this.key, ebv, ebvObj, ebvLen, lastModifiedCacheTime, isSer, requestorTimedOut,
             authoritative, dm, versionTag);
-      } catch (RegionDestroyedException rde) {
+      } catch (RegionDestroyedException ignore) {
         replyWithNull(dm);
 
-      } catch (CancelException cce) {
+      } catch (CancelException ignore) {
         replyWithNull(dm);
 
       } catch (VirtualMachineError err) {
@@ -1940,12 +1942,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     private void replyWithNull(DistributionManager dm) {
       NetSearchReplyMessage.sendMessage(NetSearchRequestMessage.this.getSender(), processorId,
           this.key, null, null, 0, 0, false, false, false, dm, null);
-
     }
-
   }
-
-  /********************* NetSearchReplyMessage ***************************************/
 
   /**
    * The NetSearchReplyMessage is a reply to a NetSearchRequestMessage, and contains the object's
@@ -1960,8 +1958,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     /** The gemfire id of the SearchLoadAndWrite object waiting for response */
     private int processorId;
-
-
 
     /** The object value being transferred */
     private byte[] value;
@@ -2150,7 +2146,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
       try {
         processor.distributionManager.putOutgoingUserData(msg);
-      } catch (NotSerializableException e) {
+      } catch (NotSerializableException ignore) {
         throw new IllegalArgumentException(
             LocalizedStrings.SearchLoadAndWriteProcessor_MESSAGE_NOT_SERIALIZABLE
                 .toLocalizedString());
@@ -2210,13 +2206,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           + "\" in region \"" + this.regionName + "\", processorId " + processorId;
     }
 
-
-
     private void doLoad(DistributionManager dm) {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        GemFireCacheImpl gfc = (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
@@ -2282,15 +2276,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     void replyWithException(Exception e, DistributionManager dm) {
       NetLoadReplyMessage.sendMessage(NetLoadRequestMessage.this.getSender(), processorId, null, dm,
           this.aCallbackArgument, e, false, false);
-
     }
-
-
   }
-
-
-
-  /********************* NetLoadReplyMessage ***************************************/
 
   /**
    * The NetLoadReplyMessage is a reply to a RequestMessage, and contains the object's value.
@@ -2302,7 +2289,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     /** The object value being transferred */
     private Object result;
-
 
     /** Loader parameter returned to sender */
     private Object aCallbackArgument;
@@ -2481,7 +2467,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        GemFireCacheImpl gfc = (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
@@ -2560,7 +2546,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
               true);
 
         }
-      } catch (RegionDestroyedException rde) {
+      } catch (RegionDestroyedException ignore) {
         NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId, dm,
             false, null, false);
 
@@ -2594,15 +2580,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       } finally {
         LocalRegion.setThreadInitLevelRequirement(oldLevel);
       }
-
-
-
     }
-
-
   }
-
-  /********************* NetWriteReplyMessage *********************************/
 
   /**
    * The NetWriteReplyMessage is a reply to a NetWriteRequestMessage, and contains the success code

@@ -27,9 +27,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
@@ -44,10 +44,10 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class RegisterInterest61Test {
+
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
   private static final byte[] DURABLE = new byte[8];
-
 
   @Mock
   private SecurityService securityService;
@@ -58,7 +58,7 @@ public class RegisterInterest61Test {
   @Mock
   private AuthorizeRequest authzRequest;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private Part regionNamePart;
   @Mock
@@ -81,7 +81,6 @@ public class RegisterInterest61Test {
   public void setUp() throws Exception {
     this.registerInterest61 = new RegisterInterest61();
     MockitoAnnotations.initMocks(this);
-
 
     when(this.authzRequest.registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any()))
         .thenReturn(this.registerInterestOperationContext);
@@ -180,7 +179,5 @@ public class RegisterInterest61Test {
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
-
-
 
 }

@@ -60,15 +60,14 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * Holds keys for those events that were not found in BucketRegionQueue during processing of
    * ParallelQueueRemovalMessage. This can occur due to the scenario mentioned in #49196.
    */
-  private final ConcurrentHashSet<Object> failedBatchRemovalMessageKeys =
-      new ConcurrentHashSet<Object>();
+  private final ConcurrentHashSet<Object> failedBatchRemovalMessageKeys = new ConcurrentHashSet<>();
 
-  public AbstractBucketRegionQueue(String regionName, RegionAttributes attrs,
-      LocalRegion parentRegion, GemFireCacheImpl cache,
-      InternalRegionArguments internalRegionArgs) {
+  AbstractBucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
+      InternalCache cache, InternalRegionArguments internalRegionArgs) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs);
     this.stats = ((AbstractLRURegionMap) getRegionMap()).getLRUStatistics();
-    gatewaySenderStats = this.getPartitionedRegion().getParallelGatewaySender().getStatistics();
+    this.gatewaySenderStats =
+        this.getPartitionedRegion().getParallelGatewaySender().getStatistics();
   }
 
   // Prevent this region from using concurrency checks
@@ -199,7 +198,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
     @Released
     EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key, null);
-    event.setEventId(new EventID(cache.getSystem()));
+    event.setEventId(new EventID(cache.getInternalDistributedSystem()));
     try {
       event.setRegion(this);
       basicDestroy(event, true, null);

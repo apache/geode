@@ -48,7 +48,7 @@ public class ConfigurationRequestHandler implements TcpHandler {
     try {
       logger.info("Received request for configuration  : {}", request);
       ConfigurationRequest configRequest = (ConfigurationRequest) request;
-      return sharedConfig.createConfigurationReponse(configRequest);
+      return sharedConfig.createConfigurationResponse(configRequest);
     } catch (Exception e) {
       logger.info(e.getMessage(), e);
       return null;

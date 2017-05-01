@@ -14,38 +14,35 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.SenderProxy;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
+import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.cache.client.internal.SenderProxy;
 
 /**
  * @since GemFire 7.0
- *
  */
 public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDispatcher {
 
@@ -326,7 +323,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
     // Here we might wait on a connection to another server if I was secondary
     // so don't start waiting until I am primary
-    Cache cache = this.sender.getCache();
+    InternalCache cache = this.sender.getCache();
     if (cache != null && !cache.isClosed()) {
       if (this.sender.isPrimary() && (this.connection != null)) {
         if (this.ackReaderThread == null || !this.ackReaderThread.isRunning()) {
@@ -551,7 +548,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
      */
     private volatile boolean shutdown = false;
 
-    private final GemFireCacheImpl cache;
+    private final InternalCache cache;
 
     private volatile boolean ackReaderThreadRunning = false;
 
@@ -562,7 +559,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     public AckReaderThread(GatewaySender sender, String name) {
       super("AckReaderThread for : " + name);
       this.setDaemon(true);
-      this.cache = (GemFireCacheImpl) ((AbstractGatewaySender) sender).getCache();
+      this.cache = ((AbstractGatewaySender) sender).getCache();
     }
 
     public void waitForRunningAckReaderThreadRunningState() {
@@ -671,13 +668,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         }
         ackReaderThreadRunning = false;
       }
-
     }
 
-    /**
-     * @param exception
-     * 
-     */
     protected void logBatchExceptions(BatchException70 exception) {
       try {
         for (BatchException70 be : exception.getExceptions()) {
@@ -785,7 +777,6 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       } catch (ConnectionDestroyedException e) {
         logger.info("AckReader shutting down and connection already destroyed");
       }
-
     }
   }
 

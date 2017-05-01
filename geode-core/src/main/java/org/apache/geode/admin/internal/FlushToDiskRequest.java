@@ -15,31 +15,32 @@
 package org.apache.geode.admin.internal;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
-import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * A request to from an admin VM to all non admin members to start a backup. In the prepare phase of
  * the backup, the members will suspend bucket destroys to make sure buckets aren't missed during
  * the backup.
- * 
- *
  */
 public class FlushToDiskRequest extends CliLegacyMessage {
+  private static final Logger logger = LogService.getLogger();
 
   public FlushToDiskRequest() {
-
+    // nothing
   }
 
   public static void send(DM dm, Set recipients) {
@@ -56,7 +57,7 @@ public class FlushToDiskRequest extends CliLegacyMessage {
         throw e;
       }
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.debug(e);
     }
     AdminResponse response = request.createResponse((DistributionManager) dm);
     response.setSender(dm.getDistributionManagerId());
@@ -65,18 +66,15 @@ public class FlushToDiskRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    HashSet<PersistentID> persistentIds;
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
-      Collection<DiskStoreImpl> diskStores = cache.listDiskStoresIncludingRegionOwned();
-      for (DiskStoreImpl store : diskStores) {
-        store.flush();
-      }
+      cache.listDiskStoresIncludingRegionOwned().forEach(DiskStore::flush);
     }
 
     return new FlushToDiskResponse(this.getSender());
   }
 
+  @Override
   public int getDSFID() {
     return FLUSH_TO_DISK_REQUEST;
   }

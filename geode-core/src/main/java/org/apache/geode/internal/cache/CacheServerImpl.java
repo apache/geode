@@ -14,19 +14,51 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.Integer.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InvalidValueException;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.ClientSession;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.server.internal.LoadMonitor;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.OSProcess;
@@ -42,29 +74,19 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * An implementation of the <code>CacheServer</code> interface that delegates most of the heavy
- * lifting to an {@link Acceptor}.
+ * An implementation of the{@code CacheServer} interface that delegates most of the heavy lifting to
+ * an {@link Acceptor}.
  * 
  * @since GemFire 4.0
  */
 @SuppressWarnings("deprecation")
 public class CacheServerImpl extends AbstractCacheServer implements DistributionAdvisee {
-
   private static final Logger logger = LogService.getLogger();
 
-  private static final int FORCE_LOAD_UPDATE_FREQUENCY =
-      Integer
-          .getInteger(
-              DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10)
-          .intValue();
+  private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
+      DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
 
   /** The acceptor that does the actual serving */
   private volatile AcceptorImpl acceptor;
@@ -88,7 +110,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   private boolean isGatewayReceiver;
 
-  private List<GatewayTransportFilter> gatewayTransportFilters = Collections.EMPTY_LIST;
+  private List<GatewayTransportFilter> gatewayTransportFilters = Collections.emptyList();
 
   /** is this a server created by a launcher as opposed to by an application or XML? */
   private boolean isDefaultServer;
@@ -107,10 +129,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   // ////////////////////// Constructors //////////////////////
 
   /**
-   * Creates a new <code>BridgeServerImpl</code> that serves the contents of the give
-   * <code>Cache</code>. It has the default configuration.
+   * Creates a new{@code BridgeServerImpl} that serves the contents of the give {@code Cache}. It
+   * has the default configuration.
    */
-  public CacheServerImpl(GemFireCacheImpl cache, boolean isGatewayReceiver) {
+  public CacheServerImpl(InternalCache cache, boolean isGatewayReceiver) {
     super(cache);
     this.isGatewayReceiver = isGatewayReceiver;
   }
@@ -251,8 +273,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Sets the configuration of <b>this</b> <code>CacheServer</code> based on the configuration of
-   * <b>another</b> <code>CacheServer</code>.
+   * Sets the configuration of <b>this</b>{@code CacheServer} based on the configuration of
+   * <b>another</b>{@code CacheServer}.
    */
   public void configureFrom(CacheServer other) {
     setPort(other.getPort());
@@ -302,8 +324,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     List overflowAttributesList = new LinkedList();
     ClientSubscriptionConfig csc = this.getClientSubscriptionConfig();
     overflowAttributesList.add(0, csc.getEvictionPolicy());
-    overflowAttributesList.add(1, Integer.valueOf(csc.getCapacity()));
-    overflowAttributesList.add(2, Integer.valueOf(this.port));
+    overflowAttributesList.add(1, valueOf(csc.getCapacity()));
+    overflowAttributesList.add(2, valueOf(this.port));
     String diskStoreName = csc.getDiskStoreName();
     if (diskStoreName != null) {
       overflowAttributesList.add(3, diskStoreName);
@@ -327,9 +349,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     // TODO : Need to provide facility to enable/disable client health monitoring.
     // Creating ClientHealthMonitoring region.
     // Force initialization on current cache
-    if (cache instanceof GemFireCacheImpl) {
-      ClientHealthMonitoringRegion.getInstance((GemFireCacheImpl) cache);
-    }
+    ClientHealthMonitoringRegion.getInstance(this.cache);
     this.cache.getLoggerI18n()
         .config(LocalizedStrings.CacheServerImpl_CACHESERVER_CONFIGURATION___0, getConfig());
 
@@ -379,7 +399,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         throw new IllegalStateException(s);
       }
     }
-    if (this.hostnameForClients == null || this.hostnameForClients.equals("")) {
+    if (this.hostnameForClients == null || this.hostnameForClients.isEmpty()) {
       if (this.acceptor != null) {
         return this.acceptor.getExternalAddress();
       } else {
@@ -518,16 +538,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   /**
    * create client subscription
    * 
-   * @param cache
-   * @param ePolicy
-   * @param capacity
-   * @param port
-   * @param overFlowDir
-   * @param isDiskStore
    * @return client subscription name
    * @since GemFire 5.7
    */
-  public static String clientMessagesRegion(GemFireCacheImpl cache, String ePolicy, int capacity,
+  public static String clientMessagesRegion(InternalCache cache, String ePolicy, int capacity,
       int port, String overFlowDir, boolean isDiskStore) {
     AttributesFactory factory =
         getAttribFactoryForClientMessagesRegion(cache, ePolicy, capacity, overFlowDir, isDiskStore);
@@ -536,7 +550,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return createClientMessagesRegion(attr, cache, capacity, port);
   }
 
-  public static AttributesFactory getAttribFactoryForClientMessagesRegion(GemFireCacheImpl cache,
+  public static AttributesFactory getAttribFactoryForClientMessagesRegion(InternalCache cache,
       String ePolicy, int capacity, String overflowDir, boolean isDiskStore)
       throws InvalidValueException, GemFireIOException {
     AttributesFactory factory = new AttributesFactory();
@@ -564,9 +578,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
             "Could not create client subscription overflow directory: " + dir.getAbsolutePath());
       }
       File[] dirs = {dir};
+
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      DiskStore bsi = dsf.setAutoCompact(true)
-          .setDiskDirsAndSizes(dirs, new int[] {Integer.MAX_VALUE}).create("bsi");
+      dsf.setAutoCompact(true).setDiskDirsAndSizes(dirs, new int[] {MAX_VALUE}).create("bsi");
+
       factory.setDiskStoreName("bsi");
       // backward compatibility, it was sync
       factory.setDiskSynchronous(true);
@@ -576,11 +591,12 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     factory.setStatisticsEnabled(true);
     /* setting LIFO related eviction attributes */
     if (HARegionQueue.HA_EVICTION_POLICY_ENTRY.equals(ePolicy)) {
-      factory.setEvictionAttributes(EvictionAttributesImpl.createLIFOEntryAttributes(capacity,
-          EvictionAction.OVERFLOW_TO_DISK));
-    } else if (HARegionQueue.HA_EVICTION_POLICY_MEMORY.equals(ePolicy)) { // condition refinement
-      factory.setEvictionAttributes(EvictionAttributesImpl.createLIFOMemoryAttributes(capacity,
-          EvictionAction.OVERFLOW_TO_DISK));
+      factory.setEvictionAttributes(
+          EvictionAttributes.createLIFOEntryAttributes(capacity, EvictionAction.OVERFLOW_TO_DISK));
+    } else if (HARegionQueue.HA_EVICTION_POLICY_MEMORY.equals(ePolicy)) {
+      // condition refinement
+      factory.setEvictionAttributes(
+          EvictionAttributes.createLIFOMemoryAttributes(capacity, EvictionAction.OVERFLOW_TO_DISK));
     } else {
       // throw invalid eviction policy exception
       throw new InvalidValueException(
@@ -589,7 +605,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return factory;
   }
 
-  public static String createClientMessagesRegion(RegionAttributes attr, GemFireCacheImpl cache,
+  private static String createClientMessagesRegion(RegionAttributes attr, InternalCache cache,
       int capacity, int port) {
     // generating unique name in VM for ClientMessagesRegion
     String regionName = generateNameForClientMsgsRegion(port);
@@ -615,22 +631,9 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return regionName;
   }
 
-  public static String createClientMessagesRegionForTesting(GemFireCacheImpl cache, String ePolicy,
-      int capacity, int port, int expiryTime, String overFlowDir, boolean isDiskStore) {
-    AttributesFactory factory =
-        getAttribFactoryForClientMessagesRegion(cache, ePolicy, capacity, overFlowDir, isDiskStore);
-    ExpirationAttributes ea =
-        new ExpirationAttributes(expiryTime, ExpirationAction.LOCAL_INVALIDATE);
-    factory.setEntryTimeToLive(ea);
-    RegionAttributes attr = factory.create();
-
-    return createClientMessagesRegion(attr, cache, capacity, port);
-  }
-
   /**
    * Generates the name for the client subscription using the given id.
    * 
-   * @param id
    * @return String
    * @since GemFire 5.7
    */
@@ -662,9 +665,9 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Returns the underlying <code>InternalDistributedSystem</code> connection.
+   * Returns the underlying{@code InternalDistributedSystem} connection.
    * 
-   * @return the underlying <code>InternalDistributedSystem</code>
+   * @return the underlying{@code InternalDistributedSystem}
    */
   public InternalDistributedSystem getSystem() {
     return (InternalDistributedSystem) this.cache.getDistributedSystem();
@@ -729,10 +732,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Registers a new <code>InterestRegistrationListener</code> with the set of
-   * <code>InterestRegistrationListener</code>s.
+   * Registers a new{@code InterestRegistrationListener} with the set of
+   * {@code InterestRegistrationListener}s.
    * 
-   * @param listener The <code>InterestRegistrationListener</code> to register
+   * @param listener The{@code InterestRegistrationListener} to register
    * @throws IllegalStateException if the BridgeServer has not been started
    * @since GemFire 5.8Beta
    */
@@ -745,10 +748,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Unregisters an existing <code>InterestRegistrationListener</code> from the set of
-   * <code>InterestRegistrationListener</code>s.
+   * Unregisters an existing{@code InterestRegistrationListener} from the set of
+   * {@code InterestRegistrationListener}s.
    * 
-   * @param listener The <code>InterestRegistrationListener</code> to unregister
+   * @param listener The{@code InterestRegistrationListener} to unregister
    * 
    * @since GemFire 5.8Beta
    */
@@ -757,11 +760,9 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Returns a read-only set of <code>InterestRegistrationListener</code>s registered with this
-   * notifier.
+   * Returns a read-only set of{@code InterestRegistrationListener}s registered with this notifier.
    * 
-   * @return a read-only set of <code>InterestRegistrationListener</code>s registered with this
-   *         notifier
+   * @return a read-only set of{@code InterestRegistrationListener}s registered with this notifier
    * 
    * @since GemFire 5.8Beta
    */

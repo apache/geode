@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * DiskRegionTestingBase: This class is extended to write more JUnit tests for Disk Regions.
- */
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
@@ -51,6 +48,8 @@ import java.util.Iterator;
 import java.util.Properties;
 
 /**
+ * DiskRegionTestingBase: This class is extended to write more JUnit tests for Disk Regions.
+ * <p>
  * All disk region unit tests extend this base class , common method to be used in all tests are
  * present here.
  * 
@@ -144,14 +143,14 @@ public abstract class DiskRegionTestingBase {
             root.localDestroyRegion("teardown");
             logWriter.info(
                 "<ExpectedException action=remove>RegionDestroyedException</ExpectedException>");
-          } catch (RegionDestroyedException e) {
+          } catch (RegionDestroyedException ignore) {
             // ignore
           }
         }
       }
 
-      for (DiskStoreImpl dstore : ((GemFireCacheImpl) cache).listDiskStoresIncludingRegionOwned()) {
-        dstore.waitForClose();
+      for (DiskStore dstore : ((InternalCache) cache).listDiskStoresIncludingRegionOwned()) {
+        ((DiskStoreImpl) dstore).waitForClose();
       }
     } finally {
       closeCache();
@@ -216,7 +215,7 @@ public abstract class DiskRegionTestingBase {
             ioe = e;
             try {
               Thread.sleep(1000);
-            } catch (Exception igore) {
+            } catch (Exception ignore) {
             }
           }
         }
@@ -253,7 +252,7 @@ public abstract class DiskRegionTestingBase {
    */
   protected void put100Int() {
     for (int i = 0; i < 100; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
     }
   }
 
@@ -266,7 +265,7 @@ public abstract class DiskRegionTestingBase {
       assertEquals(100, region.size());
     }
     for (int i = 0; i < 100; i++) {
-      Integer key = new Integer(i);
+      Integer key = i;
       assertTrue(region.containsKey(key));
       assertEquals(key, region.get(key));
     }
@@ -278,7 +277,7 @@ public abstract class DiskRegionTestingBase {
   protected void putTillOverFlow(Region region) {
     int i = 0;
     for (i = 0; i < 1010; i++) {
-      region.put(new Integer(i + 200), new Integer(i + 200));
+      region.put(i + 200, i + 200);
     }
   }
 

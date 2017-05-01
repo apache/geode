@@ -16,24 +16,36 @@ package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.*;
-import java.net.*;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * MigrationServer creates a cache using a supplied cache.xml and then opens a server socket that a
@@ -98,28 +110,34 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
  * @since GemFire 6.0.1
  */
 public class MigrationServer {
-  final static boolean VERBOSE = Boolean.getBoolean("Migration.VERBOSE");
+  private static final Logger logger = LogService.getLogger();
 
-  final static int VERSION = 551; // version for backward communications compatibility
+  static final boolean VERBOSE = Boolean.getBoolean("Migration.VERBOSE");
 
-  protected static final int CODE_ERROR = 0;
-  protected static final int CODE_ENTRY = 1; /* serialized key, serialized value */
-  protected static final int CODE_COMPLETED = 2;
+  // version for backward communications compatibility
+  private static final int VERSION = 551;
+
+  static final int CODE_ERROR = 0;
+
+  /* serialized key, serialized value */
+  static final int CODE_ENTRY = 1;
+
+  static final int CODE_COMPLETED = 2;
 
   public static void main(String[] args) throws Exception {
     int argIdx = 0;
     String cacheXmlFileName = "cache.xml";
-    String bindAddressName = null;
-    int listenPort = 10533;
 
     if (args.length > 0) {
       cacheXmlFileName = args[argIdx++];
     } else {
       System.err.println("MigrationServer cache-xml-file [server-address] [server-port]");
     }
+    int listenPort = 10533;
     if (args.length > argIdx) {
       listenPort = Integer.parseInt(args[argIdx++]);
     }
+    String bindAddressName = null;
     if (args.length > argIdx) {
       bindAddressName = args[argIdx++];
     }
@@ -136,14 +154,12 @@ public class MigrationServer {
     instance.serve();
   }
 
-
   private InetAddress bindAddress;
-  private int listenPort;
+  private final int listenPort;
   private ServerSocket serverSocket;
   private DistributedSystem distributedSystem;
   private File cacheXmlFile;
   private Cache cache;
-
 
   /**
    * Create a MigrationServer to be used with a DistributedSystem and Cache that are created using
@@ -152,18 +168,18 @@ public class MigrationServer {
    * @param bindAddressName the NIC to bind to, or null to use all interfaces
    * @param listenPort the port to listen on
    */
-  public MigrationServer(String bindAddressName, int listenPort) {
+  private MigrationServer(String bindAddressName, int listenPort) {
     this.listenPort = listenPort;
     if (bindAddressName != null) {
       if (!isLocalHost(bindAddressName)) {
         throw new IllegalArgumentException(
-            "Error - bind address is not an address of this machine: '" + bindAddressName + "'");
+            "Error - bind address is not an address of this machine: '" + bindAddressName + '\'');
       }
       try {
         this.bindAddress = InetAddress.getByName(bindAddressName);
-      } catch (IOException e) {
+      } catch (IOException ignore) {
         throw new IllegalArgumentException(
-            "Error - bind address cannot be resolved: '" + bindAddressName + "'");
+            "Error - bind address cannot be resolved: '" + bindAddressName + '\'');
       }
     }
     try {
@@ -175,7 +191,7 @@ public class MigrationServer {
         this.serverSocket = new ServerSocket(listenPort);
       }
       if (VERBOSE) {
-        System.out.println("created server socket " + serverSocket);
+        System.out.println("created server socket " + this.serverSocket);
       }
     } catch (IOException e) {
       throw new IllegalArgumentException("Port is already in use", e);
@@ -194,7 +210,8 @@ public class MigrationServer {
     this.cacheXmlFile = new File(cacheXmlFileName);
     if (!this.cacheXmlFile.exists()) {
       // in 6.x this should be localizable
-      System.err.println("Warning - file not found in local directory: '" + cacheXmlFileName + "'");
+      System.err
+          .println("Warning - file not found in local directory: '" + cacheXmlFileName + '\'');
     }
   }
 
@@ -221,7 +238,6 @@ public class MigrationServer {
     }
   }
 
-
   /**
    * create the cache to be used by this migration server
    * 
@@ -236,7 +252,6 @@ public class MigrationServer {
       System.out.println("created cache " + this.cache);
     }
   }
-
 
   /**
    * This locates the distributed system and cache, if they have not been created by this server,
@@ -269,16 +284,16 @@ public class MigrationServer {
         Socket clientSocket;
         try {
           clientSocket = this.serverSocket.accept();
-        } catch (java.net.SocketException e) {
+        } catch (SocketException ignored) {
           return;
         }
-        (new RequestHandler(clientSocket)).serveClientRequest();
+        new RequestHandler(clientSocket).serveClientRequest();
       }
     } finally {
       System.out.println("Closing migration server");
       try {
         this.serverSocket.close();
-      } catch (Exception e) {
+      } catch (Exception ignore) {
         this.serverSocket = null;
       }
     }
@@ -315,8 +330,6 @@ public class MigrationServer {
     return this.distributedSystem;
   }
 
-
-
   // copied from 6.0 SocketCreator
   public static boolean isLocalHost(Object host) {
     if (host instanceof InetAddress) {
@@ -324,11 +337,11 @@ public class MigrationServer {
         return true;
       } else {
         try {
-          Enumeration en = NetworkInterface.getNetworkInterfaces();
+          Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
           while (en.hasMoreElements()) {
-            NetworkInterface i = (NetworkInterface) en.nextElement();
-            for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
-              InetAddress addr = (InetAddress) en2.nextElement();
+            NetworkInterface i = en.nextElement();
+            for (Enumeration<InetAddress> en2 = i.getInetAddresses(); en2.hasMoreElements();) {
+              InetAddress addr = en2.nextElement();
               if (host.equals(addr)) {
                 return true;
               }
@@ -353,20 +366,15 @@ public class MigrationServer {
       return null;
     }
     try {
-      if (host.indexOf("/") > -1) {
-        return InetAddress.getByName(host.substring(host.indexOf("/") + 1));
+      if (host.contains("/")) {
+        return InetAddress.getByName(host.substring(host.indexOf('/') + 1));
       } else {
         return InetAddress.getByName(host);
       }
-    } catch (java.net.UnknownHostException e) {
+    } catch (UnknownHostException e) {
       throw new IllegalArgumentException(e.getMessage());
     }
   }
-
-
-
-  // R E Q U E S T H A N D L E R
-
 
   class RequestHandler implements Runnable {
     Socket clientSocket;
@@ -375,10 +383,9 @@ public class MigrationServer {
 
     RequestHandler(Socket clientSocket) throws IOException {
       this.clientSocket = clientSocket;
-      dos = new DataOutputStream(this.clientSocket.getOutputStream());
-      dis = new DataInputStream(this.clientSocket.getInputStream());
+      this.dos = new DataOutputStream(this.clientSocket.getOutputStream());
+      this.dis = new DataInputStream(this.clientSocket.getInputStream());
     }
-
 
     // for now this is a blocking operation - multithread later if necessary
     void serveClientRequest() {
@@ -389,65 +396,57 @@ public class MigrationServer {
           try {
             this.clientSocket.close();
           } catch (IOException e) {
-            e.printStackTrace();
+            logger.debug(e);
           }
         }
       }
     }
 
+    @Override
     public void run() {
       try {
         // first exchange version information so we can communicate correctly
-        dos.writeShort(VERSION);
-        int version = dis.readShort();
+        this.dos.writeShort(VERSION);
+        int version = this.dis.readShort();
         handleRequest(version);
       } catch (IOException e) {
         System.err.println("Trouble dispatching request: " + e.getMessage());
-        return;
       } finally {
         try {
           this.clientSocket.close();
         } catch (IOException e) {
-          System.err.println("Trouble closing client socket: " + e.getMessage());
+          logger.debug("Trouble closing client socket", e);
         }
       }
     }
 
     /**
      * read and dispatch a single request on client socket
-     * 
-     * @param clientVersion
      */
     private void handleRequest(int clientVersion) {
       // for now we ignore the client version in the server. The client
       // is typically of a later release than the server, and this information
       // is given to the server in case a situation arises where it's needed
       try {
-        ClientRequest req = ClientRequest.readRequest(this.clientSocket, dis, dos);
+        ClientRequest req = ClientRequest.readRequest(this.clientSocket, this.dis, this.dos);
         if (req != null) {
           System.out.println(
               "Processing " + req + " from " + this.clientSocket.getInetAddress().getHostAddress());
           req.process(MigrationServer.this);
-          dos.flush();
+          this.dos.flush();
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.debug(e);
       }
     }
-
   }
 
-
-  // R E Q U E S T C L A S S E S
-
-
-
-  static abstract class ClientRequest {
+  abstract static class ClientRequest {
     Socket clientSocket;
     DataInputStream dsi;
     DataOutputStream dso;
 
-    final static int REGION_REQUEST = 1;
+    static final int REGION_REQUEST = 1;
 
     /**
      * Use readRequest to create a new request object, not this constructor. Subclasses may refine
@@ -467,11 +466,9 @@ public class MigrationServer {
     /**
      * Read and return a request from a client
      * 
-     * @param clientSocket
      * @param dsi socket input stream
      * @param dso socket output stream
      * @return the new request
-     * @throws IOException
      */
     static ClientRequest readRequest(Socket clientSocket, DataInputStream dsi, DataOutputStream dso)
         throws IOException {
@@ -480,8 +477,8 @@ public class MigrationServer {
         case REGION_REQUEST:
           return new RegionRequest(clientSocket, dsi, dso);
       }
-      String errorMessage = "Type of request is not implemented in this server";
       dso.writeShort(CODE_ERROR);
+      String errorMessage = "Type of request is not implemented in this server";
       dso.writeUTF(errorMessage);
       System.err.println("Migration server received unknown type of request (" + requestType
           + ") from " + clientSocket.getInetAddress().getHostAddress());
@@ -494,7 +491,6 @@ public class MigrationServer {
     }
 
     abstract void process(MigrationServer server) throws IOException;
-
   }
 
   /**
@@ -506,12 +502,12 @@ public class MigrationServer {
     RegionRequest(Socket clientSocket, DataInputStream dsi, DataOutputStream dso)
         throws IOException {
       super(clientSocket, dsi, dso);
-      regionName = dsi.readUTF();
+      this.regionName = dsi.readUTF();
     }
 
     @Override
     public String toString() {
-      return "request for contents of region '" + this.regionName + "'";
+      return "request for contents of region '" + this.regionName + '\'';
     }
 
     @Override
@@ -519,7 +515,7 @@ public class MigrationServer {
       Cache cache = server.getCache();
       Region region = null;
       try {
-        region = cache.getRegion(regionName);
+        region = cache.getRegion(this.regionName);
         if (region == null) {
           String errorMessage = "Error: region " + this.regionName + " not found in cache";
           System.err.println(errorMessage);
@@ -527,12 +523,12 @@ public class MigrationServer {
         }
       } catch (IllegalArgumentException e) {
         String errorMessage = "Error: malformed region name";
-        System.err.println(errorMessage);
+        logger.warn(errorMessage, e);
         writeErrorResponse(errorMessage);
       }
       try {
-        for (Iterator it = region.entrySet().iterator(); it.hasNext();) {
-          sendEntry((Region.Entry) it.next());
+        for (Object o : region.entrySet()) {
+          sendEntry((Entry) o);
         }
         this.dso.writeShort(CODE_COMPLETED);
       } catch (Exception e) {
@@ -540,22 +536,21 @@ public class MigrationServer {
       }
     }
 
-    private void sendEntry(Region.Entry entry) throws Exception {
+    private void sendEntry(Region.Entry entry) throws IOException {
       Object key = entry.getKey();
       Object value = entry.getValue();
       if (!(key instanceof Serializable)) {
-        throw new IOException("Could not serialize entry for '" + key + "'");
+        throw new IOException("Could not serialize entry for '" + key + '\'');
       }
       if (!(value instanceof Serializable)) {
-        throw new IOException("Could not serialize entry for '" + key + "'");
+        throw new IOException("Could not serialize entry for '" + key + '\'');
       }
       if (VERBOSE) {
         System.out.println("Sending " + key);
       }
-      dso.writeShort(CODE_ENTRY);
-      (new ObjectOutputStream(clientSocket.getOutputStream())).writeObject(key);
-      (new ObjectOutputStream(clientSocket.getOutputStream())).writeObject(value);
+      this.dso.writeShort(CODE_ENTRY);
+      new ObjectOutputStream(clientSocket.getOutputStream()).writeObject(key);
+      new ObjectOutputStream(clientSocket.getOutputStream()).writeObject(value);
     }
   }
-
 }

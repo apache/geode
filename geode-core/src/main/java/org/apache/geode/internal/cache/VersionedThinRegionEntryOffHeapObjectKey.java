@@ -127,7 +127,7 @@ public class VersionedThinRegionEntryOffHeapObjectKey extends VersionedThinRegio
     // }
   }
 
-  protected long getlastModifiedField() {
+  protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 

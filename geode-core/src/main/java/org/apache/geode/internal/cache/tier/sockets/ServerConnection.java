@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
@@ -49,7 +48,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.ClientHandShake;
@@ -373,7 +372,7 @@ public class ServerConnection implements Runnable {
     return getCache().getDistributedSystem();
   }
 
-  public Cache getCache() {
+  public InternalCache getCache() {
     return this.crHelper.getCache();
   }
 
@@ -578,7 +577,7 @@ public class ServerConnection implements Runnable {
 
   private boolean isFiringMembershipEvents() {
     return this.acceptor.isRunning()
-        && !((GemFireCacheImpl) this.acceptor.getCachedRegionHelper().getCache()).isClosed()
+        && !(this.acceptor.getCachedRegionHelper().getCache()).isClosed()
         && !acceptor.getCachedRegionHelper().getCache().getCancelCriterion().isCancelInProgress();
   }
 

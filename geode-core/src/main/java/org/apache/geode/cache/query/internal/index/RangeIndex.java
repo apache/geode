@@ -12,12 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * RangeIndex.java
- *
- * Created on February 4, 2005, 11:10 AM
- */
 package org.apache.geode.cache.query.internal.index;
+
+import static java.lang.Integer.*;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -58,21 +55,23 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- */
 public class RangeIndex extends AbstractIndex {
 
   protected volatile int valueToEntriesMapSize = 0;
+
   /**
    * Map for valueOf(indexedExpression)=>RegionEntries. SortedMap<Object, (RegionEntry |
    * List<RegionEntry>)>. Package access for unit tests.
    */
   final ConcurrentNavigableMap valueToEntriesMap =
       new ConcurrentSkipListMap(TypeUtils.getExtendedNumericComparator());
+
   // Map for RegionEntries=>value of indexedExpression (reverse map)
   final private RegionEntryToValuesMap entryToValuesMap;
+
   // Map for RegionEntries=>values when indexedExpression evaluates to null
   protected RegionEntryToValuesMap nullMappedEntries;
+
   // Map for RegionEntries=>values when indexedExpression evaluates to UNDEFINED
   protected RegionEntryToValuesMap undefinedMappedEntries;
 
@@ -84,7 +83,7 @@ public class RangeIndex extends AbstractIndex {
 
   public static TestHook testHook;
 
-  // @todo need more specific list of exceptions
+  // TODO: need more specific list of exceptions
   /**
    * Create an Range Index that can be used when executing queries.
    * 
@@ -117,8 +116,8 @@ public class RangeIndex extends AbstractIndex {
   }
 
   @Override
-  void instantiateEvaluator(IndexCreationHelper ich) {
-    this.evaluator = new IMQEvaluator(ich);
+  void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
+    this.evaluator = new IMQEvaluator(indexCreationHelper);
   }
 
   @Override
@@ -129,8 +128,6 @@ public class RangeIndex extends AbstractIndex {
     long endTime = System.nanoTime();
     this.internalIndexStats.incUpdateTime(endTime - startTime);
   }
-
-  //// AbstractIndex implementation
 
   void addMapping(RegionEntry entry) throws IMQException {
     // Save oldKeys somewhere first
@@ -254,6 +251,7 @@ public class RangeIndex extends AbstractIndex {
                 continue;
               } else {
                 this.internalIndexStats.incNumKeys(1);
+                // TODO: non-atomic operation on volatile int
                 ++valueToEntriesMapSize;
               }
             }
@@ -302,6 +300,7 @@ public class RangeIndex extends AbstractIndex {
                   continue;
                 } else {
                   this.internalIndexStats.incNumKeys(1);
+                  // TODO: non-atomic operation on volatile int
                   ++valueToEntriesMapSize;
                 }
               }
@@ -343,7 +342,7 @@ public class RangeIndex extends AbstractIndex {
   private void removeOldMapping(RegionEntry entry, Object oldkeys) throws IMQException {
 
     if (oldkeys instanceof Collection) {
-      Iterator valuesIter = ((Collection) oldkeys).iterator();
+      Iterator valuesIter = ((Iterable) oldkeys).iterator();
       while (valuesIter.hasNext()) {
         Object key = valuesIter.next();
         RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
@@ -474,6 +473,7 @@ public class RangeIndex extends AbstractIndex {
           rvMap = new RegionEntryToValuesMap(true /* use target list */);
           this.valueToEntriesMap.put(newKey, rvMap);
           this.internalIndexStats.incNumKeys(1);
+          // TODO: non-atomic operation on volatile int
           ++valueToEntriesMapSize;
         }
         rvMap.add(entry, value);
@@ -509,7 +509,7 @@ public class RangeIndex extends AbstractIndex {
         undefinedMappedEntries.remove(entry);
       }
     } else if (values instanceof Collection) {
-      Iterator valuesIter = ((Collection) values).iterator();
+      Iterator valuesIter = ((Iterable) values).iterator();
       while (valuesIter.hasNext()) {
         Object key = valuesIter.next();
         RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
@@ -709,7 +709,7 @@ public class RangeIndex extends AbstractIndex {
               size = this.valueToEntriesMap.containsKey(key) ? 1 : 0;
             }
           } else {
-            size = Integer.MAX_VALUE;
+            size = MAX_VALUE;
           }
           break;
 
@@ -753,7 +753,7 @@ public class RangeIndex extends AbstractIndex {
               size = this.valueToEntriesMap.containsKey(key) ? 1 : 0;
             }
           } else {
-            size = Integer.MAX_VALUE;
+            size = MAX_VALUE;
           }
           break;
       }
@@ -770,7 +770,7 @@ public class RangeIndex extends AbstractIndex {
     boolean multiColOrderBy = false;
     boolean asc = true;
     List orderByAttrs = null;
-    if (orderByClause != null && orderByClause.booleanValue()) {
+    if (orderByClause != null && orderByClause) {
       orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
       CompiledSortCriterion csc = (CompiledSortCriterion) orderByAttrs.get(0);
       asc = !csc.getCriterion();
@@ -840,7 +840,7 @@ public class RangeIndex extends AbstractIndex {
         }
         default: {
           throw new IllegalArgumentException(
-              LocalizedStrings.RangeIndex_OPERATOR_0.toLocalizedString(Integer.valueOf(operator)));
+              LocalizedStrings.RangeIndex_OPERATOR_0.toLocalizedString(valueOf(operator)));
         }
       } // end switch
     } catch (ClassCastException ex) {
@@ -992,12 +992,12 @@ public class RangeIndex extends AbstractIndex {
     if (entriesMap == null || result == null)
       return;
     QueryObserver observer = QueryObserverHolder.getInstance();
-    if (verifyLimit(result, limit, context)) {
+    if (verifyLimit(result, limit)) {
       observer.limitAppliedAtIndexLevel(this, limit, result);
       return;
     }
     if (entriesMap instanceof SortedMap) {
-      if (((SortedMap) entriesMap).isEmpty()) { // bug#40514
+      if (((Map) entriesMap).isEmpty()) { // bug#40514
         return;
       }
 
@@ -1010,7 +1010,7 @@ public class RangeIndex extends AbstractIndex {
         if (keysToRemove == null || !keysToRemove.remove(key)) {
           RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entry.getValue();
           rvMap.addValuesToCollection(result, limit, context);
-          if (verifyLimit(result, limit, context)) {
+          if (verifyLimit(result, limit)) {
             observer.limitAppliedAtIndexLevel(this, limit, result);
             return;
           }
@@ -1048,12 +1048,12 @@ public class RangeIndex extends AbstractIndex {
     if (entriesMap == null || result == null)
       return;
     QueryObserver observer = QueryObserverHolder.getInstance();
-    if (verifyLimit(result, limit, context)) {
+    if (verifyLimit(result, limit)) {
       observer.limitAppliedAtIndexLevel(this, limit, result);
       return;
     }
     assert entriesMap instanceof SortedMap;
-    Iterator entriesIter = ((SortedMap) entriesMap).entrySet().iterator();
+    Iterator entriesIter = ((Map) entriesMap).entrySet().iterator();
     Map.Entry entry = null;
     boolean foundKeyToRemove = false;
     while (entriesIter.hasNext()) {
@@ -1062,7 +1062,7 @@ public class RangeIndex extends AbstractIndex {
       if (foundKeyToRemove || !keyToRemove.equals(entry.getKey())) {
         RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entry.getValue();
         rvMap.addValuesToCollection(result, limit, context);
-        if (verifyLimit(result, limit, context)) {
+        if (verifyLimit(result, limit)) {
           observer.limitAppliedAtIndexLevel(this, limit, result);
           return;
         }
@@ -1078,9 +1078,8 @@ public class RangeIndex extends AbstractIndex {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     boolean limitApplied = false;
-    if (entriesMap == null || result == null
-        || (limitApplied = verifyLimit(result, limit, context))) {
-      if (limitApplied) {
+    if (entriesMap == null || result == null) {
+      if (verifyLimit(result, limit)) {
         QueryObserver observer = QueryObserverHolder.getInstance();
         if (observer != null) {
           observer.limitAppliedAtIndexLevel(this, limit, result);
@@ -1090,7 +1089,7 @@ public class RangeIndex extends AbstractIndex {
     }
     QueryObserver observer = QueryObserverHolder.getInstance();
     if (entriesMap instanceof SortedMap) {
-      Iterator entriesIter = ((SortedMap) entriesMap).entrySet().iterator();
+      Iterator entriesIter = ((Map) entriesMap).entrySet().iterator();
       Map.Entry entry = null;
       boolean foundKeyToRemove = false;
 
@@ -1106,7 +1105,7 @@ public class RangeIndex extends AbstractIndex {
           RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entry.getValue();
           rvMap.addValuesToCollection(result, iterOps, runtimeItr, context, projAttrib,
               intermediateResults, isIntersection, limit);
-          if (verifyLimit(result, limit, context)) {
+          if (verifyLimit(result, limit)) {
             observer.limitAppliedAtIndexLevel(this, limit, result);
             break;
           }
@@ -1181,8 +1180,8 @@ public class RangeIndex extends AbstractIndex {
     int limit = -1;
 
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
-    if (applyLimit != null && applyLimit.booleanValue()) {
-      limit = ((Integer) context.cacheGet(CompiledValue.RESULT_LIMIT)).intValue();
+    if (applyLimit != null && applyLimit) {
+      limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
     }
 
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
@@ -1190,7 +1189,7 @@ public class RangeIndex extends AbstractIndex {
     List orderByAttrs = null;
     boolean asc = true;
     boolean applyOrderBy = false;
-    if (orderByClause != null && orderByClause.booleanValue()) {
+    if (orderByClause != null && orderByClause) {
       orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
       CompiledSortCriterion csc = (CompiledSortCriterion) orderByAttrs.get(0);
       asc = !csc.getCriterion();
@@ -1281,7 +1280,7 @@ public class RangeIndex extends AbstractIndex {
     List orderByAttrs = null;
 
     boolean multiColOrderBy = false;
-    if (orderByClause != null && orderByClause.booleanValue()) {
+    if (orderByClause != null && orderByClause) {
       orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
       CompiledSortCriterion csc = (CompiledSortCriterion) orderByAttrs.get(0);
       asc = !csc.getCriterion();
@@ -1360,7 +1359,7 @@ public class RangeIndex extends AbstractIndex {
     boolean multiColOrderBy = false;
     List orderByAttrs = null;
     boolean asc = true;
-    if (orderByClause != null && orderByClause.booleanValue()) {
+    if (orderByClause != null && orderByClause) {
       orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
       CompiledSortCriterion csc = (CompiledSortCriterion) orderByAttrs.get(0);
       asc = !csc.getCriterion();
@@ -1397,7 +1396,7 @@ public class RangeIndex extends AbstractIndex {
   }
 
   public String dump() {
-    StringBuffer sb = new StringBuffer(toString()).append(" {\n");
+    StringBuilder sb = new StringBuilder(toString()).append(" {\n");
     sb.append("Null Values\n");
     Iterator nI = nullMappedEntries.entrySet().iterator();
     while (nI.hasNext()) {
@@ -1429,11 +1428,12 @@ public class RangeIndex extends AbstractIndex {
     Iterator i1 = this.valueToEntriesMap.entrySet().iterator();
     while (i1.hasNext()) {
       Map.Entry indexEntry = (Map.Entry) i1.next();
-      sb.append(" Key = " + indexEntry.getKey()).append("\n");
-      sb.append(" Value Type = ").append(" " + indexEntry.getValue().getClass().getName())
+      sb.append(" Key = ").append(indexEntry.getKey()).append("\n");
+      sb.append(" Value Type = ").append(" ").append(indexEntry.getValue().getClass().getName())
           .append("\n");
       if (indexEntry.getValue() instanceof Map) {
-        sb.append(" Value Size = ").append(" " + ((Map) indexEntry.getValue()).size()).append("\n");
+        sb.append(" Value Size = ").append(" ").append(((Map) indexEntry.getValue()).size())
+            .append("\n");
       }
       Iterator i2 = ((RegionEntryToValuesMap) indexEntry.getValue()).entrySet().iterator();
       while (i2.hasNext()) {
@@ -1454,7 +1454,6 @@ public class RangeIndex extends AbstractIndex {
     return sb.toString();
   }
 
-
   public static void setTestHook(TestHook hook) {
     RangeIndex.testHook = hook;
   }
@@ -1470,9 +1469,7 @@ public class RangeIndex extends AbstractIndex {
     public RangeIndexStatistics(String indexName) {
 
       this.vsdStats = new IndexStats(getRegion().getCache().getDistributedSystem(), indexName);
-
     }
-
 
     /**
      * Return the total number of times this index has been updated
@@ -1521,13 +1518,8 @@ public class RangeIndex extends AbstractIndex {
       this.vsdStats.incUsesInProgress(delta);
     }
 
-
     public void incReadLockCount(int delta) {
       this.vsdStats.incReadLockCount(delta);
-    }
-
-    public long getUseTime() {
-      return this.vsdStats.getUseTime();
     }
 
     /**
@@ -1586,7 +1578,7 @@ public class RangeIndex extends AbstractIndex {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("No Keys = ").append(getNumberOfKeys()).append("\n");
       sb.append("No Values = ").append(getNumberOfValues()).append("\n");
       sb.append("No Uses = ").append(getTotalUses()).append("\n");

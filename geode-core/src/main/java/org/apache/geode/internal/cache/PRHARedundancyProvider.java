@@ -22,7 +22,6 @@ import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
-import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -1394,7 +1393,7 @@ public class PRHARedundancyProvider {
       chosen = 0;
     } else {
       // Pick one (at random)
-      chosen = PartitionedRegion.rand.nextInt(bestStores.size());
+      chosen = PartitionedRegion.RANDOM.nextInt(bestStores.size());
     }
     DataStoreBuckets aDataStore = bestStores.get(chosen);
     return aDataStore.memberId;
@@ -1524,7 +1523,7 @@ public class PRHARedundancyProvider {
   public void scheduleRedundancyRecovery(Object failedMemId) {
 
     final boolean isStartup = failedMemId == null ? true : false;
-    final GemFireCacheImpl cache = this.prRegion.getCache();
+    final InternalCache cache = this.prRegion.getCache();
     final int redundantCopies = PRHARedundancyProvider.this.prRegion.getRedundantCopies();
     final long delay;
     final boolean movePrimaries;

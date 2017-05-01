@@ -21,10 +21,9 @@ import javax.management.ObjectName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.BaseManagementService;
 import org.apache.geode.management.membership.MembershipListener;
-
-
 
 /**
  * Interface to the GemFire management service for a single Cache.
@@ -33,14 +32,13 @@ import org.apache.geode.management.membership.MembershipListener;
  */
 public abstract class ManagementService {
 
-
   /**
    * Returns a newly created or the existing instance of the management service for a cache.
    * 
    * @param cache Cache for which to get the management service.
    */
   public static ManagementService getManagementService(Cache cache) {
-    return BaseManagementService.getManagementService(cache);
+    return BaseManagementService.getManagementService((InternalCache) cache);
   }
 
   /**
@@ -50,7 +48,7 @@ public abstract class ManagementService {
    * @return The existing management service if one exists, null otherwise.
    */
   public static ManagementService getExistingManagementService(Cache cache) {
-    return BaseManagementService.getExistingManagementService(cache);
+    return BaseManagementService.getExistingManagementService((InternalCache) cache);
   }
 
   /**
@@ -299,7 +297,6 @@ public abstract class ManagementService {
    */
   public abstract ObjectName getGatewaySenderMBeanName(DistributedMember member,
       String gatwaySenderId);
-
 
   /**
    * Returns the object name of the AsyncEventQueueMBean representing a asynchronous queue. This is

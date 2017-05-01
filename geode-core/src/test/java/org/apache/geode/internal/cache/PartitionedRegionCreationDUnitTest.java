@@ -561,7 +561,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
     registerPrRegion = new CacheSerializableRunnable("register") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = getCache();
+        InternalCache cache = (InternalCache) getCache();
         Region root = PartitionedRegionHelper.getPRRoot(cache);
         // Region allPartitionedRegions = PartitionedRegionHelper
         // .getPRConfigRegion(root, cache);

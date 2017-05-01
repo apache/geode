@@ -12,14 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -34,21 +50,6 @@ import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ExportLogsCommand implements CommandMarker {
 
@@ -60,6 +61,10 @@ public class ExportLogsCommand implements CommandMarker {
   public final static String DEFAULT_EXPORT_LOG_LEVEL = "ALL";
 
   private static final Pattern DISK_SPACE_LIMIT_PATTERN = Pattern.compile("(\\d+)([mgtMGT]?)");
+
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
   @CliMetaData(shellOnly = false, isFileDownloadOverHttp = true,
@@ -103,7 +108,7 @@ public class ExportLogsCommand implements CommandMarker {
     // specifiedDefaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__SPECIFIED_DEFAULT,
     // help = CliStrings.EXPORT_LOGS__FILESIZELIMIT__HELP) String fileSizeLimit) {
     Result result = null;
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = getCache();
     try {
       Set<DistributedMember> targetMembers =
           CliUtil.findMembersIncludingLocators(groups, memberIds);
@@ -193,13 +198,6 @@ public class ExportLogsCommand implements CommandMarker {
       logger.info("Zipping into: " + exportedLogsZipFile.toString());
       ZipUtils.zipDirectory(exportedLogsDir, exportedLogsZipFile);
       FileUtils.deleteDirectory(tempDir.toFile());
-
-      // try {
-      // isFileSizeCheckEnabledAndWithinLimit(parseFileSizeLimit(fileSizeLimit),
-      // exportedLogsZipFile.toFile());
-      // } catch (IllegalArgumentException e) {
-      // return ResultBuilder.createUserErrorResult("TOO BIG: fileSizeLimit = " + fileSizeLimit);
-      // }
 
       result = ResultBuilder.createInfoResult(exportedLogsZipFile.toString());
     } catch (Exception ex) {

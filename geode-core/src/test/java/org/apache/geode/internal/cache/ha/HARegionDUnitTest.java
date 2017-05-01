@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -50,7 +51,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm1 = null;
 
-  private static Cache cache = null;
+  private static InternalCache cache = null;
   private static final String REGION_NAME = "HARegionDUnitTest_region";
 
   /** constructor */
@@ -83,13 +84,13 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    * @return
    * @throws Exception
    */
-  private Cache createCache() throws Exception {
+  private InternalCache createCache() throws Exception {
     Properties props = new Properties();
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
     ds = getSystem(props);
-    Cache cache = null;
-    cache = CacheFactory.create(ds);
+    InternalCache cache = null;
+    cache = (InternalCache) CacheFactory.create(ds);
     if (cache == null) {
       throw new Exception("CacheFactory.create() returned null ");
     }

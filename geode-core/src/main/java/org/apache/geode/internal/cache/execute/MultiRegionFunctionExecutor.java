@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -38,15 +37,12 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- * 
- * 
- */
 public class MultiRegionFunctionExecutor extends AbstractExecution {
 
   private final Set<Region> regions;
@@ -210,7 +206,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
           LocalizedStrings.MemberFunctionExecutor_NO_MEMBER_FOUND_FOR_EXECUTING_FUNCTION_0
               .toLocalizedString(function.getId()));
     }
-    final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    final InternalCache cache = GemFireCacheImpl.getInstance();
     if (function.optimizeForWrite() && cache != null
         && cache.getInternalResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
@@ -218,7 +214,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);
       throw new LowMemoryException(
           LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-              .toLocalizedString(new Object[] {function.getId(), sm}),
+              .toLocalizedString(function.getId(), sm),
           sm);
     }
     setExecutionNodes(dest);
@@ -243,7 +239,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       Set<String> regionPathSet = memberToRegionMap.get(localVM);
       Set<Region> regions = new HashSet<Region>();
       if (regionPathSet != null) {
-        Cache cache1 = GemFireCacheImpl.getInstance();
+        InternalCache cache1 = GemFireCacheImpl.getInstance();
         for (String regionPath : regionPathSet) {
           regions.add(cache1.getRegion(regionPath));
         }
@@ -263,8 +259,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       MultiRegionFunctionResultWaiter waiter = new MultiRegionFunctionResultWaiter(ds,
           localResultCollector, function, dest, memberArgs, resultSender, memberToRegionMap);
 
-      ResultCollector reply = waiter.getFunctionResultFrom(dest, function, this);
-      return reply;
+      return waiter.getFunctionResultFrom(dest, function, this);
     }
     return localResultCollector;
   }
@@ -280,7 +275,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
         PartitionedRegion pr = (PartitionedRegion) region;
         Set<InternalDistributedMember> prMembers = pr.getRegionAdvisor().advisePrimaryOwners();
         if (pr.isDataStore()) {
-          GemFireCacheImpl cache = (GemFireCacheImpl) region.getCache();
+          InternalCache cache = (InternalCache) region.getCache();
           // Add local node
           InternalDistributedMember localVm = cache.getMyId();
           Set<String> regions = memberToRegions.get(localVm);
@@ -334,7 +329,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
             memberToRegions.put(member, regions);
           }
         } else if (dp.withReplication()) {
-          GemFireCacheImpl cache = (GemFireCacheImpl) region.getCache();
+          InternalCache cache = (InternalCache) region.getCache();
           // Add local node
           InternalDistributedMember local = cache.getMyId();
           Set<String> regions = memberToRegions.get(local);
@@ -345,7 +340,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
           memberToRegions.put(local, regions);
         }
       } else if (region instanceof LocalRegion) {
-        GemFireCacheImpl cache = (GemFireCacheImpl) region.getCache();
+        InternalCache cache = (InternalCache) region.getCache();
         // Add local node
         InternalDistributedMember local = cache.getMyId();
         Set<String> regions = memberToRegions.get(local);
@@ -366,9 +361,9 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public void validateExecution(Function function, Set targetMembers) {
-    GemFireCacheImpl cache = null;
+    InternalCache cache = null;
     for (Region r : regions) {
-      cache = (GemFireCacheImpl) r.getCache();
+      cache = (InternalCache) r.getCache();
       break;
     }
     if (cache != null && cache.getTxManager().getTXState() != null) {
@@ -385,7 +380,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
         } else if (!target.equals(funcTarget)) {
           throw new TransactionDataNotColocatedException(
               LocalizedStrings.PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1
-                  .toLocalizedString(new Object[] {target, funcTarget}));
+                  .toLocalizedString(target, funcTarget));
         }
       }
     }
@@ -396,7 +391,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       Set<DistributedMember> sm = SetUtils.intersection(hcm, targetMembers);
       throw new LowMemoryException(
           LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-              .toLocalizedString(new Object[] {function.getId(), sm}),
+              .toLocalizedString(function.getId(), sm),
           sm);
     }
   }

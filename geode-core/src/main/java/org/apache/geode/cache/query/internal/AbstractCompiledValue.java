@@ -248,7 +248,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   }
 
   // This function needs to be appropriately overridden in the derived classes
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, System.currentTimeMillis());
     clauseBuffer.insert(0, this.getClass());

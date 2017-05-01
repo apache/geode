@@ -19,7 +19,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
@@ -56,7 +56,7 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
   private final OffHeapMemoryUsageListener offHeapMemoryUsageListener;
   private final InternalResourceManager resourceManager;
   private final ResourceAdvisor resourceAdvisor;
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
   private final ResourceManagerStats stats;
   /**
    * InternalResoruceManager insists on creating a OffHeapMemoryMonitor even when it does not have
@@ -64,7 +64,7 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
    */
   private final MemoryAllocator memoryAllocator;
 
-  OffHeapMemoryMonitor(final InternalResourceManager resourceManager, final GemFireCacheImpl cache,
+  OffHeapMemoryMonitor(final InternalResourceManager resourceManager, final InternalCache cache,
       final MemoryAllocator memoryAllocator, final ResourceManagerStats stats) {
     this.resourceManager = resourceManager;
     this.resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
@@ -131,7 +131,7 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
     if (threadToWaitFor != null) {
       try {
         threadToWaitFor.join();
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
       }
     }
@@ -548,7 +548,7 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
             try {
               this.wait(MS_TIMEOUT);
               this.deliverEvent = false;
-            } catch (InterruptedException iex) {
+            } catch (InterruptedException ignore) {
               logger.warn("OffHeapMemoryUsageListener was interrupted {}", this);
               this.stopRequested = true;
               exitRunLoop = true;

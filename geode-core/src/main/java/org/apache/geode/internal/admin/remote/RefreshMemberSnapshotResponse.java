@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
@@ -25,20 +24,19 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A message that is sent to a particular distribution manager to get its current
  * {@link org.apache.geode.admin.GemFireMemberStatus}.
- * 
  */
 public class RefreshMemberSnapshotResponse extends AdminResponse {
-  // instance variables
+
   GemFireMemberStatus snapshot;
 
   /**
-   * Returns a <code>FetchSysCfgResponse</code> that will be returned to the specified recipient.
-   * The message will contains a copy of the local manager's config.
+   * Returns a {@code FetchSysCfgResponse} that will be returned to the specified recipient. The
+   * message will contains a copy of the local manager's config.
    */
   public static RefreshMemberSnapshotResponse create(DistributionManager dm,
       InternalDistributedMember recipient) {
@@ -47,9 +45,9 @@ public class RefreshMemberSnapshotResponse extends AdminResponse {
 
     try {
       DistributedSystem sys = dm.getSystem();
-      GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getInstance(sys);
+      InternalCache c = (InternalCache) CacheFactory.getInstance(sys);
       m.snapshot = new GemFireMemberStatus(c);
-    } catch (Exception ex) {
+    } catch (Exception ignore) {
       m.snapshot = null;
     }
     return m;
@@ -71,16 +69,16 @@ public class RefreshMemberSnapshotResponse extends AdminResponse {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.snapshot = (GemFireMemberStatus) DataSerializer.readObject(in);
+    this.snapshot = DataSerializer.readObject(in);
   }
 
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
+  @Override
   public int getDSFID() {
     return REFRESH_MEMBER_SNAP_RESPONSE;
   }
-
 
   @Override
   public String toString() {

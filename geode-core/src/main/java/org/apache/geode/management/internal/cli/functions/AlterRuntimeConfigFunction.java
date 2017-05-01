@@ -14,7 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.geode.cache.Cache;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -22,21 +25,17 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-/****
- * 
- *
- */
 public class AlterRuntimeConfigFunction extends FunctionAdapter implements InternalEntity {
 
   private static final long serialVersionUID = 1L;
+
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -44,9 +43,8 @@ public class AlterRuntimeConfigFunction extends FunctionAdapter implements Inter
 
     try {
       Object arg = context.getArguments();
-      Cache trueCache = null;
-      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
-      DistributionConfig config = cache.getSystem().getConfig();
+      InternalCache cache = getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
 
       Map<String, String> runtimeAttributes = (Map<String, String>) arg;

@@ -21,9 +21,9 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.ManagementService;
 
@@ -50,32 +50,28 @@ public abstract class BaseManagementService extends ManagementService {
   protected BaseManagementService() {}
 
   // Static block to initialize the ConnectListener on the System
-
   static {
     initInternalDistributedSystem();
-
   }
 
   /**
    * This method will close the service. Any operation on the service instance will throw exception
    */
-
   protected abstract void close();
 
   /**
    * This method will close the service. Any operation on the service instance will throw exception
    */
-
   protected abstract boolean isClosed();
 
   /**
    * Returns a ManagementService to use for the specified Cache.
-   * 
+   *
    * @param cache defines the scope of resources to be managed
    */
-  public static ManagementService getManagementService(Cache cache) {
+  public static ManagementService getManagementService(InternalCache cache) {
     synchronized (instances) {
-      BaseManagementService service = (BaseManagementService) instances.get(cache);
+      BaseManagementService service = instances.get(cache);
       if (service == null) {
         service = SystemManagementService.newSystemManagementService(cache);
         instances.put(cache, service);
@@ -85,13 +81,12 @@ public abstract class BaseManagementService extends ManagementService {
     }
   }
 
-  public static ManagementService getExistingManagementService(Cache cache) {
+  public static ManagementService getExistingManagementService(InternalCache cache) {
     synchronized (instances) {
       BaseManagementService service = (BaseManagementService) instances.get(cache);
       return service;
     }
   }
-
 
   /**
    * Initialises the distributed system listener
@@ -125,8 +120,6 @@ public abstract class BaseManagementService extends ManagementService {
 
   /**
    * Add an Distributed System and adds a Discon Listener
-   * 
-   * @param sys
    */
   private static void addInternalDistributedSystem(InternalDistributedSystem sys) {
     synchronized (instances) {
@@ -147,8 +140,6 @@ public abstract class BaseManagementService extends ManagementService {
   /**
    * Remove a Distributed System from the system lists. If list is empty it closes down all the
    * services if not closed
-   * 
-   * @param sys
    */
   private static void removeInternalDistributedSystem(InternalDistributedSystem sys) {
     synchronized (instances) {
@@ -172,7 +163,6 @@ public abstract class BaseManagementService extends ManagementService {
         }
         instances.clear();
       }
-
     }
   }
 }

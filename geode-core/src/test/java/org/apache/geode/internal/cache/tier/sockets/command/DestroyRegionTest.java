@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
@@ -25,9 +26,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.RegionDestroyOperationContext;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
@@ -41,6 +42,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DestroyRegionTest {
+
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
   private static final Object CALLBACK_ARG = "arg";
@@ -57,7 +59,7 @@ public class DestroyRegionTest {
   @Mock
   private LocalRegion region;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private CacheServerStats cacheServerStats;
   @Mock

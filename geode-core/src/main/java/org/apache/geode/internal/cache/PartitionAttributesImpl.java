@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -182,13 +179,15 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   }
 
   /**
-   * Constructs an instance of <code>PartitionAttributes</code> with default settings.
+   * Constructs an instance of {@code PartitionAttributes} with default settings.
    * 
    * @see PartitionAttributesFactory
    */
-  public PartitionAttributesImpl() {}
+  public PartitionAttributesImpl() {
+    // do nothing
+  }
 
-
+  @Override
   public PartitionResolver getPartitionResolver() {
     return this.partitionResolver;
   }
@@ -211,31 +210,22 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     this.hasPartitionListeners = true;
   }
 
-  // public ExpirationAttributes getEntryTimeToLive()
-  // {
-  // return new ExpirationAttributes(this.entryTimeToLiveExpiration.getTimeout(),
-  // this.entryTimeToLiveExpiration.getAction());
-  // }
-  //
-  // public ExpirationAttributes getEntryIdleTimeout()
-  // {
-  // return new ExpirationAttributes(this.entryIdleTimeoutExpiration.getTimeout(),
-  // this.entryIdleTimeoutExpiration.getAction());
-  // }
-
+  @Override
   public int getRedundantCopies() {
     return this.redundancy;
   }
 
+  @Override
   public int getTotalNumBuckets() {
     return this.totalNumBuckets;
   }
 
-  // deprecated method
+  @Override
   public long getTotalSize() {
     return this.getTotalMaxMemory();
   }
 
+  @Override
   public long getTotalMaxMemory() {
     return this.totalMaxMemory;
   }
@@ -253,10 +243,12 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    *         DistributedSystem has not yet been created)
    * @see #getLocalMaxMemoryForValidation()
    */
+  @Override
   public int getLocalMaxMemory() {
     if (this.offHeap && !this.localMaxMemoryExists) {
       int value = computeOffHeapLocalMaxMemory();
-      if (this.localMaxMemoryExists) { // real value now exists so set it and return
+      if (this.localMaxMemoryExists) {
+        // real value now exists so set it and return
         this.localMaxMemory = value;
       }
     }
@@ -269,8 +261,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    *         DistributedSystem has not yet been created)
    */
   private void checkLocalMaxMemoryExists() {
-    if (this.offHeap && !this.localMaxMemoryExists) { // real value does NOT yet exist so throw
-                                                      // IllegalStateException
+    if (this.offHeap && !this.localMaxMemoryExists) {
+      // real value does NOT yet exist so throw IllegalStateException
       throw new IllegalStateException(
           "Attempting to use localMaxMemory for off-heap but value is not yet known (default value is equal to off-heap-memory-size)");
     }
@@ -295,32 +287,39 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     return this.localMaxMemory;
   }
 
+  @Override
   public String getColocatedWith() {
     return this.colocatedRegionName;
   }
 
+  @Override
   public Properties getLocalProperties() {
     return this.localProperties;
   }
 
+  @Override
   public Properties getGlobalProperties() {
     return this.globalProperties;
   }
 
+  @Override
   public long getStartupRecoveryDelay() {
     return startupRecoveryDelay;
   }
 
+  @Override
   public long getRecoveryDelay() {
     return recoveryDelay;
   }
 
+  @Override
   public List<FixedPartitionAttributesImpl> getFixedPartitionAttributes() {
     return this.fixedPAttrs;
   }
 
   private static final PartitionListener[] EMPTY_PARTITION_LISTENERS = new PartitionListener[0];
 
+  @Override
   public PartitionListener[] getPartitionListeners() {
     ArrayList<PartitionListener> listeners = this.partitionListeners;
     if (listeners == null) {
@@ -349,7 +348,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
         copy.partitionListeners = new ArrayList<PartitionListener>(copy.partitionListeners);
       }
       return copy;
-    } catch (CloneNotSupportedException e) {
+    } catch (CloneNotSupportedException ignore) {
       throw new InternalGemFireError(
           LocalizedStrings.PartitionAttributesImpl_CLONENOTSUPPORTEDEXCEPTION_THROWN_IN_CLASS_THAT_IMPLEMENTS_CLONEABLE
               .toLocalizedString());
@@ -362,8 +361,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   @Override
   public String toString() {
-    StringBuffer s = new StringBuffer();
-    return s.append("PartitionAttributes@").append(System.identityHashCode(this))
+    StringBuilder sb = new StringBuilder();
+    return sb.append("PartitionAttributes@").append(System.identityHashCode(this))
         .append("[redundantCopies=").append(getRedundantCopies()).append(";localMaxMemory=")
         .append(getLocalMaxMemory()).append(";totalMaxMemory=").append(this.totalMaxMemory)
         .append(";totalNumBuckets=").append(this.totalNumBuckets).append(";partitionResolver=")
@@ -378,6 +377,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * @throws IllegalStateException if off-heap and the actual value is not yet known (because the
    *         DistributedSystem has not yet been created)
    */
+  @Override
   public void toData(DataOutput out) throws IOException {
     checkLocalMaxMemoryExists();
     out.writeInt(this.redundancy);
@@ -393,6 +393,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     DataSerializer.writeObject(this.fixedPAttrs, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.redundancy = in.readInt();
     this.totalMaxMemory = in.readLong();
@@ -436,8 +437,6 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
         || this.totalMaxMemory != other.getTotalMaxMemory()
         || this.startupRecoveryDelay != other.getStartupRecoveryDelay()
         || this.recoveryDelay != other.getRecoveryDelay()
-        // || ! this.localProperties.equals(other.getLocalProperties())
-        // || ! this.globalProperties.equals(other.getGlobalProperties())
         || ((this.partitionResolver == null) != (other.getPartitionResolver() == null))
         || (this.partitionResolver != null
             && !this.partitionResolver.equals(other.getPartitionResolver()))
@@ -447,7 +446,6 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
         || ((this.fixedPAttrs == null) != (other.getFixedPartitionAttributes() == null))
         || (this.fixedPAttrs != null
             && !this.fixedPAttrs.equals(other.getFixedPartitionAttributes()))) {
-      // throw new RuntimeException("this="+this.toString() + " other=" + other.toString());
       return false;
     }
 
@@ -457,12 +455,12 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     if (otherPListeners.length != thisPListeners.length) {
       return false;
     }
-    Set<String> otherListenerClassName = new HashSet<String>();
+    Set<String> otherListenerClassName = new HashSet<>();
     for (int i = 0; i < otherPListeners.length; i++) {
       PartitionListener listener = otherPListeners[i];
       otherListenerClassName.add(listener.getClass().getName());
     }
-    Set<String> thisListenerClassName = new HashSet<String>();
+    Set<String> thisListenerClassName = new HashSet<>();
     for (int i = 0; i < thisPListeners.length; i++) {
       PartitionListener listener = thisPListeners[i];
       thisListenerClassName.add(listener.getClass().getName());
@@ -517,7 +515,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     if (propVal != null) {
       try {
         setTotalMaxMemory(Integer.parseInt(propVal));
-      } catch (RuntimeException e) {
+      } catch (RuntimeException ignore) {
         this.totalMaxMemory = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
       }
     }
@@ -525,7 +523,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     if (propVal != null) {
       try {
         this.setTotalNumBuckets(Integer.parseInt(propVal));
-      } catch (RuntimeException e) {
+      } catch (RuntimeException ignore) {
         this.totalNumBuckets = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
       }
     }
@@ -533,7 +531,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   public void addFixedPartitionAttributes(FixedPartitionAttributes fpa) {
     if (this.fixedPAttrs == null) {
-      this.fixedPAttrs = new ArrayList<FixedPartitionAttributesImpl>(1);
+      this.fixedPAttrs = new ArrayList<>(1);
       this.fixedPAttrs.add((FixedPartitionAttributesImpl) fpa);
       this.hasFixedPAttrs = true;
     } else {
@@ -562,12 +560,12 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     if ((this.totalNumBuckets <= 0)) {
       throw new IllegalStateException(
           LocalizedStrings.PartitionAttributesImpl_TOTALNUMBICKETS_0_IS_AN_ILLEGAL_VALUE_PLEASE_CHOOSE_A_VALUE_GREATER_THAN_0
-              .toLocalizedString(Integer.valueOf(this.totalNumBuckets)));
+              .toLocalizedString(this.totalNumBuckets));
     }
     if ((this.redundancy < 0) || (this.redundancy >= 4)) {
       throw new IllegalStateException(
           LocalizedStrings.PartitionAttributesImpl_REDUNDANTCOPIES_0_IS_AN_ILLEGAL_VALUE_PLEASE_CHOOSE_A_VALUE_BETWEEN_0_AND_3
-              .toLocalizedString(Integer.valueOf(this.redundancy)));
+              .toLocalizedString(this.redundancy));
     }
     for (Iterator it = this.getLocalProperties().keySet().iterator(); it.hasNext();) {
       String propName = (String) it.next();
@@ -660,29 +658,27 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     Cache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       Region<?, ?> region = cache.getRegion(this.colocatedRegionName);
-      {
-        if (region == null) {
-          throw new IllegalStateException(
-              LocalizedStrings.PartitionAttributesImpl_REGION_SPECIFIED_IN_COLOCATEDWITH_IS_NOT_PRESENT_IT_SHOULD_BE_CREATED_BEFORE_SETTING_COLOCATED_WITH_THIS_REGION
-                  .toLocalizedString());
-        }
-        if (!(region instanceof PartitionedRegion)) {
-          throw new IllegalStateException(
-              LocalizedStrings.PartitionAttributesImpl_SETTING_THE_ATTRIBUTE_COLOCATEDWITH_IS_SUPPORTED_ONLY_FOR_PARTITIONEDREGIONS
-                  .toLocalizedString());
-        }
-        PartitionedRegion colocatedRegion = (PartitionedRegion) region;
-        if (this.getTotalNumBuckets() != colocatedRegion.getPartitionAttributes()
-            .getTotalNumBuckets()) {
-          throw new IllegalStateException(
-              LocalizedStrings.PartitionAttributesImpl_CURRENT_PARTITIONEDREGIONS_TOTALNUMBUCKETS_SHOULD_BE_SAME_AS_TOTALNUMBUCKETS_OF_COLOCATED_PARTITIONEDREGION
-                  .toLocalizedString());
-        }
-        if (this.getRedundancy() != colocatedRegion.getPartitionAttributes().getRedundantCopies()) {
-          throw new IllegalStateException(
-              LocalizedStrings.PartitionAttributesImpl_CURRENT_PARTITIONEDREGIONS_REDUNDANCY_SHOULD_BE_SAME_AS_THE_REDUNDANCY_OF_COLOCATED_PARTITIONEDREGION
-                  .toLocalizedString());
-        }
+      if (region == null) {
+        throw new IllegalStateException(
+            LocalizedStrings.PartitionAttributesImpl_REGION_SPECIFIED_IN_COLOCATEDWITH_IS_NOT_PRESENT_IT_SHOULD_BE_CREATED_BEFORE_SETTING_COLOCATED_WITH_THIS_REGION
+                .toLocalizedString());
+      }
+      if (!(region instanceof PartitionedRegion)) {
+        throw new IllegalStateException(
+            LocalizedStrings.PartitionAttributesImpl_SETTING_THE_ATTRIBUTE_COLOCATEDWITH_IS_SUPPORTED_ONLY_FOR_PARTITIONEDREGIONS
+                .toLocalizedString());
+      }
+      PartitionedRegion colocatedRegion = (PartitionedRegion) region;
+      if (this.getTotalNumBuckets() != colocatedRegion.getPartitionAttributes()
+          .getTotalNumBuckets()) {
+        throw new IllegalStateException(
+            LocalizedStrings.PartitionAttributesImpl_CURRENT_PARTITIONEDREGIONS_TOTALNUMBUCKETS_SHOULD_BE_SAME_AS_TOTALNUMBUCKETS_OF_COLOCATED_PARTITIONEDREGION
+                .toLocalizedString());
+      }
+      if (this.getRedundancy() != colocatedRegion.getPartitionAttributes().getRedundantCopies()) {
+        throw new IllegalStateException(
+            LocalizedStrings.PartitionAttributesImpl_CURRENT_PARTITIONEDREGIONS_REDUNDANCY_SHOULD_BE_SAME_AS_THE_REDUNDANCY_OF_COLOCATED_PARTITIONEDREGION
+                .toLocalizedString());
       }
     }
   }
@@ -732,7 +728,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   }
 
   @SuppressWarnings("unchecked")
-  public void setAll(@SuppressWarnings("rawtypes") PartitionAttributes pa) {
+  public void setAll(PartitionAttributes pa) {
     setRedundantCopies(pa.getRedundantCopies());
     setLocalProperties(pa.getLocalProperties());
     setGlobalProperties(pa.getGlobalProperties());
@@ -770,9 +766,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
           OffHeapStorage.parseOffHeapMemorySize(testAvailableOffHeapMemory) / (1024 * 1024);
     } else if (InternalDistributedSystem.getAnyInstance() == null) {
       this.localMaxMemoryExists = false;
-      return OFF_HEAP_LOCAL_MAX_MEMORY_PLACEHOLDER; // fix 52033: return non-negative, non-zero
-                                                    // temporary placeholder for
-                                                    // offHeapLocalMaxMemory
+      // fix 52033: return non-negative, non-zero temporary placeholder for offHeapLocalMaxMemory
+      return OFF_HEAP_LOCAL_MAX_MEMORY_PLACEHOLDER;
     } else {
       String offHeapSizeConfigValue =
           InternalDistributedSystem.getAnyInstance().getOriginalConfig().getOffHeapMemorySize();

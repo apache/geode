@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static javax.xml.XMLConstants.*;
 import static org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils.*;
 import static org.apache.geode.management.internal.configuration.utils.XmlConstants.*;
-import static javax.xml.XMLConstants.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -42,7 +42,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.geode.cache.wan.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -93,6 +92,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -103,6 +103,11 @@ import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.AbstractRegion;
@@ -111,6 +116,7 @@ import org.apache.geode.internal.cache.ClientSubscriptionConfigImpl;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -127,7 +133,6 @@ import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
  * developed for testing purposes, but it is conceivable that it could be used in the product as
  * well.
  *
- *
  * @since GemFire 3.0
  */
 @SuppressWarnings("deprecation")
@@ -139,8 +144,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /** The content handler to which SAX events are generated */
   private ContentHandler handler;
 
-  ///////////////////////// Instance Fields ////////////////////////
-
   /** The Cache that we're generating XML for */
   final private Cache cache;
 
@@ -151,17 +154,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   private boolean includeKeysValues = true;
   private final boolean generateDefaults;
 
-  // final private int cacheLockLease;
-  // final private int cacheLockTimeout;
-  // final private int cacheSearchTimeout;
-  // final private boolean isServer;
-  // final private boolean copyOnRead;
-
   /** The <code>CacheCreation</code> from which XML is generated */
   private final CacheCreation creation;
-
-  /////////////////////// Static Methods ///////////////////////
-
 
   /**
    * Examines the given <code>Cache</code> and from it generates XML data that is written to the
@@ -280,9 +274,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     (new CacheXmlGenerator()).generate(pw);
   }
 
-
-  //////////////////////// Constructors ////////////////////////
-
   /**
    * Creates a new <code>CacheXmlGenerator</code> that generates XML for a given <code>Cache</code>.
    */
@@ -304,7 +295,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       this.creation.startingGenerate();
 
     } else if (cache instanceof GemFireCacheImpl) {
-      if (((GemFireCacheImpl) cache).isClient()) {
+      if (((InternalCache) cache).isClient()) {
         this.creation = new ClientCacheCreation();
         if (generateDefaults() || cache.getCopyOnRead()) {
           this.creation.setCopyOnRead(cache.getCopyOnRead());
@@ -401,8 +392,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     creation.setIsServer(false);
     creation.setCopyOnRead(GemFireCacheImpl.DEFAULT_COPY_ON_READ);
   }
-
-  ////////////////////// Instance Methods //////////////////////
 
   /**
    * Writes the generator's state to pw
@@ -563,7 +552,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
         if (this.cache instanceof GemFireCacheImpl) {
-          GemFireCacheImpl gfc = (GemFireCacheImpl) this.cache;
+          InternalCache gfc = (InternalCache) this.cache;
           for (DiskStore ds : gfc.listDiskStores()) {
             generate(ds);
           }
@@ -587,7 +576,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           // we need to exclude them in all versions.
           // It would be better if CacheCreation could only predefine them
           // for versions 6.5 and later but that is not easy to do
-          /* if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) */ {
+          {
             if (this.creation instanceof ClientCacheCreation) {
               try {
                 ClientRegionShortcut.valueOf(id);
@@ -632,8 +621,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if (!isClientCache) {
         if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
           if (this.cache instanceof GemFireCacheImpl) {
-            GemFireCacheImpl gfc = (GemFireCacheImpl) this.cache;
-            for (File file : gfc.getBackupFiles()) {
+            InternalCache internalCache = (InternalCache) this.cache;
+            for (File file : internalCache.getBackupFiles()) {
               generateBackupFile(file);
             }
           } else {
@@ -646,12 +635,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
         generateInitializer();
       }
-    } else {
-      if (handler instanceof LexicalHandler) {
-        // LexicalHandler lex = (LexicalHandler) handler;
-        // lex.comment(comment.toCharArray(), 0, comment.length());
-      }
-
     }
 
     if (cache instanceof Extensible) {
@@ -670,12 +653,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   private void generatePdx() throws SAXException {
     AttributesImpl atts = new AttributesImpl();
-    CacheConfig config;
-    if (this.cache instanceof CacheCreation) {
-      config = ((CacheCreation) cache).getCacheConfig();
-    } else {
-      config = ((GemFireCacheImpl) cache).getCacheConfig();
-    }
+    CacheConfig config = ((InternalCache) cache).getCacheConfig();
     if (config.pdxReadSerializedUserSet) {
       if (generateDefaults() || this.cache.getPdxReadSerialized())
         atts.addAttribute("", "", READ_SERIALIZED, "",
@@ -929,7 +907,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * 
    * @since GemFire 5.7
    */
-
   private void generateClientHaQueue(CacheServer bridge) throws SAXException {
     AttributesImpl atts = new AttributesImpl();
     ClientSubscriptionConfigImpl csc =
@@ -1006,11 +983,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             String.valueOf(bridge.getMaximumMessageCount()));
 
       if (generateDefaults()
-          || bridge.getMessageTimeToLive() != CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE)
+          || bridge.getMessageTimeToLive() != CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE) {
         atts.addAttribute("", "", MESSAGE_TIME_TO_LIVE, "",
             String.valueOf(bridge.getMessageTimeToLive()));
-
-
+      }
 
       if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) < 0) {
         return;
@@ -1063,8 +1039,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         if (generateDefaults() || !probe.equals(CacheServer.DEFAULT_LOAD_PROBE)) {
           generate(LOAD_PROBE, probe);
         }
-
-
       }
       if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
         handler.endElement("", "", CACHE_SERVER);
@@ -1184,8 +1158,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   /**
    * Compare regions by name
-   * 
-   *
    */
   class RegionComparator implements Comparator {
     public int compare(Object o1, Object o2) {
@@ -1196,7 +1168,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       return ((Region) this).getFullPath().equals(((Region) anObj).getFullPath());
     }
   }
-
 
   /**
    * Generates XML for the given connection pool
@@ -1598,7 +1569,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   private void generateGatewayEventFilter(GatewayEventFilter gef) throws SAXException {
-
     handler.startElement("", GATEWAY_EVENT_FILTER, GATEWAY_EVENT_FILTER, EMPTY);
     String className = gef.getClass().getName();
 
@@ -1614,7 +1584,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   private void generateGatewayTransportFilter(GatewayTransportFilter gef) throws SAXException {
-
     handler.startElement("", GATEWAY_TRANSPORT_FILTER, GATEWAY_TRANSPORT_FILTER, EMPTY);
     String className = gef.getClass().getName();
 
@@ -1646,24 +1615,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
     handler.endElement("", GATEWAY_EVENT_SUBSTITUTION_FILTER, GATEWAY_EVENT_SUBSTITUTION_FILTER);
   }
-  //
-  // private void generateGatewayEventListener(GatewayEventListener gef)
-  // throws SAXException {
-  //
-  // handler.startElement("", GATEWAY_EVENT_LISTENER, GATEWAY_EVENT_LISTENER,
-  // EMPTY);
-  // String className = gef.getClass().getName();
-  //
-  // handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
-  // handler.characters(className.toCharArray(), 0, className.length());
-  // handler.endElement("", CLASS_NAME, CLASS_NAME);
-  // Properties props = null;
-  // if (gef instanceof Declarable2) {
-  // props = ((Declarable2)gef).getConfig();
-  // generate(props, null);
-  // }
-  // handler.endElement("", GATEWAY_EVENT_LISTENER, GATEWAY_EVENT_LISTENER);
-  // }
 
   /**
    * Generates XML for a given region
@@ -1996,8 +1947,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-
-
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasStatisticsEnabled())) {
       if (generateDefaults() || attrs.getStatisticsEnabled())
@@ -2230,7 +2179,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Generates XML for a <code>CacheCallback</code>
    */
   private void generate(String kind, Object callback) throws SAXException {
-
     if (callback == null) {
       return;
     }
@@ -2248,7 +2196,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     } else if (callback instanceof ReflectionBasedAutoSerializer) {
       props = ((ReflectionBasedAutoSerializer) callback).getConfig();
     } else if (callback instanceof Declarable && cache instanceof GemFireCacheImpl) {
-      props = ((GemFireCacheImpl) cache).getDeclarableProperties((Declarable) callback);
+      props = ((InternalCache) cache).getDeclarableProperties((Declarable) callback);
     }
     generate(props, null);
 
@@ -2256,7 +2204,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   private void generate(String kind, Declarable d, Properties p) throws SAXException {
-
     if (d == null) {
       return;
     }
@@ -2274,7 +2221,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   private void generate(EvictionAttributes ea) throws SAXException {
-
     EvictionAction eAction = ea.getAction();
     if (eAction.isNone()) {
       return;
@@ -2366,7 +2312,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Generates XML for <code>SubscriptionAttributes</code>
    */
   private void generate(SubscriptionAttributes attrs) throws SAXException {
-
     if (attrs == null) {
       return;
     }
@@ -2394,7 +2339,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Generates XML for a <code>PartitionAttributes</code>
    */
   private void generate(PartitionAttributes pa) throws SAXException {
-
     AttributesImpl atts = new AttributesImpl();
 
     if (generateDefaults() || pa.getRedundantCopies() != 0)
@@ -2530,7 +2474,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
   }
 
-
   /**
    * Generates XML for a <code>DiskWriteAttributes</code>
    */
@@ -2631,29 +2574,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (d instanceof Declarable2) {
       Properties props = ((Declarable2) d).getConfig();
       generate(props, null);
-      // for (Iterator iter = props.entrySet().iterator();
-      // iter.hasNext(); ) {
-      // Map.Entry entry = (Map.Entry) iter.next();
-      // String name = (String) entry.getKey();
-      // Object value = entry.getValue();
-      //
-      // AttributesImpl atts = new AttributesImpl();
-      // atts.addAttribute("", "", NAME, "", name);
-      //
-      // handler.startElement("", PARAMETER, PARAMETER, atts);
-      //
-      // if (value instanceof String) {
-      // generate((String) value);
-      //
-      // } else if (value instanceof Declarable) {
-      // generate((Declarable) value);
-      //
-      // } else {
-      // // Ignore it
-      // }
-      //
-      // handler.endElement("", PARAMETER, PARAMETER);
-      // }
     }
 
     if (includeDeclarable) {
@@ -2704,7 +2624,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       handler.endElement("", STRING, STRING);
     }
   }
-
 
   private void generate(final Properties props, String elementName) throws SAXException {
     if (props == null || props.isEmpty()) {
@@ -2762,8 +2681,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     return this;
   }
 
-  ////////// Inherited methods that don't do anything //////////
-
   public boolean getFeature(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
     return false;
@@ -2771,7 +2688,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   public void setFeature(String name, boolean value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
-
+    // nothing
   }
 
   public Object getProperty(String name)
@@ -2782,11 +2699,11 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   public void setProperty(String name, Object value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
-
+    // nothing
   }
 
   public void setEntityResolver(EntityResolver resolver) {
-
+    // nothing
   }
 
   public EntityResolver getEntityResolver() {
@@ -2794,7 +2711,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   public void setDTDHandler(DTDHandler handler) {
-
+    // nothing
   }
 
   public DTDHandler getDTDHandler() {
@@ -2802,13 +2719,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   public void setErrorHandler(ErrorHandler handler) {
-
+    // nothing
   }
 
   public void parse(String systemId) throws IOException, SAXException {
-
+    // nothing
   }
-
 
   /**
    * Used by gemfire build.xml to generate a default gemfire.properties for use by applications. See

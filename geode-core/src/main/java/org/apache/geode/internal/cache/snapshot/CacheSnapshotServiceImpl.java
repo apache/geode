@@ -26,20 +26,19 @@ import org.apache.geode.cache.snapshot.CacheSnapshotService;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides an implementation for cache snapshots. Most of the implementation delegates to
  * {@link RegionSnapshotService}.
- * 
  */
 public class CacheSnapshotServiceImpl implements CacheSnapshotService {
   /** the cache */
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
 
-  public CacheSnapshotServiceImpl(GemFireCacheImpl cache) {
+  public CacheSnapshotServiceImpl(InternalCache cache) {
     this.cache = cache;
   }
 

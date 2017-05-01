@@ -443,6 +443,7 @@ public class AutoBalancer implements Declarable {
     }
 
     InternalCache getCache() {
+      // TODO: delete this double-checking
       if (cache == null) {
         synchronized (this) {
           if (cache == null) {
@@ -461,6 +462,7 @@ public class AutoBalancer implements Declarable {
 
     @Override
     public boolean acquireAutoBalanceLock() {
+      // TODO: delete this double-checking
       if (!isLockAcquired.get()) {
         synchronized (isLockAcquired) {
           if (!isLockAcquired.get()) {
@@ -501,7 +503,7 @@ public class AutoBalancer implements Declarable {
     }
   }
 
-  private class SystemClockTimeProvider implements TimeProvider {
+  private static class SystemClockTimeProvider implements TimeProvider {
     @Override
     public long currentTimeMillis() {
       return System.currentTimeMillis();

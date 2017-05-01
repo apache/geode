@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -32,7 +33,6 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -40,11 +40,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.ManagementException;
@@ -60,48 +62,38 @@ import org.apache.geode.management.ManagementException;
 public class FederatingManager extends Manager {
   public static final Logger logger = LogService.getLogger();
 
-
   /**
-   * 
    * This Executor uses a pool of thread to execute the member addition /removal tasks, This will
    * utilize the processing powers available. Going with unbounded queue because tasks wont be
    * unbounded in practical situation as number of members will be a finite set at any given point
    * of time
    */
-
   private ExecutorService pooledMembershipExecutor;
-
 
   /**
    * Proxy factory is used to create , remove proxies
    */
   protected MBeanProxyFactory proxyFactory;
 
-
   /**
    * Remote Filter chain for local MBean filters
    */
-
   private RemoteFilterChain remoteFilterChain;
 
   private MBeanJMXAdapter jmxAdapter;
 
   private MemberMessenger messenger;
 
-
   private SystemManagementService service;
 
-
   /**
-   * Public Constructor
-   * 
    * @param jmxAdapter JMX Adpater
    * @param repo Management resource repo
    * @param system Internal Distributed System
    * @param service SystemManagement Service
    */
   public FederatingManager(MBeanJMXAdapter jmxAdapter, ManagementResourceRepo repo,
-      InternalDistributedSystem system, SystemManagementService service, Cache cache) {
+      InternalDistributedSystem system, SystemManagementService service, InternalCache cache) {
     super(repo, system, cache);
     this.remoteFilterChain = new RemoteFilterChain();
     this.service = service;
@@ -110,14 +102,12 @@ public class FederatingManager extends Manager {
     this.messenger = new MemberMessenger(jmxAdapter, repo, system);
   }
 
-
   /**
    * This method will be invoked whenever a member wants to be a managing node. The exception
    * Management exception has to be handled by the caller.
    */
   @Override
   public synchronized void startManager() {
-
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting the Federating Manager.... ");
@@ -138,7 +128,6 @@ public class FederatingManager extends Manager {
       running = false;
       throw new ManagementException(e);
     }
-
   }
 
   public synchronized void stopManager() {
@@ -151,18 +140,13 @@ public class FederatingManager extends Manager {
       logger.debug("Stopping the Federating Manager.... ");
     }
     stopManagingActivity();
-
   }
 
   /**
    * This method will be invoked whenever a member stops being a managing node. The exception
    * Management exception has to be handled by the caller. *
-   * 
-   * @throws ManagementException
-   * 
    */
   private void stopManagingActivity() {
-
     try {
       this.pooledMembershipExecutor.shutdownNow();
       Iterator<DistributedMember> it = repo.getMonitoringRegionMap().keySet().iterator();
@@ -173,10 +157,7 @@ public class FederatingManager extends Manager {
 
     } catch (Exception e) {
       throw new ManagementException(e);
-    } finally {
-      // For future use
     }
-
   }
 
   @Override
@@ -190,8 +171,6 @@ public class FederatingManager extends Manager {
    * 
    * This method will delegate task to another thread and exit, so that it wont block the membership
    * listener
-   * 
-   * @param member
    */
   public void addMember(DistributedMember member) {
     GIITask giiTask = new GIITask(member);
@@ -203,33 +182,22 @@ public class FederatingManager extends Manager {
     });
   }
 
-
   /**
    * This method will be invoked from MembershipListener which is registered when the member becomes
    * a Management node.
    * 
    * This method will delegate task to another thread and exit, so that it wont block the membership
    * listener
-   * 
-   * @param member
    */
   public void removeMember(DistributedMember member, boolean crashed) {
     RemoveMemberTask removeTask = new RemoveMemberTask(member, crashed);
     executeTask(removeTask);
   }
 
-  private void submitTask(Callable<DistributedMember> task) {
-    try {
-      pooledMembershipExecutor.submit(task);
-    } catch (java.util.concurrent.RejectedExecutionException ex) {
-      // Ignore, we are getting shutdown
-    }
-  }
-
   private void executeTask(Runnable task) {
     try {
       pooledMembershipExecutor.execute(task);
-    } catch (java.util.concurrent.RejectedExecutionException ex) {
+    } catch (RejectedExecutionException ex) {
       // Ignore, we are getting shutdown
     }
   }
@@ -278,22 +246,16 @@ public class FederatingManager extends Manager {
    * 
    * this method will delegate task to another thread and exit, so that it wont block the membership
    * listener
-   * 
-   * @param member
-   * @param reason TODO
    */
   public void suspectMember(DistributedMember member, InternalDistributedMember whoSuspected,
       String reason) {
     service.memberSuspect((InternalDistributedMember) member, whoSuspected, reason);
-
   }
 
   /**
    * This method will be invoked when a node transitions from managed node to managing node This
    * method will block for all GIIs to be completed But each GII is given a specific time frame.
    * After that the task will be marked as cancelled.
-   * 
-   * @throws InterruptedException
    */
   public void startManagingActivity() throws Exception {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -303,7 +265,6 @@ public class FederatingManager extends Manager {
 
     Iterator<DistributedMember> it = members.iterator();
     DistributedMember member;
-
 
     final List<Callable<DistributedMember>> giiTaskList = new ArrayList<>();
 
@@ -354,9 +315,7 @@ public class FederatingManager extends Manager {
             logger.debug("InterruptedException while creating Monitoring resource with error : {}",
                 mgEx.getMessage(), mgEx);
           }
-
         }
-
       }
     } catch (InterruptedException e) {
       if (isDebugEnabled) {
@@ -370,20 +329,14 @@ public class FederatingManager extends Manager {
         logger.debug("Management Resource creation completed");
       }
     }
-
   }
-
-
 
   /**
    * Actual task of doing the GII
    * 
    * It will perform the GII request which might originate from TranstionListener or Membership
    * Listener.
-   * 
-   * 
-   * 
-   * 
+   *
    * Managing Node side resources are created per member which is visible to this node
    * 
    * 1)Management Region : its a Replicated NO_ACK region 2)Notification Region : its a Replicated
@@ -394,10 +347,7 @@ public class FederatingManager extends Manager {
    * 
    * This task can be cancelled from the calling thread if a timeout happens. In that case we have
    * to handle the thread interrupt
-   * 
-   * 
    */
-
   private class GIITask implements Callable<DistributedMember> {
 
     private DistributedMember member;
@@ -438,7 +388,6 @@ public class FederatingManager extends Manager {
           ManagementCacheListener mgmtCacheListener = new ManagementCacheListener(proxyFactory);
           monitorAttrFactory.addCacheListener(mgmtCacheListener);
 
-
           RegionAttributes<String, Object> monitoringRegionAttrs = monitorAttrFactory.create();
 
           // Notification region for member is created
@@ -472,8 +421,7 @@ public class FederatingManager extends Manager {
                     monitoringRegionAttrs, internalArgs);
             proxyMonitoringRegionCreated = true;
 
-
-          } catch (org.apache.geode.cache.TimeoutException e) {
+          } catch (TimeoutException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
             }
@@ -504,7 +452,7 @@ public class FederatingManager extends Manager {
                 cache.createVMRegion(ManagementConstants.NOTIFICATION_REGION + "_" + appender,
                     notifRegionAttrs, internalArgs);
             proxyNotifRegionCreated = true;
-          } catch (org.apache.geode.cache.TimeoutException e) {
+          } catch (TimeoutException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
             }
@@ -530,7 +478,6 @@ public class FederatingManager extends Manager {
               // region is not created
               proxyMonitoringRegion.localDestroyRegion();
             }
-
           }
 
           if (logger.isDebugEnabled()) {
@@ -560,13 +507,11 @@ public class FederatingManager extends Manager {
 
             throw new ManagementException(e);
           }
-
         }
 
       } catch (Exception e) {
         throw new ManagementException(e);
       }
-
 
       // Before completing task intimate all listening ProxyListener which might send notifications.
       service.memberJoined((InternalDistributedMember) member);
@@ -574,11 +519,8 @@ public class FederatingManager extends Manager {
       // Send manager info to the added member
       messenger.sendManagerInfo(member);
 
-
       return member;
-
     }
-
   }
 
   /**
@@ -622,10 +564,8 @@ public class FederatingManager extends Manager {
     return proxyFactory.findAllProxies(member);
   }
 
-
   public MemberMessenger getMessenger() {
     return messenger;
   }
-
 
 }

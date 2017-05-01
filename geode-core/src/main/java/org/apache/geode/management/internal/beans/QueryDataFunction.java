@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -51,6 +50,7 @@ import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -127,7 +127,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
   private QueryDataFunctionResult selectWithType(final FunctionContext context, String queryString,
       final boolean showMember, final String regionName, final int limit,
       final int queryResultSetLimit, final int queryCollectionsDepth) throws Exception {
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     Function loclQueryFunc = new LocalQueryFunction("LocalQueryFunction", regionName, showMember)
         .setOptimizeForWrite(true);
     queryString = applyLimitClause(queryString, limit, queryResultSetLimit);
@@ -293,12 +293,11 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
         List<String> decompressedList = new ArrayList<String>();
 
         while (it.hasNext()) {
-
           String decompressedStr = null;
           decompressedStr = BeanUtilFuncs.decompress(it.next().compressedBytes);
           decompressedList.add(decompressedStr);
-
         }
+
         if (zipResult) {
           return BeanUtilFuncs.compress(wrapResult(decompressedList.toString()));
         } else {
@@ -359,7 +358,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
       }
     }
 
-    Cache cache = CacheFactory.getAnyInstance();
+    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
     try {
 
       SystemManagementService service =
@@ -386,7 +385,6 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
               }
             }
           }
-
         }
       } else {
         return new JsonisedErroMessage(ManagementStrings.QUERY__MSG__INVALID_QUERY
@@ -449,6 +447,10 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
     }
   }
 
+  private InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
   private static class JsonisedErroMessage {
 
     private static String message = "message";
@@ -467,7 +469,6 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
     public String toString() {
       return gFJsonObject.toString();
     }
-
   }
 
   /**
@@ -479,7 +480,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
    *
    * @return a set of regions involved in the query
    */
-  private static Set<String> compileQuery(final Cache cache, final String query)
+  private static Set<String> compileQuery(final InternalCache cache, final String query)
       throws QueryInvalidException {
     QCompiler compiler = new QCompiler();
     Set<String> regionsInQuery = null;
@@ -537,7 +538,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
 
     @Override
     public void execute(final FunctionContext context) {
-      Cache cache = CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       QueryService queryService = cache.getQueryService();
       String qstr = (String) context.getArguments();
       Region r = cache.getRegion(regionName);
@@ -555,6 +556,10 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
       } catch (Exception e) {
         throw new FunctionException(e);
       }
+    }
+
+    private InternalCache getCache() {
+      return (InternalCache) CacheFactory.getAnyInstance();
     }
 
     @Override

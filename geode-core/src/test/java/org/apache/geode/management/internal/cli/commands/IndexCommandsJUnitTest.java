@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,11 +32,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
@@ -67,6 +68,7 @@ public class IndexCommandsJUnitTest {
     mockContext = new Mockery() {
       {
         setImposteriser(ClassImposteriser.INSTANCE);
+        setThreadingPolicy(new Synchroniser());
       }
     };
   }
@@ -77,7 +79,8 @@ public class IndexCommandsJUnitTest {
     mockContext = null;
   }
 
-  private IndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
+  private IndexCommands createIndexCommands(final InternalCache cache,
+      final Execution functionExecutor) {
     return new TestIndexCommands(cache, functionExecutor);
   }
 
@@ -88,7 +91,7 @@ public class IndexCommandsJUnitTest {
 
   @Test
   public void testGetIndexListing() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final AbstractExecution mockFunctionExecutor =
         mockContext.mock(AbstractExecution.class, "Function Executor");
@@ -129,7 +132,7 @@ public class IndexCommandsJUnitTest {
 
   @Test(expected = RuntimeException.class)
   public void testGetIndexListingThrowsRuntimeException() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final Execution mockFunctionExecutor = mockContext.mock(Execution.class, "Function Executor");
 
@@ -152,7 +155,7 @@ public class IndexCommandsJUnitTest {
 
   @Test
   public void testGetIndexListingReturnsFunctionInvocationTargetExceptionInResults() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
 
     final AbstractExecution mockFunctionExecutor =
         mockContext.mock(AbstractExecution.class, "Function Executor");
@@ -189,23 +192,23 @@ public class IndexCommandsJUnitTest {
 
   private static class TestIndexCommands extends IndexCommands {
 
-    private final Cache cache;
+    private final InternalCache cache;
     private final Execution functionExecutor;
 
-    protected TestIndexCommands(final Cache cache, final Execution functionExecutor) {
-      assert cache != null : "The Cache cannot be null!";
+    protected TestIndexCommands(final InternalCache cache, final Execution functionExecutor) {
+      assert cache != null : "The InternalCache cannot be null!";
       assert functionExecutor != null : "The function executor cannot be null!";
       this.cache = cache;
       this.functionExecutor = functionExecutor;
     }
 
     @Override
-    protected Cache getCache() {
+    protected InternalCache getCache() {
       return this.cache;
     }
 
     @Override
-    protected Set<DistributedMember> getMembers(final Cache cache) {
+    protected Set<DistributedMember> getMembers(final InternalCache cache) {
       assertSame(getCache(), cache);
       return Collections.emptySet();
     }

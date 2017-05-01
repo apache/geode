@@ -148,7 +148,7 @@ public class PartitionedRegionCacheCloseDUnitTest extends PartitionedRegionDUnit
 
           public void run2() {
 
-            Cache cache = getCache();
+            InternalCache cache = (InternalCache) getCache();
             LogWriter logger = cache.getLogger();
 
             final Region root = PartitionedRegionHelper.getPRRoot(cache);

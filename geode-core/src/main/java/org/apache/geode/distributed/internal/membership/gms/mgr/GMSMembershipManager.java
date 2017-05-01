@@ -27,7 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.*;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -77,13 +77,13 @@ import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
@@ -1550,7 +1550,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /** generate XML from the cache before shutting down due to forced disconnect */
   public void saveCacheXmlForReconnect(boolean sharedConfigEnabled) {
     // first save the current cache description so reconnect can rebuild the cache
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile")
           && !sharedConfigEnabled) {

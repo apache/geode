@@ -28,15 +28,17 @@ public class DynamicRegionFactoryImpl extends DynamicRegionFactory {
    * create an instance of the factory. This is normally only done by DynamicRegionFactory's static
    * initialization
    */
-  public DynamicRegionFactoryImpl() {}
+  public DynamicRegionFactoryImpl() {
+    // nothing
+  }
 
   /** close the factory. Only do this if you're closing the cache, too */
   public void close() {
-    _close();
+    doClose();
   }
 
   /** initialize the factory for use with a new cache */
-  public void internalInit(GemFireCacheImpl c) throws CacheException {
-    _internalInit(c);
+  void internalInit(InternalCache cache) throws CacheException {
+    doInternalInit(cache);
   }
 }

@@ -84,11 +84,8 @@ public class CachedDeserializableFactory {
   }
 
   private static boolean cachePrefersPdx() {
-    GemFireCacheImpl gfc = GemFireCacheImpl.getInstance();
-    if (gfc != null) {
-      return gfc.getPdxReadSerialized();
-    }
-    return false;
+    InternalCache internalCache = GemFireCacheImpl.getInstance();
+    return internalCache != null && internalCache.getPdxReadSerialized();
   }
 
   /**

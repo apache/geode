@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -32,20 +31,17 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
  * Gemfire function to add free items in the existing order if the total price for that order is
  * greater then the argument
  */
-
 public class AddFreeItemToOrders implements Function {
 
   public void execute(FunctionContext context) {
-
-    Cache c = null;
-    Region r = null;
+    Region region = null;
     List<Object> vals = new ArrayList<Object>();
     List<Object> keys = new ArrayList<Object>();
     List<Object> argsList = new ArrayList<Object>();
@@ -64,10 +60,11 @@ public class AddFreeItemToOrders implements Function {
       System.out.println("AddFreeItemToOrders : Invalid Arguments");
     }
 
+    InternalCache cache = null;
     try {
-      c = CacheFactory.getAnyInstance();
-      ((GemFireCacheImpl) c).getCacheConfig().setPdxReadSerialized(true);
-      r = c.getRegion("orders");
+      cache = (InternalCache) CacheFactory.getAnyInstance();
+      cache.getCacheConfig().setPdxReadSerialized(true);
+      region = cache.getRegion("orders");
     } catch (CacheClosedException ex) {
       vals.add("NoCacheFoundResult");
       context.getResultSender().lastResult(vals);
@@ -78,7 +75,7 @@ public class AddFreeItemToOrders implements Function {
     Object queryArgs[] = new Object[1];
     queryArgs[0] = argsList.get(0);
 
-    final Query query = c.getQueryService().newQuery(oql);
+    final Query query = cache.getQueryService().newQuery(oql);
 
     SelectResults result = null;
     try {
@@ -90,24 +87,24 @@ public class AddFreeItemToOrders implements Function {
           keys.add(item);
         }
     } catch (FunctionDomainException e) {
-      if (c != null)
-        c.getLogger()
+      if (cache != null)
+        cache.getLogger()
             .info("Caught FunctionDomainException while executing function AddFreeItemToOrders: "
                 + e.getMessage());
 
     } catch (TypeMismatchException e) {
-      if (c != null)
-        c.getLogger()
+      if (cache != null)
+        cache.getLogger()
             .info("Caught TypeMismatchException while executing function AddFreeItemToOrders: "
                 + e.getMessage());
     } catch (NameResolutionException e) {
-      if (c != null)
-        c.getLogger()
+      if (cache != null)
+        cache.getLogger()
             .info("Caught NameResolutionException while executing function AddFreeItemToOrders: "
                 + e.getMessage());
     } catch (QueryInvocationTargetException e) {
-      if (c != null)
-        c.getLogger().info(
+      if (cache != null)
+        cache.getLogger().info(
             "Caught QueryInvocationTargetException while executing function AddFreeItemToOrders"
                 + e.getMessage());
     }
@@ -116,13 +113,13 @@ public class AddFreeItemToOrders implements Function {
     try {
       Item it = (Item) (argsList.get(1));
       for (Object key : keys) {
-        Object obj = r.get(key);
+        Object obj = region.get(key);
         if (obj instanceof PdxInstance) {
           PdxInstance pi = (PdxInstance) obj;
           Order receivedOrder = (Order) pi.getObject();
           receivedOrder.addItem(it);
 
-          r.put(key, receivedOrder);
+          region.put(key, receivedOrder);
         }
       }
 
@@ -134,7 +131,6 @@ public class AddFreeItemToOrders implements Function {
     } catch (Exception e) {
       context.getResultSender().lastResult("failure");
     }
-
   }
 
   public String getId() {

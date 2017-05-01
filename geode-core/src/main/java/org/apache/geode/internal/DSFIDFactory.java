@@ -12,19 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal;
-
-
-
-import org.apache.geode.distributed.internal.membership.gms.messages.*;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
@@ -100,6 +96,16 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.remote.AddHealthListenerRequest;
@@ -191,18 +197,19 @@ import org.apache.geode.internal.admin.remote.VersionInfoResponse;
 import org.apache.geode.internal.admin.statalerts.GaugeThresholdDecoratorImpl;
 import org.apache.geode.internal.admin.statalerts.NumberThresholdDecoratorImpl;
 import org.apache.geode.internal.cache.AddCacheServerProfileMessage;
-import org.apache.geode.internal.cache.ClientRegionEventImpl;
-import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
+import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
+import org.apache.geode.internal.cache.ClientRegionEventImpl;
 import org.apache.geode.internal.cache.CloseCacheMessage;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
 import org.apache.geode.internal.cache.CreateRegionProcessor;
 import org.apache.geode.internal.cache.DestroyOperation;
 import org.apache.geode.internal.cache.DestroyPartitionedRegionMessage;
 import org.apache.geode.internal.cache.DestroyRegionOperation;
-import org.apache.geode.internal.cache.DistTXPrecommitMessage;
 import org.apache.geode.internal.cache.DistTXCommitMessage;
+import org.apache.geode.internal.cache.DistTXPrecommitMessage;
+import org.apache.geode.internal.cache.DistTXPrecommitMessage.DistTxPrecommitResponse;
 import org.apache.geode.internal.cache.DistTXRollbackMessage;
 import org.apache.geode.internal.cache.DistributedClearOperation.ClearRegionMessage;
 import org.apache.geode.internal.cache.DistributedClearOperation.ClearRegionWithContextMessage;
@@ -390,7 +397,6 @@ import org.apache.geode.internal.cache.versions.VMVersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySenderFlushedCoordinator;
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueBatchRemovalMessage;
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueBatchRemovalMessage.BatchRemovalReplyMessage;
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueRemovalMessage;
@@ -413,14 +419,14 @@ import org.apache.geode.pdx.internal.EnumInfo;
  *
  * @since GemFire 5.7
  */
-public final class DSFIDFactory implements DataSerializableFixedID {
+public class DSFIDFactory implements DataSerializableFixedID {
 
   private DSFIDFactory() {
     // no instances allowed
     throw new UnsupportedOperationException();
   }
 
-  public final int getDSFID() {
+  public int getDSFID() {
     throw new UnsupportedOperationException();
   }
 
@@ -437,6 +443,7 @@ public final class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private static final Constructor<?>[] dsfidMap = new Constructor<?>[256];
+
   private static final Int2ObjectOpenHashMap dsfidMap2 = new Int2ObjectOpenHashMap(800);
 
   static {
@@ -913,8 +920,7 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(PR_QUERY_TRACE_INFO, PRQueryTraceInfo.class);
     registerDSFID(INDEX_CREATION_DATA, IndexCreationData.class);
     registerDSFID(DIST_TX_OP, DistTxEntryEvent.class);
-    registerDSFID(DIST_TX_PRE_COMMIT_RESPONSE,
-        DistTXPrecommitMessage.DistTxPrecommitResponse.class);
+    registerDSFID(DIST_TX_PRE_COMMIT_RESPONSE, DistTxPrecommitResponse.class);
     registerDSFID(DIST_TX_THIN_ENTRY_STATE, TXEntryState.DistTxThinEntryState.class);
     registerDSFID(SERVER_PING_MESSAGE, ServerPingMessage.class);
     registerDSFID(PR_DESTROY_ON_DATA_STORE_MESSAGE, DestroyRegionOnDataStoreMessage.class);

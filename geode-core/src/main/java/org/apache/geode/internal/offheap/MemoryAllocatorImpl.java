@@ -14,18 +14,31 @@
  */
 package org.apache.geode.internal.offheap;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This allocator is somewhat like an Arena allocator. We start out with an array of multiple large

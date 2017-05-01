@@ -15,6 +15,21 @@
 
 package org.apache.geode.internal.cache;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -29,23 +44,13 @@ import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-
-import org.apache.logging.log4j.Logger;
-
-import java.io.Serializable;
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * An utility class to retrieve colocated regions in a colocation hierarchy in various scenarios
- * 
- * 
+ *
  * @since GemFire 6.0
  */
 public class ColocationHelper {
-
-  /** Logging mechanism for debugging */
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -58,7 +63,6 @@ public class ColocationHelper {
   /**
    * An utility method to retrieve colocated region of a given partitioned region
    *
-   * @param partitionedRegion
    * @return colocated PartitionedRegion
    * @throws IllegalStateException for missing colocated region
    * @since GemFire 5.8Beta
@@ -124,7 +128,7 @@ public class ColocationHelper {
         String prName = (String) itr.next();
         try {
           prConf = (PartitionRegionConfig) prRoot.get(prName);
-        } catch (EntryDestroyedException ede) {
+        } catch (EntryDestroyedException ignore) {
           continue;
         }
         if (prConf == null) {
@@ -134,7 +138,8 @@ public class ColocationHelper {
         }
         if (prConf.getColocatedWith() != null) {
           if (prConf.getColocatedWith().equals(tempToBeColocatedWith.getFullPath())
-              || ("/" + prConf.getColocatedWith()).equals(tempToBeColocatedWith.getFullPath())) {
+              || (Region.SEPARATOR + prConf.getColocatedWith())
+                  .equals(tempToBeColocatedWith.getFullPath())) {
             colocatedRegions.add(prConf);
             tempcolocatedRegions.add(prConf);
           }
@@ -149,11 +154,7 @@ public class ColocationHelper {
       if (colocatedWithRegionName == null)
         break;
       else {
-        try {
-          prConf = (PartitionRegionConfig) prRoot.get(getRegionIdentifier(colocatedWithRegionName));
-        } catch (EntryDestroyedException ede) {
-          throw ede;
-        }
+        prConf = (PartitionRegionConfig) prRoot.get(getRegionIdentifier(colocatedWithRegionName));
         if (prConf == null) {
           break;
         }
@@ -193,12 +194,13 @@ public class ColocationHelper {
     boolean hasOfflineChildren = false;
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
     try {
-      GemFireCacheImpl cache = region.getCache();
-      Collection<DiskStoreImpl> stores = cache.listDiskStores();
+      InternalCache cache = region.getCache();
+      Collection<DiskStore> stores = cache.listDiskStores();
       // Look through all of the disk stores for offline colocated child regions
-      for (DiskStoreImpl diskStore : stores) {
+      for (DiskStore diskStore : stores) {
         // Look at all of the partitioned regions.
-        for (Map.Entry<String, PRPersistentConfig> entry : diskStore.getAllPRs().entrySet()) {
+        for (Map.Entry<String, PRPersistentConfig> entry : ((DiskStoreImpl) diskStore).getAllPRs()
+            .entrySet()) {
 
           PRPersistentConfig config = entry.getValue();
           String childName = entry.getKey();
@@ -275,7 +277,6 @@ public class ColocationHelper {
    * getAllColocationRegions(orderPR) --> List{customerPR, shipmentPR}<br>
    * getAllColocationRegions(shipmentPR) --> List{customerPR, orderPR}<br>
    * 
-   * @param partitionedRegion
    * @return List of all partitioned regions (excluding self) in a colocated chain
    * @since GemFire 5.8Beta
    */
@@ -309,7 +310,6 @@ public class ColocationHelper {
   /**
    * gets local data of colocated regions on a particular data store
    * 
-   * @param partitionedRegion
    * @return map of region name to local colocated regions
    * @since GemFire 5.8Beta
    */
@@ -367,7 +367,6 @@ public class ColocationHelper {
    * getColocatedChildRegions(orderPR) will return List{shipmentPR}<br>
    * getColocatedChildRegions(shipmentPR) will return empty List{}<br>
    * 
-   * @param partitionedRegion
    * @return list of all child partitioned regions colocated with the region
    * @since GemFire 5.8Beta
    */
@@ -387,7 +386,7 @@ public class ColocationHelper {
         }
         try {
           prConf = (PartitionRegionConfig) prRoot.get(prName);
-        } catch (EntryDestroyedException ede) {
+        } catch (EntryDestroyedException ignore) {
           continue;
         }
         if (prConf == null) {

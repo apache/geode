@@ -24,14 +24,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- */
 public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
-
   private static final Logger logger = LogService.getLogger();
 
-  public RemoteDUnitVM() throws RemoteException {
+  RemoteDUnitVM() throws RemoteException {
     super();
   }
 
@@ -40,37 +36,38 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    * the object. Does this synchronously (does not spawn a thread). This method is used by the unit
    * test framework, dunit.
    *
-   * @param obj the object to execute the method on
+   * @param target the object to execute the method on
    * @param methodName the name of the method to execute
    * @return the result of method execution
    */
-  public MethExecutorResult executeMethodOnObject(Object obj, String methodName) {
-    String name = obj.getClass().getName() + "." + methodName + " on object: " + obj;
+  @Override
+  public MethExecutorResult executeMethodOnObject(Object target, String methodName) {
+    String name = target.getClass().getName() + '.' + methodName + " on object: " + target;
     long start = start(name);
-    MethExecutorResult result = MethExecutor.executeObject(obj, methodName);
+    MethExecutorResult result = MethExecutor.executeObject(target, methodName);
     logDelta(name, start, result);
     return result;
   }
 
   protected long start(String name) {
-    logger.info("Received method: " + name);
-    long start = System.nanoTime();
-    return start;
+    logger.info("Received method: {}", name);
+    return System.nanoTime();
   }
 
-  protected void logDelta(String name, long start, MethExecutorResult result) {
+  private void logDelta(String name, long start, MethExecutorResult result) {
     long delta = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-    logger.info("Got result: " + result.toString() + " from " + name + " (took " + delta + " ms)");
+    logger.info("Got result: {} from {} (took {} ms)", result, name, delta);
   }
 
   /**
    * Executes a given instance method on a given object with the given arguments.
    */
-  public MethExecutorResult executeMethodOnObject(Object obj, String methodName, Object[] args) {
-    String name = obj.getClass().getName() + "." + methodName
-        + (args != null ? " with " + args.length + " args" : "") + " on object: " + obj;
+  @Override
+  public MethExecutorResult executeMethodOnObject(Object target, String methodName, Object[] args) {
+    String name = target.getClass().getName() + '.' + methodName
+        + (args != null ? " with " + args.length + " args" : "") + " on object: " + target;
     long start = start(name);
-    MethExecutorResult result = MethExecutor.executeObject(obj, methodName, args);
+    MethExecutorResult result = MethExecutor.executeObject(target, methodName, args);
     logDelta(name, start, result);
     return result;
   }
@@ -85,7 +82,7 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    * @return the result of method execution
    */
   public MethExecutorResult executeMethodOnClass(String className, String methodName) {
-    String name = className + "." + methodName;
+    String name = className + '.' + methodName;
     long start = start(name);
     MethExecutorResult result = MethExecutor.execute(className, methodName);
     logDelta(name, start, result);
@@ -96,10 +93,11 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
   /**
    * Executes a given static method in a given class with the given arguments.
    */
+  @Override
   public MethExecutorResult executeMethodOnClass(String className, String methodName,
       Object[] args) {
     String name =
-        className + "." + methodName + (args != null ? " with " + args.length + " args" : "");
+        className + '.' + methodName + (args != null ? " with " + args.length + " args" : "");
     long start = start(name);
     MethExecutorResult result = MethExecutor.execute(className, methodName, args);
     logDelta(name, start, result);
@@ -107,22 +105,25 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
   }
 
   public void executeTask(int tsid, int type, int index) throws RemoteException {
-    throw new UnsupportedOperationException();
-
+    throw new UnsupportedOperationException("executeTask is not implemented");
   }
 
   public void runShutdownHook() throws RemoteException {
-
+    throw new UnsupportedOperationException("runShutdownHook is not implemented");
   }
 
   public void notifyDynamicActionComplete(int actionId) throws RemoteException {
-    throw new UnsupportedOperationException();
-
+    throw new UnsupportedOperationException("notifyDynamicActionComplete is not implemented");
   }
 
+  @Override
   public void shutDownVM() throws RemoteException {
     ChildVM.stopVM();
   }
 
-  public void disconnectVM() throws RemoteException {}
+  public void disconnectVM() throws RemoteException {
+    throw new UnsupportedOperationException("disconnectVM is not implemented");
+  }
+
+  private static final long serialVersionUID = 251934856609958734L;
 }

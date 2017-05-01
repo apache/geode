@@ -43,8 +43,8 @@ import org.apache.geode.pdx.PdxSerializer;
  */
 public interface GemFireCache extends RegionService {
   /**
-   * Returns the name of this cache. This method does not throw <code>CacheClosedException</code> if
-   * the cache is closed.
+   * Returns the name of this cache. This method does not throw {@code CacheClosedException} if the
+   * cache is closed.
    * 
    * @return the String name of this cache
    */
@@ -52,14 +52,14 @@ public interface GemFireCache extends RegionService {
 
   /**
    * Returns the distributed system used by this cache. This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
+   * {@code CacheClosedException} if the cache is closed.
    */
   public DistributedSystem getDistributedSystem();
 
   /**
-   * Returns the <code>ResourceManager</code> for managing this cache's resources.
+   * Returns the {@code ResourceManager} for managing this cache's resources.
    * 
-   * @return <code>ResourceManager</code> for managing this cache's resources
+   * @return {@code ResourceManager} for managing this cache's resources
    * @since GemFire 6.0
    */
   public ResourceManager getResourceManager();
@@ -81,8 +81,8 @@ public interface GemFireCache extends RegionService {
   public boolean getCopyOnRead();
 
   /**
-   * Returns the <code>RegionAttributes</code> with the given <code>id</code> or <code>null</code>
-   * if no <code>RegionAttributes</code> with that id exists.
+   * Returns the {@code RegionAttributes} with the given {@code id} or {@code null} if no
+   * {@code RegionAttributes} with that id exists.
    *
    * @see #setRegionAttributes
    *
@@ -91,14 +91,13 @@ public interface GemFireCache extends RegionService {
   public <K, V> RegionAttributes<K, V> getRegionAttributes(String id);
 
   /**
-   * Sets the <code>id</code> of the given <code>RegionAttributes</code>. If a region attributes
-   * named <code>name</code> already exists, the mapping will be overwritten with
-   * <code>attrs</code>. However, changing the mapping will not effect existing regions.
+   * Sets the {@code id} of the given {@code RegionAttributes}. If a region attributes named
+   * {@code name} already exists, the mapping will be overwritten with {@code attrs}. However,
+   * changing the mapping will not effect existing regions.
    *
    * @param id The id of the region attributes
-   * @param attrs The attributes to associate with <code>id</code>. If <code>attrs</code> is
-   *        <code>null</code>, any existing <code>RegionAttributes</code> associated with
-   *        <code>id</code> will be removed.
+   * @param attrs The attributes to associate with {@code id}. If {@code attrs} is {@code null}, any
+   *        existing {@code RegionAttributes} associated with {@code id} will be removed.
    *
    * @see #getRegionAttributes
    *
@@ -122,13 +121,12 @@ public interface GemFireCache extends RegionService {
    *
    * <P>
    *
-   * Because this method may perform a {@link Region#put(Object, Object) put} on a
-   * <code>Region</code>, it declares that it throws a <code>TimeoutException</code>,
-   * <code>CacheWriterException</code>, <code>GatewayException</code>, or
-   * <code>RegionExistsException</code>.
+   * Because this method may perform a {@link Region#put(Object, Object) put} on a {@code Region},
+   * it declares that it throws a {@code TimeoutException}, {@code CacheWriterException},
+   * {@code GatewayException}, or {@code RegionExistsException}.
    *
-   * @throws CacheXmlException If the XML read from <code>is</code> does not conform to the dtd or
-   *         if an <code>IOException</code> occurs while reading the XML.
+   * @throws CacheXmlException If the XML read from {@code is} does not conform to the dtd or if an
+   *         {@code IOException} occurs while reading the XML.
    *
    * @since GemFire 4.1
    */
@@ -136,8 +134,8 @@ public interface GemFireCache extends RegionService {
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException;
 
   /**
-   * Gets the logging object for GemFire. This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
+   * Gets the logging object for GemFire. This method does not throw {@code CacheClosedException} if
+   * the cache is closed.
    * 
    * @return the logging object
    */
@@ -145,17 +143,17 @@ public interface GemFireCache extends RegionService {
 
   /**
    * Gets the security logging object for GemFire. This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
+   * {@code CacheClosedException} if the cache is closed.
    * 
    * @return the security logging object
    */
   public LogWriter getSecurityLogger();
 
   /**
-   * Returns the DiskStore by name or <code>null</code> if no disk store is found.
+   * Returns the DiskStore by name or {@code null} if no disk store is found.
    * 
-   * @param name the name of the disk store to find. If <code>null</code> then the default disk
-   *        store, if it exists, is returned.
+   * @param name the name of the disk store to find. If {@code null} then the default disk store, if
+   *        it exists, is returned.
    * @since GemFire 6.5
    */
   public DiskStore findDiskStore(String name);
@@ -237,15 +235,15 @@ public interface GemFireCache extends RegionService {
   public Context getJNDIContext();
 
   /**
-   * Returns the Declarable used to initialize this cache or <code>null</code> if it does not have
-   * an initializer.
+   * Returns the Declarable used to initialize this cache or {@code null} if it does not have an
+   * initializer.
    * 
    * @since GemFire 6.6
    */
   public Declarable getInitializer();
 
   /**
-   * Returns the Properties used to initialize the cache initializer or <code>null</code> if no
+   * Returns the Properties used to initialize the cache initializer or {@code null} if no
    * initializer properties exist.
    * 
    * @since GemFire 6.6

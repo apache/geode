@@ -29,14 +29,12 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.ManagementException;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.AlertDetails;
 
 /**
  * This Listener listens on various resource creation in GemFire and create/destroys GemFire
  * specific MBeans accordingly
- * 
- * 
  */
 public class ManagementListener implements ResourceEventsListener {
 
@@ -51,10 +49,8 @@ public class ManagementListener implements ResourceEventsListener {
    * Constructor
    */
   public ManagementListener() {
-
     this.adapter = new ManagementAdapter();
     this.logger = InternalDistributedSystem.getLoggerI18n();
-
   }
 
   /**
@@ -82,7 +78,7 @@ public class ManagementListener implements ResourceEventsListener {
       return false;
     }
 
-    GemFireCacheImpl currentCache = GemFireCacheImpl.getInstance();
+    InternalCache currentCache = GemFireCacheImpl.getInstance();
     if (currentCache == null) {
       return false;
     }
@@ -92,14 +88,11 @@ public class ManagementListener implements ResourceEventsListener {
     return true;
   }
 
-
-
   /**
    * Handles various GFE resource life-cycle methods vis-a-vis Management and Monitoring
    * 
    * It checks for race conditions cases by calling shouldProceed();
-   * 
-   * 
+   *
    * @param event Management event for which invocation has happened
    * @param resource the GFE resource type
    */
@@ -109,11 +102,11 @@ public class ManagementListener implements ResourceEventsListener {
     }
     switch (event) {
       case CACHE_CREATE:
-        GemFireCacheImpl createdCache = (GemFireCacheImpl) resource;
+        InternalCache createdCache = (InternalCache) resource;
         adapter.handleCacheCreation(createdCache);
         break;
       case CACHE_REMOVE:
-        GemFireCacheImpl removedCache = (GemFireCacheImpl) resource;
+        InternalCache removedCache = (InternalCache) resource;
         adapter.handleCacheRemoval(removedCache);
         break;
       case REGION_CREATE:

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -100,18 +99,16 @@ public class StateFlushOperation {
 
   private DM dm;
 
-
   /** flush current ops to the given members for the given region */
   public static void flushTo(Set<InternalDistributedMember> targets, DistributedRegion region) {
     DM dm = region.getDistributionManager();
-    DistributedRegion r = region;
-    boolean initialized = r.isInitialized();
+    boolean initialized = region.isInitialized();
     if (initialized) {
-      r.getDistributionAdvisor().forceNewMembershipVersion(); // force a new "view" so we can track
-      // current ops
+      // force a new "view" so we can track current ops
+      region.getDistributionAdvisor().forceNewMembershipVersion();
       try {
-        r.getDistributionAdvisor().waitForCurrentOperations();
-      } catch (RegionDestroyedException e) {
+        region.getDistributionAdvisor().waitForCurrentOperations();
+      } catch (RegionDestroyedException ignore) {
         return;
       }
     }
@@ -137,14 +134,14 @@ public class StateFlushOperation {
       processors.add(processor);
     }
 
-    if (r.getRegionMap().getARMLockTestHook() != null) {
-      r.getRegionMap().getARMLockTestHook().beforeStateFlushWait();
+    if (region.getRegionMap().getARMLockTestHook() != null) {
+      region.getRegionMap().getARMLockTestHook().beforeStateFlushWait();
     }
 
     for (ReplyProcessor21 processor : processors) {
       try {
         processor.waitForReplies();
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
         return;
       }
@@ -319,7 +316,7 @@ public class StateFlushOperation {
       // 36175)
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        GemFireCacheImpl gfc = (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
         Region r = gfc.getRegionByPathForProcessing(this.regionPath);
         if (r instanceof DistributedRegion) {
           region = (DistributedRegion) r;
@@ -336,9 +333,9 @@ public class StateFlushOperation {
       // 36175)
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        GemFireCacheImpl gfc = (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
+        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
         Set<DistributedRegion> result = new HashSet();
-        for (LocalRegion r : gfc.getAllRegions()) {
+        for (LocalRegion r : cache.getAllRegions()) {
           // it's important not to check if the cache is closing, so access
           // the isDestroyed boolean directly
           if (r instanceof DistributedRegion && !r.isDestroyed) {
@@ -417,7 +414,7 @@ public class StateFlushOperation {
               }
             }
           }
-        } catch (CancelException cce) {
+        } catch (CancelException ignore) {
           // cache is closed - no distribution advisor available for the region so nothing to do but
           // send the stabilization message
         } catch (Exception e) {
@@ -550,7 +547,7 @@ public class StateFlushOperation {
         return "unknown channelState content";
       } else {
         Map csmap = (Map) state;
-        StringBuffer result = new StringBuffer(200);
+        StringBuilder result = new StringBuilder(200);
         for (Iterator it = csmap.entrySet().iterator(); it.hasNext();) {
           Map.Entry entry = (Map.Entry) it.next();
           result.append(entry.getKey()).append('=').append(entry.getValue());
@@ -585,7 +582,7 @@ public class StateFlushOperation {
                 try {
                   dm.getMembershipManager().waitForMessageState(getSender(), channelState);
                   break;
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignore) {
                   interrupted = true;
                 } finally {
                   if (interrupted) {
@@ -717,7 +714,7 @@ public class StateFlushOperation {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("StateStabilizedMessage ");
       sb.append(this.processorId);
       if (super.getSender() != null) {

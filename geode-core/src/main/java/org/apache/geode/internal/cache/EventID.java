@@ -14,6 +14,21 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.DistributedMember;
@@ -30,21 +45,13 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.Breadcrumbs;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class uniquely identifies any Region Operation like create, update destroy etc. It is
  * composed of three parts , namely :- 1) DistributedMembershipID 2) ThreadID 3) SequenceID This
  * helps in sequencing the events belonging to a unique producer.
- * 
- * 
  */
-public final class EventID implements DataSerializableFixedID, Serializable, Externalizable {
+public class EventID implements DataSerializableFixedID, Serializable, Externalizable {
   private static final Logger logger = LogService.getLogger();
 
   /** turns on very verbose logging ove membership id bytes */

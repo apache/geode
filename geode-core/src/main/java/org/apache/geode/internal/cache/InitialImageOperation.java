@@ -3451,7 +3451,7 @@ public class InitialImageOperation {
       if (haReg == null || haReg.getName() == null) {
         throw new ReplyException("HARegion for the proxy is Null.");
       }
-      GemFireCacheImpl cache = haReg.getCache();
+      InternalCache cache = haReg.getCache();
 
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
       if (ccn == null || ccn.getHaContainer() == null) {

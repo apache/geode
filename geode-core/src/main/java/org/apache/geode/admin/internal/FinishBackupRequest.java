@@ -40,6 +40,7 @@ import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -92,7 +93,7 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     HashSet<PersistentID> persistentIds;
     if (cache == null || cache.getBackupManager() == null) {
       persistentIds = new HashSet<PersistentID>();

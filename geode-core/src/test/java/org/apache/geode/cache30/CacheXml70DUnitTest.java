@@ -12,10 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- * 
- */
 package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
@@ -31,7 +27,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
@@ -51,20 +46,14 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
 
-  public CacheXml70DUnitTest() {
-    super();
-  }
-
-
-  // ////// Helper methods
-
+  @Override
   protected String getGemFireVersion() {
     return CacheXml.VERSION_7_0;
   }
 
   /** make sure we can create regions with concurrencyChecksEnabled=true */
   @Test
-  public void testConcurrencyChecksEnabled() throws CacheException {
+  public void testConcurrencyChecksEnabled() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setScope(Scope.DISTRIBUTED_ACK);
@@ -119,7 +108,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   }
 
   @Test
-  public void testGatewayConflictResolver() throws CacheException {
+  public void testGatewayConflictResolver() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setGatewayConflictResolver(new MyGatewayConflictResolver());
     testXml(cache);
@@ -131,7 +120,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   }
 
   @Test
-  public void testAsyncEventQueue() {
+  public void testAsyncEventQueue() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -166,7 +155,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   }
 
   @Test
-  public void testConcurrentAsyncEventQueue() {
+  public void testConcurrentAsyncEventQueue() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -204,7 +193,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
    * Added to test the scenario of defect #50600.
    */
   @Test
-  public void testAsyncEventQueueWithGatewayEventFilter() {
+  public void testAsyncEventQueueWithGatewayEventFilter() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
 
@@ -240,19 +229,24 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
 
   public static class MyAsyncEventListener implements AsyncEventListener, Declarable {
 
+    @Override
     public boolean processEvents(List<AsyncEvent> events) {
       return true;
     }
 
+    @Override
     public void close() {}
 
+    @Override
     public void init(Properties properties) {}
   }
 
   public static class MyGatewayConflictResolver implements GatewayConflictResolver, Declarable {
 
+    @Override
     public void onEvent(TimestampedEntryEvent event, GatewayConflictHelper helper) {}
 
+    @Override
     public void init(Properties p) {}
   }
 
@@ -313,7 +307,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
 
   // test bug 47197
   @Test
-  public void testPartitionedRegionAttributesForCoLocation3() {
+  public void testPartitionedRegionAttributesForCoLocation3() throws Exception {
     closeCache();
     setXmlFile(findFile("coLocation3.xml"));
     Cache c = getCache();
@@ -329,7 +323,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   }
 
   @Test
-  public void testBug44710() {
+  public void testBug44710() throws Exception {
     closeCache();
     setXmlFile(findFile("bug44710.xml"));
     Cache c = getCache();

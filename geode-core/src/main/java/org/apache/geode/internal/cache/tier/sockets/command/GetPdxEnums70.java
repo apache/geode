@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -46,7 +46,7 @@ public class GetPdxEnums70 extends BaseCommand {
 
     Map<Integer, EnumInfo> enums;
     try {
-      GemFireCacheImpl cache = (GemFireCacheImpl) servConn.getCache();
+      InternalCache cache = servConn.getCache();
       enums = cache.getPdxRegistry().enumMap();
 
     } catch (Exception e) {

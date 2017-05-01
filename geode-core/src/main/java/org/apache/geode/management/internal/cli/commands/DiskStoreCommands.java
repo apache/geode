@@ -14,13 +14,35 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheExistsException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
@@ -32,7 +54,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -73,35 +95,10 @@ import org.apache.geode.management.internal.messages.CompactRequest;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
 
 /**
  * The DiskStoreCommands class encapsulates all GemFire Disk Store commands in Gfsh.
- * </p>
- * 
+ *
  * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
  * @since GemFire 7.0
  */
@@ -109,12 +106,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @Override
-  protected Set<DistributedMember> getMembers(final Cache cache) {
+  protected Set<DistributedMember> getMembers(final InternalCache cache) {
     // TODO determine what this does (as it is untested and unmockable!)
     return CliUtil.getAllMembers(cache);
   }
 
-  protected Set<DistributedMember> getNormalMembers(final Cache cache) {
+  protected Set<DistributedMember> getNormalMembers(final InternalCache cache) {
     // TODO determine what this does (as it is untested and unmockable!)
     return CliUtil.getAllNormalMembers(cache);
   }
@@ -132,7 +129,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
     Result result = null;
     try {
-      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+      InternalCache cache = getCache();
       DM dm = cache.getDistributionManager();
       BackupStatus backupStatus = null;
 
@@ -149,9 +146,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       Set<DistributedMember> backedupMembers = backedupMemberDiskstoreMap.keySet();
       CompositeResultData crd = ResultBuilder.createCompositeResultData();
 
-
       if (!backedupMembers.isEmpty()) {
-
         SectionResultData backedupDiskStoresSection = crd.addSection();
         backedupDiskStoresSection.setHeader(CliStrings.BACKUP_DISK_STORE_MSG_BACKED_UP_DISK_STORES);
         TabularResultData backedupDiskStoresTable = backedupDiskStoresSection.addTable();
@@ -217,7 +212,6 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
     backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_DIRECTORY, directory);
     backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_HOST, host);
   }
-
 
   @CliCommand(value = CliStrings.LIST_DISK_STORE, help = CliStrings.LIST_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
@@ -353,7 +347,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       diskStoreAttributes.diskDirs = directories;
       diskStoreAttributes.diskDirSizes = sizes;
 
-      diskStoreAttributes.setDiskUsageWarningPercentage(diskUsageWarningPercentage);;
+      diskStoreAttributes.setDiskUsageWarningPercentage(diskUsageWarningPercentage);
       diskStoreAttributes.setDiskUsageCriticalPercentage(diskUsageCriticalPercentage);
 
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
@@ -412,7 +406,6 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
     }
   }
 
-
   @CliCommand(value = CliStrings.COMPACT_DISK_STORE, help = CliStrings.COMPACT_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
@@ -432,8 +425,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
             CliStrings.format(CliStrings.COMPACT_DISK_STORE__DISKSTORE_0_DOESNOT_EXIST,
                 new Object[] {diskStoreName}));
       } else {
-        InternalDistributedSystem ds =
-            (InternalDistributedSystem) getCache().getDistributedSystem();
+        InternalDistributedSystem ds = getCache().getInternalDistributedSystem();
 
         Map<DistributedMember, PersistentID> overallCompactInfo =
             new HashMap<DistributedMember, PersistentID>();
@@ -538,7 +530,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   }
 
   private boolean diskStoreExists(String diskStoreName) {
-    Cache cache = getCache();
+    InternalCache cache = getCache();
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
     Map<String, String[]> diskstore = dsMXBean.listMemberDiskstore();
@@ -695,7 +687,6 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
     return result;
   }
 
-
   @CliCommand(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE,
       help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
@@ -712,7 +703,6 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps)
       throws InterruptedException {
-
 
     Result result = null;
     LogWrapper logWrapper = LogWrapper.getInstance();
@@ -794,8 +784,6 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
         throw new GemFireIOException(errorMessage);
       }
 
-      // do we have to waitFor??
-      // upgraderProcess.waitFor();
       upgraderProcess.destroy();
       result = ResultBuilder.createInfoResult(output.toString());
     } catch (IOException e) {
@@ -839,8 +827,6 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
     }
     return result;
   }
-
-
 
   private String validatedDirectories(String[] diskDirs) {
     String invalidDirectories = null;
@@ -1009,8 +995,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       mandatory = true, help = CliStrings.REVOKE_MISSING_DISK_STORE__ID__HELP) String id) {
 
     try {
-      DistributedSystemMXBean dsMXBean = ManagementService
-          .getManagementService(CacheFactory.getAnyInstance()).getDistributedSystemMXBean();
+      DistributedSystemMXBean dsMXBean =
+          ManagementService.getManagementService(getCache()).getDistributedSystemMXBean();
       if (dsMXBean.revokeMissingDiskStores(id)) {
         return ResultBuilder.createInfoResult("Missing disk store successfully revoked");
       }
@@ -1297,9 +1283,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       return ResultBuilder.createGemFireErrorResult(CliStrings
           .format(CliStrings.VALIDATE_DISK_STORE__MSG__ERROR, diskStoreName, ex.getMessage()));
     }
-
   }
-
 
   @CliCommand(value = CliStrings.ALTER_DISK_STORE, help = CliStrings.ALTER_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
@@ -1455,7 +1439,6 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           }
         }
       }
-
 
       if (!accumulatedData) {
         return ResultBuilder.createInfoResult("No matching disk stores found.");

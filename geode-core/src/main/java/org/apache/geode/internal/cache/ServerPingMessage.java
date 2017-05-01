@@ -56,7 +56,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
    * 
    * @return true if all the recipients are pingable
    */
-  public static boolean send(GemFireCacheImpl cache, Set<InternalDistributedMember> recipients) {
+  public static boolean send(InternalCache cache, Set<InternalDistributedMember> recipients) {
 
     InternalDistributedSystem ids = cache.getInternalDistributedSystem();
     DM dm = ids.getDistributionManager();

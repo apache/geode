@@ -34,10 +34,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -52,13 +52,14 @@ import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.cache.query.internal.cq.CqService;
-import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
@@ -69,14 +70,12 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.i18n.StringId;
 
 /**
  * Manages Client Queues. Responsible for creating callback connections and satisfying redundancy
  * requirements.
  * 
  * @since GemFire 5.7
- * 
  */
 public class QueueManagerImpl implements QueueManager {
   private static final Logger logger = LogService.getLogger();
@@ -154,7 +153,7 @@ public class QueueManagerImpl implements QueueManager {
     if (primary != null) {
       ClientUpdater cu = primary.getUpdater();
       if (cu != null) {
-        result = ((CacheClientUpdater) cu).isAlive();
+        result = cu.isAlive();
       }
     }
     return result;
@@ -175,7 +174,7 @@ public class QueueManagerImpl implements QueueManager {
             && pool.getPoolOrCacheCancelInProgress() == null) {
           try {
             lock.wait();
-          } catch (InterruptedException e) {
+          } catch (InterruptedException ignore) {
             Thread.currentThread().interrupt();
             break;
           }
@@ -221,7 +220,7 @@ public class QueueManagerImpl implements QueueManager {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.QueueManagerImpl_TIMEOUT_WAITING_FOR_RECOVERY_THREAD_TO_COMPLETE));
         }
-      } catch (InterruptedException e1) {
+      } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
         logger.debug("Interrupted waiting for recovery thread termination");
       }
@@ -332,7 +331,7 @@ public class QueueManagerImpl implements QueueManager {
     while (primary == null) {
       try {
         primary = (QueueConnectionImpl) getAllConnections().getPrimary();
-      } catch (NoSubscriptionServersAvailableException e) {
+      } catch (NoSubscriptionServersAvailableException ignore) {
         primary = null;
         break;
       }
@@ -606,7 +605,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   private void cqsConnected() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       CqService cqService = cache.getCqService();
       // Primary queue was found, alert the affected cqs if necessary
@@ -616,7 +615,7 @@ public class QueueManagerImpl implements QueueManager {
 
   private void cqsDisconnected() {
     // No primary queue was found, alert the affected cqs if necessary
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       CqService cqService = cache.getCqService();
       cqService.cqsDisconnected(pool);
@@ -659,8 +658,7 @@ public class QueueManagerImpl implements QueueManager {
           if (printRedundancyNotSatisfiedError) {
             logger.info(LocalizedMessage.create(
                 LocalizedStrings.QueueManagerImpl_REDUNDANCY_LEVEL_0_IS_NOT_SATISFIED_BUT_THERE_ARE_NO_MORE_SERVERS_AVAILABLE_REDUNDANCY_IS_CURRENTLY_1,
-                new Object[] {Integer.valueOf(redundancyLevel),
-                    Integer.valueOf(getCurrentRedundancy())}));
+                new Object[] {redundancyLevel, getCurrentRedundancy()}));
           }
         }
         printRedundancyNotSatisfiedError = false;// printed above

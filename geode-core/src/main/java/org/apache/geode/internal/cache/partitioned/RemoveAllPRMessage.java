@@ -67,7 +67,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -632,7 +631,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
 
   @Override
-  protected final void appendFields(StringBuffer buff) {
+  protected final void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; removeAllPRDataSize=").append(removeAllPRDataSize).append("; bucketId=")
         .append(bucketId);

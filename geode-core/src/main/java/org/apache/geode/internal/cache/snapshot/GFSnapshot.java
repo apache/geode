@@ -24,28 +24,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
-import java.util.TreeMap;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.snapshot.SnapshotIterator;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Provides support for reading and writing snapshot files.
- * 
  */
 public class GFSnapshot {
   /**
@@ -260,7 +256,7 @@ public class GFSnapshot {
 
       // write pdx types
       try {
-        GemFireCacheImpl cache = GemFireCacheImpl
+        InternalCache cache = GemFireCacheImpl
             .getForPdx("PDX registry is unavailable because the Cache has been closed.");
         new ExportedRegistry(cache.getPdxRegistry()).toData(dos);
       } catch (CacheClosedException e) {
@@ -400,7 +396,7 @@ public class GFSnapshot {
     }
 
     private TypeRegistry getRegistry() {
-      GemFireCacheImpl gfc = GemFireCacheImpl.getInstance();
+      InternalCache gfc = GemFireCacheImpl.getInstance();
       if (gfc != null) {
         return gfc.getPdxRegistry();
       }

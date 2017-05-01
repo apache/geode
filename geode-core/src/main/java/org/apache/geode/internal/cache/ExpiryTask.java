@@ -12,17 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
-/**
- * ExpiryTask represents a timeout event for expiration
- */
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
@@ -32,13 +38,10 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.logging.log4j.Logger;
 
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-
+/**
+ * ExpiryTask represents a timeout event for expiration
+ */
 public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   private static final Logger logger = LogService.getLogger();
@@ -49,8 +52,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   static {
     // default to inline expiry to fix bug 37115
-    int nThreads =
-        Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0).intValue();
+    int nThreads = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
       ThreadFactory tf = new ThreadFactory() {
         private int nextId = 0;
@@ -396,7 +398,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   protected boolean isCacheClosing() {
-    return ((GemFireCacheImpl) getLocalRegion().getCache()).isClosed();
+    return getLocalRegion().getCache().isClosed();
   }
 
   /**
@@ -464,7 +466,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   private static long calculateNow() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       // Use cache.cacheTimeMillis here. See bug 52267.
       InternalDistributedSystem ids = cache.getInternalDistributedSystem();

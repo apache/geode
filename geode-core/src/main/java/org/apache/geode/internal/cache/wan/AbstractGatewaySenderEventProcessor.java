@@ -14,15 +14,42 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
@@ -31,13 +58,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * EventProcessor responsible for peeking from queue and handling over the events to the dispatcher.
@@ -46,7 +66,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * GatewaySenderEventRemoteDispatcher or GatewaySenderEventCallbackDispatcher.
  * 
  * @since GemFire 7.0
- * 
  */
 public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
@@ -391,7 +410,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     // list of filteredList + pdxEventsToBeDispatched events
     List<GatewaySenderEventImpl> eventsToBeDispatched = new ArrayList<GatewaySenderEventImpl>();
 
-
     for (;;) {
       if (stopped()) {
         break;
@@ -426,7 +444,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           // filtering VERSION_ACTION events from being sent.
           boolean sendUpdateVersionEvents = shouldSendVersionEvents(this.dispatcher);
 
-
           // sleep a little bit, look for events
           boolean interrupted = Thread.interrupted();
           try {
@@ -434,7 +451,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
               resetLastPeekedEvents();
               resetLastPeekedEvents = false;
             }
-
 
             {
               // Below code was added to consider the case of queue region is
@@ -761,7 +777,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     List<GatewaySenderEventImpl> pdxEventsToBeDispatched = new ArrayList<GatewaySenderEventImpl>();
 
     // getPDXRegion
-    GemFireCacheImpl cache = (GemFireCacheImpl) this.sender.getCache();
+    InternalCache cache = this.sender.getCache();
     Region<Object, Object> pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
 
     if (rebuildPdxList) {
@@ -782,7 +798,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           EntryEventImpl event = EntryEventImpl.create((LocalRegion) pdxRegion, Operation.UPDATE,
               typeEntry.getKey(), typeEntry.getValue(), null, false, cache.getMyId());
           event.disallowOffHeapValues();
-          event.setEventId(new EventID(cache.getSystem()));
+          event.setEventId(new EventID(cache.getInternalDistributedSystem()));
           List<Integer> allRemoteDSIds = new ArrayList<Integer>();
           for (GatewaySender sender : cache.getGatewaySenders()) {
             allRemoteDSIds.add(sender.getRemoteDSId());
@@ -804,7 +820,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
         }
       }
     }
-
 
     Iterator<GatewaySenderEventImpl> iterator = pdxSenderEventsList.iterator();
     while (iterator.hasNext()) {
@@ -838,7 +853,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
    * @param remotePdxSize
    */
   public void checkIfPdxNeedsResend(int remotePdxSize) {
-    GemFireCacheImpl cache = (GemFireCacheImpl) this.sender.getCache();
+    InternalCache cache = this.sender.getCache();
     Region<Object, Object> pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
 
     // The peer has not seen all of our PDX types. This may be because
@@ -976,7 +991,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
       }
       eventQueueRemove(events.size());
     }
-
   }
 
   public void handleUnSuccessBatchAck(int bId) {
@@ -1013,7 +1027,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
       this.isDispatcherWaiting = false;
     }
   }
-
 
   public abstract void initializeEventDispatcher();
 
@@ -1247,11 +1260,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   public void clear(PartitionedRegion pr, int bucketId) {
     ((ParallelGatewaySenderQueue) this.queue).clear(pr, bucketId);
   }
-
-  /*
-   * public int size(PartitionedRegion pr, int bucketId) throws ForceReattemptException { return
-   * ((ParallelGatewaySenderQueue)this.queue).size(pr, bucketId); }
-   */
 
   public void notifyEventProcessorIfRequired(int bucketId) {
     ((ParallelGatewaySenderQueue) this.queue).notifyEventProcessorIfRequired();

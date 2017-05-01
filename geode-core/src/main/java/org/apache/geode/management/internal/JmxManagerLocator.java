@@ -15,10 +15,8 @@
 package org.apache.geode.management.internal;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -30,11 +28,12 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.ManagementService;
@@ -43,10 +42,10 @@ import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 public class JmxManagerLocator implements TcpHandler {
   private static final Logger logger = LogService.getLogger();
 
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
 
-  public JmxManagerLocator(GemFireCacheImpl gfc) {
-    this.cache = gfc;
+  public JmxManagerLocator(InternalCache internalCache) {
+    this.cache = internalCache;
   }
 
   @Override
@@ -70,9 +69,10 @@ public class JmxManagerLocator implements TcpHandler {
     // nothing needed
   }
 
+  @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
       ClusterConfigurationService sharedConfig) {
-    this.cache = (GemFireCacheImpl) cache;
+    this.cache = (InternalCache) cache;
   }
 
   @Override
@@ -81,7 +81,6 @@ public class JmxManagerLocator implements TcpHandler {
   }
 
   private JmxManagerLocatorResponse findJmxManager(JmxManagerLocatorRequest request) {
-    JmxManagerLocatorResponse result = null;
     if (logger.isDebugEnabled()) {
       logger.debug("Locator requested to find or start jmx manager");
     }
@@ -132,8 +131,9 @@ public class JmxManagerLocator implements TcpHandler {
                         .contains(p.getDistributedMember())) {
                   sleepCount++;
                   try {
+                    // TODO: call to sleep while synchronized
                     Thread.sleep(100);
-                  } catch (InterruptedException e) {
+                  } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                   }
                   alreadyManaging = this.cache.getJmxManagerAdvisor().adviseAlreadyManaging();
@@ -147,6 +147,7 @@ public class JmxManagerLocator implements TcpHandler {
         } // sync
       }
     }
+    JmxManagerLocatorResponse result = null;
     if (!alreadyManaging.isEmpty()) {
       JmxManagerProfile p = alreadyManaging.get(0);
       result = new JmxManagerLocatorResponse(p.getHost(), p.getPort(), p.getSsl(), null);
@@ -173,11 +174,11 @@ public class JmxManagerLocator implements TcpHandler {
 
   private boolean sendStartJmxManager(InternalDistributedMember distributedMember) {
     try {
-      ArrayList<Object> resultContainer = (ArrayList<Object>) FunctionService
-          .onMember(distributedMember).execute(new StartJmxManagerFunction()).getResult();
+      List<Object> resultContainer = (List<Object>) FunctionService.onMember(distributedMember)
+          .execute(new StartJmxManagerFunction()).getResult();
       Object result = resultContainer.get(0);
       if (result instanceof Boolean) {
-        return ((Boolean) result).booleanValue();
+        return (Boolean) result;
       } else {
         logger.info("Could not start jmx manager on {} because {}", distributedMember, result);
         return false;
@@ -197,11 +198,11 @@ public class JmxManagerLocator implements TcpHandler {
 
   public static class StartJmxManagerFunction implements Function, InternalEntity {
     private static final long serialVersionUID = -2860286061903069789L;
+
     public static final String ID = StartJmxManagerFunction.class.getName();
 
     @Override
     public void execute(FunctionContext context) {
-
       try {
         Cache cache = CacheFactory.getAnyInstance();
         if (cache != null) {
@@ -214,7 +215,7 @@ public class JmxManagerLocator implements TcpHandler {
           }
         }
         context.getResultSender().lastResult(Boolean.FALSE);
-      } catch (AlreadyRunningException ok) {
+      } catch (AlreadyRunningException ignored) {
         context.getResultSender().lastResult(Boolean.TRUE);
       } catch (Exception e) {
         context.getResultSender().lastResult("Exception in StartJmxManager =" + e.getMessage());

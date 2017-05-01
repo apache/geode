@@ -16,12 +16,11 @@ package org.apache.geode.cache;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * Indicates that the caching system has been closed. Can be thrown from almost any method related
- * to regions or the <code>Cache</code> after the cache has been closed.
- *
- *
+ * to regions or the {@code Cache} after the cache has been closed.
  *
  * @see Cache
  * @since GemFire 3.0
@@ -30,28 +29,28 @@ public class CacheClosedException extends CancelException {
   private static final long serialVersionUID = -6479561694497811262L;
 
   /**
-   * Constructs a new <code>CacheClosedException</code>.
+   * Constructs a new {@code CacheClosedException}.
    */
   public CacheClosedException() {
     super();
   }
 
   /**
-   * Constructs a new <code>CacheClosedException</code> with a message string.
+   * Constructs a new {@code CacheClosedException} with a message string.
    *
    * @param msg a message string
    */
   public CacheClosedException(String msg) {
     super(msg);
-    // bug #43108 - CacheClosedException should include cause of closure
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    // bug #43108 - CacheClosedException should include cause of closure TODO: but not this way!
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       initCause(cache.getDisconnectCause());
     }
   }
 
   /**
-   * Constructs a new <code>CacheClosedException</code> with a message string and a cause.
+   * Constructs a new {@code CacheClosedException} with a message string and a cause.
    *
    * @param msg the message string
    * @param cause a causal Throwable
@@ -61,7 +60,7 @@ public class CacheClosedException extends CancelException {
   }
 
   /**
-   * Constructs a new <code>CacheClosedException</code> with a cause.
+   * Constructs a new {@code CacheClosedException} with a cause.
    *
    * @param cause a causal Throwable
    */
@@ -69,4 +68,3 @@ public class CacheClosedException extends CancelException {
     super(cause);
   }
 }
-

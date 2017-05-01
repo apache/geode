@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import java.net.UnknownHostException;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -22,26 +24,23 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 
-import java.net.UnknownHostException;
-
 /**
- * 
  * @since GemFire 7.0
  */
 public class JmxManagerAdvisee implements DistributionAdvisee {
 
   private final int serialNumber;
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
   private JmxManagerProfile myMostRecentProfile;
 
-  public JmxManagerAdvisee(GemFireCacheImpl cache) {
+  public JmxManagerAdvisee(InternalCache cache) {
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.cache = cache;
   }
@@ -73,7 +72,7 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
 
   @Override
   public InternalDistributedSystem getSystem() {
-    return this.cache.getSystem();
+    return this.cache.getInternalDistributedSystem();
   }
 
   @Override

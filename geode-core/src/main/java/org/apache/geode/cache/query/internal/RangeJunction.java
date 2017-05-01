@@ -774,7 +774,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       } finally {
         observer.afterIndexLookup(set);
       }
-      return QueryUtils.getconditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
+      return QueryUtils.getConditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
           completeExpansionNeeded, iterOperands, indpndntItrs);
     }
 
@@ -961,7 +961,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       } finally {
         observer.afterIndexLookup(set);
       }
-      return QueryUtils.getconditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
+      return QueryUtils.getConditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
           completeExpansionNeeded, iterOperands, indpndntItrs);
 
     }
@@ -1103,7 +1103,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       } finally {
         observer.afterIndexLookup(set);
       }
-      return QueryUtils.getconditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
+      return QueryUtils.getConditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
           completeExpansionNeeded, iterOperands, indpndntItrs);
 
     }

@@ -14,6 +14,14 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.transaction.Status;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
@@ -26,29 +34,21 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.cache.TXLockRequest;
+import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
-import javax.transaction.Status;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 public class ClientTXStateStub extends TXStateStub {
   private static final Logger logger = LogService.getLogger();
-
-  // /** a flag to turn off automatic replay of transactions. Maybe this should be a pool property?
-  // */
-  // private static final boolean ENABLE_REPLAY =
-  // Boolean.getBoolean("gemfire.enable-transaction-replay");
-  //
-  // /** time to pause between transaction replays, in millis */
-  // private static final int TRANSACTION_REPLAY_PAUSE =
-  // Integer.getInteger("gemfire.transaction-replay-pause", 500).intValue();
 
   /** test hook - used to find out what operations were performed in the last tx */
   private static ThreadLocal<List<TransactionalOperation>> recordedTransactionalOperations = null;
@@ -91,8 +91,6 @@ public class ClientTXStateStub extends TXStateStub {
     recordedTransactionalOperations = t;
   }
 
-
-
   public ClientTXStateStub(TXStateProxy stateProxy, DistributedMember target,
       LocalRegion firstRegion) {
     super(stateProxy, target);
@@ -124,7 +122,7 @@ public class ClientTXStateStub extends TXStateStub {
    */
   private void obtainLocalLocks() {
     lockReq = new TXLockRequest();
-    GemFireCacheImpl cache = GemFireCacheImpl.getExisting("");
+    InternalCache cache = GemFireCacheImpl.getExisting("");
     for (TransactionalOperation txOp : this.recordedOperations) {
       if (ServerRegionOperation.lockKeyForTx(txOp.getOperation())) {
         TXRegionLockRequest rlr = lockReq.getRegionLockRequest(txOp.getRegionName());
@@ -160,7 +158,7 @@ public class ClientTXStateStub extends TXStateStub {
       this.internalAfterSendCommit.run();
     }
 
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       // fixes bug 42933
       return;
@@ -176,7 +174,6 @@ public class ClientTXStateStub extends TXStateStub {
     txcm.hookupRegions(dm);
     txcm.basicProcess();
   }
-
 
   @Override
   protected TXRegionStub generateRegionStub(LocalRegion region) {

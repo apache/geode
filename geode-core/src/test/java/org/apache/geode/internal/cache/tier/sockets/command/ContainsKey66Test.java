@@ -14,11 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +25,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -56,7 +54,7 @@ public class ContainsKey66Test {
   @Mock
   private LocalRegion region;
   @Mock
-  private Cache cache;
+  private InternalCache cache;
   @Mock
   private CacheServerStats cacheServerStats;
   @Mock

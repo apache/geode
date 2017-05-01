@@ -55,6 +55,7 @@ import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -101,6 +102,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @deprecated This is specific to the internal implementation and may go away in a future
    *             release.
    */
+  @Deprecated
   protected static final Integer DEFAULT_SERVER_PORT = getDefaultServerPort();
 
   private static final Map<String, String> helpMap = new HashMap<>();
@@ -156,6 +158,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @deprecated This is specific to the internal implementation and may go away in a future
    *             release.
    */
+  @Deprecated
   public static final String DEFAULT_SERVER_PID_FILE = "vf.gf.server.pid";
 
   private static final String DEFAULT_SERVER_LOG_EXT = ".log";
@@ -167,9 +170,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private static final ServerLauncherCacheProvider DEFAULT_CACHE_PROVIDER =
       new DefaultServerLauncherCacheProvider();
 
-  private volatile transient boolean debug;
+  private volatile boolean debug;
 
-  private final transient ControlNotificationHandler controlHandler;
+  private final ControlNotificationHandler controlHandler;
 
   private final AtomicBoolean starting = new AtomicBoolean(false);
 
@@ -180,9 +183,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private final boolean rebalance;
   private final boolean redirectOutput;
 
-  private volatile transient Cache cache;
+  private volatile Cache cache;
 
-  private final transient CacheConfig cacheConfig;
+  private final CacheConfig cacheConfig;
 
   private final Command command;
 
@@ -198,7 +201,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private final String workingDirectory;
 
   // NOTE in addition to debug, the other shared, mutable state
-  private volatile transient String statusMessage;
+  private volatile String statusMessage;
 
   private final Float criticalHeapPercentage;
   private final Float evictionHeapPercentage;
@@ -214,9 +217,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   private final Integer maxThreads;
 
-  private volatile transient ControllableProcess process;
+  private volatile ControllableProcess process;
 
-  private final transient ServerControllerParameters controllerParameters;
+  private final ServerControllerParameters controllerParameters;
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
@@ -459,8 +462,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * 
    * @return a String indicating the name of the member (this Server) in the GemFire distributed
    *         system.
-   * @see AbstractLauncher#getMemberName()
    */
+  @Override
   public String getMemberName() {
     return StringUtils.defaultIfBlank(this.memberName, super.getMemberName());
   }
@@ -653,12 +656,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
     } else {
       info(StringUtils.wrap(helpMap.get(command.getName()), 80, ""));
       info("\n\nusage: \n\n");
-      info(StringUtils.wrap("> java ... " + getClass().getName() + " " + usageMap.get(command), 80,
+      info(StringUtils.wrap("> java ... " + getClass().getName() + ' ' + usageMap.get(command), 80,
           "\t\t"));
       info("\n\noptions: \n\n");
 
       for (final String option : command.getOptions()) {
-        info(StringUtils.wrap("--" + option + ": " + helpMap.get(option) + "\n", 80, "\t"));
+        info(StringUtils.wrap("--" + option + ": " + helpMap.get(option) + '\n', 80, "\t"));
       }
 
       info("\n\n");
@@ -904,7 +907,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Causes the calling Thread to block until the GemFire Cache Server/Data Member stops.
    */
-  public void waitOnServer() {
+  void waitOnServer() {
     assert getCache() != null : "The Cache Server must first be started with a call to start!";
 
     if (!isServing(getCache())) {
@@ -1012,8 +1015,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return a boolean indicating if bucket assignment is both enabled and allowed.
    * @see #isAssignBuckets()
    */
-  protected boolean isAssignBucketsAllowed(final Cache cache) {
-    return (isAssignBuckets() && (cache instanceof GemFireCacheImpl));
+  private boolean isAssignBucketsAllowed(final Cache cache) {
+    return isAssignBuckets() && cache instanceof GemFireCacheImpl;
   }
 
   /**
@@ -1022,9 +1025,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @param cache the Cache who's Partitioned Regions are accessed to assign buckets to.
    * @see PartitionRegionHelper#assignBucketsToPartitions(org.apache.geode.cache.Region)
    */
-  final void assignBuckets(final Cache cache) {
+  private void assignBuckets(final Cache cache) {
     if (isAssignBucketsAllowed(cache)) {
-      for (PartitionedRegion region : ((GemFireCacheImpl) cache).getPartitionedRegions()) {
+      for (PartitionedRegion region : ((InternalCache) cache).getPartitionedRegions()) {
         PartitionRegionHelper.assignBucketsToPartitions(region);
       }
     }
@@ -1192,7 +1195,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *         process with an embedded Server).
    */
   private boolean isStoppable() {
-    return (isRunning() && getCache() != null);
+    return isRunning() && getCache() != null;
   }
 
   /**
@@ -1388,9 +1391,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public ObjectName getNamePattern() {
       try {
         return ObjectName.getInstance("GemFire:type=Member,*");
-      } catch (MalformedObjectNameException e) {
-        return null;
-      } catch (NullPointerException e) {
+      } catch (MalformedObjectNameException | NullPointerException ignore) {
         return null;
       }
     }
@@ -1545,12 +1546,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @param args the array of arguments used to configure this Builder and create an instance of
      *        ServerLauncher.
      */
-    protected void parseArguments(final String... args) {
+    void parseArguments(final String... args) {
       try {
         OptionSet options = getParser().parse(args);
 
         parseCommand(args);
-        parseMemberName(args); // TODO:KIRK: need to get the name to LogService for log file name
+        parseMemberName(args);
 
         setAssignBuckets(options.has("assign-buckets"));
         setDebug(options.has("debug"));
@@ -2424,8 +2425,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * 
      * @see org.apache.geode.distributed.ServerLauncher.Command#START
      */
-    protected void validateOnStart() {
-      if (Command.START.equals(getCommand())) {
+    void validateOnStart() {
+      if (Command.START == getCommand()) {
         if (StringUtils.isBlank(getMemberName())
             && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
             && !isSet(getDistributedSystemProperties(), NAME)
@@ -2448,8 +2449,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * 
      * @see org.apache.geode.distributed.ServerLauncher.Command#STATUS
      */
-    protected void validateOnStatus() {
-      if (Command.STATUS.equals(getCommand())) {
+    void validateOnStatus() {
+      if (Command.STATUS == getCommand()) {
         // do nothing
       }
     }
@@ -2459,8 +2460,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * 
      * @see org.apache.geode.distributed.ServerLauncher.Command#STOP
      */
-    protected void validateOnStop() {
-      if (Command.STOP.equals(getCommand())) {
+    void validateOnStop() {
+      if (Command.STOP == getCommand()) {
         // do nothing
       }
     }
@@ -2482,7 +2483,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * An enumerated type representing valid commands to the Server launcher.
    */
-  public static enum Command {
+  public enum Command {
     START("start", "assign-buckets", "disable-default-server", "rebalance", SERVER_BIND_ADDRESS,
         "server-port", "force", "debug", "help"),
     STATUS("status", "member", "pid", "dir", "debug", "help"),
@@ -2688,10 +2689,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     @SuppressWarnings("unchecked")
     private static String getServerBindAddressAsString(final ServerLauncher launcher) {
-      final GemFireCacheImpl gemfireCache = GemFireCacheImpl.getInstance();
+      final InternalCache internalCache = GemFireCacheImpl.getInstance();
 
-      if (gemfireCache != null) {
-        final List<CacheServer> csList = gemfireCache.getCacheServers();
+      if (internalCache != null) {
+        final List<CacheServer> csList = internalCache.getCacheServers();
         if (csList != null && !csList.isEmpty()) {
           final CacheServer cs = csList.get(0);
           final String serverBindAddressAsString = cs.getBindAddress();
@@ -2706,10 +2707,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     @SuppressWarnings("unchecked")
     private static String getServerPortAsString(final ServerLauncher launcher) {
-      final GemFireCacheImpl gemfireCache = GemFireCacheImpl.getInstance();
+      final InternalCache internalCache = GemFireCacheImpl.getInstance();
 
-      if (gemfireCache != null) {
-        final List<CacheServer> csList = gemfireCache.getCacheServers();
+      if (internalCache != null) {
+        final List<CacheServer> csList = internalCache.getCacheServers();
         if (csList != null && !csList.isEmpty()) {
           final CacheServer cs = csList.get(0);
           final String portAsString = String.valueOf(cs.getPort());

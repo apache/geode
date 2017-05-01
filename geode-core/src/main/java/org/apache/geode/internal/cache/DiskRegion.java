@@ -279,12 +279,12 @@ public class DiskRegion extends AbstractDiskRegion {
   private void destroyOldTomstones(final DiskRecoveryStore drs) {
     // iterate over all region entries in drs
     drs.foreachRegionEntry(new RegionEntryCallback() {
-      public void handleRegionEntry(RegionEntry re) {
-        DiskEntry de = (DiskEntry) re;
+      public void handleRegionEntry(RegionEntry regionEntry) {
+        DiskEntry de = (DiskEntry) regionEntry;
         synchronized (de) {
           DiskId id = de.getDiskId();
-          if (id != null && re.isTombstone()) {
-            VersionStamp stamp = re.getVersionStamp();
+          if (id != null && regionEntry.isTombstone()) {
+            VersionStamp stamp = regionEntry.getVersionStamp();
             if (getRegionVersionVector().isTombstoneTooOld(stamp.getMemberID(),
                 stamp.getRegionVersion())) {
               drs.destroyRecoveredEntry(de.getKey());
@@ -299,8 +299,8 @@ public class DiskRegion extends AbstractDiskRegion {
   private void destroyRemainingRecoveredEntries(final DiskRecoveryStore drs) {
     // iterate over all region entries in drs
     drs.foreachRegionEntry(new RegionEntryCallback() {
-      public void handleRegionEntry(RegionEntry re) {
-        DiskEntry de = (DiskEntry) re;
+      public void handleRegionEntry(RegionEntry regionEntry) {
+        DiskEntry de = (DiskEntry) regionEntry;
         synchronized (de) {
           DiskId id = de.getDiskId();
           if (id != null) {
@@ -320,8 +320,8 @@ public class DiskRegion extends AbstractDiskRegion {
   public void resetRecoveredEntries(final DiskRecoveryStore drs) {
     // iterate over all region entries in drs
     drs.foreachRegionEntry(new RegionEntryCallback() {
-      public void handleRegionEntry(RegionEntry re) {
-        DiskEntry de = (DiskEntry) re;
+      public void handleRegionEntry(RegionEntry regionEntry) {
+        DiskEntry de = (DiskEntry) regionEntry;
         synchronized (de) {
           DiskId id = de.getDiskId();
           if (id != null) {
@@ -770,13 +770,13 @@ public class DiskRegion extends AbstractDiskRegion {
       return;
     }
     region.foreachRegionEntry(new RegionEntryCallback() {
-      public void handleRegionEntry(RegionEntry re) {
-        DiskEntry de = (DiskEntry) re;
+      public void handleRegionEntry(RegionEntry regionEntry) {
+        DiskEntry de = (DiskEntry) regionEntry;
         DiskId id = de.getDiskId();
         if (id != null) {
           synchronized (id) {
-            re.setValueToNull(); // TODO why call _setValue twice in a row?
-            re.removePhase2();
+            regionEntry.setValueToNull(); // TODO why call _setValue twice in a row?
+            regionEntry.removePhase2();
             id.unmarkForWriting();
             if (EntryBits.isNeedsValue(id.getUserBits())) {
               long oplogId = id.getOplogId();
