@@ -1724,6 +1724,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(temp);
               pqrm.setRecipients(recipients);
               dm.putOutgoing(pqrm);
+            } else {
+              regionToDispatchedKeysMap.putAll(temp);
             }
 
           } // be somewhat tolerant of failures
@@ -1773,8 +1775,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     private Set<InternalDistributedMember> getAllRecipients(GemFireCacheImpl cache, Map map) {
       Set recipients = new ObjectOpenHashSet();
       for (Object pr : map.keySet()) {
-        recipients.addAll(((PartitionedRegion) (cache.getRegion((String) pr))).getRegionAdvisor()
-            .adviseDataStore());
+        PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion((String) pr);
+        if (partitionedRegion != null && partitionedRegion.getRegionAdvisor() != null) {
+          recipients.addAll(partitionedRegion.getRegionAdvisor().adviseDataStore());
+        }
       }
       return recipients;
     }
