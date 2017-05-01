@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -195,5 +197,18 @@ public class LauncherLifecycleCommandsIntegrationTest {
         launcherLifecycleCommands.resolveWorkingDir(workingDirString, "server1");
     assertThat(new File(resolvedWorkingDir)).exists();
     assertThat(workingDirString).endsWith("foo");
+  }
+
+  @Test
+  public void testWorkingDirWithRelativePath() throws Exception {
+    Path relativePath = Paths.get("some").resolve("relative").resolve("path");
+    assertThat(relativePath.isAbsolute()).isFalse();
+
+    LauncherLifecycleCommands launcherLifecycleCommands = new LauncherLifecycleCommands();
+
+    String resolvedWorkingDir =
+        launcherLifecycleCommands.resolveWorkingDir(relativePath.toString(), "server1");
+
+    assertThat(resolvedWorkingDir).isEqualTo(relativePath.toAbsolutePath().toString());
   }
 }
