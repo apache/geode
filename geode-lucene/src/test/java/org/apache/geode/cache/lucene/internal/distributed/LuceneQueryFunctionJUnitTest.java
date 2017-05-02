@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
@@ -54,6 +55,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 @Category(UnitTest.class)
 public class LuceneQueryFunctionJUnitTest {
@@ -224,19 +227,42 @@ public class LuceneQueryFunctionJUnitTest {
     function.execute(mockContext);
   }
 
-  @Test(expected = InternalFunctionInvocationTargetException.class)
-  public void whenServiceReturnsNullIndexButHasDefinedLuceneIndexDuringQueryExecutionInternalFunctionExceptionShouldBeThrown()
+  @Test
+  public void whenServiceReturnsNullIndexButHasDefinedLuceneIndexDuringQueryExecutionShouldBlockUntilAvailable()
       throws Exception {
     LuceneServiceImpl mockServiceImpl = mock(LuceneServiceImpl.class);
     when(mockCache.getService(any())).thenReturn(mockServiceImpl);
-    when(mockServiceImpl.getIndex(eq("indexName"), eq(regionPath))).thenReturn(null);
-    when(mockServiceImpl.getDefinedIndex(eq("indexName"), eq(regionPath)))
-        .thenReturn(mock(LuceneIndexCreationProfile.class));
+    when(mockServiceImpl.getIndex(eq("indexName"), eq(regionPath))).thenAnswer(new Answer() {
+      private boolean calledFirstTime = false;
+
+      @Override
+      public Object answer(final InvocationOnMock invocation) throws Throwable {
+        if (calledFirstTime == false) {
+          calledFirstTime = true;
+          return null;
+        } else {
+          return mockIndex;
+        }
+      }
+    });
+    when(mockServiceImpl.getDefinedIndex(eq("indexName"), eq(regionPath))).thenAnswer(new Answer() {
+      private int count = 10;
+
+      @Override
+      public Object answer(final InvocationOnMock invocation) throws Throwable {
+        if (count-- > 0) {
+          return mock(LuceneIndexCreationProfile.class);
+        }
+        return null;
+      }
+    });
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-
+    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    CancelCriterion mockCancelCriterion = mock(CancelCriterion.class);
+    when(mockCache.getCancelCriterion()).thenReturn(mockCancelCriterion);
+    when(mockCancelCriterion.isCancelInProgress()).thenReturn(false);
     LuceneQueryFunction function = new LuceneQueryFunction();
-    when(mockService.getIndex(eq("indexName"), eq(regionPath))).thenReturn(null);
     function.execute(mockContext);
   }
 
@@ -336,3 +362,4 @@ public class LuceneQueryFunctionJUnitTest {
     query = queryProvider.getQuery(mockIndex);
   }
 }
+

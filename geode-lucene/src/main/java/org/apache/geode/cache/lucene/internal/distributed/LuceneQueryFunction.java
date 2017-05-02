@@ -133,29 +133,24 @@ public class LuceneQueryFunction implements Function, InternalEntity {
     try {
       index =
           (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
-      if (index == null && service instanceof LuceneServiceImpl) {
-        if (((LuceneServiceImpl) service).getDefinedIndex(searchContext.getIndexName(),
-            region.getFullPath()) != null) {
-          // The node may be in the process of recovering, where we have the index defined but yet
-          // to be recovered
-          // If we retry fast enough, we could get a stack overflow based on the way function
-          // execution is currently written
-          // Instead we will add an artificial sleep to slow down the retry at this point
-          // Hopefully in the future, the function execution would retry without adding to the stack
-          // and this can be removed
+      if (index == null) {
+        while (service instanceof LuceneServiceImpl && (((LuceneServiceImpl) service)
+            .getDefinedIndex(searchContext.getIndexName(), region.getFullPath()) != null)) {
           try {
-            Thread.sleep(1000);
+            Thread.sleep(10);
           } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            return null;
           }
-          throw new InternalFunctionInvocationTargetException(
-              "Defined Lucene Index has not been created");
+          region.getCache().getCancelCriterion().checkCancelInProgress(null);
         }
+        index =
+            (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
       }
     } catch (CacheClosedException e) {
       throw new InternalFunctionInvocationTargetException(
           "Cache is closed when attempting to retrieve index:" + region.getFullPath(), e);
     }
+
     return index;
   }
 
@@ -181,3 +176,4 @@ public class LuceneQueryFunction implements Function, InternalEntity {
     return true;
   }
 }
+
