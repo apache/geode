@@ -67,9 +67,7 @@ public class LuceneEventListenerJUnitTest {
 
     Mockito.when(manager.getRepository(eq(region1), any(), eq(callback1))).thenReturn(repo1);
     Mockito.when(manager.getRepository(eq(region2), any(), eq(null))).thenReturn(repo2);
-
     LuceneEventListener listener = new LuceneEventListener(manager);
-
     List<AsyncEvent> events = new ArrayList<AsyncEvent>();
 
     int numEntries = 100;
@@ -115,7 +113,6 @@ public class LuceneEventListenerJUnitTest {
     Logger log = Mockito.mock(Logger.class);
     Mockito.when(manager.getRepository(any(), any(), any()))
         .thenThrow(BucketNotFoundException.class);
-
     LuceneEventListener listener = new LuceneEventListener(manager);
     listener.logger = log;
     AsyncEvent event = Mockito.mock(AsyncEvent.class);
@@ -128,7 +125,6 @@ public class LuceneEventListenerJUnitTest {
   public void shouldThrowAndCaptureIOException() throws BucketNotFoundException {
     RepositoryManager manager = Mockito.mock(RepositoryManager.class);
     Mockito.when(manager.getRepository(any(), any(), any())).thenThrow(IOException.class);
-
     AtomicReference<Throwable> lastException = new AtomicReference<>();
     LuceneEventListener.setExceptionObserver(lastException::set);
     LuceneEventListener listener = new LuceneEventListener(manager);

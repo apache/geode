@@ -23,6 +23,7 @@ import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.RegionListener;
@@ -42,6 +43,8 @@ public class LuceneRegionListener implements RegionListener {
   private final Map<String, Analyzer> fieldAnalyzers;
 
   private final String[] fields;
+
+  private LuceneIndexImpl luceneIndex;
 
   public LuceneRegionListener(LuceneServiceImpl service, InternalCache cache, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers) {
@@ -97,6 +100,9 @@ public class LuceneRegionListener implements RegionListener {
       internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(this.indexName,
           this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers));
 
+      luceneIndex = this.service.beforeDataRegionCreated(this.indexName, this.regionPath, attrs,
+          this.analyzer, this.fieldAnalyzers, aeqId, this.fields);
+
       // Add internal async event id
       internalRegionArgs.addInternalAsyncEventQueueId(aeqId);
     }
@@ -106,8 +112,12 @@ public class LuceneRegionListener implements RegionListener {
   @Override
   public void afterCreate(Region region) {
     if (region.getFullPath().equals(this.regionPath)) {
-      this.service.afterDataRegionCreated(this.indexName, this.analyzer, this.regionPath,
-          this.fieldAnalyzers, this.fields);
+      this.service.afterDataRegionCreated(this.luceneIndex);
+      String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
+      AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+      AbstractPartitionedRepositoryManager repositoryManager =
+          (AbstractPartitionedRepositoryManager) luceneIndex.getRepositoryManager();
+      repositoryManager.allowRepositoryComputation();
       this.cache.removeRegionListener(this);
     }
   }

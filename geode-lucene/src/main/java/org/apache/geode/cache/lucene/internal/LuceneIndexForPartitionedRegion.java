@@ -57,6 +57,15 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   protected RepositoryManager createRepositoryManager() {
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+    PartitionedRepositoryManager partitionedRepositoryManager =
+        new PartitionedRepositoryManager(this, mapper);
+    return partitionedRepositoryManager;
+  }
+
+  protected void createLuceneListenersAndFileChunkRegions(
+      AbstractPartitionedRepositoryManager partitionedRepositoryManager) {
+    partitionedRepositoryManager.setUserRegionForRepositoryManager();
     RegionShortcut regionShortCut;
     final boolean withPersistence = withPersistence();
     RegionAttributes regionAttributes = dataRegion.getAttributes();
@@ -78,14 +87,6 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // create PR fileAndChunkRegion, but not to create its buckets for now
     final String fileRegionName = createFileRegionName();
     PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
-
-
-    // create PR chunkRegion, but not to create its buckets for now
-
-    // we will create RegionDirectories on the fly when data comes in
-    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
-    PartitionedRepositoryManager partitionedRepositoryManager =
-        new PartitionedRepositoryManager(this, mapper);
     DM dm = this.cache.getInternalDistributedSystem().getDistributionManager();
     LuceneBucketListener lucenePrimaryBucketListener =
         new LuceneBucketListener(partitionedRepositoryManager, dm);
@@ -98,7 +99,6 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     fileSystemStats
         .setBytesSupplier(() -> getFileAndChunkRegion().getPrStats().getDataStoreBytesInUse());
 
-    return partitionedRepositoryManager;
   }
 
   public PartitionedRegion getFileAndChunkRegion() {

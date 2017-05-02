@@ -194,7 +194,7 @@ public class LuceneIndexForPartitionedRegionTest {
     Region region = initializeScenario(withPersistence, regionPath, cache, 0);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    LuceneIndexForPartitionedRegion spy = setupSpy(region, index);
+    LuceneIndexForPartitionedRegion spy = setupSpy(region, index, "aeq");
     spy.initialize();
   }
 
@@ -208,17 +208,18 @@ public class LuceneIndexForPartitionedRegionTest {
 
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    LuceneIndexForPartitionedRegion spy = setupSpy(region, index);
+    LuceneIndexForPartitionedRegion spy = setupSpy(region, index, "aeq");
 
-    verify(spy).createAEQ(eq(region));
+    verify(spy).createAEQ(eq(region.getAttributes()), eq("aeq"));
   }
 
   protected LuceneIndexForPartitionedRegion setupSpy(final Region region,
-      final LuceneIndexForPartitionedRegion index) {
+      final LuceneIndexForPartitionedRegion index, final String aeq) {
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ(eq(region));
+    doReturn(null).when(spy).createAEQ(any(), any());
+    spy.initializeAEQ(region.getAttributes(), aeq);
     spy.initialize();
     return spy;
   }
@@ -233,7 +234,7 @@ public class LuceneIndexForPartitionedRegionTest {
 
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    LuceneIndexForPartitionedRegion spy = setupSpy(region, index);
+    LuceneIndexForPartitionedRegion spy = setupSpy(region, index, "aeq");
 
     verify(spy).createFileRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()),
         any(), any(), any());
@@ -272,7 +273,8 @@ public class LuceneIndexForPartitionedRegionTest {
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ(any());
+    doReturn(null).when(spy).createAEQ((RegionAttributes) any(), any());
+    spy.initializeAEQ(any(), any());
     spy.initialize();
 
     verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT),
@@ -292,7 +294,8 @@ public class LuceneIndexForPartitionedRegionTest {
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ(any());
+    doReturn(null).when(spy).createAEQ(any(), any());
+    spy.initializeAEQ(any(), any());
     spy.initialize();
     spy.initialize();
 
@@ -316,7 +319,8 @@ public class LuceneIndexForPartitionedRegionTest {
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index = spy(index);
     when(index.getFieldNames()).thenReturn(fields);
-    doReturn(aeq).when(index).createAEQ(any());
+    doReturn(aeq).when(index).createAEQ(any(), any());
+    index.initializeAEQ(cache.getRegionAttributes(regionPath), aeq.getId());
     index.initialize();
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
     ResultCollector collector = mock(ResultCollector.class);

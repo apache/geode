@@ -71,7 +71,14 @@ public class LonerDistributionManager implements DM {
     // no threads needed
   }
 
-  protected void shutdown() {}
+  protected void shutdown() {
+    executor.shutdown();
+    try {
+      executor.awaitTermination(20, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      throw new InternalGemFireError("Interrupted while waiting for DM shutdown");
+    }
+  }
 
   private final InternalDistributedMember id;
 
@@ -94,7 +101,7 @@ public class LonerDistributionManager implements DM {
   private ConcurrentMap<InternalDistributedMember, InternalDistributedMember> canonicalIds =
       new ConcurrentHashMap();
   static private final DummyDMStats stats = new DummyDMStats();
-  static private final DummyExecutor executor = new DummyExecutor();
+  static private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Override
   public long cacheTimeMillis() {

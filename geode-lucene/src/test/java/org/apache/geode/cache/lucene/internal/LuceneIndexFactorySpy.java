@@ -15,15 +15,11 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
 import java.util.function.Consumer;
 
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
-import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.InternalCache;
 
 public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
@@ -59,19 +55,5 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
       super(indexName, regionPath, cache);
     }
 
-    @Override
-    public RepositoryManager createRepositoryManager() {
-      RepositoryManager repositoryManagerSpy = Mockito.spy(super.createRepositoryManager());
-      Answer getRepositoryAnswer = invocation -> {
-        getRepositoryConsumer.accept(invocation.getArgumentAt(0, Object.class));
-        return invocation.callRealMethod();
-      };
-      try {
-        doAnswer(getRepositoryAnswer).when(repositoryManagerSpy).getRepositories(any());
-      } catch (BucketNotFoundException e) {
-        e.printStackTrace();
-      }
-      return repositoryManagerSpy;
-    }
   }
 }
