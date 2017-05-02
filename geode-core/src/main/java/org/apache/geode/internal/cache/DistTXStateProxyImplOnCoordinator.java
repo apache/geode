@@ -440,49 +440,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     boolean finalResult = true;
     final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Precommit");
     final DM dm = cache.getDistributionManager();
-
-    // Create Tx Participants
-    Set<DistributedMember> txParticpants = target2realDeals.keySet();
     Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
-
-    // Determine if the set of VMs for any of the Regions for this TX have
-    // changed
-    HashSet<LocalRegion> affectedRegions = new HashSet<LocalRegion>();
-    for (DistTXCoordinatorInterface distTXStateStub : target2realDeals.values()) {
-      affectedRegions.clear();
-      distTXStateStub.gatherAffectedRegions(affectedRegions, true, false);
-      for (LocalRegion lr : affectedRegions) {
-        if (lr.getScope().isLocal()) {
-          continue;
-        }
-        if (lr instanceof DistributedRegion) {
-          DistributedRegion dr = (DistributedRegion) lr;
-          CacheDistributionAdvisor adv = dr.getCacheDistributionAdvisor();
-          Set newRegionMemberView = adv.adviseTX();
-
-          if (!txParticpants.containsAll(newRegionMemberView)) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.TXCommitMessage_NEW_MEMBERS_FOR_REGION_0_ORIG_LIST_1_NEW_LIST_2,
-                new Object[] {dr, txParticpants, newRegionMemberView}));
-          }
-        } else if (lr instanceof PartitionedRegion || lr instanceof BucketRegion) {
-          final PartitionedRegion pr;
-          if (lr instanceof BucketRegion) {
-            pr = ((BucketRegion) lr).getPartitionedRegion();
-          } else {
-            pr = (PartitionedRegion) lr;
-          }
-          CacheDistributionAdvisor adv = pr.getCacheDistributionAdvisor();
-          Set newRegionMemberView = adv.adviseTX();
-
-          if (!txParticpants.containsAll(newRegionMemberView)) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.TXCommitMessage_NEW_MEMBERS_FOR_REGION_0_ORIG_LIST_1_NEW_LIST_2,
-                new Object[] {pr, txParticpants, newRegionMemberView}));
-          }
-        }
-      }
-    }
 
     // create processor and precommit message
     DistTXPrecommitMessage.DistTxPrecommitReplyProcessor processor =

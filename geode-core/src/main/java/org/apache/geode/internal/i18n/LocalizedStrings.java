@@ -1784,8 +1784,7 @@ public class LocalizedStrings {
       new StringId(2102, "Timed out waiting for ACKS.");
   public static final StringId TXCommitMessage_EXCEPTION_OCCURRED_IN_TRANSACTIONLISTENER =
       new StringId(2103, "Exception occurred in TransactionListener");
-  public static final StringId TXCommitMessage_NEW_MEMBERS_FOR_REGION_0_ORIG_LIST_1_NEW_LIST_2 =
-      new StringId(2104, "New members for Region: {0} orig list: {1} new list: {2}");
+  // 2104 unused
   public static final StringId PartitionedRegion_INDEX_CREATION_FAILED_ROLLING_UPGRADE =
       new StringId(2105,
           "Indexes should not be created when there are older versions of gemfire in the cluster.");

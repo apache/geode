@@ -361,28 +361,8 @@ public class TXCommitMessage extends PooledDistributionMessage
       }
     }
 
-    // Determine if the set of VMs for any of the Regions for this TX have changed
-    HashSet recips = new HashSet(this.msgMap.keySet());
-    DistributedRegion dr = null;
-    Iterator rI = this.txState.getRegions().iterator();
     CommitReplyProcessor processor = null;
     {
-      while (rI.hasNext()) {
-        LocalRegion lr = (LocalRegion) rI.next();
-        if (lr.getScope().isLocal()) {
-          continue;
-        }
-        dr = (DistributedRegion) lr;
-        CacheDistributionAdvisor adv = dr.getCacheDistributionAdvisor();
-        Set newRegionMemberView = adv.adviseTX();
-
-        if (!recips.containsAll(newRegionMemberView)) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.TXCommitMessage_NEW_MEMBERS_FOR_REGION_0_ORIG_LIST_1_NEW_LIST_2,
-              new Object[] {dr, recips, newRegionMemberView}));
-        }
-      }
-
       if (ackReceivers != null) {
         processor = new CommitReplyProcessor(this.dm, ackReceivers, msgMap);
         if (ackReceivers.size() > 1) {
