@@ -54,6 +54,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   private transient Cache cache;
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;
+  private boolean pdxPersistent = false;
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
 
@@ -107,6 +108,13 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     }
   }
 
+  public ServerStarterRule withPDXPersistent() {
+    pdxPersistent = true;
+    return this;
+  }
+
+
+
   public ServerStarterRule withEmbeddedLocator() {
     embeddedLocatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
     properties.setProperty("start-locator", "localhost[" + embeddedLocatorPort + "]");
@@ -127,9 +135,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
-  public void startServer() {
-    startServer(false);
-  }
 
   public ServerStarterRule withRegion(RegionShortcut type, String name) {
     this.autoStart = true;
@@ -141,7 +146,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     withProperties(properties).withConnectionToLocator(locatorPort).startServer();
   }
 
-  public void startServer(boolean pdxPersistent) {
+  public void startServer() {
     CacheFactory cf = new CacheFactory(this.properties);
     cf.setPdxReadSerialized(pdxPersistent);
     cf.setPdxPersistent(pdxPersistent);

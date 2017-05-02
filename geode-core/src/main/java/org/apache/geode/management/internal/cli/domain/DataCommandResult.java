@@ -17,14 +17,7 @@ package org.apache.geode.management.internal.cli.domain;
 import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.createBannerResult;
 import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.createPageResult;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.Result;
@@ -38,20 +31,28 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData.Secti
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 
 /**
- * Domain object used for Data Commands Functions
- * 
- * TODO : Implement DataSerializable
- *
+ * Domain object used for Data Commands Functions TODO : Implement DataSerializable
  */
 public class DataCommandResult implements /* Data */ Serializable {
 
-  /**
-   * 
-   */
+  private static Logger logger = LogManager.getLogger();
+
   private static final long serialVersionUID = 1L;
   private String command;
   private Object putResult;
@@ -66,7 +67,9 @@ public class DataCommandResult implements /* Data */ Serializable {
   public static final String RESULT_FLAG = "Result";
   public static final String NUM_ROWS = "Rows";
 
-  // Aggreagated Data.
+  public static final String MISSING_VALUE = "<NULL>";
+
+  // Aggregated Data.
   private List<KeyInfo> locateEntryLocations;
   private KeyInfo locateEntryResult;
   private boolean hasResultForAggregation;
@@ -91,21 +94,24 @@ public class DataCommandResult implements /* Data */ Serializable {
     if (isGet()) {
       sb.append(" Type  : Get").append(NEW_LINE);
       sb.append(" Key  : ").append(inputKey).append(NEW_LINE);
-      if (getResult != null)
+      if (getResult != null) {
         sb.append(" ReturnValue Class : ").append(getResult.getClass()).append(NEW_LINE);
+      }
       sb.append(" ReturnValue : ").append(getResult).append(NEW_LINE);
     } else if (isPut()) {
       sb.append(" Type  : Put");
       sb.append(" Key  : ").append(inputKey).append(NEW_LINE);
-      if (putResult != null)
+      if (putResult != null) {
         sb.append(" ReturnValue Class : ").append(putResult.getClass()).append(NEW_LINE);
+      }
       sb.append(" ReturnValue  : ").append(putResult).append(NEW_LINE);
       sb.append(" Value  : ").append(inputValue).append(NEW_LINE);
     } else if (isRemove()) {
       sb.append(" Type  : Remove");
       sb.append(" Key  : ").append(inputKey).append(NEW_LINE);
-      if (removeResult != null)
+      if (removeResult != null) {
         sb.append(" ReturnValue Class : ").append(removeResult.getClass()).append(NEW_LINE);
+      }
       sb.append(" ReturnValue  : ").append(removeResult).append(NEW_LINE);
     } else if (isLocateEntry()) {
       sb.append(" Type  : Locate Entry");
@@ -114,45 +120,31 @@ public class DataCommandResult implements /* Data */ Serializable {
       sb.append(" Results  : ").append(locateEntryResult).append(NEW_LINE);
       sb.append(" Locations  : ").append(locateEntryLocations).append(NEW_LINE);
     }
-    if (errorString != null)
+    if (errorString != null) {
       sb.append(" ERROR ").append(errorString);
+    }
     return sb.toString();
   }
 
   public boolean isGet() {
-    if (CliStrings.GET.equals(command))
-      return true;
-    else
-      return false;
+    return CliStrings.GET.equals(command);
   }
 
   public boolean isPut() {
-    if (CliStrings.PUT.equals(command))
-      return true;
-    else
-      return false;
+    return CliStrings.PUT.equals(command);
   }
 
   public boolean isRemove() {
-    if (CliStrings.REMOVE.equals(command))
-      return true;
-    else
-      return false;
+    return CliStrings.REMOVE.equals(command);
   }
 
 
   public boolean isLocateEntry() {
-    if (CliStrings.LOCATE_ENTRY.equals(command))
-      return true;
-    else
-      return false;
+    return CliStrings.LOCATE_ENTRY.equals(command);
   }
 
   public boolean isSelect() {
-    if (CliStrings.QUERY.equals(command))
-      return true;
-    else
-      return false;
+    return CliStrings.QUERY.equals(command);
   }
 
   public List<SelectResultRow> getSelectResult() {
@@ -393,11 +385,13 @@ public class DataCommandResult implements /* Data */ Serializable {
 
   public Result toCommandResult() {
 
-    if (keyClass == null || keyClass.isEmpty())
+    if (StringUtils.isEmpty(keyClass)) {
       keyClass = "java.lang.String";
+    }
 
-    if (valueClass == null || valueClass.isEmpty())
+    if (StringUtils.isEmpty(valueClass)) {
       valueClass = "java.lang.String";
+    }
 
     if (errorString != null) {
       // return ResultBuilder.createGemFireErrorResult(errorString);
@@ -406,124 +400,140 @@ public class DataCommandResult implements /* Data */ Serializable {
       section.addData("Message", errorString);
       section.addData(RESULT_FLAG, operationCompletedSuccessfully);
       return ResultBuilder.buildResult(data);
+    }
+
+    CompositeResultData data = ResultBuilder.createCompositeResultData();
+    SectionResultData section = data.addSection();
+    TabularResultData table = section.addTable();
+
+    section.addData(RESULT_FLAG, operationCompletedSuccessfully);
+    if (infoString != null) {
+      section.addData("Message", infoString);
+    }
+
+    if (isGet()) {
+      toCommandResult_isGet(section, table);
+    } else if (isLocateEntry()) {
+      toCommandResult_isLocate(section, table);
+    } else if (isPut()) {
+      toCommandResult_isPut(section, table);
+    } else if (isRemove()) {
+      toCommandResult_isRemove(section, table);
+    } else if (isSelect()) {
+      // its moved to its separate method
+    }
+    return ResultBuilder.buildResult(data);
+  }
+
+  private void toCommandResult_isGet(SectionResultData section, TabularResultData table) {
+    section.addData("Key Class", getKeyClass());
+    if (!isDeclaredPrimitive(keyClass)) {
+      addJSONStringToTable(table, inputKey);
     } else {
-      CompositeResultData data = ResultBuilder.createCompositeResultData();
-      SectionResultData section = data.addSection();
-      TabularResultData table = section.addTable();
+      section.addData("Key", inputKey);
+    }
 
-      section.addData(RESULT_FLAG, operationCompletedSuccessfully);
-      if (infoString != null)
-        section.addData("Message", infoString);
+    section.addData("Value Class", getValueClass());
+    if (!isDeclaredPrimitive(valueClass)) {
+      addJSONStringToTable(table, getResult);
+    } else {
+      section.addData("Value", getResult);
+    }
+  }
 
-      if (isGet()) {
+  private void toCommandResult_isLocate(SectionResultData section, TabularResultData table) {
 
-        section.addData("Key Class", getKeyClass());
-        if (!isDeclaredPrimitive(keyClass))
-          addJSONStringToTable(table, inputKey);
-        else
-          section.addData("Key", inputKey);
+    section.addData("Key Class", getKeyClass());
+    if (!isDeclaredPrimitive(keyClass)) {
+      addJSONStringToTable(table, inputKey);
+    } else {
+      section.addData("Key", inputKey);
+    }
 
-        section.addData("Value Class", getValueClass());
-        if (!isDeclaredPrimitive(valueClass))
-          addJSONStringToTable(table, getResult);
-        else
-          section.addData("Value", getResult);
+    if (locateEntryLocations != null) {
+      TabularResultData locationTable = section.addTable();
 
+      int totalLocations = 0;
 
-      } else if (isLocateEntry()) {
+      for (KeyInfo info : locateEntryLocations) {
+        List<Object[]> locations = info.getLocations();
 
-        section.addData("Key Class", getKeyClass());
-        if (!isDeclaredPrimitive(keyClass))
-          addJSONStringToTable(table, inputKey);
-        else
-          section.addData("Key", inputKey);
-
-        if (locateEntryLocations != null) {
-          TabularResultData locationTable = section.addTable();
-
-          int totalLocations = 0;
-
-          for (KeyInfo info : locateEntryLocations) {
-            List<Object[]> locations = info.getLocations();
-
-            if (locations != null) {
-              if (locations.size() == 1) {
-                Object array[] = locations.get(0);
-                // String regionPath = (String)array[0];
-                boolean found = (Boolean) array[1];
-                if (found) {
-                  totalLocations++;
-                  boolean primary = (Boolean) array[3];
-                  String bucketId = (String) array[4];
-                  locationTable.accumulate("MemberName", info.getMemberName());
-                  locationTable.accumulate("MemberId", info.getMemberId());
-                  if (bucketId != null) {// PR
-                    if (primary)
-                      locationTable.accumulate("Primary", "*Primary PR*");
-                    else
-                      locationTable.accumulate("Primary", "No");
-                    locationTable.accumulate("BucketId", bucketId);
-                  }
+        if (locations != null) {
+          if (locations.size() == 1) {
+            Object array[] = locations.get(0);
+            // String regionPath = (String)array[0];
+            boolean found = (Boolean) array[1];
+            if (found) {
+              totalLocations++;
+              boolean primary = (Boolean) array[3];
+              String bucketId = (String) array[4];
+              locationTable.accumulate("MemberName", info.getMemberName());
+              locationTable.accumulate("MemberId", info.getMemberId());
+              if (bucketId != null) {// PR
+                if (primary) {
+                  locationTable.accumulate("Primary", "*Primary PR*");
+                } else {
+                  locationTable.accumulate("Primary", "No");
                 }
-              } else {
-                for (Object[] array : locations) {
-                  String regionPath = (String) array[0];
-                  boolean found = (Boolean) array[1];
-                  if (found) {
-                    totalLocations++;
-                    boolean primary = (Boolean) array[3];
-                    String bucketId = (String) array[4];
-                    locationTable.accumulate("MemberName", info.getMemberName());
-                    locationTable.accumulate("MemberId", info.getMemberId());
-                    locationTable.accumulate("RegionPath", regionPath);
-                    if (bucketId != null) {// PR
-                      if (primary)
-                        locationTable.accumulate("Primary", "*Primary PR*");
-                      else
-                        locationTable.accumulate("Primary", "No");
-                      locationTable.accumulate("BucketId", bucketId);
-                    }
+                locationTable.accumulate("BucketId", bucketId);
+              }
+            }
+          } else {
+            for (Object[] array : locations) {
+              String regionPath = (String) array[0];
+              boolean found = (Boolean) array[1];
+              if (found) {
+                totalLocations++;
+                boolean primary = (Boolean) array[3];
+                String bucketId = (String) array[4];
+                locationTable.accumulate("MemberName", info.getMemberName());
+                locationTable.accumulate("MemberId", info.getMemberId());
+                locationTable.accumulate("RegionPath", regionPath);
+                if (bucketId != null) {// PR
+                  if (primary) {
+                    locationTable.accumulate("Primary", "*Primary PR*");
+                  } else {
+                    locationTable.accumulate("Primary", "No");
                   }
+                  locationTable.accumulate("BucketId", bucketId);
                 }
               }
             }
           }
-          section.addData("Locations Found", totalLocations);
-        } else {
-          section.addData("Location Info ", "Could not find location information");
         }
-
-      } else if (isPut()) {
-        section.addData("Key Class", getKeyClass());
-
-        if (!isDeclaredPrimitive(keyClass)) {
-          addJSONStringToTable(table, inputKey);
-        } else
-          section.addData("Key", inputKey);
-
-        section.addData("Value Class", getValueClass());
-        if (!isDeclaredPrimitive(valueClass)) {
-          addJSONStringToTable(table, putResult);
-        } else
-          section.addData("Old Value", putResult);
-
-      } else if (isRemove()) {
-        if (inputKey != null) {// avoids printing key when remove ALL is called
-          section.addData("Key Class", getKeyClass());
-          if (!isDeclaredPrimitive(keyClass))
-            addJSONStringToTable(table, inputKey);
-          else
-            section.addData("Key", inputKey);
-        }
-        /*
-         * if(valueClass!=null && !valueClass.isEmpty()){ section.addData("Value Class",
-         * getValueClass()); addJSONStringToTable(table,removeResult); }else
-         * section.addData("Value", removeResult);
-         */
-      } else if (isSelect()) {
-        // its moved to its separate method
       }
-      return ResultBuilder.buildResult(data);
+      section.addData("Locations Found", totalLocations);
+    } else {
+      section.addData("Location Info ", "Could not find location information");
+    }
+  }
+
+  private void toCommandResult_isPut(SectionResultData section, TabularResultData table) {
+    section.addData("Key Class", getKeyClass());
+
+    if (!isDeclaredPrimitive(keyClass)) {
+      addJSONStringToTable(table, inputKey);
+    } else {
+      section.addData("Key", inputKey);
+    }
+
+    section.addData("Value Class", getValueClass());
+    if (!isDeclaredPrimitive(valueClass)) {
+      addJSONStringToTable(table, putResult);
+    } else {
+      section.addData("Old Value", putResult);
+    }
+
+  }
+
+  private void toCommandResult_isRemove(SectionResultData section, TabularResultData table) {
+    if (inputKey != null) {// avoids printing key when remove ALL is called
+      section.addData("Key Class", getKeyClass());
+      if (!isDeclaredPrimitive(keyClass)) {
+        addJSONStringToTable(table, inputKey);
+      } else {
+        section.addData("Key", inputKey);
+      }
     }
   }
 
@@ -555,8 +565,9 @@ public class DataCommandResult implements /* Data */ Serializable {
         }
         if (this.selectResult != null) {
           section.addData(NUM_ROWS, this.selectResult.size());
-          if (this.queryTraceString != null)
+          if (this.queryTraceString != null) {
             section.addData("Query Trace", this.queryTraceString);
+          }
           buildTable(table, 0, selectResult.size());
         }
       }
@@ -570,7 +581,7 @@ public class DataCommandResult implements /* Data */ Serializable {
    */
   @SuppressWarnings({"rawtypes", "unchecked"})
   public Result pageResult(int startCount, int endCount, String step) {
-    List<String> fields = new ArrayList<String>();
+    List<String> fields = new ArrayList<>();
     List values = new ArrayList<String>();
     fields.add(RESULT_FLAG);
     values.add(operationCompletedSuccessfully);
@@ -592,8 +603,8 @@ public class DataCommandResult implements /* Data */ Serializable {
       if (selectResult != null) {
         try {
           TabularResultData table = ResultBuilder.createTabularResultData();
-          String[] headers = null;
-          Object[][] rows = null;
+          String[] headers;
+          Object[][] rows;
           int rowCount = buildTable(table, startCount, endCount);
           GfJsonArray array = table.getHeaders();
           headers = new String[array.size()];
@@ -619,35 +630,69 @@ public class DataCommandResult implements /* Data */ Serializable {
           Object valuesArray[] = {startCount, endCount};
           return createPageResult(fieldsArray, valuesArray, step, headers, rows);
         }
-      } else
+      } else {
         return createBannerResult(fields, values, step);
+      }
     }
   }
 
   private int buildTable(TabularResultData table, int startCount, int endCount) {
-    int rowCount = 0;
-    // Introspect first using tabular data
-    for (int i = startCount; i <= endCount; i++) {
-      if (i >= selectResult.size())
-        break;
-      else
-        rowCount++;
+    // Three steps:
+    // 1a. Convert each row object to a Json object.
+    // 1b. Build a list of keys that are used for each object
+    // 2. Pad MISSING_VALUE into Json objects for those data that are missing any particular key
+    // 3. Build the table from these Json objects.
 
-      SelectResultRow row = selectResult.get(i);
-      switch (row.type) {
-        case ROW_TYPE_BEAN:
-          addJSONStringToTable(table, row.value);
-          break;
-        case ROW_TYPE_STRUCT_RESULT:
-          addJSONStringToTable(table, row.value);
-          break;
-        case ROW_TYPE_PRIMITIVE:
-          table.accumulate(RESULT_FLAG, row.value);
-          break;
+    // 1.
+    int lastRowExclusive = Math.min(selectResult.size(), endCount + 1);
+    List<SelectResultRow> paginatedRows = selectResult.subList(startCount, lastRowExclusive);
+
+    List<GfJsonObject> tableRows = new ArrayList<>();
+    List<GfJsonObject> rowsWithRealJsonObjects = new ArrayList<>();
+    Set<String> columns = new HashSet<>();
+
+    for (SelectResultRow row : paginatedRows) {
+      GfJsonObject object = new GfJsonObject();
+      try {
+        if (row.value == null || MISSING_VALUE.equals(row.value)) {
+          object.put("Value", MISSING_VALUE);
+        } else if (row.type == ROW_TYPE_PRIMITIVE) {
+          object.put(RESULT_FLAG, row.value);
+        } else {
+          object = buildGfJsonFromRawObject(row.value);
+          rowsWithRealJsonObjects.add(object);
+          object.keys().forEachRemaining(columns::add);
+        }
+        tableRows.add(object);
+      } catch (GfJsonException e) {
+        JSONObject errJson =
+            new JSONObject().put("Value", "Error getting bean properties " + e.getMessage());
+        tableRows.add(new GfJsonObject(errJson, false));
       }
     }
-    return rowCount;
+
+    // 2.
+    for (GfJsonObject tableRow : rowsWithRealJsonObjects) {
+      for (String key : columns) {
+        if (!tableRow.has(key)) {
+          try {
+            tableRow.put(key, MISSING_VALUE);
+          } catch (GfJsonException e) {
+            // TODO: Address this unlikely possibility.
+            logger.warn("Ignored GfJsonException:", e);
+          }
+        }
+      }
+    }
+
+    // 3.
+    for (GfJsonObject jsonObject : tableRows) {
+      addJSONObjectToTable(table, jsonObject);
+    }
+
+    return paginatedRows.size();
   }
+
 
   private boolean isDeclaredPrimitive(String keyClass2) {
     try {
@@ -655,45 +700,6 @@ public class DataCommandResult implements /* Data */ Serializable {
       return JsonUtil.isPrimitiveOrWrapper(klass);
     } catch (ClassNotFoundException e) {
       return false;
-    }
-  }
-
-  private void addJSONStringToTable(TabularResultData table, Object object) {
-    if (object == null || "<NULL>".equals(object)) {
-      table.accumulate("Value", "<NULL>");
-    } else {
-      try {
-        Class klass = object.getClass();
-        GfJsonObject jsonObject = null;
-        if (String.class.equals(klass)) {
-          // InputString in JSON Form but with round brackets
-          String json = (String) object;
-          String newString = json.replaceAll("'", "\"");
-          if (newString.charAt(0) == '(') {
-            int len = newString.length();
-            StringBuilder sb = new StringBuilder();
-            sb.append("{").append(newString.substring(1, len - 1)).append("}");
-            newString = sb.toString();
-          }
-          jsonObject = new GfJsonObject(newString);
-        } else {
-          jsonObject = new GfJsonObject(object, true);
-        }
-
-        Iterator<String> keys = jsonObject.keys();
-        while (keys.hasNext()) {
-          String k = keys.next();
-          // filter out meta-field type-class used to identify java class of json obbject
-          if (!"type-class".equals(k)) {
-            Object value = jsonObject.get(k);
-            if (value != null) {
-              table.accumulate(k, getDomainValue(value));
-            }
-          }
-        }
-      } catch (Exception e) {
-        table.accumulate("Value", "Error getting bean properties " + e.getMessage());
-      }
     }
   }
 
@@ -708,8 +714,9 @@ public class DataCommandResult implements /* Data */ Serializable {
         } catch (Exception e) {
           return str;
         }
-      } else
+      } else {
         return str;
+      }
     }
     return value;
   }
@@ -722,7 +729,6 @@ public class DataCommandResult implements /* Data */ Serializable {
     this.inputQuery = inputQuery;
   }
 
-
   public static class KeyInfo implements /* Data */ Serializable {
 
     private String memberId;
@@ -734,8 +740,9 @@ public class DataCommandResult implements /* Data */ Serializable {
     private ArrayList<Object[]> locations = null;
 
     public void addLocation(Object[] locationArray) {
-      if (this.locations == null)
-        locations = new ArrayList<Object[]>();
+      if (this.locations == null) {
+        locations = new ArrayList<>();
+      }
 
       locations.add(locationArray);
     }
@@ -790,13 +797,14 @@ public class DataCommandResult implements /* Data */ Serializable {
     }
 
     public boolean hasLocation() {
-      if (locations == null)
+      if (locations == null) {
         return false;
-      else {
+      } else {
         for (Object[] array : locations) {
           boolean found = (Boolean) array[1];
-          if (found)
+          if (found) {
             return true;
+          }
         }
       }
       return false;
@@ -822,7 +830,6 @@ public class DataCommandResult implements /* Data */ Serializable {
       locations = DataSerializer.readArrayList(in);
     }
   }
-
 
   public static final int ROW_TYPE_STRUCT_RESULT = 100;
   public static final int ROW_TYPE_BEAN = 200;
@@ -856,44 +863,97 @@ public class DataCommandResult implements /* Data */ Serializable {
 
   }
 
+
   public void aggregate(DataCommandResult result) {
-    if (isLocateEntry()) {
-      /* Right now only called for LocateEntry */
+    /* Right now only called for LocateEntry */
+    if (!isLocateEntry()) {
+      return;
+    }
 
-      if (this.locateEntryLocations == null) {
-        locateEntryLocations = new ArrayList<KeyInfo>();
+    if (this.locateEntryLocations == null) {
+      locateEntryLocations = new ArrayList<>();
+    }
+
+    if (result == null) {// self-transform result from single to aggregate when numMember==1
+      if (this.locateEntryResult != null) {
+        locateEntryLocations.add(locateEntryResult);
+        // TODO : Decide whether to show value or not this.getResult = locateEntryResult.getValue();
       }
+      return;
+    }
 
-      if (result == null) {// self-transform result from single to aggregate when numMember==1
-        if (this.locateEntryResult != null) {
-          locateEntryLocations.add(locateEntryResult);
-          // TODO : Decide whether to show value or not this.getResult =
-          // locateEntryResult.getValue();
-        }
-        return;
-      }
+    if (result.errorString != null && !result.errorString.equals(errorString)) {
+      // append errorString only if differs
+      errorString = result.errorString + " " + errorString;
+    }
 
-      if (result.errorString != null && !result.errorString.equals(errorString)) {
-        // append errorString only if differs
-        String newString = result.errorString + " " + errorString;
-        errorString = newString;
-      }
+    // append message only when it differs for negative results
+    if (!operationCompletedSuccessfully && result.infoString != null
+        && !result.infoString.equals(infoString)) {
+      infoString = result.infoString;
+    }
 
-      // append messsage only when it differs for negative results
-      if (!operationCompletedSuccessfully && result.infoString != null
-          && !result.infoString.equals(infoString)) {
-        infoString = result.infoString;
-      }
-
-      if (result.hasResultForAggregation /* && result.errorString==null */) {
-        this.operationCompletedSuccessfully = true;// override this
-                                                   // result.operationCompletedSuccessfully
-        infoString = result.infoString;
-        if (result.locateEntryResult != null)
-          locateEntryLocations.add(result.locateEntryResult);
+    if (result.hasResultForAggregation) {
+      this.operationCompletedSuccessfully = true;
+      infoString = result.infoString;
+      if (result.locateEntryResult != null) {
+        locateEntryLocations.add(result.locateEntryResult);
       }
     }
   }
+
+
+  private void addJSONObjectToTable(TabularResultData table, GfJsonObject object) {
+    Iterator<String> keys;
+
+    keys = object.keys();
+    while (keys.hasNext()) {
+      String k = keys.next();
+      // filter out meta-field type-class used to identify java class of json object
+      if (!"type-class".equals(k)) {
+        Object value = object.get(k);
+
+        if (value != null) {
+          table.accumulate(k, getDomainValue(value));
+        }
+      }
+    }
+  }
+
+  private GfJsonObject buildGfJsonFromRawObject(Object object) throws GfJsonException {
+    GfJsonObject jsonObject;
+    if (String.class.equals(object.getClass())) {
+      jsonObject = new GfJsonObject(sanitizeJsonString((String) object));
+    } else {
+      jsonObject = new GfJsonObject(object, true);
+    }
+
+    return jsonObject;
+  }
+
+  private String sanitizeJsonString(String s) {
+    // InputString in JSON Form but with round brackets
+    String newString = s.replaceAll("'", "\"");
+    if (newString.charAt(0) == '(') {
+      int len = newString.length();
+      newString = "{" + newString.substring(1, len - 1) + "}";
+    }
+    return newString;
+  }
+
+  private void addJSONStringToTable(TabularResultData table, Object object) {
+    if (object == null || MISSING_VALUE.equals(object)) {
+      table.accumulate("Value", MISSING_VALUE);
+    } else {
+      try {
+        GfJsonObject jsonObject = buildGfJsonFromRawObject(object);
+        addJSONObjectToTable(table, jsonObject);
+      } catch (Exception e) {
+        table.accumulate("Value", "Error getting bean properties " + e.getMessage());
+      }
+    }
+  }
+
 
   // @Override
   public void toData(DataOutput out) throws IOException {
@@ -935,5 +995,3 @@ public class DataCommandResult implements /* Data */ Serializable {
   }
 
 }
-
-

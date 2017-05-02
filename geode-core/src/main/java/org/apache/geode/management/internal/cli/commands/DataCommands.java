@@ -14,27 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -79,6 +61,26 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.shiro.subject.Subject;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @since GemFire 7.0
@@ -118,8 +120,8 @@ public class DataCommands implements CommandMarker {
           help = CliStrings.REBALANCE__SIMULATE__HELP) boolean simulate) {
 
     ExecutorService commandExecutors = Executors.newSingleThreadExecutor();
-    List<Future<Result>> commandResult = new ArrayList<Future<Result>>();
-    Result result = null;
+    List<Future<Result>> commandResult = new ArrayList<>();
+    Result result;
     try {
       commandResult.add(commandExecutors
           .submit(new ExecuteRebalanceWithTimeout(includeRegions, excludeRegions, simulate)));
@@ -165,16 +167,16 @@ public class DataCommands implements CommandMarker {
 
       Result result = null;
       try {
-        RebalanceOperation op = null;
+        RebalanceOperation op;
 
-        if (includeRegions != null && includeRegions.length > 0) {
-          CompositeResultData rebalanceResulteData = ResultBuilder.createCompositeResultData();
+        if (ArrayUtils.isNotEmpty(includeRegions)) {
+          CompositeResultData rebalanceResultData = ResultBuilder.createCompositeResultData();
           int index = 0;
 
           for (String regionName : includeRegions) {
 
             // To be removed after region Name specification with "/" is fixed
-            regionName = regionName.startsWith("/") == true ? regionName : ("/" + regionName);
+            regionName = regionName.startsWith("/") ? regionName : ("/" + regionName);
             Region region = cache.getRegion(regionName);
 
             if (region == null) {
@@ -189,21 +191,18 @@ public class DataCommands implements CommandMarker {
               Function rebalanceFunction = new RebalanceFunction();
               Object[] functionArgs = new Object[3];
               functionArgs[0] = simulate ? "true" : "false";
-              Set<String> setRegionName = new HashSet<String>();
+              Set<String> setRegionName = new HashSet<>();
               setRegionName.add(regionName);
               functionArgs[1] = setRegionName;
 
-              Set<String> excludeRegionSet = new HashSet<String>();
-              if (excludeRegions != null && excludeRegions.length > 0) {
-
-                for (String str : excludeRegions) {
-                  excludeRegionSet.add(str);
-                }
+              Set<String> excludeRegionSet = new HashSet<>();
+              if (ArrayUtils.isNotEmpty(excludeRegions)) {
+                Collections.addAll(excludeRegionSet, excludeRegions);
               }
               functionArgs[2] = excludeRegionSet;
 
-              if (simulate == true) {
-                List resultList = null;
+              if (simulate) {
+                List resultList;
                 try {
                   resultList = (ArrayList) CliUtil
                       .executeFunction(rebalanceFunction, functionArgs, member).getResult();
@@ -212,24 +211,24 @@ public class DataCommands implements CommandMarker {
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
-                  rebalanceResulteData.addSection()
+                  rebalanceResultData.addSection()
                       .addData(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
                           member.getId()), ex.getMessage());
-                  result = ResultBuilder.buildResult(rebalanceResulteData);
+                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
 
-                if (checkResultList(rebalanceResulteData, resultList, member) == true) {
-                  result = ResultBuilder.buildResult(rebalanceResulteData);
+                if (checkResultList(rebalanceResultData, resultList, member)) {
+                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
                 List<String> rstList = tokenize((String) resultList.get(0), ",");
 
-                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResulteData,
-                    (ArrayList) rstList, index, simulate, cache));
+                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
+                    (ArrayList) rstList, index, true, cache));
               } else {
-                List resultList = null;
+                List resultList;
                 try {
                   resultList = (ArrayList) CliUtil
                       .executeFunction(rebalanceFunction, functionArgs, member).getResult();
@@ -238,47 +237,47 @@ public class DataCommands implements CommandMarker {
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
-                  rebalanceResulteData.addSection()
+                  rebalanceResultData.addSection()
                       .addData(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
                           member.getId()), ex.getMessage());
-                  result = ResultBuilder.buildResult(rebalanceResulteData);
+                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
 
-                if (checkResultList(rebalanceResulteData, resultList, member) == true) {
-                  result = ResultBuilder.buildResult(rebalanceResulteData);
+                if (checkResultList(rebalanceResultData, resultList, member)) {
+                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
                 List<String> rstList = tokenize((String) resultList.get(0), ",");
 
-                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResulteData,
-                    (ArrayList) rstList, index, simulate, cache));
+                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
+                    (ArrayList) rstList, index, false, cache));
               }
 
             } else {
+
               ResourceManager manager = cache.getResourceManager();
               RebalanceFactory rbFactory = manager.createRebalanceFactory();
-              Set<String> excludeRegionSet = new HashSet<String>();
+              Set<String> excludeRegionSet = new HashSet<>();
               if (excludeRegions != null) {
-                for (String excludeRegion : excludeRegions)
-                  excludeRegionSet.add(excludeRegion);
+                Collections.addAll(excludeRegionSet, excludeRegions);
               }
               rbFactory.excludeRegions(excludeRegionSet);
-              Set<String> includeRegionSet = new HashSet<String>();
+              Set<String> includeRegionSet = new HashSet<>();
               includeRegionSet.add(regionName);
               rbFactory.includeRegions(includeRegionSet);
 
-              if (simulate == true) {
+              if (simulate) {
                 op = manager.createRebalanceFactory().simulate();
-                result = ResultBuilder.buildResult(buildResultForRebalance(rebalanceResulteData,
-                    op.getResults(), index, simulate, cache));
+                result = ResultBuilder.buildResult(buildResultForRebalance(rebalanceResultData,
+                    op.getResults(), index, true, cache));
 
               } else {
                 op = manager.createRebalanceFactory().start();
                 // Wait until the rebalance is complete and then get the results
-                result = ResultBuilder.buildResult(buildResultForRebalance(rebalanceResulteData,
-                    op.getResults(), index, simulate, cache));
+                result = ResultBuilder.buildResult(buildResultForRebalance(rebalanceResultData,
+                    op.getResults(), index, false, cache));
               }
             }
             index++;
@@ -297,9 +296,9 @@ public class DataCommands implements CommandMarker {
     }
   }
 
-  List<String> tokenize(String str, String separator) {
+  private List<String> tokenize(String str, String separator) {
     StringTokenizer st = new StringTokenizer(str, separator);
-    List<String> rstList = new ArrayList<String>();
+    List<String> rstList = new ArrayList<>();
 
     while (st.hasMoreTokens()) {
       rstList.add(st.nextToken());
@@ -308,16 +307,15 @@ public class DataCommands implements CommandMarker {
     return rstList;
   }
 
-  boolean checkResultList(CompositeResultData rebalanceResulteData, List resultList,
+  private boolean checkResultList(CompositeResultData rebalanceResultData, List resultList,
       DistributedMember member) {
     boolean toContinueForOtherMembers = false;
 
-    if (resultList != null && !resultList.isEmpty()) {
-      for (int i = 0; i < resultList.size(); i++) {
-        Object object = resultList.get(i);
+    if (CollectionUtils.isNotEmpty(resultList)) {
+      for (Object object : resultList) {
         if (object instanceof Exception) {
 
-          rebalanceResulteData.addSection().addData(
+          rebalanceResultData.addSection().addData(
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Exception) object).getMessage());
 
@@ -327,7 +325,7 @@ public class DataCommands implements CommandMarker {
           toContinueForOtherMembers = true;
           break;
         } else if (object instanceof Throwable) {
-          rebalanceResulteData.addSection().addData(
+          rebalanceResultData.addSection().addData(
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Throwable) object).getMessage());
 
@@ -341,7 +339,7 @@ public class DataCommands implements CommandMarker {
     } else {
       LogWrapper.getInstance().info(
           "Rebalancing for member=" + member.getId() + ", resultList is either null or empty");
-      rebalanceResulteData.addSection().addData("Rebalancing for member=" + member.getId(),
+      rebalanceResultData.addSection().addData("Rebalancing for member=" + member.getId(),
           ", resultList is either null or empty");
       toContinueForOtherMembers = true;
     }
@@ -349,15 +347,14 @@ public class DataCommands implements CommandMarker {
     return toContinueForOtherMembers;
   }
 
-  Result executeRebalanceOnDS(InternalCache cache, String simulate, String[] excludeRegionsList) {
+  private Result executeRebalanceOnDS(InternalCache cache, String simulate,
+      String[] excludeRegionsList) {
     Result result = null;
     int index = 1;
-    CompositeResultData rebalanceResulteData = ResultBuilder.createCompositeResultData();
-    List<String> listExcludedRegion = new ArrayList<String>();
+    CompositeResultData rebalanceResultData = ResultBuilder.createCompositeResultData();
+    List<String> listExcludedRegion = new ArrayList<>();
     if (excludeRegionsList != null) {
-      for (String str : excludeRegionsList) {
-        listExcludedRegion.add(str);
-      }
+      Collections.addAll(listExcludedRegion, excludeRegionsList);
     }
     List<MemberPRInfo> listMemberRegion = getMemberRegionList(cache, listExcludedRegion);
 
@@ -377,29 +374,26 @@ public class DataCommands implements CommandMarker {
       }
     }
 
-    if (flagToContinueWithRebalance == false) {
+    if (!flagToContinueWithRebalance) {
       return ResultBuilder
           .createInfoResult(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
     }
 
-    Iterator<MemberPRInfo> it1 = listMemberRegion.iterator();
-    while (it1.hasNext() && flagToContinueWithRebalance) {
+    for (MemberPRInfo memberPR : listMemberRegion) {
       try {
-        MemberPRInfo memberPR = (MemberPRInfo) it1.next();
-        // check if there are more than one members associated with region for
-        // rebalancing
+        // check if there are more than one members associated with region for rebalancing
         if (memberPR.dsMemberList.size() > 1) {
           for (int i = 0; i < memberPR.dsMemberList.size(); i++) {
             DistributedMember dsMember = memberPR.dsMemberList.get(i);
             Function rebalanceFunction = new RebalanceFunction();
             Object[] functionArgs = new Object[3];
             functionArgs[0] = simulate;
-            Set<String> regionSet = new HashSet<String>();
+            Set<String> regionSet = new HashSet<>();
 
             regionSet.add(memberPR.region);
             functionArgs[1] = regionSet;
 
-            Set<String> excludeRegionSet = new HashSet<String>();
+            Set<String> excludeRegionSet = new HashSet<>();
             functionArgs[2] = excludeRegionSet;
 
             List resultList = null;
@@ -409,52 +403,51 @@ public class DataCommands implements CommandMarker {
                 resultList = (ArrayList) CliUtil
                     .executeFunction(rebalanceFunction, functionArgs, dsMember).getResult();
 
-                if (checkResultList(rebalanceResulteData, resultList, dsMember) == true) {
-                  result = ResultBuilder.buildResult(rebalanceResulteData);
+                if (checkResultList(rebalanceResultData, resultList, dsMember)) {
+                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
 
                 List<String> rstList = tokenize((String) resultList.get(0), ",");
-                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResulteData,
-                    (ArrayList) rstList, index, simulate.equals("true") ? true : false, cache));
+                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
+                    (ArrayList) rstList, index, simulate.equals("true"), cache));
                 index++;
 
-                // Rebalancing for region is done so break and continue with
-                // other region
+                // Rebalancing for region is done so break and continue with other region
                 break;
               } else {
                 if (i == memberPR.dsMemberList.size() - 1) {
-                  rebalanceResulteData.addSection().addData(
+                  rebalanceResultData.addSection().addData(
                       CliStrings.format(
                           CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
                           memberPR.region, listOfAllMembers(memberPR.dsMemberList)),
                       CliStrings.REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED);
-                  result = ResultBuilder.buildResult(rebalanceResulteData);
+                  result = ResultBuilder.buildResult(rebalanceResultData);
                 } else {
                   continue;
                 }
               }
             } catch (Exception ex) {
               if (i == memberPR.dsMemberList.size() - 1) {
-                rebalanceResulteData.addSection().addData(
+                rebalanceResultData.addSection().addData(
                     CliStrings.format(
                         CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
                         memberPR.region, listOfAllMembers(memberPR.dsMemberList)),
                     CliStrings.REBALANCE__MSG__REASON + ex.getMessage());
-                result = ResultBuilder.buildResult(rebalanceResulteData);
+                result = ResultBuilder.buildResult(rebalanceResultData);
               } else {
                 continue;
               }
             }
 
-            if (checkResultList(rebalanceResulteData, resultList, dsMember) == true) {
-              result = ResultBuilder.buildResult(rebalanceResulteData);
+            if (checkResultList(rebalanceResultData, resultList, dsMember)) {
+              result = ResultBuilder.buildResult(rebalanceResultData);
               continue;
             }
 
             List<String> rstList = tokenize((String) resultList.get(0), ",");
-            result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResulteData,
-                (ArrayList) rstList, index, simulate.equals("true") ? true : false, cache));
+            result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
+                (ArrayList) rstList, index, simulate.equals("true"), cache));
             index++;
           }
         }
@@ -487,65 +480,59 @@ public class DataCommands implements CommandMarker {
       ArrayList<String> rstlist, int index, boolean simulate, InternalCache cache) {
 
     // add only if there are any valid regions in results
-    if (rstlist.size() > resultItemCount && rstlist.get(resultItemCount) != null
-        && rstlist.get(resultItemCount).length() > 0) {
+    if (rstlist.size() > resultItemCount && StringUtils.isNotEmpty(rstlist.get(resultItemCount))) {
       TabularResultData table1 = rebalanceResulteData.addSection().addTable("Table" + index);
       String newLine = System.getProperty("line.separator");
       StringBuilder resultStr = new StringBuilder();
       resultStr.append(newLine);
       table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);
       table1.accumulate("Value", rstlist.get(0));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES + " = " + rstlist.get(0));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).append(" = ")
+          .append(rstlist.get(0)).append(newLine);
 
       table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM);
       table1.accumulate("Value", rstlist.get(1));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM + " = " + rstlist.get(1));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM).append(" = ")
+          .append(rstlist.get(1)).append(newLine);
 
       table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED);
       table1.accumulate("Value", rstlist.get(2));
-      resultStr
-          .append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED + " = " + rstlist.get(2));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED).append(" = ")
+          .append(rstlist.get(2)).append(newLine);
 
       table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES);
       table1.accumulate("Value", rstlist.get(3));
-      resultStr
-          .append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES + " = " + rstlist.get(3));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES).append(" = ")
+          .append(rstlist.get(3)).append(newLine);
 
       table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME);
       table1.accumulate("Value", rstlist.get(4));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME + " = " + rstlist.get(4));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME).append(" = ")
+          .append(rstlist.get(4)).append(newLine);
 
       table1.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED);
       table1.accumulate("Value", rstlist.get(5));
-      resultStr.append(
-          CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED + " = " + rstlist.get(5));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED).append(" = ")
+          .append(rstlist.get(5)).append(newLine);
 
       table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME);
       table1.accumulate("Value", rstlist.get(6));
-      resultStr
-          .append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME + " = " + rstlist.get(6));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME).append(" = ")
+          .append(rstlist.get(6)).append(newLine);
 
       table1.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
       table1.accumulate("Value", rstlist.get(7));
-      resultStr.append(
-          CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED + " = " + rstlist.get(7));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED).append(" = ")
+          .append(rstlist.get(7)).append(newLine);
 
       table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALTIME);
       table1.accumulate("Value", rstlist.get(8));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME + " = " + rstlist.get(8));
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ").append(rstlist.get(8))
+          .append(newLine);
 
-      String headerText = null;
+      String headerText;
       if (simulate) {
         headerText = "Simulated partition regions ";
       } else {
@@ -560,81 +547,73 @@ public class DataCommands implements CommandMarker {
     return rebalanceResulteData;
   }
 
-  CompositeResultData buildResultForRebalance(CompositeResultData rebalanceResulteData,
+  private CompositeResultData buildResultForRebalance(CompositeResultData rebalanceResultData,
       RebalanceResults results, int index, boolean simulate, InternalCache cache) {
     Set<PartitionRebalanceInfo> regions = results.getPartitionRebalanceDetails();
     Iterator iterator = regions.iterator();
 
     // add only if there are valid number of regions
-    if (regions.size() > 0 && ((PartitionRebalanceInfo) iterator.next()).getRegionPath() != null
-        && ((PartitionRebalanceInfo) iterator.next()).getRegionPath().length() > 0) {
+    if (regions.size() > 0
+        && StringUtils.isNotEmpty(((PartitionRebalanceInfo) iterator.next()).getRegionPath())) {
       final TabularResultData resultData =
-          rebalanceResulteData.addSection().addTable("Table" + index);
+          rebalanceResultData.addSection().addTable("Table" + index);
       String newLine = System.getProperty("line.separator");
       StringBuilder resultStr = new StringBuilder();
       resultStr.append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);
       resultData.accumulate("Value", results.getTotalBucketCreateBytes());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES + " = "
-          + results.getTotalBucketCreateBytes());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).append(" = ")
+          .append(results.getTotalBucketCreateBytes()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM);
       resultData.accumulate("Value", results.getTotalBucketCreateTime());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM + " = "
-          + results.getTotalBucketCreateTime());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM).append(" = ")
+          .append(results.getTotalBucketCreateTime()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED);
       resultData.accumulate("Value", results.getTotalBucketCreatesCompleted());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED + " = "
-          + results.getTotalBucketCreatesCompleted());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED).append(" = ")
+          .append(results.getTotalBucketCreatesCompleted()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES);
       resultData.accumulate("Value", results.getTotalBucketTransferBytes());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES + " = "
-          + results.getTotalBucketTransferBytes());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES).append(" = ")
+          .append(results.getTotalBucketTransferBytes()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME);
       resultData.accumulate("Value", results.getTotalBucketTransferTime());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME + " = "
-          + results.getTotalBucketTransferTime());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME).append(" = ")
+          .append(results.getTotalBucketTransferTime()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED);
       resultData.accumulate("Value", results.getTotalBucketTransfersCompleted());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED + " = "
-          + results.getTotalBucketTransfersCompleted());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED).append(" = ")
+          .append(results.getTotalBucketTransfersCompleted()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME);
       resultData.accumulate("Value", results.getTotalPrimaryTransferTime());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME + " = "
-          + results.getTotalPrimaryTransferTime());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME).append(" = ")
+          .append(results.getTotalPrimaryTransferTime()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
       resultData.accumulate("Value", results.getTotalPrimaryTransfersCompleted());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED + " = "
-          + results.getTotalPrimaryTransfersCompleted());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED).append(" = ")
+          .append(results.getTotalPrimaryTransfersCompleted()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALTIME);
       resultData.accumulate("Value", results.getTotalTime());
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME + " = " + results.getTotalTime());
-      resultStr.append(newLine);
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ")
+          .append(results.getTotalTime()).append(newLine);
 
       Iterator<PartitionRebalanceInfo> it = regions.iterator();
 
-      String headerText = null;
+      String headerText;
 
       if (simulate) {
         headerText = "Simulated partition regions ";
@@ -650,7 +629,7 @@ public class DataCommands implements CommandMarker {
 
       cache.getLogger().info(headerText + resultStr);
     }
-    return rebalanceResulteData;
+    return rebalanceResultData;
   }
 
   public DistributedMember getAssociatedMembers(String region, final InternalCache cache) {
@@ -660,7 +639,7 @@ public class DataCommands implements CommandMarker {
     DistributedMember member = null;
 
     if (bean == null) {
-      return member;
+      return null;
     }
 
     String[] membersName = bean.getMembers();
@@ -670,7 +649,7 @@ public class DataCommands implements CommandMarker {
     boolean matchFound = false;
 
     if (membersName.length > 1) {
-      while (it.hasNext() && matchFound == false) {
+      while (it.hasNext() && !matchFound) {
         DistributedMember dsmember = (DistributedMember) it.next();
         for (String memberName : membersName) {
           if (MBeanJMXAdapter.getMemberNameOrId(dsmember).equals(memberName)) {
@@ -684,8 +663,9 @@ public class DataCommands implements CommandMarker {
     return member;
   }
 
-  List<MemberPRInfo> getMemberRegionList(InternalCache cache, List<String> listExcludedRegion) {
-    List<MemberPRInfo> listMemberPRInfo = new ArrayList<MemberPRInfo>();
+  private List<MemberPRInfo> getMemberRegionList(InternalCache cache,
+      List<String> listExcludedRegion) {
+    List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
     String[] listDSRegions =
         ManagementService.getManagementService(cache).getDistributedSystemMXBean().listRegions();
     final Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
@@ -693,11 +673,10 @@ public class DataCommands implements CommandMarker {
     for (String regionName : listDSRegions) {
       // check for excluded regions
       boolean excludedRegionMatch = false;
-      Iterator<String> it = listExcludedRegion.iterator();
-      while (it.hasNext()) {
+      for (String aListExcludedRegion : listExcludedRegion) {
         // this is needed since region name may start with / or without it
         // also
-        String excludedRegion = it.next().trim();
+        String excludedRegion = aListExcludedRegion.trim();
         if (regionName.startsWith("/")) {
           if (!excludedRegion.startsWith("/")) {
             excludedRegion = "/" + excludedRegion;
@@ -715,7 +694,7 @@ public class DataCommands implements CommandMarker {
         }
       }
 
-      if (excludedRegionMatch == true) {
+      if (excludedRegionMatch) {
         // ignore this region
         continue;
       }
@@ -773,7 +752,7 @@ public class DataCommands implements CommandMarker {
 
     this.securityService.authorizeRegionRead(regionName);
     final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-    Result result = null;
+    Result result;
 
     if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
       return ResultBuilder.createUserErrorResult(CliStrings
@@ -826,13 +805,12 @@ public class DataCommands implements CommandMarker {
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
-      @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, mandatory = false,
-          unspecifiedDefaultValue = "false",
+      @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",
           help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks) {
 
     this.securityService.authorizeRegionWrite(regionName);
 
-    Result result = null;
+    Result result;
 
     try {
       final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
@@ -874,8 +852,7 @@ public class DataCommands implements CommandMarker {
     return result;
   }
 
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.PUT}, help = CliStrings.PUT__HELP)
   public Result put(
       @CliOption(key = {CliStrings.PUT__KEY}, mandatory = true,
@@ -894,26 +871,28 @@ public class DataCommands implements CommandMarker {
 
     this.securityService.authorizeRegionWrite(regionPath);
     InternalCache cache = getCache();
-    DataCommandResult dataResult = null;
-    if (regionPath == null || regionPath.isEmpty()) {
+    DataCommandResult dataResult;
+    if (StringUtils.isEmpty(regionPath)) {
       return makePresentationResult(DataCommandResult.createPutResult(key, null, null,
           CliStrings.PUT__MSG__REGIONNAME_EMPTY, false));
     }
 
-    if (key == null || key.isEmpty())
-      return makePresentationResult(dataResult = DataCommandResult.createPutResult(key, null, null,
+    if (StringUtils.isEmpty(key)) {
+      return makePresentationResult(DataCommandResult.createPutResult(key, null, null,
           CliStrings.PUT__MSG__KEY_EMPTY, false));
+    }
 
-    if (value == null || value.isEmpty())
-      return makePresentationResult(dataResult = DataCommandResult.createPutResult(value, null,
-          null, CliStrings.PUT__MSG__VALUE_EMPTY, false));
+    if (StringUtils.isEmpty(value)) {
+      return makePresentationResult(DataCommandResult.createPutResult(value, null, null,
+          CliStrings.PUT__MSG__VALUE_EMPTY, false));
+    }
 
     @SuppressWarnings("rawtypes")
     Region region = cache.getRegion(regionPath);
     DataCommandFunction putfn = new DataCommandFunction();
     if (region == null) {
       Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
-      if (memberList != null && memberList.size() > 0) {
+      if (CollectionUtils.isNotEmpty(memberList)) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.PUT);
         request.setValue(value);
@@ -923,28 +902,30 @@ public class DataCommands implements CommandMarker {
         request.setValueClass(valueClass);
         request.setPutIfAbsent(putIfAbsent);
         dataResult = callFunctionForRegion(request, putfn, memberList);
-      } else
+      } else {
         dataResult = DataCommandResult.createPutInfoResult(key, value, null,
             CliStrings.format(CliStrings.PUT__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS, regionPath),
             false);
+      }
     } else {
       dataResult = putfn.put(key, value, putIfAbsent, keyClass, valueClass, regionPath);
     }
     dataResult.setKeyClass(keyClass);
-    if (valueClass != null)
+    if (valueClass != null) {
       dataResult.setValueClass(valueClass);
+    }
     return makePresentationResult(dataResult);
   }
 
   private Result makePresentationResult(DataCommandResult dataResult) {
-    if (dataResult != null)
+    if (dataResult != null) {
       return dataResult.toCommandResult();
-    else
+    } else {
       return ResultBuilder.createGemFireErrorResult("Error executing data command");
+    }
   }
 
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.GET}, help = CliStrings.GET__HELP)
   public Result get(
       @CliOption(key = {CliStrings.GET__KEY}, mandatory = true,
@@ -962,23 +943,24 @@ public class DataCommands implements CommandMarker {
     this.securityService.authorizeRegionRead(regionPath, key);
 
     InternalCache cache = getCache();
-    DataCommandResult dataResult = null;
+    DataCommandResult dataResult;
 
-    if (regionPath == null || regionPath.isEmpty()) {
-      return makePresentationResult(dataResult = DataCommandResult.createGetResult(key, null, null,
+    if (StringUtils.isEmpty(regionPath)) {
+      return makePresentationResult(DataCommandResult.createGetResult(key, null, null,
           CliStrings.GET__MSG__REGIONNAME_EMPTY, false));
     }
 
-    if (key == null || key.isEmpty())
-      return makePresentationResult(dataResult = DataCommandResult.createGetResult(key, null, null,
+    if (StringUtils.isEmpty(key)) {
+      return makePresentationResult(DataCommandResult.createGetResult(key, null, null,
           CliStrings.GET__MSG__KEY_EMPTY, false));
+    }
 
     @SuppressWarnings("rawtypes")
     Region region = cache.getRegion(regionPath);
     DataCommandFunction getfn = new DataCommandFunction();
     if (region == null) {
       Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
-      if (memberList != null && memberList.size() > 0) {
+      if (CollectionUtils.isNotEmpty(memberList)) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.GET);
         request.setKey(key);
@@ -988,25 +970,26 @@ public class DataCommands implements CommandMarker {
         request.setLoadOnCacheMiss(loadOnCacheMiss);
         Subject subject = this.securityService.getSubject();
         if (subject != null) {
-          request.setPrincipal((Serializable) subject.getPrincipal());
+          request.setPrincipal(subject.getPrincipal());
         }
         dataResult = callFunctionForRegion(request, getfn, memberList);
-      } else
+      } else {
         dataResult = DataCommandResult.createGetInfoResult(key, null, null,
             CliStrings.format(CliStrings.GET__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS, regionPath),
             false);
+      }
     } else {
       dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss);
     }
     dataResult.setKeyClass(keyClass);
-    if (valueClass != null)
+    if (valueClass != null) {
       dataResult.setValueClass(valueClass);
+    }
 
     return makePresentationResult(dataResult);
   }
 
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.LOCATE_ENTRY}, help = CliStrings.LOCATE_ENTRY__HELP)
   public Result locateEntry(
       @CliOption(key = {CliStrings.LOCATE_ENTRY__KEY}, mandatory = true,
@@ -1024,20 +1007,21 @@ public class DataCommands implements CommandMarker {
 
     this.securityService.authorizeRegionRead(regionPath, key);
 
-    DataCommandResult dataResult = null;
+    DataCommandResult dataResult;
 
-    if (regionPath == null || regionPath.isEmpty()) {
-      return makePresentationResult(dataResult = DataCommandResult.createLocateEntryResult(key,
-          null, null, CliStrings.LOCATE_ENTRY__MSG__REGIONNAME_EMPTY, false));
+    if (StringUtils.isEmpty(regionPath)) {
+      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
+          CliStrings.LOCATE_ENTRY__MSG__REGIONNAME_EMPTY, false));
     }
 
-    if (key == null || key.isEmpty())
-      return makePresentationResult(dataResult = DataCommandResult.createLocateEntryResult(key,
-          null, null, CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false));
+    if (StringUtils.isEmpty(key)) {
+      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
+          CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false));
+    }
 
     DataCommandFunction locateEntry = new DataCommandFunction();
     Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), true);
-    if (memberList != null && memberList.size() > 0) {
+    if (CollectionUtils.isNotEmpty(memberList)) {
       DataCommandRequest request = new DataCommandRequest();
       request.setCommand(CliStrings.LOCATE_ENTRY);
       request.setKey(key);
@@ -1046,18 +1030,19 @@ public class DataCommands implements CommandMarker {
       request.setValueClass(valueClass);
       request.setRecursive(recursive);
       dataResult = callFunctionForRegion(request, locateEntry, memberList);
-    } else
+    } else {
       dataResult = DataCommandResult.createLocateEntryInfoResult(key, null, null, CliStrings.format(
           CliStrings.LOCATE_ENTRY__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS, regionPath), false);
+    }
     dataResult.setKeyClass(keyClass);
-    if (valueClass != null)
+    if (valueClass != null) {
       dataResult.setValueClass(valueClass);
+    }
 
     return makePresentationResult(dataResult);
   }
 
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.REMOVE}, help = CliStrings.REMOVE__HELP)
   public Result remove(
       @CliOption(key = {CliStrings.REMOVE__KEY}, help = CliStrings.REMOVE__KEY__HELP,
@@ -1070,16 +1055,16 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = {CliStrings.REMOVE__KEYCLASS},
           help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
     InternalCache cache = getCache();
-    DataCommandResult dataResult = null;
+    DataCommandResult dataResult;
 
-    if (regionPath == null || regionPath.isEmpty()) {
-      return makePresentationResult(dataResult = DataCommandResult.createRemoveResult(key, null,
-          null, CliStrings.REMOVE__MSG__REGIONNAME_EMPTY, false));
+    if (StringUtils.isEmpty(regionPath)) {
+      return makePresentationResult(DataCommandResult.createRemoveResult(key, null, null,
+          CliStrings.REMOVE__MSG__REGIONNAME_EMPTY, false));
     }
 
     if (!removeAllKeys && (key == null)) {
-      return makePresentationResult(dataResult = DataCommandResult.createRemoveResult(key, null,
-          null, CliStrings.REMOVE__MSG__KEY_EMPTY, false));
+      return makePresentationResult(DataCommandResult.createRemoveResult(null, null, null,
+          CliStrings.REMOVE__MSG__KEY_EMPTY, false));
     }
 
     if (removeAllKeys) {
@@ -1093,7 +1078,7 @@ public class DataCommands implements CommandMarker {
     DataCommandFunction removefn = new DataCommandFunction();
     if (region == null) {
       Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
-      if (memberList != null && memberList.size() > 0) {
+      if (CollectionUtils.isNotEmpty(memberList)) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.REMOVE);
         request.setKey(key);
@@ -1101,10 +1086,11 @@ public class DataCommands implements CommandMarker {
         request.setRemoveAllKeys(removeAllKeys ? "ALL" : null);
         request.setRegionName(regionPath);
         dataResult = callFunctionForRegion(request, removefn, memberList);
-      } else
+      } else {
         dataResult = DataCommandResult.createRemoveInfoResult(key, null, null,
             CliStrings.format(CliStrings.REMOVE__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS, regionPath),
             false);
+      }
 
     } else {
       dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null);
@@ -1114,17 +1100,15 @@ public class DataCommands implements CommandMarker {
     return makePresentationResult(dataResult);
   }
 
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @MultiStepCommand
   @CliCommand(value = {CliStrings.QUERY}, help = CliStrings.QUERY__HELP)
   public Object query(
       @CliOption(key = CliStrings.QUERY__QUERY, help = CliStrings.QUERY__QUERY__HELP,
           mandatory = true) final String query,
-      @CliOption(key = CliStrings.QUERY__STEPNAME, mandatory = false, help = "Step name",
+      @CliOption(key = CliStrings.QUERY__STEPNAME, help = "Step name",
           unspecifiedDefaultValue = CliStrings.QUERY__STEPNAME__DEFAULTVALUE) String stepName,
-      @CliOption(key = CliStrings.QUERY__INTERACTIVE, mandatory = false,
-          help = CliStrings.QUERY__INTERACTIVE__HELP,
+      @CliOption(key = CliStrings.QUERY__INTERACTIVE, help = CliStrings.QUERY__INTERACTIVE__HELP,
           unspecifiedDefaultValue = "true") final boolean interactive) {
 
     if (!CliUtil.isGfshVM() && stepName.equals(CliStrings.QUERY__STEPNAME__DEFAULTVALUE)) {
@@ -1156,18 +1140,12 @@ public class DataCommands implements CommandMarker {
     public String region;
 
     public MemberPRInfo() {
-      region = new String();
-      dsMemberList = new ArrayList<DistributedMember>();
+      region = "";
+      dsMemberList = new ArrayList<>();
     }
 
     public boolean equals(Object o2) {
-      if (o2 == null) {
-        return false;
-      }
-      if (this.region.equals(((MemberPRInfo) o2).region)) {
-        return true;
-      }
-      return false;
+      return o2 != null && this.region.equals(((MemberPRInfo) o2).region);
     }
   }
 
@@ -1196,8 +1174,7 @@ public class DataCommands implements CommandMarker {
           FunctionService.onMembers(members).setArguments(request).execute(putfn);
       List list = (List) collector.getResult();
       DataCommandResult result = null;
-      for (int i = 0; i < list.size(); i++) {
-        Object object = list.get(i);
+      for (Object object : list) {
         if (object instanceof Throwable) {
           Throwable error = (Throwable) object;
           result = new DataCommandResult();
@@ -1220,42 +1197,45 @@ public class DataCommands implements CommandMarker {
   public static Set<DistributedMember> getQueryRegionsAssociatedMembers(Set<String> regions,
       final InternalCache cache, boolean returnAll) {
     LogWriter logger = cache.getLogger();
-    Set<DistributedMember> members = null;
+    Set<DistributedMember> members;
     Set<DistributedMember> newMembers = null;
     Iterator<String> iterator = regions.iterator();
-    String region = (String) iterator.next();
+    String region = iterator.next();
     members = getRegionAssociatedMembers(region, cache, true);
-    if (logger.fineEnabled())
+    if (logger.fineEnabled()) {
       logger.fine("Members for region " + region + " Members " + members);
-    List<String> regionAndingList = new ArrayList<String>();
+    }
+    List<String> regionAndingList = new ArrayList<>();
     regionAndingList.add(region);
     if (regions.size() == 1) {
       newMembers = members;
     } else {
-      if (members != null && !members.isEmpty()) {
+      if (CollectionUtils.isNotEmpty(members)) {
         while (iterator.hasNext()) {
           region = iterator.next();
           newMembers = getRegionAssociatedMembers(region, cache, true);
           if (newMembers == null) {
-            newMembers = new HashSet<DistributedMember>();
+            newMembers = new HashSet<>();
           }
-          if (logger.fineEnabled())
+          if (logger.fineEnabled()) {
             logger.fine("Members for region " + region + " Members " + newMembers);
+          }
           regionAndingList.add(region);
           newMembers.retainAll(members);
           members = newMembers;
-          if (logger.fineEnabled())
+          if (logger.fineEnabled()) {
             logger.fine(
                 "Members after anding for regions " + regionAndingList + " List : " + newMembers);
+          }
         }
       }
     }
-    members = new HashSet<DistributedMember>();
-    if (newMembers == null)
+    members = new HashSet<>();
+    if (newMembers == null) {
       return members;
-    Iterator<DistributedMember> memberIterator = newMembers.iterator();
-    while (memberIterator.hasNext()) {
-      members.add(memberIterator.next());
+    }
+    for (DistributedMember newMember : newMembers) {
+      members.add(newMember);
       if (!returnAll) {
         return members;
       }
@@ -1267,17 +1247,20 @@ public class DataCommands implements CommandMarker {
   public static Set<DistributedMember> getRegionAssociatedMembers(String region,
       final InternalCache cache, boolean returnAll) {
 
-    DistributedMember member = null;
+    DistributedMember member;
 
-    if (region == null || region.isEmpty())
+    if (StringUtils.isEmpty(region)) {
       return null;
+    }
 
     DistributedRegionMXBean bean =
         ManagementService.getManagementService(cache).getDistributedRegionMXBean(region);
 
-    if (bean == null)// try with slash ahead
+    if (bean == null) {
+      // try with slash ahead
       bean = ManagementService.getManagementService(cache)
           .getDistributedRegionMXBean(Region.SEPARATOR + region);
+    }
 
     if (bean == null) {
       return null;
@@ -1285,11 +1268,11 @@ public class DataCommands implements CommandMarker {
 
     String[] membersName = bean.getMembers();
     Set<DistributedMember> dsMembers = cache.getMembers();
-    Set<DistributedMember> dsMembersWithThisMember = new HashSet<DistributedMember>();
+    Set<DistributedMember> dsMembersWithThisMember = new HashSet<>();
     dsMembersWithThisMember.addAll(dsMembers);
     dsMembersWithThisMember.add(cache.getDistributedSystem().getDistributedMember());
     Iterator it = dsMembersWithThisMember.iterator();
-    Set<DistributedMember> matchedMembers = new HashSet<DistributedMember>();
+    Set<DistributedMember> matchedMembers = new HashSet<>();
 
     if (membersName.length > 0) {
       while (it.hasNext()) {
@@ -1321,11 +1304,13 @@ public class DataCommands implements CommandMarker {
     int replacedVars = 0;
     while (!done) {
       int index1 = query.indexOf("${", startIndex);
-      if (index1 == -1)
+      if (index1 == -1) {
         break;
+      }
       int index2 = query.indexOf("}", index1);
-      if (index2 == -1)
+      if (index2 == -1) {
         break;
+      }
       String var = query.substring(index1 + 2, index2);
       String value = gfshEnvVarMap.get(var);
       if (value != null) {
@@ -1333,8 +1318,9 @@ public class DataCommands implements CommandMarker {
         replacedVars++;
       }
       startIndex = index2 + 1;
-      if (startIndex >= query.length())
+      if (startIndex >= query.length()) {
         done = true;
+      }
     }
     return new Object[] {replacedVars, query};
   }

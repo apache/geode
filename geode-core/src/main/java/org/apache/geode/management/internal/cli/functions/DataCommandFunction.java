@@ -14,23 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
-import org.json.JSONArray;
-
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -80,6 +64,19 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.json.JSONArray;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @since GemFire 7.0
@@ -138,28 +135,27 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
             System.getProperty("memberName"));
       }
       DataCommandResult result = null;
-      if (request.isGet())
+      if (request.isGet()) {
         result = get(request);
-      else if (request.isLocateEntry())
+      } else if (request.isLocateEntry()) {
         result = locateEntry(request);
-      else if (request.isPut())
+      } else if (request.isPut()) {
         result = put(request);
-      else if (request.isRemove())
+      } else if (request.isRemove()) {
         result = remove(request);
-      else if (request.isSelect())
+      } else if (request.isSelect()) {
         result = select(request);
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("Result is {}", result);
       }
       functionContext.getResultSender().lastResult(result);
-    } catch (CacheClosedException e) {
-      e.printStackTrace();
-      functionContext.getResultSender().sendException(e);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.info("Exception occurred:", e);
       functionContext.getResultSender().sendException(e);
     }
   }
+
 
   private InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
@@ -223,132 +219,131 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings("rawtypes")
   private DataCommandResult select(Object principal, String queryString) {
+
     InternalCache cache = getCache();
     AtomicInteger nestedObjectCount = new AtomicInteger(0);
-    if (queryString != null && !queryString.isEmpty()) {
-      QueryService qs = cache.getQueryService();
-
-      // TODO : Find out if is this optimised use. Can you have something equivalent of parsed
-      // queries with names
-      // where name can be retrieved to avoid parsing every-time
-      Query query = qs.newQuery(queryString);
-      DefaultQuery tracedQuery = (DefaultQuery) query;
-      WrappedIndexTrackingQueryObserver queryObserver = null;
-      String queryVerboseMsg = null;
-      long startTime = -1;
-      if (tracedQuery.isTraced()) {
-        startTime = NanoTimer.getTime();
-        queryObserver = new WrappedIndexTrackingQueryObserver();
-        QueryObserverHolder.setInstance(queryObserver);
-      }
-      List<SelectResultRow> list = new ArrayList<SelectResultRow>();
-
-      try {
-        Object results = query.execute();
-        if (tracedQuery.isTraced()) {
-          queryVerboseMsg = getLogMessage(queryObserver, startTime, queryString);
-          queryObserver.reset2();
-        }
-        if (results instanceof SelectResults) {
-          SelectResults selectResults = (SelectResults) results;
-          for (Iterator iter = selectResults.iterator(); iter.hasNext();) {
-            Object object = iter.next();
-            // Post processing
-            object = this.securityService.postProcess(principal, null, null, object, false);
-
-            if (object instanceof Struct) {
-              StructImpl impl = (StructImpl) object;
-              GfJsonObject jsonStruct = getJSONForStruct(impl, nestedObjectCount);
-              if (logger.isDebugEnabled())
-                logger.debug("SelectResults : Adding select json string : {}", jsonStruct);
-              list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_STRUCT_RESULT,
-                  jsonStruct.toString()));
-            } else {
-              if (JsonUtil.isPrimitiveOrWrapper(object.getClass())) {
-                if (logger.isDebugEnabled())
-                  logger.debug("SelectResults : Adding select primitive : {}", object);
-                list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_PRIMITIVE, object));
-              } else {
-                if (logger.isDebugEnabled())
-                  logger.debug("SelectResults : Bean Results class is {}", object.getClass());
-                String str = toJson(object);
-                GfJsonObject jsonBean;
-                try {
-                  jsonBean = new GfJsonObject(str);
-                } catch (GfJsonException e) {
-                  logger.fatal(e.getMessage(), e);
-                  jsonBean = new GfJsonObject();
-                  try {
-                    jsonBean.put("msg", e.getMessage());
-                  } catch (GfJsonException e1) {
-                  }
-                }
-                if (logger.isDebugEnabled())
-                  logger.debug("SelectResults : Adding bean json string : {}", jsonBean);
-                list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_BEAN, jsonBean.toString()));
-              }
-            }
-          }
-        } else {
-          if (logger.isDebugEnabled())
-            logger.debug("BeanResults : Bean Results class is {}", results.getClass());
-          String str = toJson(results);
-          GfJsonObject jsonBean;
-          try {
-            jsonBean = new GfJsonObject(str);
-          } catch (GfJsonException e) {
-            e.printStackTrace();
-            jsonBean = new GfJsonObject();
-            try {
-              jsonBean.put("msg", e.getMessage());
-            } catch (GfJsonException e1) {
-            }
-          }
-          if (logger.isDebugEnabled())
-            logger.debug("BeanResults : Adding bean json string : {}", jsonBean);
-          list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_BEAN, jsonBean.toString()));
-        }
-        return DataCommandResult.createSelectResult(queryString, list, queryVerboseMsg, null, null,
-            true);
-
-      } catch (FunctionDomainException e) {
-        logger.warn(e.getMessage(), e);
-        return DataCommandResult.createSelectResult(queryString, null, queryVerboseMsg, e,
-            e.getMessage(), false);
-      } catch (TypeMismatchException e) {
-        logger.warn(e.getMessage(), e);
-        return DataCommandResult.createSelectResult(queryString, null, queryVerboseMsg, e,
-            e.getMessage(), false);
-      } catch (NameResolutionException e) {
-        logger.warn(e.getMessage(), e);
-        return DataCommandResult.createSelectResult(queryString, null, queryVerboseMsg, e,
-            e.getMessage(), false);
-      } catch (QueryInvocationTargetException e) {
-        logger.warn(e.getMessage(), e);
-        return DataCommandResult.createSelectResult(queryString, null, queryVerboseMsg, e,
-            e.getMessage(), false);
-      } catch (GfJsonException e) {
-        logger.warn(e.getMessage(), e);
-        return DataCommandResult.createSelectResult(queryString, null, queryVerboseMsg, e,
-            e.getMessage(), false);
-      } finally {
-        if (queryObserver != null) {
-          QueryObserverHolder.reset();
-        }
-      }
-    } else {
+    if (StringUtils.isEmpty(queryString)) {
       return DataCommandResult.createSelectInfoResult(null, null, -1, null,
           CliStrings.QUERY__MSG__QUERY_EMPTY, false);
+    }
+
+    QueryService qs = cache.getQueryService();
+
+    // TODO : Find out if is this optimised use. Can you have something equivalent of parsed
+    // queries with names where name can be retrieved to avoid parsing every-time
+    Query query = qs.newQuery(queryString);
+    DefaultQuery tracedQuery = (DefaultQuery) query;
+    WrappedIndexTrackingQueryObserver queryObserver = null;
+    String queryVerboseMsg = null;
+    long startTime = -1;
+    if (tracedQuery.isTraced()) {
+      startTime = NanoTimer.getTime();
+      queryObserver = new WrappedIndexTrackingQueryObserver();
+      QueryObserverHolder.setInstance(queryObserver);
+    }
+    List<SelectResultRow> list = new ArrayList<>();
+
+    try {
+      Object results = query.execute();
+      if (tracedQuery.isTraced()) {
+        queryVerboseMsg = getLogMessage(queryObserver, startTime, queryString);
+        queryObserver.reset2();
+      }
+      if (results instanceof SelectResults) {
+        select_SelectResults((SelectResults) results, principal, list, nestedObjectCount);
+      } else {
+        select_NonSelectResults(results, list);
+      }
+      return DataCommandResult.createSelectResult(queryString, list, queryVerboseMsg, null, null,
+          true);
+
+    } catch (FunctionDomainException | GfJsonException | QueryInvocationTargetException
+        | NameResolutionException | TypeMismatchException e) {
+      logger.warn(e.getMessage(), e);
+      return DataCommandResult.createSelectResult(queryString, null, queryVerboseMsg, e,
+          e.getMessage(), false);
+    } finally {
+      if (queryObserver != null) {
+        QueryObserverHolder.reset();
+      }
+    }
+  }
+
+  private void select_NonSelectResults(Object results, List<SelectResultRow> list) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("BeanResults : Bean Results class is {}", results.getClass());
+    }
+    String str = toJson(results);
+    GfJsonObject jsonBean;
+    try {
+      jsonBean = new GfJsonObject(str);
+    } catch (GfJsonException e) {
+      logger.info("Exception occurred:", e);
+      jsonBean = new GfJsonObject();
+      try {
+        jsonBean.put("msg", e.getMessage());
+      } catch (GfJsonException e1) {
+        logger.warn("Ignored GfJsonException:", e1);
+      }
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("BeanResults : Adding bean json string : {}", jsonBean);
+    }
+    list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_BEAN, jsonBean.toString()));
+  }
+
+  private void select_SelectResults(SelectResults selectResults, Object principal,
+      List<SelectResultRow> list, AtomicInteger nestedObjectCount) throws GfJsonException {
+    for (Object object : selectResults) {
+      // Post processing
+      object = securityService.postProcess(principal, null, null, object, false);
+
+      if (object instanceof Struct) {
+        StructImpl impl = (StructImpl) object;
+        GfJsonObject jsonStruct = getJSONForStruct(impl, nestedObjectCount);
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Adding select json string : {}", jsonStruct);
+        }
+        list.add(
+            new SelectResultRow(DataCommandResult.ROW_TYPE_STRUCT_RESULT, jsonStruct.toString()));
+      } else if (JsonUtil.isPrimitiveOrWrapper(object.getClass())) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Adding select primitive : {}", object);
+        }
+        list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_PRIMITIVE, object));
+      } else {
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Bean Results class is {}", object.getClass());
+        }
+        String str = toJson(object);
+        GfJsonObject jsonBean;
+        try {
+          jsonBean = new GfJsonObject(str);
+        } catch (GfJsonException e) {
+          logger.error(e.getMessage(), e);
+          jsonBean = new GfJsonObject();
+          try {
+            jsonBean.put("msg", e.getMessage());
+          } catch (GfJsonException e1) {
+            logger.warn("Ignored GfJsonException:", e1);
+          }
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Adding bean json string : {}", jsonBean);
+        }
+        list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_BEAN, jsonBean.toString()));
+      }
     }
   }
 
   private String toJson(Object object) {
     if (object instanceof Undefined) {
       return "{\"Value\":\"UNDEFINED\"}";
-    } else if (object instanceof PdxInstance)
+    } else if (object instanceof PdxInstance) {
       return pdxToJson((PdxInstance) object);
-    else
+    } else {
       return JsonUtil.objectToJsonNestedChkCDep(object, NESTED_JSON_LENGTH);
+    }
   }
 
   private GfJsonObject getJSONForStruct(StructImpl impl, AtomicInteger ai) throws GfJsonException {
@@ -376,14 +371,13 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
     InternalCache cache = getCache();
 
-    if (regionName == null || regionName.isEmpty()) {
+    if (StringUtils.isEmpty(regionName)) {
       return DataCommandResult.createRemoveResult(key, null, null,
           CliStrings.REMOVE__MSG__REGIONNAME_EMPTY, false);
     }
 
-    boolean allKeysFlag = (removeAllKeys == null || removeAllKeys.isEmpty());
-    if (allKeysFlag && (key == null)) {
-      return DataCommandResult.createRemoveResult(key, null, null,
+    if (StringUtils.isEmpty(removeAllKeys) && (key == null)) {
+      return DataCommandResult.createRemoveResult(null, null, null,
           CliStrings.REMOVE__MSG__KEY_EMPTY, false);
     }
 
@@ -393,7 +387,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           CliStrings.format(CliStrings.REMOVE__MSG__REGION_NOT_FOUND, regionName), false);
     } else {
       if (removeAllKeys == null) {
-        Object keyObject = null;
+        Object keyObject;
         try {
           keyObject = getClassObject(key, keyClass);
         } catch (ClassNotFoundException e) {
@@ -406,14 +400,16 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
         if (region.containsKey(keyObject)) {
           Object value = region.remove(keyObject);
-          if (logger.isDebugEnabled())
+          if (logger.isDebugEnabled()) {
             logger.debug("Removed key {} successfully", key);
+          }
           // return DataCommandResult.createRemoveResult(key, value, null, null);
           Object array[] = getJSONForNonPrimitiveObject(value);
           DataCommandResult result =
               DataCommandResult.createRemoveResult(key, array[1], null, null, true);
-          if (array[0] != null)
+          if (array[0] != null) {
             result.setValueClass((String) array[0]);
+          }
           return result;
         } else {
           return DataCommandResult.createRemoveInfoResult(key, null, null,
@@ -423,8 +419,9 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         DataPolicy policy = region.getAttributes().getDataPolicy();
         if (!policy.withPartitioning()) {
           region.clear();
-          if (logger.isDebugEnabled())
+          if (logger.isDebugEnabled()) {
             logger.debug("Cleared all keys in the region - {}", regionName);
+          }
           return DataCommandResult.createRemoveInfoResult(key, null, null,
               CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
         } else {
@@ -441,12 +438,12 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
     InternalCache cache = getCache();
 
-    if (regionName == null || regionName.isEmpty()) {
+    if (StringUtils.isEmpty(regionName)) {
       return DataCommandResult.createGetResult(key, null, null,
           CliStrings.GET__MSG__REGIONNAME_EMPTY, false);
     }
 
-    if (key == null || key.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return DataCommandResult.createGetResult(key, null, null, CliStrings.GET__MSG__KEY_EMPTY,
           false);
     }
@@ -454,12 +451,13 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     Region region = cache.getRegion(regionName);
 
     if (region == null) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("Region Not Found - {}", regionName);
+      }
       return DataCommandResult.createGetResult(key, null, null,
           CliStrings.format(CliStrings.GET__MSG__REGION_NOT_FOUND, regionName), false);
     } else {
-      Object keyObject = null;
+      Object keyObject;
       try {
         keyObject = getClassObject(key, keyClass);
       } catch (ClassNotFoundException e) {
@@ -480,24 +478,27 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         // run it through post processor. region.get will return the deserialized object already, so
         // we don't need to
         // deserialize it anymore to pass it to the postProcessor
-        value = this.securityService.postProcess(principal, regionName, keyObject, value, false);
+        value = securityService.postProcess(principal, regionName, keyObject, value, false);
 
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
           logger.debug("Get for key {} value {}", key, value);
+        }
         // return DataCommandResult.createGetResult(key, value, null, null);
         Object array[] = getJSONForNonPrimitiveObject(value);
         if (value != null) {
           DataCommandResult result =
               DataCommandResult.createGetResult(key, array[1], null, null, true);
-          if (array[0] != null)
+          if (array[0] != null) {
             result.setValueClass((String) array[0]);
+          }
           return result;
         } else {
           return DataCommandResult.createGetResult(key, array[1], null, null, false);
         }
       } else {
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
           logger.debug("Key is not present in the region {}", regionName);
+        }
         return DataCommandResult.createGetInfoResult(key, null, null,
             CliStrings.GET__MSG__KEY_NOT_FOUND_REGION, false);
       }
@@ -510,71 +511,72 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
     InternalCache cache = getCache();
 
-    if (regionPath == null || regionPath.isEmpty()) {
+    if (StringUtils.isEmpty(regionPath)) {
       return DataCommandResult.createLocateEntryResult(key, null, null,
           CliStrings.LOCATE_ENTRY__MSG__REGIONNAME_EMPTY, false);
     }
 
-    if (key == null || key.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return DataCommandResult.createLocateEntryResult(key, null, null,
           CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false);
     }
-
-    List<Region> listofRegionStartingwithRegionPath = new ArrayList<Region>();
+    List<Region> listOfRegionsStartingWithRegionPath = new ArrayList<>();
 
     if (recursive) {
       // Recursively find the keys starting from the specified region path.
       List<String> regionPaths = getAllRegionPaths(cache, true);
-      for (int i = 0; i < regionPaths.size(); i++) {
-        String path = regionPaths.get(i);
+      for (String path : regionPaths) {
         if (path.startsWith(regionPath) || path.startsWith(Region.SEPARATOR + regionPath)) {
           Region targetRegion = cache.getRegion(path);
-          listofRegionStartingwithRegionPath.add(targetRegion);
+          listOfRegionsStartingWithRegionPath.add(targetRegion);
         }
       }
-      if (listofRegionStartingwithRegionPath.size() == 0) {
-        if (logger.isDebugEnabled())
+      if (listOfRegionsStartingWithRegionPath.size() == 0) {
+        if (logger.isDebugEnabled()) {
           logger.debug("Region Not Found - {}", regionPath);
+        }
         return DataCommandResult.createLocateEntryResult(key, null, null,
             CliStrings.format(CliStrings.REMOVE__MSG__REGION_NOT_FOUND, regionPath), false);
       }
     } else {
       Region region = cache.getRegion(regionPath);
       if (region == null) {
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
           logger.debug("Region Not Found - {}", regionPath);
+        }
         return DataCommandResult.createLocateEntryResult(key, null, null,
             CliStrings.format(CliStrings.REMOVE__MSG__REGION_NOT_FOUND, regionPath), false);
-      } else
-        listofRegionStartingwithRegionPath.add(region);
+      } else {
+        listOfRegionsStartingWithRegionPath.add(region);
+      }
     }
 
-    Object keyObject = null;
+    Object keyObject;
     try {
       keyObject = getClassObject(key, keyClass);
     } catch (ClassNotFoundException e) {
-      logger.fatal(e.getMessage(), e);
+      logger.error(e.getMessage(), e);
       return DataCommandResult.createLocateEntryResult(key, null, null,
           "ClassNotFoundException " + keyClass, false);
     } catch (IllegalArgumentException e) {
-      logger.fatal(e.getMessage(), e);
+      logger.error(e.getMessage(), e);
       return DataCommandResult.createLocateEntryResult(key, null, null,
           "Error in converting JSON " + e.getMessage(), false);
     }
 
-    Object value = null;
-    DataCommandResult.KeyInfo keyInfo = null;
+    Object value;
+    DataCommandResult.KeyInfo keyInfo;
     keyInfo = new DataCommandResult.KeyInfo();
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     keyInfo.setHost(member.getHost());
     keyInfo.setMemberId(member.getId());
     keyInfo.setMemberName(member.getName());
 
-    for (Region region : listofRegionStartingwithRegionPath) {
+    for (Region region : listOfRegionsStartingWithRegionPath) {
       if (region instanceof PartitionedRegion) {
         // Following code is adaptation of which.java of old Gfsh
         PartitionedRegion pr = (PartitionedRegion) region;
-        Region localRegion = PartitionRegionHelper.getLocalData((PartitionedRegion) region);
+        Region localRegion = PartitionRegionHelper.getLocalData(region);
         value = localRegion.get(keyObject);
         if (value != null) {
           DistributedMember primaryMember =
@@ -584,24 +586,28 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           keyInfo.addLocation(new Object[] {region.getFullPath(), true,
               getJSONForNonPrimitiveObject(value)[1], isPrimary, "" + bucketId});
         } else {
-          if (logger.isDebugEnabled())
+          if (logger.isDebugEnabled()) {
             logger.debug("Key is not present in the region {}", regionPath);
+          }
           return DataCommandResult.createLocateEntryInfoResult(key, null, null,
               CliStrings.LOCATE_ENTRY__MSG__KEY_NOT_FOUND_REGION, false);
         }
       } else {
         if (region.containsKey(keyObject)) {
           value = region.get(keyObject);
-          if (logger.isDebugEnabled())
+          if (logger.isDebugEnabled()) {
             logger.debug("Get for key {} value {} in region {}", key, value, region.getFullPath());
-          if (value != null)
+          }
+          if (value != null) {
             keyInfo.addLocation(new Object[] {region.getFullPath(), true,
                 getJSONForNonPrimitiveObject(value)[1], false, null});
-          else
+          } else {
             keyInfo.addLocation(new Object[] {region.getFullPath(), false, null, false, null});
+          }
         } else {
-          if (logger.isDebugEnabled())
+          if (logger.isDebugEnabled()) {
             logger.debug("Key is not present in the region {}", regionPath);
+          }
           keyInfo.addLocation(new Object[] {region.getFullPath(), false, null, false, null});
         }
       }
@@ -619,17 +625,17 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   public DataCommandResult put(String key, String value, boolean putIfAbsent, String keyClass,
       String valueClass, String regionName) {
 
-    if (regionName == null || regionName.isEmpty()) {
+    if (StringUtils.isEmpty(regionName)) {
       return DataCommandResult.createPutResult(key, null, null,
           CliStrings.PUT__MSG__REGIONNAME_EMPTY, false);
     }
 
-    if (key == null || key.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return DataCommandResult.createPutResult(key, null, null, CliStrings.PUT__MSG__KEY_EMPTY,
           false);
     }
 
-    if (value == null || value.isEmpty()) {
+    if (StringUtils.isEmpty(value)) {
       return DataCommandResult.createPutResult(key, null, null, CliStrings.PUT__MSG__VALUE_EMPTY,
           false);
     }
@@ -640,8 +646,8 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       return DataCommandResult.createPutResult(key, null, null,
           CliStrings.format(CliStrings.PUT__MSG__REGION_NOT_FOUND, regionName), false);
     } else {
-      Object keyObject = null;
-      Object valueObject = null;
+      Object keyObject;
+      Object valueObject;
       try {
         keyObject = getClassObject(key, keyClass);
       } catch (ClassNotFoundException e) {
@@ -659,14 +665,16 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
             "ClassNotFoundException " + valueClass, false);
       }
       Object returnValue;
-      if (putIfAbsent && region.containsKey(keyObject))
+      if (putIfAbsent && region.containsKey(keyObject)) {
         returnValue = region.get(keyObject);
-      else
+      } else {
         returnValue = region.put(keyObject, valueObject);
+      }
       Object array[] = getJSONForNonPrimitiveObject(returnValue);
       DataCommandResult result = DataCommandResult.createPutResult(key, array[1], null, null, true);
-      if (array[0] != null)
+      if (array[0] != null) {
         result.setValueClass((String) array[0]);
+      }
       return result;
     }
   }
@@ -674,53 +682,40 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   @SuppressWarnings({"rawtypes", "unchecked"})
   private Object getClassObject(String string, String klassString)
       throws ClassNotFoundException, IllegalArgumentException {
-    if (klassString == null || klassString.isEmpty())
+    if (StringUtils.isEmpty(klassString)) {
       return string;
-    else {
-      Object o = null;
-      Class klass = ClassPathLoader.getLatest().forName(klassString);
+    }
+    Class klass = ClassPathLoader.getLatest().forName(klassString);
 
-      if (klass.equals(String.class))
-        return string;
+    if (klass.equals(String.class)) {
+      return string;
+    }
 
-      if (JsonUtil.isPrimitiveOrWrapper(klass)) {
-        try {
-          if (klass.equals(Byte.class)) {
-            o = Byte.parseByte(string);
-            return o;
-          } else if (klass.equals(Short.class)) {
-            o = Short.parseShort(string);
-            return o;
-          } else if (klass.equals(Integer.class)) {
-            o = Integer.parseInt(string);
-            return o;
-          } else if (klass.equals(Long.class)) {
-            o = Long.parseLong(string);
-            return o;
-          } else if (klass.equals(Double.class)) {
-            o = Double.parseDouble(string);
-            return o;
-          } else if (klass.equals(Boolean.class)) {
-            o = Boolean.parseBoolean(string);
-            return o;
-          } else if (klass.equals(Float.class)) {
-            o = Float.parseFloat(string);
-            return o;
-          }
-          return o;
-        } catch (NumberFormatException e) {
-          throw new IllegalArgumentException(
-              "Failed to convert input key to " + klassString + " Msg : " + e.getMessage());
-        }
-      }
-
+    if (JsonUtil.isPrimitiveOrWrapper(klass)) {
       try {
-        o = getObjectFromJson(string, klass);
-        return o;
-      } catch (IllegalArgumentException e) {
-        throw e;
+        if (klass.equals(Byte.class)) {
+          return Byte.parseByte(string);
+        } else if (klass.equals(Short.class)) {
+          return Short.parseShort(string);
+        } else if (klass.equals(Integer.class)) {
+          return Integer.parseInt(string);
+        } else if (klass.equals(Long.class)) {
+          return Long.parseLong(string);
+        } else if (klass.equals(Double.class)) {
+          return Double.parseDouble(string);
+        } else if (klass.equals(Boolean.class)) {
+          return Boolean.parseBoolean(string);
+        } else if (klass.equals(Float.class)) {
+          return Float.parseFloat(string);
+        }
+        return null;
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException(
+            "Failed to convert input key to " + klassString + " Msg : " + e.getMessage());
       }
     }
+
+    return getObjectFromJson(string, klass);
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -803,9 +798,10 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       sb.append("{").append(newString.substring(1, len - 1)).append("}");
       newString = sb.toString();
     }
-    V v = JsonUtil.jsonToObject(newString, klass);
-    return v;
+    return JsonUtil.jsonToObject(newString, klass);
   }
+
+
 
   /**
    * Returns a sorted list of all region full paths found in the specified cache.
@@ -822,18 +818,17 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     }
 
     // get a list of all root regions
-    Set regions = cache.rootRegions();
-    Iterator itor = regions.iterator();
+    Set<Region<?, ?>> regions = cache.rootRegions();
 
-    while (itor.hasNext()) {
-      String regionPath = ((Region) itor.next()).getFullPath();
+    for (Region rootRegion : regions) {
+      String regionPath = rootRegion.getFullPath();
 
       Region region = cache.getRegion(regionPath);
       list.add(regionPath);
-      Set subregionSet = region.subregions(true);
+      Set<Region> subregionSet = region.subregions(true);
       if (recursive) {
-        for (Iterator subIter = subregionSet.iterator(); subIter.hasNext();) {
-          list.add(((Region) subIter.next()).getFullPath());
+        for (Region aSubregionSet : subregionSet) {
+          list.add(aSubregionSet.getFullPath());
         }
       }
     }
@@ -856,7 +851,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       int startCount = args.getInt(DataCommandResult.QUERY_PAGE_START);
       int endCount = args.getInt(DataCommandResult.QUERY_PAGE_END);
       int rows = args.getInt(DataCommandResult.NUM_ROWS); // returns Zero if no rows added so it
-                                                          // works.
+      // works.
       boolean flag = args.getBoolean(DataCommandResult.RESULT_FLAG);
       CommandResult commandResult = CLIMultiStepHelper.getDisplayResultFromArgs(args);
       Gfsh.println();
@@ -865,7 +860,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       }
 
       if (flag) {
-        boolean paginationNeeded = (startCount < rows) && (endCount < rows) && interactive && flag;
+        boolean paginationNeeded = startCount < rows && endCount < rows && interactive;
         if (paginationNeeded) {
           while (true) {
             String message = ("Press n to move to next page, q to quit and p to previous page : ");
@@ -879,17 +874,19 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
                     new Object[] {nextStart, (nextStart + getPageSize())}, SELECT_STEP_MOVE);
               } else if ("p".equals(step)) {
                 int nextStart = startCount - getPageSize();
-                if (nextStart < 0)
+                if (nextStart < 0) {
                   nextStart = 0;
+                }
                 return CLIMultiStepHelper.createBannerResult(
                     new String[] {DataCommandResult.QUERY_PAGE_START,
                         DataCommandResult.QUERY_PAGE_END},
                     new Object[] {nextStart, (nextStart + getPageSize())}, SELECT_STEP_MOVE);
-              } else if ("q".equals(step))
+              } else if ("q".equals(step)) {
                 return CLIMultiStepHelper.createBannerResult(new String[] {}, new Object[] {},
                     SELECT_STEP_END);
-              else
+              } else {
                 Gfsh.println("Unknown option ");
+              }
             } catch (IOException e) {
               throw new RuntimeException(e);
             }
@@ -916,7 +913,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       int endCount = args.getInt(DataCommandResult.QUERY_PAGE_END);
       return cachedResult.pageResult(startCount, endCount, SELECT_STEP_DISPLAY);
     }
-  };
+  }
 
   public static class SelectExecStep extends CLIMultiStepHelper.RemoteStep {
 
@@ -938,21 +935,23 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       if (interactive) {
         endCount = getPageSize();
       } else {
-        if (result.getSelectResult() != null)
+        if (result.getSelectResult() != null) {
           endCount = result.getSelectResult().size();
+        }
       }
-      if (interactive)
+      if (interactive) {
         return result.pageResult(0, endCount, SELECT_STEP_DISPLAY);
-      else
+      } else {
         return CLIMultiStepHelper.createBannerResult(new String[] {}, new Object[] {},
             SELECT_STEP_END);
+      }
     }
 
     public DataCommandResult _select(String query) {
       InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-      DataCommandResult dataResult = null;
+      DataCommandResult dataResult;
 
-      if (query == null || query.isEmpty()) {
+      if (StringUtils.isEmpty(query)) {
         dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,
             CliStrings.QUERY__MSG__QUERY_EMPTY, false);
         return dataResult;
@@ -964,15 +963,15 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
       @SuppressWarnings("deprecation")
       QCompiler compiler = new QCompiler();
-      Set<String> regionsInQuery = null;
+      Set<String> regionsInQuery;
       try {
         CompiledValue compiledQuery = compiler.compileQuery(query);
-        Set<String> regions = new HashSet<String>();
+        Set<String> regions = new HashSet<>();
         compiledQuery.getRegionsInQuery(regions, null);
 
         // authorize data read on these regions
         for (String region : regions) {
-          this.securityService.authorizeRegionRead(region);
+          securityService.authorizeRegionRead(region);
         }
 
         regionsInQuery = Collections.unmodifiableSet(regions);
@@ -984,38 +983,38 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
             DataCommandRequest request = new DataCommandRequest();
             request.setCommand(CliStrings.QUERY);
             request.setQuery(query);
-            Subject subject = this.securityService.getSubject();
+            Subject subject = securityService.getSubject();
             if (subject != null) {
-              request.setPrincipal((Serializable) subject.getPrincipal());
+              request.setPrincipal(subject.getPrincipal());
             }
             dataResult = DataCommands.callFunctionForRegion(request, function, members);
             dataResult.setInputQuery(query);
-            return (dataResult);
+            return dataResult;
           } else {
-            return (dataResult =
-                DataCommandResult.createSelectInfoResult(null, null, -1, null, CliStrings.format(
-                    CliStrings.QUERY__MSG__REGIONS_NOT_FOUND, regionsInQuery.toString()), false));
+            return DataCommandResult.createSelectInfoResult(null, null, -1, null, CliStrings.format(
+                CliStrings.QUERY__MSG__REGIONS_NOT_FOUND, regionsInQuery.toString()), false);
           }
         } else {
-          return (dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,
+          return DataCommandResult.createSelectInfoResult(null, null, -1, null,
               CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY,
                   "Region mentioned in query probably missing /"),
-              false));
+              false);
         }
       } catch (QueryInvalidException qe) {
         logger.error("{} Failed Error {}", query, qe.getMessage(), qe);
-        return (dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,
-            CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY, qe.getMessage()), false));
+        return DataCommandResult.createSelectInfoResult(null, null, -1, null,
+            CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY, qe.getMessage()), false);
       }
     }
 
     private String addLimit(String query) {
       if (StringUtils.containsIgnoreCase(query, " limit")
-          || StringUtils.containsIgnoreCase(query, " count("))
+          || StringUtils.containsIgnoreCase(query, " count(")) {
         return query;
+      }
       return query + " limit " + getFetchSize();
     }
-  };
+  }
 
   public static class SelectQuitStep extends CLIMultiStepHelper.RemoteStep {
 
@@ -1031,20 +1030,20 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       GfJsonObject args = CLIMultiStepHelper.getStepArgs();
       DataCommandResult dataResult = cachedResult;
       cachedResult = null;
-      if (interactive)
+      if (interactive) {
         return CLIMultiStepHelper.createEmptyResult("END");
-      else {
+      } else {
         CompositeResultData rd = dataResult.toSelectCommandResult();
         SectionResultData section = rd.addSection(CLIMultiStepHelper.STEP_SECTION);
         section.addData(CLIMultiStepHelper.NEXT_STEP_NAME, "END");
         return ResultBuilder.buildResult(rd);
       }
     }
-  };
+  }
 
   public static int getPageSize() {
     int pageSize = -1;
-    Map<String, String> session = null;
+    Map<String, String> session;
     if (CliUtil.isGfshVM()) {
       session = Gfsh.getCurrentInstance().getEnv();
     } else {
@@ -1052,13 +1051,15 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     }
     if (session != null) {
       String size = session.get(Gfsh.ENV_APP_COLLECTION_LIMIT);
-      if (size == null || size.isEmpty())
+      if (StringUtils.isEmpty(size)) {
         pageSize = Gfsh.DEFAULT_APP_COLLECTION_LIMIT;
-      else
+      } else {
         pageSize = Integer.parseInt(size);
+      }
     }
-    if (pageSize == -1)
+    if (pageSize == -1) {
       pageSize = Gfsh.DEFAULT_APP_COLLECTION_LIMIT;
+    }
     return pageSize;
   }
 
@@ -1068,7 +1069,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   public static String getLogMessage(QueryObserver observer, long startTime, String query) {
     String usedIndexesString = null;
-    String rowCountString = null;
     float time = 0.0f;
 
     if (startTime > 0L) {
@@ -1087,7 +1087,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         buf.append(":");
         for (Iterator itr = usedIndexes.entrySet().iterator(); itr.hasNext();) {
           Map.Entry entry = (Map.Entry) itr.next();
-          buf.append(entry.getKey().toString() + entry.getValue());
+          buf.append(entry.getKey().toString()).append(entry.getValue());
           if (itr.hasNext()) {
             buf.append(",");
           }
@@ -1099,9 +1099,8 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           + observer.getClass().getName() + ")";
     }
 
-    return "Query Executed" + (startTime > 0L ? " in " + time + " ms;" : ";")
-        + (rowCountString != null ? rowCountString : "")
-        + (usedIndexesString != null ? usedIndexesString : "");
+    return String.format("Query Executed%s%s", startTime > 0L ? " in " + time + " ms;" : ";",
+        usedIndexesString != null ? usedIndexesString : "");
   }
 
 }

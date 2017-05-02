@@ -14,20 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * 
- * 
  * @since GemFire 7.0
  */
 public class TabularResultData extends AbstractResultData {
@@ -70,8 +64,7 @@ public class TabularResultData extends AbstractResultData {
   }
 
   /**
-   * 
-   * @param headerText
+   * @param headerText Text to set to header.
    * @return this TabularResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
@@ -80,8 +73,7 @@ public class TabularResultData extends AbstractResultData {
   }
 
   /**
-   * 
-   * @param footerText
+   * @param footerText Text to set to footer.
    * @return this TabularResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
@@ -99,62 +91,8 @@ public class TabularResultData extends AbstractResultData {
     return gfJsonObject.getString(RESULT_FOOTER);
   }
 
-  public Map<String, String> retrieveDataByValueInColumn(String columnName, String valueToSearch) {
-    Map<String, String> foundValues = Collections.emptyMap();
-    try {
-      GfJsonArray jsonArray = contentObject.getJSONArray(columnName);
-      int size = jsonArray.size();
-      int foundIndex = -1;
-      for (int i = 0; i < size; i++) {
-        Object object = jsonArray.get(i);
-        if (object != null && object.equals(valueToSearch)) {
-          foundIndex = i;
-          break;
-        }
-      }
-
-      if (foundIndex != -1) {
-        foundValues = new LinkedHashMap<String, String>();
-        for (Iterator<String> iterator = contentObject.keys(); iterator.hasNext();) {
-          String storedColumnNames = (String) iterator.next();
-          GfJsonArray storedColumnValues = contentObject.getJSONArray(storedColumnNames);
-          foundValues.put(storedColumnNames, String.valueOf(storedColumnValues.get(foundIndex)));
-        }
-      }
-    } catch (GfJsonException e) {
-      throw new ResultDataException(e.getMessage());
-    }
-    return foundValues;
-  }
-
-  public List<Map<String, String>> retrieveAllDataByValueInColumn(String columnName,
-      String valueToSearch) {
-    List<Map<String, String>> foundValuesList = new ArrayList<Map<String, String>>();
-    try {
-      GfJsonArray jsonArray = contentObject.getJSONArray(columnName);
-      int size = jsonArray.size();
-      for (int i = 0; i < size; i++) {
-        Object object = jsonArray.get(i);
-        if (object != null && object.equals(valueToSearch)) {
-          Map<String, String> foundValues = new LinkedHashMap<String, String>();
-
-          for (Iterator<String> iterator = contentObject.keys(); iterator.hasNext();) {
-            String storedColumnNames = (String) iterator.next();
-            GfJsonArray storedColumnValues = contentObject.getJSONArray(storedColumnNames);
-            foundValues.put(storedColumnNames, String.valueOf(storedColumnValues.get(i)));
-          }
-
-          foundValuesList.add(foundValues);
-        }
-      }
-    } catch (GfJsonException e) {
-      throw new ResultDataException(e.getMessage());
-    }
-    return foundValuesList;
-  }
-
   public List<String> retrieveAllValues(String columnName) {
-    List<String> values = new ArrayList<String>();
+    List<String> values = new ArrayList<>();
 
     try {
       GfJsonArray jsonArray = contentObject.getJSONArray(columnName);
