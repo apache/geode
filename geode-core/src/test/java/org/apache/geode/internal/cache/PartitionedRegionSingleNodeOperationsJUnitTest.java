@@ -650,13 +650,13 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
   /**
    * Test either the keySet() or keys() methods, which logically are expected to be the same
    */
-  private void keysSetTester(Region pr, boolean keySet) {
-    assertEquals(Collections.EMPTY_SET, (keySet ? pr.keySet() : pr.keys()));
+  private void keysSetTester(Region pr) {
+    assertEquals(Collections.EMPTY_SET, pr.keySet());
     pr.put(new Integer(1), "won");
     pr.put(new Integer(2), "to");
     pr.put(new Integer(3), "free");
     pr.put(new Integer(5), "hive");
-    final Set ks = (keySet ? pr.keySet() : pr.keys());
+    final Set ks = pr.keySet();
     assertEquals(4, ks.size());
 
     try {
@@ -714,19 +714,11 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
   }
 
   @Test
-  public void test013Keys() throws Exception {
-    final String regionName = "testKeys";
-    PartitionedRegion pr = (PartitionedRegion) PartitionedRegionTestHelper
-        .createPartitionedRegion(regionName, String.valueOf(200), 0);
-    keysSetTester(pr, false);
-  }
-
-  @Test
   public void test014KeySet() throws Exception {
     String regionName = "testKeysSet";
     PartitionedRegion pr = (PartitionedRegion) PartitionedRegionTestHelper
         .createPartitionedRegion(regionName, String.valueOf(200), 0);
-    keysSetTester(pr, true);
+    keysSetTester(pr);
   }
 
   // /**

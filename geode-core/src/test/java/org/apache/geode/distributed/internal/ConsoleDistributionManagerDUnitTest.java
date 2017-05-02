@@ -266,7 +266,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
         }
         final Set subregions = root.subregions(false);
         assertEquals(3, subregions.size());
-        assertEquals(2, root.keys().size());
+        assertEquals(2, root.keySet().size());
         Region.Entry entry = root.getEntry("cacheObj1");
         assertNotNull(entry);
         if (attributes.getStatisticsEnabled()) {

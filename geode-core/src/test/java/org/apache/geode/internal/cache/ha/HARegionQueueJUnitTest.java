@@ -776,7 +776,7 @@ public class HARegionQueueJUnitTest {
         assertTrue(counters.contains(new Long((i + 1))));
       }
       Region rgn = ((HARegionQueue) regionqueue).getRegion();
-      assertTrue(rgn.keys().size() == 6);
+      assertTrue(rgn.keySet().size() == 6);
 
     } catch (Exception e) {
       throw new AssertionError("Exception occurred in test due to ", e);

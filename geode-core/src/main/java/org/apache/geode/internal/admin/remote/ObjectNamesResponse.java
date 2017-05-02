@@ -49,7 +49,7 @@ public final class ObjectNamesResponse extends AdminResponse implements Cancella
       return;
     }
 
-    Set nameSet = r.keys();
+    Set nameSet = r.keySet();
     Iterator it = nameSet.iterator();
     objectNames = new HashSet();
     synchronized (r) {

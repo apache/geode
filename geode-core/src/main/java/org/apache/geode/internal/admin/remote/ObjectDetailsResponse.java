@@ -129,7 +129,7 @@ public final class ObjectDetailsResponse extends AdminResponse implements Cancel
         }
       }
       Object obj = null;
-      Set keys = r.keys();
+      Set keys = r.keySet();
       synchronized (r) {
         Iterator it = keys.iterator();
         while (it.hasNext()) {

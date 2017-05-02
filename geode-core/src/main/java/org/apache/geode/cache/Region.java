@@ -971,26 +971,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * you need to lock down the region so this set is not modified while it is being accessed, use
    * global scope with a distributed lock.
    *
-   * @deprecated Use <code>keySet</code> instead;
-   *
-   * @return a Set of all the keys
-   */
-  @Deprecated
-  public Set<K> keys();
-
-
-  /**
-   * Returns a set of keys in the region.
-   *
-   * <p>
-   * This <code>Set</code> is unmodifiable. It is backed by this region. Synchronization is not
-   * necessary to access or iterate over this set. No <code>ConcurrentModificationException</code>s
-   * will be thrown, but keys may be added or removed to this set while a thread is iterating.
-   * Iterators are intended to be used by one thread at a time. If a stable "snapshot" view of the
-   * set is required, then call one of the toArray methods on the set and iterate over the array. If
-   * you need to lock down the region so this set is not modified while it is being accessed, use
-   * global scope with a distributed lock.
-   *
    *
    * @return a Set of all the keys
    */
@@ -1015,31 +995,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @return a Collection of all the objects cached in this region
    */
   public Collection<V> values();
-
-  /**
-   * Returns the <code>Set</code> of <code>Region.Entry</code> objects in this region. If the
-   * recursive parameter is set to true, this call will recursively collect all the entries in this
-   * region and its subregions and return them in the Set; if false, it only returns entries
-   * directly contained in this region.
-   *
-   * <p>
-   * This <code>Set</code> is unmodifiable. It is backed by this region. Synchronization is not
-   * necessary to access or iterate over this set. No <code>ConcurrentModificationException</code>s
-   * will be thrown, but entries may be added or removed to this set while a thread is iterating.
-   * Iterators are intended to be used by one thread at a time. If a stable "snapshot" view of the
-   * set is required, then call one of the toArray methods on the set and iterate over the array. If
-   * you need to lock down the region so this set is not modified while it is being accessed, use
-   * global scope with a distributed lock.
-   *
-   * @param recursive if true, this call recursively collects all the entries in this region and its
-   *        subregions; if false, it only returns the entries directly contained in this region
-   * @return a List of all the cached objects
-   *
-   * @deprecated Use <code>entrySet(boolean recursive)</code> instead.
-   * @see Region.Entry
-   */
-  @Deprecated
-  public Set<Region.Entry<?, ?>> entries(boolean recursive);
 
   /**
    * Returns the <code>Set</code> of <code>Region.Entry</code> objects in this region. If the

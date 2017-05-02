@@ -612,7 +612,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     try {
-      region.entries(false);
+      region.entrySet(false);
       fail("Should have thrown a RegionDestroyedException");
 
     } catch (RegionDestroyedException ex) {
@@ -735,7 +735,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     try {
-      region.keys();
+      region.keySet();
       fail("Should have thrown a RegionDestroyedException");
 
     } catch (RegionDestroyedException ex) {
@@ -816,21 +816,21 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests the {@link Region#entries} method without recursion
+   * Tests the {@link Region#entrySet(boolean)} method without recursion
    */
   @Test
   public void testEntries() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
-    assertEquals(0, region.entries(true).size());
-    assertEquals(0, region.entries(false).size());
+    assertEquals(0, region.entrySet(true).size());
+    assertEquals(0, region.entrySet(false).size());
 
     region.put("A", "a");
     region.put("B", "b");
     region.put("C", "c");
 
     {
-      Set entries = region.entries(false);
+      Set entries = region.entrySet(false);
       assertEquals(3, entries.size());
 
       Set keys = new HashSet(Arrays.asList(new String[] {"A", "B", "C"}));
@@ -843,7 +843,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     {
-      Set entries = region.entries(true);
+      Set entries = region.entrySet(true);
       assertEquals(3, entries.size());
 
       Set keys = new HashSet(Arrays.asList(new String[] {"A", "B", "C"}));
@@ -869,7 +869,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
      * } catch (ConcurrentModificationException ex) { // pass... } }
      */
     {
-      Iterator iter = region.entries(false).iterator();
+      Iterator iter = region.entrySet(false).iterator();
       Region.Entry entry = (Region.Entry) iter.next();
       region.destroy(entry.getKey());
       if (entry.isLocal()) {
@@ -882,7 +882,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests the {@link Region#entries} method with recursion
+   * Tests the {@link Region#entrySet} method with recursion
    */
   @Test
   public void testEntriesRecursive() throws CacheException {
@@ -902,7 +902,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     sub.put("F", "f");
 
     {
-      Set entries = region.entries(true);
+      Set entries = region.entrySet(true);
       assertEquals(6, entries.size());
 
 
@@ -917,7 +917,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     {
-      Set entries = getRootRegion().entries(true);
+      Set entries = getRootRegion().entrySet(true);
       assertEquals(6, entries.size());
 
 
@@ -932,7 +932,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     {
-      Iterator iter = region.entries(true).iterator();
+      Iterator iter = region.entrySet(true).iterator();
       Region.Entry entry = (Region.Entry) iter.next();
       Object ekey = entry.getKey();
       region.destroy(ekey);
@@ -1106,21 +1106,21 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests the {@link Region#keys} method.
+   * Tests the {@link Region#keySet()} method.
    */
   @Test
   public void testKeys() throws CacheException {
     String name = this.getUniqueName();
 
     Region region = createRegion(name);
-    assertEquals(0, region.keys().size());
+    assertEquals(0, region.keySet().size());
 
     region.put("A", "a");
     region.put("B", "b");
     region.put("C", "c");
 
     {
-      Set keys = region.keys();
+      Set keys = region.keySet();
       assertEquals(3, keys.size());
 
       assertTrue(keys.contains("A"));
@@ -1184,7 +1184,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     assertNull(region.getEntry(key));
     assertTrue(entry.isDestroyed());
-    assertEquals(0, region.keys().size());
+    assertEquals(0, region.keySet().size());
 
     try {
       entry.getKey();
@@ -1332,7 +1332,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     try {
-      region.entries(false);
+      region.entrySet(false);
       fail("Should have thrown a RegionDestroyedException");
 
     } catch (RegionDestroyedException ex) {
@@ -1454,7 +1454,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     try {
-      region.keys();
+      region.keySet();
       fail("Should have thrown a RegionDestroyedException");
 
     } catch (RegionDestroyedException ex) {
@@ -1617,9 +1617,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         assertNotNull("entry " + i + " not found", entry);
         assertEquals(String.valueOf(i), entry.getValue());
       }
-      assertEquals(1000, region.keys().size());
+      assertEquals(1000, region.keySet().size());
     } else {
-      assertEquals(0, region.keys().size());
+      assertEquals(0, region.keySet().size());
     }
 
     region.localDestroyRegion();
@@ -4000,7 +4000,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         preSnapshotRegion.destroy(String.valueOf(i));
       }
 
-      assertTrue(preSnapshotRegion.keys().size() == 0);
+      assertTrue(preSnapshotRegion.keySet().size() == 0);
 
       // DebuggerSupport.waitForJavaDebugger(getLogWriter());
       InputStream in = new FileInputStream(file);
@@ -4064,7 +4064,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         preSnapshotRegion.destroy(String.valueOf(i));
       }
 
-      assertTrue(preSnapshotRegion.keys().size() == 0);
+      assertTrue(preSnapshotRegion.keySet().size() == 0);
 
       LogWriter log = getCache().getLogger();
       log.info("before loadSnapshot");
@@ -4112,8 +4112,8 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     boolean expectData =
         isController || postSnapshotRegion.getAttributes().getMirrorType().isMirrored()
             || postSnapshotRegion.getAttributes().getDataPolicy().isPreloaded();
-    log.info("region has " + postSnapshotRegion.keys().size() + " entries");
-    assertEquals(expectData ? MAX_KEYS : 0, postSnapshotRegion.keys().size());
+    log.info("region has " + postSnapshotRegion.keySet().size() + " entries");
+    assertEquals(expectData ? MAX_KEYS : 0, postSnapshotRegion.keySet().size());
     // gets the data either locally or by netSearch
     assertEquals(new Integer(3), postSnapshotRegion.get("3"));
     // bug 33311 coverage

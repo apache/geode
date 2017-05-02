@@ -205,11 +205,6 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
-    public Set keys() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Set keySet() {
       throw new UnsupportedOperationException();
     }

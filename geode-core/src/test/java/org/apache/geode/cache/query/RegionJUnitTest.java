@@ -138,7 +138,7 @@ public class RegionJUnitTest {
 
   @Test
   public void testRegionEntryAccess() throws Exception {
-    Iterator entriesIter = region.entries(false).iterator();
+    Iterator entriesIter = region.entrySet(false).iterator();
     while (entriesIter.hasNext()) {
       Region.Entry entry = (Region.Entry) entriesIter.next();
       RegionEntry regionEntry = null;

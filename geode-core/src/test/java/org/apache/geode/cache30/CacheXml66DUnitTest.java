@@ -3729,7 +3729,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     Cache cache = getCache();
     root = cache.getRegion("root");
-    assertEquals(1, root.entries(false).size());
+    assertEquals(1, root.entrySet(false).size());
     assertEquals(value1, root.get(key1));
 
     creation = new CacheCreation();
@@ -3748,7 +3748,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     cache.loadCacheXml(generate(creation));
 
     root = cache.getRegion("root");
-    assertEquals(2, root.entries(false).size());
+    assertEquals(2, root.entrySet(false).size());
     assertEquals(value2, root.get(key1));
     assertEquals(value3, root.get(key2));
 

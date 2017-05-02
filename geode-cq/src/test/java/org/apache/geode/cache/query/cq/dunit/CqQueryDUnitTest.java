@@ -457,7 +457,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           region1.put(KEY + i, new Portfolio(i));
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -473,7 +473,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           region1.put(KEY + i, portfolio);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -488,7 +488,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           region1.put(KEY + i, portfolio);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -521,7 +521,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           }
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -554,7 +554,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           }
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -567,7 +567,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           region1.put("key" + i, new Portfolio(i));
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -596,7 +596,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           region1.destroy(KEY + i);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries In Region after Delete :" + region1.keys().size());
+            .info("### Number of Entries In Region after Delete :" + region1.keySet().size());
       }
 
     });
@@ -613,7 +613,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           region1.invalidate(KEY + i);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries In Region after Delete :" + region1.keys().size());
+            .info("### Number of Entries In Region after Delete :" + region1.keySet().size());
       }
 
     });
@@ -2539,7 +2539,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
           exampleRegion.put(KEY + i, value);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + exampleRegion.keys().size());
+            .info("### Number of Entries in Region :" + exampleRegion.keySet().size());
       }
     });
   }
@@ -3732,14 +3732,14 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     server.invoke(new CacheSerializableRunnable("Server Region Entries") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
-        LogWriterUtils.getLogWriter().info("### Entries in Server :" + region.keys().size());
+        LogWriterUtils.getLogWriter().info("### Entries in Server :" + region.keySet().size());
       }
     });
 
     client.invoke(new CacheSerializableRunnable("Client Region Entries") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
-        LogWriterUtils.getLogWriter().info("### Entries in Client :" + region.keys().size());
+        LogWriterUtils.getLogWriter().info("### Entries in Client :" + region.keySet().size());
       }
     });
   }

@@ -108,7 +108,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
           region1.put(KEY + i, new Portfolio(i));
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
 
@@ -195,7 +195,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
           region1.put(KEY + i, new Portfolio(i));
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
 

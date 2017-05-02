@@ -43,7 +43,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
       this.stats = new RemoteCacheStatistics();
     }
     this.attributes = new RemoteRegionAttributes(r.getAttributes());
-    Set nameSet = r.keys();
+    Set nameSet = r.keySet();
     this.entryCount = nameSet.size();
     Set subRegions = r.subregions(false);
     this.subregionCount = subRegions.size();

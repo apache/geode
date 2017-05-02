@@ -304,7 +304,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
      * Returns the number of keys in this index.
      */
     public long getNumberOfKeys() {
-      return getRegion().keys().size();
+      return getRegion().keySet().size();
     }
 
     /**

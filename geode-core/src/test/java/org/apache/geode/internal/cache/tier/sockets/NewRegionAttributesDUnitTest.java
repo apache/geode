@@ -251,7 +251,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   public static Object getEntryCount() {
     Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-    int keysSize = region1.entries(false).size();
+    int keysSize = region1.entrySet(false).size();
     return new Integer(keysSize);
   }
 
