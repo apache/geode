@@ -214,16 +214,15 @@ public final class PartitionedRegionFunctionResultSender implements InternalResu
   private synchronized void lastResult(Object oneResult, ResultCollector collector,
       boolean lastRemoteResult, boolean lastLocalResult, DistributedMember memberID) {
 
+
+    boolean completedLocal = lastLocalResult | this.localLastResultRecieved;
     if (lastRemoteResult) {
       this.completelyDoneFromRemote = true;
     }
 
-    if (lastLocalResult) {
-      this.localLastResultRecieved = true;
-    }
 
     if (this.serverSender != null) { // Client-Server
-      if (this.completelyDoneFromRemote && this.localLastResultRecieved) {
+      if (this.completelyDoneFromRemote && completedLocal) {
         if (lastLocalResult) {
           checkForBucketMovement(oneResult);
           if (bme != null) {
@@ -252,7 +251,7 @@ public final class PartitionedRegionFunctionResultSender implements InternalResu
 
       }
     } else { // P2P
-      if (this.completelyDoneFromRemote && this.localLastResultRecieved) {
+      if (this.completelyDoneFromRemote && completedLocal) {
         if (lastLocalResult) {
           checkForBucketMovement(oneResult);
           if (bme != null) {
@@ -278,6 +277,9 @@ public final class PartitionedRegionFunctionResultSender implements InternalResu
           collector.addResult(memberID, oneResult);
         }
       }
+    }
+    if (lastLocalResult) {
+      this.localLastResultRecieved = true;
     }
   }
 
