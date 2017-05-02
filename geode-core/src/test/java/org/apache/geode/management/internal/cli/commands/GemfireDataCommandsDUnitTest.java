@@ -218,8 +218,8 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
-    final String vm2MemberId = (String) vm2.invoke(() -> getMemberId());
+    final String vm1MemberId = vm1.invoke(() -> getMemberId());
+    final String vm2MemberId = vm2.invoke(() -> getMemberId());
     getLogWriter().info("Vm1 ID : " + vm1MemberId);
     getLogWriter().info("Vm2 ID : " + vm2MemberId);
 
@@ -457,9 +457,13 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
         doQueryRegionsAssociatedMembers(queryTemplate1, -1, false,
             new String[] {DATA_PAR_REGION_NAME_VM2_PATH, "/jfgkdfjgkd"}); // one wrong region
         doQueryRegionsAssociatedMembers(queryTemplate1, -1, true,
-            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both regions wrong
+            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both
+        // regions
+        // wrong
         doQueryRegionsAssociatedMembers(queryTemplate1, -1, false,
-            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both regions wrong
+            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both
+        // regions
+        // wrong
       }
     });
   }
@@ -1961,13 +1965,9 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
             return false;
           } else {
             // verify that bean is proper before executing tests
-            if (bean.getMembers() != null && bean.getMembers().length > 1
+            return bean.getMembers() != null && bean.getMembers().length > 1
                 && bean.getMemberCount() > 0
-                && service.getDistributedSystemMXBean().listRegions().length >= 2) {
-              return true;
-            } else {
-              return false;
-            }
+                && service.getDistributedSystemMXBean().listRegions().length >= 2;
           }
         }
 
@@ -2037,7 +2037,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     final VM manager = Host.getHost(0).getVM(0);
     manager.invoke(checkRegionMBeans);
 
-    getLogWriter().info("testRebalanceCommandForSimulate verified Mbean and executin command");
+    getLogWriter().info("testRebalanceCommandForSimulate verified Mbean and executing command");
     String command = "rebalance --simulate=true --include-region=" + "/" + REBALANCE_REGION_NAME;
     CommandResult cmdResult = executeCommand(command);
     getLogWriter().info("testRebalanceCommandForSimulate just after executing " + cmdResult);
@@ -2298,11 +2298,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
                 getLogWriter().info(
                     "waitForListClientMbean Still probing for DistributedRegionMXBean with separator Not null  "
                         + bean2.getMembers().length);
-                if (bean2.getMembers().length > 1) {
-                  return true;
-                } else {
-                  return false;
-                }
+                return bean2.getMembers().length > 1;
               }
             }
           }

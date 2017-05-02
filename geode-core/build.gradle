@@ -113,8 +113,7 @@ dependencies {
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
 
   // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
-    compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
-
+  compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
 
 
   compile project(':geode-common')
@@ -127,7 +126,6 @@ dependencies {
 
   // Test Dependencies
   // External
-  testCompile 'com.google.guava:guava:' + project.'guava.version'
   testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testRuntime 'org.apache.derby:derby:' + project.'derby.version'

@@ -14,18 +14,16 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -38,16 +36,13 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.cache.execute.PRClientServerTestBase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -92,17 +87,14 @@ public class QueryDataInconsistencyDUnitTest extends JUnit4CacheTestCase {
 
   public static volatile boolean hooked = false;
 
-  /**
-   * @param name
-   */
   public QueryDataInconsistencyDUnitTest() {
     super();
   }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> disconnectFromDS());
-    Invoke.invokeInEveryVM(() -> QueryObserverHolder.reset());
+    Invoke.invokeInEveryVM(JUnit4DistributedTestCase::disconnectFromDS);
+    Invoke.invokeInEveryVM(QueryObserverHolder::reset);
   }
 
   @Override
@@ -544,8 +536,8 @@ public class QueryDataInconsistencyDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createCacheClientWithoutReg(String host, Integer port1) {
-    this.disconnectFromDS();
-    ClientCache cache = new ClientCacheFactory().addPoolServer(host, port1).create();
+    disconnectFromDS();
+    new ClientCacheFactory().addPoolServer(host, port1).create();
   }
 
   /**
