@@ -526,7 +526,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
         r.put(KEY + i, new Portfolio(i + 1));
       }
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-          .info("### Number of Entries in Region " + rName + ": " + r.keys().size());
+          .info("### Number of Entries in Region " + rName + ": " + r.keySet().size());
     } catch (Exception ex) {
       Assert.fail("failed in putEntries()", ex);
     }

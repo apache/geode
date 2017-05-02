@@ -49,7 +49,7 @@ public final class RegionSizeResponse extends AdminResponse implements Cancellab
       return;
     }
 
-    Set nameSet = r.keys();
+    Set nameSet = r.keySet();
     if (cancelled) {
       return;
     }

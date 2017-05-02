@@ -207,7 +207,7 @@ public class Bug35214DUnitTest extends JUnit4CacheTestCase {
       Wait.waitForCriterion(ev, 2 * 1000, 200, true);
       {
         assertEquals(0, r1.values().size());
-        assertEquals(ENTRY_COUNT, r1.keys().size());
+        assertEquals(ENTRY_COUNT, r1.keySet().size());
       }
 
     } finally {

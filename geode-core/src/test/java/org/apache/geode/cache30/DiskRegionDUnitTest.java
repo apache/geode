@@ -447,8 +447,8 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
 
     assertEquals(evictions, lruStats.getEvictions());
 
-    LogWriterUtils.getLogWriter().info("keys remaining in region: " + region.keys().size());
-    assertEquals(0, region.keys().size());
+    LogWriterUtils.getLogWriter().info("keys remaining in region: " + region.keySet().size());
+    assertEquals(0, region.keySet().size());
   }
 
   /**
@@ -743,7 +743,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     region.put("foobar2", "junk");
     flush(region);
     region.localDestroy("foobar2");
-    assertEquals(total, region.keys().size());
+    assertEquals(total, region.keySet().size());
   }
 
   public void assertArrayEquals(Object expected, Object v) {
@@ -809,7 +809,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       flush(region);
       assertEquals("modified", region.get("modified"));
       total++;
-      assertEquals(total, region.keys().size());
+      assertEquals(total, region.keySet().size());
     }
     closeCache(); // @todo need to do a close that does not remove disk files
     getCache();
@@ -818,7 +818,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       dsf.setDiskDirs(new File[] {d});
       dsf.create(name);
       Region region = createRegion(name, factory.create());
-      assertEquals(total, region.keys().size());
+      assertEquals(total, region.keySet().size());
       assertTrue(region.containsKey("invalid") && !region.containsValueForKey("invalid"));
       region.localDestroy("invalid");
       total--;
@@ -872,7 +872,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     }
 
     // BitSet bits = new BitSet();
-    Set values = region.entries(false);
+    Set values = region.entrySet(false);
     assertEquals(total, values.size());
 
     for (Iterator iter = values.iterator(); iter.hasNext();) {

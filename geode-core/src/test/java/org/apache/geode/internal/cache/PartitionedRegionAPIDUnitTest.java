@@ -502,7 +502,6 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
         assertEquals("isEmpty doesnt return proper state of the PartitionedRegion", true,
             pr.isEmpty());
         assertEquals(0, pr.keySet().size());
-        assertEquals(0, pr.keys().size());
         // }
         for (int i = putRange_1Start; i <= putRange_1End; i++) {
           // System.out.println("Putting entry for key = " + i);
@@ -518,7 +517,6 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
         // For basic functional support (or lack of), please see
         // PartitionedRegionSingleNodeOperationsJUnitTest
         assertEquals(putRange_1End, pr.keySet().size());
-        assertEquals(putRange_1End, pr.keys().size());
         Set ks = pr.keySet();
         Iterator ksI = ks.iterator();
         while (ksI.hasNext()) {

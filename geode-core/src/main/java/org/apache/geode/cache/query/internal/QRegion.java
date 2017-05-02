@@ -127,7 +127,7 @@ public class QRegion implements SelectResults {
       LocalDataSet localData = (LocalDataSet) this.region;
       res = new ResultsCollectionWrapper(getKeyType(), localData.localKeys());
     } else {
-      res = new ResultsCollectionWrapper(getKeyType(), this.region.keys());
+      res = new ResultsCollectionWrapper(getKeyType(), this.region.keySet());
     }
     res.setModifiable(false);
     return res;
@@ -161,7 +161,7 @@ public class QRegion implements SelectResults {
           localData.localEntrySet());
     } else {
       res = new ResultsCollectionWrapper(TypeUtils.getRegionEntryType(this.region),
-          this.region.entries(false));
+          this.region.entrySet(false));
     }
     res.setModifiable(false);
     return res;
@@ -321,7 +321,7 @@ public class QRegion implements SelectResults {
   }
 
   public Set entries(boolean recursive) {
-    return this.region.entries(recursive);
+    return this.region.entrySet(recursive);
   }
 
   public boolean existsValue(String queryPredicate) throws FunctionDomainException,
@@ -408,7 +408,7 @@ public class QRegion implements SelectResults {
   }
 
   public Set keys() {
-    return this.region.keys();
+    return this.region.keySet();
   }
 
   public void localDestroy(Object key) throws EntryNotFoundException {
@@ -554,13 +554,13 @@ public class QRegion implements SelectResults {
 
   public SelectResults entrySet() {
     ResultsCollectionWrapper res = new ResultsCollectionWrapper(new ObjectTypeImpl(Map.Entry.class),
-        this.region.entries(false));
+        this.region.entrySet(false));
     res.setModifiable(false);
     return res;
   }
 
   public Set keySet() {
-    return this.region.keys();
+    return this.region.keySet();
   }
 
 }

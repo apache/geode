@@ -187,7 +187,7 @@ public class ProxyRegion implements Region {
   public Set entries(boolean recursive) {
     try {
       preOp();
-      return this.realRegion.entries(recursive);
+      return this.realRegion.entrySet(recursive);
     } finally {
       postOp();
     }
@@ -388,7 +388,7 @@ public class ProxyRegion implements Region {
   public Set keys() {
     try {
       preOp();
-      return this.realRegion.keys();
+      return this.realRegion.keySet();
     } finally {
       postOp();
     }

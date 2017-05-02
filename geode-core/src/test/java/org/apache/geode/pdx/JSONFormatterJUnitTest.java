@@ -261,7 +261,7 @@ public class JSONFormatterJUnitTest {
     int pdxTypes = 0;
 
     if (c.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
-      pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size();
+      pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
     }
 
     Region region = c.getRegion("primitiveKVStore");
@@ -274,7 +274,7 @@ public class JSONFormatterJUnitTest {
 
     region.put(2, JSONFormatter.fromJSON(js2));
 
-    assertEquals(pdxTypes + 1, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size());
+    assertEquals(pdxTypes + 1, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size());
   }
 
   @Test
@@ -311,13 +311,13 @@ public class JSONFormatterJUnitTest {
       int pdxTypes = 0;
 
       if (c.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
-        pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size();
+        pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
       }
 
       String js2 = "{c:\"c' go\", bb:23, b:\"b\", age:14 }";
       region.put(2, JSONFormatter.fromJSON(js2));
 
-      assertEquals(pdxTypes, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size());
+      assertEquals(pdxTypes, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size());
 
     } finally {
       System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "false");

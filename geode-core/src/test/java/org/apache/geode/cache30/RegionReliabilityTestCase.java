@@ -243,7 +243,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       // pass...
     }
     try {
-      region.entries(false);
+      region.entrySet(false);
       fail("Should have thrown an RegionAccessException");
     } catch (RegionAccessException ex) {
       // pass...
@@ -268,12 +268,6 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     }
     try {
       region.isEmpty();
-      fail("Should have thrown an RegionAccessException");
-    } catch (RegionAccessException ex) {
-      // pass...
-    }
-    try {
-      region.keys();
       fail("Should have thrown an RegionAccessException");
     } catch (RegionAccessException ex) {
       // pass...
@@ -406,12 +400,11 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.containsKey(new Object());
     region.containsValue(new Object());
     region.containsValueForKey(new Object());
-    region.entries(false);
+    region.entrySet(false);
     region.entrySet();
     region.get(keys[0]);
     region.getEntry(keys[0]);
     region.isEmpty();
-    region.keys();
     region.keySet();
     region.localDestroy(keys[0]);
     region.localInvalidate(keys[1]);

@@ -103,7 +103,7 @@ public class DiskInstantiatorsJUnitTest {
   public void testDiskInstantiators() throws CacheException {
     try {
       connect();
-      int size = this.r.entries(false).size();
+      int size = this.r.entrySet(false).size();
       if (size != 0) {
         fail("expected 0 entries but had " + size);
       }
@@ -114,7 +114,7 @@ public class DiskInstantiatorsJUnitTest {
       InternalInstantiator.unregister(Payload.class, (byte) 22);
       InternalInstantiator.unregister(Key.class, (byte) 21);
       connect();
-      size = this.r.entries(false).size();
+      size = this.r.entrySet(false).size();
       if (size != 1) {
         fail("expected 1 entry but had " + size);
       }

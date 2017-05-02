@@ -706,8 +706,7 @@ public class ProxyJUnitTest {
     checkNoCW();
     checkNoCL();
 
-    assertEquals(Collections.EMPTY_SET, r.keys());
-    assertEquals(Collections.EMPTY_SET, r.entries(true));
+    assertEquals(Collections.EMPTY_SET, r.keySet());
     assertEquals(Collections.EMPTY_SET, r.entrySet(true));
     assertEquals(this.c, r.getCache());
     r.setUserAttribute(cbArg);

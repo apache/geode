@@ -380,7 +380,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           region1.put(KEY + i, new Portfolio(i, i));
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -397,7 +397,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           region1.put(KEY + i, portfolio);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries in Region :" + region1.keys().size());
+            .info("### Number of Entries in Region :" + region1.keySet().size());
       }
     });
   }
@@ -412,7 +412,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           region1.destroy(KEY + i);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries In Region after Delete :" + region1.keys().size());
+            .info("### Number of Entries In Region after Delete :" + region1.keySet().size());
       }
 
     });
@@ -430,7 +430,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           region1.invalidate(KEY + i);
         }
         LogWriterUtils.getLogWriter()
-            .info("### Number of Entries In Region after Delete :" + region1.keys().size());
+            .info("### Number of Entries In Region after Delete :" + region1.keySet().size());
       }
 
     });
@@ -2964,7 +2964,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
-        LogWriterUtils.getLogWriter().info("### Entries in Server :" + region.keys().size());
+        LogWriterUtils.getLogWriter().info("### Entries in Server :" + region.keySet().size());
       }
     });
 
@@ -2972,7 +2972,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
-        LogWriterUtils.getLogWriter().info("### Entries in Client :" + region.keys().size());
+        LogWriterUtils.getLogWriter().info("### Entries in Client :" + region.keySet().size());
       }
     });
   }
