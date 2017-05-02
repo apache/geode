@@ -78,6 +78,8 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     when(indexForPR.getRegionPath()).thenReturn("/testRegion");
     when(indexForPR.withPersistence()).thenReturn(true);
     repoManager = new RawLuceneRepositoryManager(indexForPR, serializer);
+    repoManager.setUserRegionForRepositoryManager();
+    repoManager.allowRepositoryComputation();
   }
 
   @Test

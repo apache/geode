@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
@@ -36,10 +35,7 @@ import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.BucketNotFoundException;
-import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.partitioned.Bucket;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.TestHook;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.lucene.store.AlreadyClosedException;
 

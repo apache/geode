@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
@@ -47,16 +48,20 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       new ConcurrentHashMap<Integer, IndexRepository>();
 
   /** The user region for this index */
-  protected final PartitionedRegion userRegion;
+  protected PartitionedRegion userRegion = null;
   protected final LuceneSerializer serializer;
   protected final LuceneIndexImpl index;
   protected volatile boolean closed;
+  final private CountDownLatch isDataRegionReady = new CountDownLatch(1);
 
   public AbstractPartitionedRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer) {
     this.index = index;
-    this.userRegion = (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
     this.serializer = serializer;
     this.closed = false;
+  }
+
+  public void setUserRegionForRepositoryManager() {
+    this.userRegion = (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
   }
 
   @Override
@@ -95,6 +100,11 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       IndexRepository oldRepository) throws IOException;
 
   protected IndexRepository computeRepository(Integer bucketId) {
+    try {
+      isDataRegionReady.await();
+    } catch (InterruptedException e) {
+      throw new InternalGemFireError("Uable to create index repository", e);
+    }
     IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
       try {
         if (closed) {
@@ -109,6 +119,10 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       }
     });
     return repo;
+  }
+
+  protected void allowRepositoryComputation() {
+    isDataRegionReady.countDown();
   }
 
   /**

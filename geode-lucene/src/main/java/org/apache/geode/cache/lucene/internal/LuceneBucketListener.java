@@ -24,10 +24,10 @@ import org.apache.lucene.store.AlreadyClosedException;
 
 public class LuceneBucketListener extends PartitionListenerAdapter {
   private static final Logger logger = LogService.getLogger();
-  private PartitionedRepositoryManager lucenePartitionRepositoryManager;
+  private AbstractPartitionedRepositoryManager lucenePartitionRepositoryManager;
   private final DM dm;
 
-  public LuceneBucketListener(PartitionedRepositoryManager partitionedRepositoryManager,
+  public LuceneBucketListener(AbstractPartitionedRepositoryManager partitionedRepositoryManager,
       final DM dm) {
     lucenePartitionRepositoryManager = partitionedRepositoryManager;
     this.dm = dm;

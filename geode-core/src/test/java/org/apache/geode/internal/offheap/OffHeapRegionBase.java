@@ -31,12 +31,17 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -70,6 +75,22 @@ public abstract class OffHeapRegionBase {
         (GemFireCacheImpl) new CacheFactory(props).setPdxPersistent(isPersistent).create();
     unconfigureOffHeapStorage();
     return result;
+  }
+
+  @After
+  public void cleanUp() {
+    File dir = new File(".");
+    File[] files = dir.listFiles(new FilenameFilter() {
+
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.startsWith("BACKUP");
+      }
+
+    });
+    for (File file : files) {
+      file.delete();
+    }
   }
 
   private void closeCache(GemFireCacheImpl gfc, boolean keepOffHeapAllocated) {
@@ -200,7 +221,8 @@ public abstract class OffHeapRegionBase {
       gfc.setCopyOnRead(true);
       final MemoryAllocator ma = gfc.getOffHeapStore();
       assertNotNull(ma);
-      assertEquals(0, ma.getUsedMemory());
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .until(() -> assertEquals(0, ma.getUsedMemory()));
       Compressor compressor = null;
       if (compressed) {
         compressor = SnappyCompressor.getDefaultInstance();
@@ -413,7 +435,8 @@ public abstract class OffHeapRegionBase {
       assertTrue(ma.getUsedMemory() > 0);
       try {
         r.clear();
-        assertEquals(0, ma.getUsedMemory());
+        Awaitility.await().atMost(60, TimeUnit.SECONDS)
+            .until(() -> assertEquals(0, ma.getUsedMemory()));
       } catch (UnsupportedOperationException ok) {
       }
 
@@ -449,8 +472,8 @@ public abstract class OffHeapRegionBase {
       }
 
       r.destroyRegion();
-      assertEquals(0, ma.getUsedMemory());
-
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .until(() -> assertEquals(0, ma.getUsedMemory()));
     } finally {
       if (r != null && !r.isDestroyed()) {
         r.destroyRegion();
