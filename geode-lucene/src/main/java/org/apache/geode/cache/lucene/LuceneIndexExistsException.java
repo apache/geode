@@ -36,7 +36,7 @@ public class LuceneIndexExistsException extends GemFireException {
   @Override
   public String getMessage() {
     return LocalizedStrings.LuceneIndexExistsException_INDEX_0_ON_REGION_1_ALREADY_EXISTS
-        .toLocalizedString(new String[] {this.indexName, this.regionPath});
+        .toLocalizedString(this.indexName, this.regionPath);
   }
 
   public String getIndexName() {

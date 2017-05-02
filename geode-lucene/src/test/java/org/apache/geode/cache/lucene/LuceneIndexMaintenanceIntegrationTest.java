@@ -18,8 +18,13 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.awaitility.Awaitility;
 
 import org.junit.Test;
@@ -216,11 +221,49 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     assertEquals(4, index.getIndexStats().getCommits());
   }
 
+  @Test
+  public void entriesKeptInSerializedFormInDataRegion() throws InterruptedException {
+    // Create index and region
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+
+    // Pause sender
+    LuceneTestUtilities.pauseSender(cache);
+
+    // Do puts
+    populateRegion(region);
+
+    // Verify values are in serialized form
+    verifySerializedValues(region);
+
+    // Resume sender and wait for flushed
+    LuceneTestUtilities.resumeSender(cache);
+    assertTrue(luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS));
+
+    // Verify values are still in serialized form
+    verifySerializedValues(region);
+  }
+
   private void populateRegion(Region region) {
     region.put("object-1", new TestObject("title 1", "hello world"));
     region.put("object-2", new TestObject("title 2", "this will not match"));
     region.put("object-3", new TestObject("title 3", "hello world"));
     region.put("object-4", new TestObject("hello world", "hello world"));
+  }
+
+  private void verifySerializedValues(Region region) {
+    Set entries = region.entrySet();
+    assertFalse(entries.isEmpty());
+    for (Iterator i = entries.iterator(); i.hasNext();) {
+      EntrySnapshot entry = (EntrySnapshot) i.next();
+      RegionEntry re = entry.getRegionEntry();
+      Object reValue = re.getValue(null);
+      assertTrue(reValue instanceof CachedDeserializable);
+      Object cdValue = ((CachedDeserializable) reValue).getValue();
+      assertTrue(cdValue instanceof byte[]);
+    }
   }
 
   private void await(Runnable runnable) {

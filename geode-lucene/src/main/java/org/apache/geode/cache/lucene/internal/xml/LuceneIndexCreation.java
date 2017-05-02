@@ -94,7 +94,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     } catch (LuceneIndexExistsException e) {
       logger
           .info(LocalizedStrings.LuceneIndexCreation_IGNORING_DUPLICATE_INDEX_CREATION_0_ON_REGION_1
-              .toLocalizedString(new String[] {e.getIndexName(), e.getRegionPath()}));
+              .toLocalizedString(e.getIndexName(), e.getRegionPath()));
     }
   }
 
