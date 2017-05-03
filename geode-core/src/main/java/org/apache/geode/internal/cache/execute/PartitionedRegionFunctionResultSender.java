@@ -215,7 +215,7 @@ public final class PartitionedRegionFunctionResultSender implements InternalResu
       boolean lastRemoteResult, boolean lastLocalResult, DistributedMember memberID) {
 
 
-    boolean completedLocal = lastLocalResult | this.localLastResultRecieved;
+    boolean completedLocal = lastLocalResult || this.localLastResultRecieved;
     if (lastRemoteResult) {
       this.completelyDoneFromRemote = true;
     }
