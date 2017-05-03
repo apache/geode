@@ -51,10 +51,6 @@ To modify your war or ear file manually, make the following updates:
     <filter-mapping>
         <filter-name>gemfire-session-filter</filter-name>
         <url-pattern>/*</url-pattern>
-        <dispatcher>FORWARD</dispatcher>
-        <dispatcher>INCLUDE</dispatcher>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>ERROR</dispatcher>
     </filter-mapping>
     <listener>
         <listener-class>org.apache.geode.modules.session.filter.SessionListener</listener-class>
