@@ -145,22 +145,10 @@ public class SessionCachingFilter implements Filter {
      */
     @Override
     public HttpSession getSession(boolean create) {
+      super.getSession(false);
       if (session != null && session.isValid()) {
         session.setIsNew(false);
         session.updateAccessTime();
-        /*
-         * This is a massively gross hack. Currently, there is no way to actually update the last
-         * accessed time for a session, so what we do here is once we're into X% of the session's
-         * TTL we grab a new session from the container.
-         *
-         * (inactive * 1000) * (pct / 100) ==> (inactive * 10 * pct)
-         */
-        if (session.getLastAccessedTime()
-            - session.getCreationTime() > (session.getMaxInactiveInterval() * 10
-                * percentInactiveTimeTriggerRebuild)) {
-          HttpSession nativeSession = super.getSession();
-          session.failoverSession(nativeSession);
-        }
         return session;
       }
 
