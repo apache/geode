@@ -31,10 +31,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.execute.Execution;
@@ -57,7 +54,6 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -167,28 +163,28 @@ public class LuceneServiceImpl implements InternalLuceneService {
    * 
    * Public because this is called by the Xml parsing code
    */
-  public void afterDataRegionCreated(final String indexName, final Analyzer analyzer,
-      final String dataRegionPath, final Map<String, Analyzer> fieldAnalyzers,
-      final String... fields) {
-    LuceneIndexImpl index = createIndexRegions(indexName, dataRegionPath);
-    index.setSearchableFields(fields);
-    index.setAnalyzer(analyzer);
-    index.setFieldAnalyzers(fieldAnalyzers);
+  public void afterDataRegionCreated(LuceneIndexImpl index) {
     index.initialize();
     registerIndex(index);
     if (this.managementListener != null) {
       this.managementListener.afterIndexCreated(index);
     }
+
   }
 
-  private LuceneIndexImpl createIndexRegions(String indexName, String regionPath) {
-    Region dataregion = this.cache.getRegion(regionPath);
-    if (dataregion == null) {
-      logger.info("Data region " + regionPath + " not found");
-      return null;
-    }
-    // Convert the region name into a canonical form
-    regionPath = dataregion.getFullPath();
+  public LuceneIndexImpl beforeDataRegionCreated(final String indexName, final String regionPath,
+      RegionAttributes attributes, final Analyzer analyzer,
+      final Map<String, Analyzer> fieldAnalyzers, String aeqId, final String... fields) {
+    LuceneIndexImpl index = createIndexObject(indexName, regionPath);
+    index.setSearchableFields(fields);
+    index.setAnalyzer(analyzer);
+    index.setFieldAnalyzers(fieldAnalyzers);
+    index.initializeAEQ(attributes, aeqId);
+    return index;
+
+  }
+
+  private LuceneIndexImpl createIndexObject(String indexName, String regionPath) {
     return luceneIndexFactory.create(indexName, regionPath, cache);
   }
 

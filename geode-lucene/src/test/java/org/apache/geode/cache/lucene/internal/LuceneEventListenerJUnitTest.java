@@ -69,7 +69,7 @@ public class LuceneEventListenerJUnitTest {
     Mockito.when(manager.getRepository(eq(region2), any(), eq(null))).thenReturn(repo2);
 
     LuceneEventListener listener = new LuceneEventListener(manager);
-
+    listener.allowProcessingOfEvents();
     List<AsyncEvent> events = new ArrayList<AsyncEvent>();
 
     int numEntries = 100;
@@ -117,6 +117,7 @@ public class LuceneEventListenerJUnitTest {
         .thenThrow(BucketNotFoundException.class);
 
     LuceneEventListener listener = new LuceneEventListener(manager);
+    listener.allowProcessingOfEvents();
     listener.logger = log;
     AsyncEvent event = Mockito.mock(AsyncEvent.class);
     boolean result = listener.processEvents(Arrays.asList(new AsyncEvent[] {event}));
@@ -132,6 +133,7 @@ public class LuceneEventListenerJUnitTest {
     AtomicReference<Throwable> lastException = new AtomicReference<>();
     LuceneEventListener.setExceptionObserver(lastException::set);
     LuceneEventListener listener = new LuceneEventListener(manager);
+    listener.allowProcessingOfEvents();
     AsyncEvent event = Mockito.mock(AsyncEvent.class);
     try {
       listener.processEvents(Arrays.asList(new AsyncEvent[] {event}));
