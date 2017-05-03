@@ -19,11 +19,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-When you determine buffer size settings, you try to strike a balance between communication needs and other processing.
+When you determine buffer size settings, you must strike a balance between communication needs and other processing.
 
 Larger socket buffers allow your members to distribute data and events more quickly, but they also take memory away from other things. If you store very large data objects in your cache, finding the right sizing for your buffers while leaving enough memory for the cached data can become critical to system performance.
 
-Ideally, you should have buffers large enough for the distribution of any single data object so you don’t get message fragmentation, which lowers performance. Your buffers should be at least as large as your largest stored objects and their keys plus some overhead for message headers. The overhead varies depending on the who is sending and receiving, but 100 bytes should be sufficient. You can also look at the statistics for the communication between your processes to see how many bytes are being sent and received.
+Ideally, you should have buffers large enough for the distribution of any single data object so you don’t get message fragmentation, which lowers performance. Your buffers should be at least as large as your largest stored objects and their keys plus some overhead for message headers. The overhead varies depending on who is sending and receiving, but 100 bytes should be sufficient. You can also look at the statistics for the communication between your processes to see how many bytes are being sent and received.
 
 If you see performance problems and logging messages indicating blocked writers, increasing your buffer sizes may help.
 

@@ -58,7 +58,7 @@ This table lists the settings for gateway relationships and protocols, and tells
 
 **TCP/IP Buffer Sizes**
 
-If possible, your TCP/IP buffer size settings should match across your GemFire installation. At a minimum, follow the guidelines listed here.
+If possible, your TCP/IP buffer size settings should match across your installation. At a minimum, follow the guidelines listed here.
 
 -   **Multisite (WAN)**. In a multi-site installation using gateways, if the link between sites is not tuned for optimum throughput, it could cause messages to back up in the cache queues. If a receiving queue overflows because of inadequate buffer sizes, it will become out of sync with the sender and the receiver will be unaware of the condition.
 
@@ -111,11 +111,11 @@ Each gateway sender and gateway receiver uses a socket to distribute events or t
 </tbody>
 </table>
 
-Servers are peers in their own distributed system and have the additional socket requirements as noted in the Peer-to-Peer section above.
+Servers are peers in their own distributed systems and have the additional socket requirements as noted in the Peer-to-Peer section above.
 
 ## <a id="socket_comm__section_66D11C8E84F941B58800EDB52194B087" class="no-quick-link"></a>Member produces SocketTimeoutException
 
-A client, server, gateway sender, or gateway receiver produces a SocketTimeoutException when it stops waiting for a response from the other side of the connection and closes the socket. This exception typically happens on the handshake or when establishing a callback connection.
+A client, server, gateway sender, or gateway receiver produces a `SocketTimeoutException` when it stops waiting for a response from the other side of the connection and closes the socket. This exception typically happens on the handshake or when establishing a callback connection.
 
 Response:
 

@@ -19,12 +19,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Connect to a jmx-manager either directly or via a locator.
+Connect to a JMX manager either directly or via a locator.
 
 <a id="concept_C2DCEE6743304549825C9B62E66DBADF__section_C27BE964CE554180A65968DBEBF50B23"></a>
-If you are connecting via a locator, and a jmx-manager does not already exist, the locator starts one.
+If you are connecting via a locator, and a JMX manager does not already exist, the locator starts one.
 
-gfsh connects as a discovery client to the locator service and asks where the JMX Manager is. The locator knows when there is no member currently configured as the JMX manager and simply starts up the JMX manager service within itself. gfsh connects as a JMX client to locator JMX RMI port.
+gfsh connects as a discovery client to the locator service and asks where the JMX Manager is. The
+locator knows when there is no member currently configured as the JMX manager and simply starts up
+the JMX manager service within itself. gfsh connects as a JMX client to the locator's JMX RMI port.
 
 You can also connect to a remote locator using the HTTP protocol, as illustrated by the second example below.
 
@@ -63,7 +65,7 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-jmx-manager </span></td>
-<td>Network address of the jmx-manager in the form: <code class="ph codeph">host[port]</code>.</td>
+<td>Network address of the JMX manager in the form: <code class="ph codeph">host[port]</code>.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -82,7 +84,7 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 <tr class="odd">
 <td><span class="keyword parmname">\-\-user</span></td>
 <td>The user name of the credential to use in authentication when connecting
-to the jmx-manager.
+to the JMX manager.
 When specified, if the <code>--password</code> option is not also specified,
 <code>gfsh</code> will prompt for the password.</td>
 <td> </td>
@@ -90,7 +92,7 @@ When specified, if the <code>--password</code> option is not also specified,
 <tr class="even">
 <td><span class="keyword parmname">\-\-password</span></td>
 <td>The password portion of the credential to use in authentication 
-when connecting to the jmx-manager.
+when connecting to the JMX manager.
 </td>
 <td> </td>
 </tr>
@@ -144,7 +146,7 @@ when connecting to the jmx-manager.
 
 **Example Commands:**
 
-If you do not specify a locator or jmx-manager, `gfsh` connects to the locator on the localhost at the default port.
+If you do not specify a locator or JMX manager, `gfsh` connects to the locator on the localhost at the default port.
 
 ``` pre
 gfsh>connect

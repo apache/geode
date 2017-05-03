@@ -27,7 +27,10 @@ Sockets use file descriptors and the operating system’s view of your applicati
 
 You can configure socket sharing for peer-to-peer and client-to-server connections:
 
--   **Peer-to-peer**. You can configure whether your members share sockets both at the application level and at the thread level. To enable sharing at the application level, set the `gemfire.properties` `conserve-sockets` to true. To achieve maximum throughput, however, we recommend that you set `conserve-sockets` to `false`.
+- **Peer-to-peer**. You can configure whether your members share sockets both at the application
+level and at the thread level. To enable sharing at the application level, set the
+`gemfire.properties` property `conserve-sockets` to `true`. To achieve maximum throughput, however, we
+recommend that you set `conserve-sockets` to `false`.
 
     At the thread level, developers can override this setting by using the DistributedSystem API method `setThreadsSocketPolicy`. You might want to enable socket sharing at the application level and then have threads that do a lot of cache work take sole ownership of their sockets. Make sure to program these threads to release their sockets as soon as possible using the `releaseThreadsSockets` method, rather than waiting for a timeout or thread death.
 
@@ -51,7 +54,7 @@ A member’s socket use is governed by a number of factors, including:
 -   Whether it is a server or a client,
 -   How many connections come in from other processes
 
-The socket requirements described here are worst-case. Generally, it is not practical to calculate exact socket use for your applications. Socket use varies depending a number of factors including how many members are running, what their threads are doing, and whether threads share sockets.
+The socket requirements described here are worst-case. Generally, it is not practical to calculate exact socket use for your applications. Socket use varies depending on a number of factors including how many members are running, what their threads are doing, and whether threads share sockets.
 
 To calculate any member’s socket requirements, add up the requirements for every category that applies to the member. For example, a cache server running in a distributed system with clients connected to it has both peer-to-peer and server socket requirements.
 
@@ -109,10 +112,14 @@ The threads servicing client requests add to the total count of thread-owned soc
 
 Servers use one connection for each incoming client connection. By default, each connection is serviced by a server thread. These threads that service client requests communicate with the rest of the server distributed system to satisfy the requests and distributed update operations. Each of these threads uses its own thread-owned sockets for peer-to-peer communication. So this adds to the server’s group of thread-owned sockets.
 
-The thread and connection count in the server may be limited by server configuration settings. These are max-connections and max-threads settings in the &lt;cache-server&gt; element of the `cache.xml`. These settings limit the number of connections the server accepts and the maximum number of threads that can service client requests. Both of these limit the server's overall connection requirements:
+The thread and connection count in the server may be limited by server configuration settings. These
+are `max-connections` and `max-threads` settings in the &lt;cache-server&gt; element of the
+`cache.xml`. These settings limit the number of connections the server accepts and the maximum
+number of threads that can service client requests. Both of these limit the server's overall
+connection requirements:
 
 -   When the connection limit is reached, the server refuses additional connections. This limits the number of connections the server uses for clients.
--   When the thread limit is reached, threads start servicing multiple connections. This does not limit the number of client connections, but does limit the number of peer connections required to service client requests. Each server thread used for clients uses its own sockets, so it requires 2 connections to each of the server’s peers. The max-threads setting puts a cap on the number of this type of peer connection that your server needs.
+-   When the thread limit is reached, threads start servicing multiple connections. This does not limit the number of client connections, but does limit the number of peer connections required to service client requests. Each server thread used for clients uses its own sockets, so it requires 2 connections to each of the server’s peers. The `max-threads` setting puts a cap on the number of this type of peer connection that your server needs.
 
 The server uses one socket for each incoming client pool connection. If client subscriptions are used, the server creates an additional connection to each client that enables subscriptions.
 
@@ -139,7 +146,7 @@ In this table, M is the total number of members in the distributed system.
 <td>Number of pool connections to this server</td>
 </tr>
 <tr class="odd">
-<td><p>Threads servicing client requests (the lesser of the client pool connection count and the server’s max-threads setting). These connections are to the server’s peers.</p></td>
+<td><p>Threads servicing client requests (the lesser of the client pool connection count and the server’s <code>max-threads</code> setting). These connections are to the server’s peers.</p></td>
 <td><p>(2 * number of threads in a server that service client pool connections)</p>
 <p>* (M-1)</p>
 <p>These threads do not share sockets.</p></td>

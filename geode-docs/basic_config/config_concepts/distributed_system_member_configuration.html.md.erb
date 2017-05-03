@@ -46,6 +46,12 @@ Every Geode process is a member of a distributed system, even if the distributed
 
 The multi-site topology uses relationships that you configure between members of multiple distributed systems. Through this configuration, you loosely couple two or more distributed systems for automated data distribution. This is usually done for sites at geographically separate locations. You configure a subset of peers in each distributed system site with gateway senders and/or gateway receivers to manage events that are distributed between the sites.
 
-In the context of a single distributed system, unless otherwise specified, remote members refers to other members of the same distributed system. In client/server and multi-site installations, remote generally refers to members in other distributed systems. For example, all servers are remote to the clients that connect to them. Each client runs standalone, with connections only to the server tier, so all servers and their other clients are remote to the individual client. All gateway receivers are remote to the gateway senders that connect to them from other distributed systems,and to those gateway senders’ peers.
+In the context of a single distributed system, unless otherwise specified, "remote member" refers to
+another member of the same distributed system. In client/server and multi-site installations, "remote"
+generally refers to members in other distributed systems. For example, all servers are "remote" to the
+clients that connect to them. Each client runs standalone, with connections only to the server tier,
+so all servers and their other clients are "remote" to the individual client. All gateway receivers
+are "remote" to the gateway senders that connect to them from other distributed systems, and to those
+gateway senders' peers.
 
 

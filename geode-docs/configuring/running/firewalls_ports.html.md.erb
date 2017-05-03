@@ -30,7 +30,7 @@ There are several different port settings that need to be considered when using 
 
 -   Locator port. Geode clients can use the locator to automatically discover cache servers. The locator port is configurable as a command-line option to the `gfsh start locator` command. Locators are used in the peer-to-peer cache deployments to discover other processes. They can be used by clients to locate servers as an alternative to configuring clients with a collection of server addresses and ports.
 
-    By default, if not otherwise specified, Geode locators use the default multicast port **10334**.
+    By default, if not otherwise specified, Geode locators use the default port **10334**.
 
 -   Since locators start up the distributed system, locators must also have their ephemeral port range and TCP port accessible to other members through the firewall.
 -   For clients, you configure the client to connect to servers using the client's pool configuration. The client's pool configuration has two options: you can create a pool with either a list of server elements or a list of locator elements. For each element, you specify the host and port. The ports specified must be made accessible through your firewall.
@@ -151,7 +151,7 @@ This table contains properties potentially involved in firewall behavior, with a
 <tr class="odd">
 <td><p>Locator</p></td>
 <td><code class="ph codeph">start-locator</code> (for embedded locators) or <code class="ph codeph">--port</code> parameter to the <code class="ph codeph">gfsh start locator</code> command.</td>
-<td><em>if not specified upon startup or in the start-locator property, uses default multicast port 10334</em></td>
+<td><em>if not specified upon startup or in the start-locator property, uses default port 10334</em></td>
 </tr>
 <tr class="even">
 <td><p>Membership Port Range</p></td>
