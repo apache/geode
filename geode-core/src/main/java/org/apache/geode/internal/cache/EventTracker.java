@@ -59,14 +59,12 @@ public class EventTracker {
       new ConcurrentHashMap<ThreadIdentifier, EventSeqnoHolder>(100);
 
   /**
-   * a mapping of originator to bulkOp's last status (true means finished processing) applied to
-   * this cache.
+   * a mapping of originator to bulkOps
    *
-   * Keys are instances of @link {@link ThreadIdentifier}, values are instances of
-   * {@link BulkOpProcessed}.
+   * Keys are instances of @link {@link ThreadIdentifier}
    */
-  private final ConcurrentMap<ThreadIdentifier, BulkOpProcessed> recordedBulkOps =
-      new ConcurrentHashMap<ThreadIdentifier, BulkOpProcessed>(100);
+  private final ConcurrentMap<ThreadIdentifier, Object> recordedBulkOps =
+      new ConcurrentHashMap<ThreadIdentifier, Object>(100);
 
   /**
    * a mapping of originator to bulkOperation's last version tags. This map differs from
@@ -141,7 +139,7 @@ public class EventTracker {
   public EventTracker(LocalRegion region) {
     this.cache = region.cache;
     this.name = "Event Tracker for " + region.getName();
-    this.initializationLatch = new StoppableCountDownLatch(region.stopper, 1);
+    this.initializationLatch = new StoppableCountDownLatch(region.getStopper(), 1);
   }
 
   /** start this event tracker */
@@ -307,19 +305,22 @@ public class EventTracker {
       }
     }
 
-    // If this is a bulkOp, and concurrency checks are enabled, we need to
-    // save the version tag in case we retry.
-    if (lr.concurrencyChecksEnabled
-        && (event.getOperation().isPutAll() || event.getOperation().isRemoveAll())
-        && lr.getServerProxy() == null) {
-      recordBulkOpEvent(event, membershipID);
-    }
-
     EventSeqnoHolder newEvh = new EventSeqnoHolder(eventID.getSequenceID(), tag);
     if (logger.isTraceEnabled()) {
       logger.trace("region event tracker recording {}", event);
     }
     recordSeqno(membershipID, newEvh);
+
+    // If this is a bulkOp, and concurrency checks are enabled, we need to
+    // save the version tag in case we retry.
+    // Make recordBulkOp version tag after recordSeqno, so that recordBulkOpStart
+    // in a retry bulk op would not incorrectly remove the saved version tag in
+    // recordedBulkOpVersionTags
+    if (lr.getConcurrencyChecksEnabled()
+        && (event.getOperation().isPutAll() || event.getOperation().isRemoveAll())
+        && lr.getServerProxy() == null) {
+      recordBulkOpEvent(event, membershipID);
+    }
   }
 
   /**
@@ -542,24 +543,19 @@ public class EventTracker {
     ThreadIdentifier membershipID =
         new ThreadIdentifier(eventID.getMembershipID(), eventID.getThreadID());
 
-    BulkOpProcessed opSyncObj =
-        recordedBulkOps.putIfAbsent(membershipID, new BulkOpProcessed(false));
-    if (opSyncObj == null) {
-      opSyncObj = recordedBulkOps.get(membershipID);
-    }
+    Object opSyncObj = null;
+    do {
+      opSyncObj = recordedBulkOps.putIfAbsent(membershipID, new Object());
+      if (opSyncObj == null) {
+        opSyncObj = recordedBulkOps.get(membershipID);
+      }
+    } while (opSyncObj == null);
+
     synchronized (opSyncObj) {
       try {
-        if (opSyncObj.getStatus() && logger.isDebugEnabled()) {
-          logger.debug("SyncBulkOp: The operation was performed by another thread.");
-        } else {
-          recordBulkOpStart(membershipID);
-
-          // Perform the bulk op
-          r.run();
-          // set to true in case another thread is waiting at sync
-          opSyncObj.setStatus(true);
-          recordedBulkOps.remove(membershipID);
-        }
+        recordBulkOpStart(membershipID, eventID);
+        // Perform the bulk op
+        r.run();
       } finally {
         recordedBulkOps.remove(membershipID);
       }
@@ -567,14 +563,23 @@ public class EventTracker {
   }
 
   /**
-   * Called when a bulkOp is started on the local region. Used to clear event tracker state from the
-   * last bulkOp.
+   * Called when a new bulkOp is started on the local region. Used to clear event tracker state from
+   * the last bulkOp.
    */
-  public void recordBulkOpStart(ThreadIdentifier tid) {
+  public void recordBulkOpStart(ThreadIdentifier tid, EventID eventID) {
     if (logger.isDebugEnabled()) {
       logger.debug("recording bulkOp start for {}", tid.expensiveToString());
     }
-    this.recordedBulkOpVersionTags.remove(tid);
+    EventSeqnoHolder evh = recordedEvents.get(tid);
+    if (evh == null) {
+      return;
+    }
+    synchronized (evh) {
+      // only remove it when a new bulk op occurs
+      if (eventID.getSequenceID() > evh.lastSeqno) {
+        this.recordedBulkOpVersionTags.remove(tid);
+      }
+    }
   }
 
   /**
@@ -656,50 +661,6 @@ public class EventTracker {
     public void toData(DataOutput out) throws IOException {
       out.writeLong(lastSeqno);
       DataSerializer.writeObject(versionTag, out);
-    }
-  }
-
-  /**
-   * A status tracker for each bulk operation (putAll or removeAll) from originators specified by
-   * membershipID and threadID in the cache processed is true means the bulk op is processed by one
-   * thread no need to redo it by other threads.
-   * 
-   * @since GemFire 5.7
-   */
-  static class BulkOpProcessed {
-    /** whether the op is processed */
-    private boolean processed;
-
-    /**
-     * creates a new instance to save status of a bulk op
-     * 
-     * @param status true if the op has been processed
-     */
-    BulkOpProcessed(boolean status) {
-      this.processed = status;
-    }
-
-    /**
-     * setter method to change the status
-     * 
-     * @param status true if the op has been processed
-     */
-    void setStatus(boolean status) {
-      this.processed = status;
-    }
-
-    /**
-     * getter method to peek the current status
-     * 
-     * @return current status
-     */
-    boolean getStatus() {
-      return this.processed;
-    }
-
-    @Override
-    public String toString() {
-      return "BULKOP(" + this.processed + ")";
     }
   }
 

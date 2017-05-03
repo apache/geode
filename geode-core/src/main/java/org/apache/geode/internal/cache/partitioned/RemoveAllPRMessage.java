@@ -434,7 +434,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
             EventID eventID = removeAllPRData[0].getEventID();
             ThreadIdentifier membershipID =
                 new ThreadIdentifier(eventID.getMembershipID(), eventID.getThreadID());
-            bucketRegion.recordBulkOpStart(membershipID);
+            bucketRegion.recordBulkOpStart(membershipID, eventID);
           }
           bucketRegion.waitUntilLocked(keys);
           boolean lockedForPrimary = false;

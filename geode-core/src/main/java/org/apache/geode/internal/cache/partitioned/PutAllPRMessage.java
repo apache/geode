@@ -438,7 +438,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply {
             EventID eventID = putAllPRData[0].getEventID();
             ThreadIdentifier membershipID =
                 new ThreadIdentifier(eventID.getMembershipID(), eventID.getThreadID());
-            bucketRegion.recordBulkOpStart(membershipID);
+            bucketRegion.recordBulkOpStart(membershipID, eventID);
           }
           bucketRegion.waitUntilLocked(keys);
           boolean lockedForPrimary = false;

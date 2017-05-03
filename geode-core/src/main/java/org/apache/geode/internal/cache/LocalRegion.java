@@ -505,6 +505,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return new Stopper();
   }
 
+  protected CancelCriterion getStopper() {
+    return this.stopper;
+  }
+
   private final TestCallable testCallable;
 
   /**
@@ -682,10 +686,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
 
   /**
-   * Test method for getting the event tracker.
    * 
-   * this method is for testing only. Other region classes may track events using different
-   * mechanisms than EventTrackers
+   * Other region classes may track events using different mechanisms than EventTrackers
    */
   protected EventTracker getEventTracker() {
     return this.eventTracker;
@@ -3475,6 +3477,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
+  protected boolean getEnableConcurrencyChecks() {
+    return this.concurrencyChecksEnabled;
+  }
+
   /**
    * validate attributes of subregion being created, sent to parent
    *
@@ -6151,8 +6157,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       isDup = this.eventTracker.hasSeenEvent(event);
       if (isDup) {
         event.setPossibleDuplicate(true);
-        if (this.concurrencyChecksEnabled && event.getVersionTag() == null) {
-          event.setVersionTag(findVersionTagForClientEvent(event.getEventId()));
+        if (getConcurrencyChecksEnabled() && event.getVersionTag() == null) {
+          if (event.isBulkOpInProgress()) {
+            event.setVersionTag(findVersionTagForClientBulkOp(event.getEventId()));
+          } else {
+            event.setVersionTag(findVersionTagForClientEvent(event.getEventId()));
+          }
         }
       } else {
         // bug #48205 - a retried PR operation may already have a version assigned to it
@@ -6253,9 +6263,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  public void recordBulkOpStart(ThreadIdentifier membershipID) {
+  public void recordBulkOpStart(ThreadIdentifier membershipID, EventID eventID) {
     if (this.eventTracker != null && !isTX()) {
-      this.eventTracker.recordBulkOpStart(membershipID);
+      this.eventTracker.recordBulkOpStart(membershipID, eventID);
     }
   }
 

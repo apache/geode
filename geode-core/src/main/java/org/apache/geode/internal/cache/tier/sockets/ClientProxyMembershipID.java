@@ -38,7 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
  * 
  * 
  */
-public final class ClientProxyMembershipID
+public class ClientProxyMembershipID
     implements DataSerializableFixedID, Serializable, Externalizable {
 
   private static final Logger logger = LogService.getLogger();

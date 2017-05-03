@@ -14,15 +14,23 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.*;
 
-import org.junit.experimental.categories.Category;
+import java.util.concurrent.ConcurrentMap;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.EventTracker.BulkOpHolder;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -96,6 +104,48 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
       verify(region, times(cnt)).distributeUpdateEntryVersion(eq(event));
     } else {
       verify(region, never()).distributeUpdateEntryVersion(eq(event));
+    }
+  }
+
+  @Test
+  public void retriedBulkOpGetsSavedVersionTag() {
+    DistributedRegion region = prepare(true, true);
+    DistributedMember member = mock(DistributedMember.class);
+    ClientProxyMembershipID memberId = mock(ClientProxyMembershipID.class);
+    doReturn(false).when(region).isUsedForPartitionedRegionBucket();
+
+    byte[] memId = {1, 2, 3};
+    long threadId = 1;
+    long retrySeqId = 1;
+    ThreadIdentifier tid = new ThreadIdentifier(memId, threadId);
+    EventID retryEventID = new EventID(memId, threadId, retrySeqId);
+    boolean skipCallbacks = true;
+    int size = 2;
+    recordPutAllEvents(region, memId, threadId, skipCallbacks, member, memberId, size);
+    EventTracker eventTracker = region.getEventTracker();
+
+    ConcurrentMap<ThreadIdentifier, BulkOpHolder> map = eventTracker.getRecordedBulkOpVersionTags();
+    BulkOpHolder holder = map.get(tid);
+
+    EntryEventImpl retryEvent = EntryEventImpl.create(region, Operation.PUTALL_CREATE, "key1",
+        "value1", null, false, member, !skipCallbacks, retryEventID);
+    retryEvent.setContext(memberId);
+    retryEvent.setPutAllOperation(mock(DistributedPutAllOperation.class));
+
+    region.hasSeenEvent(retryEvent);
+    assertTrue(retryEvent.getVersionTag().equals(holder.entryVersionTags.get(retryEventID)));
+  }
+
+  protected void recordPutAllEvents(DistributedRegion region, byte[] memId, long threadId,
+      boolean skipCallbacks, DistributedMember member, ClientProxyMembershipID memberId, int size) {
+    EntryEventImpl[] events = new EntryEventImpl[size];
+    EventTracker eventTracker = region.getEventTracker();
+    for (int i = 0; i < size; i++) {
+      events[i] = EntryEventImpl.create(region, Operation.PUTALL_CREATE, "key" + i, "value" + i,
+          null, false, member, !skipCallbacks, new EventID(memId, threadId, i + 1));
+      events[i].setContext(memberId);
+      events[i].setVersionTag(mock(VersionTag.class));
+      eventTracker.recordEvent(events[i]);
     }
   }
 
