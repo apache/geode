@@ -1901,7 +1901,7 @@ public class DistributionManager implements DM {
         t.start();
         boolean interrupted = Thread.interrupted();
         try {
-          t.join(MAX_STOP_TIME);
+          t.join(MAX_STOP_TIME / 4);
         } catch (final InterruptedException e) {
           interrupted = true;
           t.interrupt();
