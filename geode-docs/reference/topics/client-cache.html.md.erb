@@ -84,7 +84,7 @@ Specifies a transaction listener.
 **Example:**
 
 ``` pre
-<cache search-timeout="60">
+<client-cache search-timeout="60">
    <cache-transaction-manager>
      <transaction-listener>
        <class-name>com.company.data.MyTransactionListener</class-name>
@@ -101,7 +101,7 @@ Specifies a transaction listener.
        <parameter>
      </transaction-writer>
    </cache-transaction-manager> .. .
-</cache>
+</client-cache>
 ```
 
 ## <a id="cc-transaction-listener" class="no-quick-link"></a>&lt;transaction-listener&gt;
@@ -494,7 +494,7 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
 **Example:**
 
 ``` pre
-<cache>
+<client-cache>
   <pdx persistent="true" disk-store-name="myDiskStore">
     <pdx-serializer>
       <class-name>
@@ -506,7 +506,7 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
   </pdx-serializer>
  </pdx>
   ...
-</cache>
+</client-cache>
 ```
 
 ## <a id="cc-pdx-serializer" class="no-quick-link"></a>&lt;pdx-serializer&gt;
@@ -522,14 +522,14 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 **Example:**
 
 ``` pre
-<cache>
+<client-cache>
   <pdx>
     <pdx-serializer>
      <class-name>com.company.ExamplePdxSerializer</class-name>
     </pdx-serializer>
   </pdx> 
   ...
-</cache>
+</client-cache>
 ```
 
 ## <a id="cc-region-attributes" class="no-quick-link"></a>&lt;region-attributes&gt;
@@ -2519,14 +2519,16 @@ Configures the behavior of the function execution service.
 **Example:**
 
 ``` pre
-<cache>
-    ...
+<client-cache>
+  ...
     </region>
-<function-service>
-  <function>
-    <class-name>com.myCompany.tradeService.cache.func.TradeCalc</class-name>
-  </function>
-</function-service>
+  <function-service>
+    <function>
+      <class-name>com.myCompany.tradeService.cache.func.TradeCalc</class-name>
+    </function>
+  </function-service>
+  ...
+</client-cache>
 ```
 
 ## <a id="cc-function" class="no-quick-link"></a>&lt;function&gt;
@@ -2610,13 +2612,13 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 **Example:**
 
 ``` pre
-<cache>
+<client-cache>
 ...
    <resource-manager 
       critical-heap-percentage="99.9" 
       eviction-heap=-percentage="85"/>
 ...
-</cache>
+</client-cache>
 ```
 
 ## <a id="cc-serialization-registration" class="no-quick-link"></a>&lt;serialization-registration&gt;
@@ -2649,7 +2651,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 **API:** `DataSerializable`
 
-You can also directly specify `<instantiator>` as a sub-element of `<cache>`. Use the `org.apache.geode.Instantiator` API to register a `DataSerializable` implementation as the serialization framework for the cache. The following table lists the attribute that can be specified for an `<instantiator>`.
+You can also directly specify `<instantiator>` as a sub-element of `<client-cache>`. Use the `org.apache.geode.Instantiator` API to register a `DataSerializable` implementation as the serialization framework for the cache. The following table lists the attribute that can be specified for an `<instantiator>`.
 
 <a id="cc-instantiator__d93e6596"></a>
 
