@@ -32,6 +32,7 @@ import org.apache.geode.internal.*;
 import org.apache.geode.internal.cache.*;
 import org.apache.geode.management.membership.*;
 import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.*;
 
 /**
@@ -43,6 +44,10 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   protected static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";
   private static final long MAX_WAIT = 60000;
+
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -567,6 +572,13 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         }
       }
     });
+  }
+
+  protected void startBridgeClient(final String group, final String host, final int port,
+      Properties systemProperties) throws Exception {
+    systemProperties.entrySet().forEach(
+        entry -> System.setProperty(entry.getKey().toString(), entry.getValue().toString()));
+    startBridgeClient(group, host, port, new String[] {REGION_NAME});
   }
 
   protected void checkUpdateLocatorListInterval(VM vm, final long expected) {
