@@ -207,7 +207,7 @@ public interface Pool {
    * The returned locator list may be slightly old information. If the locator does not exist, an
    * empty list is returned.
    */
-  public java.util.List<InetSocketAddress> getLiveLocators();
+  public java.util.List<InetSocketAddress> getOnlineLocators();
 
   /**
    * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the servers this pool is

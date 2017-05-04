@@ -89,7 +89,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   protected final List<InetSocketAddress> initialLocators;
   private final String serverGroup;
   private AtomicReference<LocatorList> locators = new AtomicReference<LocatorList>();
-  private AtomicReference<LocatorList> liveLocators = new AtomicReference<LocatorList>();
+  private AtomicReference<LocatorList> onlineLocators = new AtomicReference<LocatorList>();
   protected InternalPool pool;
   private final int connectionTimeout;
   private long pingInterval;
@@ -111,7 +111,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       int handshakeTimeout) {
     ArrayList<InetSocketAddress> tmpContacts = new ArrayList<InetSocketAddress>(contacts);
     this.locators.set(new LocatorList(tmpContacts));
-    this.liveLocators.set(new LocatorList(Collections.emptyList()));
+    this.onlineLocators.set(new LocatorList(Collections.emptyList()));
     this.initialLocators = Collections.unmodifiableList(tmpContacts);
     this.connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
@@ -193,11 +193,11 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   @Override
-  public List<InetSocketAddress> getLiveLocators() {
+  public List<InetSocketAddress> getOnlineLocators() {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return Collections.emptyList();
     }
-    return Collections.unmodifiableList(new ArrayList<>(liveLocators.get().getLocators()));
+    return Collections.unmodifiableList(new ArrayList<>(onlineLocators.get().getLocators()));
   }
 
 
@@ -263,7 +263,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     List<ServerLocation> locatorResponse = response.getLocators();
 
     List<InetSocketAddress> newLocators = new ArrayList<InetSocketAddress>(locatorResponse.size());
-    List<InetSocketAddress> activeLocators =
+    List<InetSocketAddress> newOnlineLocators =
         new ArrayList<InetSocketAddress>(locatorResponse.size());
 
     Set<InetSocketAddress> badLocators = new HashSet<InetSocketAddress>(initialLocators);
@@ -271,7 +271,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       ServerLocation locator = itr.next();
       InetSocketAddress address = new InetSocketAddress(locator.getHostName(), locator.getPort());
       newLocators.add(address);
-      activeLocators.add(address);
+      newOnlineLocators.add(address);
       badLocators.remove(address);
     }
 
@@ -300,7 +300,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     }
     LocatorList newLocatorList = new LocatorList(newLocators);
     locators.set(newLocatorList);
-    liveLocators.set(new LocatorList(activeLocators));
+    onlineLocators.set(new LocatorList(newOnlineLocators));
     pool.getStats().setLocatorCount(newLocators.size());
   }
 

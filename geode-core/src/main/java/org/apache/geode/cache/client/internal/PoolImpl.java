@@ -443,8 +443,8 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  public List<InetSocketAddress> getLiveLocators() {
-    return this.source.getLiveLocators();
+  public List<InetSocketAddress> getOnlineLocators() {
+    return this.source.getOnlineLocators();
   }
 
   public List<InetSocketAddress> getServers() {

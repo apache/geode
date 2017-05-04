@@ -76,9 +76,9 @@ public interface ConnectionSource {
   List<ServerLocation> getAllServers();
 
   /**
-   * get the list of live locators
+   * get the list of online locators
    *
-   * @return a list of live locators
+   * @return a list of online locators
    */
-  List<InetSocketAddress> getLiveLocators();
+  List<InetSocketAddress> getOnlineLocators();
 }

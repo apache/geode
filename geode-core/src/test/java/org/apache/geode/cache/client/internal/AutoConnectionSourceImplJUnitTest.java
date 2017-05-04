@@ -368,7 +368,7 @@ public class AutoConnectionSourceImplJUnitTest {
       return new ArrayList();
     }
 
-    public List/* <InetSocketAddress> */ getLiveLocators() {
+    public List/* <InetSocketAddress> */ getOnlineLocators() {
       return new ArrayList();
     }
 

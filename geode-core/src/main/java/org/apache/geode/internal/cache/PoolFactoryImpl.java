@@ -464,7 +464,7 @@ public class PoolFactoryImpl implements PoolFactory {
     }
 
     @Override
-    public List<InetSocketAddress> getLiveLocators() {
+    public List<InetSocketAddress> getOnlineLocators() {
       throw new UnsupportedOperationException();
     }
 
