@@ -49,7 +49,6 @@ import org.apache.geode.cache.CommitIncompleteException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.LoaderHelper;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -475,8 +474,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
           AttributesFactory factory2 = new AttributesFactory();
           factory2.setScope(Scope.DISTRIBUTED_ACK);
           factory2.setEarlyAck(false);
-          // factory.setDataPolicy(DataPolicy.REPLICATE);
-          factory2.setMirrorType(MirrorType.KEYS);
+          factory2.setDataPolicy(DataPolicy.REPLICATE);
           getCache().createRegion(rgnName, factory2.create());
         } catch (CacheException e) {
           Assert.fail("While creating region", e);

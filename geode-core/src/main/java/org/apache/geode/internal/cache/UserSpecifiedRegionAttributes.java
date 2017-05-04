@@ -165,10 +165,6 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
     return this.hasCustomEntryIdleTimeout;
   }
 
-  public boolean hasMirrorType() {
-    return hasDataPolicy();
-  }
-
   public boolean hasDataPolicy() {
     return this.hasDataPolicy;
   }

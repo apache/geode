@@ -57,6 +57,7 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionReinitializedException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EntryExpiryTask;
@@ -1159,17 +1160,17 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     Region region = createRegion(name);
 
-    boolean isMirrored = getRegionAttributes().getMirrorType().isMirrored();
+    DataPolicy dataPolicy = getRegionAttributes().getDataPolicy();
 
     try {
       region.localDestroy(key);
-      if (isMirrored)
+      if (dataPolicy != DataPolicy.NORMAL)
         fail("Should have thrown an IllegalStateException");
       fail("Should have thrown an EntryNotFoundException");
     } catch (EntryNotFoundException ex) {
       // pass...
     } catch (IllegalStateException ex) {
-      if (!isMirrored)
+      if (!(dataPolicy != DataPolicy.NORMAL))
         throw ex;
       else
         return; // abort test
@@ -1642,13 +1643,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     region.put(key, value);
 
     Region.Entry entry = region.getEntry(key);
-    boolean isMirrorKeysValues = getRegionAttributes().getMirrorType().isKeysValues();
+    DataPolicy dataPolicy = getRegionAttributes().getDataPolicy();
     try {
       region.localInvalidate(key);
-      if (isMirrorKeysValues)
+      if ((dataPolicy != DataPolicy.NORMAL) && (dataPolicy != DataPolicy.PRELOADED))
         fail("Should have thrown an IllegalStateException");
     } catch (IllegalStateException e) {
-      if (!isMirrorKeysValues)
+      if (!((dataPolicy != DataPolicy.NORMAL) && (dataPolicy != DataPolicy.PRELOADED)))
         throw e;
       else
         return; // abort test
@@ -1669,13 +1670,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     region.put("B", "b");
     region.put("C", "c");
 
-    boolean isKV = getRegionAttributes().getMirrorType().isKeysValues();
+    DataPolicy dataPolicy = getRegionAttributes().getDataPolicy();
     try {
       region.localInvalidateRegion();
-      if (isKV)
+      if ((dataPolicy != DataPolicy.NORMAL) && (dataPolicy != DataPolicy.PRELOADED))
         fail("Should have thrown an IllegalStateException");
     } catch (IllegalStateException e) {
-      if (!isKV)
+      if (!((dataPolicy != DataPolicy.NORMAL) && (dataPolicy != DataPolicy.PRELOADED)))
         throw e;
       else
         return; // abort test
@@ -4110,7 +4111,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     assertNotNull("Could not get reference to reinitialized region", postSnapshotRegion);
 
     boolean expectData =
-        isController || postSnapshotRegion.getAttributes().getMirrorType().isMirrored()
+        isController || (postSnapshotRegion.getAttributes().getDataPolicy() != DataPolicy.NORMAL)
             || postSnapshotRegion.getAttributes().getDataPolicy().isPreloaded();
     log.info("region has " + postSnapshotRegion.keySet().size() + " entries");
     assertEquals(expectData ? MAX_KEYS : 0, postSnapshotRegion.keySet().size());

@@ -34,7 +34,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheExistsException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionedRegionStorageException;
@@ -1448,7 +1448,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
 
   protected RegionAttributes createRegionAttrs(int red, int localMaxMem, int numBuckets) {
     AttributesFactory attr = new AttributesFactory();
-    attr.setMirrorType(MirrorType.NONE);
+    attr.setDataPolicy(DataPolicy.PARTITION);
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     PartitionAttributes prAttr = paf.setRedundantCopies(red).setLocalMaxMemory(localMaxMem)
         .setTotalNumBuckets(numBuckets).create();

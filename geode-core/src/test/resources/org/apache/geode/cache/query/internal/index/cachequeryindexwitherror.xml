@@ -20,7 +20,7 @@
 <cache lock-lease="120" lock-timeout="60" search-timeout="300">
   <vm-root-region name="root">
     
-    <region-attributes scope="distributed-no-ack" mirror-type="none"  initial-capacity="16" load-factor="0.75" concurrency-level="16" >      
+    <region-attributes scope="distributed-no-ack" data-policy="normal"  initial-capacity="16" load-factor="0.75" concurrency-level="16" >
          <value-constraint>java.lang.String</value-constraint>
     </region-attributes>
     

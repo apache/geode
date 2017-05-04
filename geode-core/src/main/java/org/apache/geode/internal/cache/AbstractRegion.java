@@ -487,20 +487,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
     return this.customEntryIdleTimeout;
   }
 
-  public MirrorType getMirrorType() {
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-        || this.dataPolicy.withPartitioning()) {
-      return MirrorType.NONE;
-    } else if (this.dataPolicy.withReplication()) {
-      return MirrorType.KEYS_VALUES;
-    } else {
-      throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
-    }
-  }
-
-
   public String getPoolName() {
     // checkReadiness();
     return this.poolName;

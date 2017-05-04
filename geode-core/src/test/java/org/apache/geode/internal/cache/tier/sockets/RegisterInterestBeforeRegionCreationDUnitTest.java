@@ -29,7 +29,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -160,7 +160,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
           public void run2() throws CacheException {
             AttributesFactory factory = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
-            factory.setMirrorType(MirrorType.KEYS_VALUES);
+            factory.setDataPolicy(DataPolicy.REPLICATE);
             RegionAttributes attrs = factory.createRegionAttributes();
             cache.createVMRegion(REGION_NAME, attrs);
           }
@@ -195,7 +195,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
     if (isCreateRegion) {
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.DISTRIBUTED_ACK);
-      factory.setMirrorType(MirrorType.KEYS_VALUES);
+      factory.setDataPolicy(DataPolicy.REPLICATE);
       RegionAttributes attrs = factory.createRegionAttributes();
       cache.createVMRegion(REGION_NAME, attrs);
     }

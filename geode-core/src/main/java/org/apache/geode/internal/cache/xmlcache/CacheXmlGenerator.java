@@ -76,7 +76,6 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.MembershipAttributes;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
@@ -1946,21 +1945,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
               String.valueOf(attrs.getEnableSubscriptionConflation()));
       }
 
-      if ((!(attrs instanceof RegionAttributesCreation)
-          || ((RegionAttributesCreation) attrs).hasMirrorType())) {
-        String mirrorString;
-        MirrorType mirror = attrs.getMirrorType();
-        if (mirror.equals(MirrorType.NONE))
-          mirrorString = NONE;
-        else if (mirror.equals(MirrorType.KEYS))
-          mirrorString = KEYS;
-        else if (mirror.equals(MirrorType.KEYS_VALUES))
-          mirrorString = KEYS_VALUES;
-        else
-          throw new InternalGemFireException(
-              LocalizedStrings.CacheXmlGenerator_UNKNOWN_MIRROR_TYPE_0.toLocalizedString(mirror));
-        atts.addAttribute("", "", MIRROR_TYPE, "", mirrorString);
-      }
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasPersistBackup())) {
         atts.addAttribute("", "", PERSIST_BACKUP, "",

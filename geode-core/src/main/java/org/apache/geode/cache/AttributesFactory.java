@@ -156,9 +156,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * <dd>Specifies the data storage policy.<br>
  * {@link #setDataPolicy} {@link RegionAttributes#getDataPolicy}</dd>
  *
- * <dt>{@link MirrorType} [<em>default:</em> <code>MirrorType.NONE</code>]</dt>
- * <dd><em>Deprecated</em>, use DataPolicy instead.</dd>
- *
  * <dt>{@link #setEvictionAttributes(EvictionAttributes) EvictionAttributes}</dt>
  * <dd>{@link EvictionAttributes} are the replacement for the deprecated and removed
  * CapacityController interface. EvictionAttributes describe the {@link EvictionAlgorithm} and the
@@ -660,35 +657,6 @@ public class AttributesFactory<K, V> {
       this.regionAttributes.evictionAttributes = new EvictionAttributesImpl();
     }
     this.regionAttributes.setHasEvictionAttributes(true);
-  }
-
-  /**
-   * Sets the mirror type for the next <code>RegionAttributes</code> created.
-   * 
-   * @param mirrorType The type of mirroring to use for the region
-   * @throws IllegalArgumentException if mirrorType is null
-   * @deprecated use {@link #setDataPolicy} instead.
-   */
-  @Deprecated
-  public void setMirrorType(MirrorType mirrorType) {
-    if (mirrorType == null) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.AttributesFactory_MIRRORTYPE_MUST_NOT_BE_NULL.toLocalizedString());
-    }
-    DataPolicy dp = mirrorType.getDataPolicy();
-    if (dp.withReplication()) {
-      // requested a mirror type that has replication
-      // if current data policy is not replicated change it
-      if (!this.regionAttributes.getDataPolicy().withReplication()) {
-        setDataPolicy(dp);
-      }
-    } else {
-      // requested a mirror type none;
-      // if current data policy is replicated change it
-      if (this.regionAttributes.getDataPolicy().withReplication()) {
-        setDataPolicy(dp);
-      }
-    }
   }
 
   /**
@@ -1703,20 +1671,6 @@ public class AttributesFactory<K, V> {
 
     public CustomExpiry<K, V> getCustomEntryIdleTimeout() {
       return this.customEntryIdleTimeout;
-    }
-
-    @SuppressWarnings("deprecation")
-    public MirrorType getMirrorType() {
-      if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-          || this.dataPolicy.withPartitioning()) {
-        return MirrorType.NONE;
-      } else if (this.dataPolicy.withReplication()) {
-        return MirrorType.KEYS_VALUES;
-      } else {
-        throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-                .toLocalizedString(this.dataPolicy));
-      }
     }
 
     public DataPolicy getDataPolicy() {

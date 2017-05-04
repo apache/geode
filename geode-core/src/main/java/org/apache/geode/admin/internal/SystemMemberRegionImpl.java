@@ -189,10 +189,6 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
-  public MirrorType getMirrorType() {
-    return this.ra.getMirrorType();
-  }
-
   public DataPolicy getDataPolicy() {
     return this.ra.getDataPolicy();
   }

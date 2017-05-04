@@ -88,7 +88,7 @@ public class AttributesFactoryJUnitTest {
     // MirrorType KEYS is incompatible with
     // ExpirationAction.LOCAL_INVALIDATE
     factory = new AttributesFactory();
-    factory.setMirrorType(MirrorType.KEYS);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setEntryIdleTimeout(destroy);
     factory.setStatisticsEnabled(true);
     {
@@ -100,7 +100,7 @@ public class AttributesFactoryJUnitTest {
     // MirrorType.KEYS are incompatible with
     // ExpirationAction.LOCAL_DESTROY.
     factory = new AttributesFactory();
-    factory.setMirrorType(MirrorType.KEYS);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setEntryIdleTimeout(destroy);
     factory.setStatisticsEnabled(true);
     {
@@ -238,7 +238,7 @@ public class AttributesFactoryJUnitTest {
     assertEquals(Scope.DISTRIBUTED_NO_ACK, attrs.getScope());
     assertEquals(DataPolicy.DEFAULT, attrs.getDataPolicy());
     assertEquals(InterestPolicy.DEFAULT, attrs.getSubscriptionAttributes().getInterestPolicy());
-    assertEquals(MirrorType.NONE, attrs.getMirrorType());
+    assertEquals(DataPolicy.NORMAL, attrs.getDataPolicy());
     assertEquals(null, attrs.getDiskStoreName());
     assertEquals(AttributesFactory.DEFAULT_DISK_SYNCHRONOUS, attrs.isDiskSynchronous());
     assertNull(attrs.getKeyConstraint());

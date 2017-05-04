@@ -27,7 +27,6 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.EnumListenerEvent;
@@ -110,7 +109,7 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
     cache = CacheFactory.create(getSystem());
 
     final AttributesFactory factory = new AttributesFactory();
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setScope(Scope.DISTRIBUTED_ACK);
 
     haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl) cache, null,

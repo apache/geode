@@ -30,7 +30,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -995,7 +995,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setConcurrencyChecksEnabled(true);
     cache.createRegion(REGION_NAME, factory.create());
 

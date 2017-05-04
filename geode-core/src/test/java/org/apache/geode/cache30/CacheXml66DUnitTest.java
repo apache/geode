@@ -73,7 +73,6 @@ import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -2745,7 +2744,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     }
     {
       RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-      attrs.setMirrorType(MirrorType.KEYS_VALUES);
+      attrs.setDataPolicy(DataPolicy.REPLICATE);
       cache.createRegion("rootREPLICATE", attrs);
     }
     {
@@ -3098,7 +3097,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     }
     {
       RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-      attrs.setMirrorType(MirrorType.KEYS_VALUES);
+      attrs.setDataPolicy(DataPolicy.REPLICATE);
       cache.createRegion("rootREPLICATE", attrs);
     }
     {
@@ -3349,13 +3348,13 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     String id1 = "id1";
     attrs = new RegionAttributesCreation(cache);
     attrs.setScope(Scope.DISTRIBUTED_ACK);
-    attrs.setMirrorType(MirrorType.KEYS);
+    attrs.setDataPolicy(DataPolicy.REPLICATE);
     cache.setRegionAttributes(id1, attrs);
 
     String id2 = "id2";
     attrs = new RegionAttributesCreation(cache);
     attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
-    attrs.setMirrorType(MirrorType.KEYS_VALUES);
+    attrs.setDataPolicy(DataPolicy.REPLICATE);
     attrs.setConcurrencyLevel(15);
     cache.setRegionAttributes(id2, attrs);
 
@@ -3938,7 +3937,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     attrs.setLockGrantor(true);
     attrs.setScope(Scope.GLOBAL);
-    attrs.setMirrorType(MirrorType.KEYS_VALUES);
+    attrs.setDataPolicy(DataPolicy.REPLICATE);
 
     cache.createRegion("root", attrs);
 
@@ -4185,7 +4184,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
-    attrs.setMirrorType(MirrorType.KEYS_VALUES);
+    attrs.setDataPolicy(DataPolicy.REPLICATE);
     attrs.setInitialCapacity(142);
     attrs.setLoadFactor(42.42f);
     attrs.setStatisticsEnabled(false);
@@ -4384,7 +4383,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     {
       attrs = new RegionAttributesCreation(cache);
       attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
-      attrs.setMirrorType(MirrorType.KEYS_VALUES);
+      attrs.setDataPolicy(DataPolicy.REPLICATE);
       attrs.setInitialCapacity(142);
       attrs.setLoadFactor(42.42f);
       attrs.setStatisticsEnabled(false);
@@ -4395,7 +4394,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     {
       attrs = new RegionAttributesCreation(cache);
       attrs.setScope(Scope.DISTRIBUTED_ACK);
-      attrs.setMirrorType(MirrorType.KEYS);
+      attrs.setDataPolicy(DataPolicy.REPLICATE);
       attrs.setInitialCapacity(242);
 
       Region region = root.createSubregion("two", attrs);
@@ -4452,7 +4451,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     CacheCreation cache = new CacheCreation();
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    attrs.setMirrorType(MirrorType.KEYS_VALUES);
+    attrs.setDataPolicy(DataPolicy.REPLICATE);
     attrs.setPersistBackup(true);
 
     cache.createRegion("root", attrs);

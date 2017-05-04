@@ -129,16 +129,6 @@ public interface RegionAttributes<K, V> {
   public boolean getIgnoreJTA();
 
   /**
-   * Returns the type of mirroring for this region.
-   *
-   * @return the region's <code>MirrorType</code>
-   * @deprecated as of GemFire 5.0, use {@link #getDataPolicy} instead.
-   */
-  @Deprecated
-  public MirrorType getMirrorType();
-
-
-  /**
    * Returns the data policy for this region. Default value of DataPolicy is set to 'Normal'. Please
    * refer the gemfire documentation for more details on this.
    *

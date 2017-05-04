@@ -40,7 +40,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.MembershipAttributes;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionAttributes;
@@ -324,20 +323,6 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   public int[] getDiskDirSizes() {
     return this.diskSizes;
-  }
-
-  public MirrorType getMirrorType() {
-    // checkReadiness();
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-        || this.dataPolicy.withPartitioning()) {
-      return MirrorType.NONE;
-    } else if (this.dataPolicy.withReplication()) {
-      return MirrorType.KEYS_VALUES;
-    } else {
-      throw new IllegalStateException(
-          LocalizedStrings.RemoteRegionAttributes_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
-    }
   }
 
   public DataPolicy getDataPolicy() {

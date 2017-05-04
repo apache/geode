@@ -34,7 +34,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.MembershipAttributes;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -677,36 +676,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     this.customEntryIdleTimeout = custom;
     setHasCustomEntryIdleTimeout(true);
     return old;
-  }
-
-  public MirrorType getMirrorType() {
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-        || this.dataPolicy.withPartitioning()) {
-      return MirrorType.NONE;
-    } else if (this.dataPolicy.withReplication()) {
-      return MirrorType.KEYS_VALUES;
-    } else {
-      throw new IllegalStateException(
-          LocalizedStrings.RegionAttributesCreation_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
-    }
-  }
-
-  public void setMirrorType(MirrorType mirrorType) {
-    DataPolicy dp = mirrorType.getDataPolicy();
-    if (dp.withReplication()) {
-      // requested a mirror type that has replication
-      // if current data policy is not replicated change it
-      if (!getDataPolicy().withReplication()) {
-        setDataPolicy(dp);
-      }
-    } else {
-      // requested a mirror type none;
-      // if current data policy is replicated change it
-      if (getDataPolicy().withReplication()) {
-        setDataPolicy(dp);
-      }
-    }
   }
 
   public DataPolicy getDataPolicy() {

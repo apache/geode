@@ -29,7 +29,7 @@ import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -187,7 +187,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     new EventIdOptimizationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 
