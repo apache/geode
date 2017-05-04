@@ -625,7 +625,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
 
   private void addUnknownHost(Set<String> remoteLocators) {
-    String unknownHostName = "unknown";
+    String unknownHostName = "unknownGeodeHostWanAutoDiscoveryDUnitTest";
     boolean unknownHostFound = false;
     int numTries = 10;
     for (int i = 0; i < numTries; i++) {
