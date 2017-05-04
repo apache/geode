@@ -377,7 +377,7 @@ public class QueueManagerJUnitTest {
       return null;
     }
 
-    public List getLiveLocators() {
+    public List getOnlineLocators() {
       return new ArrayList();
     }
 
@@ -604,7 +604,7 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public List<InetSocketAddress> getLiveLocators() {
+    public List<InetSocketAddress> getOnlineLocators() {
       return Collections.emptyList();
     }
   }

@@ -523,7 +523,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
           Assert.assertEquals(expectedOne, locator);
         }
 
-        List<InetSocketAddress> locators = pool.getLiveLocators();
+        List<InetSocketAddress> locators = pool.getOnlineLocators();
         Assert.assertEquals(expected.length, locators.size());
         Arrays.sort(expected, Comparator.comparing(InetSocketAddress::getPort));
         for (int i = 0; i < locators.size(); i++) {

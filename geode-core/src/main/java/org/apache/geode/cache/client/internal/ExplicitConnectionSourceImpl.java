@@ -265,7 +265,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
   }
 
   @Override
-  public List<InetSocketAddress> getLiveLocators() {
+  public List<InetSocketAddress> getOnlineLocators() {
     return Collections.emptyList();
   }
 }
