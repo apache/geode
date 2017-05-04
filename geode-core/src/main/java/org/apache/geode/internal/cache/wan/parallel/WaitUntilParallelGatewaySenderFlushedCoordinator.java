@@ -23,8 +23,10 @@ import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordina
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 
 public class WaitUntilParallelGatewaySenderFlushedCoordinator
@@ -46,22 +48,30 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
       sender.getCancelCriterion().checkCancelInProgress(null);
     }
 
-    // Create callables for local buckets
-    List<WaitUntilBucketRegionQueueFlushedCallable> callables =
-        buildWaitUntilBucketRegionQueueFlushedCallables(pr);
-
-    // Submit local callables for execution
     ExecutorService service = this.sender.getDistributionManager().getWaitingThreadPool();
     List<Future<Boolean>> callableFutures = new ArrayList<>();
     int callableCount = 0;
-    if (logger.isDebugEnabled()) {
-      logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Created and being submitted "
-          + callables.size() + " callables=" + callables);
-    }
-    for (Callable<Boolean> callable : callables) {
+    long nanosRemaining = unit.toNanos(timeout);
+    long endTime = System.nanoTime() + nanosRemaining;
+    Set<BucketRegion> localBucketRegions = getLocalBucketRegions(pr);
+    for (BucketRegion br : localBucketRegions) {
+      // timeout exceeded, do not submit more callables, return localResult false
+      if (System.nanoTime() >= endTime) {
+        localResult = false;
+        break;
+      }
+      // create and submit callable with updated timeout
+      Callable<Boolean> callable = createWaitUntilBucketRegionQueueFlushedCallable(
+          (BucketRegionQueue) br, nanosRemaining, TimeUnit.NANOSECONDS);
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "WaitUntilParallelGatewaySenderFlushedCoordinator: Submitting callable for bucket "
+                + br.getId() + " callable=" + callable + " nanosRemaining=" + nanosRemaining);
+      }
       callableFutures.add(service.submit(callable));
       callableCount++;
-      if ((callableCount % CALLABLES_CHUNK_SIZE) == 0 || callableCount == callables.size()) {
+      if ((callableCount % CALLABLES_CHUNK_SIZE) == 0
+          || callableCount == localBucketRegions.size()) {
         CallablesChunkResults callablesChunkResults =
             new CallablesChunkResults(localResult, exceptionToThrow, callableFutures).invoke();
         localResult = callablesChunkResults.getLocalResult();
@@ -74,6 +84,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
           throw exceptionToThrow;
         }
       }
+      nanosRemaining = endTime - System.nanoTime();
     }
 
     // Return the full result
@@ -84,16 +95,17 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     return localResult;
   }
 
-  protected List<WaitUntilBucketRegionQueueFlushedCallable> buildWaitUntilBucketRegionQueueFlushedCallables(
-      PartitionedRegion pr) {
-    List<WaitUntilBucketRegionQueueFlushedCallable> callables = new ArrayList<>();
+  protected Set<BucketRegion> getLocalBucketRegions(PartitionedRegion pr) {
+    Set<BucketRegion> localBucketRegions = new HashSet<BucketRegion>();
     if (pr.isDataStore()) {
-      for (BucketRegion br : pr.getDataStore().getAllLocalBucketRegions()) {
-        callables.add(new WaitUntilBucketRegionQueueFlushedCallable((BucketRegionQueue) br,
-            this.timeout, this.unit));
-      }
+      localBucketRegions = pr.getDataStore().getAllLocalBucketRegions();
     }
-    return callables;
+    return localBucketRegions;
+  }
+
+  protected WaitUntilBucketRegionQueueFlushedCallable createWaitUntilBucketRegionQueueFlushedCallable(
+      BucketRegionQueue br, long timeout, TimeUnit unit) {
+    return new WaitUntilBucketRegionQueueFlushedCallable(br, timeout, unit);
   }
 
   public static class WaitUntilBucketRegionQueueFlushedCallable implements Callable<Boolean> {

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinatorJUnitTest;
@@ -21,9 +23,12 @@ import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySend
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
@@ -32,12 +37,14 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Category(IntegrationTest.class)
 public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
     extends WaitUntilGatewaySenderFlushedCoordinatorJUnitTest {
 
   private PartitionedRegion region;
+  private BucketRegionQueue brq;
 
   protected void createGatewaySender() {
     super.createGatewaySender();
@@ -46,6 +53,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
     doReturn(queue).when(this.sender).getQueue();
     this.region = mock(PartitionedRegion.class);
     doReturn(this.region).when(queue).getRegion();
+    this.brq = mock(BucketRegionQueue.class);
   }
 
   protected AbstractGatewaySenderEventProcessor getEventProcessor() {
@@ -56,69 +64,99 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
 
   @Test
   public void testWaitUntilParallelGatewaySenderFlushedSuccessfulNotInitiator() throws Throwable {
+    long timeout = 5000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
-        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, 1000l,
-            TimeUnit.MILLISECONDS, false);
+        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, timeout, unit, false);
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
-    doReturn(getSuccessfulCallables(true)).when(coordinatorSpy)
-        .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
+    doReturn(getLocalBucketRegions()).when(coordinatorSpy).getLocalBucketRegions(any());
+    doReturn(getCallableResult(true)).when(coordinatorSpy)
+        .createWaitUntilBucketRegionQueueFlushedCallable(any(), anyLong(), any());
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertTrue(result);
   }
 
   @Test
-  public void testWaitUntilParallelGatewaySenderFlushedUnsuccessfulNotInitiator() throws Throwable {
+  public void waitUntilFlushShouldExitEarlyIfTimeoutElapses() throws Throwable {
+    long timeout = 500;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
-        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, 1000l,
-            TimeUnit.MILLISECONDS, false);
+        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, timeout, unit, false);
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
-    doReturn(getUnsuccessfulCallables()).when(coordinatorSpy)
-        .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
+
+    Set<BucketRegion> bucketRegions = new HashSet<>();
+    for (int i = 0; i < 5000; i++) {
+      bucketRegions.add(mock(BucketRegionQueue.class));
+    }
+    doReturn(bucketRegions).when(coordinatorSpy).getLocalBucketRegions(any());
+
+    WaitUntilBucketRegionQueueFlushedCallable callable =
+        mock(WaitUntilBucketRegionQueueFlushedCallable.class);
+    when(callable.call()).then(invocation -> {
+      Thread.sleep(100);
+      return true;
+    });
+    doReturn(callable).when(coordinatorSpy).createWaitUntilBucketRegionQueueFlushedCallable(any(),
+        anyLong(), any());
+    boolean result = coordinatorSpy.waitUntilFlushed();
+    assertFalse(result);
+
+    verify(callable, atMost(50)).call();
+  }
+
+  @Test
+  public void testWaitUntilParallelGatewaySenderFlushedUnsuccessfulNotInitiator() throws Throwable {
+    long timeout = 5000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
+    WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
+        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, timeout, unit, false);
+    WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
+    doReturn(getLocalBucketRegions()).when(coordinatorSpy).getLocalBucketRegions(any());
+    doReturn(getCallableResult(false)).when(coordinatorSpy)
+        .createWaitUntilBucketRegionQueueFlushedCallable(any(), anyLong(), any());
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertFalse(result);
   }
 
   @Test
   public void testWaitUntilParallelGatewaySenderFlushedSuccessfulInitiator() throws Throwable {
+    long timeout = 5000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
-        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, 1000l,
-            TimeUnit.MILLISECONDS, true);
+        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, timeout, unit, true);
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
-    doReturn(getSuccessfulCallables(true)).when(coordinatorSpy)
-        .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
+    doReturn(getLocalBucketRegions()).when(coordinatorSpy).getLocalBucketRegions(any());
+    doReturn(getCallableResult(true)).when(coordinatorSpy)
+        .createWaitUntilBucketRegionQueueFlushedCallable(any(), anyLong(), any());
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertTrue(result);
   }
 
   @Test
   public void testWaitUntilParallelGatewaySenderFlushedUnsuccessfulInitiator() throws Throwable {
+    long timeout = 5000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
-        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, 1000l,
-            TimeUnit.MILLISECONDS, true);
+        new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, timeout, unit, true);
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
-    doReturn(getSuccessfulCallables(false)).when(coordinatorSpy)
-        .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
+    doReturn(getLocalBucketRegions()).when(coordinatorSpy).getLocalBucketRegions(any());
+    doReturn(getCallableResult(false)).when(coordinatorSpy)
+        .createWaitUntilBucketRegionQueueFlushedCallable(any(), anyLong(), any());
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertFalse(result);
   }
 
-  private List<WaitUntilBucketRegionQueueFlushedCallable> getSuccessfulCallables(
-      boolean expectedResult) throws Exception {
-    List callables = new ArrayList();
+  private WaitUntilBucketRegionQueueFlushedCallable getCallableResult(boolean expectedResult)
+      throws Exception {
     WaitUntilBucketRegionQueueFlushedCallable callable =
         mock(WaitUntilBucketRegionQueueFlushedCallable.class);
     when(callable.call()).thenReturn(expectedResult);
-    callables.add(callable);
-    return callables;
+    return callable;
   }
 
-  private List<WaitUntilBucketRegionQueueFlushedCallable> getUnsuccessfulCallables()
-      throws Exception {
-    List callables = new ArrayList();
-    WaitUntilBucketRegionQueueFlushedCallable callable =
-        mock(WaitUntilBucketRegionQueueFlushedCallable.class);
-    when(callable.call()).thenReturn(false);
-    callables.add(callable);
-    return callables;
+  private Set<BucketRegionQueue> getLocalBucketRegions() {
+    Set<BucketRegionQueue> localBucketRegions = new HashSet<BucketRegionQueue>();
+    localBucketRegions.add(this.brq);
+    return localBucketRegions;
   }
 }
