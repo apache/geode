@@ -14,14 +14,22 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunctionCacheTest;
+import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunctionFileTest;
+import org.apache.geode.management.internal.cli.util.LogSizerTest;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
  * All of the JUnit, DUnit and Integration tests for gfsh command export logs.
  */
+
+@Ignore
 @Suite.SuiteClasses({ExportLogsCommandTest.class, ExportLogsFileSizeLimitTest.class,
-    ExportLogsIntegrationTest.class, ExportLogsDUnitTest.class,})
+    ExportLogsIntegrationTest.class, ExportLogsDUnitTest.class,
+    SizeExportLogsFunctionCacheTest.class, SizeExportLogsFunctionFileTest.class,
+    LogSizerTest.class})
 @RunWith(Suite.class)
 public class ExportLogsTestSuite {
 }

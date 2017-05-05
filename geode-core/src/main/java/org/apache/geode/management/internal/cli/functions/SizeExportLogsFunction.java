@@ -59,7 +59,9 @@ public class SizeExportLogsFunction extends ExportLogsFunction implements Functi
 
   long estimateLogFileSize(final DistributedMember member, final File logFile,
       final File statArchive, final Args args) throws ParseException, IOException {
-    LOGGER.info("SizeExportLogsFunction started for member {}", member);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("SizeExportLogsFunction started for member {}", member);
+    }
 
     File baseLogFile = null;
     File baseStatsFile = null;

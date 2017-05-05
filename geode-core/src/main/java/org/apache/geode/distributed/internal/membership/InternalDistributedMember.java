@@ -190,8 +190,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * string).
    * <p>
    *
-   * <b> [bruce]THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT.
-   * IT DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
+   * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
+   * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    *
    * 
    * @param i the hostname, must be for the current host
@@ -228,8 +228,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * string).
    * <p>
    *
-   * <b> [bruce]THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT.
-   * IT DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
+   * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
+   * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    *
    * 
    * @param i the hostname, must be for the current host
@@ -264,8 +264,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * LonerDistributionManager.
    * <p>
    *
-   * < b> [bruce]DO NOT USE THIS METHOD TO CREATE ANYTHING OTHER THAN A LONER ID WITHOUT TALKING TO
-   * ME FIRST. IT DOES NOT PROPERLY INITIALIZE THE ID. </b>
+   * < b> DO NOT USE THIS METHOD TO CREATE ANYTHING OTHER THAN A LONER ID. IT DOES NOT PROPERLY
+   * INITIALIZE THE ID. </b>
    *
    * @param host the hostname, must be for the current host
    * @param p the membership listening port
@@ -298,8 +298,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * address).
    * <p>
    *
-   * <b> [bruce]THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT.
-   * IT DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
+   * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
+   * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    *
    * 
    * @param i the hostname, must be for the current host
@@ -314,8 +314,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * Create a InternalDistributedMember as defined by the given address.
    * <p>
    * 
-   * <b> [bruce]THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT.
-   * IT DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
+   * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
+   * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    * 
    * @param addr address of the server
    * @param p the listening port of the server
@@ -911,7 +911,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
     Assert.assertTrue(netMbr.getVmKind() > 0);
-    // [bruce] disabled to allow post-connect setting of the port for loner systems
+    // disabled to allow post-connect setting of the port for loner systems
     // Assert.assertTrue(getPort() > 0);
     // if (this.getPort() == 0) {
     // InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG,

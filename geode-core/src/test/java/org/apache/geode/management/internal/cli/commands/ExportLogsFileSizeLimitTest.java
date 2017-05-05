@@ -77,7 +77,7 @@ public class ExportLogsFileSizeLimitTest {
     assertThat(exportLogsCommand.isFileSizeCheckEnabledAndWithinLimit(0, file)).isFalse();
   }
 
-  private void fillUpFile(File file, int sizeInBytes) throws IOException {
+  private void fillUpFile(File file, long sizeInBytes) throws IOException {
     PrintWriter writer = new PrintWriter(file, "UTF-8");
     while (FileUtils.sizeOf(file) < sizeInBytes) {
       writer.println("this is a line of data in the file");

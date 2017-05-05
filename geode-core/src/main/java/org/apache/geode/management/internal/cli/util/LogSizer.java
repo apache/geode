@@ -42,8 +42,10 @@ public class LogSizer {
 
   /**
    * @param logFilter the filter that's used to check if we need to accept the file or the logLine
-   * @param baseLogFile if not null, we will export the logs in that directory
-   * @param baseStatsFile if not null, we will export stats in that directory
+   * @param baseLogFile if not null, we will estimate the additional disk space required to filter
+   *        and export the logs in that directory
+   * @param baseStatsFile if not null, we will estimate the additional disk space required to filter
+   *        and export the stats in that directory
    */
   public LogSizer(LogFilter logFilter, File baseLogFile, File baseStatsFile) throws ParseException {
     assert logFilter != null;

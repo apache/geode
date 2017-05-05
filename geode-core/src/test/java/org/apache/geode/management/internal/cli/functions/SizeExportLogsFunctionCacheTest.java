@@ -16,8 +16,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
@@ -50,9 +48,9 @@ public class SizeExportLogsFunctionCacheTest {
   private FunctionContext functionContext;
   private File dir;
   private DistributedMember member;
-  File logFile;
-  File statFile;
-  String name;
+  private File logFile;
+  private File statFile;
+  private String name;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -142,12 +140,12 @@ public class SizeExportLogsFunctionCacheTest {
     FunctionContext context = new FunctionContextImpl("functionId", null, resultSender);
 
     new SizeExportLogsFunction().execute(context);
-    assertThatThrownBy(() -> resultSender.getResults()).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(resultSender::getResults).isInstanceOf(NullPointerException.class);
   }
 
   private static class TestResultSender implements ResultSender {
 
-    private final List<Object> results = new LinkedList<Object>();
+    private final List<Object> results = new LinkedList<>();
 
     private Throwable t;
 
