@@ -1353,7 +1353,7 @@ public class HARegionQueue implements RegionQueue {
           // ignore and log
           logger.error(
               LocalizedMessage.create(
-                  LocalizedStrings.HARegionQueue_EXCEPTION_OCCURED_WHILE_TRYING_TO_SET_THE_LAST_DISPATCHED_ID),
+                  LocalizedStrings.HARegionQueue_EXCEPTION_OCCURRED_WHILE_TRYING_TO_SET_THE_LAST_DISPATCHED_ID),
               e);
         }
       }
@@ -2807,7 +2807,7 @@ public class HARegionQueue implements RegionQueue {
               }
               logger.warn(
                   LocalizedMessage.create(
-                      LocalizedStrings.HARegionQueue_INTERRUPTEDEXCEPTION_OCCURED_IN_QUEUEREMOVALTHREAD_WHILE_WAITING),
+                      LocalizedStrings.HARegionQueue_INTERRUPTEDEXCEPTION_OCCURRED_IN_QUEUEREMOVALTHREAD_WHILE_WAITING),
                   e);
               break; // desperation...we must be trying to shut down...?
             } finally {

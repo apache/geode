@@ -94,7 +94,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
   protected static VM server2 = null;
   protected static VM server3 = null;
 
-  protected volatile static boolean exceptionOccured = false;
+  protected volatile static boolean exceptionOccurred = false;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -107,7 +107,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     PORT3 = ((Integer) server3.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
-    exceptionOccured = false;
+    exceptionOccurred = false;
     IgnoredException.addIgnoredException("java.net.ConnectException: Connection refused: connect");
   }
 
@@ -317,7 +317,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
           try {
             ThreadUtils.join(t, 30 * 1000);
           } catch (Exception ignore) {
-            exceptionOccured = true;
+            exceptionOccurred = true;
           }
           HAInterestTestCase.isBeforeInterestRecoveryCallbackCalled = true;
           HAInterestTestCase.class.notify();

@@ -176,7 +176,7 @@ public class IndexCreationJUnitTest {
     // Task ID: ICM17
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    // boolean exceptionoccured = true;
+    // boolean exceptionoccurred = true;
     qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolios, positions");
     qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
         "/portfolios pf, pf.positions.values b");

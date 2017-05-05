@@ -6866,7 +6866,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     // log the error
     StringId sid =
-        LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_CACHE_WILL_BE_CLOSED;
+        LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_CACHE_WILL_BE_CLOSED;
     logger.error(LocalizedMessage.create(sid, this.fullPath), dae);
 
     // forward the error to the disk store
@@ -9447,7 +9447,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           // Asif : Create an anonymous inner class of CacheRuntimeException so
           // that a RuntimeException is thrown
           throw new CacheRuntimeException(
-              LocalizedStrings.LocalRegion_EXCEPTION_OCCURED_WHILE_RE_CREATING_INDEX_DATA_ON_CLEARED_REGION
+              LocalizedStrings.LocalRegion_EXCEPTION_OCCURRED_WHILE_RE_CREATING_INDEX_DATA_ON_CLEARED_REGION
                   .toLocalizedString(),
               qe) {
             private static final long serialVersionUID = 0L;

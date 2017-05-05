@@ -79,7 +79,7 @@ public class FunctionStats {
   private static final String RESULTS_RECEIVED = "resultsReceived";
 
   /**
-   * Total number of Exceptions Occured while executing function Name of the functionExecution
+   * Total number of Exceptions Occurred while executing function Name of the functionExecution
    * exceptions statistic
    */
   private static final String FUNCTION_EXECUTION_EXCEPTIONS = "functionExecutionsExceptions";
@@ -168,7 +168,7 @@ public class FunctionStats {
                 "operations"),
 
             f.createIntCounter(FUNCTION_EXECUTION_EXCEPTIONS,
-                "Total number of Exceptions Occured while executing function", "operations"),
+                "Total number of Exceptions Occurred while executing function", "operations"),
 
         // f
         // .createLongCounter(
@@ -359,7 +359,7 @@ public class FunctionStats {
   }
 
   /**
-   * Returns the current value of the "Total number of Exceptions Occured while executing function"
+   * Returns the current value of the "Total number of Exceptions Occurred while executing function"
    * stat.
    * 
    * @return the current value of the "functionExecutionHasResultRunning" stat

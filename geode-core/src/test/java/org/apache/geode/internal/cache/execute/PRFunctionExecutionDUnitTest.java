@@ -928,7 +928,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
     ThreadUtils.join(async[0], 60 * 1000);
 
     if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occured : ", async[0].getException());
+      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
     }
     List l = (List) async[0].getReturnValue();
     assertEquals(2, l.size());
@@ -1022,7 +1022,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
     ThreadUtils.join(async[0], 60 * 1000);
 
     if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occured : ", async[0].getException());
+      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
     }
     List l = (List) async[0].getReturnValue();
     assertEquals(2, l.size());
@@ -1475,7 +1475,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         } catch (Exception expected) {
           // No data should cause exec to throw
-          LogWriterUtils.getLogWriter().warning("Exception Occured : " + expected.getMessage());
+          LogWriterUtils.getLogWriter().warning("Exception Occurred : " + expected.getMessage());
           // boolean expectedStr = expected.getMessage().startsWith("No target
           // node was found for routingKey");
           // assertTrue("Unexpected exception: " + expected, expectedStr);
@@ -2856,7 +2856,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
       rc.getResult();
       ds.disconnect();
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
       e.printStackTrace();
       Assert.fail("Test failed", e);
     }

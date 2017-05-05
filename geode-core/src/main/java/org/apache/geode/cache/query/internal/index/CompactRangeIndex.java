@@ -1174,8 +1174,8 @@ public class CompactRangeIndex extends AbstractIndex {
     private CompiledValue modifiedIndexExpr = null;
     private ObjectType addnlProjType = null;
     private int initEntriesUpdated = 0;
-    private boolean hasInitOccuredOnce = false;
-    private boolean hasIndxUpdateOccuredOnce = false;
+    private boolean hasInitOccurredOnce = false;
+    private boolean hasIndxUpdateOccurredOnce = false;
     private ExecutionContext initContext = null;
     private int iteratorSize = -1;
 
@@ -1464,7 +1464,7 @@ public class CompactRangeIndex extends AbstractIndex {
         for (int i = 0; i < this.iteratorSize; i++) {
           CompiledIteratorDef iterDef = (CompiledIteratorDef) this.indexInitIterators.get(i);
           RuntimeIterator rIter = null;
-          if (!this.hasInitOccuredOnce) {
+          if (!this.hasInitOccurredOnce) {
             iterDef.computeDependencies(this.initContext);
             rIter = iterDef.getRuntimeIterator(this.initContext);
             this.initContext.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
@@ -1474,7 +1474,7 @@ public class CompactRangeIndex extends AbstractIndex {
           }
           this.initContext.bindIterator(rIter);
         }
-        this.hasInitOccuredOnce = true;
+        this.hasInitOccurredOnce = true;
         if (this.indexResultSetType == null) {
           this.indexResultSetType = createIndexResultSetType();
         }
@@ -1725,7 +1725,7 @@ public class CompactRangeIndex extends AbstractIndex {
       // We obtain the object currently in vm, we are using this old value
       // only to detect if in place modifications have occurred
       // if the object is not in memory, obviously an in place modification could
-      // not have occured
+      // not have occurred
       this.oldValue = indexStore.getTargetObjectInVM(entry);
     }
 

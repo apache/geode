@@ -161,7 +161,7 @@ final class ProxyRegionMap implements RegionMap {
     }
     owner.recordEvent(event);
     this.owner.basicDestroyPart2(markerEntry, event, inTokenMode,
-        false /* Clear conflict occured */, duringRI, true);
+        false /* Clear conflict occurred */, duringRI, true);
     this.owner.basicDestroyPart3(markerEntry, event, inTokenMode, duringRI, true, expectedOldValue);
     return true;
   }
@@ -246,7 +246,7 @@ final class ProxyRegionMap implements RegionMap {
       ClientProxyMembershipID bridgeContext, boolean isOriginRemote, TXEntryState txEntryState,
       VersionTag versionTag, long tailKey) {
     this.owner.txApplyDestroyPart2(markerEntry, key, inTokenMode,
-        false /* Clear conflict occured */);
+        false /* Clear conflict occurred */);
     if (!inTokenMode) {
       if (txEvent != null) {
         txEvent.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
@@ -281,7 +281,7 @@ final class ProxyRegionMap implements RegionMap {
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
     this.owner.txApplyInvalidatePart2(markerEntry, key, didDestroy, true,
-        false /* Clear conflic occured */);
+        false /* Clear conflic occurred */);
     if (this.owner.isInitialized()) {
       if (txEvent != null) {
         txEvent.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
@@ -319,7 +319,7 @@ final class ProxyRegionMap implements RegionMap {
     Operation putOp = p_putOp.getCorrespondingCreateOp();
     long lastMod = owner.cacheTimeMillis();
     this.owner.txApplyPutPart2(markerEntry, key, newValue, lastMod, true, didDestroy,
-        false /* Clear conflict occured */);
+        false /* Clear conflict occurred */);
     if (this.owner.isInitialized()) {
       if (txEvent != null) {
         txEvent.addPut(putOp, this.owner, markerEntry, key, newValue, aCallbackArgument);

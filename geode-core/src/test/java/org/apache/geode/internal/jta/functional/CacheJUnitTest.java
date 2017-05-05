@@ -919,7 +919,7 @@ public class CacheJUnitTest {
     rs.next();
     String str1 = rs.getString(1);
     if (!str1.equals("name2"))
-      fail("Rollback not occured on XAConnection got in a cache loader");
+      fail("Rollback not occurred on XAConnection got in a cache loader");
   }
 
   /**

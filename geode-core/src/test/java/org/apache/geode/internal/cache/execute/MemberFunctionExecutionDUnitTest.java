@@ -410,7 +410,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       }
       ds.disconnect();
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
       e.printStackTrace();
       Assert.fail("Test failed", e);
     }
@@ -464,7 +464,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(obj, "Success");
       }
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
       e.printStackTrace();
       Assert.fail("Test failed", e);
     }
@@ -501,7 +501,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
         assertTrue(obj instanceof MyFunctionExecutionException);
       }
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
       e.printStackTrace();
       Assert.fail("Test failed", e);
     }
@@ -599,7 +599,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(obj, "Success");
       }
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
       e.printStackTrace();
       Assert.fail("Test failed", e);
     }
@@ -618,7 +618,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       rc.getResult();
       fail("Test Failed");
     } catch (Exception expected) {
-      LogWriterUtils.getLogWriter().info("Exception Occured : " + expected.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + expected.getMessage());
       // boolean check = expected.getMessage().equals("Cannot return any result, as
       // Function.hasResult() is false");
       assertTrue(expected.getMessage()

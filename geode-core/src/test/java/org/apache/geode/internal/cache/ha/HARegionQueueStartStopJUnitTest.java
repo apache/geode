@@ -74,7 +74,7 @@ public class HARegionQueueStartStopJUnitTest {
   @Test
   public void testStartStop() {
     try {
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       Cache cache = createCache();
       createHARegionQueue("test", cache);
       Assert.assertTrue(HARegionQueue.getDispatchedMessagesMapForTesting() != null);
@@ -82,9 +82,9 @@ public class HARegionQueueStartStopJUnitTest {
       try {
         HARegionQueue.getDispatchedMessagesMapForTesting();
       } catch (NullPointerException e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured) {
+      if (!exceptionOccurred) {
         fail("Expected exception to occur but did not occur");
       }
       HARegionQueue.startHAServices((GemFireCacheImpl) cache);
@@ -93,9 +93,9 @@ public class HARegionQueueStartStopJUnitTest {
       try {
         HARegionQueue.getDispatchedMessagesMapForTesting();
       } catch (NullPointerException e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured) {
+      if (!exceptionOccurred) {
         fail("Expected exception to occur but did not occur");
       }
 
@@ -104,9 +104,9 @@ public class HARegionQueueStartStopJUnitTest {
       try {
         HARegionQueue.getDispatchedMessagesMapForTesting();
       } catch (NullPointerException e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured) {
+      if (!exceptionOccurred) {
         fail("Expected exception to occur but did not occur");
       }
 

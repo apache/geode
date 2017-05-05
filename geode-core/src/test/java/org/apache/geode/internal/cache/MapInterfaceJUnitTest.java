@@ -76,13 +76,13 @@ public class MapInterfaceJUnitTest {
     } catch (Exception e) {
       throw new AssertionError(" failed in creating region due to ", e);
     }
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       region.localClear();
     } catch (UnsupportedOperationException e) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     }
-    if (!exceptionOccured) {
+    if (!exceptionOccurred) {
       fail(" exception did not occur when it was supposed to occur");
     }
     region.close();
@@ -130,13 +130,13 @@ public class MapInterfaceJUnitTest {
     } catch (Exception e) {
       throw new AssertionError(" failed in creating region due to ", e);
     }
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       region.localClear();
     } catch (UnsupportedOperationException e) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     }
-    if (!exceptionOccured) {
+    if (!exceptionOccurred) {
       fail(" exception did not occur when it was supposed to occur");
     }
     region.close();
@@ -195,13 +195,13 @@ public class MapInterfaceJUnitTest {
     } catch (Exception e) {
       throw new AssertionError(" failed in creating region due to ", e);
     }
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       region.localClear();
     } catch (UnsupportedOperationException e) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     }
-    if (!exceptionOccured) {
+    if (!exceptionOccurred) {
       fail(" exception did not occur when it was supposed to occur");
     }
     region.close();

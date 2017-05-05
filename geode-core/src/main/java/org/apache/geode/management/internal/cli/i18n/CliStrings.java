@@ -742,7 +742,7 @@ public class CliStrings {
   public static final String CREATE_INDEX__FAILURE__MSG =
       "Failed to create index \"{0}\" due to following reasons";
   public static final String CREATE_INDEX__ERROR__MSG =
-      "Exception \"{0}\" occured on following members";
+      "Exception \"{0}\" occurred on following members";
   public static final String CREATE_INDEX__NAME__CONFLICT =
       "Index \"{0}\" already exists.  " + "Create failed due to duplicate name.";
   public static final String CREATE_INDEX__INDEX__EXISTS =
@@ -1324,7 +1324,7 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__MSG__DOES_NOT_HAVE_FUNCTION_0_REGISTERED =
       "Function : {0} is not registered on member.";
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_ON_MEMBER_1_DETAILS_2 =
-      "While executing function : {0} on member : {1} error occured : {2}";
+      "While executing function : {0} on member : {1} error occurred : {2}";
   public static final String EXECUTE_FUNCTION__MSG__RESULT_COLLECTOR_0_NOT_FOUND_ERROR_1 =
       "ResultCollector : {0} not found. Error : {1}";
   public static final String EXECUTE_FUNCTION__MSG__MXBEAN_0_FOR_NOT_FOUND =
@@ -1334,7 +1334,7 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__MSG__DS_HAS_NO_MEMBERS =
       "Distributed system has no members";
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_REGION_1_DETAILS_2 =
-      "While executing function : {0} on region : {1} error occured : {2}";
+      "While executing function : {0} on region : {1} error occurred : {2}";
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR =
       "Could not retrieve executor";
   public static final String EXECUTE_FUNCTION__MSG__GROUPS_0_HAS_NO_MEMBERS =
@@ -1344,7 +1344,7 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__MSG__COULD_NOT_RETRIEVE_ARGUMENTS =
       "Could not retrieve arguments";
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_MEMBER_1_ON_REGION_2_DETAILS_3 =
-      "While executing function : {0} on member : {1} one region : {2} error occured : {3}";
+      "While executing function : {0} on member : {1} one region : {2} error occurred : {3}";
   public static final String EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION =
       "Filters for executing on \"member\"/\"mebers of group\" is not supported.";
 
@@ -1467,9 +1467,9 @@ public class CliStrings {
       "Abort the command if already exists at locator directory";
   public static final String EXPORT_STACKTRACE__MEMBER__NOT__FOUND = "Member not found";
   public static final String EXPORT_STACKTRACE__SUCCESS = "stack-trace(s) exported to file: {0}";
-  public static final String EXPORT_STACKTRACE__ERROR = "Error occured while showing stack-traces";
+  public static final String EXPORT_STACKTRACE__ERROR = "Error occurred while showing stack-traces";
   public static final String EXPORT_STACKTRACE__ERROR__FILE__PRESENT =
-      "Error occured while exporting stack-traces, file {0} already present";
+      "Error occurred while exporting stack-traces, file {0} already present";
   public static final String EXPORT_STACKTRACE__HOST = "On host : ";
   public static final String EXPORT_STACKTRACE_WARN_USER =
       "If file {0} already present at locator directory it will be overwritten, do you want to continue?";
@@ -1620,7 +1620,7 @@ public class CliStrings {
   public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1 =
       "Could not retrieve stats for client : {0}. Reason : {1}";
   public static final String DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0 =
-      "Error occured while fetching stats. Reason : {0}";
+      "Error occurred while fetching stats. Reason : {0}";
   public static final String DESCRIBE_CLIENT_NO_MEMBERS = "DS has no members";
   public static final String DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS = "Primary Servers";
   public static final String DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS = "Secondary Servers";
@@ -1890,9 +1890,9 @@ public class CliStrings {
   public static final String REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS =
       "Distributed system has no regions that can be rebalanced";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception =
-      "Excpetion occured while rebalancing on member : {0} . Exception is ";
+      "Excpetion occurred while rebalancing on member : {0} . Exception is ";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1 =
-      "Excpetion occured while rebalancing on member : {0} . Exception is : {1}";
+      "Excpetion occurred while rebalancing on member : {0} . Exception is : {1}";
   public static final String REBALANCE__MSG__ERROR_IN_RETRIEVING_MBEAN =
       "Could not retrieve MBean for region : {0}";
   public static final String REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1 =
@@ -1907,7 +1907,7 @@ public class CliStrings {
   public static final String REBALANCE__MSG__REGION_NOT_ASSOCIATED_WITH_MORE_THAN_ONE_MEMBER =
       "No regions associated with more than 1 members";
   public static final String REBALANCE__MSG__EXCEPTION_OCCRED_WHILE_REBALANCING_0 =
-      "Exception occured while rebelancing. Reason : {0}";
+      "Exception occurred while rebelancing. Reason : {0}";
 
   /* remove command */
   public static final String REMOVE = "remove";
@@ -2089,7 +2089,7 @@ public class CliStrings {
       "To shutdown locators specify this option as true. Default is false";
   public static final String SHUTDOWN__MSG__CANNOT_EXECUTE = "Cannot execute";
   public static final String SHUTDOWN__MSG__ERROR =
-      "Exception occured while shutdown. Reason : {0}";
+      "Exception occurred while shutdown. Reason : {0}";
   public static final String SHUTDOWN__MSG__MANAGER_NOT_FOUND = "Could not locate Manager.";
   public static final String SHUTDOWN__MSG__WARN_USER =
       "As a lot of data in memory will be lost, including possibly events in queues, do you really want to shutdown the entire distributed system?";
@@ -2870,7 +2870,7 @@ public class CliStrings {
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_ACCESS_DISKSTORE_0_FROM_1_CHECK_GFSH_LOGS =
       COMPACT_OFFLINE_DISK_STORE__MSG__CANNOT_ACCESS_DISKSTORE_0_FROM_1_CHECK_GFSH_LOGS;
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2 =
-      "Error occured while upgrading disk store={0} {1}. Reason: {2}";
+      "Error occurred while upgrading disk store={0} {1}. Reason: {2}";
 
   /* 'validate disk-store' command */
   public static final String VALIDATE_DISK_STORE = "validate offline-disk-store";

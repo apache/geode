@@ -1656,7 +1656,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         return (Boolean) object;
       }
     } catch (Exception e) {
-      logger.info("Exception Occured: ", e);
+      logger.info("Exception Occurred: ", e);
       return Boolean.FALSE;
     }
   }

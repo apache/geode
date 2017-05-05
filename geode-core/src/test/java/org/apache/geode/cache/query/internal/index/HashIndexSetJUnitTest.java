@@ -139,7 +139,7 @@ public class HashIndexSetJUnitTest {
     his.hashIndexSetProperties.removedTokens = his.hashIndexSetProperties.maxSize;
     addPortfoliosToHashIndexSet(portfoliosMap, his);
 
-    // compaction should have occured, removed tokens should now be gone
+    // compaction should have occurred, removed tokens should now be gone
     assertEquals(0, his.hashIndexSetProperties.removedTokens);
     assertEquals(numEntries, his.size());
   }

@@ -49,7 +49,7 @@ public class AsynchIndexMaintenanceJUnitTest {
   private Region region;
 
   private boolean indexUsed = false;
-  private volatile boolean exceptionOccured = false;
+  private volatile boolean exceptionOccurred = false;
 
   private Set idSet;
 
@@ -233,7 +233,7 @@ public class AsynchIndexMaintenanceJUnitTest {
             }
           } catch (Exception e) {
             CacheUtils.getLogger().error(e);
-            exceptionOccured = true;
+            exceptionOccurred = true;
           }
         }
       });
@@ -247,9 +247,9 @@ public class AsynchIndexMaintenanceJUnitTest {
       }
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
-      exceptionOccured = true;
+      exceptionOccurred = true;
     }
-    assertFalse(exceptionOccured);
+    assertFalse(exceptionOccurred);
   }
 
 }

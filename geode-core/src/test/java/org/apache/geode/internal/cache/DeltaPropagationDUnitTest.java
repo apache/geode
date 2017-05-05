@@ -322,8 +322,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     VM0.invoke(() -> DeltaPropagationDUnitTest.createDelta());
     VM0.invoke(() -> DeltaPropagationDUnitTest.createAnEntry());
     Thread.sleep(5000); // TODO: Find a better 'n reliable alternative
-    // assert overflow occured on client vm
-    verifyOverflowOccured(1L, 2);
+    // assert overflow occurred on client vm
+    verifyOverflowOccurred(1L, 2);
     VM0.invoke(() -> DeltaPropagationDUnitTest.updateDelta());
 
     waitForLastKey();
@@ -359,8 +359,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     VM0.invoke(() -> DeltaPropagationDUnitTest.createDelta());
     VM0.invoke(() -> DeltaPropagationDUnitTest.createAnEntry());
     Thread.sleep(5000); // TODO: Find a better 'n reliable alternative
-    // assert overflow occured on client vm
-    verifyOverflowOccured(1L, 1);
+    // assert overflow occurred on client vm
+    verifyOverflowOccurred(1L, 1);
     VM0.invoke(() -> DeltaPropagationDUnitTest.updateDelta());
 
     waitForLastKey();
@@ -1037,7 +1037,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void verifyOverflowOccured(long evictions, int regionsize) {
+  public static void verifyOverflowOccurred(long evictions, int regionsize) {
     EnableLRU cc =
         ((VMLRURegionMap) ((LocalRegion) cache.getRegion(regionName)).entries)._getCCHelper();
     Assert.assertTrue(cc.getStats().getEvictions() == evictions,

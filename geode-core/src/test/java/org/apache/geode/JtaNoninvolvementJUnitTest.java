@@ -119,7 +119,7 @@ public class JtaNoninvolvementJUnitTest {
         createCache(false);
       }
       final CountDownLatch l = new CountDownLatch(1);
-      final AtomicBoolean exceptionOccured = new AtomicBoolean(false);
+      final AtomicBoolean exceptionOccurred = new AtomicBoolean(false);
       ut = (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
       ut.begin();
       txRegion.put("key", "value");
@@ -128,17 +128,17 @@ public class JtaNoninvolvementJUnitTest {
         @Override
         public void run() {
           if (txRegion.get("key") != null) {
-            exceptionOccured.set(true);
+            exceptionOccurred.set(true);
           }
           if (nonTxRegion.get("key") != null) {
-            exceptionOccured.set(true);
+            exceptionOccurred.set(true);
           }
           l.countDown();
         }
       });
       t.start();
       l.await();
-      assertFalse(exceptionOccured.get());
+      assertFalse(exceptionOccurred.get());
     } finally {
       if (ut != null) {
         ut.commit();

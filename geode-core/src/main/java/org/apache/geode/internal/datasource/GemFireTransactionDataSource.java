@@ -166,7 +166,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
         provider.returnConnection(conn);
       } catch (Exception e) {
         String exception =
-            "GemFireTransactionDataSource::connectionClosed: Exception occured due to " + e;
+            "GemFireTransactionDataSource::connectionClosed: Exception occurred due to " + e;
         if (logger.isDebugEnabled()) {
           logger.debug(exception, e);
         }
@@ -187,7 +187,8 @@ public class GemFireTransactionDataSource extends AbstractDataSource
         provider.returnAndExpireConnection(conn);
       } catch (Exception ex) {
         String exception =
-            "GemFireTransactionDataSource::connectionErrorOccured: Exception occured due to " + ex;
+            "GemFireTransactionDataSource::connectionErrorOccurred: Exception occurred due to "
+                + ex;
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }
@@ -214,7 +215,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
       }
     } catch (Exception ex) {
       Exception e = new Exception(
-          LocalizedStrings.GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEREGISTERTRANXCONNECTION_EXCEPTION_IN_REGISTERING_THE_XARESOURCE_WITH_THE_TRANSACTIONEXCEPTION_OCCURED_0
+          LocalizedStrings.GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEREGISTERTRANXCONNECTION_EXCEPTION_IN_REGISTERING_THE_XARESOURCE_WITH_THE_TRANSACTIONEXCEPTION_OCCURRED_0
               .toLocalizedString(ex));
       e.initCause(ex);
       throw e;

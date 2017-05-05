@@ -61,7 +61,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
       assertEquals("Value2", region.get("Key"));
       assertEquals("Value2", getValueOnDisk(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail("Entry not found although was supposed to be there");
     }
   }
@@ -91,7 +91,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     try {
       assertEquals("Value1", getValueOnDisk(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail("Entry not found although was supposed to be there");
     }
   }
@@ -110,8 +110,8 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
           try {
             region.destroy("Key");
           } catch (Exception e) {
-            logWriter.error("Exception occured", e);
-            fail("Exception occured when it was not supposed to occur");
+            logWriter.error("Exception occurred", e);
+            fail("Exception occurred when it was not supposed to occur");
           }
         }
         alreadyComeHere = true;
@@ -163,8 +163,8 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
               Thread.currentThread().interrupt();
             }
           } catch (Exception e) {
-            logWriter.error("Exception occured", e);
-            fail("Exception occured when it was not supposed to occur");
+            logWriter.error("Exception occurred", e);
+            fail("Exception occurred when it was not supposed to occur");
           }
         }
         alreadyComeHere = true;
@@ -179,7 +179,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
           region.wait();
         }
       } catch (InterruptedException e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail("interrupted");
       }
     }
@@ -207,8 +207,8 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
               Thread.currentThread().interrupt();
             }
           } catch (Exception e) {
-            logWriter.error("Exception occured", e);
-            fail("Exception occured when it was not supposed to occur");
+            logWriter.error("Exception occurred", e);
+            fail("Exception occurred when it was not supposed to occur");
           }
         }
         alreadyComeHere = true;
@@ -223,7 +223,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
           region.wait();
         }
       } catch (InterruptedException e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail("interrupted");
       }
     }
@@ -290,7 +290,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
       // region.getCache().getLogger().info("getting value2");
       assertEquals("Value2", region.get("Key"));
     } catch (Exception e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail("Entry not found although was supposed to be there");
     }
 
@@ -299,7 +299,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     try {
       assertEquals("Value2", getValueOnDisk(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail("Entry not found although was supposed to be there");
     }
 
@@ -322,7 +322,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     try {
       assertEquals("Value1", getValueOnDisk(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail("Entry not found although was supposed to be there");
     }
   }
@@ -337,7 +337,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
 
             region.destroy("Key");
           } catch (Exception e1) {
-            logWriter.error("Exception occured", e1);
+            logWriter.error("Exception occurred", e1);
             fail("encounter exception when not expected " + e1);
           }
         }
@@ -544,11 +544,11 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
           hasBeenNotified = true;
         }
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         testFailed = true;
         failureCause =
-            "Exception occured when it was not supposed to occur, due to " + e + "in Close::run";
-        fail("Exception occured when it was not supposed to occur, due to " + e);
+            "Exception occurred when it was not supposed to occur, due to " + e + "in Close::run";
+        fail("Exception occurred when it was not supposed to occur, due to " + e);
       }
     }
   }

@@ -397,7 +397,7 @@ public class MiscJUnitTest {
       rgn.put("name" + i, pf);
     }
     final Object lock = new Object();
-    final boolean[] expectionOccured = new boolean[] {false};
+    final boolean[] expectionOccurred = new boolean[] {false};
     final boolean[] keepGoing = new boolean[] {true};
 
     Thread indexCreatorDestroyer = new Thread(new Runnable() {
@@ -429,7 +429,7 @@ public class MiscJUnitTest {
             region.getCache().getLogger().error(e);
             e.printStackTrace();
             synchronized (lock) {
-              expectionOccured[0] = true;
+              expectionOccurred[0] = true;
               keepGoing[0] = false;
               continueRunning = false;
             }
@@ -459,7 +459,7 @@ public class MiscJUnitTest {
               e.printStackTrace();
               region.getCache().getLogger().error(e);
               synchronized (lock) {
-                expectionOccured[0] = true;
+                expectionOccurred[0] = true;
                 keepGoing[0] = false;
                 continueRunning = false;
               }
@@ -470,7 +470,7 @@ public class MiscJUnitTest {
       });
     }
     synchronized (lock) {
-      assertFalse(expectionOccured[0]);
+      assertFalse(expectionOccurred[0]);
     }
 
     for (int i = 0; i < THREAD_COUNT; ++i) {
@@ -486,7 +486,7 @@ public class MiscJUnitTest {
 
     indexCreatorDestroyer.join();
     synchronized (lock) {
-      assertFalse(expectionOccured[0]);
+      assertFalse(expectionOccurred[0]);
     }
 
   }

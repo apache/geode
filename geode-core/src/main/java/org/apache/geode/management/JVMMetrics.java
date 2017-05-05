@@ -81,7 +81,7 @@ public class JVMMetrics implements Serializable {
   }
 
   /**
-   * Returns the number of times garbage collection has occured.
+   * Returns the number of times garbage collection has occurred.
    */
   public long getGcCount() {
     return gcCount;

@@ -220,7 +220,7 @@ public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Waits for the listener to receive all events and validates that no exception occured in client
+   * Waits for the listener to receive all events and validates that no exception occurred in client
    */
   private static void validateEventCountAtClient() throws Exception {
     if (!proceedForValidation) {

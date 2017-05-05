@@ -86,7 +86,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
   protected long delta;
 
-  protected boolean flushOccuredAtleastOnce = false;
+  protected boolean flushOccurredAtleastOnce = false;
 
   volatile protected boolean assertDone = false;
 
@@ -406,7 +406,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     try {
       region.destroy(new Integer(0));
     } catch (EntryNotFoundException e1) {
-      logWriter.error("Exception occured", e1);
+      logWriter.error("Exception occurred", e1);
       fail(" Entry not found when it was expected to be there");
     }
     region.close();
@@ -420,7 +420,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     try {
       region.destroy(new Integer(0));
     } catch (EntryNotFoundException e1) {
-      logWriter.error("Exception occured", e1);
+      logWriter.error("Exception occurred", e1);
       fail(" Entry not found when it was expected to be there");
     }
     region.close();
@@ -434,7 +434,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     try {
       region.destroy(new Integer(0));
     } catch (EntryNotFoundException e1) {
-      logWriter.error("Exception occured", e1);
+      logWriter.error("Exception occurred", e1);
       fail(" Entry not found when it was expected to be there");
     }
     region.close();
@@ -608,7 +608,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       assertTrue(dr.getNoBuffer(entry.getDiskId()) == Token.INVALID);
 
     } catch (Exception e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail(e.toString());
     }
     closeDown();
@@ -759,7 +759,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // Thread.sleep(4000);
   // }
   // catch (InterruptedException ie) {
-  // logWriter.error("Exception occured", ie);
+  // logWriter.error("Exception occurred", ie);
   // failureCause = "No guarantee of vaildity of result hence failing. Exception = "
   // + ie;
   // testFailed = true;
@@ -808,7 +808,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // Thread.sleep(5000);
   // }
   // catch (InterruptedException ie) {
-  // logWriter.error("Exception occured", ie);
+  // logWriter.error("Exception occurred", ie);
   // failureCause = "No guarantee of vaildity of result hence failing. Exception = "
   // + ie;
   // testFailed = true;
@@ -901,7 +901,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // CacheObserverHolder.setInstance(old);
   // }
   // catch (Exception e) {
-  // logWriter.error("Exception occured", e);
+  // logWriter.error("Exception occurred", e);
   // fail(e.toString());
   // }
   // assertFalse(failureCause, testFailed);
@@ -1491,7 +1491,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // {
 
   // synchronized (OplogJUnitTest.this) {
-  // flushOccuredAtleastOnce = true;
+  // flushOccurredAtleastOnce = true;
   // OplogJUnitTest.this.notify();
   // }
 
@@ -1524,9 +1524,9 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // "The number of operations did not cause asynch writer to run atleast once , the expected file
   // size = "
   // + expectedSize, expectedSize > 1000);
-  // if (!flushOccuredAtleastOnce) {
+  // if (!flushOccurredAtleastOnce) {
   // synchronized (this) {
-  // if (!flushOccuredAtleastOnce) {
+  // if (!flushOccurredAtleastOnce) {
   // try {
   // this.wait(20000);
   // }
@@ -1536,7 +1536,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // }
   // }
   // }
-  // if (!flushOccuredAtleastOnce) {
+  // if (!flushOccurredAtleastOnce) {
   // fail("In the wait duration , flush did not occur even once. Try increasing the wait time");
   // }
   // long actualFileSize = 0L;
@@ -1695,7 +1695,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       assertEquals(val_11, Token.LOCAL_INVALID);
 
     } catch (Exception e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       // fail("The test failed due to exception = " + e);
       throw e;
     } finally {
@@ -1725,7 +1725,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       byte[] val_1 = ((byte[]) ((LocalRegion) region).getValueOnDiskOrBuffer("1"));
       assertEquals(val_1.length, 0);
     } catch (Exception e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail("The test failed due to exception = " + e);
     }
     closeDown();
@@ -1753,7 +1753,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       byte[] val_1 = ((byte[]) ((LocalRegion) region).getValueOnDiskOrBuffer("1"));
       assertEquals(val_1.length, 0);
     } catch (Exception e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail("The test failed due to exception = " + e);
     }
     closeDown();
@@ -1870,7 +1870,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     try {
       region.put("key1", val);
     } catch (DiskAccessException dae) {
-      logWriter.error("Exception occured", dae);
+      logWriter.error("Exception occurred", dae);
       fail(
           "Test failed as DiskAccessException was encountered where as the operation should ideally have proceeded without issue . exception = "
               + dae);
@@ -3091,13 +3091,13 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     int sizeOfRegion = region.size();
     region.close();
     // this variable will set to false in the src code itself
-    // NewLBHTreeDiskRegion.setJdbmexceptionOccuredToTrueForTesting = true;
+    // NewLBHTreeDiskRegion.setJdbmexceptionOccurredToTrueForTesting = true;
     try {
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, null, Scope.LOCAL);
     } catch (Exception e) {
       fail("failed in recreating region due to" + e);
     } finally {
-      // NewLBHTreeDiskRegion.setJdbmexceptionOccuredToTrueForTesting = false;
+      // NewLBHTreeDiskRegion.setJdbmexceptionOccurredToTrueForTesting = false;
     }
     if (sizeOfRegion != region.size()) {
       fail(" Expected region size to be " + sizeOfRegion + " after recovery but it is "
@@ -3240,7 +3240,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
     final DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     final Object lock = new Object();
-    final boolean[] exceptionOccured = new boolean[] {true};
+    final boolean[] exceptionOccurred = new boolean[] {true};
     final boolean[] okToExit = new boolean[] {false};
     final boolean[] switchExpected = new boolean[] {false};
 
@@ -3301,9 +3301,9 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
             if (after != oplog_2_size) {
               cache.getLogger().info(
                   "test failed before=" + before + " after=" + after + " oplogsSize=" + oplogsSize);
-              exceptionOccured[0] = true;
+              exceptionOccurred[0] = true;
             } else {
-              exceptionOccured[0] = false;
+              exceptionOccurred[0] = false;
             }
             LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
             lock.notify();
@@ -3341,7 +3341,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
           lock.wait(9000);
           assertTrue(okToExit[0]);
         }
-        assertFalse(exceptionOccured[0]);
+        assertFalse(exceptionOccurred[0]);
       }
 
       region.close();
@@ -3373,7 +3373,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // diskProps);
   // final DiskRegion dr = ((LocalRegion)region).getDiskRegion();
   // final Object lock = new Object();
-  // final boolean [] exceptionOccured = new boolean[] {true};
+  // final boolean [] exceptionOccurred = new boolean[] {true};
   // final boolean [] okToExit = new boolean[] {false};
 
   // CacheObserver old = CacheObserverHolder
@@ -3391,7 +3391,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // synchronized(lock) {
   // okToExit[0] = true;
   // long after = dr.getNextDir().getDirStatsDiskSpaceUsage();;
-  // exceptionOccured[0] = false;
+  // exceptionOccurred[0] = false;
   // LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
   // lock.notify();
   // }
@@ -3410,7 +3410,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   // lock.wait(9000);
   // assertTrue(okToExit[0]);
   // }
-  // assertFalse(exceptionOccured[0]);
+  // assertFalse(exceptionOccurred[0]);
   // }
   // while (region.forceCompaction() != null) {
   // // wait until no more oplogs to compact

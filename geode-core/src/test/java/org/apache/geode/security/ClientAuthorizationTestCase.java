@@ -289,7 +289,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     final int numOps = indices.length;
     System.out.println("Got doOp for op: " + op.toString() + ", numOps: " + numOps + ", indices: "
         + indicesToString(indices) + ", expect: " + expectedResult);
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     boolean breakLoop = false;
 
     if (op.isGet() || op.isContainsKey() || op.isKeySet() || op.isQuery() || op.isExecuteCQ()) {
@@ -681,7 +681,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         }
 
       } catch (Exception ex) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         if ((ex instanceof ServerConnectivityException
             || ex instanceof QueryInvocationTargetException || ex instanceof CqException)
             && (expectedResult == NOTAUTHZ_EXCEPTION)
@@ -698,7 +698,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         }
       }
     }
-    if (!exceptionOccured && !operationOmitted && expectedResult != NO_EXCEPTION) {
+    if (!exceptionOccurred && !operationOmitted && expectedResult != NO_EXCEPTION) {
       fail("Expected an exception while performing operation: " + op + " flags = "
           + OpFlags.description(flags));
     }

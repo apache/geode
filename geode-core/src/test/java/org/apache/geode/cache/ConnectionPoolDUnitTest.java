@@ -792,10 +792,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     ThreadUtils.join(inv3, 30 * 1000);
 
     if (inv2.exceptionOccurred()) {
-      org.apache.geode.test.dunit.Assert.fail("Error occured in vm2", inv2.getException());
+      org.apache.geode.test.dunit.Assert.fail("Error occurred in vm2", inv2.getException());
     }
     if (inv3.exceptionOccurred()) {
-      org.apache.geode.test.dunit.Assert.fail("Error occured in vm3", inv3.getException());
+      org.apache.geode.test.dunit.Assert.fail("Error occurred in vm3", inv3.getException());
     }
   }
 

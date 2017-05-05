@@ -178,7 +178,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       // now, so don't let this thread continue.
       throw err;
     } catch (Throwable t) {
-      logger.debug("{} exception occured while processing message: {}", this, t.getMessage(), t);
+      logger.debug("{} exception occurred while processing message: {}", this, t.getMessage(), t);
       // Whenever you catch Error or Throwable, you must also
       // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading

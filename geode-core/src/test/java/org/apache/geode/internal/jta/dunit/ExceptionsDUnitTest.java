@@ -205,7 +205,7 @@ public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest1() throws Exception {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       DataSource ds1 = null;
@@ -221,9 +221,9 @@ public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("Exception did not occur on commit although was supposed" + "occur");
     } catch (Exception e) {
       LogWriterUtils.getLogWriter().fine("Exception caught in runTest1 due to : " + e);
@@ -232,8 +232,8 @@ public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest2() throws Exception {
-    boolean exceptionOccured1 = false;
-    boolean exceptionOccured2 = false;
+    boolean exceptionOccurred1 = false;
+    boolean exceptionOccurred2 = false;
     try {
       Context ctx = cache.getJNDIContext();
       DataSource ds1 = null;
@@ -252,16 +252,16 @@ public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {
         ds1.getConnection();
         Thread.sleep(8000);
       } catch (SQLException e) {
-        exceptionOccured1 = true;
+        exceptionOccurred1 = true;
       }
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured2 = true;
+        exceptionOccurred2 = true;
       }
-      if (!exceptionOccured1)
+      if (!exceptionOccurred1)
         fail("Exception (Login-Time-Out)did not occur although was supposed" + "to occur");
-      if (exceptionOccured2)
+      if (exceptionOccurred2)
         fail("Exception did occur on commit, although was not supposed" + "to occur");
     } catch (Exception e) {
       fail("failed in runTest2 due to " + e);
@@ -269,7 +269,7 @@ public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest3() throws Exception {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       DataSource ds1 = null;
@@ -285,9 +285,9 @@ public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("Exception (Transaction-Time-Out)did not occur although was supposed" + "to occur");
     } catch (Exception e) {
       fail("failed in runTest3 due to " + e);

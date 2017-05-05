@@ -113,7 +113,7 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("SQLException: Database 'newDB1' not found"));
       expected.add(Pattern.compile("IGNORE_EXCEPTION_test"));
       expected.add(Pattern.compile("Unsupported at this time"));
-      expected.add(Pattern.compile("DiskAccessException occured as expected"));
+      expected.add(Pattern.compile("DiskAccessException occurred as expected"));
       expected.add(Pattern.compile("Oplog::createOplog:Exception in preblowing the file"));
     } else if (type.equals("dunit")) {
       expected.add(Pattern.compile("INCOMPATIBLE_ROOT"));

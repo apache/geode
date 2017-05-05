@@ -92,7 +92,7 @@ public class GlobalTransactionJUnitTest {
   @Test
   public void testEnlistResource() throws Exception {
     try {
-      boolean exceptionoccured = false;
+      boolean exceptionoccurred = false;
       utx.begin();
       try {
         Context ctx = cache.getJNDIContext();
@@ -100,10 +100,10 @@ public class GlobalTransactionJUnitTest {
             (GemFireTransactionDataSource) ctx.lookup("java:/XAPooledDataSource");
         ds.getConnection();
       } catch (SQLException e) {
-        exceptionoccured = true;
+        exceptionoccurred = true;
       }
-      if (exceptionoccured)
-        fail("SQLException occured while trying to enlist resource");
+      if (exceptionoccurred)
+        fail("SQLException occurred while trying to enlist resource");
       utx.rollback();
     } catch (Exception e) {
       try {
@@ -119,17 +119,17 @@ public class GlobalTransactionJUnitTest {
   @Test
   public void testRegisterSynchronization() throws Exception {
     try {
-      boolean exceptionoccured = false;
+      boolean exceptionoccurred = false;
       utx.begin();
       try {
         Transaction txn = tm.getTransaction();
         Synchronization sync = new SyncImpl();
         txn.registerSynchronization(sync);
       } catch (RollbackException e) {
-        exceptionoccured = true;
+        exceptionoccurred = true;
       }
-      if (exceptionoccured)
-        fail("exception occured while trying to register synchronization ");
+      if (exceptionoccurred)
+        fail("exception occurred while trying to register synchronization ");
       utx.rollback();
     } catch (Exception e) {
       try {
@@ -145,7 +145,7 @@ public class GlobalTransactionJUnitTest {
   @Test
   public void testEnlistResourceAfterRollBack() throws Exception {
     try {
-      boolean exceptionoccured = false;
+      boolean exceptionoccurred = false;
       utx.begin();
       utx.setRollbackOnly();
       Context ctx = cache.getJNDIContext();
@@ -154,10 +154,10 @@ public class GlobalTransactionJUnitTest {
             (GemFireTransactionDataSource) ctx.lookup("java:/XAPooledDataSource");
         ds.getConnection();
       } catch (SQLException e) {
-        exceptionoccured = true;
+        exceptionoccurred = true;
       }
-      if (!exceptionoccured)
-        fail("SQLException not occured although the transaction was marked for rollback");
+      if (!exceptionoccurred)
+        fail("SQLException not occurred although the transaction was marked for rollback");
       utx.rollback();
     } catch (Exception e) {
       try {
@@ -173,7 +173,7 @@ public class GlobalTransactionJUnitTest {
   @Test
   public void testRegisterSynchronizationAfterRollBack() throws Exception {
     try {
-      boolean exceptionoccured = false;
+      boolean exceptionoccurred = false;
       utx.begin();
       utx.setRollbackOnly();
       Context ctx = cache.getJNDIContext();
@@ -182,10 +182,10 @@ public class GlobalTransactionJUnitTest {
         Synchronization sync = new SyncImpl();
         txn.registerSynchronization(sync);
       } catch (RollbackException e) {
-        exceptionoccured = true;
+        exceptionoccurred = true;
       }
-      if (!exceptionoccured)
-        fail("RollbackException not occured although the transaction was marked for rollback");
+      if (!exceptionoccurred)
+        fail("RollbackException not occurred although the transaction was marked for rollback");
       utx.rollback();
     } catch (Exception e) {
       try {

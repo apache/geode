@@ -181,7 +181,7 @@ public class FacetsJCAConnectionManagerImpl
         // mannPoolCache.destroyPooledConnection(conn);
       } catch (Exception ex) {
         String exception =
-            "FacetsJCAConnectionManagerImpl::connectionErrorOccured: Exception occured due to "
+            "FacetsJCAConnectionManagerImpl::connectionErrorOccurred: Exception occurred due to "
                 + ex.getMessage();
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
@@ -206,7 +206,7 @@ public class FacetsJCAConnectionManagerImpl
         }
       } catch (Exception se) {
         String exception =
-            "FacetsJCAConnectionManagerImpl::connectionClosed: Exception occured due to "
+            "FacetsJCAConnectionManagerImpl::connectionClosed: Exception occurred due to "
                 + se.getMessage();
         if (logger.isDebugEnabled()) {
           logger.debug(exception, se);

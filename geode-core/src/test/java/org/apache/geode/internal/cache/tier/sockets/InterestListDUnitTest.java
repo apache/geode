@@ -273,7 +273,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
   /**
    * one server two clients create Entries in all the vms server directly puts some values then both
    * clients connect to the server c1 register(k1,k2,k3) and c2 register (k4,k5) then verify that
-   * updates has occured as a result of interest registration.
+   * updates has occurred as a result of interest registration.
    */
   @Test
   public void testInitializationOfRegionFromInterestList() throws Exception {

@@ -273,7 +273,7 @@ public class ConnectionPoolingJUnitTest {
           // conn.close();
           logger.debug(" Returned connection " + display + "from " + threadName);
         } catch (Exception ex) {
-          fail("Exception occured in trying to returnPooledConnectiontoPool due to " + ex);
+          fail("Exception occurred in trying to returnPooledConnectiontoPool due to " + ex);
           ex.printStackTrace();
         }
       }

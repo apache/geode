@@ -710,7 +710,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         // is still usable:
         SystemFailure.checkFailure();
         this.cache.getLoggerI18n()
-            .error(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURED_WHEN_NOTIFYING_LISTENERS, t);
+            .error(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURRED_WHEN_NOTIFYING_LISTENERS, t);
       }
     }
   }

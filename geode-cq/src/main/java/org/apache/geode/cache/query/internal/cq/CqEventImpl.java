@@ -123,7 +123,7 @@ public class CqEventImpl implements CqEvent {
   public void setException() {
     // Needs to be changed.
     this.throwable = new Throwable(
-        LocalizedStrings.CqEventImpl_EXCEPTION_OCCURED_WHILE_APPLYING_QUERY_ON_A_CACHE_EVENT
+        LocalizedStrings.CqEventImpl_EXCEPTION_OCCURRED_WHILE_APPLYING_QUERY_ON_A_CACHE_EVENT
             .toLocalizedString());
   }
 

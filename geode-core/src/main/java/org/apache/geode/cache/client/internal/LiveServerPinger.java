@@ -90,7 +90,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
           PingOp.execute(pool, endpoint.getLocation());
         } catch (Exception e) {
           if (logger.isDebugEnabled()) {
-            logger.debug("Error occured while pinging server: {} - {}", endpoint.getLocation(),
+            logger.debug("Error occurred while pinging server: {} - {}", endpoint.getLocation(),
                 e.getMessage());
           }
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();

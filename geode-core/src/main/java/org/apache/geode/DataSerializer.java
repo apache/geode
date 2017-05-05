@@ -2952,7 +2952,7 @@ public abstract class DataSerializer {
    * loaded using the current thread's {@link Thread#getContextClassLoader context class loader}
    * before the one normally used by Java serialization is consulted.
    *
-   * @throws IOException A problem occured while reading from <code>in</code> (may wrap another
+   * @throws IOException A problem occurred while reading from <code>in</code> (may wrap another
    *         exception)
    * @throws ClassNotFoundException The class of an object read from <code>in</code> could not be
    *         found

@@ -168,7 +168,7 @@ public class MsgDestreamer {
   /**
    * Waits for the deserialization to complete and returns the deserialized message.
    * 
-   * @throws IOException A problem occured while deserializing the message.
+   * @throws IOException A problem occurred while deserializing the message.
    * @throws ClassNotFoundException The class of an object read from <code>in</code> could not be
    *         found
    */

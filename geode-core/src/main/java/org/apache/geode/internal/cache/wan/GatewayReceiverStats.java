@@ -54,7 +54,7 @@ public class GatewayReceiverStats extends CacheServerStats {
   private static final String UNKNOWN_OPERATIONS_RECEIVED = "unknowsOperationsReceived";
 
   /** Name of the unprocessed events added by primary statistic */
-  private static final String EXCEPTIONS_OCCURED = "exceptionsOccured";
+  private static final String EXCEPTIONS_OCCURRED = "exceptionsOccurred";
 
   // /** Id of the events queued statistic */
   // private int failoverBatchesReceivedId;
@@ -84,7 +84,7 @@ public class GatewayReceiverStats extends CacheServerStats {
   private int unknowsOperationsReceivedId;
 
   /** Id of the unprocessed events added by primary statistic */
-  private int exceptionsOccuredId;
+  private int exceptionsOccurredId;
 
   // ///////////////////// Constructors ///////////////////////
 
@@ -109,8 +109,8 @@ public class GatewayReceiverStats extends CacheServerStats {
             "total number of destroy operations received by this GatewayReceiver", "operations"),
         f.createIntCounter(UNKNOWN_OPERATIONS_RECEIVED,
             "total number of unknown operations received by this GatewayReceiver", "operations"),
-        f.createIntCounter(EXCEPTIONS_OCCURED,
-            "number of exceptions occured while porcessing the batches", "operations")};
+        f.createIntCounter(EXCEPTIONS_OCCURRED,
+            "number of exceptions occurred while porcessing the batches", "operations")};
     return new GatewayReceiverStats(f, ownerName, typeName, descriptors);
 
   }
@@ -128,7 +128,7 @@ public class GatewayReceiverStats extends CacheServerStats {
     updateRequestId = statType.nameToId(UPDATE_REQUESTS);
     destroyRequestId = statType.nameToId(DESTROY_REQUESTS);
     unknowsOperationsReceivedId = statType.nameToId(UNKNOWN_OPERATIONS_RECEIVED);
-    exceptionsOccuredId = statType.nameToId(EXCEPTIONS_OCCURED);
+    exceptionsOccurredId = statType.nameToId(EXCEPTIONS_OCCURRED);
   }
 
   // /////////////////// Instance Methods /////////////////////
@@ -233,14 +233,14 @@ public class GatewayReceiverStats extends CacheServerStats {
   }
 
   /**
-   * Increments the number of exceptions occured by 1.
+   * Increments the number of exceptions occurred by 1.
    */
-  public void incExceptionsOccured() {
-    this.stats.incInt(exceptionsOccuredId, 1);
+  public void incExceptionsOccurred() {
+    this.stats.incInt(exceptionsOccurredId, 1);
   }
 
-  public int getExceptionsOccured() {
-    return this.stats.getInt(exceptionsOccuredId);
+  public int getExceptionsOccurred() {
+    return this.stats.getInt(exceptionsOccurredId);
   }
 
   /**

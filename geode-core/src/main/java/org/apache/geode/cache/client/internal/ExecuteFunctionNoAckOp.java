@@ -86,7 +86,7 @@ public class ExecuteFunctionNoAckOp {
     } catch (Exception ex) {
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "ExecuteFunctionNoAckOp#execute : Exception occured while Sending Function Execution Message:"
+            "ExecuteFunctionNoAckOp#execute : Exception occurred while Sending Function Execution Message:"
                 + op.getMessage() + " to server using pool: " + pool,
             ex);
       }
@@ -127,7 +127,7 @@ public class ExecuteFunctionNoAckOp {
     } catch (Exception ex) {
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "ExecuteFunctionNoAckOp#execute : Exception occured while Sending Function Execution Message:"
+            "ExecuteFunctionNoAckOp#execute : Exception occurred while Sending Function Execution Message:"
                 + op.getMessage() + " to server using pool: " + pool,
             ex);
       }

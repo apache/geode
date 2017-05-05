@@ -542,7 +542,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
             serilizedValuesInVm++;
           }
         } catch (EntryNotFoundException e) {
-          fail("Entry not found not expected but occured ");
+          fail("Entry not found not expected but occurred ");
         }
       }
       // Test to see if values are in serialized form, when disk recovery is performed.
@@ -594,7 +594,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
         try {
           ((LocalRegion) region).getValueInVM(new Integer(i));
         } catch (EntryNotFoundException e) {
-          fail("Entry not found not expected but occured ");
+          fail("Entry not found not expected but occurred ");
         }
       }
 
@@ -603,7 +603,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
         try {
           Assert.assertTrue(((LocalRegion) region).getValueInVM(new Integer(i)) == null);
         } catch (EntryNotFoundException e) {
-          fail("Entry not found not expected but occured ");
+          fail("Entry not found not expected but occurred ");
         }
       }
       for (int i = 0; i < 1000; i++) {
@@ -611,7 +611,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
           Assert.assertTrue(
               ((LocalRegion) region).getValueOnDisk(new Integer(i)).equals(new Integer(i)));
         } catch (EntryNotFoundException e) {
-          fail("Entry not found not expected but occured ");
+          fail("Entry not found not expected but occurred ");
         }
       }
       // region.close();

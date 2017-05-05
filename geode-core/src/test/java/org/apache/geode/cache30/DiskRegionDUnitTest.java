@@ -641,7 +641,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
             fail("The values should have been evicted to disk, for key: " + "Key-" + i);
           }
         } catch (EntryNotFoundException e) {
-          fail("Entry not found not expected but occured ");
+          fail("Entry not found not expected but occurred ");
         }
       }
     }

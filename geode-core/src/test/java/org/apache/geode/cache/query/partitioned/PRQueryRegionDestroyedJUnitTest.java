@@ -202,10 +202,10 @@ public class PRQueryRegionDestroyedJUnitTest {
       ThreadUtils.join(t1, 30 * 1000);
       ThreadUtils.join(t2, 30 * 1000);
       logger.info(
-          "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: checking for any Unexpected Exception's occured");
+          "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: checking for any Unexpected Exception's occurred");
 
       assertFalse(
-          "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: Exception occured in Query-thread",
+          "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: Exception occurred in Query-thread",
           encounteredException);
     } catch (Exception e) {
       e.printStackTrace();

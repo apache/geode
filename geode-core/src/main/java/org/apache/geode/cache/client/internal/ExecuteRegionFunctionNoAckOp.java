@@ -69,7 +69,7 @@ public class ExecuteRegionFunctionNoAckOp {
     } catch (Exception ex) {
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "ExecuteRegionFunctionNoAckOp#execute : Exception occured while Sending Function Execution Message: {} to server using pool: {}",
+            "ExecuteRegionFunctionNoAckOp#execute : Exception occurred while Sending Function Execution Message: {} to server using pool: {}",
             op.getMessage(), pool, ex);
       }
       if (ex.getMessage() != null)
@@ -94,7 +94,7 @@ public class ExecuteRegionFunctionNoAckOp {
     } catch (Exception ex) {
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "ExecuteRegionFunctionNoAckOp#execute : Exception occured while Sending Function Execution Message: {} to server using pool: {}",
+            "ExecuteRegionFunctionNoAckOp#execute : Exception occurred while Sending Function Execution Message: {} to server using pool: {}",
             op.getMessage(), pool, ex);
       }
       if (ex.getMessage() != null)

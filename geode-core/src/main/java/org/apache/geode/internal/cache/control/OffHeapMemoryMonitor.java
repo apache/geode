@@ -485,7 +485,7 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
         // ignore
       } catch (Throwable t) {
         logger.error(LocalizedMessage
-            .create(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURED_WHEN_NOTIFYING_LISTENERS), t);
+            .create(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURRED_WHEN_NOTIFYING_LISTENERS), t);
       }
     }
   }

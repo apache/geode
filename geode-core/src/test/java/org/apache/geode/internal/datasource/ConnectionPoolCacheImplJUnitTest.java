@@ -67,7 +67,7 @@ public class ConnectionPoolCacheImplJUnitTest {
       ds1 = DistributedSystem.connect(props);
       cache = CacheFactory.create(ds1);
     } catch (Exception e) {
-      fail("Exception occured in creation of ds and cache due to " + e);
+      fail("Exception occurred in creation of ds and cache due to " + e);
       e.printStackTrace();
     }
   }
@@ -97,7 +97,7 @@ public class ConnectionPoolCacheImplJUnitTest {
       ThreadB = new Thread(clientB, "ThreadB");
       ThreadA.start();
     } catch (Exception e) {
-      fail("Exception occured in testConnectionPoolFunctions due to " + e);
+      fail("Exception occurred in testConnectionPoolFunctions due to " + e);
       e.printStackTrace();
     }
   }
@@ -128,7 +128,7 @@ public class ConnectionPoolCacheImplJUnitTest {
           // System.out.println(" Got connection " + numConn + "from "+
           // threadName);
         } catch (Exception ex) {
-          fail("Exception occured in trying to getPooledConnectionfromPool due to " + ex);
+          fail("Exception occurred in trying to getPooledConnectionfromPool due to " + ex);
           ex.printStackTrace();
         }
       }
@@ -157,7 +157,7 @@ public class ConnectionPoolCacheImplJUnitTest {
           // System.out.println(" Returned connection " + display + "from "+
           // threadName);
         } catch (Exception ex) {
-          fail("Exception occured in trying to returnPooledConnectiontoPool due to " + ex);
+          fail("Exception occurred in trying to returnPooledConnectiontoPool due to " + ex);
           ex.printStackTrace();
         }
       }
@@ -185,7 +185,7 @@ public class ConnectionPoolCacheImplJUnitTest {
           // System.out.println(" ********** Got connection " + numConn2+ "from
           // " + threadName);
         } catch (Exception ex) {
-          fail("Exception occured in trying to getPooledConnectionFromPool due to " + ex);
+          fail("Exception occurred in trying to getPooledConnectionFromPool due to " + ex);
           ex.printStackTrace();
         }
       }

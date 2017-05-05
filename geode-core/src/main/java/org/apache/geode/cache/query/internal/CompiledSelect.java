@@ -420,7 +420,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
-        // Asif . Ideally the function below should always be called after binding has occured
+        // Asif . Ideally the function below should always be called after binding has occurred
         // So that the interal ID gets set during binding to the scope. If not so then chances
         // are that internal_id is still null causing index_interanl_id to be null.
         // Though in our case it may not be an issue as the compute depedency phase must have

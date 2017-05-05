@@ -317,7 +317,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
         .verifyDeadAndLiveServers(new Integer(1), new Integer(2)));
     ThreadUtils.join(async[0], 6 * 60 * 1000);
     if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occured : ", async[0].getException());
+      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
     }
     List l = (List) async[0].getReturnValue();
 
@@ -361,7 +361,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
         .verifyDeadAndLiveServers(new Integer(1), new Integer(2)));
     ThreadUtils.join(async[0], 5 * 60 * 1000);
     if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occured : ", async[0].getException());
+      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
     }
     List l = (List) async[0].getReturnValue();
     assertEquals(2, l.size());
@@ -1067,7 +1067,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
         }
       });
     } catch (Exception expected) {
-      LogWriterUtils.getLogWriter().fine("Exception occured : " + expected.getMessage());
+      LogWriterUtils.getLogWriter().fine("Exception occurred : " + expected.getMessage());
       assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey)
           || expected.getMessage().startsWith("Server could not send the reply")
           || expected.getMessage().startsWith("Unexpected exception during"));

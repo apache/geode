@@ -40,7 +40,7 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
   public void createRegion(String path) {
     DistributedSystem ds = null;
     try {
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       File dir = new File("testingDirectoryForXML");
       dir.mkdir();
       dir.deleteOnExit();
@@ -52,11 +52,11 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
 
         CacheFactory.create(ds);
       } catch (IllegalArgumentException ex) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         System.out.println(
             "ExpectedStrings: Received expected IllegalArgumentException:" + ex.getMessage());
       } catch (CacheXmlException ex) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         System.out
             .println("ExpectedStrings: Received expected CacheXmlException:" + ex.getMessage());
       } catch (Exception e) {
@@ -64,7 +64,7 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
         fail("test failed due to " + e);
       }
 
-      if (!exceptionOccured) {
+      if (!exceptionOccurred) {
         fail(" exception did not occur although was expected");
       }
     } finally {

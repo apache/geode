@@ -522,11 +522,11 @@ public class LocalizedStrings {
       new StringId(1294, "ContextImpl::lookup::Error while looking up {0}");
   public static final StringId CqAttributesFactory_EXCEPTION_CLOSING_CQ_LISTENER_ERROR_0 =
       new StringId(1295, "Exception closing CQ Listener Error: {0}");
-  public static final StringId CqAttributesFactory_EXCEPTION_OCCURED_WHILE_CLOSING_CQ_LISTENER_ERROR_0 =
+  public static final StringId CqAttributesFactory_EXCEPTION_OCCURRED_WHILE_CLOSING_CQ_LISTENER_ERROR_0 =
       new StringId(1296, "Exception occurred while closing CQ Listener Error: {0}");
-  public static final StringId CqAttributesFactory_RUNTIME_EXCEPTION_OCCURED_CLOSING_CQ_LISTENER_ERROR_0 =
+  public static final StringId CqAttributesFactory_RUNTIME_EXCEPTION_OCCURRED_CLOSING_CQ_LISTENER_ERROR_0 =
       new StringId(1297, "Runtime Exception occurred closing CQ Listener Error: {0}");
-  public static final StringId CqAttributesFactory_RUNTIME_EXCEPTION_OCCURED_WHILE_CLOSING_CQ_LISTENER_ERROR_0 =
+  public static final StringId CqAttributesFactory_RUNTIME_EXCEPTION_OCCURRED_WHILE_CLOSING_CQ_LISTENER_ERROR_0 =
       new StringId(1298, "Runtime Exception occurred while closing CQ Listener Error: {0}");
   public static final StringId CqQueryImpl_FAILED_TO_STORE_CONTINUOUS_QUERY_IN_THE_REPOSITORY_CQNAME_0_1 =
       new StringId(1299, "Failed to store Continuous Query in the repository. CqName: {0} {1}");
@@ -1037,7 +1037,7 @@ public class LocalizedStrings {
   public static final StringId GlobalTransaction_GLOBALTRANSACTION_CONSTRUCTOR_ERROR_WHILE_TRYING_TO_CREATE_XID_DUE_TO_0 =
       new StringId(1645,
           "GlobalTransaction::Constructor::Error while trying to create Xid due to {0}");
-  public static final StringId GlobalTransaction_GLOBATRANSACTION_EXPIREGTX_ERROR_OCCURED_WHILE_REMOVING_TRANSACTIONAL_MAPPINGS_0 =
+  public static final StringId GlobalTransaction_GLOBATRANSACTION_EXPIREGTX_ERROR_OCCURRED_WHILE_REMOVING_TRANSACTIONAL_MAPPINGS_0 =
       new StringId(1646,
           "GlobaTransaction::expireGTX:Error occurred while removing transactional mappings {0}");
   public static final StringId GlobalTransaction_TRANSACTION_0_HAS_TIMED_OUT =
@@ -1054,7 +1054,7 @@ public class LocalizedStrings {
   public static final StringId HARegionQueue_DISPATCHEDANDCURRENTEVENTSEXPIREORUPDATE_UNEXPECTEDLY_ENCOUNTERED_EXCEPTION_WHILE_UPDATING_EXPIRY_ID_FOR_THREADIDENTIFIER_0 =
       new StringId(1651,
           "DispatchedAndCurrentEvents::expireOrUpdate: Unexpectedly encountered exception while updating expiry ID for ThreadIdentifier={0}");
-  public static final StringId HARegionQueue_EXCEPTION_OCCURED_WHILE_TRYING_TO_SET_THE_LAST_DISPATCHED_ID =
+  public static final StringId HARegionQueue_EXCEPTION_OCCURRED_WHILE_TRYING_TO_SET_THE_LAST_DISPATCHED_ID =
       new StringId(1652, "Exception occurred while trying to set the last dispatched id");
   public static final StringId HARegionQueue_HAREGIONQUEUECREATECACHELISTNEREXCEPTION_IN_THE_EXPIRY_THREAD =
       new StringId(1653, "HAREgionQueue::createCacheListner::Exception in the expiry thread");
@@ -1063,7 +1063,7 @@ public class LocalizedStrings {
       new StringId(1655, "HARegionQueue and its derived class do not support this operation ");
   public static final StringId ConnectionTable_THE_DISTRIBUTED_SYSTEM_IS_SHUTTING_DOWN =
       new StringId(1656, "The distributed system is shutting down");
-  public static final StringId HARegionQueue_INTERRUPTEDEXCEPTION_OCCURED_IN_QUEUEREMOVALTHREAD_WHILE_WAITING =
+  public static final StringId HARegionQueue_INTERRUPTEDEXCEPTION_OCCURRED_IN_QUEUEREMOVALTHREAD_WHILE_WAITING =
       new StringId(1657, "InterruptedException occurred in QueueRemovalThread  while waiting ");
   public static final StringId HealthMonitorImpl_UNEXPECTED_STOP_OF_HEALTH_MONITOR =
       new StringId(1658, "Unexpected stop of health monitor");
@@ -1101,9 +1101,9 @@ public class LocalizedStrings {
 
   public static final StringId InternalDistributedSystem_DISCONNECT_LISTENER_STILL_RUNNING__0 =
       new StringId(1685, "Disconnect listener still running: {0}");
-  public static final StringId InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT =
+  public static final StringId InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT =
       new StringId(1686, "Exception occurred while trying to connect the system during reconnect");
-  public static final StringId InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT =
+  public static final StringId InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT =
       new StringId(1687, "Exception occurred while trying to create the cache during reconnect");
   public static final StringId InternalDistributedSystem_INTERRUPTED_WHILE_PROCESSING_DISCONNECT_LISTENER =
       new StringId(1688, "Interrupted while processing disconnect listener");
@@ -1918,7 +1918,7 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGETHRESHOLD_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2 =
       new StringId(2167,
           "Could not set \"{0}.rechargeThreshold\" to \"{1}\" because its value can not be less than \"{2}\"");
-  public static final StringId UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1 =
+  public static final StringId UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURRED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1 =
       new StringId(2168,
           "Uncaught exception in thread {0} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {1}");
 
@@ -2855,7 +2855,7 @@ public class LocalizedStrings {
   public static final StringId GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEGETCONNECTIONNO_VALID_CONNECTION_AVAILABLE =
       new StringId(2707,
           "GemFireTransactionDataSource::getConnection::No valid Connection available");
-  public static final StringId GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEREGISTERTRANXCONNECTION_EXCEPTION_IN_REGISTERING_THE_XARESOURCE_WITH_THE_TRANSACTIONEXCEPTION_OCCURED_0 =
+  public static final StringId GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEREGISTERTRANXCONNECTION_EXCEPTION_IN_REGISTERING_THE_XARESOURCE_WITH_THE_TRANSACTIONEXCEPTION_OCCURRED_0 =
       new StringId(2708,
           "GemFireTransactionDataSource-registerTranxConnection(). Exception in registering the XAResource with the Transaction.Exception occurred= {0}");
   public static final StringId GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEXADATASOURCE_CLASS_OBJECT_IS_NULL_OR_CONFIGUREDDATASOURCEPROPERTIES_OBJECT_IS_NULL =
@@ -3042,7 +3042,7 @@ public class LocalizedStrings {
       new StringId(2847, "Class  {0}  could not be instantiated.");
   public static final StringId LocalRegion_CLASS_0_NOT_FOUND_IN_CLASSPATH =
       new StringId(2848, "Class  {0}  not found in classpath.");
-  public static final StringId LocalRegion_EXCEPTION_OCCURED_WHILE_RE_CREATING_INDEX_DATA_ON_CLEARED_REGION =
+  public static final StringId LocalRegion_EXCEPTION_OCCURRED_WHILE_RE_CREATING_INDEX_DATA_ON_CLEARED_REGION =
       new StringId(2849, "Exception occurred while re creating index data on cleared region.");
   public static final StringId LocalRegion_FAILED_ENLISTEMENT_WITH_TRANSACTION_0 =
       new StringId(2850, "Failed enlistement with transaction \"{0}\"");
@@ -3459,7 +3459,7 @@ public class LocalizedStrings {
 
   public static final StringId PartitionedRegion_TIME_OUT_LOOKING_FOR_TARGET_NODE_FOR_DESTROY_WAITED_0_MS =
       new StringId(3093, "Time out looking for target node for destroy; waited  {0}  ms");
-  public static final StringId PartitionedRegion_UNEXPECTED_QUERY_EXCEPTION_OCCURED_DURING_QUERY_EXECUTION_0 =
+  public static final StringId PartitionedRegion_UNEXPECTED_QUERY_EXCEPTION_OCCURRED_DURING_QUERY_EXECUTION_0 =
       new StringId(3094, "Unexpected query exception occurred during query execution  {0}");
   public static final StringId PooledExecutorWithDMStats_EXECUTOR_HAS_BEEN_SHUTDOWN =
       new StringId(3095, "executor has been shutdown");
@@ -4442,14 +4442,14 @@ public class LocalizedStrings {
   public static final StringId GlobalTransaction_GLOBALTRANSACTION_ENLISTRESOURCE_CANNOT_ENLIST_A_RESOURCE_TO_A_TRANSACTION_WHICH_IS_NOT_ACTIVE =
       new StringId(3717,
           "GlobalTransaction::enlistResource::Cannot enlist a resource to a transaction which is not active");
-  public static final StringId GlobalTransaction_GLOBALTRANSACTION_ENLISTRESOURCE_EXCEPTION_OCCURED_IN_TRYING_TO_SET_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1 =
+  public static final StringId GlobalTransaction_GLOBALTRANSACTION_ENLISTRESOURCE_EXCEPTION_OCCURRED_IN_TRYING_TO_SET_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1 =
       new StringId(3718,
           "GlobalTransaction::enlistResource:Exception occurred in trying to set XAResource timeout due to {0} Error Code = {1}");
   public static final StringId GlobalTransaction_ERROR_WHILE_DELISTING_XARESOURCE_0_1 =
       new StringId(3719, "error while delisting XAResource {0} {1}");
   public static final StringId GlobalTransaction_GLOBATRANSACTION_RESUME_RESUME_NOT_SUCCESFUL_DUE_TO_0 =
       new StringId(3720, "GlobaTransaction::resume:Resume not succesful due to {0}");
-  public static final StringId GlobalTransaction_EXCEPTION_OCCURED_WHILE_TRYING_TO_SET_THE_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1 =
+  public static final StringId GlobalTransaction_EXCEPTION_OCCURRED_WHILE_TRYING_TO_SET_THE_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1 =
       new StringId(3721,
           "Exception occurred while trying to set the XAResource TimeOut due to {0} Error code = {1}");
   public static final StringId SmHelper_NATIVE_CODE_UNAVAILABLE =
@@ -5275,7 +5275,7 @@ public class LocalizedStrings {
       new StringId(4159, "AuthorizeRequest: Client[{0}] is setting authorization callback to {1}.");
   public static final StringId AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_GET_OPERATION_ON_REGION_0 =
       new StringId(4160, "Not authorized to perform GET operation on region [{0}]");
-  public static final StringId CqEventImpl_EXCEPTION_OCCURED_WHILE_APPLYING_QUERY_ON_A_CACHE_EVENT =
+  public static final StringId CqEventImpl_EXCEPTION_OCCURRED_WHILE_APPLYING_QUERY_ON_A_CACHE_EVENT =
       new StringId(4161, "Exception occurred while applying query on a cache event.");
   public static final StringId AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_PUT_OPERATION_ON_REGION_0 =
       new StringId(4162, "Not authorized to perform PUT operation on region {0}");
@@ -5672,7 +5672,7 @@ public class LocalizedStrings {
           "recursiveDestroyRegion: postDestroyRegion failed due to cache closure. region = {0}");
   public static final StringId LocalRegion_RECURSIVEDESTROYREGION_PROBLEM_IN_CACHEWRITEBEFOREREGIONDESTROY =
       new StringId(4402, "recursiveDestroyRegion: problem in cacheWriteBeforeRegionDestroy");
-  public static final StringId LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_REGION_WILL_BE_CLOSED =
+  public static final StringId LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_REGION_WILL_BE_CLOSED =
       new StringId(4403,
           "A DiskAccessException has occurred while writing to the disk for region {0}. The region will be closed.");
   public static final StringId PoolImpl_DESTROYING_CONNECTION_POOL_0 =
@@ -6129,7 +6129,7 @@ public class LocalizedStrings {
       new StringId(4679, "InstantiatorRecoveryTask - Error ClassNotFoundException: {0}");
   public static final StringId ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE =
       new StringId(4682, "This member caught exception processing profile {0} {1}");
-  public static final StringId MemoryMonitor_EXCEPTION_OCCURED_WHEN_NOTIFYING_LISTENERS =
+  public static final StringId MemoryMonitor_EXCEPTION_OCCURRED_WHEN_NOTIFYING_LISTENERS =
       new StringId(4683, "Exception occurred when notifying listeners ");
   public static final StringId CacheXmlParser_A_0_IS_NOT_DATA_SERIALIZABLE = new StringId(4684,
       "The class {0}, presented for instantiator registration is not an instance of DataSerializable and cannot be registered.");
@@ -6519,7 +6519,7 @@ public class LocalizedStrings {
       new StringId(4903, "Received cluster configuration from the locator");
   public static final StringId GemFireCache_SHARED_CONFIGURATION_NOT_AVAILABLE =
       new StringId(4904, "cluster configuration service not available");
-  public static final StringId GemFireCache_EXCEPTION_OCCURED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION =
+  public static final StringId GemFireCache_EXCEPTION_OCCURRED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION =
       new StringId(4905,
           "Exception while deploying the jars received as a part of cluster Configuration");
   public static final StringId GemFireCache_NO_LOCATORS_FOUND_WITH_SHARED_CONFIGURATION =
@@ -6783,7 +6783,7 @@ public class LocalizedStrings {
       new StringId(5090, "-disable-default-server  Do not add a default <cache-server>");
   public static final StringId Oplog_REMOVING_INCOMPLETE_KRF =
       new StringId(5091, "Removing incomplete krf {0} for oplog {1}, disk store \"{2}\"");
-  public static final StringId PlaceHolderDiskRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_RECOVERING_FROM_DISK =
+  public static final StringId PlaceHolderDiskRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_RECOVERING_FROM_DISK =
       new StringId(5092,
           "A DiskAccessException has occurred while recovering values asynchronously from disk for region {0}.");
   public static final StringId PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2 =
@@ -6876,7 +6876,7 @@ public class LocalizedStrings {
   public static final StringId BucketPersistenceAdvisor_ERROR_RECOVERYING_SECONDARY_BUCKET_0 =
       new StringId(5137, "Unable to recover secondary bucket from disk for region {0} bucket {1}");
   public static final StringId FunctionService_EXCEPTION_ON_LOCAL_NODE =
-      new StringId(5138, "Exception occured on local node while executing Function:");
+      new StringId(5138, "Exception occurred on local node while executing Function:");
   public static final StringId AbstractIndex_WRONG_COMPARETO_IMPLEMENTATION_IN_INDEXED_OBJECT_0 =
       new StringId(5139, "Indexed object''s class {0} compareTo function is errorneous.");
   public static final StringId DefaultQuery_API_ONLY_FOR_PR =
@@ -7207,9 +7207,9 @@ public class LocalizedStrings {
   public static final StringId Region_REGION_0_HAS_1_ASYNC_EVENT_QUEUE_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_QUEUE_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_ASYNC_EVENT_QUEUE_IDS_SHOULD_BE_SAME =
       new StringId(5304,
           "Region {0} has {1} AsyncEvent queue IDs. Another cache has same region with {2} AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.");
-  public static final StringId GatewayEventFilter_EXCEPTION_OCCURED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1 =
+  public static final StringId GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1 =
       new StringId(5305,
-          "Exception occured while handling call to {0}.afterAcknowledgement for event {1}:");
+          "Exception occurred while handling call to {0}.afterAcknowledgement for event {1}:");
   public static final StringId GatewayReceiverImpl_USING_LOCAL_HOST =
       new StringId(5399, "No bind-address or hostname-for-sender is specified, Using local host ");
   public static final StringId GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME =
@@ -7376,13 +7376,13 @@ public class LocalizedStrings {
           "enforce-unique-host and redundancy-zone properties have no effect for a LonerDistributedSystem.");
   public static final StringId AttributesFactory_UNABLE_TO_CREATE_DISK_STORE_DIRECTORY_0 =
       new StringId(5607, "Unable to create directory : {0}");
-  public static final StringId LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_CACHE_WILL_BE_CLOSED =
+  public static final StringId LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_CACHE_WILL_BE_CLOSED =
       new StringId(5608,
           "A DiskAccessException has occurred while writing to the disk for region {0}. The cache will be closed.");
-  public static final StringId LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED =
+  public static final StringId LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED =
       new StringId(5609,
           "A DiskAccessException has occurred while writing to the disk for disk store {0}. The cache will be closed.");
-  public static final StringId LocalRegion_AN_EXCEPTION_OCCURED_WHILE_CLOSING_THE_CACHE =
+  public static final StringId LocalRegion_AN_EXCEPTION_OCCURRED_WHILE_CLOSING_THE_CACHE =
       new StringId(5610, "An Exception occurred while closing the cache.");
 
   public static final StringId DiskWriteAttributesFactory_DISK_USAGE_WARNING_INVALID_0 =
@@ -7480,7 +7480,7 @@ public class LocalizedStrings {
   public static final StringId Gateway_OBSOLETE_SYSTEM_POPERTY = new StringId(5711,
       "Obsolete java system property named {0} was set to control {1}. This property is no longer supported. Please use the GemFire API instead.");
   public static final StringId GatewayReceiver_EXCEPTION_WHILE_STARTING_GATEWAY_RECEIVER =
-      new StringId(5712, "Exception occured while starting gateway receiver");
+      new StringId(5712, "Exception occurred while starting gateway receiver");
   public static final StringId GatewayReceiver_IS_NOT_RUNNING =
       new StringId(5713, "Gateway Receiver is not running");
   public static final StringId GatewayReceiver_IS_ALREADY_RUNNING =

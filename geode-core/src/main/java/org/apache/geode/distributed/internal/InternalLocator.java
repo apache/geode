@@ -1255,7 +1255,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     try {
       response = statusFuture.get(5, TimeUnit.SECONDS);
     } catch (Exception e) {
-      logger.info("Exception occured while fetching the status {}", CliUtil.stackTraceAsString(e));
+      logger.info("Exception occurred while fetching the status {}", CliUtil.stackTraceAsString(e));
       response = new SharedConfigurationStatusResponse();
       response.setStatus(SharedConfigurationStatus.UNDETERMINED);
     }

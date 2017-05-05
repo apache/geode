@@ -194,7 +194,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest1() throws Exception {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -204,9 +204,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("Exception did not occur although was supposed to occur");
     } catch (Exception e) {
       fail("failed in naming lookup: ", e);
@@ -214,7 +214,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest2() throws Exception {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -224,9 +224,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("Exception did not occur although was supposed to occur");
     } catch (Exception e) {
       fail("failed in naming lookup: ", e);
@@ -248,7 +248,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest4() {
-    boolean exceptionOccured = true;
+    boolean exceptionOccurred = true;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -259,9 +259,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = false;
+        exceptionOccurred = false;
       }
-      if (exceptionOccured) {
+      if (exceptionOccurred) {
         fail("TimeOut did not rollback the transaction");
       }
     } catch (Exception e) {
@@ -270,7 +270,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest5() {
-    boolean exceptionOccured = true;
+    boolean exceptionOccurred = true;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -284,9 +284,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = false;
+        exceptionOccurred = false;
       }
-      if (exceptionOccured) {
+      if (exceptionOccurred) {
         fail("TimeOut did not rollback the transaction");
       }
     } catch (Exception e) {
@@ -295,7 +295,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest6() {
-    boolean exceptionOccured = true;
+    boolean exceptionOccurred = true;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -305,9 +305,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = false;
+        exceptionOccurred = false;
       }
-      if (exceptionOccured) {
+      if (exceptionOccurred) {
         fail("TimeOut did not rollback the transaction");
       }
     } catch (Exception e) {
@@ -316,7 +316,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest7() {
-    // boolean exceptionOccured = true;
+    // boolean exceptionOccurred = true;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -362,13 +362,13 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       sm.close();
       conn.close();
     } catch (Exception e) {
-      fail("Exception occured in test Commit due to ", e);
+      fail("Exception occurred in test Commit due to ", e);
     }
   }
 
   public static void runTest9() {
     try {
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       Context ctx = cache.getJNDIContext();
       DataSource ds2 = (DataSource) ctx.lookup("java:/SimpleDataSource");
       ds2.getConnection();
@@ -396,19 +396,19 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured) {
+      if (!exceptionOccurred) {
         fail("exception did not occur on commit although transaction timed out");
       }
     } catch (Exception e) {
-      fail("Exception occured in test Commit due to ", e);
+      fail("Exception occurred in test Commit due to ", e);
     }
   }
 
   public static void runTest10() {
     try {
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       Context ctx = cache.getJNDIContext();
       DataSource ds2 = (DataSource) ctx.lookup("java:/SimpleDataSource");
       ds2.getConnection();
@@ -436,13 +436,13 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.rollback();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured) {
+      if (!exceptionOccurred) {
         fail("exception did not occur on rollback although transaction timed out");
       }
     } catch (Exception e) {
-      fail("Exception occured in test Commit due to ", e);
+      fail("Exception occurred in test Commit due to ", e);
     }
   }
 

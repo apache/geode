@@ -329,7 +329,8 @@ public class MemoryIndexStore implements IndexStore {
               DefaultQuery.testHook.doTestHook("REMOVE_CALLED_FROM_ELEM_ARRAY");
             }
             // This could be IndexElementArray and might be changing to Set
-            // If the remove occured before changing to a set, then next time it will not be "found"
+            // If the remove occurred before changing to a set, then next time it will not be
+            // "found"
             // However the end effect would be that it was removed
             if (entries instanceof IndexElemArray) {
               if (!this.valueToEntriesMap.replace(newKey, entries, entries)) {

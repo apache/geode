@@ -57,7 +57,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
   private static volatile boolean hasNotified = false;
   private static volatile boolean putsHaveStarted = false;
 
-  private volatile boolean exceptionOccured = false;
+  private volatile boolean exceptionOccurred = false;
   private volatile boolean finished = false;
 
   private DiskRegionProperties diskProps = new DiskRegionProperties();
@@ -98,7 +98,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
   @Override
   protected final void postSetUp() throws Exception {
-    this.exceptionOccured = false;
+    this.exceptionOccurred = false;
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
   }
 
@@ -139,17 +139,17 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     assertTrue(region.get("1") == null);
 
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       Object result = ((LocalRegion) region).getValueOnDisk("1");
       if (result == null || result.equals(Token.TOMBSTONE)) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
     } catch (EntryNotFoundException e) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     }
 
-    if (!exceptionOccured) {
+    if (!exceptionOccurred) {
       fail("exception did not occur although was supposed to occur");
     }
 
@@ -831,7 +831,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         region.put("" + i, value);
       }
     } catch (DiskAccessException e) {
-      logWriter.error("Exception occured but not expected", e);
+      logWriter.error("Exception occurred but not expected", e);
       throw new AssertionError("FAILED::", e);
     }
 
@@ -841,7 +841,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     try {
       region.put("OK", value);
     } catch (DiskAccessException e) {
-      logWriter.error("Exception occured but not expected", e);
+      logWriter.error("Exception occurred but not expected", e);
       throw new AssertionError("FAILED::", e);
     }
 
@@ -884,7 +884,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         region.put("" + i, value);
       }
     } catch (DiskAccessException e) {
-      logWriter.error("Exception occured but not expected", e);
+      logWriter.error("Exception occurred but not expected", e);
       throw new AssertionError("FAILED::", e);
     }
 
@@ -940,7 +940,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         region.put("" + i, value);
       }
     } catch (DiskAccessException e) {
-      logWriter.error("Exception occured but not expected", e);
+      logWriter.error("Exception occurred but not expected", e);
       throw new AssertionError("FAILED::", e);
     }
 
@@ -950,7 +950,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     try {
       region.put("OK", value);
     } catch (DiskAccessException e) {
-      logWriter.error("Exception occured but not expected", e);
+      logWriter.error("Exception occurred but not expected", e);
       throw new AssertionError("FAILED::", e);
     }
 
@@ -986,7 +986,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     int[] diskSizes1 = ((LocalRegion) region).getDiskDirSizes();
 
     assertEquals(2048, diskSizes1[0]);
-    this.exceptionOccured = false;
+    this.exceptionOccurred = false;
     dskAccessExpHelperMethod(region, true/* synch mode */);
 
     // region.close(); // closes disk file which will flush all buffers
@@ -1020,7 +1020,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     int[] diskSizes1 = ((LocalRegion) region).getDiskDirSizes();
     assertEquals(diskDirSize1.length, 1);
     assertTrue("diskSizes != 2048 ", diskSizes1[0] == 2048);
-    this.exceptionOccured = false;
+    this.exceptionOccurred = false;
     this.dskAccessExpHelperMethod(region, false/* asynch mode */);
 
     // region.close(); // closes disk file which will flush all buffers
@@ -1040,7 +1040,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
             region.put("" + (synchMode ? 1 : i), value);
           }
         } catch (DiskAccessException e) {
-          logWriter.error("Exception occured but not expected", e);
+          logWriter.error("Exception occurred but not expected", e);
           testFailed = true;
           failureCause = "FAILED::" + e.toString();
           throw new AssertionError("FAILED::", e);
@@ -1072,24 +1072,25 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         // the space. Still the put operation must succeed.
         logWriter.info("Available disk space=" + availSpace + " MINIMUM STIPULATED SPACE="
             + DiskStoreImpl.MINIMUM_DIR_SIZE);
-        exceptionOccured = false/* availSpace >= DiskStoreImpl.MINIMUM_DIR_SIZE */; // @todo I see
-                                                                                    // this test
-                                                                                    // failing here
-                                                                                    // but I don't
-                                                                                    // know what it
-                                                                                    // means. My
-                                                                                    // availSpace is
-                                                                                    // 1052
-        if (exceptionOccured) {
+        exceptionOccurred = false/* availSpace >= DiskStoreImpl.MINIMUM_DIR_SIZE */; // @todo I see
+                                                                                     // this test
+                                                                                     // failing here
+                                                                                     // but I don't
+                                                                                     // know what it
+                                                                                     // means. My
+                                                                                     // availSpace
+                                                                                     // is
+                                                                                     // 1052
+        if (exceptionOccurred) {
           fail("FAILED::Available space should be less than Minimum Directory size("
               + DiskStoreImpl.MINIMUM_DIR_SIZE
               + ") as the operation would have violated the max directory size requirement availSpace="
               + availSpace);
         } else {
-          exceptionOccured = false /* availSpace >= 0 */; // @todo I see this test failing here but
-                                                          // I don't know what it means. My
-                                                          // availSpace is 1052
-          if (exceptionOccured) {
+          exceptionOccurred = false /* availSpace >= 0 */; // @todo I see this test failing here but
+                                                           // I don't know what it means. My
+                                                           // availSpace is 1052
+          if (exceptionOccurred) {
             fail(
                 "FAILED::Available space should be less than 0 as the operation would have violated the max directory size requirement availSpace="
                     + availSpace);
@@ -1107,7 +1108,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     assertFalse(failureCause, testFailed);
     assertFalse(
         "Expected situation of max directory size violation happening and available space less than zero did not happen  ",
-        exceptionOccured); // CC jade1d failure
+        exceptionOccurred); // CC jade1d failure
 
   }
 
@@ -1257,7 +1258,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     try {
       getInvalidEnt = region.get("key1");
     } catch (Exception e) {
-      logWriter.error("Exception occured but not expected", e);
+      logWriter.error("Exception occurred but not expected", e);
       throw new AssertionError("Failed while getting invalid entry:", e);
 
     }
@@ -1537,11 +1538,11 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
       cache.getLogger().info("waiting for clear to finish");
       ThreadUtils.join(th, 30 * 1000);
     } catch (Exception ie) {
-      DiskRegionJUnitTest.this.exceptionOccured = true;
+      DiskRegionJUnitTest.this.exceptionOccurred = true;
       DiskRegionJUnitTest.this.failureCause = ie.toString();
     }
 
-    assertFalse(this.failureCause, this.exceptionOccured);
+    assertFalse(this.failureCause, this.exceptionOccurred);
     NewLRUClockHand lruList = ((VMLRURegionMap) ((LocalRegion) region).entries)._getLruList();
     assertEquals(region.size(), 0);
     lruList.audit();
@@ -1581,7 +1582,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         // DistributedTestCase.join(th, 7 * 1000, null);
         // }
         // catch (Exception e) {
-        // DiskRegionJUnitTest.this.exceptionOccured = true;
+        // DiskRegionJUnitTest.this.exceptionOccurred = true;
         // DiskRegionJUnitTest.this.failureCause = e.toString();
         // }
       }
@@ -1589,7 +1590,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     try {
       region.clear();
       ThreadUtils.join(th, 30 * 1000);
-      assertFalse(this.failureCause, this.exceptionOccured);
+      assertFalse(this.failureCause, this.exceptionOccurred);
       // We expect 1 entry to exist, because the clear was triggered before
       // the update
       assertEquals(1, region.size());
@@ -1632,7 +1633,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         // DistributedTestCase.join(th, 10 * 1000, null);
         // }
         // catch (Exception e) {
-        // DiskRegionJUnitTest.this.exceptionOccured = true;
+        // DiskRegionJUnitTest.this.exceptionOccurred = true;
         // DiskRegionJUnitTest.this.failureCause = e.toString();
         // }
       }
@@ -1640,7 +1641,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     try {
       region.clear();
       ThreadUtils.join(th, 30 * 1000);
-      assertFalse(this.failureCause, this.exceptionOccured);
+      assertFalse(this.failureCause, this.exceptionOccurred);
       // We expect 1 entry to exist, because the clear was triggered before
       // the update
       assertEquals(1, region.size());

@@ -174,7 +174,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
 
   public void handleDiskAccessException(DiskAccessException dae) {
     getDiskStore().getCache().getLoggerI18n().error(
-        LocalizedStrings.PlaceHolderDiskRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_RECOVERING_FROM_DISK,
+        LocalizedStrings.PlaceHolderDiskRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_RECOVERING_FROM_DISK,
         getName(), dae);
 
   }

@@ -939,7 +939,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
     private int initEntriesUpdated = 0;
 
-    private boolean hasInitOccuredOnce = false;
+    private boolean hasInitOccurredOnce = false;
 
     private ExecutionContext initContext = null;
 
@@ -1047,7 +1047,7 @@ public abstract class AbstractIndex implements IndexProtocol {
         for (int i = 0; i < this.iteratorSize; i++) {
           CompiledIteratorDef iterDef = (CompiledIteratorDef) this.indexInitIterators.get(i);
           RuntimeIterator rIter = null;
-          if (!this.hasInitOccuredOnce) {
+          if (!this.hasInitOccurredOnce) {
             iterDef.computeDependencies(this.initContext);
             rIter = iterDef.getRuntimeIterator(this.initContext);
             this.initContext.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
@@ -1057,7 +1057,7 @@ public abstract class AbstractIndex implements IndexProtocol {
           }
           this.initContext.bindIterator(rIter);
         }
-        this.hasInitOccuredOnce = true;
+        this.hasInitOccurredOnce = true;
         if (this.indexResultSetType == null) {
           this.indexResultSetType = createIndexResultSetType();
         }
@@ -1345,7 +1345,7 @@ public abstract class AbstractIndex implements IndexProtocol {
       // TODO: Create a new LocalizedString for this.
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "Exception occured while verifying a Region Entry value during a Query when the Region Entry is under update operation",
+            "Exception occurred while verifying a Region Entry value during a Query when the Region Entry is under update operation",
             e);
       }
     }

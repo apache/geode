@@ -171,7 +171,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
 
     } catch (Exception e) {
-      fail("exception occured in testMultiThreaded due to " + e);
+      fail("exception occurred in testMultiThreaded due to " + e);
       e.printStackTrace();
     }
   }
@@ -196,7 +196,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest1() throws Exception {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       getSystemStatic().getLogWriter().fine("<ExpectedException action=add> +"
           + "DistributedSystemDisconnectedException" + "</ExpectedException>");
@@ -208,9 +208,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("Exception did not occur although was supposed to occur");
     } catch (Exception e) {
       LogWriterUtils.getLogWriter().fine("Exception caught " + e);
@@ -222,7 +222,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest2() throws Exception {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -232,9 +232,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       try {
         utx.commit();
       } catch (Exception e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("Exception did not occur although was supposed to occur");
     } catch (Exception e) {
       LogWriterUtils.getLogWriter().fine("Exception caught " + e);
@@ -244,7 +244,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
   public static void runTest3(Object o)
       throws SystemException, NotSupportedException, NamingException, InterruptedException {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     int sleeptime = ((Integer) o).intValue();
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -254,9 +254,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     try {
       utx.commit();
     } catch (Exception e) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     }
-    if (!exceptionOccured) {
+    if (!exceptionOccurred) {
       fail("exception did not occur although was supposed to occur");
     }
   }
