@@ -21,18 +21,23 @@ limitations under the License.
 
 The Apache Geode developer REST interface runs as an embedded HTTP or HTTPS service (Jetty server) within a Geode data node.
 
-All Geode REST interface classes and required JAR files are distributed as a WAR file with the Geode product distribution. You can locate the file in the following location:
+All Geode REST interface classes and required JAR files are distributed as a WAR file with the Geode product distribution. You can find the file in the following location:
 
-``` pre
-$GEMFIRE/tools/Extensions/gemfire-api.war
-```
+<code>
+<i>install-dir</i>/tools/Extensions/geode-web-api-<i>n.n.n.</i>war
+</code>
+
+where _install-dir_ is the server installation directory and _n.n.n_ is a version number.
 
 To enable the developer REST API service in Apache Geode, set the `start-dev-rest-api` Geode property to `true` when starting a data node using either `gfsh` or the ServerLauncher API. Setting this property to true on a data node will start up an embedded Jetty server and deploy the REST developer API WAR file.
 
 **Note:**
-The REST API service for application development can only be started on servers; you cannot use locators to host the developer Geode REST API services.
+The REST API service for application development runs only on servers; you cannot use locators to host the developer Geode REST API services.
 
-You can have multiple REST enabled data nodes in a single distributed system. Each data node should have a separate host name and unique end point. To ensure that the data node is reachable on a machine with multiple NIC addresses, you can use `http-service-bind-address` to bind an address to the REST API service (as well as the other embedded web services such as Pulse.)
+You can have multiple REST enabled data nodes in a single distributed system. Each data node should
+have a separate host name and unique end point. To ensure that the data node is reachable on a
+machine with multiple NIC addresses, you can use `http-service-bind-address` to bind an address to
+the REST API service (as well as the other embedded web services such as Pulse).
 
 You can also configure the Developer REST API service to run over
 HTTPS by enabling ssl for the `http` component in `gemfire.properties`
@@ -75,14 +80,20 @@ The following procedure starts up a REST API service-enabled Geode deployment:
 
     After you have configured PDX for your caches, then proceed with starting up your REST-enabled servers and other data nodes.
 
-2.  Start a server node with the Geode property `start-dev-rest-api` set to `true`. For example:
+2.  Start a server node with the Geode property `start-dev-rest-api` set to `true`. 
+    Optionally, you can also configure a `http-service-bind-address` and `http-service-port` to
+    identify the cache server and specific port that will host REST services. If you do not specify
+    the `http-service-port`, the default port is 7070. If you do not specify
+    `http-service-bind-address`, the HTTP service will bind to all local addresses by default.
+    **Note:** If your application will be running in a VM (as when running in the cloud, for example), it's good practice to specify `http-service-bind-address` and `http-service-port`
+    so they will be publicly visible. The default values may not be visible outside the VM in which the application is running.
+
+    For example:
 
     ``` pre
     gfsh>start server --name=server1 --start-rest-api=true \
     --http-service-port=8080 --http-service-bind-address=localhost
     ```
-
-    Optionally, you can also configure a `http-service-bind-address` and `http-service-port` to identify the cache server and specific port that will host REST services. If you do not specify the `http-service-port`, the default port is 7070. If you do not specify `http-service-bind-address`, the HTTP service will bind to all local addresses by default.
 
     Any server that hosts data, even a server acting as a JMX manager, can start the developer REST API service. For example, to start the service on a server that is also a JMX manager, you would run:
 
