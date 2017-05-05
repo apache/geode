@@ -16,7 +16,6 @@ package org.apache.geode.internal;
 
 import static java.util.stream.Collectors.joining;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
@@ -26,13 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Proxy;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This
@@ -57,30 +56,27 @@ import java.util.stream.Collectors;
  * <li>4. <tt>ClassLoader.getSystemClassLoader()</tt> If the attempt to acquire any of the above
  * class loaders results in either a {@link java.lang.SecurityException SecurityException} or a
  * null, then that class loader is quietly skipped. Duplicate class loaders will be skipped.
- * 
+ * <p>
+ * This class it not an extension of ClassLoader due to #43080. See also
+ * http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-5.html
+ *
  * @since GemFire 6.5.1.4
  */
-public final class ClassPathLoader {
-  /*
-   * This class it not an extension of ClassLoader due to reasons outlined in
-   * https://svn.gemstone.com/trac/gemfire/ticket/43080
-   * 
-   * See also http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-5.html
-   */
+public class ClassPathLoader {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String EXCLUDE_TCCL_PROPERTY =
+  static final String EXCLUDE_TCCL_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
-  public static final boolean EXCLUDE_TCCL_DEFAULT_VALUE = false;
 
   private static volatile ClassPathLoader latest;
 
   private volatile URLClassLoader classLoaderForDeployedJars;
+
   private final JarDeployer jarDeployer;
 
   private boolean excludeTCCL;
 
-  public void rebuildClassLoaderForDeployedJars() {
+  void rebuildClassLoaderForDeployedJars() {
     ClassLoader parent = ClassPathLoader.class.getClassLoader();
 
     this.classLoaderForDeployedJars = new URLClassLoader(jarDeployer.getDeployedJarURLs(), parent);
@@ -98,7 +94,7 @@ public final class ClassPathLoader {
     rebuildClassLoaderForDeployedJars();
   }
 
-  public static ClassPathLoader setLatestToDefault() {
+  static ClassPathLoader setLatestToDefault() {
     latest = new ClassPathLoader(Boolean.getBoolean(EXCLUDE_TCCL_PROPERTY));
     return latest;
   }
@@ -112,7 +108,9 @@ public final class ClassPathLoader {
     return this.jarDeployer;
   }
 
-  // This is exposed for testing.
+  /**
+   * createWithDefaults is exposed for testing.
+   */
   static ClassPathLoader createWithDefaults(final boolean excludeTCCL) {
     return new ClassPathLoader(excludeTCCL);
   }
@@ -174,7 +172,7 @@ public final class ClassPathLoader {
   /**
    * See {@link Proxy#getProxyClass(ClassLoader, Class...)}
    */
-  public Class<?> getProxyClass(final Class<?>[] classObjs) {
+  Class<?> getProxyClass(final Class<?>... classObjs) {
     IllegalArgumentException ex = null;
 
     for (ClassLoader classLoader : this.getClassLoaders()) {
@@ -227,11 +225,9 @@ public final class ClassPathLoader {
 
   /**
    * Returns an input stream for reading the specified resource.
-   *
    * <p>
    * The search order is described in the documentation for {@link #getResource(String)}.
-   * </p>
-   * 
+   *
    * @param name The resource name
    * @return An input stream for reading the resource, or <tt>null</tt> if the resource could not be
    *         found
@@ -265,7 +261,6 @@ public final class ClassPathLoader {
     return getResourceAsStream(name);
   }
 
-
   /**
    * Finds all the resources with the given name. This method will first search the class loader of
    * the context class for the resource before searching all other {@link ClassLoader}s.
@@ -278,7 +273,7 @@ public final class ClassPathLoader {
    * @throws IOException If I/O errors occur
    * @see ClassLoader#getResources(String)
    */
-  public Enumeration<URL> getResources(final Class<?> contextClass, final String name)
+  private Enumeration<URL> getResources(final Class<?> contextClass, final String name)
       throws IOException {
     final LinkedHashSet<URL> urls = new LinkedHashSet<URL>();
 
@@ -369,8 +364,8 @@ public final class ClassPathLoader {
    * @return {@link ClassLoader} for current {@link ClassPathLoader}.
    * @since GemFire 8.1
    */
-  public static final ClassLoader getLatestAsClassLoader() {
-    return latest.asClassLoader();
+  public static ClassLoader getLatestAsClassLoader() {
+    return getLatest().asClassLoader();
   }
 
 }
