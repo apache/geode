@@ -284,9 +284,7 @@ public class LonerDistributionManager implements DM {
     return null;
   }
 
-  public void close() {
-    shutdown();
-  }
+  public void close() {}
 
   public void restartCommunications() {
 
