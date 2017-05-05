@@ -37,6 +37,7 @@ rat {
     'native/**',
     'wrapper/**',
     '**/build/**',
+    '**/build-*/**',
     '.buildinfo',
 
     // SBT
