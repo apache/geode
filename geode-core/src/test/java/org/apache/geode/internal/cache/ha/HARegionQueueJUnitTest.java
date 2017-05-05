@@ -582,7 +582,7 @@ public class HARegionQueueJUnitTest {
           !(regionqueue.getEventsMapForTesting().size() == 0));
 
     } catch (Exception e) {
-      throw new AssertionError("Exception occured in test due to ", e);
+      throw new AssertionError("Exception occurred in test due to ", e);
     }
   }
 

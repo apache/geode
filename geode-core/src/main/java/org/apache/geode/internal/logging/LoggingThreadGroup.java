@@ -267,7 +267,7 @@ public class LoggingThreadGroup extends ThreadGroup {
       if ((ex instanceof NoClassDefFoundError)
           && (threadName.equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
         final StringId msg =
-            LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1;
+            LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURRED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1;
         final Object[] msgArgs = new Object[] {t, ex.getLocalizedMessage()};
         stderr.info(msg, msgArgs);
         if (this.logger != null) {

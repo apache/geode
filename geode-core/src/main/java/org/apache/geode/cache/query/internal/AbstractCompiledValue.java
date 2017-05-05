@@ -57,7 +57,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     Support.assertionFailed(
-        "This method should not have invoked as CompieldComparison & CompiledUndefined are the only classes on which this invocation should have occured ");
+        "This method should not have invoked as CompieldComparison & CompiledUndefined are the only classes on which this invocation should have occurred ");
     return null;
   }
 

@@ -816,7 +816,7 @@ public class PartitionedRegion extends LocalRegion
           Object[] prms =
               new Object[] {this.getFullPath(), colocatedWith, config.getColocatedWith()};
           DiskAccessException dae = new DiskAccessException(
-              LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_REGION_WILL_BE_CLOSED
+              LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_REGION_WILL_BE_CLOSED
                   .toLocalizedString(this.getFullPath()),
               null, dsi);
           dsi.handleDiskAccessException(dae);
@@ -1794,7 +1794,7 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (QueryException qe) {
         throw new QueryInvocationTargetException(
-            LocalizedStrings.PartitionedRegion_UNEXPECTED_QUERY_EXCEPTION_OCCURED_DURING_QUERY_EXECUTION_0
+            LocalizedStrings.PartitionedRegion_UNEXPECTED_QUERY_EXCEPTION_OCCURRED_DURING_QUERY_EXECUTION_0
                 .toLocalizedString(qe.getMessage()),
             qe);
       } finally {

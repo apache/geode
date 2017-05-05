@@ -584,7 +584,7 @@ public class PRQueryProcessor {
         return _ex;
       }
 
-      public boolean exceptionOccured() {
+      public boolean exceptionOccurred() {
         return _ex != null;
       }
 

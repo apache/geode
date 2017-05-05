@@ -91,7 +91,7 @@ public class IndexManagerJUnitTest {
     assertFalse(IndexManager.setIndexBufferTime(0, 9));
     assertFalse(IndexManager.setIndexBufferTime(1, 10));
 
-    // Now let's assume a new update has occured where the time is larger (enough to roll off the
+    // Now let's assume a new update has occurred where the time is larger (enough to roll off the
     // large delta)
     // but the delta is smaller
     assertTrue(IndexManager.setIndexBufferTime(30, 30));

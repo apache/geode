@@ -159,7 +159,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
         // mannPoolCache.destroyPooledConnection(conn);
       } catch (Exception ex) {
         String exception =
-            "JCAConnectionManagerImpl::connectionErrorOccured: Exception occured due to " + ex;
+            "JCAConnectionManagerImpl::connectionErrorOccurred: Exception occurred due to " + ex;
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }
@@ -186,7 +186,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
         }
       } catch (Exception se) {
         String exception =
-            "JCAConnectionManagerImpl::connectionClosed: Exception occured due to " + se;
+            "JCAConnectionManagerImpl::connectionClosed: Exception occurred due to " + se;
         if (logger.isDebugEnabled()) {
           logger.debug(exception, se);
         }

@@ -135,7 +135,7 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
       } catch (ConcurrentCacheModificationException e) {
         if (logger.isTraceEnabled()) {
           logger.trace(
-              "UpdateEntryVersionMessage.operationOnRegion; ConcurrentCacheModificationException occured for key={}",
+              "UpdateEntryVersionMessage.operationOnRegion; ConcurrentCacheModificationException occurred for key={}",
               ev.getKey());
         }
         return true; // concurrent modification problems are not reported to senders

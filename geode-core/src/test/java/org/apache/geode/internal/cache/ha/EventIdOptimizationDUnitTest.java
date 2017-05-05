@@ -401,7 +401,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Waits for the listener to receive all events and validates that no exception occured in client
+   * Waits for the listener to receive all events and validates that no exception occurred in client
    */
   public static void verifyEventIdsOnClient2() {
     if (!proceedForValidation) {

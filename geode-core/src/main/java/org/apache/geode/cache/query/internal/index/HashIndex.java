@@ -1085,8 +1085,8 @@ public class HashIndex extends AbstractIndex {
     private CompiledValue modifiedIndexExpr = null;
     private ObjectType addnlProjType = null;
     private int initEntriesUpdated = 0;
-    private boolean hasInitOccuredOnce = false;
-    private boolean hasIndxUpdateOccuredOnce = false;
+    private boolean hasInitOccurredOnce = false;
+    private boolean hasIndxUpdateOccurredOnce = false;
     private ExecutionContext initContext = null;
     private int iteratorSize = -1;
 
@@ -1186,7 +1186,7 @@ public class HashIndex extends AbstractIndex {
         for (int i = 0; i < this.iteratorSize; i++) {
           CompiledIteratorDef iterDef = (CompiledIteratorDef) this.indexInitIterators.get(i);
           RuntimeIterator rIter = null;
-          if (!this.hasInitOccuredOnce) {
+          if (!this.hasInitOccurredOnce) {
             iterDef.computeDependencies(this.initContext);
             rIter = iterDef.getRuntimeIterator(this.initContext);
             this.initContext.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
@@ -1196,7 +1196,7 @@ public class HashIndex extends AbstractIndex {
           }
           this.initContext.bindIterator(rIter);
         }
-        this.hasInitOccuredOnce = true;
+        this.hasInitOccurredOnce = true;
         if (this.indexResultSetType == null) {
           this.indexResultSetType = createIndexResultSetType();
         }

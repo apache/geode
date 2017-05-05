@@ -1719,7 +1719,7 @@ class IndexConditioningHelper {
    * fields in the resultset obtained from Index usage. This List will be populated only if there
    * exists fields in index resultset which will not be selected.If all the fields of index
    * resultset will be used , then this List should be null or empty. It is used in preventing
-   * unnecessary expansion of same type, when a similar expansion has already occured. as for eg
+   * unnecessary expansion of same type, when a similar expansion has already occurred. as for eg
    * 
    * consider a index result containing 3 fields field1 field2 & field3 . Assume that field3 is for
    * cutdown. Since the expansion iterators can either be independent of all the fields in the index

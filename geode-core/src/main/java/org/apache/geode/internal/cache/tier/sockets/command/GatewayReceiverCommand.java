@@ -859,7 +859,7 @@ public class GatewayReceiverCommand extends BaseCommand {
     // errorMsg.addStringPart(be.toString());
     errorMsg.send(servConn);
     for (Exception e : exceptions) {
-      ((GatewayReceiverStats) servConn.getCacheServerStats()).incExceptionsOccured();
+      ((GatewayReceiverStats) servConn.getCacheServerStats()).incExceptionsOccurred();
     }
     for (Exception be : exceptions) {
       if (logger.isWarnEnabled()) {

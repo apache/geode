@@ -1071,7 +1071,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
           noOfExecutionsCompleted_Inline++;
 
         } catch (Exception e) {
-          LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
+          LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
           e.printStackTrace();
           Assert.fail("Test failed", e);
         }
@@ -1144,7 +1144,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
   }
 
   /**
-   * Test the exception occured while invoking the function execution on all members of DS
+   * Test the exception occurred while invoking the function execution on all members of DS
    * 
    * Function throws the Exception, The check is added to for the no of function execution execption
    * in datatostore1
@@ -1220,7 +1220,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         } catch (Exception expected) {
           return Boolean.TRUE;
         }
-        fail("No exception Occured");
+        fail("No exception Occurred");
         return Boolean.FALSE;
       }
     });

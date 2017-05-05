@@ -115,7 +115,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
                 }
               } catch (Exception e) {
                 logger.fatal(LocalizedMessage.create(
-                    LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
+                    LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
                     new Object[] {filter.toString(), eventForFilter}), e);
               }
             }

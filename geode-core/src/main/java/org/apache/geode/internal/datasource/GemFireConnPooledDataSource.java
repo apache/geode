@@ -157,7 +157,7 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
         provider.returnAndExpireConnection(conn);
       } catch (Exception ex) {
         String exception =
-            "GemFireConnPooledDataSource::connectionErrorOccured:error in returning and expiring connection due to "
+            "GemFireConnPooledDataSource::connectionErrorOccurred:error in returning and expiring connection due to "
                 + ex;
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);

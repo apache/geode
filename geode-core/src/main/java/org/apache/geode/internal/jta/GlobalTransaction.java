@@ -358,7 +358,7 @@ public class GlobalTransaction {
             }
           } catch (XAException xe) {
             String exception =
-                LocalizedStrings.GlobalTransaction_GLOBALTRANSACTION_ENLISTRESOURCE_EXCEPTION_OCCURED_IN_TRYING_TO_SET_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1
+                LocalizedStrings.GlobalTransaction_GLOBALTRANSACTION_ENLISTRESOURCE_EXCEPTION_OCCURRED_IN_TRYING_TO_SET_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1
                     .toLocalizedString(new Object[] {xe, Integer.valueOf(xe.errorCode)});
             LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
             if (VERBOSE)
@@ -601,7 +601,7 @@ public class GlobalTransaction {
     } catch (Exception e) {
       if (writer.severeEnabled())
         writer.severe(
-            LocalizedStrings.GlobalTransaction_GLOBATRANSACTION_EXPIREGTX_ERROR_OCCURED_WHILE_REMOVING_TRANSACTIONAL_MAPPINGS_0,
+            LocalizedStrings.GlobalTransaction_GLOBATRANSACTION_EXPIREGTX_ERROR_OCCURRED_WHILE_REMOVING_TRANSACTIONAL_MAPPINGS_0,
             e, e);
     }
   }
@@ -628,7 +628,7 @@ public class GlobalTransaction {
             resetXATimeOut = xar.setTransactionTimeout(seconds);
           } catch (XAException e) {
             String exception =
-                LocalizedStrings.GlobalTransaction_EXCEPTION_OCCURED_WHILE_TRYING_TO_SET_THE_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1
+                LocalizedStrings.GlobalTransaction_EXCEPTION_OCCURRED_WHILE_TRYING_TO_SET_THE_XARESOURCE_TIMEOUT_DUE_TO_0_ERROR_CODE_1
                     .toLocalizedString(new Object[] {e, Integer.valueOf(e.errorCode)});
             LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
             if (VERBOSE)

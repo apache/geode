@@ -2704,7 +2704,7 @@ public class InternalDistributedSystem extends DistributedSystem
           if (e.getMessage().contains("Rejecting the attempt of a member using an older version")) {
             logger.warn(
                 LocalizedMessage.create(
-                    LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
+                    LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
                 e);
             attemptingToReconnect = false;
             return;
@@ -2718,7 +2718,7 @@ public class InternalDistributedSystem extends DistributedSystem
         } catch (Exception ee) {
           logger.warn(
               LocalizedMessage.create(
-                  LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
+                  LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
               ee);
           attemptingToReconnect = false;
           return;
@@ -2750,20 +2750,21 @@ public class InternalDistributedSystem extends DistributedSystem
                 // this try failed. The new cache will call reconnect again
               }
             } catch (CacheXmlException e) {
-              logger.warn("Exception occured while trying to create the cache during reconnect", e);
+              logger.warn("Exception occurred while trying to create the cache during reconnect",
+                  e);
               reconnectDS.disconnect();
               reconnectDS = null;
               reconnectCancelled = true;
               break;
             } catch (CancelException ignor) {
-              logger.warn("Exception occured while trying to create the cache during reconnect",
+              logger.warn("Exception occurred while trying to create the cache during reconnect",
                   ignor);
               reconnectDS.disconnect();
               reconnectDS = null;
             } catch (Exception e) {
               logger.warn(
                   LocalizedMessage.create(
-                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT),
+                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT),
                   e);
             }
           }

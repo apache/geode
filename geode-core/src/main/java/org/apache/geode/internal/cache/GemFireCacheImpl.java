@@ -1031,7 +1031,7 @@ public class GemFireCacheImpl
       ClusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(this, response);
     } catch (IOException | ClassNotFoundException e) {
       throw new GemFireConfigException(
-          LocalizedStrings.GemFireCache_EXCEPTION_OCCURED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION
+          LocalizedStrings.GemFireCache_EXCEPTION_OCCURRED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION
               .toLocalizedString(),
           e);
     }

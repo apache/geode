@@ -204,10 +204,10 @@ public class PRQueryRegionClosedJUnitTest {
       t2.join(30000);
       assertFalse(t2.isAlive());
       logger.info(
-          "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: checking for any Unexpected Exception's occured");
+          "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: checking for any Unexpected Exception's occurred");
 
       assertFalse(
-          "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Exception occured in Query-thread",
+          "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Exception occurred in Query-thread",
           encounteredException);
     } catch (Exception e) {
       e.printStackTrace();

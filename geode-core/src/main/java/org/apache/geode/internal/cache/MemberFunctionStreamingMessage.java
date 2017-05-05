@@ -197,7 +197,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       stats.endFunctionExecution(start, this.functionObject.hasResult());
     } catch (FunctionException functionException) {
       if (logger.isDebugEnabled()) {
-        logger.debug("FunctionException occured on remote member while executing Function: {}",
+        logger.debug("FunctionException occurred on remote member while executing Function: {}",
             this.functionObject.getId(), functionException);
       }
       stats.endFunctionExecutionWithException(this.functionObject.hasResult());
@@ -214,7 +214,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       replyWithException(dm, rex);
     } catch (Exception exception) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Exception occured on remote member while executing Function: {}",
+        logger.debug("Exception occurred on remote member while executing Function: {}",
             this.functionObject.getId(), exception);
       }
       stats.endFunctionExecutionWithException(this.functionObject.hasResult());

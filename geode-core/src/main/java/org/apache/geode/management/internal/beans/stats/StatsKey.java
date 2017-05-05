@@ -291,7 +291,7 @@ public class StatsKey {
   public static final String UPDATE_REQUESTS = "updateRequest";
   public static final String DESTROY_REQUESTS = "destroyRequest";
   public static final String UNKNOWN_OPERATIONS_RECEIVED = "unknowsOperationsReceived";
-  public static final String EXCEPTIONS_OCCURED = "exceptionsOccured";
+  public static final String EXCEPTIONS_OCCURRED = "exceptionsOccurred";
   public static final String BATCH_PROCESS_TIME = "processBatchTime";
   public static final String TOTAL_BATCHES = "processBatchRequests";
 

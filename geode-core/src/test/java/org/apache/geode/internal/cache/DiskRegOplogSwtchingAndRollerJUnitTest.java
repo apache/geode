@@ -861,7 +861,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
    */
   @Test
   public void testDiskFullExcep() {
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     int[] diskDirSize1 = new int[4];
     diskDirSize1[0] = 1048576;
     diskDirSize1[1] = 1048576;
@@ -894,9 +894,9 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
       }
     } catch (DiskAccessException e) {
       logWriter.error("exception not expected", e);
-      exceptionOccured = true;
+      exceptionOccurred = true;
     }
-    if (exceptionOccured) {
+    if (exceptionOccurred) {
       fail("FAILED::DiskAccessException is Not expected here !!");
     }
 

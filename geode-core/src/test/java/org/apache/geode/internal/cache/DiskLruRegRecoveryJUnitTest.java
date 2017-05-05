@@ -45,7 +45,7 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
           valuesInVm++;
         }
       } catch (EntryNotFoundException e) {
-        fail("Entry not found not expected but occured ");
+        fail("Entry not found not expected but occurred ");
       }
     }
     return valuesInVm;

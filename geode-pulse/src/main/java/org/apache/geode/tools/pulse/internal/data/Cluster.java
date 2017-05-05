@@ -2351,7 +2351,7 @@ public class Cluster extends Thread {
     try {
       join();
     } catch (InterruptedException e) {
-      logger.info("InterruptedException occured while stoping cluster thread : ", e);
+      logger.info("InterruptedException occurred while stoping cluster thread : ", e);
     }
   }
 

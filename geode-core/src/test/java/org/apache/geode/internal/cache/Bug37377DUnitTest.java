@@ -63,7 +63,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
 
   transient private static CountDownLatch clearLatch = new CountDownLatch(1);
 
-  static Boolean clearOccured = false;
+  static Boolean clearOccurred = false;
 
   public Bug37377DUnitTest() {
     super();
@@ -291,11 +291,11 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
     public boolean initialImageInit(final LocalRegion r, final long lastModifiedTime,
         final Object newValue, final boolean create, final boolean wasRecovered,
         final boolean versionTagAccepted) throws RegionClearedException {
-      synchronized (clearOccured) {
-        if (!clearOccured) {
+      synchronized (clearOccurred) {
+        if (!clearOccurred) {
           // Force other member to perform a clear during our GII
           invokeRemoteClearAndWait(otherVM, thisVM);
-          clearOccured = true;
+          clearOccurred = true;
         }
       }
 

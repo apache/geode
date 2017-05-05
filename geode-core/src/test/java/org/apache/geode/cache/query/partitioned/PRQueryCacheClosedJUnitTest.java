@@ -212,10 +212,10 @@ public class PRQueryCacheClosedJUnitTest {
       ThreadUtils.join(t1, 30 * 1000);
       ThreadUtils.join(t2, 30 * 1000);
       logger.info(
-          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: checking for any Unexpected Exception's occured");
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: checking for any Unexpected Exception's occurred");
 
       assertFalse(
-          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Exception occured in Query-thread: "
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Exception occurred in Query-thread: "
               + errorBuf,
           encounteredException);
     } catch (Exception e) {

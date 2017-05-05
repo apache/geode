@@ -73,7 +73,7 @@ public class FunctionServiceStats {
       "functionExecutionsHasResultRunning";
 
   /**
-   * Total number of Exceptions Occuredwhile executing function Name of the functionExecution
+   * Total number of Exceptions Occurredwhile executing function Name of the functionExecution
    * exceptions statistic
    */
   private static final String FUNCTION_EXECUTION_EXCEPTIONS = "functionExecutionsExceptions";
@@ -148,7 +148,7 @@ public class FunctionServiceStats {
                 "A gauge indicating the number of currently active execute() calls for functions where hasResult() returns true.",
                 "operations"),
             f.createIntCounter(FUNCTION_EXECUTION_EXCEPTIONS,
-                "Total number of Exceptions Occured while executing function", "operations"),
+                "Total number of Exceptions Occurred while executing function", "operations"),
 
         });
     // Initialize id fields
@@ -318,7 +318,7 @@ public class FunctionServiceStats {
   }
 
   /**
-   * Returns the current value of the "Total number of Exceptions Occured while executing function"
+   * Returns the current value of the "Total number of Exceptions Occurred while executing function"
    * stat.
    * 
    * @return the current value of the "functionExecutionHasResultRunning" stat

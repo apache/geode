@@ -3900,20 +3900,20 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       stats.endFunctionExecution(start, function.hasResult());
     } catch (FunctionException functionException) {
       if (logger.isDebugEnabled()) {
-        logger.debug("FunctionException occured on remote node  while executing Function: {}",
+        logger.debug("FunctionException occurred on remote node  while executing Function: {}",
             function.getId(), functionException);
       }
       stats.endFunctionExecutionWithException(function.hasResult());
       throw functionException;
     } catch (CacheClosedException cacheClosedexception) {
       if (logger.isDebugEnabled()) {
-        logger.debug("CacheClosedException occured on remote node  while executing Function: {}",
+        logger.debug("CacheClosedException occurred on remote node  while executing Function: {}",
             function.getId(), cacheClosedexception);
       }
       throw cacheClosedexception;
     } catch (Exception exception) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Exception occured on remote node  while executing Function: {}",
+        logger.debug("Exception occurred on remote node  while executing Function: {}",
             function.getId(), exception);
       }
       stats.endFunctionExecutionWithException(function.hasResult());

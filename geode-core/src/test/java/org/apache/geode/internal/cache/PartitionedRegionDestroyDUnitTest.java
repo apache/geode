@@ -115,7 +115,7 @@ public class PartitionedRegionDestroyDUnitTest extends PartitionedRegionDUnitTes
 
         } catch (RegionDestroyedException e) {
           // getLogWriter().info (
-          // "RegionDestroyedException occured for Region = " + PR_PREFIX + j);
+          // "RegionDestroyedException occurred for Region = " + PR_PREFIX + j);
         }
         getCache().getLogger().info(
             "<ExpectedException action=remove>" + expectedExistsException + "</ExpectedException>");
@@ -158,7 +158,7 @@ public class PartitionedRegionDestroyDUnitTest extends PartitionedRegionDUnitTes
           }
         } catch (RegionDestroyedException e) {
           LogWriterUtils.getLogWriter()
-              .info("RegionDestroyedException occured for Region = " + PR_PREFIX + j);
+              .info("RegionDestroyedException occurred for Region = " + PR_PREFIX + j);
         }
         getCache().getLogger()
             .info("<ExpectedException action=remove>" + expectedException + "</ExpectedException>");

@@ -273,74 +273,74 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < totalKeys; i++) {
       keylist.add("key-" + i);
     }
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
 
     // test registerInterest(key)
     try {
       region1.registerInterest("DummyKey1");
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("UnsupportedOperationException was not thrown as expected for registerInterest(key)");
     }
 
     // test registerInterest(key,policy)
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.registerInterest("DummyKey2", policy);
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for  registerInterest(key,policy)");
     }
 
     // test registerInterest(keylist)
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.registerInterest(keylist);
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterest(keylist)");
     }
 
     // test registerInterest(keylist,policy)
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.registerInterest(keylist, policy);
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterest(keylist,policy)");
     }
 
     // test registerInterestRegex(expr)
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.registerInterestRegex("ke?");
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterestRegex(expr)");
     }
 
     // test registerInterestRegex(expr,policy)
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.registerInterestRegex("ke?", InterestResultPolicy.KEYS_VALUES);
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterestRegex(expr,policy)");
     }
@@ -363,37 +363,37 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     }
 
     // test unregisterInterest(key)
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
     try {
       region1.unregisterInterest("DummyKey1");
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for unregisterInterest(key)");
     }
 
     // test unregisterInterest(keylist)
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.unregisterInterest(keylist);
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for unregisterInterest(keylist)");
     }
 
     // test unregisterInterestRegex(expr)
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.unregisterInterestRegex("kp?");
     } catch (UnsupportedOperationException expected) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail(
             "UnsupportedOperationException was not thrown as expected for unregisterInterestRegex(expr)");
     }
@@ -409,27 +409,27 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void getInterestForRegion() {
     Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-    boolean exceptionOccured = false;
+    boolean exceptionOccurred = false;
 
     // test getInterestList()
     try {
       region1.getInterestList();
     } catch (UnsupportedOperationException e) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("UnsupportedOperationException was not thrown as expected for getInterestList()");
     }
 
     // test getInterestListRegex()
 
-    exceptionOccured = false;
+    exceptionOccurred = false;
     try {
       region1.getInterestListRegex();
     } catch (UnsupportedOperationException e) {
-      exceptionOccured = true;
+      exceptionOccurred = true;
     } finally {
-      if (!exceptionOccured)
+      if (!exceptionOccurred)
         fail("UnsupportedOperationException was not thrown as expected for getInterestListRegex()");
     }
   }

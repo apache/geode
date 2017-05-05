@@ -355,7 +355,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     setClientServerObserverForBeforeInterestRecoveryFailure();
     primary.invoke(() -> HAInterestTestCase.startServer());
     waitForBeforeInterestRecoveryCallBack();
-    if (exceptionOccured) {
+    if (exceptionOccurred) {
       fail("The DSM could not ensure that server 1 is started & serevr 2 is stopped");
     }
     final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);

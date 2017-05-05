@@ -136,7 +136,7 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     assertNotNull(conf);
     hrq.remove();
     Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> !t1.isAlive());
-    assertFalse("Exception occured in put-thread", encounteredException);
+    assertFalse("Exception occurred in put-thread", encounteredException);
 
   }
 
@@ -174,6 +174,6 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     waitAtLeast(1000, start, () -> {
       assertFalse("Put-thread blocked unexpectedly", t1.isAlive());
     });
-    assertFalse("Exception occured in put-thread", encounteredException);
+    assertFalse("Exception occurred in put-thread", encounteredException);
   }
 }

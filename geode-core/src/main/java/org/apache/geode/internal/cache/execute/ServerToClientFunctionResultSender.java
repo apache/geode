@@ -308,7 +308,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
             sendHeader();
           }
           String exceptionMessage = exception.getMessage() != null ? exception.getMessage()
-              : "Exception occured during function execution";
+              : "Exception occurred during function execution";
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
               this.fn), exception);

@@ -3409,7 +3409,7 @@ public class DiskStoreImpl implements DiskStore {
 
     // log the error
     final StringId sid =
-        LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED;
+        LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED;
     logger.error(LocalizedMessage.create(sid, DiskStoreImpl.this.getName()), dae);
 
     final ThreadGroup exceptionHandlingGroup =
@@ -3424,7 +3424,7 @@ public class DiskStoreImpl implements DiskStore {
 
         } catch (Exception e) {
           logger.error(LocalizedMessage.create(
-              LocalizedStrings.LocalRegion_AN_EXCEPTION_OCCURED_WHILE_CLOSING_THE_CACHE), e);
+              LocalizedStrings.LocalRegion_AN_EXCEPTION_OCCURRED_WHILE_CLOSING_THE_CACHE), e);
         }
       }
     };

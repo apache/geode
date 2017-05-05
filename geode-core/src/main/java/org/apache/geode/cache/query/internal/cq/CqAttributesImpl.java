@@ -155,7 +155,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
           // Handle client side exceptions.
         } catch (Exception ex) {
           logger.warn(LocalizedMessage.create(
-              LocalizedStrings.CqAttributesFactory_EXCEPTION_OCCURED_WHILE_CLOSING_CQ_LISTENER_ERROR_0,
+              LocalizedStrings.CqAttributesFactory_EXCEPTION_OCCURRED_WHILE_CLOSING_CQ_LISTENER_ERROR_0,
               ex.getLocalizedMessage()));
           if (logger.isDebugEnabled()) {
             logger.debug(ex.getMessage(), ex);
@@ -173,7 +173,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
           // is still usable:
           SystemFailure.checkFailure();
           logger.warn(LocalizedMessage.create(
-              LocalizedStrings.CqAttributesFactory_RUNTIME_EXCEPTION_OCCURED_WHILE_CLOSING_CQ_LISTENER_ERROR_0,
+              LocalizedStrings.CqAttributesFactory_RUNTIME_EXCEPTION_OCCURRED_WHILE_CLOSING_CQ_LISTENER_ERROR_0,
               t.getLocalizedMessage()));
           if (logger.isDebugEnabled()) {
             logger.debug(t.getMessage(), t);
@@ -227,7 +227,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
             // is still usable:
             SystemFailure.checkFailure();
             logger.warn(LocalizedMessage.create(
-                LocalizedStrings.CqAttributesFactory_RUNTIME_EXCEPTION_OCCURED_CLOSING_CQ_LISTENER_ERROR_0,
+                LocalizedStrings.CqAttributesFactory_RUNTIME_EXCEPTION_OCCURRED_CLOSING_CQ_LISTENER_ERROR_0,
                 t.getLocalizedMessage()));
             if (logger.isDebugEnabled()) {
               logger.debug(t.getMessage(), t);

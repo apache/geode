@@ -373,7 +373,7 @@ public class QueryJUnitTest {
       try {
         q.execute(params);
       } catch (Exception e) {
-        throw new AssertionError("exception occured while executing query", e);
+        throw new AssertionError("exception occurred while executing query", e);
       }
     }
   }

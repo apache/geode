@@ -568,7 +568,7 @@ public abstract class AbstractExecution implements InternalExecution {
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Exception occured on local node while executing Function: {}", fn.getId(),
+      logger.debug("Exception occurred on local node while executing Function: {}", fn.getId(),
           functionException);
     }
     stats.endFunctionExecutionWithException(fn.hasResult());

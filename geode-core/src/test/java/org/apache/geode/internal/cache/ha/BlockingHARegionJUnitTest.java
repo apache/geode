@@ -40,7 +40,7 @@ public class BlockingHARegionJUnitTest {
   private static Cache cache = null;
 
   /** boolean to record an exception occurence in another thread **/
-  private static volatile boolean exceptionOccured = false;
+  private static volatile boolean exceptionOccurred = false;
   /** StringBuffer to store the exception **/
   private static StringBuffer exceptionString = new StringBuffer();
   /** boolen to quit the for loop **/
@@ -63,7 +63,7 @@ public class BlockingHARegionJUnitTest {
    */
   @Test
   public void testBoundedPuts() throws Exception {
-    exceptionOccured = false;
+    exceptionOccurred = false;
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(1);
     HARegionQueue hrq = HARegionQueue.getHARegionQueueInstance("BlockingHARegionJUnitTest_Region",
@@ -78,7 +78,7 @@ public class BlockingHARegionJUnitTest {
     ThreadUtils.join(thread1, 30 * 1000);
     ThreadUtils.join(thread2, 30 * 1000);
 
-    if (exceptionOccured) {
+    if (exceptionOccurred) {
       fail(" Test failed due to " + exceptionString);
     }
 
@@ -95,7 +95,7 @@ public class BlockingHARegionJUnitTest {
    */
   @Test
   public void testPutBeingBlocked() throws Exception {
-    exceptionOccured = false;
+    exceptionOccurred = false;
     quitForLoop = false;
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(1);
@@ -144,7 +144,7 @@ public class BlockingHARegionJUnitTest {
 
     ThreadUtils.join(thread1, 30 * 1000); // for completeness
     ThreadUtils.join(thread2, 30 * 1000);
-    if (exceptionOccured) {
+    if (exceptionOccurred) {
       fail(" Test failed due to " + exceptionString);
     }
     cache.close();
@@ -160,7 +160,7 @@ public class BlockingHARegionJUnitTest {
    */
   @Test
   public void testConcurrentPutsNotExceedingLimit() throws Exception {
-    exceptionOccured = false;
+    exceptionOccurred = false;
     quitForLoop = false;
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
@@ -228,7 +228,7 @@ public class BlockingHARegionJUnitTest {
   @Ignore("TODO: test is disabled")
   @Test
   public void testConcurrentPutsTakesNotExceedingLimit() throws Exception {
-    exceptionOccured = false;
+    exceptionOccurred = false;
     quitForLoop = false;
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
@@ -315,7 +315,7 @@ public class BlockingHARegionJUnitTest {
   @Test
   public void testHARQMaxCapacity_Bug37627() throws Exception {
     try {
-      exceptionOccured = false;
+      exceptionOccurred = false;
       quitForLoop = false;
       HARegionQueueAttributes harqa = new HARegionQueueAttributes();
       harqa.setBlockingQueueCapacity(1);
@@ -335,13 +335,13 @@ public class BlockingHARegionJUnitTest {
             hrq.put(new ConflatableObject("key3", "value1", id2, false, "region1"));
           } catch (Exception e) {
             exceptionString.append("First Put in region queue failed");
-            exceptionOccured = true;
+            exceptionOccurred = true;
           }
         }
       };
       t1.start();
       ThreadUtils.join(t1, 20 * 1000);
-      if (exceptionOccured) {
+      if (exceptionOccurred) {
         fail(" Test failed due to " + exceptionString);
       }
     } finally {
@@ -388,8 +388,8 @@ public class BlockingHARegionJUnitTest {
             break;
           }
         } catch (Exception e) {
-          exceptionOccured = true;
-          exceptionString.append(" Exception occured due to " + e);
+          exceptionOccurred = true;
+          exceptionString.append(" Exception occurred due to " + e);
         }
       }
     }
@@ -414,8 +414,8 @@ public class BlockingHARegionJUnitTest {
         try {
           assertNotNull(this.regionQueue.take());
         } catch (Exception e) {
-          exceptionOccured = true;
-          exceptionString.append(" Exception occured due to " + e);
+          exceptionOccurred = true;
+          exceptionString.append(" Exception occurred due to " + e);
         }
       }
     }

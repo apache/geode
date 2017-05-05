@@ -3561,7 +3561,7 @@ public final class Oplog implements CompactableOplog, Flushable {
       getOplogSet().getChild().create(region, entry, value, async);
     } else {
       DiskId did = entry.getDiskId();
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       byte prevUsrBit = did.getUserBits();
       int len = did.getValueLength();
       try {
@@ -3580,20 +3580,20 @@ public final class Oplog implements CompactableOplog, Flushable {
         }
         basicCreate(region.getDiskRegion(), entry, value, userBits, async);
       } catch (IOException ex) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         region.getCancelCriterion().checkCancelInProgress(ex);
         throw new DiskAccessException(LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0
             .toLocalizedString(this.diskFile.getPath()), ex, region.getFullPath());
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
-        exceptionOccured = true;
+        exceptionOccurred = true;
         region.getCancelCriterion().checkCancelInProgress(ie);
         throw new DiskAccessException(
             LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0_DUE_TO_FAILURE_IN_ACQUIRING_READ_LOCK_FOR_ASYNCH_WRITING
                 .toLocalizedString(this.diskFile.getPath()),
             ie, region.getFullPath());
       } finally {
-        if (exceptionOccured) {
+        if (exceptionOccurred) {
           did.setValueLength(len);
           did.setUserBits(prevUsrBit);
         }
@@ -4487,7 +4487,7 @@ public final class Oplog implements CompactableOplog, Flushable {
       getOplogSet().getChild().modify(region, entry, value, async);
     } else {
       DiskId did = entry.getDiskId();
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       byte prevUsrBit = did.getUserBits();
       int len = did.getValueLength();
       try {
@@ -4504,20 +4504,20 @@ public final class Oplog implements CompactableOplog, Flushable {
         }
         basicModify(region.getDiskRegion(), entry, value, userBits, async, false);
       } catch (IOException ex) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         region.getCancelCriterion().checkCancelInProgress(ex);
         throw new DiskAccessException(LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0
             .toLocalizedString(this.diskFile.getPath()), ex, region.getFullPath());
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
-        exceptionOccured = true;
+        exceptionOccurred = true;
         region.getCancelCriterion().checkCancelInProgress(ie);
         throw new DiskAccessException(
             LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0_DUE_TO_FAILURE_IN_ACQUIRING_READ_LOCK_FOR_ASYNCH_WRITING
                 .toLocalizedString(this.diskFile.getPath()),
             ie, region.getFullPath());
       } finally {
-        if (exceptionOccured) {
+        if (exceptionOccurred) {
           did.setValueLength(len);
           did.setUserBits(prevUsrBit);
         }
@@ -4606,7 +4606,7 @@ public final class Oplog implements CompactableOplog, Flushable {
       getOplogSet().getChild().copyForwardModifyForCompact(dr, entry, wrapper);
     } else {
       DiskId did = entry.getDiskId();
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       int len = did.getValueLength();
       try {
         // TODO: compaction needs to get version?
@@ -4622,12 +4622,12 @@ public final class Oplog implements CompactableOplog, Flushable {
         // will be grouped. This is not a true async write; just a grouped one.
         basicModify(dr, entry, vw, userBits, true, true);
       } catch (IOException ex) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         getParent().getCancelCriterion().checkCancelInProgress(ex);
         throw new DiskAccessException(LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0
             .toLocalizedString(this.diskFile.getPath()), ex, getParent());
       } catch (InterruptedException ie) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         Thread.currentThread().interrupt();
         getParent().getCancelCriterion().checkCancelInProgress(ie);
         throw new DiskAccessException(
@@ -4638,7 +4638,7 @@ public final class Oplog implements CompactableOplog, Flushable {
         if (wrapper.getOffHeapData() != null) {
           wrapper.setOffHeapData(null, (byte) 0);
         }
-        if (exceptionOccured) {
+        if (exceptionOccurred) {
           did.setValueLength(len);
         }
       }
@@ -4964,26 +4964,26 @@ public final class Oplog implements CompactableOplog, Flushable {
       getOplogSet().getChild().remove(region, entry, async, isClear);
     } else {
       DiskId did = entry.getDiskId();
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       byte prevUsrBit = did.getUserBits();
       int len = did.getValueLength();
       try {
         basicRemove(dr, entry, async, isClear);
       } catch (IOException ex) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
         getParent().getCancelCriterion().checkCancelInProgress(ex);
         throw new DiskAccessException(LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0
             .toLocalizedString(this.diskFile.getPath()), ex, dr.getName());
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         region.getCancelCriterion().checkCancelInProgress(ie);
-        exceptionOccured = true;
+        exceptionOccurred = true;
         throw new DiskAccessException(
             LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0_DUE_TO_FAILURE_IN_ACQUIRING_READ_LOCK_FOR_ASYNCH_WRITING
                 .toLocalizedString(this.diskFile.getPath()),
             ie, dr.getName());
       } finally {
-        if (exceptionOccured) {
+        if (exceptionOccurred) {
           did.setValueLength(len);
           did.setUserBits(prevUsrBit);
         }

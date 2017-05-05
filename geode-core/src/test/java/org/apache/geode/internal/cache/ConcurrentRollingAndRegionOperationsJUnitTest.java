@@ -79,7 +79,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     try {
       assertEquals("Value2", getValueOnDisk(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       throw new AssertionError("Entry not found although was supposed to be there", e);
     }
   }
@@ -114,7 +114,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
       assertEquals("Value1", getValueOnDisk(region));
       assertEquals("Value1", getValueInHTree(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       throw new AssertionError("Entry not found although was supposed to be there", e);
     }
   }
@@ -144,7 +144,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     try {
       region.destroy("Key");
     } catch (Exception e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       throw new AssertionError("failed while trying to destroy due to ", e);
     }
     boolean entryNotFound = false;
@@ -239,7 +239,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     try {
       assertEquals("Value2", getValueOnDisk(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       throw new AssertionError("Entry not found although was supposed to be there", e);
     }
   }
@@ -271,7 +271,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
       assertEquals("Value1", getValueOnDisk(region));
       assertEquals("Value1", getValueInHTree(region));
     } catch (EntryNotFoundException e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       throw new AssertionError("Entry not found although was supposed to be there", e);
     }
   }
@@ -301,7 +301,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     try {
       region.destroy("Key");
     } catch (Exception e1) {
-      logWriter.error("Exception occured", e1);
+      logWriter.error("Exception occurred", e1);
       throw new AssertionError("encounter exception when not expected ", e1);
     }
     boolean entryNotFound = false;
@@ -663,7 +663,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
                 Thread.sleep(2000);
               } catch (InterruptedException e) {
                 testFailed = true;
-                failureCause = "Exception occured when it was not supposed to occur, Exception is "
+                failureCause = "Exception occurred when it was not supposed to occur, Exception is "
                     + e + "in concurrentPutAndRoll";
                 throw new AssertionError("exception not expected here", e);
               }
@@ -679,7 +679,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
             }
           } catch (InterruptedException e) {
             testFailed = true;
-            failureCause = "Exception occured when it was not supposed to occur, Exception is " + e
+            failureCause = "Exception occurred when it was not supposed to occur, Exception is " + e
                 + "in concurrentPutAndRoll";
             throw new AssertionError("exception not expected here", e);
           }
@@ -819,8 +819,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
           th.start();
           Thread.sleep(3000);
         } catch (Exception e) {
-          logWriter.error("Exception occured", e);
-          throw new AssertionError("Exception occured when it was not supposed to occur", e);
+          logWriter.error("Exception occurred", e);
+          throw new AssertionError("Exception occurred when it was not supposed to occur", e);
         }
       }
     });
@@ -856,8 +856,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
           th.start();
           Thread.sleep(3000);
         } catch (Exception e) {
-          logWriter.error("Exception occured", e);
-          throw new AssertionError("Exception occured when it was not supposed to occur", e);
+          logWriter.error("Exception occurred", e);
+          throw new AssertionError("Exception occurred when it was not supposed to occur", e);
         }
       }
     });
@@ -898,10 +898,11 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
           hasBeenNotified = true;
         }
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         testFailed = true;
-        failureCause = "Exception occured when it was not supposed to occur, due to " + e;
-        throw new AssertionError("Exception occured when it was not supposed to occur, due to ", e);
+        failureCause = "Exception occurred when it was not supposed to occur, due to " + e;
+        throw new AssertionError("Exception occurred when it was not supposed to occur, due to ",
+            e);
       }
     }
   }

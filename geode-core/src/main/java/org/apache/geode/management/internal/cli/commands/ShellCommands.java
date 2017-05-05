@@ -963,7 +963,7 @@ public class ShellCommands implements CommandMarker {
     } catch (Exception e) {
       LogWrapper.getInstance().info(CliUtil.stackTraceAsString(e));
       return ResultBuilder
-          .createGemFireErrorResult("Exception occured while clearing history " + e.getMessage());
+          .createGemFireErrorResult("Exception occurred while clearing history " + e.getMessage());
     }
     return ResultBuilder.createInfoResult(CliStrings.HISTORY__MSG__CLEARED_HISTORY);
 

@@ -96,7 +96,7 @@ public class OrderByComparator implements Comparator {
       Object[] list2 = this.evaluateSortCriteria(obj2);
 
       if (list1.length != list2.length) {
-        Support.assertionFailed("Error Occured due to improper sort criteria evaluation ");
+        Support.assertionFailed("Error Occurred due to improper sort criteria evaluation ");
       } else {
         for (int i = 0; i < list1.length; i++) {
           Object arr1[] = (Object[]) list1[i];

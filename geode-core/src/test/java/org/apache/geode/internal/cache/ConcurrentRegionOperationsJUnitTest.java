@@ -70,15 +70,15 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
    */
   protected int TIME_TO_RUN = 1000;
 
-  private boolean exceptionOccuredInPuts = false;
+  private boolean exceptionOccurredInPuts = false;
 
-  private boolean exceptionOccuredInGets = false;
+  private boolean exceptionOccurredInGets = false;
 
-  private boolean exceptionOccuredInDestroys = false;
+  private boolean exceptionOccurredInDestroys = false;
 
-  private boolean exceptionOccuredInClears = false;
+  private boolean exceptionOccurredInClears = false;
 
-  protected boolean exceptionOccuredInForceRolls = false;
+  protected boolean exceptionOccurredInForceRolls = false;
 
   // if this test is to run for a longer time, make this true
   private static final boolean longTest = false;
@@ -330,13 +330,13 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
       try {
         region.get("" + 1);
       } catch (Exception e) {
-        logWriter.severe("Exception occured  ", e);
+        logWriter.severe("Exception occurred  ", e);
         fail(
             "Failed to retrieve value from disk as the Oplog has been rolled but entry still references the Oplog.");
       }
 
     } catch (Exception e) {
-      logWriter.severe("Exception occured  ", e);
+      logWriter.severe("Exception occurred  ", e);
       fail("Test failed because  of unexpected exception");
     }
 
@@ -518,23 +518,23 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     }
     r1.close();
 
-    if (exceptionOccuredInDestroys) {
-      fail("Exception occured while destroying");
+    if (exceptionOccurredInDestroys) {
+      fail("Exception occurred while destroying");
     }
-    if (exceptionOccuredInClears) {
-      fail("Exception occured while clearing");
-    }
-
-    if (exceptionOccuredInForceRolls) {
-      fail("Exception occured while force Rolling");
+    if (exceptionOccurredInClears) {
+      fail("Exception occurred while clearing");
     }
 
-    if (exceptionOccuredInGets) {
-      fail("Exception occured while doing gets");
+    if (exceptionOccurredInForceRolls) {
+      fail("Exception occurred while force Rolling");
     }
 
-    if (exceptionOccuredInPuts) {
-      fail("Exception occured while doing puts");
+    if (exceptionOccurredInGets) {
+      fail("Exception occurred while doing gets");
+    }
+
+    if (exceptionOccurredInPuts) {
+      fail("Exception occurred while doing puts");
     }
 
     return region2;
@@ -590,8 +590,8 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
           expected = region2.put(integer1, integer2);
         }
       } catch (Exception e) {
-        exceptionOccuredInPuts = true;
-        logWriter.severe("Exception occured in puts ", e);
+        exceptionOccurredInPuts = true;
+        logWriter.severe("Exception occurred in puts ", e);
         fail(" failed during put due to " + e);
       }
     } finally {
@@ -627,8 +627,8 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
           expected = region2.get(integer1);
         }
       } catch (Exception e) {
-        exceptionOccuredInGets = true;
-        logWriter.severe("Exception occured in get ", e);
+        exceptionOccurredInGets = true;
+        logWriter.severe("Exception occurred in get ", e);
         throw new AssertionError(" failed during get due to ", e);
       }
     } finally {
@@ -642,8 +642,8 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
   }
 
   void destroy() {
-    Exception exceptionOccured1 = null;
-    Exception exceptionOccured2 = null;
+    Exception exceptionOccurred1 = null;
+    Exception exceptionOccurred2 = null;
     int randomInt1 = random.nextInt() % 10;
     if (randomInt1 < 0) {
       randomInt1 = randomInt1 * (-1);
@@ -660,20 +660,20 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
       try {
         v = region1.destroy(integer1);
       } catch (Exception e) {
-        exceptionOccured1 = e;
+        exceptionOccurred1 = e;
       }
       if (this.validate) {
         try {
           expected = region2.destroy(integer1);
         } catch (Exception e) {
-          exceptionOccured2 = e;
+          exceptionOccurred2 = e;
         }
 
-        if ((exceptionOccured1 != null) ^ (exceptionOccured2 != null)) {
-          exceptionOccuredInDestroys = true;
-          logWriter.severe("Exception occured in destroy ex1=" + exceptionOccured1 + " ex2="
-              + exceptionOccured2);
-          fail("Exception occured in destroy");
+        if ((exceptionOccurred1 != null) ^ (exceptionOccurred2 != null)) {
+          exceptionOccurredInDestroys = true;
+          logWriter.severe("Exception occurred in destroy ex1=" + exceptionOccurred1 + " ex2="
+              + exceptionOccurred2);
+          fail("Exception occurred in destroy");
         }
       }
     } finally {
@@ -696,15 +696,15 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     try {
       region1.clear();
     } catch (Exception e) {
-      exceptionOccuredInClears = true;
-      logWriter.severe("Exception occured in clear=", e);
-      throw new AssertionError("Exception occured in clear", e);
+      exceptionOccurredInClears = true;
+      logWriter.severe("Exception occurred in clear=", e);
+      throw new AssertionError("Exception occurred in clear", e);
     }
   }
 
   /**
    * Bug Test for bug # 35139. This bug was occuring because a clear & region destroy operation
-   * occured near concurrently. The region destroy operation notified the roller thread to stop &
+   * occurred near concurrently. The region destroy operation notified the roller thread to stop &
    * then it joined with the roller . But by that time clear operation created a new instance of
    * roller thread ( because a clear operation stop/starts the roller) & the destroy operation
    * actually joined with the new thread ( different from the one on which notification was issued
@@ -824,9 +824,9 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
       try {
         region1.forceRolling();
       } catch (Exception e) {
-        exceptionOccuredInForceRolls = true;
-        logWriter.severe("Exception occured in forceRolling ", e);
-        throw new AssertionError(" Exception occured here", e);
+        exceptionOccurredInForceRolls = true;
+        logWriter.severe("Exception occurred in forceRolling ", e);
+        throw new AssertionError(" Exception occurred here", e);
       }
     }
 

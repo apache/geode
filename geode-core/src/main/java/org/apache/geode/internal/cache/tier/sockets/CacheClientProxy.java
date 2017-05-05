@@ -2477,7 +2477,7 @@ public class CacheClientProxy implements ClientSession {
      */
     @Override
     public void run() {
-      boolean exceptionOccured = false;
+      boolean exceptionOccurred = false;
       this._isStopped = false;
 
       if (logger.isDebugEnabled()) {
@@ -2597,7 +2597,7 @@ public class CacheClientProxy implements ClientSession {
               pauseOrUnregisterProxy(e);
             } // _isStopped
           } // synchronized
-          exceptionOccured = true;
+          exceptionOccurred = true;
         } // IOException
         catch (InterruptedException e) {
           // If the thread is paused, ignore the InterruptedException and
@@ -2621,16 +2621,16 @@ public class CacheClientProxy implements ClientSession {
           if (logger.isDebugEnabled()) {
             logger.debug("{}: shutting down due to cancellation", this);
           }
-          exceptionOccured = true; // message queue is defunct, don't try to read it.
+          exceptionOccurred = true; // message queue is defunct, don't try to read it.
           break;
         } catch (RegionDestroyedException e) {
           if (logger.isDebugEnabled()) {
             logger.debug("{}: shutting down due to loss of message queue", this);
           }
-          exceptionOccured = true; // message queue is defunct, don't try to read it.
+          exceptionOccurred = true; // message queue is defunct, don't try to read it.
           break;
         } catch (Exception e) {
-          // An exception occured while processing a message. Since it
+          // An exception occurred while processing a message. Since it
           // is not an IOException, the client may still be alive, so
           // continue processing.
           if (!isStopped()) {
@@ -2644,7 +2644,7 @@ public class CacheClientProxy implements ClientSession {
 
       // Processing gets here if isStopped=true. What is this code below doing?
       List list = null;
-      if (!exceptionOccured) {
+      if (!exceptionOccurred) {
         try {
           // Clear the interrupt status if any,
           Thread.interrupted();

@@ -252,7 +252,7 @@ public class PRPerformanceTestDUnitTest extends PartitionedRegionDUnitTestCase {
             ResultCollector rc = dataSet.execute(function.getId());
             list = (ArrayList) rc.getResult();
           } catch (Exception ex) {
-            LogWriterUtils.getLogWriter().info("Exception Occured :" + ex.getMessage());
+            LogWriterUtils.getLogWriter().info("Exception Occurred :" + ex.getMessage());
             Assert.fail("Test failed", ex);
           }
           Object val = list.get(0);

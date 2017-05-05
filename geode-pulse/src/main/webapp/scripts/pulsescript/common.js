@@ -1320,7 +1320,7 @@ function ajaxPost(pulseUrl, pulseData, pulseCallBackName) {
     // callback handler that will be called on error
     error : function(jqXHR, textStatus, errorThrown) {
       // log the error to the console
-      console.log("The following error occured: " + textStatus, errorThrown);
+      console.log("The following error occurred: " + textStatus, errorThrown);
       $('#connectionStatusDiv').show();
       $('#connectionErrorMsgDiv').html("Pulse server is not connected");
     },

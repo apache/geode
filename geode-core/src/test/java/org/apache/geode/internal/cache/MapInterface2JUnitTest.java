@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class MapInterface2JUnitTest {
 
-  protected boolean afterClearCallbackOccured = false;
+  protected boolean afterClearCallbackOccurred = false;
   boolean mainThreadProceed = false;
 
   @Before
@@ -115,7 +115,7 @@ public class MapInterface2JUnitTest {
       public void afterRegionClear(RegionEvent event) {
         synchronized (MapInterface2JUnitTest.this) {
           event.getRegion().getCache().getLogger().info("afterRegionClear call back " + event);
-          afterClearCallbackOccured = true;
+          afterClearCallbackOccurred = true;
           MapInterface2JUnitTest.this.notify();
         }
       }
@@ -132,14 +132,14 @@ public class MapInterface2JUnitTest {
     }
     try {
       synchronized (this) {
-        if (!this.afterClearCallbackOccured) {
+        if (!this.afterClearCallbackOccurred) {
           this.wait(10000);
         }
       }
     } catch (InterruptedException ie) {
       fail(ie.toString());
     }
-    if (!this.afterClearCallbackOccured) {
+    if (!this.afterClearCallbackOccurred) {
       fail("afterClear Callback not issued");
     }
   }

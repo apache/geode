@@ -73,7 +73,7 @@ public class CleanUpJUnitTest {
         fail(
             "DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
     } catch (Exception e) {
-      fail("Exception occured in testGetSimpleDataSource due to " + e);
+      fail("Exception occurred in testGetSimpleDataSource due to " + e);
       e.printStackTrace();
     }
   }
@@ -104,7 +104,7 @@ public class CleanUpJUnitTest {
         fail("Clean-up on expiration not done");
       }
     } catch (Exception e) {
-      fail("Exception occured in testBlockingTimeOut due to " + e);
+      fail("Exception occurred in testBlockingTimeOut due to " + e);
       e.printStackTrace();
     }
   }

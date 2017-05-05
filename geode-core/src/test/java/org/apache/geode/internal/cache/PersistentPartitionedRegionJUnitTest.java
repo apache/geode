@@ -322,7 +322,7 @@ public class PersistentPartitionedRegionJUnitTest {
           valuesInVm++;
         }
       } catch (EntryNotFoundException e) {
-        fail("Entry not found not expected but occured ");
+        fail("Entry not found not expected but occurred ");
       }
     }
     return valuesInVm;

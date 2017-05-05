@@ -2957,7 +2957,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       stats.endFunctionExecution(start, function.hasResult());
     } catch (FunctionException functionException) {
       if (logger.isDebugEnabled()) {
-        logger.debug("FunctionException occured on remote node while executing Function: {}",
+        logger.debug("FunctionException occurred on remote node while executing Function: {}",
             function.getId(), functionException);
       }
       stats.endFunctionExecutionWithException(function.hasResult());

@@ -1242,9 +1242,9 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     assertTrue(stats instanceof GatewayReceiverStats);
     GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
     if (exceptionsOccurred == 0) {
-      assertEquals(exceptionsOccurred, gatewayReceiverStats.getExceptionsOccured());
+      assertEquals(exceptionsOccurred, gatewayReceiverStats.getExceptionsOccurred());
     } else {
-      assertTrue(gatewayReceiverStats.getExceptionsOccured() >= exceptionsOccurred);
+      assertTrue(gatewayReceiverStats.getExceptionsOccurred() >= exceptionsOccurred);
     }
   }
 

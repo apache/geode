@@ -300,7 +300,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         hrq.getRegion().localDestroy(iterator.next());
       }
     } catch (Exception e) {
-      fail("Exception occured while trying to destroy region", e);
+      fail("Exception occurred while trying to destroy region", e);
     }
 
   }

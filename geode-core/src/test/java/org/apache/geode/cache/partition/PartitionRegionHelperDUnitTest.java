@@ -260,7 +260,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           try {
             date = sdf.parse(dateString);
           } catch (ParseException e) {
-            Assert.fail("Exception Occured while parseing date", e);
+            Assert.fail("Exception Occurred while parseing date", e);
           }
           String value = month.toString() + 10;
           region.put(date, value);
@@ -281,7 +281,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           try {
             date = sdf.parse(dateString);
           } catch (ParseException e) {
-            Assert.fail("Exception Occured while parseing date", e);
+            Assert.fail("Exception Occurred while parseing date", e);
           }
           DistributedMember key1Pri = PartitionRegionHelper.getPrimaryMemberForKey(region, date);
           assertNotNull(key1Pri);

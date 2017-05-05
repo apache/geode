@@ -430,7 +430,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
      * DataPolicy.REPLICATE ));
      * 
      * DistributedTestCase.join(async[0], 50 * 1000, getLogWriter()); if (async[0].getException() !=
-     * null) { fail("UnExpected Exception Occured : ", async[0].getException()); } List l =
+     * null) { fail("UnExpected Exception Occurred : ", async[0].getException()); } List l =
      * (List)async[0].getReturnValue();
      */
     List l = (List) empty
@@ -468,7 +468,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
     ThreadUtils.join(async[0], 50 * 1000);
     if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occured : ", async[0].getException());
+      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
     }
     List l = (List) async[0].getReturnValue();
     assertEquals(5001, l.size());
@@ -594,7 +594,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     emptyServer1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.closeCacheHA());
     ThreadUtils.join(async[0], 4 * 60 * 1000);
     if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occured : ", async[0].getException());
+      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
     }
     List l = (List) async[0].getReturnValue();
     assertEquals(5001, l.size());
@@ -952,7 +952,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
       executeInlineFunction();
       ds.disconnect();
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
       e.printStackTrace();
       Assert.fail("Test failed", e);
     }

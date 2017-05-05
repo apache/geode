@@ -61,7 +61,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       try {
         region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, diskProps);
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
       region.close();
@@ -73,7 +73,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       try {
         region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail(" Exception in createOverflowOnly due to " + e);
       }
       region.close();
@@ -85,7 +85,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       try {
         region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
       region.close();
@@ -96,7 +96,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
     try {
       region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
     } catch (Exception e) {
-      logWriter.error("Exception occured", e);
+      logWriter.error("Exception occurred", e);
       fail(" Exception in createOverflowandPersist due to " + e);
     }
 
@@ -146,7 +146,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       try {
         region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, diskProps);
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
       region.destroyRegion();
@@ -162,7 +162,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       try {
         region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail(" Exception in createOverflowOnly due to " + e);
       }
       region.destroyRegion();
@@ -178,7 +178,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       try {
         region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
       } catch (Exception e) {
-        logWriter.error("Exception occured", e);
+        logWriter.error("Exception occurred", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
       region.destroyRegion();
