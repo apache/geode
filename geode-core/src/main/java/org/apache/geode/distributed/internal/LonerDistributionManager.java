@@ -101,7 +101,7 @@ public class LonerDistributionManager implements DM {
   private ConcurrentMap<InternalDistributedMember, InternalDistributedMember> canonicalIds =
       new ConcurrentHashMap();
   static private final DummyDMStats stats = new DummyDMStats();
-  static private final ExecutorService executor = Executors.newCachedThreadPool();
+  private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Override
   public long cacheTimeMillis() {
@@ -284,7 +284,9 @@ public class LonerDistributionManager implements DM {
     return null;
   }
 
-  public void close() {}
+  public void close() {
+    shutdown();
+  }
 
   public void restartCommunications() {
 
