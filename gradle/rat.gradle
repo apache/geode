@@ -40,10 +40,6 @@ rat {
     '**/build-*/**',
     '.buildinfo',
 
-    // SBT
-    'geode-spark-connector/**/target/**',
-    'geode-spark-connector/sbt',
-
     // Geode examples
     'geode-examples/.idea/**',
     'geode-examples/gradlew*/**',
@@ -61,7 +57,6 @@ rat {
     '**/*.ipr',
     '**/*.iws',
     '.idea/**',
-    'geode-spark-connector/.idea/**',
     '**/tags',
     '**/out/**',
 
@@ -102,8 +97,6 @@ rat {
     'geode-book/final_app/**',
 
     // other text files
-    'geode-spark-connector/project/plugins.sbt',
-    'geode-spark-connector/project/build.properties',
     '**/log4j*.xml',
 
     // modules
