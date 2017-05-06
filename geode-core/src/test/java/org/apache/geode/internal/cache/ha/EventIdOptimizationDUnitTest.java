@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static java.util.concurrent.TimeUnit.*;
+import static org.awaitility.Awaitility.*;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
@@ -305,9 +307,12 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     ServerRegionProxy srp = new ServerRegionProxy(regionName, pool);
 
     for (int i = 0; i < eventIds.length; i++) {
-      srp.destroyOnForTestsOnly(connection, "KEY-" + i, null, Operation.DESTROY,
+      String key = "KEY-" + i;
+      srp.putOnForTestsOnly(connection, key, "value-" + i, eventIds[i], null);
+      srp.destroyOnForTestsOnly(connection, key, null, Operation.DESTROY,
           new EventIDHolder(eventIds[i]), null);
     }
+    srp.putOnForTestsOnly(connection, LAST_KEY, "lastValue", eventIdForLastKey, null);
     srp.destroyOnForTestsOnly(connection, LAST_KEY, null, Operation.DESTROY,
         new EventIDHolder(eventIdForLastKey), null);
   }
@@ -404,17 +409,9 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * Waits for the listener to receive all events and validates that no exception occurred in client
    */
   public static void verifyEventIdsOnClient2() {
-    if (!proceedForValidation) {
-      synchronized (EventIdOptimizationDUnitTest.class) {
-        if (!proceedForValidation)
-          try {
-            LogWriterUtils.getLogWriter().info("Client2 going in wait before starting validation");
-            EventIdOptimizationDUnitTest.class.wait();
-          } catch (InterruptedException e) {
-            fail("interrupted");
-          }
-      }
-    }
+    await("Waiting for proceedForValidation to be true").atMost(2, MINUTES)
+        .until(() -> proceedForValidation);
+
     LogWriterUtils.getLogWriter().info("Starting validation on client2");
     if (validationFailed) {
       fail(
@@ -515,11 +512,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     EventID eventIdAtClient2 = (EventID) assertThreadIdToSequenceIdMapHasEntryId();
     if ((eventIdAtClient2.getThreadID() == eventIdForLastKey.getThreadID())
         && (eventIdAtClient2.getSequenceID() == eventIdForLastKey.getSequenceID())) {
-      synchronized (EventIdOptimizationDUnitTest.class) {
-        LogWriterUtils.getLogWriter().info("Notifying client2 to proceed for validation");
-        proceedForValidation = true;
-        EventIdOptimizationDUnitTest.class.notify();
-      }
+      LogWriterUtils.getLogWriter().info("Notifying client2 to proceed for validation");
+      proceedForValidation = true;
     } else {
       boolean containsEventId = false;
       for (int i = 0; i < eventIds.length; i++) {
