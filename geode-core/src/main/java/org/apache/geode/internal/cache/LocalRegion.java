@@ -6831,7 +6831,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (notifyGateways) {
       notifyGatewaySender(eventType, event);
     }
-    if (callDispatchListenerEvent) {
+    if (callDispatchListenerEvent && !event.getIsRedestroyedEntry()) {
       dispatchListenerEvent(eventType, event);
     }
   }
