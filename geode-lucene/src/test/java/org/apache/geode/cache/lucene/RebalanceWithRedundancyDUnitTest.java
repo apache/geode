@@ -31,6 +31,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -150,9 +151,20 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
           });
     });
 
+
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 30000));
+
+    dataStore2.invoke(() -> {
+      PartitionedRegion region = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      Awaitility.await().atMost(1, TimeUnit.MINUTES)
+          .until(() -> assertEquals(0, region.getPrStats().getLowRedundancyBucketCount()));
+    });
+
+    dataStore1.invoke(() -> getCache().close());
+
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 30000));
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
