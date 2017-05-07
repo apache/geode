@@ -1,0 +1,49 @@
+#coordLabel {
+  -fx-font-size: 8pt;
+}
+
+.chart-series-line {
+	/*	DEFAULTS
+	-fx-stroke: #f9d900;
+	-fx-stroke-width: 4px;
+	-fx-effect: dropshadow(two-pass-box, rgba(0, 0, 0, 0.3), 8, 0.0, 0, 3);
+*/
+	-fx-stroke-width: 1px;
+	-fx-effect: null;
+	-fx-cursor: hand;
+}
+
+/**
+ ** Series lines of the selected Y-Axis
+ **/
+.chart-series-line.chart-primary-y-axis {
+	-fx-effect: dropshadow(two-pass-box, rgba(0, 0, 0, 0.3), 8, 0.0, 0, 3);
+}
+
+.axis:left,.axis:right {
+	-fx-cursor: hand;
+	-fx-opacity: 0.6;
+}
+
+/**
+ ** Selected Y-Axis
+ **/
+.axis.chart-primary-y-axis {
+	-fx-cursor: default;
+	-fx-opacity: 1;
+	/* drop shadow covers plot area, blocks mouse
+	-fx-effect: dropshadow(two-pass-box, rgba(0, 0, 0, 0.3), 8, 0.0, 0, 3);*/
+}
+
+.chart-series-line.advanced-chart-selected-series {
+	-fx-stroke: red;
+}
+
+.chart-legend-item {
+	-fx-cursor: hand;
+	-fx-effect: null;
+}
+
+.chart-legend-item.advanced-chart-selected-series {
+	-fx-effect: dropshadow(two-pass-box, rgba(0, 0, 0, 0.3), 8, 0.0, 0, 3);
+}

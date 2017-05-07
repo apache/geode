@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.apache.geode.jvsd.controller.ChartController">
+  <top>
+    <HBox alignment="CENTER_LEFT" prefHeight="50.0" BorderPane.alignment="CENTER">
+      <children>
+        <Label fx:id="coordLabel" minWidth="-Infinity">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin></Label>
+            <HBox alignment="CENTER_RIGHT" prefWidth="10000.0">
+               <children>
+                  <Button fx:id="resetButton" mnemonicParsing="false" onAction="#resetRangeClicked" text="Reset">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+      </children>
+    </HBox>
+  </top>
+  <center>
+    <AnchorPane fx:id="root" prefHeight="329.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
+  </center>
+</BorderPane>

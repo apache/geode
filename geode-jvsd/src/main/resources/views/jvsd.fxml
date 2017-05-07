@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.apache.geode.jvsd.controller.RootController">
+  <top>
+    <MenuBar BorderPane.alignment="CENTER">
+      <menus>
+        <Menu mnemonicParsing="false" text="File">
+          <items>
+                  <MenuItem mnemonicParsing="false" text="Open" onAction="#handleOpenMenuAction"/>
+                  
+            <MenuItem mnemonicParsing="false" text="Close" onAction="#handleCloseMenuAction"/>
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Edit">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Delete" onAction="#handleUnimplementedMenuAction"/>
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+          <items>
+            <MenuItem mnemonicParsing="false" text="About" onAction="#handleUnimplementedMenuAction"/>
+          </items>
+        </Menu>
+      </menus>
+    </MenuBar>
+  </top>
+  <center>
+    <SplitPane dividerPositions="0.75" orientation="VERTICAL" prefHeight="435.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+      <items>
+        <AnchorPane>
+          <children>
+            <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <content>
+                <TableView fx:id="tableView">
+                  <columns>
+                    <TableColumn text="Row" />
+                    <TableColumn text="Start Time" />
+                    <TableColumn text="File" />
+                    <TableColumn text="Samples" />
+                    <TableColumn text="PID" />
+                    <TableColumn text="Type" />
+                    <TableColumn text="Name" />
+                  </columns>
+                </TableView>
+              </content>
+            </ScrollPane>
+          </children>
+        </AnchorPane>
+        <AnchorPane>
+          <children>
+            <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="103.0" prefWidth="492.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <content>
+                <ListView fx:id="listView" prefHeight="200.0" prefWidth="200.0" />
+              </content>
+            </ScrollPane>
+          </children>
+        </AnchorPane>
+      </items>
+    </SplitPane>
+  </center>
+  <bottom>
+    <HBox alignment="CENTER" prefHeight="42.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+      <children>
+        <Button fx:id="newChartButton" alignment="CENTER" mnemonicParsing="false" onAction="#newChartButtonClicked" text="New Chart">
+          <HBox.margin>
+            <Insets left="20.0" right="20.0" />
+          </HBox.margin>
+        </Button>
+        <Button fx:id="addToChartButton" alignment="CENTER" disable="false" mnemonicParsing="false" onAction="#addToChartButtonClicked" text="Add to Chart">
+          <HBox.margin>
+            <Insets right="20.0" />
+          </HBox.margin>
+        </Button>
+        <ComboBox fx:id="chartCombo" disable="true" prefWidth="150.0" promptText="Chart" />
+      </children>
+    </HBox>
+  </bottom>
+</BorderPane>
