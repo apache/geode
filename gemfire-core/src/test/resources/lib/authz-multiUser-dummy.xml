@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE acl PUBLIC "-//GemStone Systems, Inc.//GemFire XML Authorization 1.0//EN"
+              "authz6_0.dtd" >
+<acl>
+
+  <role name="reader">
+    <user>user1</user>
+    <user>user2</user>
+    <user>root</user>
+    <user>admin</user>
+    <user>administrator</user>
+  </role>
+
+  <role name="writer">
+    <user>user3</user>
+    <user>user4</user>
+    <user>root</user>
+    <user>admin</user>
+    <user>administrator</user>
+  </role>
+  
+  <role name="cacheOps">
+    <user>user1</user>
+    <user>user2</user>
+    <user>root</user>
+    <user>admin</user>
+    <user>administrator</user>
+  </role>
+
+  <role name="queryRegions">
+    <user>user5</user>
+    <user>user6</user>
+  </role>
+
+  <role name="registerInterest">
+    <user>user7</user>
+    <user>user8</user>
+  </role>
+
+  <role name="unregisterInterest">
+    <user>user5</user>
+    <user>user7</user>
+  </role>
+  
+  <permission role="cacheOps">
+    <operation>QUERY</operation>
+    <operation>EXECUTE_CQ</operation>
+    <operation>STOP_CQ</operation>
+    <operation>CLOSE_CQ</operation>
+  </permission>
+
+  <permission role="reader">
+    <operation>GET</operation>
+    <operation>REGISTER_INTEREST</operation>
+    <operation>UNREGISTER_INTEREST</operation>
+    <operation>KEY_SET</operation>
+    <operation>CONTAINS_KEY</operation>
+    <operation>EXECUTE_FUNCTION</operation>
+  </permission>
+
+  <permission role="writer">
+    <operation>PUT</operation>
+    <operation>PUTALL</operation>
+    <operation>DESTROY</operation>
+    <operation>INVALIDATE</operation>
+    <operation>REGION_CLEAR</operation>
+  </permission>
+
+  <permission role="queryRegions" regions="//Portfolios,/Positions/,AuthRegion">
+    <operation>QUERY</operation>
+    <operation>EXECUTE_CQ</operation>
+    <operation>STOP_CQ</operation>
+    <operation>CLOSE_CQ</operation>
+  </permission>
+  
+  <permission role="registerInterest">
+    <operation>REGISTER_INTEREST</operation>
+    <operation>GET</operation>
+  </permission>
+
+  <permission role="unregisterInterest">
+    <operation>UNREGISTER_INTEREST</operation>
+    <operation>GET</operation>
+  </permission>
+
+</acl>
