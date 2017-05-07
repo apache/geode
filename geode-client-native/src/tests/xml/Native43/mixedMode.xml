@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="false" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="false" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+
+  <client-set name="Feeder"/>
+
+  <test name="Thin Client Entry Events" description="Clients perform entry events">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">Native43/csAckMirror.xml</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <client-set name="Feeder"/>
+    </task>
+
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="Feeder"/>
+    </task>
+    
+    
+    
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <client-set name="Feeder"/>
+    </task>
+
+  </test>
+</test-driver>

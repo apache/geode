@@ -1,0 +1,10 @@
+Regression/largeMembership.xml
+Regression/mirrorGII.xml
+Misc/getInitialImage.xml
+Regression/regionContent.xml
+Regression/regionPeerCount.xml
+Regression/perfBenchmark.xml
+Regression/regionEventRoots.xml
+Regression/entryEvent.xml
+cacheserver/shortClientEvents.xml
+event/entryEventOverflow.xml

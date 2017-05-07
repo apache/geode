@@ -1,0 +1,98 @@
+# Determine platform
+ifdef WINDIR
+  HOSTTYPE_OSTYPE=intel.Windows
+  WINDOWS = true
+else
+  UNAME := $(shell uname)
+  ifeq ($(UNAME),Linux)
+    HOSTTYPE_OSTYPE=intel.Linux
+    LINUX = true
+  else
+    ifeq ($(UNAME),SunOS)
+	    UNAME_P := $(shell uname -p)
+	    ifeq ($(UNAME_P),sparc)
+        HOSTTYPE_OSTYPE=sparc.Solaris
+        SOLARIS = true
+	    else
+	      HOSTTYPE_OSTYPE=x86.Solaris
+		    SOLARIS = true
+	    endif
+    endif
+  endif
+endif
+
+# common
+
+NATIVEDIR_FUNC = $(1)
+UNIXDIR_FUNC = $(1)
+NATIVEPATH_FUNC = $(1)
+CURRENTDIR := $(shell pwd)
+
+# branch on platform
+
+ifdef WINDOWS
+
+###################
+# WINDOWS
+ifeq ($(VCVER),vc8)
+    CFLAGSvc8 = /wd4996 -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NON_CONFORMING_SWPRINTFS
+    MT_COMMAND = mt /nologo -manifest $(call NATIVEDIR_FUNC,$@).manifest -outputresource:$(call NATIVEDIR_FUNC,$@) 
+endif
+NATIVEDIR_FUNC = '$(strip $(shell cygpath -w "$(1)"))'
+UNIXDIR_FUNC = $(shell cygpath -u '$(1)')
+NATIVEPATH_FUNC = '$(strip $(shell cygpath -p -w "$(1)"))'
+
+CURRENTDIR := $(call NATIVEDIR_FUNC,$(CURRENTDIR))
+OBJ = .obj
+libPrefix =
+libSuffix = .dll
+
+# END WINDOWS
+###################
+
+else
+  ifdef LINUX
+
+###################
+# LINUX
+
+OBJ = .o
+libPrefix = lib
+libSuffix = .so
+
+ifeq ($(GFLIB_MODEL),64bit)
+    CFLAGS_MODEL = -m64
+    FPIC = -fPIC
+else
+    CFLAGS_MODEL = -m32
+    FPIC =
+endif
+
+# END LINUX
+###################
+
+  else
+    ifdef SOLARIS
+
+###################
+# SOLARIS
+
+OBJ = .o
+libPrefix = lib
+libSuffix = .so
+
+ifeq ($(GFLIB_MODEL),64bit)
+    CFLAGS_MODEL = -m64
+else
+    CFLAGS_MODEL = -m32
+endif
+
+# END SOLARIS
+###################
+
+    endif
+  endif
+endif
+
+# end of platform branches
+

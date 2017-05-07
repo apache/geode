@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">10</data> 
+  
+  <data name="distinctKeys">
+    <list>
+      <item>100000</item>
+    </list>
+  </data>
+
+  <data name="distinctKeysForDestroyTask">
+    <list>
+      <item>100000</item>
+      <item>100000</item>
+    </list>
+  </data>
+    
+	<data name="valueSizes">
+		<list>
+			<item>10000</item>
+		</list>
+	</data>
+	
+	<data name="numThreads">
+		<list>
+			<item>1</item>
+		</list>
+	</data>
+  	
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+	
+	<client-set count="64" name="Client"/>
+	
+	
+	<test name="NodeScalabilityTest" description="AckMirrorNil Entry Event test">
+		<task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="600">
+			<data name="regionSpec">AckMirrorNil</data>
+			<client-set count="2" name="Client"/> 
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+			<client-set count="1" name="Client"/> 
+    </task>
+		<task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="600">
+			<data name="regionSpec">AckMirrorNil</data>
+			<client-set begin ="2" count="2" name="Client"/> 
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+			<client-set count="1" name="Client"/> 
+    </task>
+		<task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="600">
+			<data name="regionSpec">AckMirrorNil</data>
+			<client-set begin ="4" count="4" name="Client"/> 
+    </task>      
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+			<client-set count="1" name="Client"/> 
+    </task>
+		<task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="600">
+			<data name="regionSpec">AckMirrorNil</data>
+			<client-set begin ="8" count="8" name="Client"/> 
+    </task>      
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+			<client-set count="1" name="Client"/> 
+    </task>
+		<task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="600">
+			<data name="regionSpec">AckMirrorNil</data>
+			<client-set begin ="16" count="16" name="Client"/> 
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+			<client-set count="1" name="Client"/> 
+    </task>
+		<task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="600">
+			<data name="regionSpec">AckMirrorNil</data>
+			<client-set begin ="32" count="32" name="Client"/> 
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+			<client-set count="1" name="Client"/> 
+    </task>
+ 	</test>
+</test-driver>

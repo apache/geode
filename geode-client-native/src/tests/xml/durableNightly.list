@@ -1,0 +1,15 @@
+DurableClient/durableFailoverR2.xml
+DurableClient/durableNonDurableCrash.xml
+DurableClient/durableNonDurableKAFalse.xml
+DurableClient/durableNonDurableKATrue.xml
+DurableClient/durableNonDurableTimeout.xml
+DurableClient/durablePerfEventCount.xml
+DurableClient/durablePerfPutGetThroughput.xml
+DurableClient/durablePerfVariableTest2.xml
+DurableClient/durablePerfVariableTestWithHLRU.xml
+DurableClient/durablePerfVariableTest.xml
+DurableClient/durablePR/durableFailoverR2.xml
+DurableClient/durablePR/durableNonDurableCrash.xml
+DurableClient/durablePR/durableNonDurableKAFalse.xml
+DurableClient/durablePR/durableNonDurableKATrue.xml
+DurableClient/durablePR/durableNonDurableTimeout.xml

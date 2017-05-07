@@ -1,0 +1,427 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 11">
+<meta name=Originator content="Microsoft Word 11">
+<link rel=File-List href="README_files/filelist.xml">
+<title>ExecuteFunctions: Pivotal GemFire&#174; Native Client Example</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>qhe</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>qhe</o:LastAuthor>
+  <o:Revision>4</o:Revision>
+  <o:TotalTime>13</o:TotalTime>
+  <o:Created>2008-10-29T17:56:00Z</o:Created>
+  <o:LastSaved>2008-10-29T18:10:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>632</o:Words>
+  <o:Characters>3608</o:Characters>
+  <o:Company>GemStone Systems, Inc.</o:Company>
+  <o:Lines>30</o:Lines>
+  <o:Paragraphs>8</o:Paragraphs>
+  <o:CharactersWithSpaces>4232</o:CharactersWithSpaces>
+  <o:Version>11.6360</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState="false" LatentStyleCount="156">
+ </w:LatentStyles>
+</xml><![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:2;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:0 268435456 0 0 -2147483648 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:1;
+	font-size:24.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+h2
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:2;
+	font-size:18.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+h4
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:4;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+p
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+code
+	{font-family:"Courier New";
+	mso-ascii-font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	mso-hansi-font-family:"Courier New";
+	mso-bidi-font-family:"Courier New";}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:162935388;
+	mso-list-template-ids:1394253234;}
+@list l0:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+@list l1
+	{mso-list-id:226569577;
+	mso-list-template-ids:-1947287032;}
+@list l1:level2
+	{mso-level-text:"%2\)";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l2
+	{mso-list-id:1273512360;
+	mso-list-template-ids:699437352;}
+@list l3
+	{mso-list-id:1483305081;
+	mso-list-template-ids:1760043970;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]-->
+<meta http-equiv=Content-Style-Type content="text/css">
+</head>
+
+<IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+<body lang=EN-US link=blue vlink=blue style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<div>
+
+<h1 align=center style='text-align:center'><span class=SpellE>ExecuteFunctions</span></h1>
+
+<h2 align=center style='text-align:center'>GemFire Native Client </h2>
+
+<h2 align=center style='text-align:center'>C# Programming Example</h2>
+
+</div>
+
+
+<div>
+
+<h2>About the <span class=SpellE>ExecuteFunctions</span> Example </h2>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>ExecuteFunctions</span></code></span>
+example is a C# program that uses Microsoft .NET Framework 4.0 to access the
+GemFire C++ API for continuous query.</p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><em>Microsoft .NET Framework 4.0 must be installed before running this
+example. For information about installing the .NET Framework, see the </em>GemFire
+Native Client User's Guide<em>.</em> </p>
+
+</blockquote>
+
+<p>The client application comes with a cache configuration file, <code><span
+style='font-size:10.0pt'><a href="HierarchicalClient.xml" target="_blank"><span
+class=SpellE>clientExecuteFunctions.xml</span></a></span></code>, which is configured to
+create a root region and establish the native client endpoints to the
+locally-run server by specifying <code><span style='font-size:10.0pt'>localhost<span
+class=GramE>:50505</span></span></code>. <span class=GramE>If java server is
+located on another host, change <span class=SpellE>localhost</span> to that
+host accordingly.</span></p>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>ExecuteFunctions</span></code></span>
+cache listens for client requests at a specific port (see <code><span
+style='font-size:10.0pt'><a
+href="../../../quickstart/xml/hierarchicalserver.xml" target="_blank"><span
+class=SpellE>serverExecuteFunctions.xml</span></a></span></code>). The client connects
+to the cache server's port.</p>
+
+</div>
+
+<div>
+
+<h2><a name="configuring_environment"></a>Configuring the Environment </h2>
+
+<p>Examples that interact with a Java cache server require specific environment
+configurations so the Java cache server will run properly. Follow the
+configuration steps listed below that apply to your operating system: </p>
+
+</div>
+
+<div>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+     mso-list:l3 level1 lfo2;tab-stops:list .5in'>From the GemFire
+     product installation directory, configure your environment settings by
+     following the steps in <code><span style='font-size:10.0pt'>examples/EnvSetup.html</span></code>.
+     Refer to the developer's guide if you need help with this step.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+     mso-list:l3 level1 lfo2;tab-stops:list .5in'>Set the <code><span
+     style='font-size:10.0pt'>JAVA_HOME</span></code> and <code><span
+     style='font-size:10.0pt'>GF_JAVA_HOME</span></code> environment variables
+     to your installed Java JRE or JDK. See the Installation chapter of the <em>GemFire
+     User's Guide</em> for the versions of Java that
+     are compatible with GemFire. The <code><span style='font-size:
+     10.0pt'>JAVA_HOME</span></code> setting is for your applications, and <code><span
+     style='font-size:10.0pt'>GF_JAVA_HOME</span></code> is for the GemFire
+     scripts. You must have a compatible Java JRE or JDK installed and you must
+     set <code><span style='font-size:10.0pt'>JAVA_HOME</span></code> and <code><span
+     style='font-size:10.0pt'>GF_JAVA_HOME</span></code> to point to it.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+     mso-list:l3 level1 lfo2;tab-stops:list .5in'>Add <code><span
+     style='font-size:10.0pt'>$JAVA_HOME/bin</span></code> to the start of your
+     <code><span style='font-size:10.0pt'>PATH</span></code>. </li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l3 level1 lfo2;tab-stops:list .5in'>Add the GemFire <span
+     class=SpellE>quickstart</span> classes to your <code><span
+     style='font-size:10.0pt'>CLASSPATH</span></code>. </li>
+</ol>
+
+<p style='margin-left:.5in'><span class=GramE><strong><span style='font-size:
+10.0pt;font-family:"Courier New"'>set</span></strong></span><strong><span
+style='font-size:10.0pt;font-family:"Courier New"'> CLASSPATH=%GEMFIRE%\<span
+class=SpellE>quickstart\classes;%CLASSPATH</span>%</span></strong></p>
+
+<p>The following is a list of the environment configuration commands for the <span
+class=SpellE><code><span style='font-size:10.0pt'>ExecuteFunctions</span></code></span>
+example. Choose the set of commands that are appropriate for your operating
+system. The text that you type is shown in bold. These configurations only need
+to be performed for the sessions that invoke the Java cache server.</p>
+
+<p><strong>Bourne and <span class=SpellE>Korn</span> shells (<span
+class=SpellE>sh</span>, <span class=SpellE>ksh</span>, bash)</strong></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><code><span style='font-size:10.0pt'>% </span></code><span class=SpellE><strong><span
+style='font-size:10.0pt;font-family:"Courier New"'>cd</span></strong></span><strong><span
+style='font-size:10.0pt;font-family:"Courier New"'> <span class=SpellE>GemFireInstallDirectory</span></span></strong><span
+style='font-size:10.0pt;font-family:"Courier New"'><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>CLASSPATH=$CLASSPATH<span
+class=GramE>:$</span>GEMFIRE/<span class=SpellE>quickstart</span>/classes;
+export CLASSPATH</span></strong><br>
+<code>% </code><span class=SpellE><strong><span style='font-family:"Courier New"'>cd</span></strong></span><strong><span
+style='font-family:"Courier New"'> $GEMFIRE/<span class=SpellE>quickstart</span></span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>JAVA_HOME=&lt;Installed
+JRE PATH&gt;; export JAVA_HOME</span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>GF_JAVA_HOME=$JAVA_HOME;
+export GF_JAVA_HOME</span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>PATH=$JAVA_HOME/<span
+class=SpellE>bin:$PATH</span>; export PATH</span></strong></span></p>
+
+</blockquote>
+
+<p><strong>Windows</strong></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><code><span style='font-size:10.0pt'>&gt; </span></code><span class=SpellE><span
+class=GramE><strong><span style='font-size:10.0pt;font-family:"Courier New"'>cd</span></strong></span></span><strong><span
+style='font-size:10.0pt;font-family:"Courier New"'> <span class=SpellE>GemFireInstallDirectory</span></span></strong><span
+style='font-size:10.0pt;font-family:"Courier New"'><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+CLASSPATH=%GEMFIRE%\<span class=SpellE>quickstart\classes;%CLASSPATH</span>%</span></strong><br>
+<code>&gt; </code><span class=SpellE><strong><span style='font-family:"Courier New"'>cd</span></strong></span><strong><span
+style='font-family:"Courier New"'> %GEMFIRE%\<span class=SpellE>quickstart</span></span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+JAVA_HOME=&lt;Installed JRE PATH&gt;</span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+GF_JAVA_HOME=%JAVA_HOME%</span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+PATH=%JAVA_HOME%\<span class=SpellE>bin;%PATH</span>%</span></strong><code> </code></span></p>
+
+</blockquote>
+
+</div>
+
+<div>
+
+<h2>Starting <span class=SpellE>ExecuteFunctions</span> </h2>
+
+<p>To run the <span class=SpellE><code><span style='font-size:10.0pt'>ExecuteFunctions</span></code></span>
+example, create a session from the GemFire product directory and
+complete the following steps. Throughout this example, when you're prompted to
+enter the native client directory, replace the <span class=SpellE><code><span
+style='font-size:10.0pt'>xxxx</span></code></span> in <span class=SpellE><code><span
+style='font-size:10.0pt'>NativeClient_xxxx</span></code></span> with the actual
+four-digit product version number. Note that in the following steps, except ExecuteFunctions.exe,
+all other programs can be run on other operating system machines.</p>
+
+<p>This first session starts the Java cache server. <code><span
+style='mso-ansi-font-size:12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><o:p></o:p></span></code></p>
+
+</div>
+
+<p style='margin-left:.5in'><span class=SpellE><code><b><span
+style='font-size:10.0pt'>cd examples\ExecuteFunctions</span></b></code></span><b><span
+style='font-size:10.0pt;font-family:"Courier New"'><o:p></o:p></span></b></p>
+
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l2 level1 lfo3;tab-stops:list .5in'>Start Java server: </li>
+</ol>
+
+<p style='margin-left:.5in'><span class=SpellE><code><b><span
+style='font-size:10.0pt'>startServer.bat</span></b></code></span><b><span
+style='font-size:10.0pt;font-family:"Courier New"'><o:p></o:p></span></b></p>
+
+<ol start=2 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l2 level1 lfo3;tab-stops:list .5in'>Create another session and go
+     to the <span class=SpellE><code><span style='font-size:10.0pt'>cli_ExecuteFunctions</span></code></span>
+     example directory: </li>
+</ol>
+
+<p style='margin-left:.5in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>cd</span></b></code></span></span><code><b><span
+style='font-size:10.0pt'> <span class=SpellE>examples\cli_ExecuteFunctions</span></span></b></code></p>
+
+<ol start=3 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l2 level1 lfo3;tab-stops:list .5in'>Start the <span class=SpellE><code><span
+     style='font-size:10.0pt'>ExecuteFunctions</span></code></span> application:</li>
+</ol>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><code><b><span style='margin-left:.1in;font-size:10.0pt'>ExecuteFunctions.exe</span></b></code><b><span
+style='font-size:10.0pt;font-family:"Courier New"'><o:p></o:p></span></b></p>
+
+</blockquote>
+
+<ol start=4 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l2 level1 lfo3;tab-stops:list .5in'>Start the <code><span
+     style='font-size:10.0pt'>updater</span></code> application. In another window:</li>
+</ol>
+<br>
+<p class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+margin-left:.5in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>cd</span></b></code></span></span><code><b><span
+style='font-size:10.0pt'> <span class=SpellE>examples\ExecuteFunctions</span><o:p></o:p></span></b></code></p>
+
+<p style="margin-left:.25in"><code><b><span style='font-size:10.0pt'><span style='mso-spacerun:yes'>  
+</span><span class=SpellE>runUpdater.bat</span> &lt;<span class=SpellE>itr</span>
+number&gt;, where <span class=SpellE>itr</span> number is the number of
+iterations you want this program to run, <span class=SpellE>e.g</span>, 500.</span></b></code><code><span
+style='mso-ansi-font-size:12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><o:p></o:p></span></code></p>
+
+<ol start=5 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l2 level1 lfo3;tab-stops:list .5in'>Stop Java server. In the window where java server was started:</li>
+</ol>
+<br>
+<p class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+margin-left:.5in'><span class=SpellE><code><b><span style='font-size:10.0pt'>stopServer.bat</span></b></code></span></p>
+<br>
+</div>
+
+<p class=MsoNormal><a href="#Top">Top</a> </p>
+
+<p><br>
+<p><span class=GramE>Copyright &#169; 2006-2014 Pivotal Software, Inc. All rights reserved.
+This product is protected by U.S. and international copyright and intellectual
+property laws. Pivotal products are covered by one or more patents listed at
+http://www.pivotal.io/patents. </p>
+
+</div>
+
+</body>
+
+</html>

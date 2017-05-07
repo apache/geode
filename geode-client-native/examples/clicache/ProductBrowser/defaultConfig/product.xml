@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.0//EN" "http://www.gemstone.com/dtd/cache6_0.dtd">
+<cache lock-lease="120" lock-timeout="60" search-timeout="300" is-server="true" copy-on-read="false">
+  <bridge-server port="40404" notify-by-subscription="true"/>
+  <region name="product">
+    <region-attributes/>
+  </region>
+</cache>

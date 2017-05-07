@@ -1,0 +1,16 @@
+bdb.dir=@DEPENDENCIES_db_DIR@
+sqlite.dir=@DEPENDENCIES_sqlite_DIR@
+ace.version=@DEPENDENCIES_ACE_VERSION@
+ace.dir=@DEPENDENCIES_ACE_DIR@
+acelinkname=ACE.${ace.version}
+ace.static.dir=${ace.dir}
+xerces.dir=@DEPENDENCIES_xerces-c_DIR@
+xerceLinuxsversion=@DEPENDENCIES_xerces-c_LIB_VERSION@
+xerceWindowsversion=@DEPENDENCIES_xerces-c_LIB_VERSION@
+xml.dir=@DEPENDENCIES_libxml2_DIR@
+openssl.dir=@DEPENDENCIES_openssl_DIR@
+antlr.dir=@DEPENDENCIES_antlr_DIR@
+perl.devel.gdb.dir=@DEPENDENCIES_perl-Devel-GDB_DIR@/lib
+doxygen=@DEPENDENCIES_doxygen_DIR@
+stlport.dir=@DEPENDENCIES_STLport_DIR@
+

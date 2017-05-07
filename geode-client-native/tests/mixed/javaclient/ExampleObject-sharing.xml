@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sharing PUBLIC "-//GemStone Systems, Inc.//GemFire Class Sharing 1.1//EN"
+  "http://www.gemstone.com/dtd/sharing1_1.dtd">
+<sharing>
+  <class name="cacheRunner.ExampleObject" sharing="direct">
+    <description>Example Object For Java/C Caching</description>
+    <field name="double_field" fieldType="double"/>
+    <field name="float_field" fieldType="float"/>
+    <field name="int_field" fieldType="int"/>
+    <field name="long_field" fieldType="long"/>
+    <field name="short_field" fieldType="short"/>
+    <field name="string_field" fieldType="string"/>
+    <field name="string_vector" fieldType="object"/>
+  </class>
+</sharing>

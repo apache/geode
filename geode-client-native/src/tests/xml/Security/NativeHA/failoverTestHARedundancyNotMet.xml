@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="redundancyLevel">3</data>
+
+  <data name="timedInterval">15m</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>30</item>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  <data name="securityScheme">
+   <list>
+     <item>LDAP</item>
+     <item>DUMMY</item>
+     <item>PKCS</item>
+     <item>NONE</item>
+   </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set count="10" name="ThinClient"/>
+  <client-set name="Feeder"/>
+
+  <test name="ThinClientFailoverHARedundancyNotMet" description="Thin Client HA Failover test with redundancy not satisfied" timesToRun="4">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 NativeHA/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS3"/>
+    </task>
+
+    <task name="CreateRegion_feeder" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set name="Feeder"/>
+      <data name="securityParams">
+        <list>
+          <item>create</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateRegion_tc1-5" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set count="5" name="ThinClient"/>
+      <data name="securityParams">
+        <list>
+          <item>get</item>
+          <item>register_interest</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateRegion_tc5-rest" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set begin="6" count="5" name="ThinClient"/>
+      <data name="securityParams">
+        <list>
+          <item>create</item>
+          <item>update</item>
+          <item>register_interest</item>
+        </list>
+      </data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="perftests" waitTime="15m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register Partial Interest List" action="doRegisterInterestList" container="perftests" waitTime="15m">
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">100</data>
+      <client-set count="10" name="ThinClient"/>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="30m" parallel="true">
+      <client-set count="5" name="ThinClient"/>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="30m" parallel="true">
+      <client-set begin="6" count="5" name="ThinClient"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="3" waitTime="1h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="3" waitTime="1h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="3" waitTime="1h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS3"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="5m"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

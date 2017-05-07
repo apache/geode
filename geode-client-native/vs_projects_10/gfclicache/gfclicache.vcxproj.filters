@@ -1,0 +1,1429 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\impl">
+      <UniqueIdentifier>{f5aaa023-a27f-4418-8cb8-0652d3447799}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\com">
+      <UniqueIdentifier>{9124c695-f75b-49c2-a905-a170920f06db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\com\vmware">
+      <UniqueIdentifier>{5a3d819c-00f4-4200-a655-d24c36d91734}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\com\vmware\impl">
+      <UniqueIdentifier>{2ef4655e-8f74-41c1-8fcd-a95376226885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\impl">
+      <UniqueIdentifier>{d3432b22-1b1c-4c4a-9257-f28fbbe5eafb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\com">
+      <UniqueIdentifier>{7bc12df6-cbf7-4476-bc1c-b7349729d3ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\com\vmware">
+      <UniqueIdentifier>{e8560c4e-ce83-4d9a-bb46-c4a0abd566e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\com\vmware\impl">
+      <UniqueIdentifier>{71bb3436-7ace-4fa0-9f72-22f243bb2e9f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesFactoryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesMutatorM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableDateM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableFileNameM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashMapM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableKeyM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectArrayM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectXml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStackM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringArrayM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableUndefinedM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableVectorM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesFactoryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheFactoryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheStatisticsM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesFactoryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesMutatorM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqEventM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqQueryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqServiceStatisticsM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStateM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStatisticsM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataInputM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataOutputM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\DistributedSystemM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\EntryEventM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExceptionTypesM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExecutionM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\FunctionServiceM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\LogM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolFactoryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolManagerM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PropertiesM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryServiceM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionAttributesM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEntryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEventM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionFactoryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultCollectorM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultSetM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\SelectResultsIteratorM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\SerializableM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticDescriptorM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsFactoryM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsTypeM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructSetM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\SystemPropertiesM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\AssemblyInfo.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\AuthenticatedCacheM.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\CacheLoaderM.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedAuthInitialize.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDelta.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDeltaBytes.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKey.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKeyBytes.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheListener.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheLoader.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheWriter.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCqListener.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedFixedPartitionResolver.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedPartitionResolver.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedResultCollector.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedVisitor.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\MemoryPressureHandler.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesFactoryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesMutatorMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableDateMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableFileNameMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashMapMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableKeyMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectArrayMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectXmlN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStackMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringArrayMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableUndefinedMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableVectorMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesFactoryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheFactoryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheStatisticsMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheTransactionManagerMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesFactoryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMutatorMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqEventMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqQueryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqServiceStatisticsMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStateMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStatisticsMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataInputMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataOutputMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DistributedSystemMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\EntryEventMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExceptionTypesMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExecutionMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\FunctionServiceMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LocalRegionMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LogMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolFactoryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolManagerMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PropertiesMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryServiceMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ReflectionBasedAutoSerializer.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionAttributesMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEntryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEventMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionFactoryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultCollectorMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultSetMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SelectResultsIteratorMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SerializableMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticDescriptorMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsFactoryMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsTypeMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructSetMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SystemPropertiesMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionEventMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UtilsN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AssemblyInfoN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AuthenticatedCacheMN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedAuthInitializeN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaBytesN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyBytesN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheListenerN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheLoaderN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheWriterN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqListenerN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedFixedPartitionResolverN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPartitionResolverN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedResultCollectorN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionListenerN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionWriterN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedVisitorN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\MemoryPressureHandlerN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxFieldType.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxHelper.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceImpl.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceFactoryImpl.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalReader.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalWriter.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKey.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKeyBytes.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxReaderWithTypeCollector.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteReader.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteWriter.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxType.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\EnumInfo.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxTypeRegistry.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxWriterWithTypeCollector.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\RegionImplN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\UserFunctionExecutionExceptionM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UserFunctionExecutionExceptionMN.cpp">
+      <Filter>Source Files\com\vmware</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqStatusListenerN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPersistenceManagerN.cpp">
+      <Filter>Source Files\com\vmware\impl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesMutatorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableArrayListM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableBuiltinsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableDateM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableFileNameM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashMapM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashSetM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashTableM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableIdentityHashMapM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableKeyM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectArrayM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectXml.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStackM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringArrayM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableUndefinedM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableVectorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheListenerAdapter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheStatisticsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheWriterAdapter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesMutatorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqEventM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqListenerM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqOperationM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqQueryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqServiceStatisticsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStateM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStatisticsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataInputM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataOutputM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DiskPolicyTypeM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DistributedSystemM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\EntryEventM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExceptionTypesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExecutionM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExpirationActionM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\FunctionServiceM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\GemFireClassIdsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\gf_defs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\gf_includes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IAuthInitialize.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheableKey.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheLoader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqAttributes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqResults.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IFixedPartitionResolver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IGemFireCache.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IGFDelta.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IGFSerializable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IPartitionResolver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IRegionService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IResultCollector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ISelectResults.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\LogM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolManagerM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PropertiesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryServiceM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionAttributesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEntryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEventM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionShortcutM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultCollectorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultSetM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ScopeTypeM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\SelectResultsIteratorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticDescriptorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsTypeM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructSetM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\SystemPropertiesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\Utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\AuthenticatedCacheM.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\DelegateWrapper.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\GFDataInputStream.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\GFDataOutputStream.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\GFNullStream.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedAuthInitialize.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDelta.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDeltaBytes.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKey.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKeyBytes.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheListener.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheLoader.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheWriter.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCqListener.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedFixedPartitionResolver.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedPartitionResolver.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedResultCollector.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedString.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedVisitor.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\MemoryPressureHandler.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\NativeWrapper.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\SafeConvert.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesFactoryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesMutatorMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableArrayListMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableBuiltinsMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableDateMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableFileNameMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashMapMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashSetMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashTableMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableIdentityHashMapMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableLinkedListMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableKeyMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectArrayMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectXmlN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStackMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringArrayMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableUndefinedMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableVectorMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesFactoryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheFactoryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheListenerAdapterN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheStatisticsMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheTransactionManagerMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheWriterAdapterN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesFactoryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMutatorMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqEventMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqListenerMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqOperationMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqQueryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqServiceStatisticsMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStateMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStatisticsMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataInputMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataOutputMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DiskPolicyTypeMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DistributedSystemMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\EntryEventMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExceptionTypesMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExecutionMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExpirationActionMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\FunctionServiceMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\GemFireClassIdsMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IAuthInitializeN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheableKeyN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheListenerN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheLoaderN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheWriterN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqAttributesN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqEventN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqListenerN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqResultsN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IFixedPartitionResolverN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IGemFireCacheN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IGFDeltaN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IGFSerializableN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPartitionResolverN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxInstance.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxTypeMapper.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxInstanceFactory.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxReaderN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxSerializableN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxSerializer.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxUnreadFields.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxWriterN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IRegionN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IRegionServiceN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IResultCollectorN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ISelectResultsN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ISubscriptionServiceN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ITransactionListenerN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ITransactionWriterN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IWritablePdxInstance.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LocalRegionMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LogMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PdxIdentityFieldAttribute.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolFactoryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolManagerMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PropertiesMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryServiceMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ReflectionBasedAutoSerializer.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionAttributesMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEntryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEventMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionFactoryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionShortcutMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultCollectorMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultSetMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ScopeTypeMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SelectResultsIteratorMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SerializableMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticDescriptorMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsFactoryMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsTypeMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructSetMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SystemPropertiesMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionEventMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionIdMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionListenerAdapterN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionWriterAdapterN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UtilsN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AuthenticatedCacheMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AuthInitializeMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CacheListenerMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CacheLoaderMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CacheWriterMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CqListenerProxyMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\DelegateWrapperN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\DotNetTypes.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\FixedPartitionResolverMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\GFDataInputStreamN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\GFDataOutputStreamN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\GFNullStreamN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedAuthInitializeN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaBytesN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyBytesN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheListenerN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheLoaderN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheWriterN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqListenerN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedFixedPartitionResolverN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPartitionResolverN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedResultCollectorN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedStringN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionListenerN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionWriterN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedVisitorN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\MemoryPressureHandlerN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\NativeWrapperN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PartitionResolverMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxFieldType.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxHelper.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceImpl.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceFactoryImpl.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalReader.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalWriter.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKey.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKeyBytes.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxReaderWithTypeCollector.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemotePreservedData.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteReader.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteWriter.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxType.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\EnumInfo.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxTypeRegistry.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxWrapper.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxWriterWithTypeCollector.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\RegionImplN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ResultCollectorProxyMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\SafeConvertN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\TransactionListenerMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\TransactionWriterMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\WeakhashMap.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\UserFunctionExecutionExceptionM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UserFunctionExecutionExceptionMN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqStatusListenerN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqStatusListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CqStatusListenerProxyMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqStatusListenerN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPersistenceManagerN.hpp">
+      <Filter>Header Files\com\vmware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPersistenceManagerN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PersistenceManagerProxyMN.hpp">
+      <Filter>Header Files\com\vmware\impl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\src\com\gemstone\gemfire\internal\clicache\SerializableM.hpp">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

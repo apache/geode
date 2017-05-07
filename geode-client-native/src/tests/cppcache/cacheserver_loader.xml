@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<!-- cacheserverLoader.xml
+     Configures a server to for clients at port 40404.
+     The example region also is configured with a loader. 
+-->
+
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+    "http://www.gemstone.com/dtd/cache6_0.dtd">
+
+<cache>
+  <bridge-server port="40404"/>
+  <region name="root">
+    <region-attributes/>
+    <region name="exampleRegion">
+      <region-attributes scope="distributed-no-ack" data-policy="replicate"/>
+    </region>
+  </region>
+</cache>

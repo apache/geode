@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+	
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+	
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+  <!--data name="ThinClientPool1">
+   <snippet>
+     <pool name="_Test_Pool1" subscription-enabled="true" locators="true" />
+   </snippet>
+  </data-->
+  <data name="ThinClientRegion1">
+    <snippet>
+      <region name="partitionedRegion">
+        <region-attributes caching-enabled="false" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegion2">
+    <snippet>
+      <region name="replicatedRegion">
+        <region-attributes caching-enabled="false" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="useTransactions">true</data>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set count="10" name="Client"/>
+  <data name="getResult">true</data>
+  <data name="poolName">_Test_Pool</data>
+  <data name="executionMode">onRegion</data>
+	
+  <test name="functionExecutionHA" description="Testing function execution APIs">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH FunctionExecution/csReplicatedPR.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <!--task name="CreatePool1" action="doCreatePool" container="functionExecution" waitTime="3m">
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="10" name="Client"/>
+    </task-->
+    <task name="CreateRegion1" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="3m" argTypes="String,String">
+      <data name="regionSpec">ThinClientRegion1</data>
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="CreateRegion1" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="3m" argTypes="String,String">
+      <data name="regionSpec">ThinClientRegion2</data>
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="PopulateRegion" action="doLoadRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="15m" argTypes="String,String">
+      <client-set count="10" name="Client"/>
+       <data name="regionName">partitionedRegion</data>
+    </task>
+    <task name="PopulateRegion" action="doLoadRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="15m" argTypes="String,String">
+      <client-set count="10" name="Client"/>
+       <data name="regionName">replicatedRegion</data>
+    </task>
+    <!-- test function execution with result -->
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,String">
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="ExecuteFunctionWithHA" action="doExecuteExceptionHandling" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="20m" continueOnError="true" parallel="true" argTypes="String,String">
+      <client-set count="10" name="Client"/>
+      <data name="entryOps">
+        <oneof>
+          <item>ParitionedRegionFunctionExecution</item>
+          <item>ReplicatedRegionFunctionExecution</item>
+          <item>FireAndForgetFunctionExecution</item>
+        </oneof>
+      </data>
+      <data name="workTime">10m</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="2m" argTypes="String,String"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

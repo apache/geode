@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <client-set name="Client1" />
+
+  <test name="FairQueue-Perf" description="Check performance of different FairQueues">
+
+    <task name="Populate queue with 5 objects" action="doQueuePopulate" container="perftests" waitTime="2m">
+      <data name="numObjects">5</data>
+    </task>
+    <task name="Queue gets, puts with 5 objects" action="doQueueGetPut" container="perftests" waitTime="30m">
+      <data name="sleepMillis">
+        <list>
+          <item>0</item>
+          <item>10</item>
+          <item>100</item>
+        </list>
+      </data>
+      <data name="numOps">
+        <list>
+          <item>1000</item>
+          <item>10000</item>
+          <item>100000</item>
+          <item>500000</item>
+          <item>1000000</item>
+        </list>
+      </data>
+      <data name="numThreads">
+        <list>
+          <item>1</item>
+          <item>2</item>
+          <item>5</item>
+          <item>10</item>
+        </list>
+      </data>
+    </task>
+    <task name="Clean queue" action="doQueueClean" container="perftests" waitTime="2m">
+    </task>
+
+    <task name="Populate queue with 10 objects" action="doQueuePopulate" container="perftests" waitTime="2m">
+      <data name="numObjects">10</data>
+    </task>
+    <task name="Queue gets, puts with 10 objects" action="doQueueGetPut" container="perftests" waitTime="30m">
+      <data name="sleepMillis">
+        <list>
+          <item>0</item>
+          <item>10</item>
+          <item>100</item>
+        </list>
+      </data>
+      <data name="numOps">
+        <list>
+          <item>1000</item>
+          <item>10000</item>
+          <item>100000</item>
+          <item>500000</item>
+          <item>1000000</item>
+        </list>
+      </data>
+      <data name="numThreads">
+        <list>
+          <item>1</item>
+          <item>2</item>
+          <item>5</item>
+          <item>10</item>
+        </list>
+      </data>
+    </task>
+    <task name="Clean queue" action="doQueueClean" container="perftests" waitTime="2m">
+    </task>
+
+    <task name="Populate queue with 15 objects" action="doQueuePopulate" container="perftests" waitTime="2m">
+      <data name="numObjects">15</data>
+    </task>
+    <task name="Queue gets, puts with 15 objects" action="doQueueGetPut" container="perftests" waitTime="30m">
+      <data name="sleepMillis">
+        <list>
+          <item>0</item>
+          <item>10</item>
+          <item>100</item>
+        </list>
+      </data>
+      <data name="numOps">
+        <list>
+          <item>1000</item>
+          <item>10000</item>
+          <item>100000</item>
+          <item>500000</item>
+          <item>1000000</item>
+        </list>
+      </data>
+      <data name="numThreads">
+        <list>
+          <item>1</item>
+          <item>2</item>
+          <item>5</item>
+          <item>10</item>
+        </list>
+      </data>
+    </task>
+    <task name="Clean queue" action="doQueueClean" container="perftests" waitTime="2m">
+    </task>
+
+  </test>
+
+</test-driver>

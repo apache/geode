@@ -1,0 +1,12 @@
+
+/*=========================================================================
+ * Copyright (c) XXXX Pivotal Software, Inc. All rights reserved. 
+ * This product is protected by U.S. and international copyright 
+ * and intellectual property laws. Pivotal products are covered by 
+ * one or more patents listed at http://www.pivotal.io/patents.  
+REPLACE XXXX with year of code initial change (new file) or if modification 
+use specific year starting with initial (ie. 1997, 1999, 2008) or 
+range (1997-2014) if changed every year and delete these three lines. 
+ *=========================================================================
+ */
+

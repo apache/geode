@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9DF53A3B-0F5D-371E-9EBD-8106B711B3DF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GemStone.GemFire.Cache.FwkDriver</RootNamespace>
+    <AssemblyName>FwkDriver</AssemblyName>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>${CMAKE_SOURCE_DIR}/../release/keys/gemfire.snk</AssemblyOriginatorKeyFile>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <NoWarn>618</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <IntermediateOutputPath>Debug</IntermediateOutputPath>
+    <OutputPath>Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>618</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <IntermediateOutputPath>Debug</IntermediateOutputPath>
+    <OutputPath>Debug</OutputPath>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>${NUNIT}\bin\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkDriver\AssemblyInfo.cs">
+      <Link>AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkDriver\FwkDriver.cs">
+      <Link>FwkDriver.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DUnitFramework\DUnitFramework.csproj">
+      <Project>{796727E8-3A6A-46BE-A2DB-584A4774CD51}</Project>
+      <Name>DUnitFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FwkBBServer\FwkBBServer.csproj">
+      <Project>{CC86BCBD-04DB-4151-8705-9EB8FB1FCA47}</Project>
+      <Name>FwkBBServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FwkBBClient\FwkBBClient.csproj">
+      <Project>{1E0FB5D4-5792-4E98-BA2A-FAB7FD26C1B6}</Project>
+      <Name>FwkBBClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FwkClient\FwkClient.csproj">
+      <Project>{9EFAA401-B5D1-4592-A2FF-0972C776FF6A}</Project>
+      <Name>FwkClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FwkLib\FwkLib.csproj">
+      <Project>{E01351F3-2E8B-4A28-8D96-C591A7ED10DE}</Project>
+      <Name>FwkLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FwkUtil\FwkUtil.csproj">
+      <Project>{0DDB5AAF-C707-4F65-9000-659A24504D36}</Project>
+      <Name>FwkUtil</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="${CMAKE_SOURCE_DIR}\tests\clicache\FwkLib\gfcpp.properties">
+      <Link>gfcpp.properties</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="cdb.pl" />
+    <None Include="genCSFwkReport.sh" />
+    <None Include="killJavaServer.sh" />
+    <None Include="runCSDriver.sh" />
+    <None Include="runCSFunctions.sh" />
+    <None Include="runCSTests.sh" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>echo # Note that this file is not suitable to be sourced by a shell script&gt; $(TargetDir)/run.env
+echo GFCPP=$(GFCPP)&gt;&gt; $(TargetDir)/run.env
+echo GFBASE=$(OSBUILDDIR)&gt;&gt; $(TargetDir)/run.env
+echo GFE_DIR=$(GFE_DIR)&gt;&gt; $(TargetDir)/run.env
+echo GEMFIRE_SOURCE_REVISION=$(GEMFIRE_SOURCE_REVISION)&gt;&gt; $(TargetDir)/run.env
+echo GEMFIRE_SOURCE_REPOSITORY=$(GEMFIRE_SOURCE_REPOSITORY)&gt;&gt; $(TargetDir)/run.env
+echo NATIVECLIENTVERSION=$(GEMFIRE_PRODUCTNAME) $(GEMFIRE_VERSION) $(GEMFIRE_BUILDID) $(GEMFIRE_BUILDDATE)&gt;&gt; $(TargetDir)/run.env
+if $(ConfigurationName)==Release (
+  echo PATH+=$(HIDDENDIR)/lib;$(HIDDENDIR)/gpl;$(FRAMEWORK)/bin;$(FRAMEWORK)/bin/openssl;$(GFCPP)/bin;&gt;&gt; $(TargetDir)/run.env
+) else (
+  echo PATH+=$(HIDDENDIR)/lib/debug;$(HIDDENDIR)/lib;$(HIDDENDIR)/gpl;$(FRAMEWORK)/bin;$(FRAMEWORK)/bin/openssl;$(GFCPP)/bin;&gt;&gt; $(TargetDir)/run.env
+)</PostBuildEvent>
+  </PropertyGroup>
+</Project>

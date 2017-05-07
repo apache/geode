@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+<!-- Description 
+# Servers  5
+# Clients  6  durable 
+Purpose  - Test if HA failover is working fine for durable client. 
+Details  R = 2, Three Clients have durable Reg Int and another three is having non Durable Reg Int
+-->
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">2</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+	
+  <data name="keyType">str</data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>30</item>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  <data name="minServers">3</data>
+
+  <!--Default Values for this test only-->
+  <data name="isDurable">true</data>
+  <data name="keepAlive">true</data>
+  <data name="durableTimeout">300</data>
+  <data name="restartTime">20</data>
+  <data name="updateReceiveTime">60</data>
+
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="durableclienttests" function="createDurableCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegionWithListener</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set name="JCS5" hostGroup="CS"/>
+  <client-set name="DClient1"/>
+  <client-set name="DClient2"/>
+  <client-set name="DClient3"/>
+  <client-set name="DClient4"/>
+  <client-set name="DClient5"/>
+  <client-set name="DClient6"/>
+  <client-set name="Feeder"/>
+	
+  <test name="DurableFailoverR2" description="HA Failover test for durable client ">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 5 DurableClient/durablePR/csNotifySubscription.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServer 4" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StartCacheServer 5" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="Create Durable Clients" action="doCreateRegion" container="durableclienttests" waitTime="10m">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="DClient3"/>
+      <client-set name="DClient4"/>
+      <client-set name="DClient5"/>
+      <client-set name="DClient6"/>
+    </task>
+    <task name="Create Feeder" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set name="Feeder"/>
+      <data name="isFeeder">true</data>
+    </task>
+    <task name="Register All Keys Durable" action="doRegisterAllKeys" container="durableclienttests" waitTime="5m" parallel="true">
+      <data name="isDurableReg">true</data>
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Register Interest List" action="doRegisterInterestList" container="durableclienttests" waitTime="5m" parallel="true">
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">1</data>
+      <data name="isDurableReg">true</data>
+      <client-set name="DClient2"/>
+    </task>
+    <task name="Register Regex List" action="doRegisterRegexList" container="durableclienttests" waitTime="5m" parallel="true">
+      <data name="registerRegex">.*</data>
+      <data name="isDurableReg">true</data>
+      <client-set name="DClient3"/>
+    </task>
+    <task name="Register All Keys Durable" action="doRegisterAllKeys" container="durableclienttests" waitTime="5m" parallel="true">
+      <client-set name="DClient4"/>
+    </task>
+    <task name="Register Interest List" action="doRegisterInterestList" container="durableclienttests" waitTime="5m" parallel="true">
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">1</data>
+      <client-set name="DClient5"/>
+    </task>
+    <task name="Register Regex List" action="doRegisterRegexList" container="durableclienttests" waitTime="5m">
+      <data name="registerRegex">.*</data>
+      <client-set name="DClient6"/>
+    </task>
+    <task name="Incremental Puts" action="doIncrementalPuts" container="durableclienttests" waitTime="30m"  parallel="true">
+      <data name="valueEnd">100000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="stopStartCacheServer 4" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="stopStartCacheServer 5" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="Close Cycle for DC 1 " action="doCloseCacheAndReInitialize" container="durableclienttests" waitTime="25m" timesToRun="5" parallel="true">
+      <data name="isDurableReg">true</data>
+      <data name="registerType">All</data>
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Close Cycle for DC 2 " action="doCloseCacheAndReInitialize" container="durableclienttests" waitTime="25m" timesToRun="5" parallel="true">
+      <data name="isDurableReg">true</data>
+      <data name="registerType">List</data>
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">1</data>
+      <client-set name="DClient2"/>
+    </task>
+    <task name="Close Cycle for DC 3 " action="doCloseCacheAndReInitialize" container="durableclienttests" waitTime="25m" timesToRun="5" parallel="true">
+      <data name="isDurableReg">true</data>
+      <data name="registerType">Regex</data>
+      <data name="registerRegex">.*</data>
+      <client-set name="DClient3"/>
+    </task>
+    <task name="Close Cycle for DC 4 " action="doCloseCacheAndReInitialize" container="durableclienttests" waitTime="25m" timesToRun="5" parallel="true">
+      <data name="registerType">All</data>
+      <client-set name="DClient4"/>
+    </task>
+    <task name="Close Cycle for DC 5 " action="doCloseCacheAndReInitialize" container="durableclienttests" waitTime="25m" timesToRun="5" parallel="true">
+      <data name="registerType">List</data>
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">1</data>
+      <client-set name="DClient5"/>
+    </task>
+    <task name="Close Cycle for DC 6 " action="doCloseCacheAndReInitialize" container="durableclienttests" waitTime="25m" timesToRun="5" parallel="true">
+      <data name="registerType">Regex</data>
+      <data name="registerRegex">.*</data>
+      <client-set name="DClient6"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="5m">
+      <data name="sleepTime">120</data>
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="DClient3"/>
+      <client-set name="DClient4"/>
+      <client-set name="DClient5"/>
+      <client-set name="DClient6"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="durableclienttests" waitTime="5m">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="DClient3"/>
+      <client-set name="DClient4"/>
+      <client-set name="DClient5"/>
+      <client-set name="DClient6"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Verify" action="doVerifyEventCount" container="durableclienttests" waitTime="5m">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="DClient3"/>
+    </task>
+    <task name="Verify" action="doVerifyEventCount" container="durableclienttests" waitTime="5m">
+      <client-set name="DClient4"/>
+      <client-set name="DClient5"/>
+      <client-set name="DClient6"/>
+      <data name="missedEvents">true</data>
+    </task>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 4" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StopCacheServer 5" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+  </test>
+
+</test-driver>

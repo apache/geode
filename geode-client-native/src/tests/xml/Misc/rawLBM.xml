@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data> 
+  
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+  
+	<data name="valueSizes">
+		<list>
+			<item>1000</item>
+		</list>
+	</data>
+	
+	<data name="numThreads">
+		<list>
+			<item>1</item>
+		</list>
+	</data>
+  
+  <data name="scope">ack</data>
+  <data name="topicName">rawTopic</data>
+	
+	<client-set>
+		<client name="Ping"/>
+		<client name="Pong"/>
+	</client-set>
+	
+	<test name="Local" description="Local Entry Event test">
+    <task name="Gets" action="doRawGets" container="perftests" waitTime="160" parallel="true">
+      <client-set>
+        <client name="Pong"/>
+      </client-set>
+    </task>
+    <task name="Puts" action="doRawPuts" container="perftests" waitTime="160" parallel="true">
+      <client-set>
+        <client name="Ping"/>
+      </client-set>
+    </task>
+	</test>
+		
+</test-driver>

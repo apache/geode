@@ -1,0 +1,10 @@
+Native/clientEventsFailover.xml
+NativeHA/failoverTestHARedundancyNotMet.xml
+NativeHA/mixedRedundancyTestHA.xml
+NativeHA/clientEventsHAFailover_FullInterest.xml
+RemoteQueryPR/distributedDataValidationQueryTest.xml
+Security/Native/clientAuthnAndAuthzTest.xml
+Security/NativePR/clientAuthnAndAuthzFailoverPrTest.xml
+DurableClient/durableFailoverR2.xml
+DurableClient/durablePR/durableNonDurableKATrue.xml
+DurableClient/durablePR/durableNonDurableTimeout.xml

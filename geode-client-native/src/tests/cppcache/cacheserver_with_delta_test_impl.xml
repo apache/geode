@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN"
+  "http://www.gemstone.com/dtd/cache4_1.dtd">
+<cache>
+	<bridge-server port="HOST_PORT1" notify-by-subscription="true"/>
+
+	<vm-root-region name="DistRegionAck">
+		<region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+		<entry>
+                <key><string>delta1-1</string></key>
+                <value>
+                  <declarable>
+                    <class-name>javaobject.DeltaTestImpl</class-name>
+                  </declarable>
+                </value>
+         </entry>
+	</vm-root-region>
+</cache> 

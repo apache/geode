@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="maxTestTime">10200</data>
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSRegion</data>
+  <client-set name="Feeders">
+    <client name="Feeder"/>
+  </client-set>
+  <client-set count="4" name="Server"/>
+  <client-set count="24" name="Client"/>
+
+  <test name="ClientsUpdate" description="Clients update entries" waitTime="780">
+    <task name="CreateFeeder" action="createProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">PEER</data>
+      <client-set name="Feeders">
+          <client name="Feeder"/>
+      </client-set>
+    </task>
+    <task name="CreateServers" action="createValidationProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <client-set count="4" name="Server"/> 
+    </task>
+    <task name="CreateClients" action="createValidationProcess" container="cacheserver" waitTime="600" >
+      <data name="cacheType">CLIENT</data>
+      <client-set count="6" name="Client"/> 
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="600">
+      <data name="batchSize">200</data>
+      <data name="workTime">120</data>
+      <client-set name="Feeders">
+        <client name="Feeder"/> 
+      </client-set>
+    </task>
+    <task name="ClientsPopulate" action="doEntryOperations" container="cacheserver" waitTime="600">
+      <data name="workTime">30</data>
+      <client-set count="6" name="Client"/> 
+    </task>
+    <task name="ClientsUpdateEntries" action="doEntryOperations" container="cacheserver" waitTime="600">
+      <data name="workTime">120</data>
+      <data name="entryOps">update</data>      
+      <client-set count="6" name="Client"/>
+    </task>
+    </test>
+</test-driver>

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.1//EN"
+  "http://www.gemstone.com/dtd/cache6_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true">
+    <client-subscription eviction-policy="entry" capacity="10000" />
+  </bridge-server> 
+  <vm-root-region name="dummy">
+    <region-attributes scope="distributed-ack" data-policy="replicate" mirror-type="keys-values" cloning-enabled="true"/>
+    <entry>
+      <key><string>delta1-1</string></key>
+      <value>
+        <declarable>
+           <class-name>javaobject.DeltaTestImpl</class-name>
+        </declarable>
+      </value>
+    </entry>
+  </vm-root-region>
+  <vm-root-region name="TestTCR1">
+    <region-attributes scope="distributed-ack" data-policy="replicate" mirror-type="keys-values" cloning-enabled="true"/>
+  </vm-root-region>
+</cache> 

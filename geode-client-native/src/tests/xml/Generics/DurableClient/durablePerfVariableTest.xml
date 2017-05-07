@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+<!-- Description 
+# Servers  1
+# Clients  1  durable 
+Purpose  - Perf Test for durable Get / Put. 
+Details  
+-->
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+
+
+  <data name="distinctKeys">
+    <list>
+      <item>5000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>100</item>
+      <item>1000</item>
+      <item>10000</item>
+      <item>50000</item>
+      <item>100000</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+<!--Default Values for this test only-->
+  <data name="isDurable">true</data>
+  <data name="durableTimeout">120</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+
+  <client-set name="CS1" hostGroup="CS"/>
+  <client-set name="Publisher"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">Native/csAckMirror.xml</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="CreateRegionForPerformanceVariable" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Measure Performance Variable with string keys" action="doPuts" container="perftests" waitTime="45m">
+      <client-set name="Publisher"/>
+      <data name="keySize">
+        <list>
+          <item>6</item>
+        </list>
+      </data>
+    </task>
+    <task name="Measure Performance Variable with int keys" action="doPuts" container="perftests" waitTime="30m">
+      <client-set name="Publisher"/>
+      <data name="keyType">int</data>
+    </task>
+    <task name="Measure Performance Variable with cache size" action="doPuts" container="perftests" waitTime="15m">
+      <client-set name="Publisher"/>
+      <data name="distinctKeys">
+        <list>
+          <item>1</item>
+          <item>100</item>
+          <item>10000</item>
+          <item>184877</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>100</item>
+        </list>
+      </data>
+    </task>
+    <task name="Measure Performance Variable with payload size" action="doPuts" container="perftests" waitTime="45m">
+      <client-set name="Publisher"/>
+      <data name="distinctKeys">
+        <list>
+          <item>184877</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>80</item>
+          <item>160</item>
+          <item>320</item>
+          <item>640</item>
+          <item>1280</item>
+          <item>2560</item>
+        </list>
+      </data>
+    </task>
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="5m">
+      <client-set name="Publisher"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="CS1"/>
+    </task>
+  </test>
+
+</test-driver>

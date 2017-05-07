@@ -1,0 +1,154 @@
+
+<!-- An XML include file that contains common Ant target for building
+     source code -->
+
+  <target name="usage"
+          description="Describes how to find out usage information">
+    <echo>
+Builds artifacts developed with the GemFire SDK.
+
+Run "build.sh -projecthelp" for descriptions of available build
+targets.
+    </echo>
+  </target>
+
+  <taskdef classname="com.gemstone.tools.ant.taskdefs.Conditional"
+           name="conditional"> 
+    <classpath>
+      <pathelement location="${basedir}/product/taskdefsV3.jar"/>
+    </classpath>
+  </taskdef>
+
+  <target name="-props">
+    <!-- "Sets Ant properties for this Project" -->
+
+    <property environment="myenv"/>  <!-- Get environment variables -->
+
+    <!-- determine machine and os -->
+    <condition property="gf.os" value="sol">
+      <os name="SunOs"/>
+    </condition>
+    <condition property="gf.os" value="linux">
+      <os name="Linux"/>
+    </condition>
+    <condition property="gf.os" value="win">
+      <os family="windows"/>
+    </condition>
+
+    <!-- Load Ant property files, if present -->
+    <property file="${basedir}/build${gf.os}.properties"/>
+    <available file="${basedir}/build${gf.os}.properties" 
+               property="build.os.exists"/>
+    <conditional if="build.os.exists">
+      <echo message="Loading properties from ${basedir}/build${gf.os}.properties:"/>
+      <concat>
+        <filelist dir="${basedir}" files="build${gf.os}.properties"/>
+      </concat>
+    </conditional>
+
+    <property file="${basedir}/build.properties"/>
+    <available file="${basedir}/build.properties" property="build.props.exists"/>
+    <conditional if="build.props.exists">
+      <echo message="Loading properties from ${basedir}/build.properties:"/>
+      <concat>
+        <filelist dir="${basedir}" files="build.properties"/>
+      </concat>
+    </conditional>
+
+    <property name="build.dir" value="${basedir}/build-artifacts"/>
+    <property name="osbuild.dir" value="${build.dir}/${gf.os}"/>
+    <property name="gemfire.product" 
+              value="${basedir}/product/${gf.os}"/>
+
+    <property name="src.dir" value="${basedir}/src"/>
+    <patternset id="src.files">
+      <include name="com/gemstone/**/*.java"/>
+    </patternset>
+
+    <path id="src.compile.classpath">
+      <pathelement location="${gemfire.product}/lib/gemfire.jar"/>
+      <fileset dir="${src.dir}/lib">
+        <include name="*.jar"/>
+      </fileset>
+    </path>
+    <property name="classes.dir" value="${osbuild.dir}/classes"/>
+
+    <property name="tests.src.dir" value="${basedir}/tests"/>
+    <path id="tests.compile.classpath">
+      <path refid="src.compile.classpath"/>
+      <pathelement location="${classes.dir}"/>      
+      <pathelement location="${tests.src.dir}/lib/test-framework.jar"/>      
+      <pathelement location="${tests.src.dir}/lib/test-framework.jar"/>
+      <fileset dir="${tests.src.dir}/lib">
+        <include name="*.jar"/>
+      </fileset>
+    </path>
+    <property name="tests.classes.dir"
+              value="${osbuild.dir}/tests/classes"/> 
+
+    <property name="last.update.file" value="lastUpdate.txt"/>
+    <property name="jar.name" value="gfApp.jar"/>
+    <property name="app.version" value="1.0alpha"/>
+    <property name="jar.manifest" value="${osbuild.dir}/Manifest.mf"/>
+    <property name="date.pattern" value="MM/dd/yyyy HH:mm:ss z"/>
+    <tstamp>
+       <format pattern="${date.pattern}" property="build.time"/>
+    </tstamp>
+    <property name="product.dir" value="${osbuild.dir}/product"/>
+
+  </target>
+
+  <target name="-compile-java-source">
+    <!-- Does the real work of compiling the Java source code -->
+
+    <mkdir dir="${classes.dir}"/>
+
+    <property name="includeAntRuntime" value="false"/>
+    <property name="deprecation" value="on"/>
+ 
+    <javac debug="on" optimize="off" deprecation="${deprecation}" 
+           verbose="off" nowarn="off"
+           includeAntRuntime="${includeAntRuntime}" 
+           srcdir="${src.dir}"
+           destdir="${classes.dir}">
+      <patternset refid="src.files"/>
+      <classpath refid="src.compile.classpath"/>
+    </javac>
+  </target>
+
+  <target name="update-cvs" depends="-props"
+          description="Updates this CVS checkout and notes the time">
+    <property name="cvs.logfile" value="update-cvs.log"/>
+    <tstamp>
+      <format pattern="${date.pattern}" property="last.update"/>
+    </tstamp>
+    <mkdir dir="${build.dir}"/>
+    <echo file="${build.dir}/${last.update.file}">Source-Date: ${last.update}
+</echo>
+    <propertyfile comment="Build Number File" file="${build.dir}/build.number">
+      <entry default="0" key="build.number" operation="+" type="int"/>
+    </propertyfile>
+
+    <property name="cvs.hist.logfile" value=".cvs-history.log"/>
+    <delete file="${cvs.logfile}" quiet="true"/>
+
+<!--<property name="cvs.command" value="update -dP ${cvs.branch}"/>-->
+    <property name="cvs.command" value="update -dP -A"/>
+    <echo message="Invoking &apos;${cvs.command}&apos; logging to ${cvs.logfile}"/>
+    <cvs append="true" command="${cvs.command}" error="${cvs.logfile}" failonerror="true" output="${cvs.logfile}" quiet="true"/>
+    <exec executable="grep" resultproperty="grepExitStatus">
+      <arg value="^C "/>
+      <arg value="${cvs.logfile}"/>
+    </exec>
+    <condition property="grepFailed">
+      <equals arg1="${grepExitStatus}" arg2="0"/>
+    </condition>
+    <fail if="grepFailed" message="CVS conflicts detected"/>
+
+    <concat append="true" destfile="${cvs.hist.logfile}">==================</concat>
+    <concat append="true" destfile="${cvs.hist.logfile}">
+      <filelist dir="${basedir}" files="build-artifacts/build.number"/>
+      <filelist dir="${basedir}" files="${cvs.logfile}"/>
+    </concat>
+  </target>
+

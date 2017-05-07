@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+  "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true" maximum-time-between-pings="600000" />
+  <region name="IndexRegion">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    
+  </region>
+  <region name="Portfolios">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index1">
+        <functional from-clause="/Portfolios" expression="ID" />
+    </index>
+    <index name="index5">
+      <functional from-clause="/Portfolios.keys" expression="toString" />
+    </index>
+    <!--index name="index7">
+      <functional from-clause="/Portfolios.values k" expression="nvl(k.position2.toString(),'nopes')" />
+    </index-->
+    <index name="index8">
+      <functional from-clause="/Portfolios.keys k" expression="k" />
+    </index>
+  </region>
+  <region name="Portfolios2">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index2">
+      <functional from-clause="/Portfolios2" expression="ID" />
+    </index>
+  </region>
+  <region name="Portfolios3">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index3">
+      <functional from-clause="/Portfolios3" expression="ID" />
+    </index>
+  </region>
+  <region name="Positions">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index4">
+      <functional from-clause="/Positions" expression="secId" />
+    </index>
+  </region>
+
+</cache> 

@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 7.0/HTML Export Filter">
+
+<TITLE>HierarchicalClient: Pivotal GemFire&#169; Native Client Example</TITLE>
+
+</HEAD>
+<BODY>
+ <IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+ <DIV>
+   <h1 align="center"><a name="Top" id="Top"></a>HierarchicalClient</h1>
+   <h2 align="center">Pivotal GemFire&#174; Native Client</h2>
+   <h2 align="center">C# Programming Example</h2>
+</DIV>
+ 
+<DIV>
+<P>Tiered caching, also called hierarchical caching, lets you isolate data management to one or more servers, allowing multiple clients to connect and use the server caches. This is the model for scalability, with many clients benefitting from the management resources of just a few servers.
+<P> In GemFire hierarchical caching, there is a server-side distributed system and one or more client-side distributed systems. The server VMs run BridgeServers that listen on unique ports for data requests and updates from clients. The clients forward all data requests their caches cannot fulfill to the servers. To do this, they use a custom data loader, the BridgeLoader. The clients might also be configured with a custom listener, called the BridgeWriter, that updates the servers when data is modified on the client side.  In the <a href="../../../quickstart/xml/hierarchicalserver.xml" target="_blank"><code>HierarchicalServer.xml</code></a> file for the cache server used in this example, note that the BridgeServer is defined for the entire cache. It services requests from any client for any region in the cache.<br>
+  <br>
+</DIV>
+ <DIV>
+<H2>
+About the HierarchicalClient Example </H2>
+<P>The <code>HierarchicalClient</code> example is an interactive C# program that uses Microsoft .NET Framework 4.0 to access the GemFire C++ API for modifying and viewing cache contents.</P>
+<blockquote>
+  <p align="left"><em>Microsoft .NET Framework 4.0 must be installed before running this example. For information about installing the .NET Framework, see the </em>GemFire Native Client User's Guide<em>.</em> </p>
+</blockquote>
+<P><code>HierarchicalClient</code> demonstrates a server in a tiered hierarchical caching setup. The client application comes with a cache configuration file, <code><a href="./HierarchicalClient.xml" target="_blank">HierarchicalClient.xml</a></code>, which  is configured to create a root region and establish the native client endpoints to the locally-run server by specifying <code>localhost:40404</code>.</P>
+<P>The <code>HierarchicalClient</code> cache listens for client requests at a specific port (see <code><a href="../../../quickstart/xml/hierarchicalserver.xml" target="_blank">HierarchicalServer.xml</a></code>). The client connects to the cache server's port, sending data requests and updates. At the beginning, both the server and client cache regions are empty.</P>
+<P> When you run the example it will:</P>
+<UL>
+<LI CLASS="Bulleted">Get entries.<br>
+  These result in client cache misses, so the client forwards   the request to the server. The server's loader runs to satisfy its   cache misses. You also see server and client listeners reporting on the   new cache entries.<br>
+  <br>
+</LI>
+<LI CLASS="Bulleted">Modify the cache.<br>
+  The client entry updates and destroys are forwarded to   the server by the client's cache writer. Client entry invalidates are not   forwarded. Again, the listeners on both sides report the cache activity.<br>
+</LI>
+</UL>
+</DIV>
+
+<DIV>
+<H2>
+<a name="configuring_environment" id="configuring_environment"></a>Configuring the Environment </H2>
+<P>
+Examples that interact with a Java cache server require specific environment configurations so the Java cache server will run properly. Follow the configuration steps listed below that apply to your operating system: </P>
+</DIV>
+ <DIV>
+<ol>
+  <li>From the GemFire product installation directory, configure your environment settings by following the steps in <code>examples/EnvSetup.html</code>. Refer to the User's 
+      Guide if you need help with this step.<br>
+      <br>
+  <li>Set the <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code>  environment variables to your installed Java JRE or JDK. See the Installation chapter of the   <em>GemFire Users's Guide</em> for the versions of Java that are compatible with GemFire. The <code>JAVA_HOME</code> setting is for your applications, and  <code>GF_JAVA_HOME</code> is for the GemFire scripts. You must have a compatible Java JRE or JDK installed and you must set <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code> to point to it.<br>
+      <br>
+  <li>Add <code>$JAVA_HOME/bin</code> to the start of your <code>PATH</code>. <br>
+  <br>
+  <li>Add the GemFire quickstart classes to your <code>CLASSPATH</code>. <br>
+  <blockquote>
+  <p><strong> <code><strong>set CLASSPATH=%GEMFIRE%\quickstart\classes;%CLASSPATH%</strong></code></strong></p>
+</blockquote>  
+</ol>
+<p>The following is a list of the environment configuration commands for the <code>HierarchicalClient</code> example. Choose the set of commands that are appropriate for your operating system. The text that you type is shown in bold.
+  These configurations only need to be performed for the sessions that invoke the Java cache server.</p>
+<p><strong>Bourne and Korn shells (sh, ksh, bash)</strong></p>
+<blockquote>
+  <p>    <code>% <strong>cd GemFireInstallDirectory</strong><br>
+    % <strong>CLASSPATH=$CLASSPATH:$GEMFIRE/quickstart/classes; export CLASSPATH</strong><br>
+    % <strong>cd $GEMFIRE/quickstart</strong><br>
+    % <strong>JAVA_HOME=&lt;Installed JRE PATH&gt;; export JAVA_HOME</strong><br>
+    % <strong>GF_JAVA_HOME=$JAVA_HOME; export GF_JAVA_HOME</strong><br>
+    % <strong>PATH=$JAVA_HOME/bin:$PATH; export PATH</strong></code></p>
+</blockquote>
+<p><strong>Windows</strong></p>
+<blockquote>
+  <p><code>&gt; <strong>cd GemFireInstallDirectory</strong><br>
+&gt; <strong>set CLASSPATH=%GEMFIRE%\quickstart\classes;%CLASSPATH%</strong><br>
+&gt; <strong>cd %GEMFIRE%\quickstart</strong><br>
+&gt; <strong>set JAVA_HOME=&lt;Installed JRE PATH&gt;</strong><br>
+&gt; <strong>set GF_JAVA_HOME=%JAVA_HOME%</strong><br>
+&gt; <strong>set PATH=%JAVA_HOME%\bin;%PATH%</strong> </code></p>
+</blockquote>
+</DIV>
+
+<DIV>
+<H2>
+Starting HierarchicalClient </H2>
+<P>
+To run the <code>HierarchicalClient</code> example, create a session from the GemFire product directory and complete the following steps.</P>
+<P>This first session starts the Java cache server. </P>
+</DIV>
+ <DIV>
+<OL>
+<LI CLASS="Numbered-1st"><p>
+Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a><a href="../envsetup.html" target="_blank"></a>.</p>
+</LI>
+
+<LI CLASS="Numbered-1st">If you have not already done so, go to the <code>%GEMFIRE%/quickstart</code> directory.</LI>
+  <blockquote>
+    <p><strong>
+      <code>cd %GEMFIRE%/quickstart</code></strong></p>
+    </blockquote>
+<LI CLASS="Numbered">Enter this command to start the Java cache server:
+  
+  <blockquote>
+    <p><strong>
+      <code>java quickstart.HierarchicalServer</code></strong></p>
+     </blockquote>
+  <P>The server creates <code>/root/exampleRegion</code> and prompts you to start the <code>HierarchicalClient</code> application.</P>
+</LI>
+<LI CLASS="Numbered">
+Create another session and go to the <code>cli_HierarchicalClient</code> example directory:
+  <blockquote>
+    <p><strong><code>cd examples\cli_HierarchicalClient</code></strong></p>
+  </blockquote>
+  <li>
+    Start the <code>HierarchicalClient</code> application:</li>
+  <blockquote>
+   <p><strong>
+     <code>HierarchicalClient.exe</code></strong></p>
+   </blockquote>	
+</OL>
+<br>
+</DIV>
+
+<DIV>
+<H2>
+Running the Example </H2>
+<P>
+The client session does a <code>get</code> for <code>Key0</code>, <code>Key1</code>, <code>Key2</code>, and <code>Key3</code>, then forwards the requests to the cache server. The server session reports that the values have been retrieved.</P>
+</DIV>
+<DIV>
+<P><strong>
+In the client session</strong></P>
+<blockquote>
+  <p>
+    Press <code>Enter</code>, as prompted. The client session reports a series of entry updates and destroys, which are forwarded to the cache server.</p>
+  </blockquote>
+<p><strong>In the server session</strong></p>
+<blockquote>
+  <p>
+    The listener for the cache server reports create, update, and destroy events resulting from the modified entries.
+  </p>
+</blockquote>
+<p><strong>In the client session</strong></p>
+<blockquote>
+  <p>
+    Press <code>Enter</code> to end the application, then type <strong><code>Exit</code></strong> to close the session.  </p>
+</blockquote>
+<p><strong>In the server session</strong></p>
+<blockquote>
+  <p>Press <code>Enter</code> to end the cache server, then type <strong><code>Exit</code></strong> to close the session.  </p>
+</blockquote>
+</DIV>
+<DIV>
+<H2>
+Changing System Parameters</H2>
+<P>This product ships configured to run with default system properties. If you need to run in a non-default configuration, GemFire also takes a system-level configuration file. To configure a .NET client, rename any <code>gfcpp.properties</code> file currently in the example directory, then copy <code>gfcpp.properties</code> file into your <code>cli_HierarchicalClient</code> directory from the <code>defaultSystem</code> directory. Edit the <code>gfcpp.properties</code> file in your <code>cli_HierarchicalClient</code> directory, as needed.</P>
+<P>If you also need to make a non-default configuration for the Java cache server, rename any <code>gemfire.properties</code> file currently in the <code>%GEMFIRE%/quickstart</code>, then copy <code>gemfire.properties</code> into the <code>/quickstart</code> directory from the <code>%GEMFIRE%/defaultConfigs</code> directory and edit it. For example, to change the name of the <code>cache.xml</code> file, uncomment this line and change the file name:</P>
+<P> <code>#cache-xml-file=cache.xml</code></P>
+<P>When you're done with the example, delete your edited versions of <code>gemfire.properties</code> and <code>gfcpp.properties</code>, then restore the renamed original versions to their original names so other examples can use the unedited files.</P>
+</DIV>
+<a href="#Top">Top</a>
+<P>
+<br>
+Copyright &#169; 2005-2014 Pivotal Software, Inc. All rights reserved. This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents.
+</BODY>
+</HTML>
+

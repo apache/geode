@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  
+
+  <data name="distinctKeys">
+    <list>
+      <item>100000</item>
+    </list>
+  </data>
+	
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+	
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="true" mirroring="false"
+            interest-list-enabled="false" initial-capacity="18500" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS"/>
+  <client-set name="Putter1"/>
+  <client-set name="Getter1"/>
+  <client-set name="Destroyer1"/>
+  <client-set name="Putter2"/>
+  <client-set name="Getter2"/>
+  <client-set name="Destroyer2"/>
+	
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-t CS1 Native43/csNotifySubscription.xml</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="SetupCacheServer CS2" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-t CS2 Native43/csNotifySubscription.xml</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-t CS1</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-t CS2</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Putter1"/>
+      <data name="TAG">CS1</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Getter1"/>
+      <data name="TAG">CS1</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Destroyer1"/>
+      <data name="TAG">CS1</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Destroyer1"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Putter2"/>
+      <data name="TAG">CS2</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Getter2"/>
+      <data name="TAG">CS2</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Destroyer2"/>
+      <data name="TAG">CS2</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Putter2"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Getter2"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Destroyer2"/>
+    </task>
+    <task name="Measure Put Throughput" action="doPuts" container="perftests" waitTime="30m">
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="Measure Put Throughput" action="doPuts" container="perftests" waitTime="30m">
+      <client-set name="Putter2"/>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="perftests" waitTime="30m">
+      <client-set name="Getter2"/>
+    </task>
+    <task name="Update Entries from Publisher" action="doPuts" container="perftests" waitTime="30m">
+      <data name="valueSizes">
+        <list>
+          <item>200</item>
+        </list>
+      </data>
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Update Entries from Publisher" action="doPuts" container="perftests" waitTime="30m">
+      <data name="valueSizes">
+        <list>
+          <item>200</item>
+        </list>
+      </data>
+      <client-set name="Putter2"/>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+      <data name="registerKeys">100000</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">200</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="perftests" waitTime="30m">
+      <client-set name="Getter2"/>
+      <data name="registerKeys">100000</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">200</data>
+    </task>
+    <task name="Measure Destroy Throughput" action="doDestroys" container="perftests" waitTime="30m">
+      <client-set name="Destroyer1"/>
+    </task>
+    <task name="Measure Destroy Throughput" action="doDestroys" container="perftests" waitTime="30m">
+      <client-set name="Destroyer2"/>
+    </task>
+    <task name="StopCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">-t CS1</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">-t CS2</data>
+      <client-set name="JCS"/>
+    </task>
+  </test>
+
+</test-driver>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+  "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+  <bridge-server port="HOST_PORT1" notify-by-subscription="true"/>
+  <vm-root-region name="ConflatedRegion">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values" enable-bridge-conflation="true"/>
+  </vm-root-region>
+  <vm-root-region name="NonConflatedRegion">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values" enable-bridge-conflation="false"/>
+  </vm-root-region>
+</cache> 

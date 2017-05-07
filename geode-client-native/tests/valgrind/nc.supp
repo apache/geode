@@ -1,0 +1,136 @@
+{
+   SUPPRESSION_TEST_OBJECT_COND
+   Memcheck:Cond
+   ...
+   obj:/export/pnq-gst-dev01a/users/adongre/valgrind_702/nc/ThinClient702X_maint/build-artifacts/linux/framework/lib/libtestobject.so
+   ...
+}
+{
+   SUPPRESSION_TEST_OBJECT_LEAK
+   Memcheck:Leak
+   ...
+   obj:/export/pnq-gst-dev01a/users/adongre/valgrind_702/nc/ThinClient702X_maint/build-artifacts/linux/framework/lib/libtestobject.so
+   ...
+}
+{
+   SUPPRESSION_ACE_LIBRARY_COND
+   Memcheck:Cond
+   ...
+   obj:/export/pnq-gst-dev01a/users/adongre/valgrind_702/nc/ThinClient702X_maint/build-artifacts/linux/hidden/lib/libACE.so.*
+   ...
+}
+{
+   SUPPRESSION_ACE_LIBRARY_LEAK
+   Memcheck:Leak
+   ...
+   obj:/export/pnq-gst-dev01a/users/adongre/valgrind_702/nc/ThinClient702X_maint/build-artifacts/linux/hidden/lib/libACE.so.*
+   ...
+}
+{
+   SUPPRESSION_m_redundancyManager_deleted_in_TcrConnectionManager_close
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZN7gemfire20TcrConnectionManagerC1EPNS_9CacheImplE
+   ...
+}
+{
+   SUPPRESSION_CLONED_ONE_AUTOPTR
+   Memcheck:Leak
+   ...
+   fun:_ZN7gemfire14PoolAttributes5cloneEv                                                                                                                                                                                             
+   ...
+}
+{
+   SUPRESSION_SAMPLER_GETTING_DELETED_VERIFIED_BY_PUTTING_LOGS
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZN18gemfire_statistics17StatisticsManager12initInstanceEPKcxbxx                                                                                                                                                                
+   ...
+}
+{
+   SUPRESSION_EXPIRY_TASK_MANAGER_GETS_DELETED_ONCE_CANCEL_TASK_CALLED
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZN7gemfire17ExpiryTaskManagerC1Ev
+   ...
+}
+{
+   SUPPRESSION_THIS_SEEMS_IN_ACE_NO_STACK_TRACE_AVAILABLE
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_ZnwjRKSt9nothrow_t
+   fun:_ZN9ACE_6_1_011ACE_Log_Msg8instanceEv
+   fun:_ZN9ACE_6_1_011ACE_Log_Msg12inherit_hookEPNS_24ACE_OS_Thread_DescriptorERNS_25ACE_OS_Log_Msg_AttributesE
+   fun:_ZN9ACE_6_1_023ACE_Base_Thread_Adapter15inherit_log_msgEv
+   fun:_ZN9ACE_6_1_018ACE_Thread_Adapter6invokeEv
+   fun:start_thread
+   fun:clone
+}
+{
+   SUPPRESSION_THIS_IS_NOT_MLK_DELETED_IN_TcrConnectionManager_removeRefToEndpoint 
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZN7gemfire20TcrConnectionManager19addRefToTcrEndpointEN8stlp_std12basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEEPNS_16ThinClientBaseDME
+   ...
+}
+
+{
+   SUPPRESSION_THIS_IS_DELETED_DTOR_VERIFIED_WITH_LOG_FILES
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znwj
+   fun:_ZN7gemfire11TcrEndpoint19createNewConnectionERPNS_13TcrConnectionEbbjib
+   fun:_ZN7gemfire16ThinClientPoolDM20createPoolConnectionERPNS_13TcrConnectionERN8stlp_std3setINS_14ServerLocationENS4_4lessIS6_EENS4_9allocatorIS6_EEEEPKS1_
+   fun:_ZN7gemfire16ThinClientPoolDM21restoreMinConnectionsERVb
+   fun:_ZN7gemfire16ThinClientPoolDM25manageConnectionsInternalERVb
+   fun:_ZN7gemfire16ThinClientPoolDM17manageConnectionsERVb
+   fun:_ZN7gemfire9GF_TASK_TINS_16ThinClientPoolDMEE3svcEv
+   fun:_ZN9ACE_6_1_013ACE_Task_Base7svc_runEPv
+   fun:_ZN9ACE_6_1_018ACE_Thread_Adapter8invoke_iEv
+   fun:_ZN9ACE_6_1_018ACE_Thread_Adapter6invokeEv
+   fun:start_thread
+   fun:clone
+}
+{
+   SUPPRESSIONS_CONN_ARE_DELETED_FROM_FAIRQUEUE_DESTROCTOR 
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZN7gemfire13TcrConnection16createConnectionEPKcji
+   ...
+}
+{
+   SUPPRESSION_NOT_A_LEAK_DELETED_IN_TcrEndpoint_stopNotifyReceiverAndCleanup
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZN7gemfire15TcrPoolEndPoint10registerDMEbbbPNS_16ThinClientBaseDME
+   ...
+}
+{
+   SUPPRESSION_NOT_A_LEAK_2
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZN7gemfire23ThinClientLocatorHelper16createConnectionEPKciji
+   ...
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

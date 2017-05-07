@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+  "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true" maximum-time-between-pings="600000" />
+  <region name="IndexRegion">
+    <!--region-attributes>
+      <partition-attributes redundant-copies="2"/>
+    </region-attributes-->
+    <region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+   
+  </region>
+  <region name="Portfolios">
+    <region-attributes>
+      <partition-attributes redundant-copies="2"/>
+    </region-attributes>
+  </region>
+  <region name="Portfolios2">
+    <region-attributes>
+      <partition-attributes redundant-copies="2"/>
+    </region-attributes>
+  </region>
+  <region name="Portfolios3">
+    <region-attributes>
+      <partition-attributes redundant-copies="2"/>
+    </region-attributes>
+  </region>
+  <region name="Positions">
+    <region-attributes>
+      <partition-attributes redundant-copies="2"/>
+    </region-attributes>
+  </region>
+
+</cache> 

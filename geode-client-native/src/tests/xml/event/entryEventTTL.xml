@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="maxTestTime">10200</data>
+  <data name="valueSizes">2000</data>
+  <data name="entryOps">	
+    <oneof>
+			<item>read</item>
+			<item>read</item>
+			<item>read</item>
+			<item>read</item>
+		</oneof>
+	</data>
+	<data name="workTime">20</data>
+	<data name="regionName">EntryTTLTest</data>
+  <data name="randomKey">
+	  <range low="1" high="9999"/>
+	</data>
+
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNilLstnr">
+    <snippet>
+      <region name="AckNmirrorNilLstnr">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNilLstnr">
+    <snippet>
+      <region name="NackNmirrorNilLstnr">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorIlLstnr">
+    <snippet>
+      <region name="AckNmirrorIlLstnr">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorIlLstnr">
+    <snippet>
+      <region name="NackNmirrorIlLstnr">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <entry-time-to-live>
+            <expiration-attributes timeout="5" action="local-destroy"/>
+          </entry-time-to-live>
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+          <cache-loader library="eventtest" function="createETCacheLoader"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <test name="EntryTTLTest-AckNmirrorNil" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>
+
+  <test name="EntryTTLTest-NackNmirrorNil" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>
+
+  <test name="EntryTTLTest-AckNmirrorIl" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">AckNmirrorIl</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>
+
+  <test name="EntryTTLTest-NackNmirrorIl" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">NackNmirrorIl</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>
+
+  <test name="EntryTTLTest-AckNmirrorNilLstnr" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">AckNmirrorNilLstnr</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>
+
+  <test name="EntryTTLTest-NackNmirrorNilLstnr" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">NackNmirrorNilLstnr</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>
+  
+  <test name="EntryTTLTest-AckNmirrorIlLstnr" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">AckNmirrorIlLstnr</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>
+
+  <test name="EntryTTLTest-NackNmirrorIlLstnr" description="entry event time to live test" waitTime="780">
+    <task name="CreateRegion" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">NackNmirrorIlLstnr</data>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+    </task>        
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" timesToRun="4" continueOnError="true" threadCount="4">
+      <data name="removeAllRegions">1</data>
+    </task>    
+    <task name="RemoveRegion" action="doRemoveRootRegion" container="eventtest" waitTime="600"></task>
+  </test>    
+</test-driver>

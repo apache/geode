@@ -1,0 +1,13 @@
+pdx/AutoPdx/pdxPutGetMerge.xml
+pdx/AutoPdx/pdxPRRegionOps.xml
+pdx/AutoPdx/nestedPdxOps.xml
+pdx/AutoPdx/pdxFailover.xml
+pdx/AutoPdx/serialNestedPdxOps.xml
+pdx/AutoPdx/pdxReplicatedRegionRI.xml
+pdx/AutoPdx/pdxPersistentRegionFE.xml
+pdx/AutoPdx/pdxReplicatedRegionFE.xml
+pdx/AutoPdx/pdxPutGetMergeWithRI.xml
+pdx/AutoPdx/pdxPutGetFEMerge.xml
+pdx/AutoPdx/pdxPRRegionFE.xml
+pdx/AutoPdx/pdxPutGetPdxInstance.xml
+pdx/AutoPdx/pdxInstanceFactoryTest.xml

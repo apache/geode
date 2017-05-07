@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+  
+<!-- Example 9.13 Creating an Index on a Cache Server Using a Server XML File -->
+<cache>
+	<!-- put valid port no Eg:- $PORT_NUM = 24680 -->
+	<bridge-server port="24680" maximum-time-between-pings="600000"/>
+	<region name="Portfolios">
+		<region-attributes index-update-type="asynchronous"
+			scope="distributed-ack" mirror-type="keys-values">
+		</region-attributes>
+			<index name="index1">
+				<functional from-clause="/Portfolios" expression="ID" />
+			</index>
+			<index name="index5">
+				<functional from-clause="/Portfolios.keys" expression="toString" />
+			</index>
+			<index name="index7">
+				<functional from-clause="/Portfolios.values k"
+					expression="nvl(k.position2.toString(),'nopes')" />
+			</index>
+			<index name="index8">
+				<functional from-clause="/Portfolios.keys k" expression="k" />
+			</index>
+	</region>
+	<region name="Portfolios2">
+		<region-attributes index-update-type="asynchronous"
+			scope="distributed-ack" mirror-type="keys-values">
+		</region-attributes>
+			<index name="index2">
+				<functional from-clause="/Portfolios2" expression="ID" />
+			</index>
+	</region>
+	<region name="Portfolios3">
+		<region-attributes index-update-type="asynchronous"
+			scope="distributed-ack" mirror-type="keys-values">
+		</region-attributes>
+			<index name="index3">
+				<functional from-clause="/Portfolios3" expression="ID" />
+			</index>
+	</region>
+	<region name="Positions">
+		<region-attributes index-update-type="asynchronous"
+				scope="distributed-ack" mirror-type="keys-values">
+		</region-attributes>
+			<index name="index4">
+				<functional from-clause="/Positions" expression="secId" />
+			</index>
+	</region>
+</cache>

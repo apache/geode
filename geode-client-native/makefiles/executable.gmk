@@ -1,0 +1,74 @@
+#=========================================================================
+# Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+# This product is protected by U.S. and international copyright
+# and intellectual property laws. Pivotal products are covered by
+# more patents listed at http://www.pivotal.io/patents.
+#========================================================================
+
+ifeq ($(HOSTTYPE_OSTYPE),intel.Windows)
+    EXE = .exe
+    OBJ = .obj
+else
+    EXE =
+    OBJ = .o
+endif
+
+PRODDIR_lib = $(PRODDIR)/lib
+
+ifeq ($(HOSTTYPE_OSTYPE),sparc.Solaris)
+  CFLAGS = -mt $(CFLAGS_MODEL) $(CINCL)
+  # TODO jbarrett - CFLAGS += -xmemalign=4s
+  LDFLAGS = $(LDFLAGSfast) $(CFLAGS_MODEL)
+  LIBS += $(ACE_DIR)/lib/libACE.a
+else
+ifeq ($(HOSTTYPE_OSTYPE),x86.Solaris)
+  CFLAGS = -mt $(CFLAGS_MODEL) $(CINCL)
+  LDFLAGS = $(LDFLAGSfast) $(CFLAGS_MODEL)
+  LIBS += $(ACE_DIR)/lib/libACE.a
+else
+ifeq ($(HOSTTYPE_OSTYPE),intel.Linux)
+  CFLAGS = $(CFLAGS_MODEL) $(FPIC) $(CINCL)
+  LDFLAGS = $(LDFLAGSfast) $(CFLAGS_MODEL)
+  LIBS += $(ACE_DIR)/lib/libACE.a
+else
+  CINCL := $(foreach dir,$(subst -I,,$(CINCL)),-I$(call NATIVEDIR_FUNC,$(dir)))
+  CFLAGS = $(CFLAGS_COMMON) $(CINCL)
+  LDFLAGS = $(LFLAGSfast) /LIBPATH:$(call NATIVEDIR_FUNC,$(PRODDIR_lib))
+  ifeq ($(VCVER),vc8)
+    MT_COMMAND = mt /nologo -manifest $(call NATIVEDIR_FUNC,$@).manifest -outputresource:$(call NATIVEDIR_FUNC,$@)
+  endif
+endif
+endif
+endif
+
+# Use CXX (C++ compiler) for all of these compiles to require prototypes 
+# for all functions.
+# Without prototypes, 64 bit code will not be compiled correctly because
+# default function result type of "int" is not the same size as "void*"
+
+$(DESTDIR)/%${OBJ} : %.cpp
+	@echo compiling 1 $<
+	$(CXX) $(CFLAGS) $(VCINCLUDES) -c $(OUT.c) $<
+
+$(DESTDIR)/%${OBJ} : %.c
+	@echo compiling 2 $<
+	$(CXX) $(CFLAGS) $(VCINCLUDES) -c $(OUT.c) $<
+
+$(DESTDIR)/%${OBJ} : $(DESTDIR)/%.c
+	@echo compiling 3 $<
+	$(CXX) $(CFLAGS) $(VCINCLUDES) -c $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(DESTDIR)/%${EXE} : $(DESTDIR)/%${OBJ}
+	@echo linking $@
+ifeq ($(HOSTTYPE_OSTYPE),intel.Windows)
+	link $(LDFLAGS) $(LIBPATH) -out:$(call NATIVEDIR_FUNC,$@) $(foreach obj,$^,$(call NATIVEDIR_FUNC,$(obj))) $(LDLIBS)
+	$(MT_COMMAND)
+else
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+endif
+
+KEEPOBJS= $(DESTDIR)/%${OBJ}
+
+.PRECIOUS: $(KEEPOBJS)
+
+

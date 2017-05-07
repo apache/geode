@@ -1,0 +1,72 @@
+diff -ru a/ace/config-lite.h b/ace/config-lite.h
+--- a/ace/config-lite.h	2015-09-16 23:55:18.290052190 -0700
++++ b/ace/config-lite.h	2015-12-16 13:05:16.451203813 -0800
+@@ -115,7 +115,8 @@
+ // adapters, we can drop this generator macro or at least drop the
+ // MSVC++ or Sun Studio preprocessor conditional blocks.
+ #if defined (__SUNPRO_CC) && __SUNPRO_CC <= 0x5130 \
+-      && !defined (_STLPORT_VERSION)
++      && !defined (_STLPORT_VERSION) \
++      && __cplusplus < 201103L
+   // If we're not using the stlport4 C++ library (which has standard
+   // iterators), we need to ensure this is included in order to test
+   // the _RWSTD_NO_CLASS_PARTIAL_SPEC feature test macro below.
+diff -ru a/include/makeinclude/platform_sunos5_sunc++.GNU b/include/makeinclude/platform_sunos5_sunc++.GNU
+--- a/include/makeinclude/platform_sunos5_sunc++.GNU	2015-09-16 23:55:18.443053145 -0700
++++ b/include/makeinclude/platform_sunos5_sunc++.GNU	2015-12-16 13:12:05.914217145 -0800
+@@ -45,6 +45,7 @@
+ rwtools ?= 0
+ stdcpplib ?= 1
+ stlport ?= 0
++c++11 ?= 0
+ threads ?= 1
+ pthreads ?= 1
+ versioned_so ?= 1
+@@ -121,6 +122,10 @@
+ 
+   CCFLAGS += $(CFLAGS)
+ 
++  ifeq (C++ 5.13,$(findstring C++ 5.13,$(CC_VERSION)))
++    CCFLAGS += -features=zla
++  endif # 5.13
++
+   #### If compat=4 is desired, set up for that. There are syntactic diffs
+   #### in the compatibility modes, but here all we need to be concerned with
+   #### is turning on -compat=4, and not trying to enable the new libraries.
+@@ -187,6 +192,9 @@
+ 
+ # Support alternate CC libraries (i.e. STLport, Tools.h++, Cstd)
+ # See: http://docs.sun.com/app/docs/doc/820-7599/bkaty?a=view
++ifeq ($(c++11),1)
++  CCFLAGS += -std=c++11
++else
+ ifeq ($(stlport),1)
+   CC_LIBRARY = stlport4
+   PLATFORM_STLPORT_CCFLAGS += -library=$(CC_LIBRARY)
+@@ -210,6 +218,7 @@
+   CCFLAGS += -library=$(CC_LIBRARY)
+   LDFLAGS += -library=$(CC_LIBRARY)
+ endif
++endif
+ 
+ ### CC 5.10 enables annotation support by default; allow user to override
+ ### new behavior. This also provides a work around for 64-bit linker crashes,
+diff -ru a/ace/Stats.cpp b/ace/Stats.cpp
+--- a/ace/Stats.cpp        2015-09-16 23:55:18.268052000 -0700
++++ b/ace/Stats.cpp  2015-11-23 17:21:03.000000000 -0800
+@@ -240,12 +240,12 @@
+       ACE_Stats_Value minimum (tmp_precision), maximum (tmp_precision);
+       if (min_ != 0)
+         {
+-          const ACE_UINT64 m (min_);
++          const ACE_UINT64 m = min_;
+           quotient (m, scale_factor, minimum);
+         }
+       if (max_ != 0)
+         {
+-          const ACE_UINT64 m (max_);
++          const ACE_UINT64 m = max_;
+           quotient (m, scale_factor, maximum);
+         }
+       ACE_OS::sprintf (min_string, format,
+

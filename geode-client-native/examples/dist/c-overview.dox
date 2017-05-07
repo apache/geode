@@ -1,0 +1,16 @@
+// This file contains external summary documentation for the GemFire C
+// API similar to an "overview.html" in Javadoc.  The document tags it
+// uses can be interpreted by DOxygen.
+
+/**
+ * @mainpage Examples of the GemFire Distributed C API
+ *
+ * The following programs provide examples of using the GemFire C API
+ * to access distributed cached data.
+ *
+ * \li cacheRunner.c is an interactive program that allows you to
+ *     explore the C API to the GemFire distributed cache
+ *
+ * \li ha.c allows you to experiment with GemFire's high availability
+ *     and failover features
+ */

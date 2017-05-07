@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd">
+<cache>
+  <bridge-server port="HOST_PORT2" notify-by-subscription="true"/>
+
+  <vm-root-region name="DistRegionAck">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+    <region name="AuthSubregion">
+      <region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+    </region>
+  </vm-root-region>
+  <vm-root-region name="DistRegionNoAck">
+    <region-attributes scope="distributed-no-ack" mirror-type="keys-values"/>
+    <region name="AuthSubregion">
+      <region-attributes scope="distributed-no-ack" mirror-type="keys-values"/>
+    </region>
+  </vm-root-region>
+  <function-service>
+  	<function>
+  		<class-name>javaobject.ExampleFunction</class-name>
+      <parameter name="id"><string>securityTest</string></parameter>
+      <parameter name="haveResults"><string>true</string></parameter>
+  	</function>
+    <function>
+  		<class-name>javaobject.FireNForget</class-name>
+  	</function>
+	<function>
+  		<class-name>javaobject.executeFunction_SendException</class-name>
+  	</function>
+  </function-service>
+</cache> 

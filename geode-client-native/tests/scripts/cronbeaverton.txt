@@ -1,0 +1,9 @@
+# lines starting with a # are comments
+-p /export/tiny1/users/tkeith/regression
+-d /export/tiny2/users/tkeith/regression/build-artifacts/linux
+-l shortNightly.list
+-m tim.keith@gemstone.com
+-m sudhir.menon@gemstone.com
+-m matthew.splett@gemstone.com
+-m qing.he@gemstone.com
+-m jdai@gemstone.com

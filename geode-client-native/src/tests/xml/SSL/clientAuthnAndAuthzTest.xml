@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="securityScheme">
+   <list>
+     <item>LDAP</item>
+     <item>DUMMY</item>
+     <item>PKCS</item>
+   </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="sslEnable">true</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes scope="distributed-ack" caching-enabled="false" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set name="Feeder"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set name="JCS5" hostGroup="CS"/>
+  <client-set count="10" name="WriterClient"/>
+  <client-set count="10" name="ReaderClient"/>
+  <client-set count="10" name="QueryClient"/>
+
+  <test name="Thin Client Entry Events" description="Clients perform entry events" timesToRun="3">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 5 Native/csAckMirrorSecurity.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" >
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StartCacheServer 5" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">5</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS5"/>
+    </task>
+
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="securityParams">
+        <list>
+          <item>create</item>
+          <item>update</item>
+        </list>
+      </data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="CreateClientsWithWriterAuthZ" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="securityParams">
+        <list>
+          <item>create</item>
+          <item>update</item>
+          <item>destroy</item>
+        </list>
+      </data>
+      <client-set count="10" name="WriterClient"/>
+    </task>
+    <task name="CreateClientsWithReaderAuthZ" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="securityParams">
+        <list>
+          <item>get</item>
+          <item>register_interest</item>
+          <item>unregister_interest</item>
+        </list>
+      </data>
+      <client-set count="10" name="ReaderClient"/>
+    </task>
+    <task name="CreateClientsWithQueryAuthZ" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="securityParams">
+        <list>
+          <item>query</item>
+        </list>
+      </data>
+      <client-set count="10" name="QueryClient"/>
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="40m">
+      <data name="entryCount">10000</data>
+      <data name="opsSecond">1200</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Client Events" action="doEntryOperationsForSecurity" container="cacheserver" waitTime="30m">
+      <data name="entryOps">
+        <oneof>
+          <item>create</item>
+          <item>update</item>
+          <item>update</item>
+          <item>update</item>
+          <item>get</item>
+          <item>get</item>
+          <item>regNUnregInterest</item>
+          <item>regNUnregInterest</item>
+          <item>query</item>
+          <item>query</item>
+          <item>cq</item>
+          <item>cq</item>
+          <item>destroy</item>
+          <item>destroy</item>
+        </oneof>
+      </data>
+      <data name="workTime">10m</data>
+      <data name="opsSecond">1200</data>
+      <data name="entryCount">10000</data>
+      <data name="valueSizes">10</data>
+      <client-set count="10" name="WriterClient"/>
+      <client-set count="10" name="ReaderClient"/>
+      <client-set count="10" name="QueryClient"/>
+    </task>
+    <task name=" Validate on Writer Client with valid Authz" action="doValidateEntryOperationsForSecurity" container="cacheserver" waitTime="5m">
+      <data name="entryOps">
+        <list>
+         <item>create</item>
+         <item>update</item>
+         <item>destroy</item>
+        </list>
+      </data>
+      <data name="isExpectedPass">true</data>
+      <client-set count="10" name="WriterClient"/>
+    </task>  
+    <task name=" Validate on Writer Client with invalid Authz" action="doValidateEntryOperationsForSecurity" container="cacheserver" waitTime="5m">
+      <data name="entryOps">
+        <list>
+          <item>get</item>
+          <item>regNUnregInterest</item>
+          <item>query</item>
+          <item>cq</item>
+        </list>
+      </data>
+      <data name="isExpectedPass">false</data>
+      <client-set count="10" name="WriterClient"/>
+    </task>  
+    <task name=" Validate on Reader Client with valid Authz" action="doValidateEntryOperationsForSecurity" container="cacheserver" waitTime="5m">
+      <data name="entryOps">
+        <list>
+         <item>get</item>
+         <item>regNUnregInterest</item>
+         <item>cq</item>
+        </list>
+      </data>
+      <data name="isExpectedPass">true</data>
+      <client-set count="10" name="ReaderClient"/>
+    </task>  
+    <task name=" Validate on Reader Client with invalid Authz" action="doValidateEntryOperationsForSecurity" container="cacheserver" waitTime="5m">
+      <data name="entryOps">
+        <list>
+         <item>create</item>
+         <item>update</item>
+         <item>destroy</item>
+         <item>query</item>
+        </list>
+      </data>
+      <data name="isExpectedPass">false</data>
+      <client-set count="10" name="ReaderClient"/>
+    </task>  
+    <task name=" Validate on Query Client with valid Authz" action="doValidateEntryOperationsForSecurity" container="cacheserver" waitTime="5m">
+      <data name="entryOps">
+        <list>
+         <item>query</item>
+          <item>cq</item>
+        </list>
+      </data>
+      <data name="isExpectedPass">true</data>
+      <client-set count="10" name="QueryClient"/>
+    </task>  
+    <task name=" Validate on Query Client with invalid Authz" action="doValidateEntryOperationsForSecurity" container="cacheserver" waitTime="5m">
+      <data name="entryOps">
+        <list>
+         <item>create</item>
+         <item>update</item>
+         <item>destroy</item>
+         <item>get</item>
+         <item>regNUnregInterest</item>
+        </list>
+      </data>
+      <data name="isExpectedPass">false</data>
+      <client-set count="10" name="QueryClient"/>
+    </task>  
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StopCacheServer 5" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+
+  </test>
+</test-driver>

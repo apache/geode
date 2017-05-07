@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="maxTestTime">10200</data>
+	<data name="minTaskGranularitySec">300</data>
+	<data name="totalTaskTimeSec">1200</data>
+	<data name="maxResultWaitSec">600</data>
+	<data name="preemptCounter">10</data>
+	<!-- abort, exit, done ops downcounter before execution -->
+	<data name="haltIfBadResult">true</data>
+	<data name="maxRegions">100</data>
+	<data name="installListener">true</data>
+	<data name="installWriter">false</data>
+	<data name="installLoader">false</data>
+	<data-set name="Local">
+		<data name="regionName">Local</data>
+		<data name="scope">local</data>
+	</data-set>
+	<data-set name="AckMirrorNil">
+		<data name="regionName">AckMirrorNil</data>
+		<data name="scope">ack</data>
+		<data name="mirroring">true</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	<data-set name="NackMirrorNil">
+		<data name="regionName">NackMirrorNil</data>
+		<data name="scope">nack</data>
+		<data name="mirroring">true</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	<data-set name="AckNmirrorNil">
+		<data name="regionName">AckNmirrorNil</data>
+		<data name="scope">ack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	<data-set name="NackNmirrorNil">
+		<data name="regionName">NackNmirrorNil</data>
+		<data name="scope">nack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	<data-set name="AckMirrorIl">
+		<data name="regionName">AckMirrorIl</data>
+		<data name="scope">ack</data>
+		<data name="mirroring">true</data>
+		<data name="interestListEnabled">true</data>
+	</data-set>
+	<data-set name="NackMirrorIl">
+		<data name="regionName">NackMirrorIl</data>
+		<data name="scope">nack</data>
+		<data name="mirroring">true</data>
+		<data name="interestListEnabled">true</data>
+	</data-set>
+	<data-set name="AckNmirrorIl">
+		<data name="regionName">AckNmirrorIl</data>
+		<data name="scope">ack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">true</data>
+	</data-set>
+	<data-set name="NackNmirrorIl">
+		<data name="regionName">NackNmirrorIl</data>
+		<data name="scope">nack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">true</data>
+	</data-set>
+	<data-set name="NackNmirrorNcacheNil">
+		<data name="regionName">NackNmirrorNil</data>
+		<data name="scope">nack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">false</data>
+		<data name="cachingEnabled">false</data>
+	</data-set>
+	<data-set name="AckNmirrorNcacheNil">
+		<data name="regionName">AckNmirrorNil</data>
+		<data name="scope">ack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">false</data>
+		<data name="cachingEnabled">false</data>
+	</data-set>
+	
+	<test name="Local" description="Local Entry Event test" waitTime="780">
+		<task name="CreateReg-LocalA" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">Local</data>
+		</task>
+	</test>
+	
+	<test name="AckMirrorNil" description="AckMirrorNil Entry Event test" waitTime="780">
+		<task name="CreateRegion-AckMirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">AckMirrorNil</data>
+		</task>
+	</test>
+	
+	<test name="NackMirrorNil" description="NackMirrorNil Entry Event test" waitTime="780">
+		<task name="CreateRegion-NackMirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">NackMirrorNil</data>
+		</task>
+	</test>
+	
+	<test name="AckNmirrorNil" description="AckNmirrorNil Entry Event test" waitTime="780">
+		<task name="CreateRegion-AckNmirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">AckNmirrorNil</data>
+		</task>
+	</test>
+	
+	<test name="NackNmirrorNil" description="NackNmirrorNil Entry Event test" waitTime="780">
+		<task name="CreateRegion-NackNmirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">NackNmirrorNil</data>
+		</task>
+	</test>
+	
+	<test name="AckMirrorIl" description="AckMirrorIl Entry Event test" waitTime="780">
+		<task name="CreateRegion-AckMirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">AckMirrorIl</data>
+		</task>
+	</test>
+	
+	<test name="NackMirrorIl" description="NackMirrorIl Entry Event test" waitTime="780">
+		<task name="CreateRegion-NackMirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">NackMirrorIl</data>
+		</task>
+	</test>
+	
+	<test name="AckNmirrorIl" description="AckNmirrorIl Entry Event test" waitTime="780">
+		<task name="CreateRegion-AckNmirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">AckNmirrorIl</data>
+		</task>
+	</test>
+	
+	<test name="NackNmirrorIl" description="NackNmirrorIl Entry Event test" waitTime="780">
+		<task name="CreateRegion-NackNmirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">NackNmirrorIl</data>
+		</task>
+	</test>
+	
+	<test name="AckNmirrorNcacheNil" description="AckNmirrorNcacheNil Entry Event test" waitTime="780">
+		<task name="CreateRegion-AckNmirrorNcacheNil" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">AckNmirrorNcacheNil</data>
+		</task>
+	</test>
+	
+	<test name="NackNmirrorNcacheNil" description="NackNmirrorNcacheNil Entry Event test" waitTime="780">
+		<task name="CreateRegion-NackNmirrorNcacheNil" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionSpec">NackNmirrorNcacheNil</data>
+		</task>
+	</test>
+	
+	<test name="MixedNil" description="MixedNil Entry Event test" waitTime="780">
+		<task name="CreateRegion-MixedNil" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionName">MixedNil</data>
+			<data name="regionSpec">
+				<oneof>
+					<item>NackNmirrorNil</item>
+					<item>NackMirrorNil</item>
+					<item>AckNmirrorNil</item>
+					<item>AckMirrorNil</item>
+					<item>NackNmirrorNcacheNil</item>
+					<item>AckNmirrorNcacheNil</item>
+				</oneof>
+			</data>
+		</task>
+	</test>
+	
+	<test name="MixedIl" description="MixedIl Entry Event test" waitTime="780">
+		<task name="CreateRegion-MixedIl" action="doCreateRootRegion" container="eventtest" waitTime="60" timesToRun="45" continueOnError="true">
+			<data name="regionName">MixedIl</data>
+			<data name="regionSpec">
+				<oneof>
+					<item>NackNmirrorIl</item>
+					<item>NackMirrorIl</item>
+					<item>AckNmirrorIl</item>
+					<item>AckMirrorIl</item>
+				</oneof>
+			</data>
+		</task>
+	</test>
+	
+</test-driver>

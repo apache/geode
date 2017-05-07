@@ -1,0 +1,1016 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This test for put and get scalibility with varying clients and threads -->
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+	
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+	
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+      <item>2</item>
+      <item>4</item>
+      <item>7</item>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="distinctKeysForDestroyTask">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true"
+            caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true"
+            caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckMirrorIl">
+    <snippet>
+      <region name="AckMirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="true"
+            caching-enabled="true" interest-list-enabled="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackMirrorIl">
+    <snippet>
+      <region name="NackMirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="true"
+            caching-enabled="true" interest-list-enabled="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackNmirrorNcacheNil">
+    <snippet>
+      <region name="NackNmirrorNcacheNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false"
+            caching-enabled="false" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckNmirrorNcacheNil">
+    <snippet>
+      <region name="AckNmirrorNcacheNil">
+        <region-attributes scope="distributed-ack" mirroring="false"
+            caching-enabled="false" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackNmirrorNcacheNilII">
+    <snippet>
+      <region name="NackNmirrorNcacheNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false"
+            caching-enabled="false" interest-list-enabled="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckNmirrorNcacheNilII">
+    <snippet>
+      <region name="AckNmirrorNcacheNil">
+        <region-attributes scope="distributed-ack" mirroring="false"
+            caching-enabled="false" interest-list-enabled="true"/>
+      </region>
+    </snippet>
+  </data>
+	
+  <client-set name="source">
+    <client name="sink1"/>
+    <client name="sink2"/>
+    <client name="sink3"/>
+    <client name="sink4"/>
+    <client name="sink5"/>
+  </client-set>
+
+  <test name="Local" description="Local Entry Event test">
+    <task name="CreateLocal" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+      <data name="regionSpec">Local</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckMirrorNil - 2 Procs" description="AckMirrorNil Entry Event test">
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckMirrorNil</data>
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckMirrorNil - 3 Procs" description="AckMirrorNil Entry Event test">
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckMirrorNil</data>
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckMirrorNil - 4 Procs" description="AckMirrorNil Entry Event test">
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckMirrorNil</data>
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackMirrorNil- 2 Procs" description="NackMirrorNil Entry Event test">
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackMirrorNil</data>
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackMirrorNil - 3 Procs" description="NackMirrorNil Entry Event test">
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackMirrorNil</data>
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackMirrorNil - 4 Procs" description="NackMirrorNil Entry Event test">
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackMirrorNil</data>
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckNmirrorNil -2 Procs" description="AckNmirrorNil Entry Event test">
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckNmirrorNil</data>
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckNmirrorNil - 3 Procs" description="AckNmirrorNil Entry Event test">
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckNmirrorNil</data>
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckNmirrorNil - 4 Procs" description="AckNmirrorNil Entry Event test">
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckNmirrorNil</data>
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackNmirrorNil - 2 Procs" description="NackNmirrorNil Entry Event test">
+    <task name="CreateRegion-NackNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackNmirrorNil</data>
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackNmirrorNil - 3 Procs" description="NackNmirrorNil Entry Event test">
+    <task name="CreateRegion-NackNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackNmirrorNil</data>
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackNmirrorNil - 4 Procs" description="NackNmirrorNil Entry Event test">
+    <task name="CreateRegion-NackNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackNmirrorNil</data>
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckMirrorIl - 2 Procs" description="AckMirrorIl Entry Event test">
+    <task name="CreateRegion-AckMirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckMirrorII</data>
+      <data name="regionSpec">AckNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckMirrorIl - 3 Procs" description="AckMirrorIl Entry Event test">
+    <task name="CreateRegion-AckMirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckMirrorII</data>
+      <data name="regionSpec">AckNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckMirrorIl - 4 Procs" description="AckMirrorIl Entry Event test">
+    <task name="CreateRegion-AckMirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckMirrorII</data>
+      <data name="regionSpec">AckNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackMirrorIl - 2 Procs" description="NackMirrorIl Entry Event test">
+    <task name="CreateRegion-NackMirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackMirrorII</data>
+      <data name="regionSpec">NackNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackMirrorIl - 3 Procs" description="NackMirrorIl Entry Event test">
+    <task name="CreateRegion-NackMirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackMirrorII</data>
+      <data name="regionSpec">NackNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackMirrorIl - 4 Procs" description="NackMirrorIl Entry Event test">
+    <task name="CreateRegion-NackMirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackMirrorII</data>
+      <data name="regionSpec">NackNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+	
+  <test name="AckNmirrorIl - 2 Procs" description="AckNmirrorIl Entry Event test">
+    <task name="CreateRegion-AckNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckNmirrorII</data>
+      <data name="regionSpec">AckNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckNmirrorIl - 3 Procs" description="AckNmirrorIl Entry Event test">
+    <task name="CreateRegion-AckNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckNmirrorII</data>
+      <data name="regionSpec">AckNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckNmirrorIl - 4 Procs" description="AckNmirrorIl Entry Event test">
+    <task name="CreateRegion-AckNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-AckNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">AckNmirrorII</data>
+      <data name="regionSpec">AckNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackNmirrorIl - 2 Porcs" description="NackNmirrorIl Entry Event test">
+    <task name="CreateRegion-NackNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-with-NackNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackNmirrorII</data>
+      <data name="regionSpec">NackNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackNmirrorIl - 3 Procs" description="NackNmirrorIl Entry Event test">
+    <task name="CreateRegion-NackNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackNmirrorII</data>
+      <data name="regionSpec">NackNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackNmirrorIl - 4 Procs" description="NackNmirrorIl Entry Event test">
+    <task name="CreateRegion-NackNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="source">
+        <client name="sink1"/>
+        <client name="sink2"/>
+        <client name="sink3"/>
+        <client name="sink4"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackNmirrorNcacheNilII" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionName">NackNmirrorII</data>
+      <data name="regionSpec">NackNmirrorNcacheNilII</data>
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="AckNmirrorNcacheNil " description="AckNmirrorNcacheNil Entry Event test">
+    <task name="CreateRegion-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+	
+  <test name="NackNmirrorNcacheNil " description="NackNmirrorNcacheNil Entry Event test">
+    <task name="CreateRegion-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="2m">
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink1"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set name="source">
+        <client name="sink5"/>
+      </client-set>
+    </task>
+  </test>
+</test-driver>

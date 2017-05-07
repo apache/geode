@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache>
+
+  <region name = "exampleRegion" >
+      <region-attributes refid="CACHING_PROXY" cloning-enabled="true"
+        pool-name="examplePool"/>
+    </region>
+  <pool name="examplePool"  server-group="ServerGroup1" >
+    <locator host="localhost" port="34756" />
+  </pool>
+
+</client-cache>

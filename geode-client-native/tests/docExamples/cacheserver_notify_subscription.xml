@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+<cache>
+  <bridge-server port="24680" notify-by-subscription="true"/>
+  <vm-root-region name="exampleRegion">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </vm-root-region>
+  
+  <vm-root-region name="root">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+    	<region name="listenerWriterLoader">
+      <region-attributes scope="distributed-ack" mirror-type="keys-values">
+        <!--cache-loader>
+          <class-name>cacheRunner.StringLoader</class-name>
+        </cache-loader-->
+      </region-attributes>
+      <entry>
+        <key><string>entry1</string></key>
+        <value><string>1.0</string></value>
+      </entry>
+    </region>
+  </vm-root-region>
+  
+  <region name="exampleRegion0">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+  
+  <region name="exampleRegion1">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+  
+  <function-service>
+  	<function>
+  		<class-name>javaobject.MultiGetFunctionI</class-name>
+  	</function>
+  </function-service>
+</cache> 

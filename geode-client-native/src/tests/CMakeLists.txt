@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.4)
+project(nativeclient.tests)
+
+add_subdirectory(fwklib)
+add_subdirectory(fwk)
+add_subdirectory(pdxautoserializerclass)
+add_subdirectory(testobject)
+add_subdirectory(security)
+add_subdirectory(cppcache)
+if (${BUILD_CLI})
+  add_subdirectory(clicache)
+endif()

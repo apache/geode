@@ -1,0 +1,6 @@
+Generics/ResumableTx/concPRWithOps.xml
+Generics/ResumableTx/concRRWithOps.xml
+Generics/ResumableTx/serialPRWithOps.xml
+Generics/ResumableTx/serialRRWithOps.xml
+Generics/ResumableTx/concRRFailover.xml
+Generics/ResumableTx/serialRRFailover.xml

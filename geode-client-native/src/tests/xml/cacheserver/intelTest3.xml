@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSIntelTestRegion</data>
+  <data name="valueSizes">
+		<oneof>
+			<item>100</item>
+			<item>1000</item>
+		</oneof>
+	</data>
+  <data name="entryCount">10000</data>
+  <client-set>
+    <client name="Feeder"/>
+  </client-set>
+  <client-set count="50" name="Server"/>
+  <client-set count="5000" name="Client"/>
+
+  <test name="IntelTest2" 
+        description="Start a feeder and get data into server caches. Connect clients 
+        and have the clients do gets. While the feeder continues to update keys 
+        (at a lower rate than test 2), the clients may update keys and demonstrate 
+        that the updates make it to all the servers within the specified time period 
+        (all 50 servers should see the updates in millseconds) (Push from clients to servers)
+        And demonstrate the clients see the relevant updates in their local caches within the 
+        specified time period ( Push from clients to other clients)" >
+    <task name="CreateFeeder" action="doCreateRegion" container="cacheserver" waitTime="600">
+      <client-set>
+          <client name="Feeder"/>
+      </client-set>
+     </task>
+    <task name="InitServers" action="doInitProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <client-set count="50" name="Server"/> 
+    </task>
+    <task name="CreateServerRegion" action="createValidationProcess" container="cacheserver" waitTime="600">
+      <client-set count="1" name="Server"/> 
+    </task>
+    <task name="CreateClients" action="createValidationProcess" container="cacheserver" waitTime="3600">
+      <data name="cacheType">CLIENT</data>
+      <client-set count="5000" name="Client"/> 
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="3600">
+      <data name="opsSecond">1200</data>
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+    </task>
+    <task name="ClientsUpdate" action="doEntryOperations" container="cacheserver" waitTime="36000" parallel="true">
+      <data name="entryOps">update</data>
+      <data name="workTime">3600</data>
+      <data name="opsSecond">1200</data>
+      <client-set count="5000" name="Client"/> 
+    </task>   
+    <task name="FeederUpdates" action="doEntryOperations" container="cacheserver" waitTime="36000" parallel="true">
+      <data name="entryOps">update</data>
+      <data name="workTime">3600</data>
+      <data name="opsSecond">12</data>
+      <client-set> 
+        <client name="Feeder"/> 
+      </client-set>
+    </task>   
+  </test>
+</test-driver>

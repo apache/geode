@@ -1,0 +1,396 @@
+/*=========================================================================
+ * (c) Copyright 2002-2007, GemStone Systems, Inc. All Rights Reserved.
+ * 1260 NW Waterhouse Ave., Suite 200,  Beaverton, OR 97006
+ *=========================================================================
+ */
+
+#ifndef _GFAS_BASETYPES_HPP_
+#define _GFAS_BASETYPES_HPP_
+
+#include <string>
+#include <vector>
+#include <set>
+#include <map>
+#include <cassert>
+#include <stdexcept>
+
+namespace gemfire
+{
+  namespace auto_serializer
+  {
+    /** Shorthand for vector of strings. */
+    typedef std::vector<std::string> StringVector;
+
+    /** Shorthand for set of strings. */
+    typedef std::set<std::string> StringSet;
+
+    /**
+     * Shorthand for the <code>std::map</code> containing property
+     * key-value pairs.
+     */
+    typedef std::map<std::string, StringVector> PropertyMap;
+
+    /**
+     * Shorthand for the <code>std::map</code> containing string
+     * key-value pairs.
+     */
+    typedef std::map<std::string, std::string> StringMap;
+
+    /**
+     * Shorthand for the <code>std::map</code> containing string
+     * keys mapped to usage string and boolean indicator of option
+     * requiring a value.
+     */
+    typedef std::map<std::string, std::pair<bool, std::string> > OptionMap;
+
+    /** Shorthand for iterator of vector of strings. */
+    typedef std::vector<std::string>::const_iterator StringVectorIterator;
+
+    /** Shorthand for iterator of set of strings. */
+    typedef std::set<std::string>::const_iterator StringSetIterator;
+
+    /**
+     * Encapsulates different kinds of references (headers/dlls etc).
+     */
+    class ReferenceKind
+    {
+    private:
+      /** TypeId for a C++ header file. */
+      static const int TP_HEADER = 0x01;
+
+      /** TypeId for a library (so/dll). */
+      static const int TP_LIB = 0x02;
+
+      /** TypeId for a jar file (Java). */
+      static const int TP_JAR = 0x04;
+
+      /** Type of this reference. */
+      int m_type;
+
+      ReferenceKind(int type) :
+        m_type(type)
+      {
+      }
+
+    public:
+      /** The reference is a C++ header file. */
+      static ReferenceKind HEADER;
+
+      /** The reference is a library (so/dll). */
+      static ReferenceKind LIB;
+
+      /** The reference is a jar file (Java). */
+      static ReferenceKind JAR;
+
+      /** Return true if the reference is a C++ header file. */
+      inline bool isHeader() const
+      {
+        return (m_type & TP_HEADER);
+      }
+
+      /** Return true if the reference is a library (so/dll). */
+      inline bool isLib() const
+      {
+        return (m_type & TP_LIB);
+      }
+
+      /** Return true if the reference is a library (so/dll). */
+      inline bool isJar() const
+      {
+        return (m_type & TP_JAR);
+      }
+    };
+
+    /**
+     * Structure to hold information of a reference (e.g. header/dll).
+     */
+    struct ReferenceInfo
+    {
+      /** Path of the reference. */
+      std::string m_path;
+
+      /** <code>ReferenceKind</code> of the reference. */
+      int m_kind;
+    };
+
+    /**
+     * Encapsulates different kinds of types.
+     *
+     * Also includes the information whether the type is a built-in one or
+     * a user-defined type, and whether the type is a .NET managed type.
+     */
+    class TypeKind
+    {
+    private:
+      /** TypeId for an invalid type. */
+      static const int TP_INVALID = 0x0;
+
+      /** TypeId for a value type. */
+      static const int TP_VALUE = 0x01;
+
+      /** TypeId for a pointer type. */
+      static const int TP_POINTER = 0x02;
+
+      /** TypeId for a reference type or pass by reference. */
+      static const int TP_REFERENCE = 0x04;
+
+      /** TypeId for an array type with fixed/dynamic size. */
+      static const int TP_ARRAY = 0x08;
+
+      /**
+       * The array is of fixed size -- both this and <code>ARRAY</code> bits
+       * should be set for fixed size arrays.
+       */
+      static const int TP_FIXEDARRAY = 0x10;
+
+      /** TypeId for a C++ template or .NET/Java generic type. */
+      static const int TP_TEMPLATE = 0x20;
+
+      /**
+       * TypeId when the type is actually template/generic parameter symbol.
+       */
+      static const int TP_TEMPLATEPARAM = 0x40;
+
+      /**
+       * Indicates that the type is a .NET managed type -- required for
+       * generators like C++/CLI that understand both normal objects
+       * as well as .NET types.
+       */
+      static const int TP_MANAGED = 0x100;
+
+      /**
+       * Indicates that the type is a builtin one. This will be normally
+       * OR'd with one of the actual kinds above. If this bit is not set then
+       * the type is assumed to be a user-defined type.
+       */
+      static const int TP_BUILTIN = 0x200;
+
+      /**
+       * Mask to extract the Type part only from the constants in
+       * <code>TypeKind</code> class.
+       */
+      static const int TYPEKIND_TYPEMASK = 0xFF;
+
+      int m_type;
+
+      TypeKind(int type) :
+        m_type(type)
+      {
+      }
+
+    public:
+      /** An invalid type. */
+      static TypeKind INVALID;
+
+      /** A value type. */
+      static TypeKind VALUE;
+
+      /** A pointer type. */
+      static TypeKind POINTER;
+
+      /** A reference type or pass by reference. */
+      static TypeKind REFERENCE;
+
+      /** An array type with fixed/dynamic size. */
+      static TypeKind ARRAY;
+
+      /** An array of fixed size. */
+      static TypeKind FIXEDARRAY;
+
+      /** A C++ template or .NET/Java generic type. */
+      static TypeKind TEMPLATE;
+
+      /**
+       * The type is actually template/generic parameter symbol.
+       */
+      static TypeKind TEMPLATEPARAM;
+
+      TypeKind(TypeKind other, bool isBuiltin)
+      {
+        m_type = (other.m_type & TP_BUILTIN);
+      }
+
+      TypeKind(TypeKind other, bool isManaged)
+      {
+        m_type = (other.m_type & TP_MANAGED);
+      }
+
+      /** Return true if the type if an invalid one. */
+      inline bool isInvalid() const
+      {
+        return (m_type & TP_INVALID);
+      }
+
+      /** Return true if this is a value type. */
+      inline bool isValue() const
+      {
+        return (m_type & TP_VALUE);
+      }
+
+      /** Return true if this is a pointer type. */
+      inline bool isPointer() const
+      {
+        return (m_type & TP_POINTER);
+      }
+
+      /** Return true if this is a reference type or pass by reference. */
+      inline bool isReference() const
+      {
+        return (m_type & TP_REFERENCE);
+      }
+
+      /** Return true if this is an array type with fixed/dynamic size. */
+      inline bool isArray() const
+      {
+        return (m_type & TP_ARRAY);
+      }
+
+      /** Return true if this is an array type with fixed size. */
+      inline bool isFixedArray() const
+      {
+        return (m_type & TP_FIXEDARRAY);
+      }
+
+      /** Return true if this is a C++ template or .NET/Java generic type. */
+      inline bool isTemplate() const
+      {
+        return (m_type & TP_TEMPLATE);
+      }
+
+      /** Return true if this is a template/generic parameter symbol. */
+      inline bool isTemplateParam() const
+      {
+        return (m_type & TP_TEMPLATEPARAM);
+      }
+
+      /** Return true if the type is a builtin one. */
+      inline bool isBuiltin() const
+      {
+        return (m_type & TP_BUILTIN);
+      }
+
+      /** Return true if the type is a .NET managed type. */
+      inline bool isManaged() const
+      {
+        return (m_type & TP_MANAGED);
+      }
+
+      inline bool operator ==(TypeKind other) const
+      {
+        return (m_type == other.m_type);
+      }
+
+      inline TypeKind operator &(TypeKind other) const
+      {
+        return TypeKind(m_type & other.m_type);
+      }
+
+      inline TypeKind operator |(TypeKind other) const
+      {
+        return TypeKind(m_type | other.m_type);
+      }
+    };
+
+
+    /**
+     * Constants for the possible kinds of type modifiers.
+     */
+    class TypeModifier
+    {
+    public:
+      /** No modifier. */
+      static const int NONE = 0x01;
+
+      /** The type is defined to be a constant. */
+      static const int CONSTANT = 0x02;
+
+      /** The type is defined to be volatile. */
+      static const int VOLATILE = 0x04;
+
+      /** The member is private to the class. */
+      static const int PRIVATE = 0x08;
+
+      /** The member is declared to be protected. */
+      static const int PROTECTED = 0x10;
+
+      /** The member is declared to be public. */
+      static const int PUBLIC = 0x20;
+
+      /** The member is declared to be internal (.NET). */
+      static const int INTERNAL = 0x40;
+
+      /** The member is a property (.NET). */
+      static const int PROPERTY = 0x80;
+
+      /** The member is defined to be transient (Java). */
+      static const int TRANSIENT = 0x100;
+    };
+
+    /**
+     * Structure to hold information for a type.
+     */
+    struct TypeInfo
+    {
+      /** The {@link gemfire::auto_serializer::TypeKind} of the type. */
+      int m_kind;
+
+      /** The {@link gemfire::auto_serializer::TypeModifier} for the type. */
+      int m_modifier;
+
+      /**
+       * Contains either the name of the variable, or for the case of
+       * <code>FIXEDARRAY</code> or <code>ARRAY</code>, the size of the array,
+       * name of variable containing the size respectively.
+       */
+      std::string m_nameOrSize;
+
+      /** The namespace for the type expressed as a vector. */
+      StringVector m_namespaces;
+
+      /**
+       * Information of any child sub-types for the case of
+       * <code>POINTER</code>, <code>REFERENCE</code> or
+       * <code>TEMPLATE</code> types.
+       */
+      TypeInfo* m_children;
+
+      /**
+       *  The number of child sub-types. Can be greater than one for the case
+       *  of <code>TEMPLATE</code> types.
+       */
+      int m_numChildren;
+    };
+
+    /**
+     * Structure to hold information for a variable.
+     */
+    struct VariableInfo
+    {
+      /** The type of the variable. */
+      TypeInfo m_type;
+
+      /** The name of the variable. */
+      std::string m_name;
+    };
+
+    /** Shorthand for a vector of <code>ReferenceInfo</code>. */
+    typedef std::vector<ReferenceInfo> ReferenceVector;
+
+    /**
+     * Shorthand for <code>const_iterator</code> of a vector of
+     * <code>ReferenceInfo</code>.
+     */
+    typedef std::vector<ReferenceInfo>::const_iterator ReferenceVectorIterator;
+
+    /** Shorthand for a vector of <code>VariableInfo</code>. */
+    typedef std::vector<VariableInfo> VariableVector;
+
+    /**
+     * Shorthand for <code>const_iterator</code> of a vector of
+     * <code>VariableInfo</code>.
+     */
+    typedef std::vector<VariableInfo>::const_iterator VariableVectorIterator;
+  }
+}
+
+#endif // _GFAS_BASETYPES_HPP_

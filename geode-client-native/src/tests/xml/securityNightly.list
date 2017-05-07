@@ -1,0 +1,9 @@
+Security/Native/clientAuthnAndAuthzTestMU.xml
+Security/Native/clientAuthnAndAuthzTestFailoverMU.xml
+Security/Native/clientAuthnAndAuthzTest.xml
+Security/Native/multiUserDurableCQ.xml
+Security/Native/clientAuthnAndAuthzFailoverTest.xml
+Security/NativePR/clientAuthnAndAuthzPrMU.xml
+Security/NativePR/clientAuthnAndAuthzFailoverPrMU.xml
+Security/NativePR/clientAuthnAndAuthzPrTest.xml
+Security/NativePR/clientAuthnAndAuthzFailoverPrTest.xml

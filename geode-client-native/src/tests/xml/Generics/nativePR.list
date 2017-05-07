@@ -1,0 +1,7 @@
+Generics/NativePR/perfBenchmarkTCR.xml
+Generics/NativePR/clientEventsFailover.xml # 52
+Generics/NativePR/failoverTest.xml
+Generics/NativePR/perfClientsUpdateTest.xml
+Generics/NativePR/perfTestPutGetDestroyTCR.xml
+Generics/NativePR/perfTestPutGetDestroy_PartialInterestTCR.xml
+Generics/NativePR/perfTestPutGetDestroyTCRscaledUp.xml

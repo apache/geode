@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache>
+  <region name = "exampleRegion" refid="CACHING_PROXY"/>
+</client-cache>

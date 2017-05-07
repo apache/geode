@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 3.0//EN"
+    "http://www.gemstone.com/dtd/gfcpp-cache3000.dtd">
+
+<cache>
+	<!-- Example 13.1 Declaring a Native Client Region Using cache.xml -->
+	<region name="NativeClientRegion">
+	  <region-attributes 	pool-name="test_pool_1" client-notification="true" caching-enabled="true">
+	  </region-attributes>
+	</region>
+	
+ <root-region name= "Root1">
+    <region-attributes caching-enabled="false" pool-name="test_pool_1" /> 
+  </root-region>
+
+  <!-- Example 11.1 Configuring a Pool -->
+	<pool
+		free-connection-timeout = "12345"
+		idle-timeout = "5555"
+		load-conditioning-interval = "23456"
+		max-connections = "7"
+		min-connections = "3"
+		name = "test_pool_1"
+		ping-interval = "12345"
+		read-timeout = "23456"
+		retry-attempts = "3"
+		socket-buffer-size = "32768"
+		statistic-interval = "10123"
+		subscription-ack-interval = "567"
+		subscription-enabled = "true"
+		subscription-message-tracking-timeout = "900123"
+		subscription-redundancy = "0"
+		thread-local-connections = "true"
+	>
+	<locator host="localhost" port="34756" />
+	<!--server host="localhost" port="34757" /-->
+	</pool>
+  
+</cache>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">60</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>50</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>2</item>
+    </list>
+  </data>
+  
+  <data name="minServers">3</data>
+ 
+    <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>10</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+
+  <data name="ThinClientPool">
+    <snippet>
+      <pool name="_Test_Pool1" min-connections="2" thread-local-connections="true" subscription-enabled="true" subscription-redundancy="-1" servers="true" />
+    </snippet>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" pool-name="_Test_Pool1" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set name="JCS5" hostGroup="CS"/>
+  <client-set count="1" name="Client"/>
+  
+  <test name="SerialPRFailoverTest" description="Serial test threads begin the transaction do tryResume+RandomOps+Suspend commit in a serial fashion along with failover and then validation is done">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 5 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Generics/ResumableTx/csPRTx.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="Int32,String">
+      <data name="poolSpec">ThinClientPool</data>
+      <client-set name="Client"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="Int32,String">
+      <client-set name="Client"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="2m" argTypes="Int32,String">
+      <data name="regionName">TestTCR1</data>
+      <client-set name="Client"/>
+    </task>
+    <task name="Begin TX" action="doBeginTx" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="Int32,String">
+      <data name="regionName">TestTCR1</data>
+      <data name="isBeginTX">true</data>
+      <client-set name="Client"/>
+    </task>
+    <task name="do Serial Tx with Random Ops" action="doSerialTxWithOps" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="Int32,String" parallel="true">
+      <data name="entryOps">
+        <oneof>
+          <item>create</item>
+          <item>invalidate</item>
+          <item>update</item>
+          <item>invalidate</item>
+          <item>destroy</item>
+          <item>update</item>
+          <item>get</item>
+        </oneof>
+      </data>
+      <data name="isSerialExecution">true</data>
+      <client-set name="Client"/>
+    </task> 
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="2" waitTime="5m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="5m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="160">
+      <client-set name="Client"/>
+      <data name="sleepTime">10</data>
+    </task>
+    <task name="Commit TX" action="doFinishAllActiveTx" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="15m" argTypes="Int32,String">
+      <data name="regionName">TestTCR1</data>
+      <data name="isCommitTX">true</data>
+      <client-set name="Client"/>
+    </task>	
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="Int32,String"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+  </test>
+</test-driver>

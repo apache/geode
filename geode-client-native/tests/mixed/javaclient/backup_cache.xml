@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<!-- Configures a GemFire cache region whose contents is backed up to
+     disk.  The data files will be written to the current working
+     directory. -->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
+  "http://www.gemstone.com/dtd/cache4_0.dtd">
+<cache cache-proxy-enabled="false" is-server="false">
+  <vm-root-region name="root">
+    <region-attributes mirror-type="keys-values" persist-backup="true">
+
+      <disk-write-attributes>
+        <!-- Write buffer data to disk every 10 million bytes or 15 seconds,
+             whichever comes first -->
+        <asynchronous-writes bytes-threshold="10000000"
+                             time-interval="15000"/>
+      </disk-write-attributes>
+
+      <capacity-controller>
+        <!-- Overflow to disk when 100 megabytes of data reside in the
+             region -->
+        <class-name>com.gemstone.gemfire.cache.util.MemLRUCapacityController</class-name>
+        <parameter name="maximum-megabytes">
+          <string>100</string>
+        </parameter>
+        <parameter name="eviction-action">
+          <string>overflow-to-disk</string>
+        </parameter>
+      </capacity-controller>
+
+    </region-attributes>
+  </vm-root-region>
+</cache>

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+  "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true"/>
+  <!--vm-root-region name="dummy"-->
+  <vm-root-region name="TestTCR1">
+    <region-attributes scope="distributed-ack"  data-policy="replicate"/>
+    <entry>
+      <key><string>_0_1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.BatchObject</class-name>
+          <parameter name="index">
+            <string>0</string>
+          </parameter>
+          <parameter name="batch">
+            <string>0</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+  </vm-root-region>
+  <!--vm-root-region name="TestTCR1">
+    <region-attributes scope="distributed-ack"  data-policy="replicate"/>
+  </vm-root-region-->
+</cache> 

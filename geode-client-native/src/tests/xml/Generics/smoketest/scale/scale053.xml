@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">240</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>1000000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>1024</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>3</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+  <data name="ObjectType">ArrayOfByte</data>
+  <data name="clientCount">4</data>
+  <data name="disableShufflingEP">true</data>
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" thread-local-connections="false" max-connections="-1" free-connection-timeout="10000000" read-timeout="10000000" servers="true"/>
+    </snippet>
+  </data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" pool-name="_Test_Pool1"/>
+      </region>
+    </snippet>
+  </data>
+                                 
+
+  <client-set count="2" name="Client" hostGroup="CS2"/>
+  <client-set count="2" name="Client_" hostGroup="CS3"/>
+  <client-set name="JCS1" hostGroup="CS1"/>
+  <client-set name="JCS2" hostGroup="CS1"/>
+  <client-set name="JCS3" hostGroup="CS1"/>
+  <client-set name="JCS4" hostGroup="CS1"/>
+
+  <test name="scale053" description="Clients put partitioned data onto servers. Conserve sockets is true. Uses default connection settings. Objects are byte arrays of size 1024.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 4 smoketest/scale/csPRRC1NoSelector.xml</data>
+      <data name="statEnable">false</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-N conserve-sockets=true -M 1500 -X 1500 -N -J-XX:+UseParNewGC -N -J-XX:+UseConcMarkSweepGC -N -J-XX:+DisableExplicitGC -N -J-XX:CMSInitiatingOccupancyFraction=33 1</data>
+      <client-set name="JCS1"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-N conserve-sockets=true -M 1500 -X 1500 -N -J-XX:+UseParNewGC -N -J-XX:+UseConcMarkSweepGC -N -J-XX:+DisableExplicitGC -N -J-XX:CMSInitiatingOccupancyFraction=33 2</data>
+      <client-set name="JCS2"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-N conserve-sockets=true -M 1500 -X 1500 -N -J-XX:+UseParNewGC -N -J-XX:+UseConcMarkSweepGC -N -J-XX:+DisableExplicitGC -N -J-XX:CMSInitiatingOccupancyFraction=33 3</data>
+      <client-set name="JCS3"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-N conserve-sockets=true -M 1500 -X 1500 -N -J-XX:+UseParNewGC -N -J-XX:+UseConcMarkSweepGC -N -J-XX:+DisableExplicitGC -N -J-XX:CMSInitiatingOccupancyFraction=33 4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="Open Statistic" action="doOpenStatistic" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="5m">
+      <data name="statEnable">true</data>
+      <client-set count="2" name="Client"/>
+      <client-set count="2" name="Client_"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="3m">
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="2" name="Client"/>
+      <client-set count="2" name="Client_"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="5m">
+      <client-set count="2" name="Client"/>
+      <client-set count="2" name="Client_"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="Create Entries in Region" action="doCreateData" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="10m">
+      <data name="regionName">TestTCR1</data>
+      <client-set count="2" name="Client"/>
+      <client-set count="2" name="Client_"/>
+    </task>
+    <task name="Put Entries in Region" action="doPutDataTask" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="10m">
+      <data name="regionName">TestTCR1</data>
+      <client-set count="2" name="Client"/>
+      <client-set count="2" name="Client_"/>
+    </task>
+    <task name="Close Statistics" action="doCloseStatistic" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="5m">
+      <client-set count="2" name="Client"/>
+      <client-set count="2" name="Client_"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="5m"/>
+    <task name="Generate statistic spec" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">cp</data>
+      <data name="arguments">../build_*/framework/xml/smoketest/scale/createputs.spec statistics.spec</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="Generate Trim Spec" action="doGenerateScaleTrimSpec" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="Int32,ArrayOfByte"  waitTime="5m">
+      <client-set begin="1" count="1" name="Client"/>
+    </task>
+  </test>
+
+</test-driver>

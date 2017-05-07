@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="EntryCount">300000</data>
+  <data name="valueSizes">3000</data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="true" client-notification="false"/>
+     </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+  <data name="regionName">TestTCR1</data>
+
+
+  <client-set name="Feeder"/>
+  <client-set name="JavaCacheServer"/>
+  <client-set count="10" name="Client"/>
+
+  <test name="Thin Client Entry Events" description="Clients perform entry events">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 Native43/csAckMirror.xml</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-c 3</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+
+    <task name="Init Feeder" action="doCreateRootRegion" container="eventtest" waitTime="10m">
+      <client-set name="Feeder"/>
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="Populate Entry" action="doAddEntry" container="eventtest" waitTime="10m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Get Entries" action="doGets" container="eventtest" waitTime="30m" parallel="true">
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="stopStartCacheServer" action="doRunProcessAndSleep" container="utils" waitTime="5m" continueOnError="true" parallel="true">
+      <data name="program">stopJavaServers 2;sleep 60 ; startJavaServers 2</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+    <task name="Verify Key Count" action="doVerifyKeyCount" container="eventtest" waitTime="600">
+      <client-set count="10" name="Client"/>
+      <data name="expectedKeyCount">300000</data>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">-c 3</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+
+  </test>
+</test-driver>

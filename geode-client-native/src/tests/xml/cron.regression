@@ -1,0 +1,12 @@
+#  minute         0-59
+#  hour           0-23
+#  day of month   1-31
+#  month          1-12 (or names, see below)
+#  day of week    0-7 (0 or 7 is Sun, or use names)
+### This file is still changing frequently
+# email the owner of these jobs the current crontab
+0 16 * * 1-5 crontab -l
+# The short list to be run nightly
+0 20 * * * /export/tiny1/users/tkeith/regression/tests/scripts/cronbeaverton.sh -b shortNightly.list bobo odin newton thor
+# The long running test to run on weekends
+#0 22 * * 5 /export/tiny1/users/tkeith/regression/tests/scripts/cronbeaverton.sh run24Hours.list hs20a hs20b hs20c hs20d

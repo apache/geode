@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- A sample GemFire declarative caching XML File with Portfolio data -->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
+  "http://www.gemstone.com/dtd/cache4_0.dtd">
+<cache lock-lease="300" search-timeout="60">
+  <vm-root-region name="root">
+    <region-attributes scope="distributed-no-ack" mirror-type="none" keep-alive-timeout="0" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true"/>
+
+    <region name="portfolios">
+    <region-attributes scope="distributed-no-ack" mirror-type="none" keep-alive-timeout="0" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
+        <value-constraint>cacheRunner.Portfolio</value-constraint>
+    </region-attributes>
+    <!-- Add entries to the region -->
+    <entry> 
+      <key><string>1</string></key>
+      <value>
+        <declarable>
+          <class-name>cacheRunner.Portfolio</class-name>
+          <parameter name="id">
+            <string>1</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>SUN</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>34000</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>24.42</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>IBM</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>8765</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>34.29</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+     </entry>
+     
+     <entry>
+      <key><string>2</string></key>
+      <value>
+        <declarable>
+          <class-name>cacheRunner.Portfolio</class-name>
+          <parameter name="id">
+            <string>2</string>
+          </parameter>
+          <parameter name="type">
+            <string>type2</string>
+          </parameter>
+          <parameter name="status">
+            <string>inactive</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>YHOO</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>9834</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>12.925</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>GOOG</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>12176</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>21.972</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+
+     <entry>
+      <key><string>3</string></key>
+      <value>
+        <declarable>
+          <class-name>cacheRunner.Portfolio</class-name>
+          <parameter name="id">
+            <string>3</string>
+          </parameter>
+          <parameter name="type">
+            <string>type3</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>MSFT</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>98327</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>23.32</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>AOL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>978</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>40.373</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+
+     <entry>
+      <key><string>4</string></key>
+      <value>
+        <declarable>
+          <class-name>cacheRunner.Portfolio</class-name>
+          <parameter name="id">
+            <string>4</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>inactive</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>APPL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>90</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>67.356572</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>ORCL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>376</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>101.34</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+
+     <entry>
+      <key><string>5</string></key>
+      <value>
+        <declarable>
+          <class-name>cacheRunner.Portfolio</class-name>
+          <parameter name="id">
+            <string>5</string>
+          </parameter>
+          <parameter name="type">
+            <string>type2</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>SAP</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>90</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>67.356572</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>DELL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>376</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>101.34</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>    
+
+     <entry>
+      <key><string>6</string></key>
+      <value>
+        <declarable>
+          <class-name>cacheRunner.Portfolio</class-name>
+          <parameter name="id">
+            <string>6</string>
+          </parameter>
+          <parameter name="type">
+            <string>type3</string>
+          </parameter>
+          <parameter name="status">
+            <string>inactive</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>RHAT</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>90</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>67.356572</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>cacheRunner.Position</class-name>
+                <parameter name="secId">
+                    <string>NOVL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>376</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>101.34</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>    
+    </region>           
+  </vm-root-region>
+</cache>

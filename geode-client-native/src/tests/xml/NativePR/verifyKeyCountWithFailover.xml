@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+  <data name="EntryCount">300000</data>
+  <data name="valueSizes">3000</data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>30</item>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>stop</item>
+      <item>stop</item>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  <data name="minServers">4</data>
+  
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="false"/>
+     </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+  <data name="regionName">TestTCR1</data>
+
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set name="JCS5" hostGroup="CS"/>
+  <client-set name="JCS6" hostGroup="CS"/>
+  <client-set name="Feeder"/>
+  <client-set count="10" name="Client"/>
+
+  <test name="Thin Client Entry Events" description="Clients perform entry events">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 6 NativePR/csNotifySubscription.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StartCacheServer 5" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StartCacheServer 6" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+
+    <task name="Init Feeder" action="doCreateRootRegion" container="eventtest" waitTime="10m">
+      <client-set name="Feeder"/>
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="Populate Entry" action="doAddEntry" container="eventtest" waitTime="10m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Get Entries" action="doGets" container="eventtest" waitTime="30m" parallel="true">
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="stopStartCacheServer 4" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="stopStartCacheServer 5" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="stopStartCacheServer 6" action="doStopStartServer" container="utils" timesToRun="3" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Client"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="Verify Key Count" action="doVerifyKeyCount" container="eventtest" waitTime="600">
+      <client-set count="10" name="Client"/>
+      <data name="expectedKeyCount">300000</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StopCacheServer 5" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StopCacheServer 6" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+
+  </test>
+</test-driver>

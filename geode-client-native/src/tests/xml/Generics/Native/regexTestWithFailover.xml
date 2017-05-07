@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="minServers">1</data>
+ 
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>5</item>
+      <item>10</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true"
+            initial-capacity="18500" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="CS1" hostGroup="CS"/>
+  <client-set name="CS2" hostGroup="CS"/>
+  <client-set name="Client1"/>
+  <client-set name="Client2"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 Native/csNotifySubscription.xml</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Client1"/>
+      <client-set name="Client2"/>
+    </task>
+    <task name="Populate Entries in publisher" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Client1"/>
+    </task>
+    <task name="Register Interest List" action="doRegisterInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="registerKeys">100</data>
+      <data name="keyIndexBegin">100</data>
+      <client-set name="Client2"/>
+    </task>
+    <task name="Gets Entries in Client2" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Client2"/>
+    </task>
+    <task name="Register Regex List" action="doRegisterRegexList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="registerRegex">AAA*0*1*</data>
+      <client-set name="Client2"/>
+    </task>
+    <task name="Update Entries from Client1" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="valueSizes">
+        <list>
+          <item>500</item>
+        </list>
+      </data>
+      <client-set name="Client1"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" waitTime="10m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" waitTime="10m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="CS2"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Client2"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Client2"/>
+      <data name="registerKeys">104</data>
+      <data name="valueSizes">500</data>
+    </task>
+    <task name="Unregister Regex List" action="doUnRegisterRegexList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="unregisterRegex">AAA*0*1*</data>
+      <client-set name="Client2"/>
+    </task>
+    <task name="Update Entries from Client1" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="valueSizes">
+        <list>
+          <item>100</item>
+        </list>
+      </data>
+      <client-set name="Client1"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Client2"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Client2"/>
+      <data name="registerKeys">100</data>
+      <data name="valueSizes">100</data>
+    </task>
+    <task name="Register Regex List" action="doRegisterRegexList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="registerRegex">AAA*0*2*</data>
+      <client-set name="Client2"/>
+    </task>
+    <task name="Register Regex List" action="doRegisterRegexList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="registerRegex">AAA*0*3*</data>
+      <client-set name="Client2"/>
+    </task>
+    <task name="Update Entries from Client1" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" parallel="true" argTypes="String,byte[]">
+      <data name="valueSizes">
+        <list>
+          <item>200</item>
+        </list>
+      </data>
+      <client-set name="Client1"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" waitTime="10m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" waitTime="10m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="CS2"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Client2"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Client2"/>
+      <data name="registerKeys">109</data>
+      <data name="valueSizes">200</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+  </test>
+
+</test-driver>

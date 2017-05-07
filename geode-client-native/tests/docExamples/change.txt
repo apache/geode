@@ -1,0 +1,469 @@
+Correction to Chapter 2
+
+* For example 2.1 refer the Example_2_1.xml.
+
+* example 2.5 should be below type.
+
+ try {
+    cachePtr = CacheFactory::getInstance(dsysPtr);
+  } catch(gemfire::EntryNotFoundException) {
+    cachePtr = CacheFactory::create( "example_cache", dsysPtr );
+  }
+ RegionPtr regPtr0 = cachePtr->getRegion( regionNames[0] );
+ RegionPtr regPtr1 = cachePtr->getRegion( regionNames[1] );
+ regPtr0->registerAllKeys();
+ regPtr1->registerAllKeys();
+ 
+* example 2.6 should be below type.
+
+ try {
+    cachePtr = CacheFactory::getInstance(dsysPtr);
+  } catch(gemfire::EntryNotFoundException) {
+    cachePtr = CacheFactory::create( "example_cache", dsysPtr );
+  }
+ RegionPtr regPtr0 = cachePtr->getRegion( regionNames[0] );
+ RegionPtr regPtr1 = cachePtr->getRegion( regionNames[1] );
+ regPtr0->unregisterAllKeys();
+ regPtr1->unregisterAllKeys();
+ 
+* example 2.9 should be below type.
+ Remove the below lines from the example 2.9 or refer to the example_2_9() from the Ch_02_NativeClientCache.cpp
+ XASSERT( foundKey1 );
+ XASSERT( foundKey2 );
+
+------------------------------------------------------------------------------------------
+Correction to Chapter 3
+* For example 3.1 refer the Example_3_1.xml.
+
+------------------------------------------------------------------------------------------
+Correction to Chapter 4
+
+* example 4.1 should be below type  or refer the example in Ch_04_CppCachingApi.cpp example_4_1().
+dsys = DistributedSystem::getInstance();
+or
+DistributedSystemPtr dsysPtr = DistributedSystem::connect( "example_dsys" );
+
+* example 4.2 should be below type or refer the example in Ch_04_CppCachingApi.cpp example_4_2().
+try {
+    cachePtr = CacheFactory::getInstance(dsysPtr);
+  } catch(gemfire::EntryNotFoundException) {
+    cachePtr = CacheFactory::create( "example_cache", dsysPtr );
+  }
+  
+* example 4.3 should be below type
+change this line 
+ attrsFact.setEndpoints( "servername:portnumber" );
+ to
+ attrsFact.setEndpoints( "localhost:24680" );
+  
+* example 4.4 should be below type  or refer the example in Ch_04_CppCachingApi.cpp example_4_4().
+   change these lines
+    bdbProperties->insert("PersistenceDirectory","/tmp/BDB/");
+	bdbProperties->insert("EnvironmentDirectory","/tmp/BDBEnv/");
+	bdbProperties->insert("CacheSizeGb","1");
+	to
+	bdbProperties->insert("PersistenceDirectory","BDB");
+    bdbProperties->insert("EnvironmentDirectory","BDBEnv");
+    bdbProperties->insert("CacheSizeGb","0");
+    
+  and change these lines 
+  /** create a subregion */
+  AttributesFactory attrsSubFact;
+  RegionAttributesPtr attrsSubPtr = attrsSubFact.createRegionAttributes( );
+  RegionPtr subRegionPtr =
+  regionPtr->createSubRegion( "exampleSubRegion", attrsSubPtr );  
+to
+  /** create a subregion */
+  AttributesFactory attrsSubFact;
+  attrsSubFact.setScope( ScopeType::DISTRIBUTED_ACK );
+  attrsSubFact.setEndpoints( "localhost:24680, localhost:24680" );
+  RegionAttributesPtr attrsSubPtr = attrsSubFact.createRegionAttributes( );
+  RegionPtr subRegionPtr =
+    regionPtr->createSubregion( "exampleSubRegion", attrsSubPtr );
+    
+* example 4.6 should be below type  or refer the example in Ch_04_CppCachingApi.cpp example_4_6().
+	for ( int32_t i=0; i< 100; i++) {
+    CacheableInt32Ptr res = dynCast<CacheableInt32Ptr>(regionPtr->get(i));
+  }
+  
+* example 4.8 should be below type  or refer the class in Ch_04_SerializableBankAccount.hpp example_4_8().
+ Add this method to the class
+  virtual uint32_t objectSize() const
+  {
+    return 10;
+  } 
+  
+* example 4.9 should be below type  or refer the class in Ch_04_CacheableKeyBankAccount.hpp example_4_9().
+ Add these methods to the class
+ virtual int32_t classId( )const
+  {
+    return 10; // must be unique per class.
+  }
+
+  virtual uint32_t objectSize() const
+  {
+    return 10;
+  }  
+  
+* example 4.10 should be removed from the doc example as it is not useful.
+  
+* example 4.11 should be below type  or refer the class in Ch_04_UsingCustomClass.cpp example_4_11().
+  change these lines
+  af.setEndpoints( "servername:portnumber" );
+  BankAccountPtr KeyPtr = new BankAccount( 2309, 123091 );
+  AccountHistoryPtr ValPtr = new AccountHistory( ); 
+  
+  to 
+  af.setEndpoints( "localhost:24680" );
+  BankAccountPtr KeyPtr(new BankAccount(2309, 123091));
+  AccountHistoryPtr ValPtr(new AccountHistory());
+  
+  and these lines 
+  if ( historyPtr != NULL )
+  to
+  if ( historyPtr != NULLPTR )
+  
+* example 4.12 should be below type  or refer the class in Ch_04_CppCachingApi.cpp example_4_12().
+  change these lines  
+Statistics* testStat =
+		factory>createStatistics(statsType,"TestStatistics");  
+to 
+Statistics* testStat =
+    factory->createStatistics(statsType,"TestStatistics");	
+    	
+------------------------------------------------------------------------------------------
+  
+Correction to Chapter 6  
+No changes to be made.
+
+------------------------------------------------------------------------------------------
+
+Correction to Chapter 7
+
+* example 7.2 should be below type.
+change these lines 
+  cFact.setEndpoints( "java_servername1:java_port1,
+  java_servername2:java_port2,java_servername3:java_port3" );
+to 
+  cFact.setEndpoints( "localhost:26480,localhost:26481,localhost:26482" );
+  
+* For example 7.3 refer the Example7_3.xml.  
+  
+* example 7.6 should be below type  or refer the example in Ch_07_PreservingData.cpp example_7_6().
+  // Durable client interest registration can be durable (true) or nondurable
+  //(default).
+  UserDataPtr userDataPtr = NULL;
+  VectorOfCacheableKey keys;
+  keys.push_back( CacheableString::create("Key-1") );
+  regionPtr->registerKeys(keys,true);
+
+-----------------------------------------------------------------------------------------  
+
+Correction to Chapter 8  
+No changes to be made.
+
+------------------------------------------------------------------------------------------
+
+Correction to Chapter 9
+
+* example 9.2 should be below type.
+change this line
+ QueryPtr qry = qs->newQuery("select distinct * from
+ /root/portfolios where status = 'active'");
+to 
+ QueryPtr qry = qs->newQuery("select distinct * from /Portfolios where status = 'active'");
+ 
+and change this line 
+ while(iter->hasNext())
+{
+ Portfolio * portfolio = dynamic_cast<Portfolio *>
+ (iter.next().ptr());
+}
+to
+ while(iter.hasNext())
+{
+ PortfolioPtr portfolio = dynCast<PortfolioPtr >(iter.next());
+}
+ 
+* example 9.3 should be below type.
+change this line
+ QueryPtr qry = qs->newQuery("select distinct * from
+ /root/portfolios where status = 'active' and \"type\"='xyz'");
+to 
+ QueryPtr qry = qs->newQuery("select distinct * from	/Portfolios where status = 'active' and \"type\"='xyz'");
+ 
+and change this line 
+ while(iter->hasNext())
+{
+ Portfolio * portfolio = dynamic_cast<Portfolio *>
+ (iter.next().ptr());
+}
+to
+ while(iter.hasNext())
+{
+ PortfolioPtr portfolio = dynCast<PortfolioPtr >(iter.next());
+}
+ 
+* example 9.4 should be below type.
+change this line
+ QueryPtr qry = qs->newQuery("SELECT DISTINCT id, status FROM
+ /root/portfolios WHERE NOT (SELECT DISTINCT * FROM positions.values
+ posnVal TYPE Position WHERE posnVal.secId='yyy').isEmpty");
+to 
+ QueryPtr qry = qs->newQuery("import javaobject.Position; SELECT DISTINCT ID, status FROM "
+    "/Portfolios WHERE NOT (SELECT DISTINCT * FROM positions.values "
+    "posnVal TYPE Position WHERE posnVal.secId='DELL').isEmpty");
+and change this line 
+while(iter->hasNext())
+{
+ Struct * si = iter.next();
+ SerializablePtr id = si->operator[]("ID");
+ SerializablePtr status = si->operator[]("status");
+}
+to
+while(iter.hasNext())
+{
+ Struct * si = (Struct*) iter.next().ptr();
+ SerializablePtr id = si->operator[]("ID");
+ SerializablePtr status = si->operator[]("status");
+ printf("\nID=%s, status=%s", id->toString()->asChar(), status->toString()->asChar());
+}
+  
+* For example 9.13 Refer the DocXmlSnippetsServer.xml Example 9.13. 
+
+* example 9.14 should be below type.
+change this line
+	QueryPtr query = qs->newQuery("select distinct ID from /Portfolios");
+to
+	QueryPtr query = qs->newQuery("select distinct pkid from /Portfolios");
+
+change this line
+	if (results == NULL)
+to
+	if (results == NULLPTR)
+	
+change this line
+	if (rs == NULL)
+to
+	if (rs == NULLPTR)
+	
+change this line
+	if (str != NULL)
+to
+	if (str != NULLPTR)		
+	
+
+* example 9.15 should be below type.
+change this line
+	if (results == NULL)
+to
+	if (results == NULLPTR)
+	
+change this line
+	if (rs == NULL)
+to
+	if (rs == NULLPTR)
+	
+change these lines	
+ while (iter->hasNext()) {
+ SerializablePtr ser = iter->Next();
+ PortfolioPtr port = dynamic_cast<Portfolio*> (ser.ptr());
+ if (str != NULL) {
+ printf("Portfolio object is - %s \n", port->asString() );
+ }
+ }//end of rows	
+ 
+to
+  while (iter.hasNext()) {
+    SerializablePtr ser = iter.next();
+    PortfolioPtr port(dynamic_cast<Portfolio*> (ser.ptr()));
+    if (port != NULLPTR) {
+      printf("\nPortfolio object is - %s \n", port->toString()->asChar() );
+    }
+  }//end of rows
+  
+  
+* example 9.16 should be below type.
+change this line
+	if (results == NULL)
+to
+	if (results == NULLPTR)
+	
+change this line
+	if (ss == NULL)
+to
+	if (ss == NULLPTR)
+
+change this line
+	if (siptr == NULL)
+to
+	if (siptr == NULLPTR)	
+	
+change this line
+	if (fieldptr == NULL)
+to
+	if (fieldptr == NULLPTR)	
+
+change this line
+	if (str == NULL)
+to
+	if (str == NULLPTR)	
+	    
+  
+* example 9.17 should be below type.
+change this line
+	if (results == NULL)
+to
+	if (results == NULLPTR)
+	
+change this line
+	if (ss == NULL)
+to
+	if (ss == NULLPTR)
+
+change this line
+	if (siptr == NULL)
+to
+	if (siptr == NULLPTR)	
+	
+change this line
+	if (fieldptr == NULL)
+to
+	if (fieldptr == NULLPTR)	
+
+change this line
+	if (port == NULL)
+to
+	if (port == NULLPTR)	
+	
+	
+* example 9.18 should be below type.
+change this line
+	if (results == NULL)
+to
+	if (results == NULLPTR)
+	
+change this line
+	if (ss == NULL)
+to
+	if (ss == NULLPTR)
+
+change this line
+	if (siptr == NULL)
+to
+	if (siptr == NULLPTR)	
+	
+change this line
+	if (fieldptr == NULL)
+to
+	if (fieldptr == NULLPTR)	
+
+change this line
+	if (str != NULL)
+to
+	if (str != NULLPTR)	
+
+change this line
+	if (simpl == NULL)
+to
+	if (simpl == NULLPTR)
+
+change this line
+	if (innerfieldptr == NULL)
+to
+	if (innerfieldptr == NULLPTR)	
+	
+	
+* example 9.19 should be below type  or refer the example in Ch_09_RemoteQuerying.cpp example_9_19().
+change this line
+	char * querystring = "select distinct ID, name from /Portfolios";
+to
+	char * querystring = "select distinct ID, names from /Portfolios";
+
+change this line
+	if (results == NULL)
+to
+	if (results == NULLPTR)
+
+change this line
+	StructSetPtr ss = dynamic_cast<StructSet*> (results.ptr());	
+to
+	StructSetPtr ss(dynamic_cast<StructSet*> (results.ptr()));
+	
+change this line
+	if (ss == NULL)
+to
+	if (ss == NULLPTR)
+
+change this line
+	if (siptr == NULL)
+to
+	if (siptr == NULLPTR)	
+	
+change this line
+	if (fieldptr == NULL)
+to
+	if (fieldptr == NULLPTR)	
+	
+hange this line
+	CacheableStringArrayPtr csa =
+	dynamic_cast<CacheableStringArray*>
+	(fieldptr.ptr());
+to
+	CacheableObjectArrayPtr coa(dynamic_cast<CacheableObjectArray*>(fieldptr.ptr()));
+	
+change this line
+	if (csa == NULL)
+to
+	if (csa == NULLPTR)		
+				
+---------------------------------------------------------------------------------------
+Correction to Chapter 10
+
+* example 10.1 should be below type  or refer the example in Ch_10_ContinuousQuerying.hpp example_10_1().
+change this line
+ . . .
+to
+ //. . . 
+ 
+example 10.3 should be below type  or refer the example in Ch_10_ContinuousQuerying.cpp example_10_3().
+change this line
+ CqListenerPtr tradeEventListener = new TradeEventListener();
+to
+ CqListenerPtr tradeEventListener (new TradeEventListener());
+and change this line
+ CqQueryPtr priceTracker = queryServicePtr->newCq(cqName, queryStr, cqa);
+to 
+ CqQueryPtr priceTracker = qrySvcPtr->newCq(cqName, queryStr, cqa); 
+ 
+and change this line 
+ . . .
+to
+ //. . . 
+ 
+----------------------------------------------------------------------------------------
+Correction to Chapter 11  
+* For example 11.1 Refer the DocXmlSnippets.xml Example 11.1.
+ 
+----------------------------------------------------------------------------------------
+
+Correction to Chapter 12
+
+* For example 12.1 Refer the example in Ch_12_FunctionExecution.cpp example_12_1().
+
+* For example 12.3 Refer the example in Ch_12_FunctionExecution.cpp example_12_3().
+
+----------------------------------------------------------------------------------------
+
+Correction to Chapter 13
+* For example 13.1 refer the DocXmlSnippets.xml Example 13.1.
+
+* For example 13.3 refer the class ExampleCacheLoader in Ch_13_ExampleCacheLoader.cpp
+
+* For example 13.4 refer the class User in Ch_13_User.hpp.
+  
+* For example 13.5 refer the class ExampleObject in Ch_13_ExampleObject.hpp.  
+  
+* For example 13.7 refer in User.java in javaobject folder.
+
+* For example 13.8 refer in ExampleObject.java in javaobject folder.

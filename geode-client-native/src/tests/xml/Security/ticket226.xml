@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="heapLruLimit">400</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="securityScheme">
+   <list>
+     <item>LDAP</item>
+     <item>PKCS</item>
+     <item>DUMMY</item>
+     <item>NONE</item>
+   </list>
+  </data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>500</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+  <data name="clientCount">2</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestSecurity">
+        <region-attributes caching-enabled="true" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS" hostGroup="CS"/>
+  <client-set name="Feeder"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test" timesToRun="5">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">Security/csAckMirror.xml</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Feeder"/>
+      <data name="securityParams">
+        <list>
+           <item>create</item>
+           <item>update</item>
+        </list>
+      </data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="perftests" waitTime="10m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+  </test>
+
+</test-driver>

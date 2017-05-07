@@ -1,0 +1,33 @@
+diff -ru a/lib/cpp/antlr/CharScanner.hpp b/lib/cpp/antlr/CharScanner.hpp
+--- a/lib/cpp/antlr/CharScanner.hpp	2006-11-01 13:37:17.000000000 -0800
++++ b/lib/cpp/antlr/CharScanner.hpp	2015-12-22 16:09:21.979422041 -0800
+@@ -22,6 +22,9 @@
+ // VC6 seems to need this
+ // note that this is not a standard C++ include file.
+ # include <stdio.h>
++#else
++#include <cstring>
++#include <cstdio>
+ #endif
+ 
+ #include <antlr/TokenStream.hpp>
+
+diff -ru a/scripts/cxx.sh.in b/scripts/cxx.sh.in
+--- a/scripts/cxx.sh.in	2006-11-01 13:37:18.000000000 -0800
++++ b/scripts/cxx.sh.in	2016-02-18 09:50:09.862590900 -0800
+@@ -68,6 +68,14 @@
+     ;;
+   cl)
+     cxxflags="-nologo -GX -GR" 
++    case "${DEBUG}" in
++      0)
++        cxxflags="/MD ${cxxflags}"
++        ;;
++      1)
++        cxxflags="/MDd /Od ${cxxflags}"
++        ;;
++    esac
+     ;;
+   bcc32)
+     cxxflags="-q -v -w-inl -w-aus -w-par -w-ccc" 
+

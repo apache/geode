@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 7.0/HTML Export Filter">
+
+<TITLE>userobjects: Pivotal&#8482; GemFire&#174; Native Client C++ Example</TITLE>
+</HEAD>
+<BODY>
+ <IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+ <DIV>
+   <h1 align="center"><a name="Top" id="Top"></a>userobjects</h1>
+   <h2 align="center">
+   Pivotal<b><sup><font size=-0>&#8482;</font></sup></b> GemFire<b><sup><font size=-0>&#174;</font></sup></b> Native Client </h2>
+   <h2 align="center">C++ Programming Example</h2>
+</DIV>
+<DIV>
+<H2>
+<br>
+About the userobjects Example </H2>
+<P>The <code>userobjects</code> example demonstrates the native client C++ API for distributing and retrieving custom-defined user types. The example uses <code>gemfire::CacheableKey</code> to define a key type suitable for storage as a value in the cache. See the C++ API documentation for a description of <code>gemfire::CacheableKey</code>. You can also review the example source code in the <code>userobjects</code> directory. </P>
+<P>The <code>userobjects</code> example is located in <code>NativeClient_InstallDir/SampleCode/examples/userobjects</code>.</P>
+<br>
+</DIV>
+
+<DIV>
+<H2>
+<a name="configuring_environment" id="configuring_environment"></a>Configuring the Environment </H2>
+</DIV>
+ <DIV>
+   <p>The following is a list of the environment configuration commands for the <code>userobjects</code> example. Choose the set of commands that are appropriate for your operating system. The text that you type is shown in <strong><code>bold</code></strong>.</p>
+<p><strong>Bourne and Korn shells (sh, ksh, bash)</strong>  </p>
+<blockquote>
+  <p><code>    % <strong>GFCPP=&lt;path to NativeClient_InstallDir directory&gt;; export GFCPP </strong><br>
+    % <strong>PATH=$GFCPP/bin:$PATH; export PATH</strong><br>
+    % <strong>LD_LIBRARY_PATH=$GFCPP/lib; export LD_LIBRARY_PATH</strong></code></p>
+</blockquote>
+<p><strong>Windows</strong></p>
+<blockquote>
+  <p><em>The Windows native client installer sets the required environment configurations for you, so they are listed for reference only.</em></p>
+  <p><code>&gt; GFCPP=&lt;path to NativeClient_InstallDir directory&gt;<br>
+  &gt; PATH=%GFCPP%\bin;%PATH%<br>
+  <br>
+  <br>
+  </code></p>
+</blockquote>
+</DIV>
+
+<DIV>
+<H2>Running userobjects</H2>
+<P>
+Follow these steps to run the <code>userobjects</code> example.  The steps reflect Windows operations, so alter them as needed for your operating system.</P>
+</DIV>
+<DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+  <p>
+Create a session, then configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a><a href="../envsetup.html" target="_blank"></a>.</p>
+</LI>
+<LI CLASS="Numbered-1st">Go to the <code>userobjects</code> example directory.</LI>
+<blockquote>
+  <p><strong> <code>cd NativeClient_InstallDir\SampleCode\examples\userobjects</code></strong></p>
+</blockquote>
+<LI CLASS="Numbered">
+Enter this command to start the example:
+
+  <blockquote>
+   <p><strong>
+     <code>userobjects</code></strong></p>
+   </blockquote>
+ </LI>
+
+<p>The process registers custom serializable types, then connects to the distributed system. It creates a cache and region, then creates a new <code>AccountHistory</code> and puts it in the cache. Next, it gets <code>AccountHistory</code> from the cache and updates it.</p>
+<p>This is the example output:</p>
+<blockquote>
+    <p><code>Put an AccountHistory in cache keyed with BankAccount.<br>
+      BankAccount( customer: 2309, account: 123091 )<br>
+      AccountHistory:<br>
+&nbsp;&nbsp;Created account<br>
+      Found AccountHistory in the cache.<br>
+      AccountHistory:<br>
+&nbsp;&nbsp;Created account<br>
+      Updated AccountHistory in the cache.<br>
+      Found AccountHistory in the cache.<br>
+      AccountHistory:<br>
+&nbsp;&nbsp;Created account<br>
+&nbsp;&nbsp;debit $1,000,000.</code></p>
+  </blockquote>
+  <LI CLASS="Numbered">Close the session by entering <code>exit</code>.</LI>
+</OL>
+<br>
+</DIV>
+<DIV>
+<H2>
+Changing System Parameters</H2>
+<P>
+By default, this product ships configured for multicast membership resolution. If your network environment does not allow multicast, you can configure GemFire for unicast. See the <em>GemFire User's Guide</em> for instructions on configuring TCP transport for membership and discovery. <code><br>
+    <br>
+</code></P>
+</DIV>
+<a href="#Top">Top</a>
+<P>
+<br>
+<p>Copyright (c) 2006-2014 Pivotal Software, Inc. All rights reserved. This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents. </p>
+</BODY>
+</HTML>
+

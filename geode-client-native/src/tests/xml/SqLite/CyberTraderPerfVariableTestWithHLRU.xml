@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">60</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>50</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>80</item>
+      <!--item>160</item>
+      <item>320</item>
+      <item>640</item-->
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion1">
+    <snippet>
+      <region name="TestTCR1">
+       <!--region-attributes caching-enabled="true" client-notification="true"/-->
+        <region-attributes caching-enabled="true" lru-entries-limit="10" disk-policy="overflows">
+          <persistence-manager library="SqLiteImpl" function="createSqLiteInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="SqLiteRoot1"/>
+              <property name="MaxPageCount" value="1073741823"/>
+              <property name="PageSize" value="65536"/>
+            </properties>
+          </persistence-manager>
+         <!--persistence-manager library="BDBImpl" function="createBDBInstance">
+           <properties>
+             <property name="PersistenceDirectory" value="./BDBLocal"/>
+             <property name="EnvironmentDirectory" value="./BDBLocalEnv"/>
+             <property name="CacheSizeGb" value="0"/>
+             <property name="CacheSizeMb" value="512"/>
+             <property name="PageSize" value="65536"/>
+             <property name="MaxFileSize" value="512000000"/>
+           </properties>
+         </persistence-manager-->
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion1</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" lru-entries-limit="5" disk-policy="overflows">
+          <persistence-manager library="SqLiteImpl" function="createSqLiteInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="SqLiteRoot2"/>
+              <property name="MaxPageCount" value="1073741823"/>
+              <property name="PageSize" value="65536"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>  
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+ 
+  <client-set name="CS1" hostGroup="CS"/>
+  <client-set name="CS2" hostGroup="CS"/>
+  <client-set name="Publisher"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf multi threaded test to test that the entry that exceeds the lru-entries-limit is evicted and Evicted entries are written to disk by a persistence manager viz SqLite db.It also checks that a Get fetches all the entries that were feeded in the region cache and all the evicted entries are marked as OVERFLOW.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 SqLite/csAckMirror.xml</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+    <task name="CreateRegionForPerformanceVariable" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Measure Performance Variable with string keys" action="doPuts" container="perftests" waitTime="1h">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">30</data>
+    </task>
+    <task name="Check OverFlow value" action="doCheckOverFlow" container="perftests" waitTime="1h">
+      <client-set name="Publisher"/>
+      <data name="entryCount">50</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">30</data>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="perftests" waitTime="30m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">30</data>
+    </task> 
+    <task name="Check OverFlow value" action="doCheckOverFlow" container="perftests" waitTime="1h">
+      <client-set name="Publisher"/>
+      <data name="entryCount">50</data> 
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+    <task name="StopCacheServers CS3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="CS3"/>
+    </task>
+  </test>
+
+</test-driver>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 'distributed' is an unknown scope -->
+
+<client-cache>
+ <root-region name = "root1" >
+     <region-attributes scope="local" caching-enabled="true" lru-entries-limit = "35">
+     </region-attributes>
+  </root-region>
+</client-cache>
+

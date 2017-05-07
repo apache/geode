@@ -1,0 +1,6 @@
+#Steps to run yet to come.
+#use runScalePerf script for cpp run
+Example for cpp run: Need 8 hosts to run the tests
+/export/w1-gst-dev01a/users/rkumar/project/ThinClient/build-artifacts/linux/framework/scripts/runScalePerf /export/w1-gst-dev01a/users/rkumar/project/ThinClient/build-artifacts/linux /export/gcm/where/jdk/1.6.0_26/x86_64.linux/bin/java /gcm/where/gemfire/70/snaps.Any/snapshots.34944/gf70MAINTsancout/product . w1-gst-dev01 w1-gst-dev02 w1-gst-dev03 w1-gst-dev04 w1-gst-dev05 w1-gst-dev06 w1-gst-dev07 w1-gst-dev08
+#use FwkDriver.exe for c# run
+OS_BUILD_DIR/framework/csharp/bin/FwkDriver.exe --list=scale.list CS1:w1-gst-dev01 CS1:w1-gst-dev02 CS1:w1-gst-dev03 CS1:w1-gst-dev04 CS2:w1-gst-dev05 CS2:w1-gst-dev06 CS3:w1-gst-dev07 CS3:w1-gst-dev08

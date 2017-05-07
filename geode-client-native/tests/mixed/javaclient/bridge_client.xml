@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Initializes a bridge client for a bridge server that runs on port 40404.
+     Loads values and sends updates to the server.  -->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
+  "http://www.gemstone.com/dtd/cache4_0.dtd">
+<cache cache-proxy-enabled="false" is-server="false">
+  <vm-root-region name="root">
+    <region-attributes scope="distributed-no-ack">
+    </region-attributes>
+    <region name="listenerWriterLoader">
+      <region-attributes scope="local">
+        <cache-loader>
+          <class-name>com.gemstone.gemfire.cache.util.BridgeLoader</class-name>
+          <parameter name="endpoints">
+            <string>server=localhost:50505</string>
+          </parameter>
+        </cache-loader>
+        <cache-writer>
+          <class-name>com.gemstone.gemfire.cache.util.BridgeWriter</class-name>
+          <parameter name="endpoints">
+            <string>server=localhost:50505</string>
+          </parameter>
+          <parameter name="establishCallbackConnection">
+            <string>true</string>
+          </parameter>
+        </cache-writer>
+      </region-attributes>
+      <region name="sub1">
+        <region-attributes scope="local">
+          <cache-loader>
+            <class-name>com.gemstone.gemfire.cache.util.BridgeLoader</class-name>
+            <parameter name="endpoints">
+              <string>server=localhost:50505</string>
+            </parameter>
+          </cache-loader>
+          <cache-writer>
+            <class-name>com.gemstone.gemfire.cache.util.BridgeWriter</class-name>
+            <parameter name="endpoints">
+              <string>server=localhost:50505</string>
+            </parameter>
+            <parameter name="establishCallbackConnection">
+              <string>true</string>
+            </parameter>
+          </cache-writer>
+        </region-attributes>
+      </region>
+    </region>
+  </vm-root-region>
+</cache>

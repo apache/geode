@@ -1,0 +1,166 @@
+This file describes the command line arguments used by the runDriver script,
+the files that may be used as values for some of the command line arguments,
+and shows some common uses for runDriver.
+
+First the arguments runDriver accepts:
+
+This option indicates that the debug build executables and libraries should be 
+used. This will affect the paths used in setting PATH and LD_LIBRARY_PATH.
+  -D
+
+These next four all cause valgrind to be used, and each will cause a different tool
+to be used. These are mutually exclusive, but the script does not error out.
+It is simply a "first one wins" situation. After the tool to use has been set,
+subsequent options that would otherwise set are just ignored.
+You should just use one of these next four options:
+  -M -- use valgrind with memcheck
+  -C -- use valgrind with cachegrind
+  -H -- use valgrind with massif
+  -P -- use valgrind with callgrind
+
+This option allows you to specify a particular xml test file to include in the run.
+This option may be used multiple times, and can be used in addition to the -l option.
+The xml file should have path information relative to the <build_results>/framework/xml directory.
+  -x <xml file> 
+
+This option allows you to specify a text file containing a number of text xml files.
+Each xml file in this file will be added to the test, just as though it had been
+specified using the -x option. This means the path relative to ..../framework/xml
+is required. This is used for regression testing.
+  -l <file containing names of xml files> -
+
+This option specifies how many times each test should be run. Each xml test file
+will be processed this number of times. The default is 1. This is used in perf testing
+where a single run is not adequate to generate reliable numbers.
+  -r <n>  
+
+This option causes the framework to start a unicast locator for topic resolution,
+nstead of using the default multicast topic resolution. This will cause a 
+different locator to be used for each run of an xml test, to prevent pollution 
+from leftover processes that the framework failed to kill.
+  -u
+
+This option causes the framework to start the test with pool along with the specified pool option
+  -p <pool option>
+where <pool option>= poolwithendpoints/poolwithlocator
+
+This option causes the test to use statically built executables and libraries,
+instead of the dynamically linked. This is used in regression tests to make sure
+both types are tested. This will affect the paths used in setting PATH 
+and LD_LIBRARY_PATH.
+  -s 
+
+This option allows valgrind to be used with only the clients specified, 
+instead of trying to run all client under valgrind. This option can be specified
+multiple times, allowing any number of clients to be run under valgrind.
+  -t client_id
+
+The next three options allow you specify the location of the build to use on a
+particular OS. The platform that runDriver is executed on will default to the
+build that runDriver is being executed out of. The specification is in the form
+of hostname:absolute_path_to_build with the directory above product being the 
+location to specify.
+  -L <host>:<build_location> -- linux build to use
+  -S <host>:<build_location> -- solaris build to use
+  -W <host>:<build_location> -- windows build to use
+
+This option allows you to specify the location of the valgrind install. 
+Not very sophisticated, only one location is active for a entire test run. 
+The default location is /gcm/where/cplusplus/perftools/valgrind.
+  -V path_to_valgrind
+
+This option allows you to specify what directory will be used as the base location
+for the test run, all files and directories created as part of the run will be 
+under this location. 
+The default is the current working directory when runDriver is invoked.
+  -d test_directory 
+
+This option allows email recipients to be specified. The content of the error.report
+file for the entire test run will be emailed to the specified recipients.
+This option may be used multiple times to specify multiple recipients.
+  -m mail_address 
+
+This option allows you to specify a file containing additional command line
+arguments. Its purpose is to allow you place common, or lengthy arguments into
+a file, and use that file whenever appropriate by using this option. Any
+argument is allowed, with the exception of hostnames, as they do not have a option
+that prefaces them. You can include the -h option that specifies a file with host
+names in it. The file is consumed and its arguments processed as soon as it is 
+encountered on the commandline. So where it appears relative to other command line
+options may be important. This option may be used multiple times. You could have
+different options files for different purposes, and they may be used in 
+conjunction with each other at times.
+  -o options_file  
+
+It is important to note some behaviors that result from using an options file. 
+Some arguments are "last one wins" arguments, others are "first one wins", this 
+causes the order of the arguments on the command line relative to the -o option 
+to be important. Some arguments cannot be unset, such as the -D, -M, etc options. 
+If you set this in an options file, you cannot override it on the command line, 
+even after the -o. Some arguments can appears many times, their content 
+aggregating with the previous occurances. This prevents you from overriding 
+something like email recipients on the command line. Whatever is on the command 
+line is simply added to anything that may have been specified through the use of 
+the -o option.
+
+This option allows you to place the hosts you wish to use into a file, and just 
+specify that file on the command line.
+  -h <file_containing_host_name> 
+  
+Lastly, rundriver expects all arguments after the options to be host names to 
+use in the test. It aggregates these names with any hosts that might have been
+specified using the -h option. If no host are specified in either manner, the
+host runDriver is executing on will be the only host used in the test.
+  host list 
+
+This option allows you to upload the regression results into database table to keep the regression history.
+  -R
+Some examples of runDriver use:
+
+~/mybuild/framework/scripts/runDriver -x Misc/quickTest.xml \
+  -W tkeith-desk:/cygdrive/C/Temp/Built/trunk tiny tkeith-desk hs20a
+
+This is an example of needing to run a single test, using the current working 
+directory as the test directory, and using a mix of linux and windows machines.
+
+
+~/mybuild/framework/scripts/runDriver -x Perf/perfBenchmark.xml -r 10 \
+  -h grid_machines.txt
+
+Is an example of how runDriver could be used to run perfBenchmark 10 times on a 
+set of machines in an Intel ( or other vendor ) lab.
+
+~/mybuild/framework/scripts/runDriver -x Native/getAll.xml -p poolwithendpoints bensa
+
+~/mybuild/framework/scripts/runDriver -x Native/getAll.xml -p poolwithlocator bensa
+
+~/mybuild/framework/scripts/runDriver -x Native/getAll.xml bensa
+
+The above 3 examples  will enable the xmls to run with pool with various pool options ie 
+The 1st one will run with pool,with serverendpoints
+2nd one with pool,with locators and
+3rd will run without pool which is the default.
+
+/export/tiny1/users/tkeith/regression/framework/scripts/runDriver \
+  -l short_nightly.list \
+  -h /export/tiny2/users/tkeith/regression/regHostsA.txt \
+  -o /export/tiny2/users/tkeith/regression/regEmail.txt \
+  -o /export/tiny2/users/tkeith/regression/regBuilds.txt
+
+This is an example of how it might be used for regression runs. 
+The list of xml tests are in /export/tiny1/users/tkeith/regression/framework/xml/short_nightly.list
+and the list of hosts to use is in regHostsA.txt
+and the list of email recipients is in regEmail.txt
+and the builds to use in the regression run are in regBuilds.txt.
+
+
+It is important to note that runDriver has no option to do an git pull and
+clean build. This is handled by the runBuild script. In a cron, it should be run 
+prior to the regression test themselves, allowing enough time for it to complete 
+prior to the regression tests starting.
+
+
+The files specified by the -o -h and -l options are allowed to have comments.
+The comments are indicated by a # symbol. The contents of these files 
+will have everything between a # and the end of line, stripped before the 
+file is consumed. this allows trailing comments in addition to whole line comments.

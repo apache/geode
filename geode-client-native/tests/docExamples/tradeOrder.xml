@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+<cache>
+
+  <bridge-server port="24680" notify-by-subscription="true"/>
+  <vm-root-region name="tradeOrder">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values" data-policy="replicate"/>    
+    						<entry>
+                <key><string>new-trade</string></key>
+                <value>
+                  <declarable>
+                    <class-name>javaobject.TradeOrder</class-name>
+                    <parameter name="price">
+                      <string>200</string>
+                    </parameter>
+                    <parameter name="pkid">
+                      <string>A0</string>
+                    </parameter>
+                    <parameter name="type">
+                      <string>type1</string>
+                    </parameter>
+                    <parameter name="status">
+                      <string>active</string>
+                    </parameter>
+                      </declarable>
+                </value>
+               </entry>               
+  </vm-root-region>
+</cache> 

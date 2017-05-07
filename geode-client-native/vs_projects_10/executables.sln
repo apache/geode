@@ -1,0 +1,89 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "executables", "executables", "{DD9379D0-9A59-4009-BF90-6E3195A79CB4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{2B50BBDB-6092-46A4-B055-40F6D012BBF6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{412030BA-C971-482A-A3B6-74ECDA71526D}"
+	ProjectSection(SolutionItems) = preProject
+		..\build.sh = ..\build.sh
+		..\build.xml = ..\build.xml
+		..\filehdr.txt = ..\filehdr.txt
+		..\gfgrep = ..\gfgrep
+		..\myBuild.sh = ..\myBuild.sh
+		..\myBuild.sh.example = ..\myBuild.sh.example
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "buildfiles", "buildfiles", "{F40324F4-B271-44B4-9DCF-33F717C9763A}"
+	ProjectSection(SolutionItems) = preProject
+		..\buildfiles\build-docs.xml = ..\buildfiles\build-docs.xml
+		..\buildfiles\build-examples.xml = ..\buildfiles\build-examples.xml
+		..\buildfiles\build-src.xml = ..\buildfiles\build-src.xml
+		..\buildfiles\build-tests.xml = ..\buildfiles\build-tests.xml
+		..\buildfiles\build_from_eclipse.bat = ..\buildfiles\build_from_eclipse.bat
+		..\buildfiles\composit-ar.sh = ..\buildfiles\composit-ar.sh
+		..\buildfiles\jedit-gfcpp.xml = ..\buildfiles\jedit-gfcpp.xml
+		..\buildfiles\prettycode.sh = ..\buildfiles\prettycode.sh
+		..\buildfiles\uniqueTransportConfig.sh = ..\buildfiles\uniqueTransportConfig.sh
+		..\buildfiles\vcvars32_7.sh = ..\buildfiles\vcvars32_7.sh
+		..\buildfiles\winlog.sh = ..\buildfiles\winlog.sh
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gfcpp", "executables\gfcpp.vcxproj", "{41864C92-1195-4260-A0DF-66BB8B87DDC2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extern-examples", "antTasks\extern-examples.vcxproj", "{193BE58C-E2C2-4B11-B69A-87E85044C62A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extern-gfclicache", "antTasks\extern-gfclicache.vcxproj", "{1A9D8380-04FB-4351-88DA-0B3890D1BF64}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extern-compile-cpp-tests", "antTasks\extern-compile-cpp-tests.vcxproj", "{AA9B2AB1-9B88-4627-863E-2387A8776D03}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pdxautoserializer", "executables\pdxautoserializer.vcxproj", "{90C38291-0461-460C-9F95-236B606F554C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Debug|Win32.Build.0 = Debug|Win32
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Debug|x64.ActiveCfg = Debug|x64
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Debug|x64.Build.0 = Debug|x64
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Release|Win32.ActiveCfg = Release|Win32
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Release|Win32.Build.0 = Release|Win32
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Release|x64.ActiveCfg = Release|x64
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2}.Release|x64.Build.0 = Release|x64
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Debug|x64.ActiveCfg = Debug|x64
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Release|Win32.ActiveCfg = Release|Win32
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Release|x64.ActiveCfg = Release|x64
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Debug|x64.ActiveCfg = Debug|x64
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Release|Win32.ActiveCfg = Release|Win32
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Release|x64.ActiveCfg = Release|x64
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Debug|x64.ActiveCfg = Debug|x64
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Release|Win32.ActiveCfg = Release|Win32
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Release|x64.ActiveCfg = Release|x64
+		{90C38291-0461-460C-9F95-236B606F554C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{90C38291-0461-460C-9F95-236B606F554C}.Debug|Win32.Build.0 = Debug|Win32
+		{90C38291-0461-460C-9F95-236B606F554C}.Debug|x64.ActiveCfg = Debug|x64
+		{90C38291-0461-460C-9F95-236B606F554C}.Release|Win32.ActiveCfg = Release|Win32
+		{90C38291-0461-460C-9F95-236B606F554C}.Release|Win32.Build.0 = Release|Win32
+		{90C38291-0461-460C-9F95-236B606F554C}.Release|x64.ActiveCfg = Release|x64
+		{90C38291-0461-460C-9F95-236B606F554C}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{41864C92-1195-4260-A0DF-66BB8B87DDC2} = {DD9379D0-9A59-4009-BF90-6E3195A79CB4}
+		{90C38291-0461-460C-9F95-236B606F554C} = {DD9379D0-9A59-4009-BF90-6E3195A79CB4}
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A} = {2B50BBDB-6092-46A4-B055-40F6D012BBF6}
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64} = {2B50BBDB-6092-46A4-B055-40F6D012BBF6}
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03} = {2B50BBDB-6092-46A4-B055-40F6D012BBF6}
+	EndGlobalSection
+EndGlobal

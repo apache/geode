@@ -1,0 +1,32 @@
+<project name="gemfire-sonar">
+
+  <taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml" classpath="${sonar-ant-task.jar}"/>
+
+  <property name="sonar.host.url" value="http://brazil.gemstone.com:9000"/>
+  <property name="sonar.jdbc.url" value="jdbc:mysql://brazil.gemstone.com:3306/sonar?useUnicode=true&amp;characterEncoding=utf8"/>
+  <property name="sonar.jdbc.driverClassName" value="com.mysql.jdbc.Driver"/>
+  <property name="sonar.jdbc.username" value="sonar"/>
+  <property name="sonar.jdbc.password" value="sonar"/>
+
+  <target name="sonar" depends="props">
+    <!-- Get Build Number -->
+    <property file="${build.dir}/build.number"/>
+
+    <property name="sonar.projectKey" value="com.vmware:gfcpp" />
+    <property name="sonar.projectName" value="GemFireNC" />
+    <property name="sonar.projectVersion" value="${gemfire.version} b${build.number}" />
+    <property name="sonar.projectDescription" value="vFabric GemFire Native Client- Revision ${build.number}"/>
+    <property name="sonar.branch" value="${source.branch}"/>
+    <property name="sonar.language" value="c++"/>
+    <property name="sonar.sources" value="${basedir}/src/com/gemstone/gemfire/internal"/>
+    <property name="sonar.binaries" value="${osbuild.dir}/classes"/>
+    <property name="sonar.tests" value="${basedir}/tests"/>
+    <property name="sonar.dynamicAnalysis" value="reuseReports"/>
+    <property name="sonar.doxygen.customPath" value="${osbuild.dir}/javadocs/cppreference/html"/>
+    <property name="sonar.doxygen.deploymentPath" value="${osbuild.dir}/javadocs/cppreference/html"/>
+    <property name="sonar.cxx.cppcheck.reportPath" value="gfcpp_cppcheckresults.xml"/>
+    <sonar:sonar xmlns:sonar="antlib:org.sonar.ant"/>
+
+  </target>
+
+</project>

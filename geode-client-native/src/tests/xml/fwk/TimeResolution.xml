@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <test name="Check Time Resolution" description="" waitTime="5m">
+    <task name="Check Time Resolution" action="checkTimeResolution" container="utils" waitTime="2m"/>
+    <task name="Check Time Delta" action="checkTimeDelta" container="utils" waitTime="2m"/>
+  </test>
+</test-driver>

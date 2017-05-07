@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="maxTestTime">6000</data>
+	<data name="minTaskGranularitySec">30</data>
+	<data name="totalTaskTimeSec">1200</data>
+	<data name="maxResultWaitSec">600</data>
+	<data name="preemptCounter">10</data>
+	<!-- abort, exit, done ops downcounter before execution -->
+	<data name="haltIfBadResult">true</data>
+	<data name="maxRegions">50</data>
+	<data name="installListener">true</data>
+	<data name="installWriter">false</data>
+	<data name="installLoader">false</data>
+	<data-set name="Local">
+		<data name="regionName">Local</data>
+		<data name="scope">local</data>
+	</data-set>
+	<data-set name="AckMirrorNil">
+		<data name="regionName">AckMirrorNil</data>
+		<data name="scope">ack</data>
+		<data name="mirroring">true</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	<data-set name="NackMirrorNil">
+		<data name="regionName">NackMirrorNil</data>
+		<data name="scope">nack</data>
+		<data name="mirroring">true</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	<data-set name="AckNmirrorNil">
+		<data name="regionName">AckNmirrorNil</data>
+		<data name="scope">ack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	<data-set name="NackNmirrorNil">
+		<data name="regionName">NackNmirrorNil</data>
+		<data name="scope">nack</data>
+		<data name="mirroring">false</data>
+		<data name="interestListEnabled">false</data>
+	</data-set>
+	
+        <test name="Local" description="Local Event test" waitTime="780">
+	    <task name="DistributedMemberCount" action="doDistributedMemberCount" container="eventtest" waitTime="60" timesToRun="5" continueOnError="true">
+            </task>
+        </test>
+</test-driver>

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <client-set>
+    <client name="checker"/>
+  </client-set>
+  <client-set count="10" name="A"/>
+  <client-set count="10" name="B"/>
+  <client-set count="10" name="C"/>
+  <client-set count="10" name="D"/>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorIl">
+    <snippet>
+      <region name="AckMirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorIl">
+    <snippet>
+      <region name="NackMirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <test name="Distributed System" description="Distributed System test" waitTime="5400">
+    <task name="DistributedMemberCount" action="doDistributedMemberCount" container="eventtest" waitTime="600">
+    </task>
+    <task name="CreateRegion-AckMirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorIl</data>
+      <data name="regionName">AckMirrorIl</data>
+    </task>
+    <task name="Verify CreateRegion-AckMirrorIl" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorIl</data>
+      <data name="regionName">AckMirrorIl</data>
+    </task>
+    <task name="CreateRegion-NackMirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorIl</data>
+      <data name="regionName">NackMirrorIl</data>
+    </task>
+    <task name="Verify CreateRegion-NackMirrorIl" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorIl</data>
+      <data name="regionName">NackMirrorIl</data>
+    </task>
+    <task name="CreateRegion-AckNmirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorIl</data>
+      <data name="regionName">AckNmirrorIl</data>
+    </task>
+    <task name="Verify CreateRegion-AckNmirrorIl" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorIl</data>
+      <data name="regionName">AckNmirrorIl</data>
+    </task>
+    <task name="CreateRegion-NackNmirrorIl" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorIl</data>
+      <data name="regionName">NackNmirrorIl</data>
+    </task>
+    <task name="Verify CreateRegion-NackNmirrorIl" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorIl</data>
+      <data name="regionName">NackNmirrorIl</data>
+    </task>
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorNil</data>
+      <data name="regionName">AckMirrorNil</data>
+    </task>
+    <task name="Verify CreateRegion-AckMirrorNil" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorNil</data>
+      <data name="regionName">AckMirrorNil</data>
+    </task>
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorNil</data>
+      <data name="regionName">NackMirrorNil</data>
+    </task>
+    <task name="Verify CreateRegion-NackMirrorNil" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackMirrorNil</data>
+      <data name="regionName">NackMirrorNil</data>
+    </task>
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorNil</data>
+      <data name="regionName">AckNmirrorNil</data>
+    </task>
+    <task name="Verify CreateRegion-AckNmirrorNil" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorNil</data>
+      <data name="regionName">AckNmirrorNil</data>
+    </task>
+    <task name="CreateRegion-NackNmirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorNil</data>
+      <data name="regionName">NackNmirrorNil</data>
+    </task>
+    <task name="Verify CreateRegion-NackNmirrorNil" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="checker"/>
+      </client-set>
+      <data name="regionSpec">NackNmirrorNil</data>
+      <data name="regionName">NackNmirrorNil</data>
+    </task>
+  </test>
+</test-driver>

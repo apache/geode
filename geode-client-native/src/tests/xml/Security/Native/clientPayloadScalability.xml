@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="securityScheme">
+   <list>
+     <item>LDAP</item>
+     <item>DUMMY</item>
+     <item>PKCS</item>
+     <item>NONE</item>
+   </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS" hostGroup="CS"/>
+  <client-set name="ThinClient"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test" timesToRun="4">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">Native/csAckMirror.xml</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <data name="securityParams">
+        <list>
+          <item>create</item>
+          <item>destroy</item>
+          <item>register_interest</item>
+        </list>
+      </data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="2h">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>5</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>5120</item>
+          <item>10240</item>
+          <item>512000</item>
+          <item>102400</item>
+          <item>5242880</item>
+          <item>10485760</item>
+          <item>31457280</item>
+          <item>52428800</item>
+          <item>73400320</item>
+          <item>104857600</item>
+        </list>
+      </data>
+    </task>
+    <task name="Destroy Entries" action="doDestroys" container="perftests" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>5</item>
+        </list>
+      </data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="2h">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>209715200</item>
+        </list>
+      </data>
+    </task>
+    <task name="Destroy Entries" action="doDestroys" container="perftests" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="2h">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>314572800</item>
+        </list>
+      </data>
+    </task>
+    <task name="Destroy Entries" action="doDestroys" container="perftests" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="2h">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>419430400</item>
+        </list>
+      </data>
+    </task>
+    <task name="Destroy Entries" action="doDestroys" container="perftests" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="2h">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>524288000</item>
+        </list>
+      </data>
+    </task>
+    <task name="Destroy Entries" action="doDestroys" container="perftests" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>2</item>
+        </list>
+      </data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+  </test>
+
+</test-driver>

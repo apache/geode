@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+
+  <client-set name="All">
+    <client name="ClientF1"></client>
+  </client-set>
+	
+  <test name="ValidateCounts" description="Count distributed events">
+
+    <task name="CreateFeed" action="createCountingProcess" container="libcacheserver" waitTime="60" parallel="true">
+      <data name="cacheType">PEER</data>
+      <data name="regionName">CSRegion</data>
+      <client-set>
+        <client name="ClientF1"></client>
+      </client-set>
+    </task>
+		
+    <task name="CreateServers" action="createCountingProcess" container="libcacheserver" waitTime="60" parallel="true">
+      <data name="cacheType">SERVER</data>
+      <data name="regionName">CSRegion</data>
+      <client-set exclude="true">
+        <client name="ClientF1"></client>
+      </client-set>
+    </task>
+    
+    <task name="CreateFeed" action="createCountingProcess" container="libcacheserver" waitTime="60" parallel="true">
+      <data name="cacheType">PEER</data>
+      <data name="regionName">CSRegion</data>
+      <client-set>
+        <client name="ClientF1"></client>
+      </client-set>
+    </task>
+		
+    <task name="CreateServers" action="createCountingProcess" container="libcacheserver" waitTime="60" parallel="true">
+      <data name="cacheType">SERVER</data>
+      <data name="regionName">CSRegion</data>
+      <client-set exclude="true">
+        <client name="ClientF1"></client>
+      </client-set>
+    </task>
+    
+  </test>
+
+</test-driver>

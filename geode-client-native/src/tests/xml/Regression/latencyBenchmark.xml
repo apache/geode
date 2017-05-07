@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="timedInterval">2m</data>
+  <data name="opsSecond">100</data>
+  <data name="distinctKeys">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorIl">
+    <snippet>
+      <region name="AckMirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorIl">
+    <snippet>
+      <region name="NackMirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNcacheNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNcacheNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <client-set name="Driver">
+    <client name="Producer"/>
+    <client name="Consumer1"/>
+    <client name="Consumer2"/>
+    <client name="Consumer3"/>
+  </client-set>
+  <test name="Latency Benchmark" description="Latency measurement test" waitTime="5400">
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-AckMirrorIl" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-AckNmirrorIl" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">AckNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackMirrorIl" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackNmirrorNil" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackNmirrorIl" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">NackNmirrorIl</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="300">
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+  </test>
+</test-driver>

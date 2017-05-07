@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">RogueWave</data>
+  <data name="systemName">RWTest</data>
+  <data name="cacheType">PEER</data>
+  
+  <data name="burstMillis">300</data>
+  <data name="burstPause">3</data>
+  <data name="timedInterval">10</data>
+  <data name="keyType">int</data>
+  <data name="opsSecond">100</data>
+  <data name="localDestroy">true</data>
+  
+  <!-- Loop variables must be lists -->
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+      <item>10</item>
+    </list>
+  </data>
+	
+  <data name="distinctKeys"><list><item>10240</item></list></data>
+  <data name="valueSizes"><list><item>2048</item></list></data>
+  <data name="clientCount">1</data>
+  <data name="localDestroy">false</data>
+
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="CSEventsAck">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorNilBDB">
+    <snippet>
+      <region name="CSEventsAck">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"
+          lru-entries-limit="1000" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBAckMirrorIl"/>
+              <property name="EnvironmentDirectory" value="./BDBAckMirrorIlEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512000000"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="CSEventsNack">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNilBDB">
+    <snippet>
+      <region name="CSEventsNack">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"
+          lru-entries-limit="1000" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBAckMirrorIl"/>
+              <property name="EnvironmentDirectory" value="./BDBAckMirrorIlEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512000000"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <client-set count="1" name="Receiver"/>
+  <client-set count="1" name="Feeder"/>
+
+  <test name="2 peers, 2k values" description="Feed throughput testing">
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="1" name="Feeder"/>
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="1" name="Receiver"/>
+      <data name="regionSpec">NackMirrorNilBDB</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1h">
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="DestroyRegion-NackMirrorNil" action="doLocalDestroyRegion" container="perftests" waitTime="5m">
+      <data name="regionName">CSEventsNack</data>
+    </task>
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="1" name="Feeder"/>
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="1" name="Receiver"/>
+      <data name="regionSpec">AckMirrorNilBDB</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1h">
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="DestroyRegion-AckMirrorNil" action="doLocalDestroyRegion" container="perftests" waitTime="5m">
+      <data name="regionName">CSEventsAck</data>
+    </task>
+  </test>
+</test-driver>

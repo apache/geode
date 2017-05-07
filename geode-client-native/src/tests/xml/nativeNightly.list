@@ -1,0 +1,19 @@
+Native/getAllTest.xml
+Native/perfBenchmarkTCR.xml
+Native/perfTCRServerEviction.xml
+Native/clientEventsFailover.xml # 52
+Native/failoverTest.xml
+Native/perfClientsUpdateTest.xml
+Native/perfTestPutGetDestroyTCR.xml
+Native/perfTCROverflowToDisk.xml
+Native/perfTestPutGetDestroy_PartialInterestTCR.xml
+Native/perfTestPutGetDestroyTCRscaledUp.xml
+Native/clientEventsHLRU.xml
+Native/ticket226.xml
+Native/registerAllKeysTest.xml 
+Native/registerKeysAndRegexTest.xml
+Native/registerAndUnregisterRegexTest.xml
+Native/registerAllKeysGIIValueTest.xml
+Native/putGetAllTest.xml
+#Native/registerKeysAndRegexWithReceiveValue.xml
+#Native/clientEventsFailoverCB.xml

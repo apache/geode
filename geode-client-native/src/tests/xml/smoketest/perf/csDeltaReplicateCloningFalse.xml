@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.1//EN"
+  "http://www.gemstone.com/dtd/cache6_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="false"/>
+  <region name="dummy">
+    <region-attributes  data-policy="normal">
+    </region-attributes>
+    <entry>
+      <key><string>1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.DeltaFastAssetAccount</class-name>
+          <parameter name="acctId">
+            <string>1</string>
+          </parameter>
+          <parameter name="customerName">
+            <string>Milton Moneybags</string>
+          </parameter>
+          <parameter name="netWorth">
+            <string>1.0</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+    <entry>
+      <key><string>2</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.FastAsset</class-name>
+          <parameter name="assetId">
+            <string>1</string>
+          </parameter>
+          <parameter name="value">
+            <string>1.0</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+  </region>
+  <region name="TestTCR1">
+    <region-attributes data-policy="replicate" mirror-type="keys-values" cloning-enabled="false"/>
+  </region>
+</cache>

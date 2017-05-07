@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="numThreads">
+    <list>
+      <item>5</item>
+    </list>
+  </data>
+  <data name="useTransactions">true</data>
+  <data name="getInitialValues">true</data>
+  <data name="entryCount">10000</data>
+  <data name="NumNewKeys">200</data>
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" subscription-enabled="true" thread-local-connections="false" min-connections="2" read-timeout="60000" 
+           subscription-redundancy="0" load-conditioning-interval="5000" servers="true" />
+    </snippet>
+  </data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="false" client-notification="false"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <!--region-attributes caching-enabled="true" client-notification="true" concurrency-checks-enabled="false"-->
+        <region-attributes caching-enabled="true" client-notification="true" concurrency-checks-enabled="true">
+          <cache-listener library="cacheserver" function="createSilenceListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+
+  <client-set name="Feeder"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set count="10" name="Client"/>
+
+  <test name="staticInterestPolicyList" description="In a client VM/bridge server configuration, one client VM loads data into the
+region, which distributes it to all bridge servers. Each remaining client 
+VM then calls registerInterest either with interest policy 
+with the keys of interest. Then the same VM that did the
+load does operations on the region (destroy invalidate etc). Each remaining 
+client then validates that the proper keys and/or values are present in the 
+client region.">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 4 hct/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+     <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver"  waitTime="3m" argTypes="int,object">
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="10" name="Client"/>
+      <client-set name="Feeder"/>
+    </task>
+    <!--task name="Create Feeder Client" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="Feeder"/>
+    </task-->
+    <task name="CreateClients" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="10m" argTypes="int,object">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set count="10" name="Client"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="InitInstance" action="doInitInstance" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="20m" argTypes="int,object">
+      <client-set name="Feeder"/>
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="LoadRegion	" action="doFeedInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="20m" argTypes="int,object">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="DoOperations" action="doOps" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="10m" argTypes="int,object">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register Interest List" action="doRegisterInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="2m" argTypes="int,object">
+      <client-set count="10" name="Client"/>
+    </task>
+    <task name="Wait for updates" action="doWaitForSilenceListenerComplete" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="5m" argTypes="int,object">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="VerifyRegionContentsAfterOpsRI" action="doVerifyRegionContentsAfterOpsRI" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="10m" argTypes="int,object">
+       <client-set count="10" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="int,object"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+  </test>
+</test-driver>

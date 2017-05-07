@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">10m</data>
+
+  <client-set name="Client1" />
+
+  <test name="AtomicIncsDecs" description="Atomic Increment Decrement Test">
+
+    <task name="AtomicIncsDecs" action="doAtomicIncDec" container="perftests" waitTime="2h">
+      <data name="sleepMillis">
+        <list>
+          <item>0</item>
+          <item>10</item>
+          <item>100</item>
+        </list>
+      </data>
+      <data name="numThreads">
+        <list>
+          <item>5</item>
+          <item>10</item>
+        </list>
+      </data>
+    </task>
+
+  </test>
+
+</test-driver>

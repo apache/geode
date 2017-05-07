@@ -1,0 +1,25 @@
+#!/bin/bash
+
+thisDir=`basename $BASEDIR`
+echo $thisDir
+
+# should be /export/gcm once pune supports it.
+MY_THIRDPARTY_BASE=/gcm/where/cplusplus/thirdparty
+
+if [ `uname` = "SunOS" ]; then
+  export CPP_THIRDPARTY=${MY_THIRDPARTY_BASE}/solaris
+  export ANT_ARGS="-D/export/scrooge2/users/tkeith/built/$thisDir"
+else
+if [ `uname` = "Linux" ]; then
+  export CPP_THIRDPARTY=${MY_THIRDPARTY_BASE}/linux
+  export ANT_ARGS="-Dosbuild.dir=/export/tiny2/users/tkeith/built/$thisDir"
+else
+  MY_THIRDPARTY_BASE=C:/src/gcm/where/cplusplus
+  export CPP_THIRDPARTY=${MY_THIRDPARTY_BASE}
+  export ANT_ARGS="-Dosbuild.dir=C:/Temp/built/$thisDir"
+fi
+fi
+
+export JAVA_HOME=${CPP_THIRDPARTY}/jdk1.4.2_06
+export ANT_HOME=${CPP_THIRDPARTY}/ant/apache-ant-1.8.4
+

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>20</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="regionPaths">
+    <list>
+      <item>/IndexRegion</item>
+      <item>/Portfolios</item>
+    </list>
+  </data>
+
+  <!--categoryTypes are singleRegion = 1, multiRegion, operators, constants, functions, collectionOps, keywords,
+      regionInterface, nestedQueries, importAndSelect, canonicalization, unsupported,
+      queryAndIndexing, misc, qcEnd/*to mark the end of categoryTypes*/-->
+  <data name="categoryType">
+    <list>
+      <item>1</item>
+      <item>3</item>
+      <item>4</item>
+      <item>5</item>
+      <item>6</item>
+      <item>7</item>
+      <item>8</item>
+      <item>9</item>
+      <item>11</item>
+      <item>12</item>
+      <item>13</item>
+      <item>14</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes caching-enabled="true" client-notification="true">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+  <data name="index">true</data>
+  <data name="largeSetQuery">false</data>
+
+  <client-set name="JCS" hostGroup="CS"/>
+  <client-set name="ThinClient"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH RemoteQuery/csAckMirror.xml</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="querytests" waitTime="3m">
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 1k" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>1024</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 2k" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>2048</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 5k" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>5120</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with  Portfolio object with size 10k" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>10240</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 50k" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>512000</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 1M" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>1024000</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 5M" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>5242880</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 10M" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>10485760</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 30M" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>31457280</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <!--task name="PopulateRegion Portfolios with Portfolio object with size 50M" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>52428800</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 70M" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>73400320</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object with size 100M" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="ThinClient"/>
+      <data name="valueSizes">
+        <list>
+          <item>104857600</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="querytests" timesToRun="5" waitTime="30m">
+      <client-set name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task-->
+    <task name="close cache for CPP clients" action="doCloseCache" container="querytests" waitTime="5m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+  </test>
+</test-driver>

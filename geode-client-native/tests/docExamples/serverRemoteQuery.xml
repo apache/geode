@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+
+<cache>
+  <bridge-server port="24680" notify-by-subscription="true"/>
+
+  <vm-root-region name="Portfolios">
+    <region-attributes
+      scope="distributed-ack"
+      mirror-type="keys-values"
+      data-policy="replicate"
+    />
+  </vm-root-region>
+  
+  <vm-root-region name="Positions">
+    <region-attributes
+      scope="distributed-ack"
+      mirror-type="keys-values"
+      data-policy="replicate"
+    />
+  </vm-root-region>
+  
+  <vm-root-region name="ExampleRegion">
+    <region-attributes
+      scope="distributed-ack"
+      mirror-type="keys-values"
+      data-policy="replicate"
+    />
+    <entry>
+                <key><string>port1-1</string></key>
+                <value>
+                  <declarable>
+                    <class-name>javaobject.Portfolio</class-name>
+                    <parameter name="ID">
+                      <string>1</string>
+                    </parameter>
+                    <parameter name="pkid">
+                      <string>A0</string>
+                    </parameter>
+                    <parameter name="type">
+                      <string>type1</string>
+                    </parameter>
+                    <parameter name="status">
+                      <string>active</string>
+                    </parameter>
+                    <parameter name="position1">
+                      <declarable>
+                          <class-name>javaobject.Position</class-name>
+                          <parameter name="secId">
+                              <string>SUN</string>
+                          </parameter>
+                          <parameter name="sharesOutstanding">
+                              <string>3400</string>
+                          </parameter>
+                          <parameter name="secType">
+                              <string>r</string>
+                          </parameter>
+                          <parameter name="pid">
+                              <string>345</string>
+                          </parameter>
+                      </declarable>
+                    </parameter>
+                    <parameter name="position2">
+                      <declarable>
+                          <class-name>javaobject.Position</class-name>
+                          <parameter name="secId">
+                              <string>IBM</string>
+                          </parameter>
+                          <parameter name="sharesOutstanding">
+                              <string>8765</string>
+                          </parameter>
+                          <parameter name="secType">
+                             <string>p</string>
+                          </parameter>
+                          <parameter name="pid">
+                             <string>123</string>
+                          </parameter>
+                      </declarable>
+                    </parameter>
+                  </declarable>
+                </value>
+               </entry>
+  </vm-root-region>
+  
+  <!--vm-root-region name="TheMetaRegion">
+    <region-attributes
+    scope="distributed-ack"
+    mirror-type="keys-values"
+    data-policy="persistent-replicate"
+    >
+    <disk-write-attributes roll-oplogs="true" max-oplog-size="1024">
+      <asynchronous-writes bytes-threshold="10000" time-interval="15" />
+    </disk-write-attributes>
+    <disk-dirs>
+      <disk-dir dir-size="4096">TheDiskDir</disk-dir>
+    </disk-dirs>
+    <cache-listener>
+			<class-name>ThePackage.TheListener</class-name>
+    </cache-listener>
+    </region-attributes>
+  </vm-root-region>
+
+  <function-service>  
+    <function>
+      <class-name>ThePackage.TheFunction</class-name>
+      <!-parameter name="TheRegionName"/>
+      <parameter name="TheRegionAttributes"/->
+    </function>
+  </function-service-->
+  
+</cache> 

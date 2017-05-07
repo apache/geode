@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="keySize">
+		<range low="4" high="12"/>
+	</data>
+	<data name="distinctKeys">
+		10000
+	</data>
+	<data name="valueSizes">
+		<range low="0" high="10000"/>
+	</data>
+	<data name="entryOps">
+		<oneof>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>done</item>
+			
+		</oneof>
+	</data>
+	<data name="opCount">
+		<range low="1" high="10"/>
+	</data>
+	<data name="maxTestTime">10200</data>
+	<data name="workTime">300</data>
+	<data name="preemptCounter">10</data>
+	<!-- abort, exit, done ops downcounter before execution -->
+	<data name="maxRegions">100</data>
+
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="RegionA">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="Validate">
+    <snippet>
+      <region name="RegionB">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="RegionC">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="ValidateNonMirror">
+    <snippet>
+      <region name="RegionD">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+	<client-set name="CacheChecker">
+	  <client name="ClientA"/>
+	</client-set>
+
+	
+	<test name="CheckCacheContent" description="AckMirrorNil Validating Cache Content Test">
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" >
+		    <data name="regionName">RegionA</data>
+		    <data name="regionSpec">AckMirrorNil</data>
+		</task>
+		<task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="1200" continueOnError="true" >
+		    <data name="regionName">RegionB</data>
+		    <data name="regionSpec">Validate</data>
+		</task>
+	       <task name="doIterateOnEntry" action="doIterateOnEntry" container="eventtest" waitTime="1200" continueOnError="true">
+		    <data name="testRegion">RegionA</data>
+		    <data name="validateRegion">RegionB</data>
+	            <client-set ><client name="ClientA"/></client-set>
+	       </task>
+	       <task name="checkCacheContent" action="doValidateCacheContent" container="eventtest" waitTime="1200" continueOnError="true">
+		    <data name="testRegion">RegionA</data>
+		    <data name="validateRegion">RegionB</data>
+	            <client-set exclude="true"><client name="ClientA"/></client-set>
+	       </task>
+	</test>
+	<test name="CheckNmirrorCacheContent" description="AckNonMirrorNil validating Cache content Test">
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" >
+		    <data name="regionName">RegionC</data>
+		    <data name="regionSpec">AckNmirrorNil</data>
+		</task>
+		<task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="1200" continueOnError="true" >
+		    <data name="regionName">RegionD</data>
+		    <data name="regionSpec">ValidateNonMirror</data>
+		</task>
+		<!--task name="addEntry" action="doAddEntry" container="eventtest" waitTime="1200" continueOnError="true" >
+		    <data name="regionName">RegionC</data>
+		    <data name="regionSpec">AckNmirrorNil</data>
+		</task-->
+	       <task name="doIterateOnEntry" action="doIterateOnEntry" container="eventtest" waitTime="1200" continueOnError="true">
+		    <data name="testRegion">RegionC</data>
+		    <data name="validateRegion">RegionD</data>
+	            <client-set ><client name="ClientA"/></client-set>
+	       </task>
+	       <task name="checkCacheContent" action="doValidateCacheContent" container="eventtest" waitTime="1200" continueOnError="true">
+		    <data name="testRegion">RegionC</data>
+		    <data name="validateRegion">RegionD</data>
+	            <client-set exclude="true"><client name="ClientA"/></client-set>
+	       </task>
+	</test>
+</test-driver>

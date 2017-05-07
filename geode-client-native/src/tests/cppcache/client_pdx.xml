@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<client-cache redundancy-level="1" >
+
+  <pdx read-serialized="true" />
+	<root-region name='DistRegionAck'>
+	   <region-attributes pool-name="__TESTPOOL1_" caching-enabled="false" />
+	</root-region>
+  
+  <root-region name='DistRegionNoAck'>
+	   <region-attributes pool-name="__TESTPOOL1_" caching-enabled="false" />
+	</root-region>
+  
+	<pool
+    name="__TESTPOOL1_"
+  >
+    <server host="localhost" port="HOST_PORT1" />    
+    <server host="localhost" port="HOST_PORT2" />    
+    
+  </pool>
+	   
+</client-cache> 
+
+

@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache>
+
+  <cache-server port="50505" />
+    
+    <region name="exampleRegion">
+      <region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+    </region>
+    
+    <region name="Portfolios">
+    
+      <region-attributes scope="distributed-ack" mirror-type="keys-values">
+      </region-attributes>
+      
+      <entry>
+      <key><string>Key1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.Portfolio</class-name>
+          <parameter name="ID">
+            <string>1</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>1</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="newVal">
+            <string>CCCCC</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>SUN</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>3400</string>
+                </parameter>
+                <parameter name="secType">
+                    <string>r</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>345</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>IBM</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>4600</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>9900.884732</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>8765</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>p</string>
+                </parameter>
+                <parameter name="pid">
+                   <string>123</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+     </entry>
+     
+	 <entry>
+      <key><string>Key1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.newapi.Portfolio</class-name>
+          <parameter name="ID">
+            <string>1</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>1</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="newVal">
+            <string>CCCCC</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.newapi.Position</class-name>
+                <parameter name="secId">
+                    <string>SUN</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>3400</string>
+                </parameter>
+                <parameter name="secType">
+                    <string>r</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>345</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.newapi.Position</class-name>
+                <parameter name="secId">
+                    <string>IBM</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>4600</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>9900.884732</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>8765</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>p</string>
+                </parameter>
+                <parameter name="pid">
+                   <string>123</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+     </entry>
+    </region>
+  
+</cache> 

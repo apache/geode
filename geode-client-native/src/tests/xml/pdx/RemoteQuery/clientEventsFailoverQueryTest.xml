@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+  <data name="minServers">2</data>
+ 
+  <data name="valueSizes">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="entryCount">1000</data>
+  <data name="regionPaths">
+    <list>
+      <item>/Portfolios</item>
+      <item>/Portfolios2</item>
+      <item>/Portfolios3</item>
+      <item>/Positions</item>
+      <item>/Portfolios/Positions</item>
+    </list>
+  </data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true"/>
+     </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+       </region-attributes>
+     </region>
+    </snippet>
+  </data>
+  <data name="index">true</data>
+  <data name="largeSetQuery">false</data>
+  <data name="isPdx">true</data>
+  
+  <client-set name="Feeder"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set count="20" name="Client"/>
+
+  <test name="Thin Client Entry Events" description="Clients perform entry events">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 4 pdx/RemoteQuery/csWithIndex.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServer 4" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="Init Feeder" action="doAddRootAndSubRegion" container="querytests" waitTime="5m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="CreateClients" action="doAddRootAndSubRegion" container="querytests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set count="20" name="Client"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="PopulateRegion Portfolios with Portfolio object" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="PopulateRegion Portfolios2 with Portfolio object" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios2</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="PopulateRegion Portfolios3 with Portfolio object" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Portfolios3</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="PopulateRegion Positions with Position object" action="doPopulateUserObject" container="querytests" waitTime="30m">
+      <data name="regionName">Positions</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PositionPdx</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Feeder"/>
+      <client-set count="20" name="Client"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Client Events" action="doEntryOperations" container="cacheserver" waitTime="2h10m" parallel="true">
+      <data name="entryOps">
+        <oneof>
+          <item>add</item>
+          <item>update</item>
+          <item>update</item>
+          <item>update</item>
+          <item>read</item>
+          <item>read</item>
+          <item>read</item>
+          <item>query</item>
+          <item>query</item>
+          <item>query</item>
+          <item>invalidate</item>
+          <item>destroy</item>
+        </oneof>
+      </data>
+      <data name="workTime">10m</data>
+      <data name="opsSecond">12</data>
+      <data name="entryCount">1000</data>
+      <data name="valueSizes">100</data>
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">PortfolioPdx</data>
+      <client-set name="Feeder"/>
+      <client-set count="20" name="Client"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="2" waitTime="1h" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="1h" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="2" waitTime="1h" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="stopStartCacheServer 4" action="doStopStartServer" container="utils" timesToRun="2" waitTime="1h" continueOnError="true" parallel="true">
+      <data name="ServerId">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="querytests" waitTime="5m"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+  </test>
+</test-driver>

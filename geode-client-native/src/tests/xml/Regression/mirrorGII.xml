@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <client-set>
+    <client name="A01"/>
+    <client name="A02"/>
+    <client name="A03"/>
+    <client name="A04"/>
+    <client name="A05"/>
+    <client name="A06"/>
+    <client name="A07"/>
+    <client name="A08"/>
+    <client name="A09"/>
+    <client name="A10"/>
+    <client name="A11"/>
+    <client name="A12"/>
+    <client name="A13"/>
+    <client name="A14"/>
+    <client name="A15"/>
+    <client name="A16"/>
+    <client name="A17"/>
+    <client name="A18"/>
+    <client name="A19"/>
+    <client name="A20"/>
+    <client name="A21"/>
+  </client-set>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="valueSizes">100</data>
+  <data name="EntryCount">100</data>
+  <data name="usePID">1</data>
+  <test name="MirrorGII" description="AckMirrorNilGII test" waitTime="2400">
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="A01"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorNil</data>
+      <data name="regionName">MirrorGII</data>
+    </task>
+    <task name="Populate-AckMirrorNil" action="doAddEntry" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="A01"/>
+      </client-set>
+      <data name="regionName">MirrorGII</data>
+    </task>
+    <task name="Verify" action="doCreateMirrorVerifyKeyCount" container="eventtest" waitTime="600" timesToRun="100" continueOnError="false">
+      <client-set>
+        <client name="A01"/>
+      </client-set>
+      <data name="expectedKeyCount">2000</data>
+      <data name="regionSpec">AckMirrorNil</data>
+      <data name="regionName">MirrorGII</data>
+    </task>
+  </test>
+</test-driver>

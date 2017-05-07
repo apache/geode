@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="useTransactions">true</data>
+  <!--data name="keyType">int</data-->
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes caching-enabled="true" client-notification="true">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set count="2" name="ThinClient"/>
+  <client-set name="Feeder"/>
+
+  <test name="serialEntryEventWithRegInterest" description="cq test with register interest">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Generics/parReg/tx/csPR.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="2" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="10m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="Register And execute CQ" action="doRegisterCqForConc" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+         </list>
+      </data>
+      <data name="registerAndExecuteCQs">true</data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="10m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="UpdateRegion" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="10m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+      <data name="valueSizes">
+        <list>
+          <item>200</item>
+        </list>
+      </data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+      <data name="registerKeys">0</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">0</data>
+    </task>
+    <task name="stop all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <data name="cqState">stopped</data>
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="Running Query with initial result" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="15m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+      <data name="cq">true</data>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+         </list>
+      </data>
+      <data name="resultSize">
+        <list>
+          <item>100</item>
+        </list>
+      </data>
+    </task>
+    <task name="destroyKeys" action="doDestroysKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="10m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+      <data name="distinctKeys">
+      <list>
+        <item>20</item>
+      </list>
+  </data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+      <data name="registerKeys">0</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">0</data>
+    </task>
+    <task name="stop all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <data name="cqState">stopped</data>
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="Running Query with initial result" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="15m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+      <data name="cq">true</data>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+         </list>
+      </data>
+      <data name="resultSize">
+        <list>
+          <item>80</item>
+        </list>
+      </data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="10m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <data name="sleepTime">5</data>
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="doCqOperations" action="doCQOperation" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,byte[]">
+      <data name="cqOps">
+        <oneof>
+          <item>getCQAttributes</item>
+          <item>getCQName</item>
+          <item>getQuery</item>
+          <item>getQueryString</item>
+          <item>getStatistics</item>
+          <item>getStatistics</item>
+          <item>getStatistics</item>
+        </oneof>
+      </data>
+      <data name="workTime">5m</data>
+      <data name="opsSecond">5</data>
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="verify CQ listener is called" action="doVerifyCQListenerInvoked" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="stop all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <data name="cqState">stopped</data>
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="Running Query with initial result" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="15m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+      <data name="cq">true</data>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+         </list>
+      </data>
+      <data name="resultSize">
+        <list>
+          <item>100</item>
+        </list>
+      </data>
+    </task>
+    <task name="destroyKeys" action="doDestroysKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="10m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="verify CQ listener is called" action="doVerifyCQListenerInvoked" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="10m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="verify CQ listener is called" action="doVerifyCQListenerInvoked" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="destroy region" action="doDestroyRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <data name="sleepTime">5</data>
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="verify CQ removed " action="doVerifyCqDestroyed" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="close cache for CPP clients" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,byte[]"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+  </test>
+
+</test-driver>

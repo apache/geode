@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+<cache>
+
+  <bridge-server port="24680" notify-by-subscription="true"/>
+  <vm-root-region name="BankAccounts">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values" data-policy="replicate"/>
+    
+    						<entry>
+                <key><string>new-bankaccount</string></key>
+                <value>
+                  <declarable>
+                    <class-name>javaobject.BankAccount</class-name>
+                    <parameter name="customerId">
+                      <string>100</string>
+                    </parameter>
+                    <parameter name="accountId">
+                        <string>1000</string>
+                    </parameter>
+                      </declarable>
+                </value>
+               </entry>
+               
+  </vm-root-region>
+  
+</cache> 

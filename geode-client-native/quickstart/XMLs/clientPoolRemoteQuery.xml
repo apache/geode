@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache>
+
+  <region name = "exampleRegion" >
+     <region-attributes refid="CACHING_PROXY" pool-name="examplePool"/>
+  </region>	
+  <region name = "Portfolios" >
+     <region-attributes refid="CACHING_PROXY" pool-name="examplePool"/>
+  </region>	
+  
+  <pool name="examplePool"  subscription-enabled="true"  server-group="ServerGroup1" >
+    <locator host="localhost" port="34756" />    
+  </pool>
+
+</client-cache>

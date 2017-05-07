@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">UserObject</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="className">
+    <list>
+      <item>ExampleObject</item>
+      <item>User</item>
+    </list>
+  </data>
+  <data name="keyType">str</data>
+  <data name="objValue">15</data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set name="CS" hostGroup="CS"/>
+  <client-set name="Feeder"/>
+  <client-set name="Reader"/>
+  <client-set name="JCC1" hostGroup="CS"/>
+  <client-set name="JCC2" hostGroup="CS"/>
+  <client-set name="JFeeder" hostGroup="CS"/>
+
+  <test name="Thin Client Entry Events" description="Clients perform entry events">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">Native/csAckMirror.xml</data>
+      <client-set name="CS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="CS"/>
+    </task>
+    <task name="SetupJavaClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaClients</data>
+      <data name="arguments">-c 1 MixedMode/bridge_client_cacheless.xml</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="SetupJavaClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaClients</data>
+      <data name="arguments">-c 2 MixedMode/bridge_client_cacheless.xml</data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="SetupJavaClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaClients</data>
+      <data name="arguments">-c 3 MixedMode/bridge_client_cacheless.xml</data>
+      <client-set name="JFeeder"/>
+    </task>
+    <task name="StartCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaClients</data>
+      <data name="arguments">-c 1</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="StartCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaClients</data>
+      <data name="arguments">-c 2</data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="StartCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaClients</data>
+      <data name="arguments">-c 3</data>
+      <client-set name="JFeeder"/>
+    </task>
+
+    <task name="Init CPP clients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="Feeder"/>
+      <client-set name="Reader"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set name="Feeder"/>
+      <client-set name="Reader"/>
+    </task>
+
+    <task name="put objects at CPP" action="doPuts" container="userobject" waitTime="10m">
+      <data name="entryCount">100</data>
+      <data name="keyIndexBegin">0</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="verify objects from java client1" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mverify keytype=str base=ExampleObject keyrange=0-100 value=15 valuetype=obj seqid=1 >> JC_1.cmd; echo mverify keytype=str base=User keyrange=0-100 value=15 valuetype=usr seqid=2 >> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="wait seq 1 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 1</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="wait for seq 2 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 2</data>
+      <client-set name="JCC1"/>
+    </task>
+
+    <task name="put objects into Java at JFeeder" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mput keytype=str base=ExampleObject keyrange=100-200 value=15 valuetype=obj seqid=3 >> JC_3.cmd; echo mput keytype=str base=User keyrange=100-200 value=15 valuetype=usr seqid=4 >> JC_3.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JFeeder"/>
+    </task>
+    <task name="wait for seq 3 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 3 -p 3</data>
+      <client-set name="JFeeder"/>
+    </task>
+    <task name="wait for seq 4 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 3 -p 4</data>
+      <client-set name="JFeeder"/>
+    </task>
+    <task name="verify objects from JFeeder" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mverify keytype=str base=ExampleObject keyrange=100-200 value=15 valuetype=obj seqid=7 >> JC_3.cmd; echo mverify keytype=str base=User keyrange=100-200 value=15 valuetype=usr seqid=8 >> JC_3.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JFeeder"/>
+    </task>
+    <task name="wait for seq 7 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 3 -p 7</data>
+      <client-set name="JFeeder"/>
+    </task>
+    <task name="wait for seq 8 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 3 -p 8</data>
+      <client-set name="JFeeder"/>
+    </task>
+
+    <task name="get and verify at CPP reader for objects created in CPP" action="doVerifyAll" container="userobject" waitTime="15m">
+      <client-set name="Reader"/>
+      <data name="entryCount">100</data>
+      <data name="keyIndexBegin">0</data>
+    </task>
+    <task name="get and verify at CPP reader for objects created in Java" action="doVerifyAll" container="userobject" waitTime="15m">
+      <client-set name="Reader"/>
+      <data name="entryCount">100</data>
+      <data name="keyIndexBegin">100</data>
+    </task>
+    <task name="verify objects from java client2" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mverify keytype=str base=ExampleObject keyrange=0-200 value=15 valuetype=obj seqid=5 >> JC_2.cmd; echo mverify keytype=str base=User keyrange=0-200 value=15 valuetype=usr seqid=6 >> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="wait for seq 5 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 5</data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="wait for seq 6 to finish" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 6</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="StopCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">echo quit >> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="StopCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">echo quit >> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="StopCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">echo quit >> JC_3.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JFeeder"/>
+    </task>
+    <task name="close cache for CPP clients" action="finalize" container="userobject" waitTime="5m" continueOnError="true">
+      <client-set name="Feeder"/>
+      <client-set name="Reader"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="CS"/>
+    </task>
+  </test>
+</test-driver>

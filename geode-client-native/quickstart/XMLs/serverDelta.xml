@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache>
+  <cache-server port="40404">
+    <group>ServerGroup1</group>
+  </cache-server>
+
+    <region name="exampleRegion">
+      <entry>
+        <key>
+          <string>delta1-2</string>
+        </key>
+        <value>
+          <declarable>
+            <class-name>javaobject.DeltaExample</class-name>
+          </declarable>
+        </value>
+      </entry>
+    </region>
+
+</cache>

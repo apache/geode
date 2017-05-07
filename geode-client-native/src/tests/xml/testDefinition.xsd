@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include schemaLocation="gfcpp-cache.xsd" />
+  <xs:element name="test-driver" type="Test-Driver">
+    <xs:annotation>
+      <xs:documentation>The container for all the information required to perform a test. This is
+        the root level element.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:complexType name="Test-Driver">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="localFile" type="Local-File" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="data" type="Data" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="data-set" type="Data-Set" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="client-set" type="Client-Set" minOccurs="0" />
+      <xs:element name="test" type="Test" minOccurs="0" maxOccurs="unbounded" />
+    </xs:choice>
+    <xs:attribute name="version" type="xs:string" use="optional" />
+  </xs:complexType>
+  <xs:complexType name="Test">
+    <xs:annotation>
+      <xs:documentation>A collection of tasks that comprise a single test.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="task" type="Task" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Printed in some log messages.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Not logged currently.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="waitTime" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Not recommended for use, will cause test to fail if it has not completed
+          in this number of seconds.</xs:documentation>
+        <xs:documentation>Use the waitTime associated with tasks instead.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timesToRun" type="xs:int" use="optional">
+      <xs:annotation>
+        <xs:documentation>Total number of times to run this task. If any executions of the task
+          return an error status, further execution of the task will continue, only if
+          continueOnError is set to true.</xs:documentation>
+        <xs:documentation>timesToRun defaults to once per client, specifying "1" would run it once
+          on one client.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Task">
+    <xs:annotation>
+      <xs:documentation>A single task, currently a function within a library, for
+      execution.</xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="data" type="Data" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="client-set" type="Client-Set" minOccurs="0" />
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the task, used in some log messages.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="action" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The name of the extern "C" function that will be looked up in the library
+          and executed.</xs:documentation>
+        <xs:documentation>The reason for calling it an action is to not marry too tightly the notion
+          that this is only a function, in the future it should be possible to extend support to
+          different flavors of clients.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="class" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>The name of the class to load, when using assemblies.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="container" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The name of the library to load.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="waitTime" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of seconds to wait for task to complete before assuming client
+          is hung and killing it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timesToRun" type="xs:int" use="optional">
+      <xs:annotation>
+        <xs:documentation>Total number of times to run this task. If any executions of the task
+          return an error status, further execution of the task will continue, only if
+          continueOnError is set to true.</xs:documentation>
+        <xs:documentation>timesToRun defaults to once per client, specifying "1" would run it once
+          on one client.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="threadCount" type="xs:int" use="optional">
+      <xs:annotation>
+        <xs:documentation>Number of threads each client should run this task on.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="parallel" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Run this task in parallel with the previous task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="continueOnError" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>When running this task multiple times, continue to schedule it on clients,
+          even if any results returned have been failures.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Local-File">
+    <xs:annotation>
+      <xs:documentation>Specify content for a file, may optionally specify whether to append to
+        existing file, default is to append.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="append" type="xs:boolean" use="optional" default="false" />
+        <xs:attribute name="description" type="xs:string" use="optional" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="Client-Set">
+    <xs:annotation>
+      <xs:documentation>A collection of client elements.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="client" type="Client" maxOccurs="unbounded" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="optional" />
+    <xs:attribute name="exclude" type="xs:boolean" use="optional" />
+    <xs:attribute name="count" type="xs:int" use="optional" />
+    <xs:attribute name="begin" type="xs:int" use="optional" />
+    <xs:attribute name="hostGroup" type="xs:string" use="optional" />
+    <xs:attribute name="remaining" type="xs:boolean" use="optional" />
+  </xs:complexType>
+  <xs:complexType name="Client">
+    <xs:annotation>
+      <xs:documentation>A single client, used when it is necessary to restrain what clients will be
+        used for a particular task.</xs:documentation>
+      <xs:documentation>Also useful for specifying a minimum number of clients for the test,
+        regardless of how few hosts are provided on the commandline.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="program" type="xs:string" use="optional" />
+    <xs:attribute name="arguments" type="xs:string" use="optional" />
+  </xs:complexType>
+  <xs:complexType name="Data-Set">
+    <xs:annotation>
+      <xs:documentation>A collection of data elements.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="data" type="Data" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="optional" />
+  </xs:complexType>
+  <xs:complexType name="Data" mixed="true">
+    <xs:annotation>
+      <xs:documentation>Data item that can be accessed by name from the application at
+      runtime.</xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="1">
+      <xs:element name="list" type="List" />
+      <xs:element name="oneof" type="Oneof" />
+      <xs:element name="range" type="Range" />
+      <xs:element name="snippet" type="Snippet" />
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The name to be used in the application to find the value associated with
+          this data element.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="List">
+    <xs:annotation>
+      <xs:documentation>A list of items that can be accessed from the application using first, next
+        semantics.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="item" type="xs:string" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Oneof">
+    <xs:annotation>
+      <xs:documentation>A data item that randomly returns one of the items it contains each time
+        getValue is called on it.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="item" type="xs:string" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Range">
+    <xs:annotation>
+      <xs:documentation>A random number between its low and high attribute values will be returned
+        each time its getValue function is called.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="low" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>Low end of range used in selecting a random number.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="high" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>High end of range used in selecting a random number.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Snippet">
+    <xs:annotation>
+      <xs:documentation>A root-region element as would be suitable for a cache.xml
+      file.</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="region" type="Region" />
+      <xs:element name="pool" type="Pool" />
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>

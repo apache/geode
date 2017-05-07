@@ -1,0 +1,1415 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:st1="urn:schemas-microsoft-com:office:smarttags"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 11">
+<meta name=Originator content="Microsoft Word 11">
+<link rel=File-List href="README_files/filelist.xml">
+<link rel=Edit-Time-Data href="README_files/editdata.mso">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<title>Pivotal GemFire&#174; Native Client QuickStart Guide</title>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="Street"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="PostalCode"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="City"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="State"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="address"/>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>qhe</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>qhe</o:LastAuthor>
+  <o:Revision>3</o:Revision>
+  <o:TotalTime>1</o:TotalTime>
+  <o:Created>2008-10-29T18:27:00Z</o:Created>
+  <o:LastSaved>2008-10-29T18:28:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>2653</o:Words>
+  <o:Characters>15126</o:Characters>
+  <o:Company>GemStone Systems, Inc.</o:Company>
+  <o:Lines>126</o:Lines>
+  <o:Paragraphs>35</o:Paragraphs>
+  <o:CharactersWithSpaces>17744</o:CharactersWithSpaces>
+  <o:Version>11.6360</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState="false" LatentStyleCount="156">
+ </w:LatentStyles>
+</xml><![endif]--><!--[if !mso]><object
+ classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object>
+<style>
+st1\:*{behavior:url(#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:2;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:0 268435456 0 0 -2147483648 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:1;
+	font-size:24.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+h2
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:2;
+	font-size:18.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+h3
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:3;
+	font-size:13.5pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+p
+	{font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+code
+	{font-family:"Courier New";
+	mso-ascii-font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	mso-hansi-font-family:"Courier New";
+	mso-bidi-font-family:"Courier New";}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:3483968;
+	mso-list-template-ids:1404578712;}
+@list l0:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+@list l1
+	{mso-list-id:99837355;
+	mso-list-template-ids:519213850;}
+@list l2
+	{mso-list-id:257758118;
+	mso-list-template-ids:-86754458;}
+@list l3
+	{mso-list-id:412242023;
+	mso-list-template-ids:-1537711854;}
+@list l4
+	{mso-list-id:475685102;
+	mso-list-template-ids:-907134536;}
+@list l5
+	{mso-list-id:897012002;
+	mso-list-template-ids:-1281953210;}
+@list l5:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+@list l6
+	{mso-list-id:1085611677;
+	mso-list-template-ids:587892910;}
+@list l7
+	{mso-list-id:1095860104;
+	mso-list-template-ids:-748251592;}
+@list l7:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+@list l8
+	{mso-list-id:1780684537;
+	mso-list-template-ids:-193442186;}
+@list l9
+	{mso-list-id:1802921706;
+	mso-list-template-ids:-690195988;}
+@list l9:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+@list l10
+	{mso-list-id:1814712329;
+	mso-list-template-ids:2142788068;}
+@list l11
+	{mso-list-id:1956714238;
+	mso-list-template-ids:-1584504088;}
+@list l12
+	{mso-list-id:2025857035;
+	mso-list-template-ids:-106034156;}
+@list l12:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]-->
+</head>
+
+<h3 align=center style='text-align:center'>
+<IMG SRC="../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+<body lang=EN-US link=blue vlink=blue style='tab-interval:.5in'>
+</h3>
+
+<h1 align=center style='text-align:center'><a name=Top>Native Client<br><span class=SpellE>QuickStart</span> Guide</h1>
+
+<h3 align=center style='text-align:center'>Feburary 2014</h3>
+<div class=Section1>
+<p><br>
+The GemFire Native Client <span class=SpellE>QuickStart</span> Guide
+provides a set of examples that demonstrate the capabilities of the GemFire
+Native Client product. Reviewing the operation of these <span
+class=SpellE>QuickStart</span> examples, along with studying the source files
+for the examples, can help you quickly get started with C++ and Microsoft .NET
+code development for the GemFire native client. The examples can be
+invoked individually from the command line, or by using the <span class=SpellE>QuickStart</span>
+menu.</p>
+
+<p>The examples and their source files are located in the <span class=SpellE><code><span
+style='font-size:10.0pt'>SampleCode\quickstart</span></code></span>
+directory.  The C++ examples are in the <span
+class=SpellE><code><span style='font-size:10.0pt'>cpp</span></code></span>
+directory, and the C# examples are in the <span class=SpellE><code><span
+style='font-size:10.0pt'>csharp</span></code></span> directory. The <span
+class=SpellE>Interop</span> example is in its own <span class=SpellE><code><span
+style='font-size:10.0pt'>interop</span></code></span> directory. Note that the
+C# examples are only available for Windows.</p>
+
+<p>In Each example, client and server are configured either using a pair of companion XML files in the <span class=SpellE><code><span
+style='font-size:10.0pt'>XMLs</span></code></span> directory or by programatically. For example, <span class=SpellE><code><span
+style='font-size:10.0pt'>LoaderListenerWriter</span></code></span> uses <span
+class=SpellE><code><span style='font-size:10.0pt'>serverLoaderListenerWriter.xml</span></code></span>
+to configure the cache server and <span class=SpellE><code><span
+style='font-size:10.0pt'>clientLoaderListenerWriter.xml</span></code></span> to
+configure the client, while <span class=SpellE><code><span style='font-size:10.0pt'>BasicOperations</span></code></span> uses <span
+class=SpellE><code><span style='font-size:10.0pt'>serverBasicOperations.xml</span></code></span>
+to configure the cache server and initialize the client programmatically.
+
+Additional support files are stored in the <code><span
+style='font-size:10.0pt'>lib</span></code> directory. </p>
+
+<p>The C++ and C# example files are packaged as Microsoft Visual Studio 2010
+solutions (<span class=SpellE><code><span style='font-size:10.0pt'>quickstart_cpp_10.sln</span></code></span>
+and <span class=SpellE><code><span style='font-size:10.0pt'>quickstart_csharp_10.sln</span></code></span>),
+and can be accessed through the IDE or through any editor.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<h2>About the GemFire Native Client </h2>
+
+<p>The GemFire Native Client provides access for C++ and Microsoft
+.NET clients to the GemFire distributed system. GemFire
+native clients in C++ and .NET communicate only with the cache server and do
+not communicate with each other. C++ and .NET native clients provide access to
+the full region API, including support for application <span class=SpellE>plugins</span>.
+All of this is transparent to the end user.</p>
+
+<p>This figure provides a conceptual overview of how .NET and C++ applications
+access the GemFire cache server: <br>
+<br>
+<img width=768 height=268 id="_x0000_i1026" src=overview.gif border="0/"></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<h2><a name="configuring_environment" id="configuring_environment"></a>Configuring
+the <span class=SpellE>QuickStart</span> Environment</h2>
+
+<p>Follow these steps to prepare your system environment to run the <span
+class=SpellE>QuickStart</span> examples. Throughout this <span class=SpellE>QuickStart</span>
+Guide, text that you type is shown in <code><b><span style='font-size:10.0pt'>bold</span></b></code>.</p>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'><em>For Linux and Solaris:</em>
+     Start a terminal session from the GemFire product installation
+     directory, <span class=GramE>then</span> configure the environment
+     settings by following these steps.<br>
+     <br>
+     <em>For Windows:</em> Run the Visual Studio 2010 Command Prompt to create
+     a session with preset compiler environment configurations. Change to the
+     GemFire product installation directory, <span class=GramE>then</span>
+     configure the environment settings by following these steps.<br>
+     <br>
+     See the environment configuration list below for system-specific
+     instructions for the following steps.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'>Install <span class=SpellE>OpenSSL</span>
+     (optional):</li>
+</ol>
+
+<p style='margin-left:.5in'>To enable security in GemFire, the security <span
+class=SpellE>plugin</span> <span class=SpellE><code><span style='font-size:
+10.0pt'>securityImpl</span></code></span> needs to be compiled. The security <span
+class=SpellE>plugin</span> <strong>optionally</strong> depends on <span
+class=SpellE>OpenSSL</span> for its <strong>PKCS sample template</strong>, so <span
+class=SpellE>OpenSSL</span> needs to be compiled or installed first.<br>
+<br>
+For Linux and Solaris, you can download the <a
+href="http://www.openssl.org/source/" target="_blank">latest <span
+class=SpellE>tarball</span></a> archive for <span class=SpellE>OpenSSL</span>.
+For Windows users, you can get the <span class=SpellE>OpenSSL</span> installer <a
+href="http://www.openssl.org/related/binaries.html" target="_blank">here</a>. </p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'><em>To compile <span class=SpellE>OpenSSL</span>
+(Linux and Solaris):</em></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'>Copy the downloaded <span class=SpellE>OpenSSL</span>
+<span class=SpellE>tarball</span> to your appropriate <code><span
+style='font-size:10.0pt'>Linux</span></code> or <code><span style='font-size:
+10.0pt'>SunOS</span></code> folder at <span class=SpellE><code><span
+style='font-size:10.0pt'>templates/security/openssl</span></code></span>,
+<span class=GramE>then</span> execute <span class=SpellE><code><span
+style='font-size:10.0pt'>buildit.sh</span></code></span> from the shell.</p>
+
+</blockquote>
+
+<p style='margin-left:.5in'><em>To install <span class=SpellE>OpenSSL</span>
+(Windows):</em></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'>Run the downloaded <span class=SpellE>OpenSSL</span>
+installer and accept the default installation path (<code><span
+style='font-size:10.0pt'>C:\OpenSSL</span></code>). </p>
+
+</blockquote>
+
+</blockquote>
+
+<ol start=3 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'>Set the <code><span
+     style='font-size:10.0pt'>JAVA_HOME</span></code> and <code><span
+     style='font-size:10.0pt'>GF_JAVA_HOME</span></code> environment variables
+     to your installed JRE or JDK. See the installation information in the <em>GemFire
+     User's Guide</em> for the versions of Java that
+     are compatible with GemFire. The <code><span style='font-size:
+     10.0pt'>JAVA_HOME</span></code> setting is for your applications, and <code><span
+     style='font-size:10.0pt'>GF_JAVA_HOME</span></code> is for the GemFire
+     scripts. You must have a compatible JRE or JDK installed and you must set <code><span
+     style='font-size:10.0pt'>JAVA_HOME</span></code> and <code><span
+     style='font-size:10.0pt'>GF_JAVA_HOME</span></code> to point to it. See
+     the Sun Java web site at <a href="http://java.sun.com" target="_blank">http://java.sun.com</a>
+     for the latest Java version for your operating system. </li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'>Add <code><span
+     style='font-size:10.0pt'>$JAVA_HOME/bin</span></code> to the start of your
+     <code><span style='font-size:10.0pt'>PATH</span></code>.<br>
+     Set the <code><span style='font-size:10.0pt'>GFCPP</span></code>
+     environment variable to point to <span class=SpellE><code><span
+     style='font-size:10.0pt'>NativeClient_InstallDir</span></code></span>.<br>
+     Set the <code><span style='font-size:10.0pt'>OPENSSL</span></code>
+     environment variable. For Linux and Solaris, point it to the parent folder
+     for the <span class=SpellE>OpenSSL</span> binaries created from the <span
+     class=SpellE>tarball</span>. For Windows, if you accept the default
+     installation path in step 2, it will be <code><span style='font-size:10.0pt'>set
+     OPENSSL=C<span class=GramE>:\</span><span class=SpellE>OpenSSL</span></span></code>.
+     </li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'><em>For Solaris and Linux
+     only</em>: <br>
+     Set the <code><span style='font-size:10.0pt'>LD_LIBRARY_PATH</span></code>
+     environment variable to point to the <span class=SpellE><code><span
+     style='font-size:10.0pt'>NativeClient_InstallDir</span></code></span><code><span
+     style='font-size:10.0pt'>/lib</span></code> directory and <code><span
+     style='font-size:10.0pt'>$OPENSSL/lib</span></code> directory for running
+     the <strong>Security</strong> example.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'><em>For Windows only</em>: <br>
+     Set the <code><span style='font-size:10.0pt'>PATH</span></code>
+     environment variable to point to the <span class=SpellE><code><span
+     style='font-size:10.0pt'>NativeClient_InstallDir</span></code></span><code><span
+     style='font-size:10.0pt'>\bin</span></code> directory and <code><span
+     style='font-size:10.0pt'>%OPENSSL%\bin</span></code> directory for running
+     the <strong>Security</strong> example.</li>
+</ol>
+
+<p style='margin-left:.5in'>The following environment configuration list is a
+summary of the commands described in steps 1 through 6 that you need to run for
+the <span class=SpellE>QuickStart</span> Guide. Choose the set of commands that
+are appropriate for your operating system. The text that you type is shown in <code><b><span
+style='font-size:10.0pt'>bold</span></b></code>.</p>
+
+<p style='margin-left:.5in'><strong>Bourne and <span class=SpellE>Korn</span>
+shells (<span class=SpellE>sh</span>, <span class=SpellE>ksh</span>, bash)</strong></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'><code><span style='font-size:10.0pt'>% </span></code><span
+class=SpellE><strong><span style='font-size:10.0pt;font-family:"Courier New"'>cd</span></strong></span><strong><span
+style='font-size:10.0pt;font-family:"Courier New"'> <span class=SpellE>GemFireInstallDirectory</span></span></strong><span
+style='font-size:10.0pt;font-family:"Courier New"'><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>GEMFIRE=<span
+class=SpellE>GemFireInstallDirectory</span>; export GEMFIRE </span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>CLASSPATH=$GEMFIRE/lib/gemfire.jar:$GEMFIRE/lib/antlr.jar:$GEMFIRE/lib/gfSecurityImpl.jar:$CLASSPATH;
+export CLASSPATH </span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>JAVA_HOME=&lt;installed
+JRE PATH&gt; export JAVA_HOME</span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>GF_JAVA_HOME=$JAVA_HOME;
+export GF_JAVA_HOME</span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>PATH=$JAVA_HOME/<span
+class=SpellE>bin:$GEMFIRE/bin:$PATH</span>; export PATH</span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>GFCPP=&lt;full
+path to <span class=SpellE>NativeClient_InstallDir</span>&gt;; export GFCPP</span></strong><b><br>
+</b><code>% </code><strong><span style='font-family:"Courier New"'>OPENSSL=&lt;parent
+folder for <span class=SpellE>OpenSSL</span> binaries&gt;; export OPENSSL </span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>LD_LIBRARY_PATH=$GFCPP/lib:${LD_LIBRARY_PATH};
+export LD_LIBRARY_PATH</span></strong><b><br>
+</b><code>% </code><strong><span style='font-family:"Courier New"'>LD_LIBRARY_PATH=$OPENSSL/lib:${LD_LIBRARY_PATH};
+export LD_LIBRARY_PATH</span></strong></span></p>
+
+</blockquote>
+
+<p style='margin-left:.5in'><strong>Windows</strong></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'><code><span style='font-size:10.0pt'>&gt; </span></code><span
+class=SpellE><span class=GramE><strong><span style='font-size:10.0pt;
+font-family:"Courier New"'>cd</span></strong></span></span><strong><span
+style='font-size:10.0pt;font-family:"Courier New"'> <span class=SpellE>GemFireInstallDirectory</span></span></strong><span
+style='font-size:10.0pt;font-family:"Courier New"'><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set GEMFIRE=<span
+class=SpellE>GemFireInstallDirectory</span> </span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+CLASSPATH=%GEMFIRE%\lib\gemfire.jar;%GEMFIRE%\lib\antlr.jar;%GEMFIRE%\lib\gfSecurityImpl.jar%CLASSPATH%</span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+JAVA_HOME=&lt;installed JRE PATH&gt;</span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+GF_JAVA_HOME=%JAVA_HOME%</span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set GFCPP=C:\<span
+class=SpellE>NativeClient_InstallDir</span></span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+OPENSSL=C:\<span class=SpellE>OpenSSL</span></span></strong><br>
+<code>&gt; </code><strong><span style='font-family:"Courier New"'>set
+PATH=%JAVA_HOME%\bin;%GFCPP%\bin;%OPENSSL%\bin;%GEMFIRE%\bin;%PATH%</span></strong></span></p>
+
+</blockquote>
+
+<ol start=7 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'>Compile the security <span
+     class=SpellE>plugin</span>:</li>
+</ol>
+
+<p style='margin-left:.5in'><em>To compile the </em><span class=SpellE><code><i><span
+style='font-size:10.0pt'>securityImpl</span></i></code></span><em> security <span
+class=SpellE>plugin</span> on Linux and Solaris:</em></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'>Execute the <span class=SpellE><code><span
+style='font-size:10.0pt'>buildit.sh</span></code></span> script in the <span
+class=SpellE><code><span style='font-size:10.0pt'>NativeClient_InstallDir</span></code></span><code><span
+style='font-size:10.0pt'>/templates/security</span></code> directory.</p>
+
+</blockquote>
+
+<p style='margin-left:.5in'><em>To compile the </em><span class=SpellE><code><i><span
+style='font-size:10.0pt'>securityImpl</span></i></code></span><em> security <span
+class=SpellE>plugin</span> on Windows:</em></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'>Execute the <span class=SpellE><code><span
+style='font-size:10.0pt'>buildit.bat</span></code></span> script in the <span
+class=SpellE><code><span style='font-size:10.0pt'>NativeClient_InstallDir</span></code></span><code><span
+style='font-size:10.0pt'>/templates/security</span></code> directory.</p>
+
+</blockquote>
+
+<ol start=8 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l4 level1 lfo1;tab-stops:list .5in'>Change the working directory
+     to the <span class=SpellE><code><span style='font-size:10.0pt'>quickstart</span></code></span>
+     directory for the native client:</li>
+</ol>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p class=MsoNormal style='margin-left:.5in'><span class=SpellE><span
+class=GramE><code><b><span style='font-size:10.0pt'>cd</span></b></code></span></span><code><b><span
+style='font-size:10.0pt'> <span class=SpellE>SampleCode\quickstart</span></span></b></code></p>
+
+</blockquote>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><o:p>&nbsp;</o:p></p>
+
+</blockquote>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<h2>About the <span class=SpellE>QuickStart</span> Examples</h2>
+
+<p>The examples are briefly described in this section. Each example performs
+the following steps:</p>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l8 level1 lfo2;tab-stops:list .5in'>Starts the cache server with
+     the example's server XML.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l8 level1 lfo2;tab-stops:list .5in'>Creates a GemFire cache.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l8 level1 lfo2;tab-stops:list .5in'>Performs operations specific
+     to the example.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l8 level1 lfo2;tab-stops:list .5in'>Closes the GemFire cache.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l8 level1 lfo2;tab-stops:list .5in'>Shuts down the cache server.</li>
+</ol>
+
+<p>Note the messages that appear in the example's session as it runs and
+performs the steps in the list.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Basic Operations </h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>BasicOperations</span></code></span>
+example puts entries (key and value pairs) into a region, gets entries from the
+region, invalidates an entry in the region, and destroys an entry in the
+region.</p>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>BasicOperations</span></code></span>
+example uses the built-in <span class=SpellE>serializable</span> types <code><span
+style='font-size:10.0pt'>CacheableInt32</span></code> and <span class=SpellE><code><span
+style='font-size:10.0pt'>CacheableString</span></code></span>. There are other
+built-in types which can be used for an entry. Some types can be used as keys
+or values, while others can only be used as values. The types are listed in the
+following table: </p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width=575 style='width:431.25pt;
+ mso-cellspacing:1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td colspan=2 style='border:none;padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal align=center style='text-align:center'><strong>Built-In <span
+  class=SpellE>Serializable</span> Types</strong> </p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=276 style='width:207.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal align=center style='text-align:center'><em>Cacheable Types
+  For Keys or Values </em></p>
+  </td>
+  <td width=289 style='width:216.75pt;padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal align=center style='text-align:center'><em>Cacheable Types
+  Only For Values </em></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><code><span style='font-size:10.0pt'>CacheableInt32</span></code></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableBytes</span></code></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableString</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableDoubleArray</span></code></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableBoolean</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableFloatArray</span></code></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableByte</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><code><span style='font-size:10.0pt'>CacheableInt16Array</span></code></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableDouble</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><code><span style='font-size:10.0pt'>CacheableInt32Array</span></code></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableFloat</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><code><span style='font-size:10.0pt'>CacheableInt64Array</span></code></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><code><span style='font-size:10.0pt'>CacheableInt16</span></code></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableStringArray</span></code></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><code><span style='font-size:10.0pt'>CacheableInt64</span></code></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableObjectArray</span></code></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableWideChar</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableVector</span></code></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:11'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableDate</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableHashMap</span></code></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:12;mso-yfti-lastrow:yes'>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableFileName</span></code></span></p>
+  </td>
+  <td style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span class=SpellE><code><span style='font-size:10.0pt'>CacheableHashSet</span></code></span></p>
+  </td>
+ </tr>
+</table>
+
+<p>You can also provide your own <span class=SpellE>serializable</span>
+objects. Examples of custom <span class=SpellE>serializable</span> objects are <code><span
+style='font-size:10.0pt'>Position</span></code> and <code><span
+style='font-size:10.0pt'>Portfolio</span></code> in the <span class=SpellE><code><span
+style='font-size:10.0pt'>RemoteQuery</span></code></span> example. For more
+information regarding serialization, refer to the <em>GemFire Native
+Client Guide</em> and the online API documentation for the native client.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Data Expiration </h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>DataExpiration</span></code></span>
+example is configured with an expiration action of <code><span
+style='font-size:10.0pt'>destroy</span></code> that has a 10 second timeout. It
+performs the following operations:</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l7 level1 lfo3;tab-stops:list .5in'>Sets the <span class=SpellE><code><span
+     style='font-size:10.0pt'>SimpleCacheListener</span></code></span> <span
+     class=SpellE>plugin</span> on a region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l7 level1 lfo3;tab-stops:list .5in'>Puts three entries into the
+     region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l7 level1 lfo3;tab-stops:list .5in'>Gets the entry idle timeout
+     setting from the region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l7 level1 lfo3;tab-stops:list .5in'>Counts the keys in the region
+     before the timeout duration elapses</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l7 level1 lfo3;tab-stops:list .5in'>Waits for the timeout
+     expiration action to be reported by the <span class=SpellE><code><span
+     style='font-size:10.0pt'>SimpleCacheListener</span></code></span></li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l7 level1 lfo3;tab-stops:list .5in'>Counts the remaining keys in
+     the region after the timeout duration elapses </li>
+</ul>
+
+<p>Multiple eviction action options are available, including <code><span
+style='font-size:10.0pt'>overflow</span></code>. For detailed information, see
+the <em>GemFire Native Client Guide</em>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Loader Listener Writer</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>LoaderListenerWriter</span></code></span>
+example sets the <span class=SpellE><code><span style='font-size:10.0pt'>SimpleCacheLoader</span></code></span>,
+<span class=SpellE><code><span style='font-size:10.0pt'>SimpleCacheListener</span></code></span>,
+and <span class=SpellE><code><span style='font-size:10.0pt'>SimpleCacheWriter</span></code></span>
+<span class=SpellE>plugins</span> on a region. These <span class=SpellE>plugins</span>
+report the events that occur during the following region operations:</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l5 level1 lfo4;tab-stops:list .5in'>Put three entries into the
+     region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l5 level1 lfo4;tab-stops:list .5in'>Update an entry in the region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l5 level1 lfo4;tab-stops:list .5in'>Destroy an entry in the
+     region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l5 level1 lfo4;tab-stops:list .5in'>Invalidate an entry in the
+     region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l5 level1 lfo4;tab-stops:list .5in'>Get a new entry from the
+     region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l5 level1 lfo4;tab-stops:list .5in'>Get the destroyed entry from
+     the region </li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Register Interest</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>RegisterInterest</span></code></span>
+example calls the interest API on a region. These are the functions that are
+called:</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l12 level1 lfo5;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>registerAllKeys</span></code></span></li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l12 level1 lfo5;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>unregisterAllKeys</span></code></span></li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l12 level1 lfo5;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>registerKeys</span></code></span></li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l12 level1 lfo5;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>unregisterKeys</span></code></span></li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l12 level1 lfo5;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>registerRegex</span></code></span></li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l12 level1 lfo5;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>unregisterRegex</span></code></span></li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Remote Query</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>RemoteQuery</span></code></span>
+example populates some query objects on a region, executes a query that returns
+a <span class=SpellE><code><span style='font-size:10.0pt'>ResultSet</span></code></span>,
+executes a query that returns a <span class=SpellE><code><span
+style='font-size:10.0pt'>StructSet</span></code></span>, and executes the
+region shortcut query methods.</p>
+
+<h3>Continuous Query</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>CqQuery</span></code></span>
+<span class=GramE>example demonstrate</span> the continuous query APIs.</p>
+
+<h3>Function Execution</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>ExecuteFunctions</span></code></span>
+<span class=GramE>example demonstrate</span> the function execution APIs.</p>
+
+
+<h3><span class=SpellE>Interop</span></h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>Interop</span></code></span>
+example is a simple demonstration that starts a cache server with a C++ client,
+a C# client, and a Java client to demonstrate their interoperability. The C#
+client is not started on Linux or Solaris.</p>
+
+<p>Each client populates a single entry on a region, <span class=GramE>then</span>
+waits for the other clients to populate their entries. Each client then gets
+and prints out every entry populated on the server. You might see multiple
+lines output every second with the message <code><span style='font-size:10.0pt'>Checking
+server for keys...</span></code> displayed while the clients wait for the <span
+class=GramE>others</span> to complete their puts. You should eventually see the
+output from each client printing its own entry and the entries from the other
+clients.</p>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>Interop</span></code></span>
+example is not included on the <span class=SpellE>QuickStart</span> menu, so it
+can only be started from the command line. See <a href="#run_interop">Running
+the <span class=SpellE>Interop</span> Example</a> for more information.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>HA Cache</h3>
+
+<p>The <code><span style='font-size:10.0pt'>HA Cache</span></code> example uses
+client and server <span class=SpellE>XMLs</span> configured to provide high
+availability functionality for client queues. The example calls the interest
+API on a region and does simple puts.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Exceptions</h3>
+
+<p>The <code><span style='font-size:10.0pt'>Exceptions</span></code> example
+performs some operations in incorrect ways, <span class=GramE>then</span> logs
+the exceptions thrown by GemFire to demonstrate error handling.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Durable Client</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>DurableClient</span></code></span>
+example demonstrates durable client messaging. If the client loses its
+connection with a cache server, the primary server and any redundant servers
+maintain an event queue until the client reconnects. The queued messages are
+then sent to the client. This example demonstrates the following functionality:</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l9 level1 lfo6;tab-stops:list .5in'>Durable client properties ( <code><span
+     style='font-size:10.0pt'>durable-client-id, durable-timeout</span></code>)</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l9 level1 lfo6;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>readyForEvents</span></code></span> cache API</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l9 level1 lfo6;tab-stops:list .5in'>Register interest APIs with
+     the <span class=SpellE><code><span style='font-size:10.0pt'>isDurable</span></code></span>
+     option</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l9 level1 lfo6;tab-stops:list .5in'>Cache close API with the <span
+     class=SpellE><code><span style='font-size:10.0pt'>keepalive</span></code></span>
+     option</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l9 level1 lfo6;tab-stops:list .5in'><span class=SpellE><code><span
+     style='font-size:10.0pt'>CacheListener</span></code></span> with the <span
+     class=SpellE><code><span style='font-size:10.0pt'>afterRegionLive</span></code></span>
+     API</li>
+</ul>
+
+<h3>Security</h3>
+
+<p>The <code><span style='font-size:10.0pt'>Security</span></code> example
+demonstrates how native client credentials are authenticated when the client
+connects to a cache server. Authorization for client cache operations is also
+shown. </p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3><span class=SpellE>PutAll</span> <span class=GramE>And</span> <span
+class=SpellE>GetAll</span> Operations </h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>PutAllGetAllOperations</span></code></span>
+example demonstrates <span class=SpellE>PutAll</span> and <span class=SpellE>GetAll</span>
+operations</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'>The Client is initialized
+     programmatically rather than declaratively</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'><span class=SpellE>PutAll</span>
+     is called with 100 entries into the region</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'><span class=SpellE>GetAll</span>
+     is called with 100 entries from the region</li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3><span class=SpellE>DistributedSystem</span></h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>DistributedSystem</span></code></span>
+example demonstrates how client can connect to two distributed systems.</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'>Client creates the instance of cache.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'>Then clients creates two different regions in two
+     different distributed systems.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'> And then it creates basic put-get operations on those regions and closes
+     the instance of cache.</li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+
+<h3><span class=SpellE>PoolWithEndpoints</span></h3>
+
+<p>This example demonstrates how client can create programatically pool with endpoints.</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'>Client creates the instance of cache.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'>Then clients creates poolfactory with endpoints. Then it creates
+     pool using this poolfactory</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'> Then it creates region with pool and does put-get operations on this region.</li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+
+<h3><span class=SpellE>PoolRemoteQuery</span></h3>
+
+<p>This example demonstrates how client can create pool with locator using xml. And then it demonstrates how it can execute qurey on region(attached with pool).</p>
+
+<ul type=disc>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'>Client creates the instance of cache using XML.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'>Then client gets region from the cache. And then it puts some data on cache.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo7;tab-stops:list .5in'> And then it gets queryService from cache and executes some queries.</li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+
+<h3>Pool Continuous Query</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>PoolCqQuery</span></code></span>
+<span class=GramE>example demonstrates</span> the continuous query with Pool APIs.</p>
+
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+
+<h3>Delta Propagation</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>Delta</span></code></span>
+<span class=GramE>example </span> shows how a change in a value stored in a client can be propagated to the server.
+ In the example, a single field of an existing value in a region is modified, and the delta for the value (which is
+ the new value for the updated field) is propagated to the server in a put operation.</p>
+
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Multiuser Security</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>Multiuser Security</span></code></span>
+<span class=GramE>example </span> shows per user authenticated cache usage.</p>
+
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>RefIDExample</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>RefIDExample</span></code></span>
+<span class=GramE>example </span> shows how to declaratively intialize the Region using refid.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Transactions</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>Transactions</span></code></span>
+<span class=GramE>example </span> shows the use of the client-server transactions API.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>PdxRemoteQuery</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>PdxRemoteQuery</span></code></span>
+<span class=GramE>example </span> shows the use of PDX serialized objects with GemFire querying.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>PdxSerializer</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>PdxSerializer</span></code></span>
+<span class=GramE>example </span> shows the use of an external PDX serializer for user domain classes that aren't modified to implement the <span class=SpellE><code><span style='font-size:10.0pt'>IPdxSerializable</span></code></span> interface.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>PdxInstance</h3>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>PdxInstance</span></code></span>
+<span class=GramE>example </span> shows the ability of clients to work with PDX serialized objects without having the actual domain classes available.</p>
+
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='margin-bottom:12.0pt'><o:p>&nbsp;</o:p></p>
+
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<h2>Running the Examples</h2>
+
+<p>You can run the <span class=SpellE>QuickStart</span> examples by starting
+each C++ or C# example individually from the command line, or by starting the
+examples from a menu. The menu provides a numbered list of the example names,
+so you just enter the example number to start it.</p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><em>The C# examples are only available for Windows.</em></p>
+
+</blockquote>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Running an Example <span class=GramE>From</span> the Command Line</h3>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<h4>C++ examples </h4>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><em>For Windows:</em> <span class=SpellE><code><b><span style='font-size:
+10.0pt'>runcpp</span></b></code></span><code><b><span style='font-size:10.0pt'>
+<span class=SpellE>ExampleName</span></span></b></code> (for example, <span
+class=SpellE><code><b><span style='font-size:10.0pt'>runcpp</span></b></code></span><code><b><span
+style='font-size:10.0pt'> <span class=SpellE>DataExpiration</span></span></b></code>)</p>
+
+<p><em>For Linux or Solaris:</em> <code><b><span style='font-size:10.0pt'>./<span
+class=SpellE>runcpp.sh</span> <span class=SpellE>ExampleName</span></span></b></code>
+(for example, <code><b><span style='font-size:10.0pt'>./<span class=SpellE>runcpp.sh</span>
+<span class=SpellE>BasicOperations</span></span></b></code>)</p>
+
+</blockquote>
+
+<h4>C# examples </h4>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><span class=SpellE><span class=GramE><code><b><span style='font-size:10.0pt'>runcs</span></b></code></span></span><code><b><span
+style='font-size:10.0pt'> <span class=SpellE>ExampleName</span></span></b></code>
+(for example, <span class=SpellE><code><b><span style='font-size:10.0pt'>runcs</span></b></code></span><code><b><span
+style='font-size:10.0pt'> <span class=SpellE>RemoteQuery</span></span></b></code>)</p>
+
+</blockquote>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+</blockquote>
+
+<h3>Running a C++ Example <span class=GramE>From</span> the Menu</h3>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><em>For Windows:</em></p>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l11 level1 lfo8;tab-stops:list .5in'>Start the C++ menu. </li>
+</ol>
+
+<p style='margin-left:.5in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>runcpp</span></b></code></span></span></p>
+
+<ol start=2 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l11 level1 lfo8;tab-stops:list .5in'>Enter a number from the list
+     to start that example. </li>
+</ol>
+
+<p><em>For Linux or Solaris:</em></p>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l10 level1 lfo9;tab-stops:list .5in'>Start the C++ menu. </li>
+</ol>
+
+<p style='margin-left:.5in'><code><b><span style='font-size:10.0pt'>./<span
+class=SpellE>runcpp.sh</span></span></b></code></p>
+
+<ol start=2 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l10 level1 lfo9;tab-stops:list .5in'>Enter a number from the list
+     to start that example</li>
+</ol>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+</blockquote>
+
+<h3>Running a C# Example <span class=GramE>From</span> the Menu</h3>
+
+<ol start=1 type=1>
+ <ol start=1 type=1>
+  <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:
+      auto;mso-list:l2 level2 lfo10;tab-stops:list 1.0in'>Start the C# menu. </li>
+ </ol>
+</ol>
+
+<p style='margin-left:1.0in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>runcs</span></b></code></span></span></p>
+
+<ol start=1 type=1>
+ <ol start=2 type=1>
+  <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:
+      auto;mso-list:l2 level2 lfo10;tab-stops:list 1.0in'>Enter a number from
+      the list to start that example. </li>
+ </ol>
+</ol>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3><a name="run_interop" id="run_interop"></a>Running the <span class=SpellE>Interop</span>
+Example</h3>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>Interop</span></code></span>
+example can only be run from the command line, so it's not listed on the <span
+class=SpellE>QuickStart</span> menu. Follow these steps to run <span
+class=SpellE><code><span style='font-size:10.0pt'>Interop</span></code></span>.
+</p>
+
+<p><em>For Windows:</em></p>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l1 level1 lfo11;tab-stops:list .5in'>Start the <span
+     class=SpellE><code><span style='font-size:10.0pt'>Interop</span></code></span>
+     example. </li>
+</ol>
+
+<p style='margin-left:.5in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>runinterop</span></b></code></span></span></p>
+
+<ol start=2 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l1 level1 lfo11;tab-stops:list .5in'>When the example has finished,
+     stop the Java cache server by entering this command in the open terminal
+     session: </li>
+</ol>
+
+<p style='margin-left:.5in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>cacheserver</span></b></code></span></span><code><b><span
+style='font-size:10.0pt'> stop -dir=<span class=SpellE>gfecs</span></span></b></code></p>
+
+<p><em>For Linux or Solaris:</em></p>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l3 level1 lfo12;tab-stops:list .5in'>Start the <span
+     class=SpellE><code><span style='font-size:10.0pt'>Interop</span></code></span>
+     example. </li>
+</ol>
+
+<p style='margin-left:.5in'><code><b><span style='font-size:10.0pt'>./<span
+class=SpellE>runinterop.sh</span></span></b></code></p>
+
+<ol start=2 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l3 level1 lfo12;tab-stops:list .5in'>When the example has
+     finished, stop the Java cache server by entering this command in the open
+     terminal session:</li>
+</ol>
+
+<p style='margin-left:.5in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>cacheserver</span></b></code></span></span><code><b><span
+style='font-size:10.0pt'> stop -dir=<span class=SpellE>gfecs</span></span></b></code></p>
+
+<p class=MsoNormal style='mso-margin-top-alt:auto;margin-bottom:12.0pt;
+margin-left:.5in'><o:p>&nbsp;</o:p></p>
+
+</blockquote>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<h2>If you have problems running the examples</h2>
+
+<p>This section discusses problems you might encounter when you run the
+examples, and suggests corrective actions. If your problems aren't covered or
+resolved here, please contact Pivotal Technical Support. For instructions, see 
+the Pivotal page <a href="https://support.pivotal.io/hc/en-us/articles/202278056-How-do-I-submit-a-request-for-Pivotal-support-">How to File a Support Request</a>.
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+<h3>Error Messages</h3>
+
+<p><code><span style='font-size:10.0pt'>Exception ... <span class=SpellE>Region<span
+class=GramE>:put</span></span> not connected to GemFire</span></code> </p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p>Verify that the cache server has successfully started by reviewing the <span
+class=SpellE><code><span style='font-size:10.0pt'>cacheserver.log</span></code></span>
+file in the <span class=SpellE><code><span style='font-size:10.0pt'>gfecs</span></code></span>
+directory. The log may indicate why the cache server failed to start. </p>
+
+</blockquote>
+
+<p><code><span style='font-size:10.0pt'>Exception ... <span class=SpellE>NoClassDefFoundError</span></span></code>
+</p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p>This error may appear in the <span class=SpellE><code><span
+style='font-size:10.0pt'>cacheserver.log</span></code></span> file in the <span
+class=SpellE><code><span style='font-size:10.0pt'>gfecs</span></code></span>
+directory. Verify that you have followed all the steps in the <a
+href="#configuring_environment">Configuring the <span class=SpellE>QuickStart</span>
+Environment</a> section. You must run the example from the <span class=SpellE><code><span
+style='font-size:10.0pt'>quickstart</span></code></span> directory with the <span
+class=SpellE><code><span style='font-size:10.0pt'>runcpp</span></code></span>
+or <span class=SpellE><code><span style='font-size:10.0pt'>runcs</span></code></span>
+scripts for the <code><span style='font-size:10.0pt'>CLASSPATH</span></code>
+setting to work, and so the example can find its XML files. </p>
+
+</blockquote>
+
+<p><code><span style='font-size:10.0pt'>Exception ... XML file/resource does
+not exist or not found</span></code> </p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p>This error might appear in the <span class=SpellE><code><span
+style='font-size:10.0pt'>cacheserver.log</span></code></span> file in the <span
+class=SpellE><code><span style='font-size:10.0pt'>gfecs</span></code></span>
+directory, or in the <span class=GramE>example's</span> screen output. Verify
+that you have followed all the steps in the <a href="#configuring_environment">Configuring
+the <span class=SpellE>QuickStart</span> Environment</a> section. You must run
+the example from the <span class=SpellE><code><span style='font-size:10.0pt'>quickstart</span></code></span>
+directory with the <span class=SpellE><code><span style='font-size:10.0pt'>runcpp</span></code></span>
+or <span class=SpellE><code><span style='font-size:10.0pt'>runcs</span></code></span>
+scripts so the example can find its XML files.</p>
+
+</blockquote>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+<h3>Connection Problems</h3>
+
+<p>GemFire is a network-centric distributed system, so if you have a firewall
+running it could cause connection problems. For example, your connections may
+fail if your firewall places restrictions on inbound or outbound permissions
+for sockets. You may need to modify your firewall configuration to permit
+traffic to applications running on your machine. The specific configuration
+depends on the firewall you're using.</p>
+
+<p>If you experience port conflicts with other distributed systems, change the <span
+class=SpellE><code><span style='font-size:10.0pt'>localhost</span></code></span>
+and <code><span style='font-size:10.0pt'>bridge-server</span></code> port
+numbers for each of the XML files in the <span class=SpellE><code><span
+style='font-size:10.0pt'>quickstart/XMLs</span></code></span> directory. If you
+need to specify a non-default multicast port setting for the Java cache server,
+place a copy of the GemFire <span class=SpellE><code><span
+style='font-size:10.0pt'>gemfire.properties</span></code></span> file in the <span
+class=SpellE><code><span style='font-size:10.0pt'>quickstart/gfecs</span></code></span>
+directory, then change the <span class=SpellE><code><span style='font-size:
+10.0pt'>mcast</span></code></span><code><span style='font-size:10.0pt'>-port=</span></code>
+setting to a unique value for your network.</p>
+
+<p class=MsoNormal style='margin-bottom:12.0pt'><br style='mso-special-character:
+line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<h2>Building the Examples</h2>
+
+<p>If you want to build the <span class=SpellE>QuickStart</span> examples
+yourself from the source files provided, follow these steps:</p>
+
+<ol start=1 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l6 level1 lfo13;tab-stops:list .5in'>Run the Visual Studio 2010
+     Command Prompt tool to open a command prompt shell.</li>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l6 level1 lfo13;tab-stops:list .5in'>In the command shell, enter
+     the following environment configurations:</li>
+</ol>
+
+<p style='margin-left:.5in'><span class=GramE><code><span style='font-size:
+10.0pt'>set</span></code></span><code><span style='font-size:10.0pt'>
+GEMFIRE=&lt;</span></code><em><span style='font-size:10.0pt;font-family:"Courier New"'>full
+path to the GemFire directory</span></em><code><span
+style='font-size:10.0pt'>&gt;</span></code><b><span style='font-size:10.0pt;
+font-family:"Courier New"'><br>
+</span></b><code><span style='font-size:10.0pt'>set GFCPP=<span class=SpellE>NativeClient_InstallDir</span></span></code><br>
+<code><span style='font-size:10.0pt'>set JAVA_HOME=&lt;installed JDK PATH&gt;</span></code><br>
+<code><span style='font-size:10.0pt'>set PATH=%PATH%;%JAVA_HOME%/<span
+class=SpellE>bin;%GFCPP</span>%\bin</span></code></p>
+
+<ol start=3 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l6 level1 lfo13;tab-stops:list .5in'>In the command shell, change
+     to the <span class=SpellE><code><span style='font-size:10.0pt'>quickstart</span></code></span>
+     directory:</li>
+</ol>
+
+<p style='margin-left:.5in'><span class=SpellE><span class=GramE><code><span
+style='font-size:10.0pt'>cd</span></code></span></span><code><span
+style='font-size:10.0pt'> SampleCode\<span class=SpellE>quickstart</span></span></code></p>
+
+<p style='margin-left:.5in;text-indent:-.25in;mso-list:l6 level1 lfo13;
+tab-stops:list .5in'><![if !supportLists]><span style='mso-list:Ignore'>4.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><![endif]>In
+the command shell, run the appropriate build script for your system. The build
+script uses the <span class=SpellE><code><span style='font-size:10.0pt'>quickstart_cpp_10.sln</span></code></span>
+and <span class=SpellE><code><span style='font-size:10.0pt'>quickstart_csharp_10.sln</span></code></span>
+Visual Studio solution files in the <span class=SpellE><code><span
+style='font-size:10.0pt'>quickstart</span></code></span> directory. </p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in'>For Windows<span class=GramE>: <strong>.</strong></span><strong>\
+</strong><span class=SpellE><code><b><span style='font-size:10.0pt'>buildit_10.bat</span></b></code></span>
+</p>
+
+<p style='margin-left:.5in'>For Linux and Solaris: <code><b><span
+style='font-size:10.0pt'>./<span class=SpellE>buildit.sh</span></span></b></code></p>
+
+</blockquote>
+
+<p class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+margin-left:.5in'><o:p>&nbsp;</o:p></p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<BR>Pivotal Software, Inc.
+<BR>3495 Deer Creek Road
+<BR>Palo Alto, CA 94304
+<BR><a href="http://www.pivotal.io">www.pivotal.io</a>
+
+<p><a href="#Top">Top</a></p>
+
+<p><span class=GramE>Copyright &#169; 2006-2014 Pivotal Software, Inc. All rights reserved. This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents. </p>
+
+</div>
+
+</body>
+
+</html>

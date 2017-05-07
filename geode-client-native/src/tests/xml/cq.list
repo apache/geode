@@ -1,0 +1,15 @@
+CqQuery/cqDurableQS.xml
+CqQuery/concCQMTTest.xml
+CqQuery/serialCQMTTest.xml
+CqQuery/resultSetValidationCQTest.xml
+CqQuery/serialEntryEvent.xml
+CqQuery/serialEntryEventWithRegInterest.xml
+CqQuery/serialMultRegOpsCQListenerWithFeeder.xml
+CqQuery/singleRegCQOps.xml
+CqQuery/multRegCQOps.xml
+CqQuery/serverFailoverAndCQOps.xml
+CqQuery/multRegServerFailoverAndCQOps.xml
+CqQuery/durableTimeoutWithCq.xml
+CqQuery/durableWithCqKAFalse.xml
+CqQuery/durableWithCqKATrue.xml
+CqQuery/durableCqFailoverR2.xml

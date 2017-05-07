@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="maxKeys">10000</data>
+  <client-set name="Feed">
+    <client name="Feed"/>
+  </client-set>
+  <client-set count="3" name="Server"/>
+  <client-set count="9" name="Client"/>
+  
+  <data name="distinctKeys">10</data>
+  <data name="valueSize">100</data>
+  <test name="List Peer Counts" description="Each Member lists the peers for the region.">
+    <task name="CreateFeed" action="createProcess" container="cacheserver" waitTime="900" parallel="true">
+      <data name="cacheType">PEER</data>
+      <data name="regionName">CSRegion</data>
+      <client-set>
+        <client name="Feed"/>
+      </client-set>
+    </task>
+    <task name="CreateServers" action="createProcess" container="cacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">SERVER</data>
+      <data name="regionName">CSRegion</data>
+      <client-set count="3" name="Server"/>
+    </task>
+    <task name="CreateClients" action="createProcess" container="cacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">CSRegion</data>
+      <client-set count="9" name="Client"/>
+    </task>
+    <task name="Check Peers" action="doCheckPeers" container="cacheserver" waitTime="150">
+    </task>
+  </test>
+  
+  <test name="ValidateContent" description="Validate Cache Content">
+    <task name="Populate" action="doPopulate" container="cacheserver" waitTime="600">
+      <data name="valuePrefix">1</data>
+      <client-set>
+        <client name="Feed"/>
+      </client-set>
+    </task>
+    <task name="Dump" action="doDumpBB" container="cacheserver" waitTime="600">
+      <client-set>
+        <client name="Feed"/>
+      </client-set>
+    </task>
+     <task name="Netsearch" action="doNetsearch" container="cacheserver" waitTime="600">
+      <client-set count="9" name="Client"/>
+    </task>
+    <task name="Verify" action="doValidate" container="cacheserver" waitTime="600">
+      <data name="valuePrefix">1</data>
+      <client-set count="9" name="Client"/>
+    </task>
+    <task name="Repopulate" action="doRepopulate" container="cacheserver" waitTime="600">
+      <data name="valuePrefix">2</data>
+      <client-set count="1" name="Client"/>
+    </task>
+    <task name="Verify" action="doValidate" container="cacheserver" waitTime="600">
+      <data name="valuePrefix">2</data>
+      <client-set count="9" name="Client"/>
+    </task>
+    <task name="Repopulate" action="doRepopulate" container="cacheserver" waitTime="600">
+      <data name="valuePrefix">3</data>
+      <client-set>
+        <client name="Feed"/>
+      </client-set>
+    </task>
+    <task name="Verify" action="doValidate" container="cacheserver" waitTime="600">
+      <data name="valuePrefix">3</data>
+      <client-set count="9" begin="2" name="Client"/>
+    </task>
+  </test>
+</test-driver>

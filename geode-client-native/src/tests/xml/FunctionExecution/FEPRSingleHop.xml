@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">500</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>1200000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>1024</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>3</item>
+    </list>
+  </data>
+
+ <data name="sleepTime">
+    <oneof>
+      <item>40</item>
+      <item>50</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  <data name="keyType">int</data>
+  <data name="ObjectType">PSTObject</data>
+  <data name="clientCount">4</data>
+  <data name="disableShufflingEP">true</data>
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" thread-local-connections="true" max-connections="-1" locators="true" />
+    </snippet>
+  </data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" pool-name="_Test_Pool1"/>
+      </region>
+    </snippet>
+  </data>
+   <data name="minServers">3</data>                              
+  <data name="funcName">PutKeyFunction</data>    
+  <client-set count="4" name="Client"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set name="JCS5" hostGroup="CS"/>
+  <client-set name="JCS6" hostGroup="CS"/>
+  
+
+  <test name="FEPRSingleHop" description="Clients use function execution to put partitioned data onto servers. Objects are DataSerializable PSTObjects of size 1024.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 6 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH FunctionExecution/csFEPartitionedRegion.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+     <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="Open Statistic" action="doOpenStatistic" container="smokeperf" waitTime="5m">
+      <data name="statEnable">true</data>
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="smokeperf" waitTime="3m">
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="smokeperf" waitTime="5m">
+      <client-set count="4" name="Client"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="Create Entries in Region" action="doCreateData" container="smokeperf" waitTime="10m">
+      <data name="regionName">TestTCR1</data>
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="Put FunctionExecution" action="doPutFunctionExecutionData" container="smokeperf" parallel="true" waitTime="20m">
+      <data name="regionName">TestTCR1</data>
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="stopStartCacheServer 4" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="stopStartCacheServer 5" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="stopStartCacheServer 6" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="Close Statistics" action="doCloseStatistic" container="smokeperf" waitTime="5m">
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="smokeperf" waitTime="5m"/>
+    
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+   
+  </test>
+
+</test-driver>

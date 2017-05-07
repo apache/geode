@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache>
+
+  <cache-server port="40404">
+	</cache-server>
+  
+    <region name="Portfolios">    
+      <region-attributes scope="distributed-ack" mirror-type="keys-values">
+      </region-attributes>
+    </region>
+  
+</cache> 

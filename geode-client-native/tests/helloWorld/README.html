@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 7.0/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="../../docs/DocIndex.css" CHARSET="ISO-8859-1" TYPE="text/css">
+<TITLE>userobjects: Pivotal GemFire Native Client C++ Example</TITLE>
+<style type="text/css">
+<!--
+.style1 {font-family: "Courier New"}
+body {
+	background-color: #FFFFFF;
+}
+.style5 {font-weight: bold}
+-->
+</style>
+</HEAD>
+<BODY>
+<DIV>
+<H4 CLASS="Title2">
+<A NAME="pgfId-998407"></A>userobjects</H1></P>
+<H5 CLASS="Title2">
+<A NAME="pgfId-1003977"></A>Pivotal GemFire Native Client C++
+<H5 CLASS="Title2">
+<A NAME="pgfId-1003982"></A>C++ API Programming Example</P>
+<H6 CLASS="Title-Date">
+<A NAME="pgfId-1006442"></A>Version 1.0, March 2006</H6>
+<P CLASS="Body">
+<A NAME="pgfId-1005899"></A>The <EM class=Code9>userobjects</EM> example illustrates usage of the C++ caching API for distribution and retrieval of custom defined user types. 
+The purpose is to demonstrates the code required to derive from gemfire::Cacheable to define a type suitable for storage as a value in the cache. 
+The derivation of a gemfire::CacheableKey type is illustrated as well.
+The example is located in the GemFire software installation under <EM class=Code9><EM CLASS="Italic"> GemFireInstallDirectory</EM></EM><EM class="Code9 style1">/examples/userobjects</a>.
+</P>
+<H2 CLASS="Head-B">
+<A NAME="pgfId-1004038"></A>Setting Up the Environment</P>
+<P CLASS="Body">
+<A NAME="pgfId-1004039"></A>On Linux: In every shell used to run this example application, set these environment variables:</P>
+<P CLASS="Code-Indented">
+<A NAME="pgfId-1004040"></A>export GFCPP=<EM CLASS="Italic">GemFireInstallDirectory</EM>
+</P>
+<P CLASS="Code-Indented">
+<A NAME="pgfId-1004041"></A>export PATH=$GFCPP/bin:$PATH</P>
+<P CLASS="Code-Indented">
+<A NAME="pgfId-1004042"></A>export LD_LIBRARY_PATH=$GFCPP/lib:$LD_LIBRARY_PATH</P>
+<P CLASS="Body">
+<A NAME="pgfId-1004043"></A>On Windows: The environment variables were set automatically during installation.</P>
+<P CLASS="Body">
+<A NAME="pgfId-1004053"></A>By default, this product ships configured for multicast resolution of membership. If the network environment does not allow multicast, you can configure GemFire for unicast. See the <EM CLASS="Italic">
+GemFire User's Guide</EM> for instructions on configuring TCP transport for membership and discovery. To view the GemFire manuals, the online C++ API documentation, and the complete set of examples,
+see <EM class=Code9><EM CLASS="Italic"><a href="../../docs/index.html">GemFireInstallDirectory</a></EM></EM><span class="Code9"><a href="../../docs/index.html">/docs/index.html</a></span>.
+</P>
+
+<H2 CLASS="Head-B">
+<A NAME="pgfId-1006430"></A>Running userobjects</P>
+<P CLASS="Body">
+<A NAME="pgfId-1006097"></A>You can run <EM CLASS="Code9">
+userobjects</EM>
+ by simply invoking the executable. There are no command line arguments. The process registers custom serializable types, then connects to the distributed system. It creates a cache and region, and creates a new AccountHistory and puts it in the cache. It will then fetch the AccountHistory from the cache and update it.
+<P CLASS="Head-D">
+<A NAME="pgfId-1001566"></A>Example: Running the executable</P>
+<P CLASS="Body">
+<P CLASS="Code-Indented">
+<A NAME="pgfId-998480"></A>
+./userobjects
+</P>
+<PRE>
+<P CLASS="Code-Indented">
+<EM CLASS="Code9">Put an AccountHistory in cache keyed with BankAccount.
+BankAccount( customer: 2309, account: 123091 )
+AccountHistory:
+  Created account
+Found AccountHistory in the cache.
+AccountHistory:
+  Created account
+Updated AccountHistory in the cache.
+Found AccountHistory in the cache.
+AccountHistory:
+  Created account
+  debit $1,000,000.</EM>
+</PRE>
+</P>
+</P>
+
+<P CLASS="Company">&nbsp;</P>
+<P CLASS="Company-Copyright">
+Copyright &#169; 2002-2006 GemStone Systems, Inc. All Rights Reserved. GemStone&#174;, GemFire<span class="Superscript">TM</span>, and the GemStone logo are trademarks or registered trademarks of GemStone Systems, Inc. All other trade names or trademarks are the property of their respective owners. Information in this document is subject to change without notice.</P>
+<P CLASS="Body">
+<A NAME="pgfId-998290"></A>&nbsp;</P>
+</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+    "http://www.gemstone.com/dtd/cache6_5.dtd">
+
+<!--
+  | 
+  | Configures a cache to serve caching clients at port 40404.
+-->
+<cache>
+  <bridge-server port="HOST_PORT1"/>
+  <region name="exampleRegion" refid="REPLICATE">
+    <region-attributes statistics-enabled="true">
+
+      <entry-idle-time>
+
+        <expiration-attributes timeout="5" action="invalidate"/>
+
+      </entry-idle-time>
+
+    </region-attributes>
+  </region>
+</cache>
+
+

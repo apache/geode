@@ -1,0 +1,8 @@
+#define ACE_LACKS_IOSTREAM_TOTALLY 1
+#define ACE_HAS_VERSIONED_NAMESPACE 1
+
+//TODO GEM-479: remove below when fixing so that debug builds have logging and debug, only disable to work around issue
+#define ACE_NLOGGING 1
+#define ACE_NDEBUG 1
+
+#include "ace/config-@ACE_CONFIG@.h"

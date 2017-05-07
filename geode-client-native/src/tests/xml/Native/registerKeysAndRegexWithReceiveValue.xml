@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+  <data name="minServers">2</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>2</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>40</item>
+    </oneof>
+  </data>
+  
+     
+
+  <data name="keyType">str</data>
+  <data name="checkReceiveVal">true</data>
+
+  <data name="ThinClientRegion1">
+    <snippet>
+      <region name="receiveValueTrue">
+        <region-attributes client-notification="true">
+          <cache-listener library="perftests" function="createConflationTestCacheListener"/>
+        </region-attributes>  
+      </region>
+    </snippet>
+  </data>
+   <data name="ThinClientRegion2">
+     <snippet>
+       <region name="receiveValueFalse">
+         <region-attributes client-notification="true">
+          <cache-listener library="perftests" function="createConflationTestCacheListener"/>
+        </region-attributes>  
+       </region>
+     </snippet>
+   </data>
+   <data name="ThinClientRegion3">
+     <snippet>
+       <region name="receiveValueNone">
+         <region-attributes client-notification="true">
+          <cache-listener library="perftests" function="createConflationTestCacheListener"/>
+        </region-attributes>  
+       </region>
+     </snippet>
+   </data>
+  <data name="ThinClientRegionDC1">
+    <snippet>
+      <region name="receiveValueTrue">
+        <region-attributes client-notification="true">
+          <cache-listener library="durableclienttests" function="createConflationTestCacheListener"/>
+        </region-attributes>  
+      </region>
+    </snippet>
+  </data>
+   <data name="ThinClientRegionDC2">
+     <snippet>
+       <region name="receiveValueFalse">
+         <region-attributes client-notification="true">
+          <cache-listener library="durableclienttests" function="createConflationTestCacheListener"/>
+        </region-attributes>  
+       </region>
+     </snippet>
+   </data>
+   <data name="ThinClientRegionDC3">
+     <snippet>
+       <region name="receiveValueNone">
+         <region-attributes client-notification="true">
+          <cache-listener library="durableclienttests" function="createConflationTestCacheListener"/>
+        </region-attributes>  
+       </region>
+     </snippet>
+   </data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="Feeder1"/>
+  <client-set name="Feeder2"/>
+  <client-set name="Feeder3"/>
+  <client-set count="3" name="Client"/>
+  <client-set count="3" name="DurableClient"/>
+
+  <test name="registerKeysAndRegexWithReciveValue.xml" description="Test to check the register interest's receive value feature">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 Native/csMultiRegion.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="CreateRegion receiveValueTrue" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="3" name="Client"/>
+      <client-set name="Feeder1"/>
+      <data name="regionSpec">ThinClientRegion1</data>
+    </task>
+    <task name="CreateRegion receiveValueTrue for dc" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set count="3" name="DurableClient"/>
+      <data name="isDurable">true</data>
+      <data name="regionSpec">ThinClientRegionDC1</data>
+    </task>
+    <task name="CreateRegion receiveValueFalse" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="3" name="Client"/>
+      <client-set name="Feeder2"/>
+      <data name="regionSpec">ThinClientRegion2</data>
+    </task>
+    <task name="CreateRegion receiveValueFalse for DC" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set count="3" name="DurableClient"/>
+      <data name="isDurable">true</data>
+      <data name="regionSpec">ThinClientRegionDC2</data>
+    </task>
+    <task name="CreateRegion receiveValueNone" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="3" name="Client"/>
+      <client-set name="Feeder3"/>
+      <data name="regionSpec">ThinClientRegion3</data>
+    </task>
+    <task name="CreateRegion receiveValueNone for dc" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set count="3" name="DurableClient"/>
+      <data name="isDurable">true</data>
+      <data name="regionSpec">ThinClientRegionDC3</data>
+    </task>
+    <task name="Register Interest List on receiveValueTrue region" action="doRegisterInterestList" container="perftests" waitTime="2m">
+      <client-set count="3" name="Client"/>
+      <data name="regionName">receiveValueTrue</data>
+      <data name="registerKeys">1</data>
+      <data name="keyIndexBegin">1</data>
+      <data name="receiveValue">true</data>
+    </task>
+    <task name="Register Interest List  on receiveValueFalse region" action="doRegisterInterestList" container="perftests" waitTime="2m">
+      <client-set count="3" name="Client"/>
+      <data name="regionName">receiveValueFalse</data>
+      <data name="registerKeys">1</data>
+      <data name="keyIndexBegin">1</data>
+      <data name="receiveValue">false</data>
+    </task>
+    <task name="Register Interest List on receiveValueTrue region  For DC" action="doRegisterInterestList" container="durableclienttests" waitTime="2m">
+      <client-set count="3" name="DurableClient"/>
+      <data name="regionName">receiveValueTrue</data>
+      <data name="registerKeys">1</data>
+      <data name="keyIndexBegin">1</data>
+      <data name="receiveValue">true</data>
+      <data name="isDurableReg">true</data>
+    </task>
+    <task name="Register Interest List on receiveValueFalse region for DC" action="doRegisterInterestList" container="durableclienttests" waitTime="2m">
+      <client-set count="3" name="DurableClient"/>
+      <data name="regionName">receiveValueFalse</data>
+      <data name="registerKeys">1</data>
+      <data name="keyIndexBegin">1</data>
+      <data name="receiveValue">false</data>
+      <data name="isDurableReg">true</data>
+    </task>
+    <task name="Register Regex List on receiveValueTrue region" action="doRegisterRegexList" container="perftests" waitTime="2m">
+      <client-set count="3" name="Client"/>
+      <data name="regionName">receiveValueTrue</data>
+       <data name="registerRegex">AAA*0*4*</data>
+      <data name="receiveValue">true</data>
+    </task>
+    <task name="Register Regex List on receiveValueFalse region" action="doRegisterRegexList" container="perftests" waitTime="2m">
+      <client-set count="3" name="Client"/>
+      <data name="regionName">receiveValueFalse</data>
+      <data name="registerRegex">AAA*0*4*</data>
+      <data name="receiveValue">false</data>
+    </task>
+    <task name="Register Regex List on receiveValueTrue region for DC" action="doRegisterRegexList" container="durableclienttests" waitTime="2m">
+      <client-set count="3" name="DurableClient"/>
+      <data name="regionName">receiveValueTrue</data>
+      <data name="registerRegex">AAA*0*4*</data>
+      <data name="receiveValue">true</data>
+      <data name="isDurableReg">true</data>
+    </task>
+    <task name="Register Regex List on receiveValueFalse region for DC" action="doRegisterRegexList" container="durableclienttests" waitTime="2m">
+      <client-set count="3" name="DurableClient"/>
+      <data name="regionName">receiveValueFalse</data>
+      <data name="registerRegex">AAA*0*4*</data>
+      <data name="receiveValue">false</data>
+      <data name="isDurableReg">true</data>
+    </task>
+    <task name="Entry Operations" action="doCreateUpdateDestroy" container="perftests" timesToRun="200" waitTime="60m" continueOnError="true" parallel="true">
+      <data name="regionName">receiveValueTrue</data>
+      <client-set name="Feeder1"/>
+    </task>
+    <task name="Entry Operations" action="doCreateUpdateDestroy" container="perftests" timesToRun="200" waitTime="60m" continueOnError="true" parallel="true">
+      <data name="regionName">receiveValueFalse</data>
+      <client-set name="Feeder2"/>
+    </task>
+    <task name="Entry Operations" action="doCreateUpdateDestroy" container="perftests" timesToRun="200" waitTime="60m" continueOnError="true" parallel="true">
+      <data name="regionName">receiveValueNone</data>
+      <client-set name="Feeder3"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="360">
+      <data name="sleepTime">60</data>
+    </task>
+    <task name="validate test for receiveValueTrue" action="doValidateBankTest" container="perftests" waitTime="5m">
+      <client-set count="3" name="Client"/>
+      <client-set count="3" name="DurableClient"/>
+      <data name="regionName">receiveValueTrue</data>
+      <data name="expectedAfterCreateCount">400</data>
+      <data name="expectedAfterUpdateCount">400</data>
+      <data name="expectedAfterInvalidateCount">0</data>
+      <data name="expectedAfterDestroyCount">400</data>
+    </task>
+    <task name="validate test for receiveValueFalse" action="doValidateBankTest" container="perftests" waitTime="5m">
+      <client-set count="3" name="Client"/>
+      <client-set count="3" name="DurableClient"/>
+      <data name="regionName">receiveValueFalse</data>
+      <data name="expectedAfterCreateCount">0</data>
+      <data name="expectedAfterUpdateCount">0</data>
+      <data name="expectedAfterInvalidateCount">800</data>
+      <data name="expectedAfterDestroyCount">400</data>
+    </task>
+    <task name="validate test for receiveValueNone" action="doValidateBankTest" container="perftests" waitTime="5m">
+      <client-set count="3" name="Client"/>
+      <client-set count="3" name="DurableClient"/>
+      <data name="regionName">receiveValueNone</data>
+      <data name="expectedAfterCreateCount">0</data>
+      <data name="expectedAfterUpdateCount">0</data>
+      <data name="expectedAfterInvalidateCount">0</data>
+      <data name="expectedAfterDestroyCount">0</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

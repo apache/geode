@@ -1,0 +1,9 @@
+# lines starting with a # are comments
+-p /export/crab2/users/matthews/svn/gfcpp/regression/build-artifacts/linux
+-d /export/crab2/users/matthews/svn/gfcpp/regression/results
+-l batchOne.list
+-m tim.keith@gemstone.com
+-m sudhir.menon@gemstone.com
+-m matthew.splett@gemstone.com
+-m qing.he@gemstone.com
+-m jdai@gemstone.com

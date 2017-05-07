@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">240</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="clientCount">1</data>
+  <data name="sleepMs">20</data>
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" min-connections="0" subscription-enabled="true" subscription-redundancy="0" servers="true" />
+    </snippet>
+  </data>
+
+  <client-set count="1" name="Client" hostGroup="CS2"/>
+  <client-set name="JCS1" hostGroup="CS1"/>
+
+  <test name="perf104" description="Edge clients create and close a connection pool using explicit servers. Uses selector. 
+    Runs on two hosts. Enables queue. Measures time to connect to server when throttled by 20ms sleeps.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">smoketest/perf/csAckMirrorNSFalseSelector.xml</data>
+      <data name="statEnable">false</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Open Statistic" action="doOpenStatistic" container="smokeperf" waitTime="5m">
+      <data name="statEnable">true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+    <task name="cyclePoolTask" action="doCyclePoolTask" container="smokeperf" waitTime="10m">
+      <data name="isMainWorkLoad">true</data>
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="1" name="Client"/>
+    </task>
+    <task name="Close Statistics" action="doCloseStatistic" container="smokeperf" waitTime="5m">
+      <client-set count="1" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="smokeperf" waitTime="5m"/>
+    <task name="Generate statistic spec" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">cp</data>
+      <data name="arguments">../build_*/framework/xml/smoketest/perf/perf073.spec statistics.spec</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Generate Trim Spec" action="doGenerateTrimSpec" container="smokeperf" waitTime="5m">
+      <client-set name="JCS1"/>
+    </task>
+  </test>
+
+</test-driver>

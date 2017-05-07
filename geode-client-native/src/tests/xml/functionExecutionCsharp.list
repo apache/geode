@@ -1,0 +1,12 @@
+# These test should be run with pool option poolwithendpoints and poolwithlocator.
+
+FunctionExecution/onRegionFunctionExecWithResult.xml
+FunctionExecution/onRegionFunctionExecWithOutResult.xml
+FunctionExecution/onServerFunctionExecWithResult.xml
+FunctionExecution/onServerFunctionExecWithOutResult.xml
+FunctionExecution/onServersFunctionExecWithResult.xml
+FunctionExecution/onServersFunctionExecWithOutResult.xml
+FunctionExecution/replicatedRegionExecution.xml
+FunctionExecution/exceptionHandling.xml
+FunctionExecution/functionExecutionHA.xml
+FunctionExecution/onRegionFunctionExecHAWithResult.xml

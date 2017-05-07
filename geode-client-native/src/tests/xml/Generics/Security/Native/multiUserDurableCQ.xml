@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="securityScheme">
+   <list>
+      <item>DUMMY</item>
+      <item>LDAP</item>
+      <item>PKCS</item>
+   </list>
+  </data>
+  
+ <!--Default Values for this test only-->
+  <data name="isDurable">true</data>
+  <data name="keepAlive">false</data>
+  <data name="durableTimeout">120</data>
+  <data name="restartTime">0</data>
+  <data name="updateReceiveTime">60</data>
+  <data name="cq">true</data>
+  <data name="MultiUsers">6</data>
+  <data name="LDAP">
+    <oneof>
+      <item>gemfire</item>  
+    </oneof>    
+  </data>
+  <data name="PKCS">
+    <oneof>
+      <item>gemfire</item>  
+    </oneof>    
+  </data>
+  <data name="DUMMY">
+    <oneof>
+      <item>user</item>  
+    </oneof>    
+  </data>
+  
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes scope="distributed-ack" caching-enabled="false" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set  count="5" name="DClient"/>
+  <client-set  name="Feeder"/>
+  
+  <test name="MultiUser Security tests" description="Test durable CQ's with durable clients for multiUser mode" timesToRun="3">
+    <task name="SetupCacheServer" action="doRunProcess" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.utils" waitTime="5m" argTypes="String,String">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Security/Native/csAckMirrorSecurity.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.utils" waitTime="10m"  argTypes="String,String">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <data name ="multiUserMode">true</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="CreateClient" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.multiusersecurity" waitTime="10m" argTypes="String,String">
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name ="multiUserMode">true</data>
+      <client-set count="5" name="DClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="FeedSystem" action="doFeedTask" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.multiusersecurity" waitTime="40m" argTypes="String,String">
+      <data name="entryCount">10</data>
+      <client-set  name="Feeder"/>
+    </task>
+    <task name="doCqOperations" action="doCqForMU" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.multiusersecurity" waitTime="15m" argTypes="String,String">
+      <client-set count="5" name="DClient"/>
+      <data name="entryOps">
+        <oneof>
+          <item>cq</item>
+        </oneof>
+      </data>
+    </task>
+     <task name="Client Events" action="doEntryOperationsForMU" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.multiusersecurity" waitTime="30m" parallel="true" argTypes="String,String">
+      <data name="entryOps">
+         <oneof>
+          <item>create</item>
+          <item>update</item>
+          <item>update</item>
+          <item>destroy</item>
+          <item>destroy</item>
+        </oneof>
+      </data>
+      <data name="workTime">5m</data>
+      <data name="opsSecond">12</data>
+      <data name="entryCount">10</data>
+      <client-set  name="Feeder"/>
+    </task>
+    <task name="Close Cycle for DC" action="doCloseCacheAndReInitialize" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.multiusersecurity" waitTime="25m" timesToRun="5" parallel="true" argTypes="String,String">
+      <data name="regionName">Portfolios</data>
+      <data name="restartTime">10</data>
+      <data name ="multiUserMode">true</data>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios where TRUE</item>
+         </list>
+      </data>
+     <client-set count="5" name="DClient"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="5m">
+      <data name="sleepTime">60</data>
+      <client-set count="5" name="DClient"/>
+    </task>
+    <task name=" Validate for per user" action="doValidateCqOperationsForPerUser" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.multiusersecurity" waitTime="5m" argTypes="String,String">
+       <client-set count="5" name="DClient"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.multiusersecurity" waitTime="2m" argTypes="String,String"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.utils" waitTime="10m" parallel="true" argTypes="String,String">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+  </test>
+</test-driver>

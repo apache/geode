@@ -1,0 +1,324 @@
+<?xml version="1.0"?>
+
+<!-- This is the Ant build file for running C tests.  It is designed 
+     to be invoked from the build.xml Ant script in the top level directory
+     of the GemFire tree, and expects to inherit the properties set
+     there.
+  -->
+
+<project name ="gemfire" default="usage">
+  <description>Runs GemFire C++ Tests</description>
+  <target name="usage">
+    <echo>
+    This script is designed to be invoked from the build.xml script
+    in the base directory.
+    </echo>
+  </target>
+
+  <taskdef name="conditional"
+    classname="com.gemstone.tools.ant.taskdefs.Conditional">
+    <classpath>
+      <pathelement location="${basedir}/../../buildfiles/taskdefsV10.jar" />
+    </classpath>
+  </taskdef>
+
+
+  <target name="-run-test">
+    <description>
+       Requires that the testName property be set.
+       If the testArgs property is set then it is passed as command line args.
+       If the testScript property is set then bash is used as the executable.
+       The testTimeout property can be set to the number of seconds to
+       wait before timing out. It defaults to 30 seconds.
+       If a test should only be run once against a single sytem then set
+       the testRunOnce property.
+    </description>
+    <conditional unless="cpp.testcase">
+      <property name="thisTestOk" value="true"/>
+    </conditional>
+    <conditional if="cpp.testcase">
+      <condition property="thisTestOk">
+        <equals arg1="${testName}" arg2="${cpp.testcase}"/>
+      </condition>
+    </conditional>
+    <condition property="okToRun">
+      <and>
+        <or>
+          <not> <isset property="testRunOnce"/> </not>
+          <not> <isset property="userSystem"/> </not>
+          <equals arg1="${iterations.count}" arg2="1"/>
+        </or>
+        <isset property="thisTestOk"/>
+      </and>
+    </condition>
+
+    <conditional unless="okToRun">
+       <echo level="info" message="Skipping test ${testName}"/>
+    </conditional>
+    <conditional if="okToRun">
+      <condition property="myTimeout" value="${testTimeout}">
+         <isset property="testTimeout"/>
+      </condition>
+    <!--  set the timeout for an individual test to 30 minutes -->
+      <condition property="myTimeout" value="1800">
+         <and>
+         <not><isset property="testTimeout"/></not>
+         <not><or>
+           <isset property="msdev"/>
+           <isset property="msdev.profile"/>
+           <isset property="cpp-debug"/>
+         </or></not>
+         </and>
+      </condition>
+      <condition property="myTimeout" value="9999999">
+         <or>
+           <isset property="msdev"/>
+           <isset property="msdev.profile"/>
+           <isset property="cpp-debug"/>
+         </or>
+      </condition>
+      <condition property="myExe" value="cmd">
+         <isset property="msdev.profile"/>
+      </condition>
+      <condition property="myExe" value="msdev">
+         <isset property="msdev"/>
+      </condition>
+      <condition property="msdevTestName" value="${cppdoctest.exedir}/${testName}.exe">
+         <isset property="msdev"/>
+      </condition>
+      <condition property="msdevTestName" value="/c ftime.bat ${cppdoctest.exedir}/${testName}">
+         <isset property="msdev.profile"/>
+      </condition>
+      <condition property="myExe" value="bash">
+         <isset property="testScript"/>
+      </condition>
+      <condition property="myExe" value="${cppdoctest.exedir}/${testName}">
+         <not><isset property="testScript"/></not>
+      </condition>
+      <condition property="myPath" value="${cppdoctest.exedir}${path.separator}${hiddenlib.dir}/debug${path.separator}${product.library.dir}${path.separator}${myenv.PATH}">
+         <isset property="cpp-debug"/>
+      </condition>
+      <condition property="myPath" value="${cppdoctest.exedir}${path.separator}${myenv.PATH}">
+         <and>
+         <not><isset property="cpp-debug"/></not>
+         <isset property="testScript"/>
+         </and>
+      </condition>
+      <condition property="myPath" value="${cppdoctest.exedir}${path.separator}${product.library.dir}${path.separator}${myenv.PATH}">
+         <and>
+         <not><isset property="cpp-debug"/></not>
+         <not><isset property="testScript"/></not>
+         </and>
+      </condition>
+      <condition property="test.library.dir" value="${cppdoctest.exedir}${path.separator}${product.library.dir}">
+         <and>
+         <not><isset property="cpp-debug"/></not>
+         <not><isset property="testScript"/></not>
+         </and>
+      </condition>
+      <condition property="test.library.dir" value="${cppdoctest.exedir}${path.separator}${hiddenlib.dir}/debug${path.separator}${product.library.dir}">
+         <isset property="cpp-debug"/>
+      </condition>
+      <property name="additionalLibPath" value=""/>
+      <tstamp>
+        <format property="test.time" pattern="HH:mm:ss"/>
+      </tstamp>
+      <echo level="info" message="${test.time}: ${testName} timeout=${myTimeout} seconds"/>
+      <condition property="working.dir" value="${tst_res}/cpp/${test.type}/native-client-only">
+        <contains string="${testName}" substring="thinclient" casesensitive="no"/>
+      </condition>
+      <condition property="working.dir" value="${tst_res}/cpp/${test.type}">
+        <not><contains string="${testName}" substring="thinclient" casesensitive="no"/></not>
+      </condition>
+     
+      <!-- echo message="Working dir is ${working.dir}"/ -->
+      <exec executable="bash" outputProperty="mport">
+        <arg line=" -c '((res=( ( $RANDOM * ( 52999 - 21111 + 1 ) ) / 53767 ) + 32111)); echo $res'"/>
+      </exec>
+      <exec executable="bash" outputProperty="bbport">
+        <arg line=" -c '((res=( ( $RANDOM * ( 31999 - 21111 + 1 ) ) / 32767 ) + 21115)); echo $res'"/>
+      </exec>
+      <exec executable="bash" outputProperty="maddr">
+        <arg line=" -c '((res=( ( $RANDOM * ( 255 - 1 + 1 ) ) / 32767 ) + 1)); echo $res'"/>
+      </exec>
+
+      <condition property="profiler.cmd" value="${valgrind.dir}/bin/valgrind --tool=${vtool} --log-file=./${vtool}-%lu-%d-%d.out ${vtool.args}">
+         <and>
+         <isset property="valgrind.dir"/>
+         <isset property="vtool"/>
+         </and>
+      </condition>
+      <condition property="profiler.cmd" value="">
+         <not><isset property="vtool"/></not>
+      </condition>
+      <condition property="valgrind.dir" value="">
+         <not><isset property="vtool"/></not>
+      </condition>
+
+      <property name="path.dir" value="${product.library.dir}${path.separator}${myPath}${path.separator}${framework.dir}/lib${additionalLibPath}${path.separator}${thirdparty.dir}/openssl/bin"/>
+      <!--property name="path.dir" value="${myPath}${path.separator}${framework.dir}/lib${additionalLibPath}${path.separator}${valgrind.dir}/bin${path.separator}${thirdparty.dir}/openssl/lib${path.separator}${product.library.dir}"/-->
+      <!-- echo message="PATH is name=${path.dir}"/ -->
+      <!-- echo message="Port is ${mport}"/ -->
+      <!-- echo message="Addr is 224.10.13.${maddr}"/ -->
+      <!-- echo message="Cacheservers will use 224.10.13.${maddr}:${mport} for discovery."/ -->
+      <exec executable="${myExe}"
+                          resultproperty="testResult"
+                          failifexecutionfails="false"
+                          output="${tst_res}/cpp/${test.type}/${testName}.out"
+                          dir="${working.dir}">
+        <env key="LD_LIBRARY_PATH" path="${test.library.dir}${path.separator}${framework.dir}/lib${additionalLibPath}${path.separator}${hiddenlib.dir}${path.separator}${thirdparty.dir}/openssl/lib"/>
+        <env key="PATH" path="${path.dir}"/>
+        <env key="TESTSRC" path="${basedir}"/>    
+        <env key="GFCPP" path="${product.dir}"/>
+        <env key="GF_JAVA" path="${gfe.jre}/bin/java"/>
+        <env key="GFJAVA" path="${gfe.dir}"/>
+        <env key="GFE_LOGLEVEL" value="${gfeLogLevel}"/>
+        <env key="GFE_SECLOGLEVEL" value="${gfeSecLogLevel}"/>
+        <env key="MCAST_PORT" value="${mport}"/>
+        <env key="BB_PORT" value="${bbport}"/>
+        <env key="MCAST_ADDR" value="224.10.13.${maddr}"/>
+        <env key="TIMEBOMB" value="${myTimeout}"/>
+        <env key="CLASSPATH" path="${framework.dir}/lib/javaobject.jar:${gfe.dir}/lib/antlr.jar:${gfe.dir}/lib/gfSecurityImpl.jar" />
+        <env key="PROFILERCMD" value="${profiler.cmd}" />
+        <arg line="${msdevTestName}"/>
+      </exec>
+      <condition property="unitTestFailed">
+        <not>
+           <equals arg1="${testResult}" arg2="0"/>
+        </not>
+      </condition>
+      <property name="xml.reports" 
+                value="${tst_res}/cpp/${test.type}/xml-reports"/>
+      <conditional if="unitTestFailed">
+        <echo level="info" message="FAILED: c++ example test ${testName}"/>
+        <propertyfile file="${tst_res}/cpp/${test.type}/cppTestFailures" comment="Number of Tests that Failed">
+          <entry key="failureCount" type="int" operation="+" value="1"/>
+          <entry key="failedTests" operation="+" value=" ${testName}"/>
+        </propertyfile>
+        <copy todir="${errorsDir}" preservelastmodified="true">
+           <fileset dir="${tst_res}/cpp/${test.type}" includes="${testName}*"/>
+        </copy>
+<!--
+DICK
+<linecontainsregexp>
+  <regexp pattern="assert|exception"/>
+</linecontainsregexp>
+-->
+        <loadfile srcfile="${tst_res}/cpp/${test.type}/${testName}.out" property="output">
+          <filterchain>
+            <filterreader classname="org.apache.tools.ant.filters.TailFilter">
+              <param name="lines" value="15"/>
+            </filterreader>
+          </filterchain>
+        </loadfile>
+
+        <concat append="no" destfile="${xml.reports}/${testName}.xml">
+<![CDATA[<testsuite errors="0" failures="1" name="${testName}" tests="1">
+  <testcase classname="${testName}" name="${testName}">
+    <failure message="Log lines that contain suspect phrases">]]>
+<![CDATA[<![CDATA[
+${output}
+]]>]]&gt;
+<![CDATA[      </failure>
+  </testcase>
+</testsuite>]]>
+        </concat>
+      </conditional>
+      <conditional unless="unitTestFailed">
+        <concat append="no" destfile="${xml.reports}/${testName}.xml">
+<![CDATA[<testsuite errors="0" failures="0" name="${testName}" tests="1">
+  <testcase classname="${testName}" name="${testName}"/>
+</testsuite>]]>
+        </concat>
+      </conditional>
+    </conditional>
+  </target>
+
+<target name="example-tests">
+
+    <!-- LD_LIBRARY_PATH and PATH are both set to the lib directory so
+         that the loader can find the shared-library/dll and we don't 
+         have to have a different exec task for each operating system -->
+
+    <echo>running tests</echo>
+
+    <delete file="${tst_res}/cpp/${test.type}/cppTestFailures" quiet="true"/>
+    <propertyfile file="${tst_res}/cpp/${test.type}/cppTestFailures" comment="Number of Tests that Failed">
+      <entry key="failureCount" type="int" value="0"/>
+      <entry key="failedTests" value=""/>
+    </propertyfile>
+
+    <exec executable="bash" outputProperty="unique.mcast.port">
+      <arg line=" -c '((res=( ( $RANDOM * ( 52999 - 21111 + 1 ) ) / 53767 ) + 32111)); echo $res'"/>
+    </exec>
+
+    <propertyfile file="${tst_res}/cpp/${test.type}/native-client-only/gfcpp.properties">
+      <entry key="log-level" value="${logLevel}"/>
+      <entry key="stacktrace-enabled" value="true"/>
+      <entry key="license-file" value="${hidden.dir}/internal.license.nativeclientonly.zip"/>
+    </propertyfile>
+
+    <propertyfile file="${tst_res}/cpp/${test.type}/gfcpp.properties">
+      <entry key="log-level" value="${logLevel}"/>
+      <entry key="stacktrace-enabled" value="true"/>
+    </propertyfile>    
+    <propertyfile file="${tst_res}/cpp/${test.type}/native-client-only/gemfire.properties">
+      <entry key="log-level" value="Config"/>
+    </propertyfile>    
+
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_02_NativeClientCache"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_04_CppCachingApi"/>
+        <param name="additionalLibPath" value="${path.separator}${hidden.gpl.dir}"/>
+    </antcall>    
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_04_SimpleBankAccount"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_04_SerializableBankAccount"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_04_CacheableKeyBankAccount"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_04_UsingCustomClass"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_06_SettingProperties"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_07_PreservingData"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_08_Security"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_09_RemoteQuerying"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_09_Portfolio"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_10_ContinuousQuerying"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_11_ConnectionPools"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_12_FunctionExecution"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="DataSerialization"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="Ch_13_ExampleCacheLoader"/>
+    </antcall>
+     <antcall target="-run-test">
+        <param name="testName" value="ExampleTestXml"/>
+    </antcall>
+
+</target>
+
+</project>

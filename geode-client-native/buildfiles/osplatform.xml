@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="osplatform">
+  <!-- determine machine and os, and if this is a 32 bit only or 64 bit only platform -->
+  <condition property="gf.os" value="sol">
+    <os name="SunOs"/>
+  </condition>
+  <condition property="gf.os" value="linux">
+    <os name="Linux"/>
+  </condition>
+  <conditional unless="only64">
+    <condition property="only32" value="true">
+      <os name="Linux"/>
+    </condition>
+  </conditional>
+  <condition property="gf.os" value="mac">
+    <os family="mac"/>
+  </condition>
+  <condition property="only32" value="true">
+    <os family="mac"/>
+  </condition>
+  <condition property="gf.os" value="win">
+    <os family="windows"/>
+  </condition>
+  <conditional unless="only64">
+    <condition property="only32" value="true">
+      <os family="windows"/>
+    </condition>
+  </conditional>
+  <condition property="gf.os" value="aix">
+    <os name="AIX"/>
+  </condition>
+  <conditional unless="only64">
+    <condition property="only32" value="true">
+      <os name="AIX"/>
+    </condition>
+  </conditional>
+
+  <condition property="isSolaris">
+    <os name="SunOs"/>
+  </condition>
+  <condition property="isMac">
+    <os family="mac"/>
+  </condition>
+  <condition property="isAIX">
+    <os name="AIX"/>
+  </condition>
+  <condition property="isLinux">
+    <os name="Linux"/>
+  </condition>
+  <condition property="isWindows">
+    <os family="windows"/>
+  </condition>
+
+  <conditional if="only32">
+    <property name="singleModel" value="true"/>
+    <property name="do32bit" value="true"/>
+  </conditional>
+
+  <conditional if="only64">
+    <property name="singleModel" value="true"/>
+    <property name="do64bit" value="true"/>
+  </conditional>
+
+  <conditional unless="singleModel">
+    <property name="do32bit" value="true"/>
+    <property name="do64bit" value="true"/>
+  </conditional>
+</project>

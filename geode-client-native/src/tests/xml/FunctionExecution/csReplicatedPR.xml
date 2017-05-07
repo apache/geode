@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.8//EN"
+  "http://www.gemstone.com/dtd/cache5_8.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true"/>
+  <region name="partitionedRegion">
+    <region-attributes  mirror-type="keys-values" data-policy="partition">
+    </region-attributes>
+  </region>
+  <region name="replicatedRegion">
+    <region-attributes  mirror-type="keys-values" data-policy="replicate">
+    </region-attributes>
+  </region>
+  <function-service>
+    <function>
+      <class-name>javaobject.ExceptionHandlingFunction</class-name>
+    </function>
+    <function>
+      <class-name>javaobject.FireNForget</class-name>
+    </function>
+  </function-service>
+</cache>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="keySize">
+    <range low="4" high="12"/>
+  </data>
+  <data name="distinctKeys">
+		10000
+	</data>
+  <data name="valueSizes">
+    <range low="0" high="85607"/>
+  </data>
+  <!-- Number of add ops is equal to number of destroy ops -->
+  <data name="entryOps">
+    <oneof>
+      <item>add</item>
+      <item>add</item>
+      <item>update</item>
+      <item>update</item>
+      <item>update</item>
+      <item>read</item>
+      <item>read</item>
+      <item>read</item>
+      <item>invalidate</item>
+      <item>localInvalidate</item>
+      <item>destroy</item>
+      <item>localDestroy</item>
+    </oneof>
+  </data>
+  <data name="opCount">
+    <range low="1" high="10"/>
+  </data>
+  <data name="minTaskGranularitySec">120</data>
+  <data name="maxRegions">100</data>
+  <data name="installListener">true</data>
+  <data name="installWriter">false</data>
+  <data name="installLoader">false</data>
+  <data-set name="NackMirrorNil">
+    <data name="regionName">NackMirrorNil</data>
+    <data name="scope">nack</data>
+    <data name="mirroring">true</data>
+    <data name="interestListEnabled">false</data>
+  </data-set>
+  <data-set name="NackNmirrorNil">
+    <data name="regionName">NackNmirrorNil</data>
+    <data name="scope">nack</data>
+    <data name="mirroring">false</data>
+    <data name="interestListEnabled">false</data>
+  </data-set>
+  <data-set name="NackMirrorIl">
+    <data name="regionName">NackMirrorIl</data>
+    <data name="scope">nack</data>
+    <data name="mirroring">true</data>
+    <data name="interestListEnabled">true</data>
+  </data-set>
+  <data-set name="NackNmirrorIl">
+    <data name="regionName">NackNmirrorIl</data>
+    <data name="scope">nack</data>
+    <data name="mirroring">false</data>
+    <data name="interestListEnabled">true</data>
+  </data-set>
+  <data-set name="NackNmirrorNcacheNil">
+    <data name="regionName">NackNmirrorNcacheNil</data>
+    <data name="scope">nack</data>
+    <data name="mirroring">false</data>
+    <data name="interestListEnabled">false</data>
+    <data name="cachingEnabled">false</data>
+  </data-set>
+  <data-set name="AckNmirrorNcacheNil">
+    <data name="regionName">AckNmirrorNcacheNil</data>
+    <data name="scope">ack</data>
+    <data name="mirroring">false</data>
+    <data name="interestListEnabled">false</data>
+    <data name="cachingEnabled">false</data>
+  </data-set>
+  <test name="All" description="Entry Event test" waitTime="5400">
+    <task name="NackMirrorNil doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" threadCount="4">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+		<task name="doSleep" action="doSleep" container="utils" waitTime="60">
+			<data name="sleepTime">15</data>
+		</task>
+    <task name="NackNmirrorNil doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" threadCount="4">
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="NackMirrorIl doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" threadCount="4">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+		<task name="doSleep" action="doSleep" container="utils" waitTime="60">
+			<data name="sleepTime">15</data>
+		</task>
+    <task name="NackNmirrorIl doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" threadCount="4">
+      <data name="regionSpec">NackNmirrorIl</data>
+    </task>
+    <task name="NackNmirrorNcacheNil doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" threadCount="4">
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+    </task>
+    <task name="NackMixedNil doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" threadCount="4">
+      <data name="regionName">NackMixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackNmirrorNil</item>
+          <item>NackMirrorNil</item>
+          <item>NackNmirrorNcacheNil</item>
+        </oneof>
+      </data>
+    </task>
+    <task name="NackMixedIl doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" threadCount="4">
+      <data name="regionName">NackMixedIl</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackNmirrorIl</item>
+          <item>NackMirrorIl</item>
+        </oneof>
+      </data>
+    </task>
+  </test>
+</test-driver>

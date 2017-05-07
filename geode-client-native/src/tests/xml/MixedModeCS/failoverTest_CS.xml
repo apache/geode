@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">15m</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>30</item>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set count="6" name="ThinClient"/>
+
+  <test name="YAPerfTest" description="Thin Client perf test">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">CPP</data>
+      <client-set count="1" name="ThinClient"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set count="6" name="ThinClient"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set count="6" name="ThinClient"/>
+    </task>
+    <task name="WaitForPopulate" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DonePopulate 1200</data>
+      <client-set count="1" name="ThinClient"/>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="30m" parallel="true">
+      <client-set count="3" name="ThinClient"/>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="30m" parallel="true">
+      <client-set begin="4" count="3" name="ThinClient"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="DoneCSharp" action="doRunProcess" container="utils" waitTime="2m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DoneCSharp true</data>
+      <client-set count="1" name="ThinClient"/>
+    </task>
+  </test>
+
+</test-driver>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+  <data name="minServers">1</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+  <data name="sleepTime">
+    <oneof>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+    </oneof>
+  </data>
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes caching-enabled="true" client-notification="true">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="ThinClient"/>
+  <client-set name="Feeder"/>
+
+  <test name="serverFailoverAndCQOps" description="failover test with single region">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH RemoteQuery/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="CreateRegion" action="doCreateUserDefineRegion" container="querytests" waitTime="5m">
+      <data name="regionName">Portfolios</data>
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register CQ" action="doRegisterCqForConc" container="querytests" waitTime="5m">
+      <client-set name="ThinClient"/>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+           <item>select * from /Portfolios where ID =  2</item>
+         </list>
+      </data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateUserObject" container="querytests" waitTime="10m">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">Portfolio</data>
+    </task>
+    <task name="doCqOperations" action="doCQOperation" container="querytests" waitTime="15m" parallel="true">
+      <data name="cqOps">
+        <oneof>
+          <item>executeCQWithIR</item>
+          <item>executeCQ</item>
+          <item>closeCQ</item>
+          <item>stopCq</item>
+        </oneof>
+      </data>
+      <data name="workTime">7m</data>
+      <data name="opsSecond">5</data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="do random entry ops on portfolio" action="doEntryOperations" container="cacheserver" waitTime="15m" parallel="true">
+      <data name="entryOps">
+        <oneof>
+          <item>add</item>
+          <item>update</item>
+          <item>update</item>
+          <item>putAll</item>
+          <item>destroy</item>
+          <item>destroy</item>
+        </oneof>
+      </data>
+      <data name="workTime">10m</data>
+      <data name="opsSecond">5</data>
+      <data name="entryCount">1000</data>
+      <data name="valueSizes">100</data>
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="verify CQ listener is called" action="doVerifyCQListenerInvoked" container="querytests" waitTime="5m">
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="close cache for CPP clients" action="doCloseCache" container="querytests" waitTime="5m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+  </test>
+
+</test-driver>

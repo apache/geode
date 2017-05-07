@@ -1,0 +1,3255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  This is the Ant build file for building GemFire Native Client.
+
+    For Ant information:      http://jakarta.apache.org/ant
+
+    For JUnit information:    http://www.junit.org
+
+    For Doxygen information:  http://www.stack.nl/~dimitri/doxygen
+
+    $Id: build.xml 9885 2005-03-07 22:06:12Z matthews $
+-->
+<project default="usage" name="gemfire">
+  <description>Builds GemFire C++</description>
+
+  <condition property="gcm.dir" value="${GCMDIR}">
+    <os family="windows"/>
+  </condition>
+  <property name="gcm.dir" value="/export/gcm"/>
+  
+  <property name="cmake-build-type" value="Debug"/>
+  <condition property="isDebug">
+    <equals arg1="${cmake-build-type}" arg2="Debug" />
+  </condition>
+
+  <taskdef resource="com/gemstone/tools/ant/taskdefs/buildtasks.properties"
+           classpath="${basedir}/buildfiles/taskdefsV10.jar"/>
+
+  <!-- include external xml files here -->
+  <import file="buildfiles/dependencies.xml"/>
+  <import file="buildfiles/utilities.xml"/>
+  
+  <if>
+    <istrue value="${sonar.scan}"/>
+    <then>
+      <import file="buildfiles/sonar.xml"/>
+    </then>
+    <else>
+    </else>
+  </if>
+ 
+  <if>
+    <isset property="buildUser"/>
+    <then>
+      <property name="userName" value="${buildUser}"/>
+    </then>
+    <else>
+      <property name="userName" value="${user.name}"/>
+    </else>
+  </if>
+
+  <target name="usage">
+    <description>Prints information about what targets exist</description>
+
+    <echo>
+Commonly used targets:
+  update-git           Updates this gemfire git checkout and property files
+  src                  Builds all GemFire product jars and libraries
+  tests                Builds all GemFire product jars, libraries, and
+                       test code
+  build-all            Builds product into product tree and tests, does
+                       not run tests
+  cpp-pre-checkin      Runs: clean, build-product, compile-cpp-tests, run-cpp-tests
+                       Use this before checking in.
+  precheckin           Runs: clean, build-product, compile-cpp-tests, run-cpp-tests, run-csharp-tests
+                       Use this before checking in.
+  console              Builds the gfc.exe .NET console
+
+Available targets:
+  build-product        Packs a product tree into build-artifacts
+
+  shared-library       Compiles the C++ code and builds the shared libraries
+  rebuild-shared-library Builds &quot;shared-library&quot; and then &quot;quick-build-product&quot;
+                   the gemfire.jar is written directly to the product tree
+
+  framework            Compiles the test framework, and the test libraries
+  compile-cpp-tests    Compiles the GemFire C++ Cache test code
+  compile-all-tests    Compiles all GemFire unit test code
+  
+  compile-cpp-docexample     Compiles the NativeClient document's test examples
+  run-doc-examples           Runs the NativeClient document's test examples
+
+  run-cpp-perf-tests          Runs C++ perf tests on Linux and Windows
+  run-csharp-perf-tests   Runs C# perf tests
+
+  run-all-tests        Runs all unit tests (java, c, smoke, dunit, distcoll)
+
+  cppref-doxygen       Builds the C++ Cache reference docs with doxygen 
+  cliref-doxygen       Builds the C++ Cache .NET reference docs with doxygen 
+  cliref-sandcastle    Builds the C++ Cache .NET reference docs using sandcastle
+  glimpse              Builds a glimpse database for GemFire source code
+
+  clean                Cleans all byproducts of building
+  clean-framework      Cleans the byproducts of framework
+  clean-gfcppcache-library clean just the objs files in the gfcppcache so or dll.
+  clean-cpp-tests      clean the c++ cache unit tests
+
+  quick-build-product  Same as &quot;build-product&quot; but does not check dependencies
+  build-installer      Creates installshield installer for product tree
+
+Command Line Defines:
+  -Dproduct.dir=yourProductDir  Causes &quot;unit-tests&quot; to compile and run using
+                                yourProductDir.
+  -DtestIterations=n   Where n is the number of complete passes to make over
+                       the unit tests. The default is 1. Test failures are
+           archived to a pass-c directory where c is the current
+           pass number.
+  -DhaltOnFailure=false  Causes ant to log unit test failures but to keep
+                         executing ant targets.
+  -DlogLevel=level     The log level the unit test system should default to.
+                       One of: all, finest, finer, fine (default), debug,
+                               config, info, warning, severe, none
+  -DgfeLogLevel=level  The log level the unit test system should default to for GFE server.
+                       One of: all, finest, finer, fine, debug,
+                               config (default), info, warning, severe, none
+  -DgfeSecLogLevel=level  The security-log-level the unit test system should default to for GFE server.
+                          One of: all, finest, finer, fine, debug,
+                                  config (default), info, warning, severe, none
+
+  -Dlogging=false      Show the log on the console for the C# unit tests.
+  -Dcsharp.debug=true  Run with the debug build of GemStone.GemFire.Cache.dll and C# unit tests.
+                       Also set the log level the C# unit test system to 'debug'.
+  -Dcpp.quickstart=ExampleName      Runs only the C++ quickstart example specified in Example Name.
+  -Dcsharp.quickstart=ExampleName   Runs only the C# quickstart example specified in Example Name.
+  -Dmulticast=false    Skip the C# multicast unit tests.
+  -Dunicast=false      Skip the C# unicast unit tests.
+  -Ddeprecated=false   Skip the deprecated C# unit tests.
+  -Dgenerics=false     Skip the generics C# unit tests.
+  -Dcsharp.testcase=CLASSNAME  Only run the C# unit tests in the given CLASSNAME in GemStone.GemFire.Cache.UnitTests namespace.
+  -Dcsharp.coverage=true Run the coverage tool for C# unit tests (currently NCover)
+  -Dcleanup=true       Cleanup the C# unit tests output directories and kill any stray processes.
+  -Dskipsandcastle=false Whether to skip the time-consuming .NET API generation using the SandCastle tool.
+  -DkeepGeneratedFiles=false Do not delete generted files after the build, for debugging purpose.
+    </echo>
+  </target>
+
+  <!-- Sets properties used in this build file -->
+  <target name="props" unless="target.props.done" depends="-props,-props-dependencies">
+    <property name="target.props.done" value="true" />
+  </target>
+  
+  <target name="-props" unless="target.-props.done">
+    <property name="target.-props.done" value="true" />
+    
+    <property environment="myenv"/>  <!-- Get environment variables -->
+      <!-- 
+       read.vs.propertyfile should only be set as a -D arg to ant
+       from within a Microsoft Build environment.
+       This is a mechanism to pass info to ant within that environment.
+       It should set properties used by targets called within the antTasks
+       vcproj files: as of 9/12/2006 ace_props, pack-core, and pack-tests 
+      -->
+
+    <condition property="vs.2010">
+      <contains string="${VCVER}" substring="10"/>
+    </condition>
+     
+     <conditional if="vs.2010">
+        <property name="vs.project.dir" location="${basedir}/vs_projects_10"/>
+        <property name="vs.solution.dir" value="VS_Solutions_10"/>
+        <property name="vcp.file.ext" value="vcxproj"/>
+        <property name="quickstart.ext" value="_10"/>
+        <property name="quickstart.exclude.ext" value=""/>
+       <exec executable="cygpath" outputproperty="vcvars.path">
+         <arg value="--dos"/>
+         <arg value="C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\amd64\vcvars64.bat"/>
+       </exec>
+    </conditional>
+    <conditional unless="vs.2010">
+        <property name="vs.project.dir" location="${basedir}/vs_projects"/>
+        <property name="vs.solution.dir" value="VS_Solutions"/>
+        <property name="vcp.file.ext" value="vcproj"/>
+        <property name="quickstart.ext" value=""/>
+        <property name="quickstart.exclude.ext" value="_10"/>
+     </conditional>
+       
+     <property name="vs.file" location="${vs.project.dir}/gemfirecpp.sln"/>
+     <property name="vs.quickstart.file" location="${basedir}/quickstart/quickstart_cpp${quickstart.ext}.sln"/>
+     
+     <property name="vs.propertyfile" value="${basedir}/vs_ant.properties"/>
+     
+     <!--<property name="read.vs.propertyfile" value="false" />-->
+
+     <conditional if="read.vs.propertyfile">
+       <echo message="Reading the vs.propertyfile ${vs.propertyfile}" level="info"/>
+       <property file="${vs.propertyfile}" />
+     </conditional>
+  
+    <echo message="OS Name is:         ${os.name}" />
+    <echo message="OS Architecture is: ${os.arch}" />
+
+    <!-- determine machine and os -->
+    <condition property="gf.os" value="sol">
+      <and>
+      <os name="SunOs"/>
+      <os arch="sparcv9"/>
+      </and>
+    </condition>
+
+    <condition property="gf.os" value="solx86">
+      <and>
+      <os name="SunOs"/>
+      <os arch="amd64"/>
+      </and>
+    </condition>
+
+    <condition property="isSolarisx86">
+      <and>
+      <os name="SunOs"/>
+      <os arch="amd64"/>
+      </and>
+    </condition>
+    
+    <condition property="gf.os" value="linux">
+      <os name="Linux"/>
+    </condition>
+
+    <condition property="gf.os" value="win">
+      <os family="windows"/>
+    </condition>
+
+    <condition property="isLinux">
+      <os name="Linux"/>
+    </condition>
+    <condition property="isWindows">
+      <os family="windows"/>
+    </condition>
+    <condition property="isSolaris">
+      <os name="SunOs"/>
+    </condition>
+
+    <exec executable="bash" outputproperty="host.name" failonerror="true" failifexecutionfails="true">
+      <arg line="-c hostname"/>
+    </exec>
+
+    <echo message="Running on host ${host.name}" level="info"/>
+    <conditional if="isWindows">
+        <echo level="info" message="VCVER = ${VCVER}"/>
+    </conditional>
+    
+    <property file="${basedir}/build${host.name}.properties"/>
+    <available file="${basedir}/build${host.name}.properties" property="build.host.exists"/>
+    <conditional if="build.host.exists">
+      <echo message="Loading properties from ${basedir}/build${host.name}.properties:" level="info"/>
+      <concat>
+        <filelist dir="${basedir}" files="build${host.name}.properties"/>
+      </concat>
+    </conditional>
+
+    <property file="${basedir}/build${gf.os}.properties"/>
+    <available file="${basedir}/build${gf.os}.properties" property="build.os.exists"/>
+    <conditional if="build.os.exists">
+      <echo message="Loading properties from ${basedir}/build${gf.os}.properties:" level="info"/>
+      <concat>
+        <filelist dir="${basedir}" files="build${gf.os}.properties"/>
+      </concat>
+    </conditional>
+
+    <property file="${basedir}/build.properties"/>
+    <available file="${basedir}/build.properties" property="build.props.exists"/>
+    <conditional if="build.props.exists">
+      <echo message="Loading properties from ${basedir}/build.properties:" level="info"/>
+      <concat>
+        <filelist dir="${basedir}" files="build.properties"/>
+      </concat>
+    </conditional>
+
+    <property name="cPointerModel" value="32bit"/>
+    <property name="cppcacheTarget" value="all"/>
+    <property name="makeTarget" value="all"/>
+    
+    <condition property="useCpp11">
+    	<isset property="myenv.USE_CPP11" />
+    </condition>
+
+    <!-- For legacy reasons thirdparty.libs.dir == thirdparty.dir 
+         when cPointerModel == 32bits -->
+    <condition property="do64bit">
+      <contains string="${cPointerModel}" substring="64bit"/>
+    </condition>
+    <conditional if="do64bit">
+      <property name="thirdparty.libs.dir" value="${thirdparty.dir}64"/>
+    </conditional>
+    <property name="thirdparty.libs.dir" value="${thirdparty.dir}"/>
+
+    <!-- property name="perftools.dir" location="default location "/ -->
+    <condition property="perftools.dir" value="${gcm.dir}/where/cplusplus/perftools">
+      <os name="Linux"/>
+    </condition>
+
+    <!-- productname cannot have trailing whitespace -->
+    <property name="gemfire.productname" value="Pivotal GemFire Native Client"/> 
+    <property name="gemfire.version" value="9.0.0.0"/>
+    <property name="gemfire.bits" value="${cPointerModel}"/>
+    
+    <!-- license.version controls the version the license code must have -->
+    <property name="license.version" value="1.2"/>
+    <property name="build.dir" value="${basedir}/build-artifacts"/>
+
+    <property name="osbuild.dir" value="${build.dir}/${gf.os}"/>
+
+    <conditional if="isWindows" >
+        <conditional unless="vs.2010">
+            <property name="osbuild.ext.dir" value="${osbuild.dir}/VS2005" />
+            <if><available file="${osbuild.dir}/product/bin/" type="dir" />
+                <then><mkdir dir="${osbuild.dir}/product/bin/Net20"/></then>
+            </if>
+        </conditional>
+    </conditional>
+
+    <property name="osbuild.ext.dir" value="${osbuild.dir}"/>
+
+    <echo message="osbuild.dir is ${osbuild.ext.dir}" level="info"/>
+
+    <condition property="bad.osbuild.dir">
+      <contains string="${osbuild.ext.dir}" substring="shared_build"/>
+    </condition>
+    <fail message="Illegal osbuild.dir, should not be on shared_build." if="bad.osbuild.dir"/>
+
+    <mkdir dir="${osbuild.ext.dir}"/>
+    <property name="scripts.dir" value="${basedir}/release/scripts"/>
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="src.out.dir" value="${osbuild.ext.dir}/src"/>
+    <property name="cppcache.dir" value="${basedir}/src/cppcache"/>
+    <property name="clicache.dir" value="${basedir}/src/clicache"/>
+    <property name="classes.dir" value="${osbuild.ext.dir}/classes"/>
+
+    <property name="tests.src.dir" value="${basedir}/src/tests"/>
+    <property name="tests.dir" value="${basedir}/tests"/>
+    <property name="tests.bin.dir" value="${tests.src.dir}/bin"/>
+    <property name="tests.lib.dir" value="${tests.dir}/lib"/>
+    <property name="tests.out.dir" value="${osbuild.ext.dir}/tests"/>
+    <property name="tests.objects.dir" value="${tests.out.dir}/objects"/>
+    <property name="tests.objects_g.dir" value="${tests.out.dir}/objects_g"/>
+    <mkdir dir="${tests.out.dir}"/>
+    <mkdir dir="${tests.objects.dir}"/>
+    <mkdir dir="${tests.objects_g.dir}"/>
+
+    <!-- CPP tests source and compilation output directories -->
+   
+    <property name="savedresults.dir" value="${basedir}"/>
+    <property name="quickstart.dir" value="${osbuild.ext.dir}/quickstart"/>
+
+    <property name="tests.cppcache.src.dir" value="${tests.src.dir}/cppcache"/>
+    <property name="tests.cppcache.out.dir" value="${tests.out.dir}/cppcache"/>
+    <property name="tests.autopdx.src.dir" value="${tests.src.dir}/pdxautoserializerclass"/>
+    <property name="tests.autopdx.out.dir" value="${tests.out.dir}/pdxautoserializerclass"/>
+
+    <property name="tests.quickstart.src.dir" value="${basedir}/quickstart"/>
+    <property name="tests.quickstart.out.dir" value="${tests.out.dir}/results/quickstart"/>
+    <property name="tests.perftest.out.dir" value="${tests.out.dir}/results/perfResults"/>
+
+    <property name="tests.results.dir" value="${osbuild.ext.dir}/tests/results"/>
+
+    <property name="hidden.dir" value="${osbuild.ext.dir}/hidden"/>
+    <property name="hiddenlib.dir" value="${hidden.dir}/lib"/>
+    
+          <echo message="hidden.dir: ${osbuild.ext.dir}/hidden " level="error"/>
+          <echo message="hiddenlib.dir: ${hidden.dir}/lib " level="error"/>
+
+    <property name="tests.docExample.src.dir" value="${tests.src.dir}/docExamples"/>
+    <property name="tests.docExample.out.dir" value="${tests.out.dir}/docExamples"/>
+
+    <!--
+      This is the directory to put thirdparty libraries that we integrate 
+      with, but cannot ship. This directory can be added to the PATH 
+      or LD_LIBRARY_PATH for testing
+    -->
+    <property name="hidden.gpl.dir" value="${hidden.dir}/gpl"/>
+    <mkdir dir="${hidden.dir}"/>
+    <mkdir dir="${hiddenlib.dir}"/>
+    <mkdir dir="${hiddenlib.dir}/debug"/>
+    <mkdir dir="${hidden.gpl.dir}/"/>
+    
+    <property name="framework.dir" value="${osbuild.ext.dir}/framework"/>
+    <mkdir dir="${framework.dir}"/>
+    <mkdir dir="${framework.dir}/bin"/>
+    <mkdir dir="${framework.dir}/bin/debug"/>
+    <mkdir dir="${framework.dir}/scripts"/>
+    <mkdir dir="${framework.dir}/xml"/>
+    <mkdir dir="${framework.dir}/lib"/>
+    <mkdir dir="${framework.dir}/lib/debug"/>
+
+    <property name="c.docs.dir" value="${basedir}/docs"/>
+    <property name="glimpse.dir" value="glimpsefiles"/>
+
+    <property name="product.dir" value="${osbuild.ext.dir}/product"/>
+
+    <property name="productlib.dir" value="${product.dir}/lib"/>
+    <condition property="product.library.dir" value="${product.dir}/lib">
+      <os family="unix"/>
+    </condition>
+    <condition property="product.library.dir" value="${product.dir}/bin">
+      <os family="windows"/>
+    </condition>
+
+    <property name="installer.dir" value="${osbuild.ext.dir}/installer"/>
+
+    <property name="docs.dir" value="${osbuild.ext.dir}/javadocs"/>
+    <property name="last.update.file" value="${build.dir}/lastUpdate.txt"/>
+
+    <conditional if="vs.2010" unless="clean-all">
+        <property file="${basedir}/build-artifacts/build.number"/>
+        <available file="${basedir}/build-artifacts/build.number" property="build.num.exists"/>
+        <conditional if="build.num.exists">
+          <echo message="Loading properties from ${basedir}/build-artifacts/build.number:" level="info"/>
+          <concat>
+            <filelist dir="${basedir}/build-artifacts" files="build.number"/>
+          </concat>
+        </conditional>
+    </conditional>
+    
+    <property name="date.pattern" value="MM/dd/yyyy HH:mm:ss z"/>
+    <tstamp>
+       <format pattern="yyyy-MM-dd-hh-mm-ss-SSS" property="sys.build.time"/>
+       <format pattern="${date.pattern}" property="build.time"/>
+    </tstamp>
+    <property name="haltOnFailure" value="true"/>
+
+    <!-- GemFire system configuration properties -->
+    <property name="logLevel" value="config"/>
+    <condition property="parallelTests" value="1">
+      <isset property="cpp.testcase"/>
+    </condition>
+    <property name="parallelTests" value="1"/>
+    <property name="gfeLogLevel" value="config"/>
+    <property name="gfeSecLogLevel" value="config"/>
+    <property name="defaultPort" value="10333"/>
+    <!-- Set gemfire.debug to true to use the debug "_g" native code library -->
+    <property name="gemfire.debug" value="false"/>
+
+    <condition property="cpp.devel" value="1">
+      <equals arg1="${cpp-devel}" arg2="true"/>
+    </condition>
+    <property name="cpp.devel" value="0"/>
+    
+    <property name="skipsandcastle" value="false"/>
+    <property name="keepGeneratedFiles" value="false"/>
+ 
+    <condition property="runsandcastle">
+      <equals arg1="${skipsandcastle}" arg2="false" casesensitive="false"/>
+    </condition>
+    
+    <property name="testIterations" value="1"/>
+
+    <property file="${basedir}/buildfiles/thirdparty_${gf.os}.properties"/>
+    <property file="${basedir}/buildfiles/thirdparty.properties"/>
+    <!-- more 32/64 bit conditional properties -->
+
+    <conditional if="isLinux">
+      <condition property="valgrind.dir" 
+                 value="${perftools.dir}/valgrind/x86_64">
+        <isset property="do64bit"/>
+      </condition>
+      <property name="valgrind.dir" value="${perftools.dir}/valgrind/i386"/>
+    </conditional>
+    <property name="vtool.args" value=" "/>
+
+    <!-- If a "last update" file doesn't exist, then create one -->
+    <available file="${last.update.file}" property="last.update.exists"/>
+
+    <conditional unless="last.update.exists">
+      <echo message="Updating lastUpdate.txt as it doesn't exist..."/>
+        <antcall target="make-last-update"/>  
+      <property name="skipLastUpdate"  value="true"/>
+    </conditional> 
+
+    <conditional if="clean-all">
+        <antcall target="make-last-update"/> 
+      <property name="skipLastUpdate"  value="true"/>
+    </conditional> 
+  </target>
+
+  <target name="update-git" depends="props">
+    <description>Updates the sources to latest revision.</description>
+
+    <property name="git.logfile" value="update-git.log"/>
+    <property name="git.hist.logfile" value=".git-history.log"/>
+    <property name="git.branch" value=".git/.git-branch.log"/>
+    <delete file="${git.logfile}" quiet="true"/>
+
+    <!-- Need finally block for git pull because it may actually
+         perform a lot of updates before failing, and we want to capture
+         those in .git-history.log -->
+    <trycatch>
+      <try>
+        <exec executable="git" resultproperty="gitpullExitStatus" output="${git.logfile}">
+          <arg value="pull"/>
+        </exec>
+      </try>
+      <finally>
+        <exec executable="git" append="true" output="${git.logfile}">
+          <arg value="status"/>
+        </exec>
+      </finally>
+    </trycatch>
+
+    <condition property="gitpullFailed">
+      <equals arg1="${gitpullExitStatus}" arg2="1"/>
+    </condition>
+    <if>
+      <isset property="gitpullFailed"/>
+      <then>
+        <exec executable="cat" >
+          <arg value="${git.logfile}"/>
+        </exec>
+        <fail if="gitpullFailed" message="git pull failed. See ${git.logfile} for details."/>
+      </then>
+    </if>
+
+    <antcall inheritAll="true" target="make-last-update"/>
+
+    <concat append="true" fixlastline="true" destfile="${git.hist.logfile}" >
+==============================
+</concat>  <!-- Leave the two lines above as is so they concat properly -->
+
+    <concat append="true" fixlastline="true" destfile="${git.hist.logfile}">
+      <filelist dir="${basedir}" files="build-artifacts/build.number"/>
+      <filelist dir="${basedir}" files="${git.logfile}"/>
+    </concat>
+  </target>
+
+  <target name="rcs-init">
+    <available file=".git" type="dir" property="git.present"/>
+    <available file=".svn" type="dir" property="svn.present"/>
+  </target>
+
+  <target name="make-last-update" depends="rcs-init" unless="skipLastUpdate">
+    <description>Creates a file that contains the time at which the
+         GemFire checkout was last updated</description>
+
+    <property name="build.dir" value="${basedir}/build-artifacts"/>
+    <mkdir dir="${build.dir}"/>
+
+    <!-- Make Last Update File with SVN workspace -->
+    <if>
+      <isset property="svn.present"/>
+      <then>
+        <delete file="${last.update.file}" quiet="true"/>
+        <echo level="info" message="Querying SVN Workspace Information" />
+        <svnSetting client="cli" dateformatter="MM/dd/yyyy HH:mm:ss z" id="svn.settings"/>
+          <!-- Get svn info of the SVN workspace -->
+          <svn refid="svn.settings">
+            <info target="."/>
+          </svn>
+          <propertyregex property="source.branch"
+            input="${svn.info.url}"
+            regexp="^https\:\/\/svn\.gemstone\.com\/repos\/"
+            replace=""
+            casesensitive="false" />
+        </then>
+        <elseif>
+          <isset property="git.present"/>
+          <then>
+            <property name="git.status" value="${basedir}/.git/.git-status.log"/>
+            <echo level="info" message="Querying GIT Workspace Information..." />
+
+            <exec executable="git" failonerror="false" output="${git.status}">
+              <arg value="log"/>
+              <arg value="--grep=git-svn-id"/>
+              <arg value="-1"/>
+            </exec>
+
+            <exec executable="git" failonerror="false" outputproperty="GIT.source.branch">
+              <arg value="rev-parse"/>
+              <arg value="--abbrev-ref"/>
+              <arg value="HEAD"/>
+            </exec>
+
+            <exec executable="git" failonerror="false" outputproperty="GIT.source.revision">
+              <arg value="rev-parse"/>
+              <arg value="HEAD"/>
+            </exec>
+
+            <exec executable="git" failonerror="false" outputproperty="GIT.source.date">
+              <arg value="show"/>
+              <arg value="-s"/>
+              <arg value="--format=%cD"/>
+              <arg value="${GIT.source.revision}"/>
+            </exec>
+
+            <exec executable="git" failonerror="false" outputproperty="TEMPGIT.build.number">
+              <arg value="rev-list"/>
+              <arg value="origin/${GIT.source.branch}"/>
+              <arg value="--count"/>
+            </exec>
+
+          </then>
+        </elseif>
+        <else>
+          <echo level="info" message="No revision control information found"/>
+        </else>
+    </if>
+
+    <!-- If git version is old then count switch won't work so use date string instead -->
+    <if>
+      <contains string="${TEMPGIT.build.number}" substring="usage" />
+      <then>
+        <tstamp>
+          <format property="GIT.build.number" pattern="MMddyy"/>
+        </tstamp>
+        <echo message="Falling back to date string for build.number due to older git version." level="info"/>
+      </then>
+      <else>
+        <property name="GIT.build.number" value="${TEMPGIT.build.number}"/>
+      </else>
+    </if>
+
+    <!-- Load lastUpdate.txt properties with prefix to avoid setting -->
+    <property file="${last.update.file}" prefix="PROP" prefixValues="true"/> 
+
+    <if>
+      <equals arg1="${GIT.source.revision}" arg2="${PROP.source.revision}" />
+      <then>
+        <echo message="Source revision hasn't changed. Skipping property file update..." />
+      </then>
+    <else>
+      <!-- Create lastUpdate.txt and build.number property files -->
+      <echo message="Updating build-artifacts property files..." level="info"/>
+
+      <property name="git.status" value="${basedir}/.git/.git-status.log"/>
+      <delete file="${git.status}" quiet="true"/>
+      <delete file="${last.update.file}" quiet="true"/>
+
+      <propertyfile comment="Information about a checkout" file="${last.update.file}">
+        <entry key="source.branch" value="${GIT.source.branch}"/>
+        <entry key="source.date" value="${GIT.source.date}"/>
+        <entry key="source.revision" value="${GIT.source.revision}"/>
+      </propertyfile>
+
+      <delete file="${build.dir}/build.number" quiet="true"/>
+      <propertyfile comment="Build Number File" file="${build.dir}/build.number">
+        <entry key="build.number" value="${GIT.build.number}"/>
+      </propertyfile>
+    </else>
+   </if>
+
+   <!-- Load lastUpdate.txt to set properties and print banner -->
+   <property file="${last.update.file}"/> 
+   <property file="${build.dir}/build.number"/>
+   <echo message="" level="info"/>
+   <echo message="=========================================" level="info"/>
+   <echo message="Version: ${gemfire.version} ${user.name} ${build.number}" level="info"/>
+   <echo message="Source-branch: ${source.branch}" level="info"/>
+   <echo message="Source-Date: ${source.date}" level="info"/>
+   <echo message="Source-Revision: ${source.revision}" level="info"/>
+   <echo message="=========================================" level="info"/>
+
+  </target>
+
+  <target name="code-verify">
+    <exec dir="." executable="perl"
+          failonerror="true" failifexecutionfails="true">
+          <arg value="${basedir}/buildfiles/source_verify.pl"/>
+          <arg value="--directory"/>
+          <arg value="${basedir}/src/com/gemstone/gemfire/internal/cppcache"/>
+    </exec>
+    <exec dir="." executable="perl"
+          failonerror="true" failifexecutionfails="true">
+          <arg value="${basedir}/buildfiles/source_verify.pl"/>
+          <arg value="--directory"/>
+          <arg value="${basedir}/src/com/gemstone/gemfire/internal/cppcache/impl"/>
+    </exec>
+    <exec dir="." executable="perl"
+          failonerror="true" failifexecutionfails="true">
+          <arg value="${basedir}/buildfiles/source_verify.pl"/>
+          <arg value="--directory"/>
+          <arg value="${basedir}/src/com/gemstone/gemfire/internal/cppcache/statistics"/>
+    </exec>    
+  </target>
+
+  <target depends="props, src" name="fortifyDotNetScan" if="isWindows">
+    <description>Runs Fortify scan for .NET code on Windows</description>
+
+    <!-- Set properties -->
+    <property name="fortify.project" value="GemFireNC"/>
+    <property name="fortify.project.version" value="ThinClient"/>
+    <property name="fortify.build" value="${fortify.project}_${fortify.project.version}"/>
+    
+    <!-- Clean last results -->
+    <delete file="${fortify.build}.fpr" quiet="true"/>
+    <exec executable="sourceanalyzer" dir="${basedir}">
+      <arg line="-b '${fortify.build}' -clean"/>
+    </exec>
+
+    <!-- Run Fortify Sourceanalyzer -->
+    <antcall target="vcbuild-solution">
+          <param name="vs.buildtool" value="sourceanalyzer"/>
+          <param name="vs.commandline" value="-64 -Xms3G -Xmx3G -b '${fortify.build}' msbuild.exe vs_projects_10/gfclicache/gfclicache.vcxproj /p:Configuration=Release /p:Platform=&quot;${platforms}&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+    </antcall>
+  
+    <!-- Run Fortify Scan -->
+    <exec executable="sourceanalyzer" dir="${basedir}">
+      <arg line="-64 -Xms3G -Xmx3G -b '${fortify.build}' -scan -f ${fortify.build}.fpr"/>
+    </exec>
+  </target>
+  
+  <!-- ==============  Building GemStone Source Code  ================ -->
+
+  <target depends="build-product" name="product"/>
+   
+  <target depends="build-product, compile-all-tests, compile-cpp-docexample" name="build-all"
+     description="Build all components of the product and test suites."/>
+
+  <target depends="clean, report-versions, build-all, run-cpp-tests, run-csharp-tests" name="cruisecontrol-build-and-test"/>
+
+<!--
+  <target depends="clean, report-versions, build-all, run-cpp-tests" name="cruisecontrol-build-and-test"/>
+-->
+
+  <!-- report-versions used only by cruisecontrol-build-and-test target -->
+  <target depends="props" name="report-versions">
+
+    <!-- Make the manifest -->
+    <property file="${build.dir}/build.number"/>
+    <!-- Provide svn information and artifact path in cruisecontrol mail -->
+
+    <property name="ccartifact.file" value="${build.dir}/ccpath.txt" />
+    <touch file="${ccartifact.file}"/>
+    <echo file="${ccartifact.file}" level="info">ccArtifactPath=${basedir}/${cctimestamp}
+    </echo>
+
+    <conditional if="isWindows">
+      <replace file="${ccartifact.file}" token="\" value="/"/>
+    </conditional>
+
+    <replace file="${ccartifact.file}" token="/checkout/" value="/artifacts/"/>
+
+    <conditional if="isWindows">
+      <replace file="${ccartifact.file}" token="${cctimestamp}" value="${cctimestamp} on ${host.name}"/>
+    </conditional>
+    <property file="${build.dir}/ccpath.txt"/>
+
+    <echo message="Running build ${build.number} "/>
+    <echo message=""/>
+    <echo message="========================================================================================="/>
+    <echo message="Run artifacts can be found at: ${ccArtifactPath} "/>
+    <echo message="========================================================================================="/>
+    <echo message=""/>
+
+    <echo level="info" message="Note: the following svn info isnt accurate if you manually used svn to update specific files."/>
+    <concat>
+      <filelist dir="${build.dir}" files="lastUpdate.txt"/>
+    </concat>
+    <echo message=""/>
+    <delete file="${ccartifact.file}"/>
+  </target>
+
+  <target depends="props" name="rcsinfo">
+    <description>
+      Drop build information into rcsinfo file.
+    </description>
+    <exec executable="cat" failonerror="false" append="false" output="${framework.dir}/rcsinfo">
+      <arg value="${last.update.file}"/>
+   </exec>
+  </target>
+
+  <target depends="props" name="fwk_msi">
+    <description>
+      This target builds an msi installer to populate a windows machine with the dlls required for both release and debug builds, this only needs to be run once per machine per compiler version.
+    </description> 
+    <exec dir="${basedir}" executable="bash" failonerror="true">
+      <arg value="release/scripts/makeFwkMSI.sh"/>
+      <env key="VERSION" value="${gemfire.version}"/>
+      <env key="OSBUILDDIR" value="${osbuild.ext.dir}"/>
+      <env key="WIX" value="${wix.dir}"/>
+    </exec>
+    <copy todir="${framework.dir}/scripts" file="${osbuild.ext.dir}/installer/fwk_provision.msi"/>
+  </target>
+
+  <target depends="props"
+          name="pack-tests">
+    <description>Copies the test code into the correct places in the osbuild.dir
+    </description>
+
+    <copy todir="${framework.dir}/xml">
+      <fileset dir="${tests.src.dir}/xml"/>
+    </copy>
+    <copy file="${tests.src.dir}/scripts/runDriver.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/runDriver"/>
+    <chmod file="${framework.dir}/scripts/runDriver" perm="a+x"/>
+     
+    <copy file="${tests.src.dir}/xml/smoketest/ops.spec" verbose="true" preservelastmodified="true" tofile="${framework.dir}/xml/smoketest/ops.spec"/>
+    <chmod file="${framework.dir}/xml/smoketest/ops.spec" perm="a+x"/>
+    
+    <copy file="${tests.src.dir}/scripts/runDriverFunctions.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/runDriverFunctions"/>
+    <updateBuildScript file="${framework.dir}/scripts/runDriverFunctions"/>
+    <chmod file="${framework.dir}/scripts/runDriverFunctions" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/genericFunctions.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/genericFunctions"/>
+    <chmod file="${framework.dir}/scripts/genericFunctions" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/piper.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/piper"/>
+    <chmod file="${framework.dir}/scripts/piper" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/startClient.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/startClient"/>
+    <chmod file="${framework.dir}/scripts/startClient" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/stopClient.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/stopClient"/>
+    <chmod file="${framework.dir}/scripts/stopClient" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/stopAll.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/stopAll"/>
+    <chmod file="${framework.dir}/scripts/stopAll" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/stopProcess.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/stopProcess"/>
+    <chmod file="${framework.dir}/scripts/stopProcess" perm="a+x"/>
+    
+    <copy file="${tests.src.dir}/scripts/runBatch.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/runBatch"/>
+    <chmod file="${framework.dir}/scripts/runBatch" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/runBuild.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/runBuild"/>
+    <chmod file="${framework.dir}/scripts/runBuild" perm="a+x"/>
+    
+    <copy file="${tests.src.dir}/scripts/setupJavaServers.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/setupJavaServers"/>
+    <chmod file="${framework.dir}/scripts/setupJavaServers" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/startJavaServers.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/startJavaServers"/>
+    <chmod file="${framework.dir}/scripts/startJavaServers" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/stopCS.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/stopCS"/>
+    <chmod file="${framework.dir}/scripts/stopCS" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/stopJavaServers.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/stopJavaServers"/>
+    <chmod file="${framework.dir}/scripts/stopJavaServers" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/killJavaServer.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/killJavaServer"/>
+    <chmod file="${framework.dir}/scripts/killJavaServer" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/killJavaServers.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/killJavaServers"/>
+    <chmod file="${framework.dir}/scripts/killJavaServers" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/setupJavaClients.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/setupJavaClients"/>
+    <chmod file="${framework.dir}/scripts/setupJavaClients" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/startJavaClients.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/startJavaClients"/>
+    <chmod file="${framework.dir}/scripts/startJavaClients" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/waitForTask.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/waitForTask"/>
+    <chmod file="${framework.dir}/scripts/waitForTask" perm="a+x"/>
+
+    <copy file="${tests.src.dir}/scripts/runCPPCSDriver.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/runCPPCSDriver"/>
+    <chmod file="${framework.dir}/scripts/runCPPCSDriver" perm="a+x"/>
+
+    <copy file="${tests.src.dir}/scripts/startCSFwk.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/startCSFwk"/>
+    <chmod file="${framework.dir}/scripts/startCSFwk" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/stopCSFwk.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/stopCSFwk"/>
+    <chmod file="${framework.dir}/scripts/stopCSFwk" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/waitForBBKey.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/waitForBBKey"/>
+    <chmod file="${framework.dir}/scripts/waitForBBKey" perm="a+x"/>
+
+    <copy file="${tests.src.dir}/scripts/gdb.pl" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/gdb.pl"/>
+    <chmod file="${framework.dir}/scripts/gdb.pl" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/cdb.pl" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/cdb.pl"/>
+    <chmod file="${framework.dir}/scripts/cdb.pl" perm="a+x"/>
+    <copy file="${basedir}/release/build/grepLogs.pl" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/grepLogs.pl"/>
+    <chmod file="${framework.dir}/scripts/grepLogs.pl" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/runPerfTest.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/runPerfTest"/>
+    <chmod file="${framework.dir}/scripts/runPerfTest" perm="a+x"/>
+    <copy file="${tests.src.dir}/scripts/runScalePerf.sh" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/runScalePerf"/>
+    <chmod file="${framework.dir}/scripts/runScalePerf" perm="a+x"/>
+    <mkdir dir="${framework.dir}/lib/openssl"/>
+    <copy todir="${framework.dir}/lib/openssl" >
+      <fileset dir="${openssl.dir}/lib/"/>
+    </copy>
+    <!-- copy additional data files required by tests -->
+    <mkdir dir="${framework.dir}/data"/>
+    <copy todir="${framework.dir}/data" >
+      <fileset dir="${basedir}/src/templates/security" excludes="CMake*.*"/>
+      <fileset dir="${tests.cppcache.src.dir}">
+        <include name="keystore/**"/>
+      </fileset>
+    </copy>
+
+    <conditional unless="isWindows">
+      <copy file="${perl.devel.gdb.dir}/Devel/GDB.pm" verbose="true" preservelastmodified="true" tofile="${framework.dir}/scripts/GDB.pm"/>
+    </conditional>
+
+    <conditional if="isWindows">
+      <copy file="${cdb.dir}/cdb.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/cdb.exe"/>
+      <chmod file="${framework.dir}/bin/cdb.exe" perm="a+x"/>
+      <copy file="${cdb.dir}/dbghelp.dll" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/dbghelp.dll"/>
+      <chmod file="${framework.dir}/bin/dbghelp.dll" perm="a+x"/>
+      <copy file="${cdb.dir}/dbgeng.dll" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/dbgeng.dll"/>
+      <chmod file="${framework.dir}/bin/dbgeng.dll" perm="a+x"/>
+      <!-- copy the C# framework -->
+      <mkdir dir="${framework.dir}/csharp"/>
+      <copy file="${thirdparty.libs.dir}/PsExec.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/csharp/bin/PsExec.exe"/>
+      <copy file="${tests.out.dir}/clicache/FwkUI/FwkUI.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/FwkUI.exe"/>
+      <copy todir="${framework.dir}/csharp/bin">
+        <fileset dir="${tests.out.dir}/clicache/FwkDriver"/>
+        <fileset dir="${tests.out.dir}/clicache/NewFwkLib">
+          <include name="NewFwkLib.*"/>
+        </fileset>
+        <fileset dir="${tests.out.dir}/clicache/FwkLauncher">
+          <include name="FwkLauncher.*"/>
+        </fileset>
+        <fileset dir="${tests.out.dir}/clicache/UnitTests"/>
+      </copy>
+      <updateBuildScript file="${framework.dir}/csharp/bin/genCSFwkReport.sh"/>
+      <mkdir dir="${framework.dir}/bin/openssl"/>
+      <copy todir="${framework.dir}/bin/openssl" >
+        <fileset dir="${openssl.dir}/bin/"/>
+      </copy>
+      <!-- copy additional data files required by tests -->
+      <mkdir dir="${framework.dir}/data"/>
+      <copy todir="${framework.dir}/data" >
+        <fileset dir="${basedir}/src/templates/security" excludes="CMake*.*"/>
+        <fileset dir="${tests.cppcache.src.dir}">
+          <include name="keystore/**"/>
+        </fileset>
+      </copy>
+    </conditional>
+
+    <description>
+      Retain some env info in a file for runDriver to source.
+    </description>
+    <exec executable="echo" dir="${basedir}" append="false" output="${framework.dir}/scripts/run.env">
+      <arg value="## Some variables set at compile time"/>
+    </exec>
+    <exec executable="echo" dir="${basedir}" append="true" output="${framework.dir}/scripts/run.env">
+      <arg value="export GFE_DIR=NO_GFE_DIR_SPECIFIED"/>
+    </exec>
+    <conditional if="gfe.dir">
+      <exec executable="echo" dir="${basedir}" append="true" output="${framework.dir}/scripts/run.env">
+        <arg value="export GFE_DIR=${gfe.dir}"/>
+      </exec>
+    </conditional>
+
+    <conditional if="isWindows">
+      <condition property="frameworkReleaseBuild">
+         <or>
+           <available file="${tests.out.dir}/objects/fwkbin/Driver.exe"/>
+           <available file="${tests.out.dir}/objects/fwkbin/Client.exe"/>
+           <available file="${tests.out.dir}/objects/fwkbin/FileProcessor.exe"/>
+         </or>
+      </condition>
+      <condition property="frameworkDebugBuild">
+         <or>
+           <available file="${tests.out.dir}/objects_g/fwkbin/Driver.exe"/>
+           <available file="${tests.out.dir}/objects_g/fwkbin/Client.exe"/>
+           <available file="${tests.out.dir}/objects_g/fwkbin/FileProcessor.exe"/>
+         </or>
+      </condition>
+      <conditional if="frameworkReleaseBuild">
+        <copy file="${tests.out.dir}/objects/fwkbin/Driver.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/Driver.exe"/>
+        <chmod file="${framework.dir}/bin/Driver.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects/fwkbin/Client.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/Client.exe"/>
+        <chmod file="${framework.dir}/bin/Client.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects/fwkbin/FileProcessor.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/FileProcessor.exe"/>
+        <chmod file="${framework.dir}/bin/FileProcessor.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects/fwkbin/Validate.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/Validate.exe"/>
+        <chmod file="${framework.dir}/bin/Validate.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects/fwkbin/FwkBB.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/FwkBB.exe"/>
+        <chmod file="${framework.dir}/bin/FwkBB.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects/fwkbin/TimeStr.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/TimeStr.exe"/>
+        <chmod file="${framework.dir}/bin/TimeStr.exe" perm="a+x"/>
+      </conditional>
+
+      <conditional if="frameworkDebugBuild">
+        <copy file="${tests.out.dir}/objects_g/fwkbin/Driver.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/Driver.exe"/>
+        <chmod file="${framework.dir}/bin/debug/Driver.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects_g/fwkbin/Client.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/Client.exe"/>
+        <chmod file="${framework.dir}/bin/debug/Client.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects_g/fwkbin/FileProcessor.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/FileProcessor.exe"/>
+        <chmod file="${framework.dir}/bin/debug/FileProcessor.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects_g/fwkbin/Validate.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/Validate.exe"/>
+        <chmod file="${framework.dir}/bin/debug/Validate.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects_g/fwkbin/FwkBB.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/FwkBB.exe"/>
+        <chmod file="${framework.dir}/bin/debug/FwkBB.exe" perm="a+x"/>
+        <copy file="${tests.out.dir}/objects_g/fwkbin/TimeStr.exe" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/TimeStr.exe"/>
+        <chmod file="${framework.dir}/bin/debug/TimeStr.exe" perm="a+x"/>
+      </conditional>
+    </conditional>
+    <conditional unless="isWindows">
+      <copy file="${tests.out.dir}/objects/fwkbin/Driver" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/Driver"/>
+      <chmod file="${framework.dir}/bin/Driver" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects_g/fwkbin/Driver" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/Driver"/>
+      <chmod file="${framework.dir}/bin/debug/Driver" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects/fwkbin/Client" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/Client"/>
+      <chmod file="${framework.dir}/bin/Client" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects_g/fwkbin/Client" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/Client"/>
+      <chmod file="${framework.dir}/bin/debug/Client" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects/fwkbin/FileProcessor" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/FileProcessor"/>
+      <chmod file="${framework.dir}/bin/FileProcessor" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects_g/fwkbin/FileProcessor" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/FileProcessor"/>
+      <chmod file="${framework.dir}/bin/debug/FileProcessor" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects/fwkbin/Validate" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/Validate"/>
+      <chmod file="${framework.dir}/bin/Validate" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects_g/fwkbin/Validate" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/Validate"/>
+      <chmod file="${framework.dir}/bin/debug/Validate" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects/fwkbin/FwkBB" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/FwkBB"/>
+      <chmod file="${framework.dir}/bin/FwkBB" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects_g/fwkbin/FwkBB" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/FwkBB"/>
+      <chmod file="${framework.dir}/bin/debug/FwkBB" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects/fwkbin/TimeStr" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/TimeStr"/>
+      <chmod file="${framework.dir}/bin/TimeStr" perm="a+x"/>
+      <copy file="${tests.out.dir}/objects_g/fwkbin/TimeStr" verbose="true" preservelastmodified="true" tofile="${framework.dir}/bin/debug/TimeStr"/>
+      <chmod file="${framework.dir}/bin/debug/TimeStr" perm="a+x"/>
+    </conditional>
+
+  </target>
+
+  <target name="mixed-mode" depends="props, javaobject-library">
+    <property name="mixed.src.dir" value="${tests.src.dir}/mixed/javaclient"/>
+    <property name="mixed.out.dir" value="${tests.out.dir}/mixed"/>
+    <mkdir dir="${mixed.out.dir}"/>
+    <echo message="mixed.out.dir=${mixed.out.dir}" level="info"/>
+    <javac debug="on"
+           target="1.5"
+           destdir="${mixed.out.dir}"
+           includeAntRuntime="true"
+           optimize="off"
+           srcdir="${mixed.src.dir}">
+      <include name="*.java"/>
+      <classpath>
+        <pathelement location="${java.home}/lib/tools.jar"/>
+        <pathelement location="${gfe.dir}/lib/gemfire.jar"/>
+        <pathelement location="${gfe.dir}/lib/gfSecurityImpl.jar"/>
+        <pathelement location="${framework.dir}/lib/javaobject.jar"/>
+      </classpath>
+    </javac>
+    <jar basedir="${mixed.out.dir}" jarfile="${framework.dir}/lib/mixed.jar"/>
+    <copy file="${mixed.src.dir}/bridge_client.xml" preservelastmodified="true" todir="${mixed.out.dir}/javaclient"/>
+    <copy file="${mixed.src.dir}/bridge_server.xml" preservelastmodified="true" todir="${mixed.out.dir}/javaclient"/>
+    <copy file="${mixed.src.dir}/mytest.txt" preservelastmodified="true" todir="${mixed.out.dir}/javaclient"/>
+    <copy file="${mixed.src.dir}/gemfire.properties" preservelastmodified="true" todir="${mixed.out.dir}/javaclient"/>
+    <copy file="${mixed.src.dir}/README" preservelastmodified="true" todir="${mixed.out.dir}/javaclient"/>
+  </target>
+
+  <target name="javaobject-library" depends="props">                                     
+    <property name="javaobject.src.dir" value="${tests.dir}/javaobject"/>
+    <property name="javaobject.out.dir" value="${tests.out.dir}/javaobject"/>
+    <mkdir dir="${javaobject.out.dir}"/>
+    <echo message="javaobject.out.dir=${javaobject.out.dir}" level="info"/>
+    <javac debug="off"
+           target="1.5"
+           destdir="${javaobject.out.dir}"
+           optimize="on"
+           srcdir="${javaobject.src.dir}">
+      <include name="*.java"/>
+      <include name="newapi/*.java"/>
+    <include name="PdxTests/*.java"/>
+      <classpath>
+        <pathelement location="${java.home}/lib/tools.jar"/>
+        <pathelement location="${gfe.dir}/lib/gemfire.jar"/>
+        <pathelement location="${tests.lib.dir}/dom4j-1.6.1.jar"/>
+        <pathelement location="${tests.lib.dir}/vijava5b20110825.jar"/>
+      </classpath>
+    </javac>
+    <jar basedir="${javaobject.out.dir}" jarfile="${framework.dir}/lib/javaobject.jar"/>
+    <copy file="${tests.lib.dir}/dom4j-1.6.1.jar" todir="${framework.dir}/lib"/>
+    <copy file="${tests.lib.dir}/vijava5b20110825.jar" todir="${framework.dir}/lib"/>
+  </target>
+  
+  <target name="testdb-library" depends="props">                                     
+    <property name="testdb.src.dir" value="${tests.src.dir}/testdb"/>
+    <property name="testdb.out.dir" value="${tests.out.dir}/testdb"/>
+    <mkdir dir="${testdb.out.dir}"/>
+    <echo message="testdb.out.dir=${testdb.out.dir}" level="info"/>
+    <javac debug="off"
+           target="1.5"
+           destdir="${testdb.out.dir}"
+           optimize="on"
+           srcdir="${testdb.src.dir}">
+      <include name="*.java"/>
+      <classpath>
+        <pathelement location="${java.home}/lib/tools.jar"/>
+        <pathelement location="${gcm.dir}/where/java/mysql/mysql-connector-java-5.1.8-bin.jar"/>
+        <pathelement location="${gfe.dir}/lib/gemfire.jar"/>
+      </classpath>
+    </javac>
+    <jar basedir="${testdb.out.dir}" jarfile="${framework.dir}/lib/testdb.jar"/>
+  </target>
+
+  <target name="-cppcachemake-impl" >
+    <mkdir dir="${tests.cppcache.out.dir}"/>
+    <echo message="osbuild.dir=${osbuild.ext.dir}" level="info"/>
+
+    <!-- gnumake to compile C++ test programs -->
+    <exec dir="${tests.cppcache.src.dir}" executable="${ant.make}" failonerror="true">
+      <arg value="${ant.make.threads}"/>
+      <arg value="${cppcacheTarget}"/>
+      <arg value="OSNAME=${os.name}"/>
+      <arg value="GFLIB_MODEL=${cPointerModel}"/>
+      <arg value="base=${basedir}"/>
+      <arg value="product=${product.dir}"/>
+      <arg value="OSBUILDDIR=${osbuild.ext.dir}"/>
+      <arg value="ACE_DIR=${ace.dir}"/>
+      <arg value="ACEDIR=${ace.dir}"/>
+      <arg value="ACELINKNAME=${acelinkname}"/>
+      <arg value="XERCESDIR=${xerces.dir}"/>
+      <arg value="CPPDEBUG=${cpp-debug}"/>
+      <arg value="CPPDEVEL=${cpp.devel}"/>
+      <arg value="STLPORT=${stlport.dir}"/>
+      <arg value="STACKTRACE=${stacktrace.dir}"/>
+      <arg value="XML=${xml.dir}"/>
+      <arg value="TESTOBJECTLIB=testobject"/>
+      <arg value="ZZIP=${zzip.dir}"/>
+      <env key="MAKE_MODE" value="unix"/>
+      <env key="FASTDEPEXE" value="${fastdep.exe}"/>
+      <env key="FRAMEWORK" value="${framework.dir}"/>
+      <env key="EXTRA_CLASSPATH" value="${framework.dir}/lib/javaobject.jar:${gfe.dir}/lib/gfSecurityImpl.jar"/>
+    </exec>
+    <copy todir="${tests.cppcache.out.dir}" >
+      <fileset dir="${basedir}/src/templates/security" excludes="CMake*.*"/>
+      <fileset dir="${tests.cppcache.src.dir}">
+        <include name="*.xml"/>
+        <include name="keystore/**"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- make-c-tests expects the arguments makefile-source and makefile-target
+   to be set -->
+  <target name="make-c-tests">
+    <!-- gnumake to create shared library -->
+    <!-- mkdir dir="${tests.classes.dir}/${makefile-source}"/ -->
+    <exec dir="${tests.src.dir}/${makefile-source}" executable="${ant.make}"
+     failonerror="true">
+      <arg value="${makefile-target}"/>
+      <arg value="OSNAME=${os.name}"/>
+      <arg value="GFLIB_MODEL=${cPointerModel}"/>
+      <arg value="base=${basedir}"/>
+      <arg value="product=${product.dir}"/>
+      <arg value="OSBUILDDIR=${osbuild.ext.dir}"/>
+      <arg value="DESTDIR=${tests.objects.dir}/${makefile-source}"/>
+      <arg value="ACE_DIR=${ace.dir}"/>
+      <arg value="SQLITE=${sqlite.dir}"/>
+      <arg value="ANTLR=${antlr.dir}"/>
+      <arg value="CPP_DIR=${cppcache.dir}"/>
+      <arg value="BASEDIR=${basedir}"/>
+      <arg value="ACEDIR=${ace.dir}"/>
+      <arg value="ACELINKNAME=${acelinkname}"/>
+      <arg value="XERCESDIR=${xerces.dir}"/>
+      <arg value="STLPORT=${stlport.dir}"/>
+      <arg value="STACKTRACE=${stacktrace.dir}"/>
+      <arg value="XMLDIR=${xml.dir}"/>
+      <arg value="CPPDEVEL=${cpp.devel}"/>
+      <arg value="OPENSSL=${openssl.dir}"/>
+      <arg value="ZZIP=${zzip.dir}"/>
+      <env key="MAKE_MODE" value="unix"/>
+      <env key="FASTDEPEXE" value="${fastdep.exe}"/>
+    </exec>
+  </target>
+
+  <!-- test-env is for debugging only, echoes all enviroment variables -->
+  <target name="test-env">
+    <exec executable="bash">
+      <arg value="-c"/>
+      <arg value="set"/>
+    </exec>
+  </target>
+  
+  <target depends ="props" name="generate-pdx-auto-files">
+    <description>Generate new C++ files for pdxautoserialization unit tests</description>
+      <conditional if="isWindows">
+      <antcall target="vcbuild-solution">
+        <param name="vs.file" value="${vs.project.dir}\\executables\\pdxautoserializer.${vcp.file.ext}"/>
+        <param name="vs.configuration" value="Release"/>
+      </antcall>
+    </conditional>      
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="${basedir}/tests/testobject/PdxAutoMegaType.hpp" />
+    </exec>
+    
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="--className=CharTypes"/>
+      <arg value="--suffix=_UTImpl"/>	  
+      <arg value="${basedir}/tests/testobject/PdxTypeWithAuto.hpp" />
+    </exec>  
+    
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="--className=PdxType"/>
+      <arg value="--suffix=_UTImpl"/>
+	  <arg value="--classNameStr=PdxType:PdxTests.PdxTestsWithAuto"/>
+      <arg value="${basedir}/tests/testobject/PdxTypeWithAuto.hpp" />
+    </exec>
+    
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="--className=Address"/>
+      <arg value="--suffix=_UTImpl"/>
+	  <arg value="--classNameStr=Address:PdxTests.Address"/>
+      <arg value="${basedir}/tests/testobject/PdxTypeWithAuto.hpp" />
+    </exec>
+    
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="--className=Child"/>
+      <arg value="--suffix=_UTImpl"/>
+      <arg value="${basedir}/tests/testobject/PdxTypeWithAuto.hpp" />
+    </exec>
+
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="--className=PdxTypes1"/>
+      <arg value="--className=PdxTypes2"/>
+      <arg value="--className=PdxTypes3"/>
+      <arg value="--className=PdxTypes4"/>
+      <arg value="--className=PdxTypes5"/>
+      <arg value="--className=PdxTypes6"/>
+      <arg value="--className=PdxTypes7"/>
+      <arg value="--className=PdxTypes8"/>
+      <arg value="--className=PdxTypes9"/>
+      <arg value="--className=PdxTypes10"/>
+      <arg value="--className=NestedPdx"/>
+      <arg value="--suffix=_UTImpl"/>
+      <arg value="${basedir}/tests/testobject/VariousPdxTypesWithAuto.hpp" />
+    </exec>
+
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="--className=PdxType1V1"/>
+      <arg value="--className=PdxType2V1"/>
+      <arg value="--className=PdxType3V1"/>
+      <arg value="--className=PdxTypesV1R1"/>
+      <arg value="--className=PdxTypesV1R2"/>
+      <arg value="--className=PdxTypesIgnoreUnreadFieldsV1"/>
+      <arg value="--className=TestEqualsV1"/>     
+      <arg value="--className=PdxVersionedV1"/>
+      
+      <arg value="--classNameStr=PdxType1V1:PdxTestsAuto.PdxType1V1"/>
+      <arg value="--classNameStr=PdxType2V1:PdxTestsAuto.PdxType2V1"/>
+      <arg value="--classNameStr=PdxType3V1:PdxTestsAuto.PdxType3V1"/>
+      <arg value="--classNameStr=PdxTypesV1R1:PdxTestsAuto.PdxTypesV1R1"/>
+      <arg value="--classNameStr=PdxTypesV1R2:PdxTestsAuto.PdxTypesV1R2"/>
+      <arg value="--classNameStr=PdxTypesIgnoreUnreadFieldsV1:PdxTestsAuto.PdxTypesIgnoreUnreadFieldsV1"/>
+      <arg value="--classNameStr=TestEqualsV1:PdxTestsAuto.TestEqualsV1"/>
+      <arg value="--classNameStr=PdxVersionedV1:PdxTestsAuto.PdxVersionedV1"/>
+      
+      <arg value="--suffix=_UTImpl"/>
+      <arg value="${basedir}/tests/testobject/PdxClassV1WithAuto.hpp" />
+    </exec>
+
+    <exec executable="${src.out.dir}/executables/pdxautoserializer" failonerror="true">
+      <arg value="--outDir=${basedir}/tests/testobject"/>
+      <arg value="--className=PdxTypes1V2"/>
+      <arg value="--className=PdxTypes2V2"/>
+      <arg value="--className=PdxTypes3V2"/>
+      <arg value="--className=PdxTypesR1V2"/>
+      <arg value="--className=PdxTypesR2V2"/>
+      <arg value="--className=PdxTypesIgnoreUnreadFieldsV2"/>
+      <arg value="--className=PdxVersionedV2"/>
+      
+      <arg value="--classNameStr=PdxTypes1V2:PdxTestsAuto.PdxType1V1"/>
+      <arg value="--classNameStr=PdxTypes2V2:PdxTestsAuto.PdxType2V1"/>
+      <arg value="--classNameStr=PdxTypes3V2:PdxTestsAuto.PdxType3V1"/>
+      <arg value="--classNameStr=PdxTypesR1V2:PdxTestsAuto.PdxTypesV1R1"/>
+      <arg value="--classNameStr=PdxTypesR2V2:PdxTestsAuto.PdxTypesV1R2"/>
+      <arg value="--classNameStr=PdxTypesIgnoreUnreadFieldsV2:PdxTestsAuto.PdxTypesIgnoreUnreadFieldsV1"/>
+      <arg value="--classNameStr=TestEqualsV1:PdxTestsAuto.TestEqualsV1"/>
+      <arg value="--classNameStr=PdxVersionedV2:PdxTestsAuto.PdxVersionedV1"/>
+      
+      <arg value="--suffix=_UTImpl"/>
+      <arg value="${basedir}/tests/testobject/PdxClassV2WithAuto.hpp" />
+    </exec>
+    
+  </target>
+
+  <target depends="props, -cppcachemake-impl" name="compile-unit-tests"
+    description="Compile all the unit tests"/>
+
+  <target depends="props, compile-unit-tests" name="compile-cpp-tests"/>
+  <target depends="props, compile-doc-tests" name="compile-cpp-docexample"/>
+
+  <target depends="props, native-client, pack-core" name="src">
+    <description>Builds all of the GemFire product source code</description>
+  </target>
+
+  <target name="cppref-doxygen" depends="props">
+    <description>Uses Doxygen to create HTML document for the C++ Cache reference</description>
+
+    <mkdir dir="${product.dir}/docs"/>
+    <echo message="building Doxygen documentation for C++ Cache reference" level="info"/>
+
+    <copy file="${c.docs.dir}/common-Doxyfile"
+          tofile="${docs.dir}/cpp-reference-Doxyfile" overwrite="true"/>
+    <copy todir="${product.dir}/docs" overwrite="true">
+       <fileset dir="${basedir}/release/images">
+         <include name="gemFireCPPLogo.png"/>
+         <include name="PIVOTAL_GemFire_139x64.png"/>
+         <include name="gemFireDotNETLogo.png"/>
+       </fileset>
+    </copy>
+    <echo file="${docs.dir}/cpp-reference-Doxyfile" append="true" level="info">
+ALPHABETICAL_INDEX     = YES
+ENABLED_SECTIONS       = nativeclient 
+EXCLUDE_PATTERNS       = */impl/* AtomicBits.hpp AtomicInc.hpp AtomicOpT.hpp BridgeLoader.hpp CacheableToken.hpp Debug.hpp ExpirationAttributes.hpp gfcpp_globals.hpp Lock.hpp SpinLock.hpp Task.hpp Timecode.hpp 
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+FILE_PATTERNS          = *.h *.hpp statistics/*.hpp
+GENERATE_TODOLIST      = NO
+GENERATE_TREEVIEW      = YES
+HIDE_UNDOC_CLASSES     = YES
+HIDE_UNDOC_MEMBERS     = YES
+HTML_FOOTER            = ${c.docs.dir}/cpp-footer.html
+IMAGE_PATH             = ${product.dir}/docs
+INPUT                  = ${product.dir}/include/gfcpp ${product.dir}/include/gfcpp/statistics
+JAVADOC_AUTOBRIEF      = YES
+MACRO_EXPANSION        = YES
+OUTPUT_DIRECTORY       = ${docs.dir}/cppreference
+PROJECT_NAME           = "${gemfire.productname} Cache Reference"
+PROJECT_NUMBER         = "${gemfire.version}"
+PREDEFINED             = DOXYGEN
+SHOW_USED_FILES        = NO
+SKIP_FUNCTION_MACROS   = NO
+SORT_BRIEF_DOCS        = YES
+SORT_MEMBER_DOCS       = YES
+WARNINGS               = NO
+WARN_IF_DOC_ERROR      = NO
+WARN_IF_UNDOCUMENTED   = NO
+WARN_LOGFILE           = cppDoxygenWarnings.log
+SOURCE_BROWSER         = NO
+SHOW_INCLUDE_FILES     = NO
+SHOW_USED_FILES        = NO
+SHOW_DIRECTORIES       = NO
+INTERNAL_DOCS          = NO
+INLINE_INHERITED_MEMB  = YES
+INHERIT_DOCS           = YES
+
+</echo>    
+
+    <!-- I couldn't get Doxygen to compile on Solaris with the Sun
+         compiler, so I had to use GCC 3.2 which isn't in the standard
+         LD_LIBRARY_PATH -->
+    <condition property="ld_library_path"
+               value="/export/localnew/sparc.Solaris/gcc32/lib:${doxygen}/lib:${ld_library_path}">
+      <os name="SunOs"/>
+    </condition>
+    <property name="ld_library_path" value="${myenv.LD_LIBRARY_PATH}"/>
+
+    <exec dir="" executable="${doxygen}/bin/doxygen" failOnError="true">
+      <env key="LD_LIBRARY_PATH" value="${ld_library_path}"/>
+      <arg value="${docs.dir}/cpp-reference-Doxyfile"/>
+    </exec>
+    <exec executable="grep" resultproperty="grepExitStatus">
+      <arg value="Warning"/>
+      <arg value="cppDoxygenWarnings.log"/>
+    </exec>
+    <condition property="grepFailed">
+      <equals arg1="${grepExitStatus}" arg2="0"/>
+    </condition>
+    <exec executable="rm" resultproperty="rmStatus">
+      <arg value="cppDoxygenWarnings.log"/>
+    </exec>
+    <fail if="grepFailed" message="cppref-doxygen warnings found, see build${gf.os}.log"/>
+
+  </target>
+
+  <target name="cliref-doxygen" depends="props" if="isWindows">
+    <description>Uses Doxygen to create HTML document for the C++ Cache .NET reference</description>
+
+    <mkdir dir="${docs.dir}/clireference"/>
+    <echo message="building Doxygen documentation for C++ Cache .NET reference" level="info"/>
+
+    <copy file="${c.docs.dir}/common-Doxyfile"
+          tofile="${docs.dir}/cli-reference-Doxyfile" overwrite="true"/>
+    <echo file="${docs.dir}/cli-reference-Doxyfile" append="true" level="info">
+ALPHABETICAL_INDEX     = YES
+ENABLED_SECTIONS       = nativeclient
+EXCLUDE_PATTERNS       = */clicache/impl/*
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+FILE_PATTERNS          = *.h *.hpp
+GENERATE_TODOLIST      = NO
+GENERATE_TREEVIEW      = YES
+HIDE_UNDOC_CLASSES     = YES
+HIDE_UNDOC_MEMBERS     = YES
+HTML_FOOTER            = ${c.docs.dir}/cli-footer.html
+IMAGE_PATH             = ${product.dir}/docs
+INPUT                  = ${clicache.dir}
+JAVADOC_AUTOBRIEF      = YES
+MACRO_EXPANSION        = YES
+OUTPUT_DIRECTORY       = ${docs.dir}/clireference
+PROJECT_NAME           = "${gemfire.productname} Cache .NET Reference"
+PROJECT_NUMBER         = "${gemfire.version}"
+PREDEFINED             = "internal=private" \
+                         "STATICCLASS=" \
+                         "GFINDEXER(x)=Item"
+CPP_CLI_SUPPORT        = YES
+SKIP_FUNCTION_MACROS   = NO
+SORT_BRIEF_DOCS        = YES
+SORT_MEMBER_DOCS       = YES
+WARNINGS               = YES
+WARN_IF_DOC_ERROR      = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_LOGFILE           = cliDoxygenWarnings.log
+SOURCE_BROWSER         = NO
+VERBATIM_HEADERS       = NO
+SHOW_INCLUDE_FILES     = NO
+SHOW_USED_FILES        = NO
+SHOW_DIRECTORIES       = NO
+INTERNAL_DOCS          = NO
+INLINE_INHERITED_MEMB  = YES
+INHERIT_DOCS           = YES
+</echo>    
+
+    <exec dir="" executable="${doxygen}/bin/doxygen" failOnError="true">
+      <env key="LD_LIBRARY_PATH" value="${ld_library_path}"/>
+      <arg value="${docs.dir}/cli-reference-Doxyfile"/>
+    </exec>
+    <exec executable="grep" resultproperty="grepExitStatus">
+      <arg value="Warning"/>
+      <arg value="cliDoxygenWarnings.log"/>
+    </exec>
+    <condition property="grepFailed">
+      <equals arg1="${grepExitStatus}" arg2="0"/>
+    </condition>
+    <exec executable="rm" resultproperty="rmStatus">
+      <arg value="cliDoxygenWarnings.log"/>
+    </exec>
+    <fail if="grepFailed" message="cliref-doxygen warnings found, see build${gf.os}.log"/>
+
+  </target>
+
+  <target name="cliref-sandcastle" depends="props" if="isWindows">
+    <conditional if="runsandcastle">
+      <description>Uses Sandcastle (and sandcastle help file builder) to create HTML document for the C++ Cache .NET reference</description>
+      <delete dir="${docs.dir}/clireference-sandcastle"/>
+      <mkdir dir="${docs.dir}/clireference-sandcastle"/>
+      <echo message="building Sandcastle documentation for C++ Cache .NET reference" level="info"/>  
+      <msbuild buildfile="${scripts.dir}/gfclicache.shfbproj">
+        <property name="HIDDENLIBDIR" value="${product.dir}\bin"/>
+        <property name="SANDCASTLE" value="${sandcastle.dir}"/>
+        <property name="HTMLWORKSHOP" value="${htmlworkshop.dir}"/>
+        <property name="DOTNETDOCSDIR" value="${docs.dir}/clireference-sandcastle"/>
+        <property name="SHFBROOT" value="${sandcastle.builder}"/>
+        <property name="PRODVERSION" value="${gemfire.version}"/>
+      </msbuild>
+    </conditional>
+  </target>
+
+  <target depends="props" name="clean-gfcppcache-library">
+    <delete dir="${src.out.dir}/cpp_objects"/>
+    <delete dir="${src.out.dir}/cpp_objects_g"/>
+    <delete>
+      <fileset dir="${src.out.dir}" includes="*_depend"/>
+    </delete>
+  </target>
+  <target depends="props" name="clean-cpp-tests">
+    <delete dir="${tests.cppcache.out.dir}"/>
+  </target>
+  
+  <target depends="clean-gfcppcache-library" name="clean-shared-libraries"/>
+  
+  <target depends="native-client, pack-core" name="rebuild-shared-library">
+    <description>Rebuilds native library and packs it into product tree</description>
+  </target>
+
+  <target depends="make-last-update" name="build-test-library">
+  <echo message="Building framework" level="info"/>
+
+    <exec dir="${tests.src.dir}" executable="${ant.make}" failonerror="true">
+      <arg value="${ant.make.threads}"/>
+      <arg value="${library-target}"/>
+      <arg value="OSNAME=${os.name}"/>
+      <arg value="GFLIB_MODEL=${cPointerModel}"/>
+      <arg value="GEMFIRE_SOURCE_REVISION=${source.revision}"/>
+      <arg value="GEMFIRE_SOURCE_REPOSITORY=${source.branch}"/>
+      <arg value="BASEDIR=${basedir}"/>
+      <arg value="OSBUILDDIR=${osbuild.ext.dir}"/>
+      <arg value="CPP_DIR=${cppcache.dir}"/>
+      <arg value="ACEDIR=${ace.dir}"/>
+      <arg value="ACELINKNAME=${acelinkname}"/>
+      <arg value="XERCESDIR=${xerces.dir}"/>
+      <arg value="STLPORT=${stlport.dir}"/>
+      <arg value="STACKTRACE=${stacktrace.dir}"/>
+      <arg value="XMLDIR=${xml.dir}"/>
+      <arg value="CPPDEVEL=${cpp.devel}"/>
+      <arg value="ZZIP=${zzip.dir}"/>
+      <env key="MAKE_MODE" value="unix"/>
+      <arg value="OPENSSL=${openssl.dir}"/>
+      <env key="FASTDEPEXE" value="${fastdep.exe}"/>
+    </exec>
+
+    <delete>
+        <fileset dir="${basedir}/tests/testobject" includes="PdxAuto*Serializable.cpp"/>
+        <fileset dir="${basedir}/tests/testobject" includes="*_UTImpl*.cpp"/>
+    </delete>
+
+  </target>
+
+<!-- ==========================  Clean  =========================== -->
+
+  <!-- Removes osbuild.dir which now contains all artifacts of building
+       Excludes save past performance results in saved-results dir -->
+  <target name="set-clean-env">
+    <property name="clean-all" value="true" />
+  </target>
+  <target depends="set-clean-env, -props" name="clean" 
+    description="clean all build artifacts.">
+   
+    <echo message="Cleaning osbuild.dir excludes=saved-results" level="info"/>
+
+    <!-- Remove osbuild.dir now with exclude -->
+    <delete includeEmptyDirs="true">
+      <fileset dir="${osbuild.ext.dir}" defaultexcludes="false" excludes="**/saved-results/**"/>
+    </delete>
+  </target>
+
+  <!-- Removes all byproducts of building the tests -->
+  <target depends="props" name="clean-framework">
+    <delete dir="${framework.dir}"/>
+    <delete dir="${tests.objects.dir}"/>
+    <delete dir="${tests.objects_g.dir}"/>
+  </target>
+
+  <!-- Alias because Tim is a lousy typist -->
+  <target depends="clean-framework" name="clean-fwk"/>
+
+<!-- =======================  Glimpse  ======================== -->
+
+  <!-- Builds a glimpse database for the source code -->
+  <target depends="props" name="glimpse">
+    <delete dir="${glimpse.dir}" quiet="true"/>
+    <mkdir dir="${glimpse.dir}"/>
+
+    <!-- What kinds of files do we not include in the glimpse DB -->
+    <echo file="${glimpse.dir}/.glimpse_exclude" level="info">
+/CVS/
+/glimpsefiles/
+/build-artifacts/
+/results/
+/objects/
+/objects_g/
+/defaultSystem/
+/lib/
+/classes/
+/docs/
+~$
+/.#
+/MANIFEST.MF
+.cvsignore$
+.class$
+.exe$
+.gif$
+.gz$
+.lib$
+.log$
+.log10$
+.log50$
+.o$
+.s$
+.so$
+.zip$
+.gfs$
+.pdf$
+.checkin.data$
+.checkin.data.bak$
+    </echo>
+
+    <exec executable="glimpseindex">
+      <!-- use a bigger hash table while building the index -->
+      <arg line="-B"/>
+
+      <!-- use 32 Mb of memory for temporary tables -->
+      <arg line="-M 32"/>
+
+      <!-- build a larger index, for faster searches -->
+      <arg line="-b"/>
+
+      <!-- update existing index -->
+      <!-- <arg line="-f"/> -->
+
+      <!-- index numerals as well as words -->
+      <arg line="-n"/>
+
+      <!-- allocate more space for tables? -->
+      <arg line="-o"/>
+
+      <!-- order files reverse-sorted by date -->
+      <arg line="-t"/>
+
+      <!-- Put the index in ${glimpse.dir} -->
+      <arg line="-H ${glimpse.dir}"/>
+
+      <!-- Where to start looking for files to index -->
+      <arg line="${basedir}/src ${basedir}/tests ${basedir}/bin ${basedir}/docs ${basedir}/makefiles ${basedir}/release"/>
+
+    </exec>
+  </target>
+
+<!-- =====================  Run Tests  ========================= -->
+<!--  do not execute the *tests_impl targets directly, they do not
+      check for failure status -->
+
+  <target depends="props, run-cpp-tests, run-csharp-tests" name="run-all-unit-tests">
+    <antcall target="run-cpp-tests">
+      <param name="tst_res.arg" value="${tests.results.dir}"/>
+      <param name="ld.librarypath.arg" value="${product.library.dir}${path.separator}${hiddenlib.dir}"/>
+    </antcall>
+  </target>
+
+  <target depends="check-public-headers, run-unicast-tests" name="run-cpp-tests"/>
+  <target depends="props, test_props" name="run-unicast-tests" description="Run the unit tests in unicast/TCP mode">
+      <antcall target="run-cpp-tests-impl">
+        <param name="test.type" value="unicast"/>
+      </antcall>
+      <!--
+      <antcall target="-fail-if-any-cpp-test-failures">
+        <param name="test.type" value="unicast"/>
+        <param name="test.method" value="unit"/>
+      </antcall>
+      -->
+  </target>
+
+  <target name="test_props">
+     <property name="cpptest.exedir" value="${tests.cppcache.out.dir}"/>
+     <property name="cppdoctest.exedir" value="${tests.docExample.out.dir}"/>
+     <property name="tst_res" value="${tests.results.dir}"/>
+     <property name="ld.library.dir" value="${product.library.dir}${path.separator}${hiddenlib.dir}"/>
+  </target>
+
+  <target depends="compile-cpp-tests" name="compile-all-tests"/>
+
+  <!-- begin targets for interactive execution of specific parts of the tests -->
+  <target depends="run-cpp-tests" name="run-unit-tests" description="Alias for run-cpp-tests"/>
+  
+  <!-- end targets for interactive execution of specific parts of the tests -->
+
+  <target name="-cpp-unit-tests-body">
+      <property name="errorsDir" value="${tst_res}/cpp/${test.type}/failures${iterations.count}"/>
+      <delete quiet="true">
+          <fileset dir="${tst_res}/cpp/${test.type}" excludes="cppTestFailedIterations, transport.config" includes="*"/>
+      </delete>
+      <mkdir dir="${errorsDir}"/>
+
+      <echo message="Running tests..." level="info"/>
+
+      <ant antfile="${tests.cppcache.src.dir}/${test.type}.xml" dir="${tests.cppcache.src.dir}" target="${test.type}-tests"/>
+<!--
+      <antcall target="-check-${test.type}-test-results"/>
+      -->
+
+  </target>
+
+  <target depends="props" name="run-cpp-tests-impl"
+    description="Runs the C++ tests.">
+
+
+    <mkdir dir="${tst_res}/cpp"/>
+    <delete dir="${tst_res}/cpp/${test.type}"/>
+    <mkdir dir="${tst_res}/cpp/${test.type}"/>
+    <mkdir dir="${tst_res}/cpp/${test.type}/native-client-only"/>
+    
+    <antcall target="-init-cpp-test-results"/>
+
+    <iterations announce="true" totalIterations="${testIterations}">
+      <antcall target="-cpp-unit-tests-body"/>
+    </iterations>
+  </target>
+
+  <target name="-init-cpp-test-results">
+    <delete file="${failedIterations}" quiet="true"/>
+    <propertyfile comment="Number of C++ Unit Test Iterations that Failed" file="${tst_res}/cpp/cppTestFailedIterations">
+      <entry key="failedIterationCount" type="int" value="0"/>
+    </propertyfile>
+  </target>
+
+  <target name="-check-unicast-test-results">
+    <antcall target="-check-cpp-test-results">
+      <param name="test.type" value="unicast"/>
+      <param name="test.method" value="unit"/>
+    </antcall>
+  </target>
+
+  <target name="-check-example-test-results">
+    <antcall target="-check-cpp-test-results">
+      <param name="test.type" value="example"/>
+      <param name="test.method" value="doc example"/>
+    </antcall>
+  </target>
+
+  <target name="-check-cpp-test-results">
+    <property file="${tst_res}/cpp/${test.type}/cppTestFailures"/>
+    <condition property="cppTestsFailed">
+        <not>
+           <equals arg1="${failureCount}" arg2="0"/>
+        </not>
+    </condition>
+    <conditional if="cppTestsFailed">
+        <echo level="info" message="FAILED: The following ${test.type} tests failed: ${failedTests} "/>
+        <propertyfile comment="Number of C++ ${test.method} Test Iterations that Failed" file="${tst_res}/cpp/cppTestFailedIterations">
+          <entry key="failedIterationCount" operation="+" type="int" value="1"/>
+        </propertyfile>
+    </conditional>
+    <conditional unless="cppTestsFailed">
+        <echo level="info" message="Info: all ${test.type} tests ran successfully."/>
+        <delete dir="${errorsDir}" quiet="true"/>
+    </conditional>
+  </target>
+
+  <target name="-fail-if-any-cpp-test-failures">
+    <property file="${tst_res}/cpp/cppTestFailedIterations"/>
+    <condition property="cppTestsFailed">
+        <not>
+           <equals arg1="${failedIterationCount}" arg2="0"/>
+        </not>
+    </condition>
+    <conditional if="cppTestsFailed">
+      <condition property="haltNow">
+         <istrue value="${haltOnFailure}"/>
+      </condition>
+      <conditional if="haltNow">
+         <fail message="FAILED: One or more C++ ${test.method} tests failed"/>
+      </conditional>
+      <conditional unless="haltNow">
+         <echo message="FAILED: One or more C++ ${test.method} tests failed" level="info"/>
+      </conditional>
+    </conditional>
+  </target>
+
+ <!--Running cpp perf tests-->
+ <target depends="props, make-last-update" name="run-cpp-perf-tests">
+   <condition property="JAVA_HOME" value="${gfe.jre}/bin/java">
+     <os family="windows"/>
+   </condition>
+   <condition property="JAVA_HOME" value="${gfe.jre}/bin/java">
+     <not><os family="windows"/></not>
+   </condition>
+   <condition property="HOST1" value="${host1}">
+     <isset property="host1"/>
+   </condition>
+   <condition property="HOST2" value="${host2}">
+     <isset property="host2"/>
+   </condition>
+   <condition property="OkToRunPerf">
+     <and>
+       <isset property="host1"/>
+       <isset property="host2"/>
+     </and>
+   </condition>
+   <property name="SAVEDRESULTDIR" value="${savedresults.dir}/${build.number}/perf"/>
+   <mkdir dir="${SAVEDRESULTDIR}"/>
+   <echo message="Saved result dir is ${SAVEDRESULTDIR}"/>
+   <conditional unless="OkToRunPerf">
+     <echo message="No hosts specified to run the perf tests ,hence skipping run-perf-tests target"/>
+     <echo message="Syntax : -Dhost1=abc -Dhost2=xyz"/>
+   </conditional>
+   <conditional if="isWindows">
+     <echo message="The OS is windows"/>
+     <property name="resultDir" value="${tests.perftest.out.dir}"/>
+     <mkdir dir="${resultDir}"/> 
+   </conditional>
+   <conditional unless="isWindows">
+     <echo message="OS is Linux"/>
+     <property name="resultDir" value="${SAVEDRESULTDIR}"/>
+   </conditional>
+   <conditional if="OkToRunPerf">
+     <property name="OSBUILDDIR" value="${osbuild.ext.dir}"/>
+     <property name="GEMFIRE" value="${gfe.dir}"/>
+     <echo message="Detailed results can be found at ${resultDir}"/>
+     <exec dir="${resultDir}"
+         executable="bash"
+         failonerror="false" resultproperty="ExitCode">
+       <arg file="${osbuild.ext.dir}/framework/scripts/runPerfTest"/> 
+       <arg value="${OSBUILDDIR}"/>
+       <arg value="${JAVA_HOME}"/>
+       <arg value="${GEMFIRE}"/>
+       <arg value="${resultDir}"/>
+       <arg value="${HOST1}"/>
+       <arg value="${HOST2}"/>
+     </exec>
+     <conditional if="isWindows">
+       <echo message="Copying results to saved directory ..."/>
+       <copy todir="${SAVEDRESULTDIR}" failonerror="false" preservelastmodified="true">
+         <fileset dir="${resultDir}">
+           <include name="summary.prop"/>
+           <include name="gfcpp.env"/>
+           <include name="perf*/*"/>
+         </fileset>
+       </copy>
+     </conditional>
+     <condition property="TestFailed">
+       <not>
+         <equals arg1="${ExitCode}" arg2="0"/>
+       </not>
+     </condition>
+   </conditional>
+   <fail message="Output can be found at ${resultDir}" if="TestFailed"/>
+ </target>
+
+ <!--Running Csharp perf tests -->
+
+ <target name="run-csharp-perf-tests-new">
+   <antcall target="run-csharpperf-tests">
+     <param name="perf.bt" value="genericPerf.list"/>
+   </antcall>
+ </target>
+
+ <target name="run-csharp-perf-tests">
+   <antcall target="run-csharpperf-tests">
+     <param name="perf.bt" value="perf.list"/>
+   </antcall>
+ </target>
+
+ <target name="run-csharpperf-tests" depends="props, make-last-update">
+   <!--condition property="perf.list" value="${list}">
+     <isset property="list"/>
+   </condition-->
+   <condition property="HOST1" value="${host1}">
+     <isset property="host1"/>
+   </condition>
+   <condition property="HOST2" value="${host2}">
+     <isset property="host2"/>
+   </condition>
+   <condition property="OkToRunPerf">
+     <and>
+       <isset property="host1"/>
+       <isset property="host2"/>
+     </and>
+   </condition>
+   <conditional unless="OkToRunPerf">
+     <echo message="No hosts specified to run the perf tests ,hence skipping run-perf-tests target"/>
+     <echo message="Syntax : -Dhost1=abc -Dhost2=xyz"/>
+   </conditional>
+   <conditional if="OkToRunPerf">
+     <property name="SAVERESULTS" value="${savedresults.dir}/${build.number}/perf"/>
+     <mkdir dir="${SAVERESULTS}"/>
+     <copy file="${osbuild.ext.dir}/framework/xml/${perf.bt}" preservelastmodified="true" todir="${SAVERESULTS}"/>
+     <exec executable="echo" dir="${basedir}" append="true" output="${framework.dir}/csharp/bin/run.env">
+       <arg value="CLASSPATH=${gfe.dir}/lib/antlr.jar;${gfe.dir}/lib/gfSecurityImpl.jar;${framework.dir}/lib/javaobject.jar"/>
+     </exec>
+     <exec executable="echo" dir="${basedir}" append="true" output="${framework.dir}/csharp/bin/run.env">
+       <arg value="FWK_LOGDIR.WIN=${SAVERESULTS}"/>
+     </exec>
+     <exec executable="echo" dir="${basedir}" append="true" output="${framework.dir}/csharp/bin/run.env">
+       <arg value="GF_JAVA.WIN=${gfe.jre}/bin/java"/>
+     </exec>
+     <echo message="Detailed results can be found at ${SAVERESULTS}"/>
+     <echo message="the perf list = ${perf.bt}"/>
+     <exec dir="${SAVERESULTS}"
+       executable="bash"
+       failonerror="false" resultproperty="ExitCode">
+       <arg file="${osbuild.ext.dir}/framework/csharp/bin/runCSDriver.sh"/>
+       <arg value="--auto-ssh"/>
+       <arg value="--list=${perf.bt}"/>
+       <arg value="CS1:${HOST1}"/>
+       <arg value="CS2:${HOST2}"/>
+       <env key="OSBUILDDIR" file="${osbuild.ext.dir}"/>
+       <env key="GFCPP" file="${product.dir}"/>
+       <env key="GFE_DIR" file="${gfe.dir}"/>
+       <env key="PERFTEST" value="true"/>
+       <env key="COPYON" value="true"/> 
+     </exec>
+   </conditional>
+  <fail message="Output can be found at ${SAVERESULTS}" if="TestFailed"/>
+</target>
+
+ <!--Running C++ QuickStart examples for unix/windows -->
+ 
+  <target name="run-cpp-quickstart" depends="props">
+    <property name="test.type" value="quickstart"/>
+    <condition property="scriptsfx" value="bat">
+      <os family="windows"/>
+    </condition>
+    <condition property="scriptsfx" value="sh">
+      <not><os family="windows"/></not>
+    </condition>
+    <mkdir dir="${tests.quickstart.out.dir}"/>
+    <delete dir="${tests.quickstart.out.dir}/cpp"/>
+    <delete>
+      <fileset dir="${product.dir}/SampleCode/quickstart">
+        <include name="gfecs*/*"/>
+      </fileset>
+    </delete>
+    <mkdir dir="${tests.quickstart.dir}/cpp"/>
+    <mkdir dir="${tests.quickstart.src.dir}"/>
+    <echo message="Running tests..." level="info"/>
+    <ant antfile="${tests.quickstart.src.dir}/${test.type}.xml" dir="${tests.quickstart.src.dir}" target="${test.type}-tests">
+      <property name="runscript.file" value="${product.dir}/SampleCode/quickstart/runcpp.${scriptsfx}"/>
+    </ant>
+    <echo message="The output files can be found at ${tests.quickstart.out.dir}/cpp"/>
+  </target>
+
+<!--Running C# QuickStart examples -->
+
+ <target name="run-csharp-quickstart" depends="props" if="isWindows">
+   <property name="test.type" value="quickstart"/>
+   <mkdir dir="${tests.quickstart.out.dir}"/>
+   <delete dir="${tests.quickstart.out.dir}/csharp"/>
+   <delete>
+     <fileset dir="${product.dir}/SampleCode/quickstart"> 
+       <include name="gfecs*/*"/>
+     </fileset>
+   </delete>
+   <mkdir dir="${tests.quickstart.out.dir}/csharp"/>
+   <echo message="Running tests..." level="info"/>
+   <ant antfile="${tests.quickstart.src.dir}/${test.type}.xml" dir="${tests.quickstart.src.dir}" target="${test.type}-tests">
+     <property name="runscript.file" value="${product.dir}/SampleCode/quickstart/runcs.bat"/>
+   </ant>
+   <echo message="The output files can be found at ${tests.quickstart.out.dir}/csharp"/>
+ </target>
+
+  
+  <target depends="props" name="run-csharp-tests" if="isWindows">
+    <property name="logging" value="true"/>
+    <property name="csharp.debug" value="false"/>
+    <property name="unicast" value="true"/>
+    <property name="multicast" value="false"/>
+    <property name="cleanup" value="false"/>
+    <condition property="runSequential" value="true">
+      <equals arg1="${deprecated}" arg2="false"/>
+    </condition>
+    <condition property="runSequential" value="true">
+      <equals arg1="${generics}" arg2="false"/>
+    </condition>
+    <property name="runSequential" value="false" />
+    <condition property="runSingleTest" value="true">
+      <isset property="csharp.testcase"/>
+    </condition>
+    <condition property="deprecated" value="false">
+      <and>
+        <isset property="csharp.testcase"/>
+        <contains string="${csharp.testcase}" substring="NewAPI"/>
+      </and>
+    </condition>
+    <property name="deprecated" value="true"/>
+    <!-- Code added for category=generics-->
+    <condition property="generics" value="false">
+      <and>
+        <isset property="csharp.testcase"/>
+        <not><contains string="${csharp.testcase}" substring="NewAPI"/></not>
+      </and>
+    </condition>
+    <property name="generics" value="true"/>
+
+    <property name="runSingleTest" value="false" />
+    <condition property="doclean" value="-clean">
+      <istrue value="${cleanup}"/>
+    </condition>
+    <condition property="fixturearg" value="/run=GemStone.GemFire.Cache.UnitTests.${csharp.testcase}">
+      <isset property="csharp.testcase"/>
+    </condition>
+    <condition property="runscript.file" value="${osbuild.ext.dir}/tests/clicache/UnitTests/Debug/runCSTests.sh">
+      <istrue value="${csharp.debug}"/>
+    </condition>
+    <condition property="coveragearg" value="-coverage">
+      <isset property="csharp.coverage"/>
+    </condition>
+    <property name="runscript.file" value="${osbuild.ext.dir}/tests/clicache/UnitTests/runCSTests.sh"/>
+    <property name="doclean" value=""/>
+    <property name="fixturearg" value=""/>
+    <property name="coveragearg" value=""/>
+    <exec dir="${basedir}" 
+          executable="bash"
+          failonerror="true">
+      <arg file="${runscript.file}"/>
+      <arg value="-logging=${logging}"/>
+      <arg value="-logLevel=${logLevel}"/>
+      <arg value="-gfeLogLevel=${gfeLogLevel}"/>
+      <arg value="-gfeSecLogLevel=${gfeSecLogLevel}"/>
+      <arg value="-debug=${csharp.debug}"/>
+      <arg value="-unicast=${unicast}"/>
+      <arg value="-deprecated=${deprecated}"/>
+      <arg value="-generics=${generics}"/>
+      <arg value="-multicast=${multicast}"/>
+      <arg value="${coveragearg}"/>
+      <arg value="${doclean}"/>
+      <arg value="${fixturearg}"/>
+      <env key="TESTSRC" file="${osbuild.ext.dir}/tests/clicache/UnitTests"/>
+      <env key="CPP_TESTOUT" file="${tests.cppcache.out.dir}"/>
+      <env key="OSBUILDDIR" file="${osbuild.ext.dir}"/>
+      <env key="GFCPP" file="${product.dir}"/>
+      <env key="GFE_DIR" file="${gfe.dir}"/>
+      <env key="GF_JAVA" file="${gfe.jre}/bin/java"/>
+      <env key="CLASSPATH" path="${framework.dir}/lib/javaobject.jar:${gfe.dir}/lib/antlr.jar:${gfe.dir}/lib/gfSecurityImpl.jar" />
+      <env key="OPENSSL" value="${openssl.dir}"/>
+      <env key="NUNIT" file="${nunit.dir}"/>
+      <env key="CDB" file="${cdb.dir}"/>
+      <env key="RUNSINGLETEST" value="${runSingleTest}"/>
+      <env key="RUNSEQUENTIAL" value="${runSequential}"/>
+      <env key="VS2010" value="${vs.2010}"/>
+      <env key="PATH" value="${sqlite.dir}/lib:${myenv.PATH}"/>
+    </exec>
+  </target>
+
+  <target depends="props" name="run-csharp-tests-net20" if="isWindows">  
+    <property name="logging" value="true"/>
+    <property name="csharp.debug" value="false"/>
+    <property name="unicast" value="true"/>
+    <property name="multicast" value="false"/>
+    <property name="cleanup" value="false"/>
+    <condition property="runSequential" value="true">
+      <equals arg1="${deprecated}" arg2="false"/>
+    </condition>	
+	<condition property="runSequential" value="true">
+      <equals arg1="${generics}" arg2="false"/>
+    </condition>
+    <property name="runSequential" value="false" />
+    <condition property="runSingleTest" value="true">
+      <isset property="csharp.testcase"/>
+    </condition>
+    <condition property="deprecated" value="false">
+      <and>
+        <isset property="csharp.testcase"/>
+        <contains string="${csharp.testcase}" substring="NewAPI"/>
+      </and>
+    </condition>
+	<property name="deprecated" value="true"/>
+	<!-- Code added for category=generics-->
+	<condition property="generics" value="false">
+      <and>
+        <isset property="csharp.testcase"/>
+        <not><contains string="${csharp.testcase}" substring="NewAPI"/></not>
+      </and>
+    </condition>
+    <property name="generics" value="true"/>
+	<property name="net20" value="true"/>
+	<!-- -->
+    <property name="runSingleTest" value="false" />
+    <condition property="doclean" value="-clean">
+      <istrue value="${cleanup}"/>
+    </condition>
+    <condition property="fixturearg" value="/run=GemStone.GemFire.Cache.UnitTests.${csharp.testcase}">
+      <isset property="csharp.testcase"/>
+    </condition>
+    <condition property="runscript.file" value="${osbuild.ext.dir}/tests/clicache/UnitTests/Debug/runCSTests.sh">
+      <istrue value="${csharp.debug}"/>
+    </condition>
+    <condition property="coveragearg" value="-coverage">
+      <isset property="csharp.coverage"/>
+    </condition>
+    <property name="runscript.file" value="${osbuild.ext.dir}/tests/clicache/UnitTests/runCSTests.sh"/>
+    <property name="doclean" value=""/>
+    <property name="fixturearg" value=""/>
+    <property name="coveragearg" value=""/>
+    <exec dir="${basedir}" 
+          executable="bash"
+          failonerror="true">
+      <arg file="${runscript.file}"/>
+      <arg value="-logging=${logging}"/>
+      <arg value="-logLevel=${logLevel}"/>
+      <arg value="-gfeLogLevel=${gfeLogLevel}"/>
+      <arg value="-gfeSecLogLevel=${gfeSecLogLevel}"/>
+      <arg value="-debug=${csharp.debug}"/>
+      <arg value="-unicast=${unicast}"/>
+      <arg value="-deprecated=${deprecated}"/>
+      <arg value="-generics=${generics}"/>
+	  <arg value="-net20=${net20}"/>
+      <arg value="-multicast=${multicast}"/>
+      <arg value="${coveragearg}"/>
+      <arg value="${doclean}"/>
+      <arg value="${fixturearg}"/>
+      <env key="TESTSRC" file="${osbuild.ext.dir}/tests/clicache/UnitTests"/>
+      <env key="CPP_TESTOUT" file="${tests.cppcache.out.dir}"/>
+      <env key="OSBUILDDIR" file="${osbuild.ext.dir}"/>
+	  <env key="OSBUILDEXTDIR" file="${osbuild.dir}"/>
+      <env key="GFCPP" file="${product.dir}"/>
+      <env key="GFE_DIR" file="${gfe.dir}"/>
+      <env key="GF_JAVA" file="${gfe.jre}/bin/java"/>
+      <env key="CLASSPATH" path="${framework.dir}/lib/javaobject.jar:${gfe.dir}/lib/antlr.jar:${gfe.dir}/lib/gfSecurityImpl.jar" />
+      <env key="OPENSSL" value="${openssl.dir}"/>
+      <env key="NUNIT" file="${nunit.dir}"/>
+      <env key="CDB" file="${cdb.dir}"/>
+      <env key="RUNSINGLETEST" value="${runSingleTest}"/>
+      <env key="RUNSEQUENTIAL" value="${runSequential}"/>
+      <env key="VS2010" value="${vs.2010}"/>
+    </exec>
+  </target>
+ 
+  <target depends="props, make-last-update" name="start-eclipse"
+     description="Starts Eclipse with the required environment variables">
+     <exec dir="${basedir}" 
+           executable="eclipse" 
+           failonerror="false"
+           spawn="true"
+           vmlauncher="false">
+       <arg line="-vm ${eclipsevm.dir}/bin/java"/>
+       <env key="GF_BASEDIR" value="${basedir}"/>
+       <env key="OSBUILDDIR" value="${osbuild.ext.dir}"/>
+       <env key="ACE_DIR" value="${ace.dir}"/>
+       <env key="ACELINKNAME" value="${acelinkname}"/>
+       <env key="SQLITE" value="${sqlite.dir}"/>
+       <env key="ANTLR" value="${antlr.dir}"/>
+       <env key="STLPORT" value="${stlport.dir}"/>
+       <env key="STACKTRACE" value="${stacktrace.dir}"/>
+       <env key="XERCESDIR" value="${xerces.dir}"/>
+       <env key="XML" value="${xml.dir}"/>
+       <env key="ZZIP" value="${zzip.dir}"/>
+       <env key="ZLIB" value="${zlib.dir}"/>
+       <env key="FASTDEPEXE" value="${fastdep.exe}"/>
+       <env key="GEMFIRE_PRODUCTNAME" value="${gemfire.productname}"/>
+       <env key="GEMFIRE_VERSION" value="${gemfire.version}"/>
+       <env key="GEMFIRE_BITS" value="${gemfire.bits}"/>
+       <env key="GEMFIRE_BUILDID" value="${userName} ${build.number}"/>
+       <env key="GEMFIRE_BUILDDATE" value="${build.time}"/>
+       <env key="GEMFIRE_SOURCE_REVISION" value="${source.revision}"/>
+       <env key="GEMFIRE_SOURCE_REPOSITORY" value="${source.branch}"/>
+       <env key="LICENSE_VERSION" value="${license.version}"/>
+       <env key="GFCPP" file="${product.dir}"/>
+       <env key="GFE_DIR" file="${gfe.dir}"/>
+       <env key="HIDDENDIR" value="${hidden.dir}"/>
+       <env key="FRAMEWORK" value="${framework.dir}"/>
+       <env key="CPPDEVEL" value="${cpp.devel}"/>
+     </exec>
+  </target>
+
+  <target depends="props" name="start-devenv">
+    <antcall target="vcbuild-solution">
+      <param name="vs.buildtool" value="devenv"/>
+      <param name="vs.commandline" value="${vs.file}"/>
+      <param name="exec.spawn" value="true"/>
+    </antcall>
+  </target>
+  
+  <target depends="props" name="start-devenv-quickstart">
+    <antcall target="vcbuild-solution">
+      <param name="vs.buildtool" value="devenv"/>
+      <param name="vs.commandline" value="${vs.quickstart.file}"/>
+      <param name="exec.spawn" value="true"/>
+    </antcall>
+  </target>  
+
+  <target depends="props, generate-pdx-auto-files" name="start-devenv-fwk">
+      <conditional if="isWindows">
+      <antcall target="vcbuild-solution">
+        <param name="vs.file" value="${vs.project.dir}\\executables\\pdxautoserializer.${vcp.file.ext}"/>
+        <param name="vs.configuration" value="Release"/>
+      </antcall>
+    </conditional>  
+    <property name="vs.file.fwk" location="${vs.project.dir}/fwk.sln"/>
+    <antcall target="vcbuild-solution">
+      <param name="vs.buildtool" value="devenv"/>
+      <param name="vs.commandline" value="${vs.file.fwk}"/>
+      <param name="exec.spawn" value="true"/>
+    </antcall>
+  </target>
+
+  <target depends="props, gen-cpp-parser" name="start-devenv-executables">
+    <property name="vs.file.executables" location="${vs.project.dir}/executables.sln"/>
+    <antcall target="vcbuild-solution">
+      <param name="vs.buildtool" value="devenv"/>
+      <param name="vs.commandline" value="${vs.file.executables}"/>
+      <param name="exec.spawn" value="true"/>
+    </antcall>
+  </target>
+
+  <target depends="props" name="start-devenv-sqlite">
+    <property name="vs.file.sqlite" location="${vs.project.dir}/sqlite.sln"/>
+    <antcall target="vcbuild-solution">
+      <param name="vs.buildtool" value="devenv"/>
+      <param name="vs.commandline" value="${vs.file.sqlite}"/>
+      <param name="exec.spawn" value="true"/>
+    </antcall>
+  </target>
+
+  <target depends="props" name="start-devenv-cli">
+    <property name="vs.file.cli" location="${vs.project.dir}/../${vs.solution.dir}/gfclicache/gfclicache.sln"/>
+    <antcall target="vcbuild-solution">
+      <param name="vs.buildtool" value="devenv"/>
+      <param name="vs.commandline" value="${vs.file.cli}"/>
+      <param name="exec.spawn" value="true"/>
+    </antcall>
+  </target>
+
+  <target depends="props" name="start-devenv-authinit">
+    <property name="vs.file.authinit" location="${vs.project.dir}/authinit.sln"/>
+    <antcall target="vcbuild-solution">
+      <param name="vs.buildtool" value="devenv"/>
+      <param name="vs.commandline" value="${vs.file.authinit}"/>
+      <param name="exec.spawn" value="true"/>
+    </antcall>
+  </target>
+
+  <target depends="props"  name="vcbuild-product">
+    <sequential>
+      <!-- Call vcbuild-solution once to build the release config. -->
+      <antcall target="vcbuild-solution"/>
+      
+      <!-- Currently this is done sequential to avoid a race condition, could be parallelized -->
+      <!-- Now build the missing debug parts -->
+      <antcall target="vcbuild-solution">
+        <param name="vs.configuration" value="sanctionedBuildDebug"/>
+      </antcall>
+      <antcall target="vcbuild-gfclicache"/>
+    </sequential>
+  </target>
+
+  <target depends="props" name="vcbuild-gfclicache" if="isWindows">
+    <conditional if="do64bit">
+        <antcall target="vcbuild-solution">
+          <param name="vs.buildtool" value="msbuild.exe"/>
+          <param name="vs.commandline" value="${osbuild.dir}/nativeclient.sln /p:Configuration=&quot;${cmake-build-type}&quot; /p:Platform=&quot;${platforms}&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+        </antcall>
+
+      
+      <antcall target="vcbuild-solution">
+        <param name="vs.buildtool" value="msbuild.exe"/>
+        <param name="vs.commandline" value="${vs.solution.dir}/gfclicache/gfclicache.sln /p:Configuration=sanctionedBuildDebug /p:Platform=&quot;${platforms}&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+      </antcall>
+    </conditional>
+    <conditional unless="do64bit">
+      <antcall target="vcbuild-solution">
+        <param name="vs.buildtool" value="msbuild.exe"/>
+        <param name="vs.commandline" value="${vs.solution.dir}/gfclicache/gfclicache.sln /p:Configuration=Release /p:Platform=&quot;Mixed Platforms&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+      </antcall>
+        <copy file="${build.dir}/build-${cmake-build-type}/clicache/${cmake-build-type}/GemStone.GemFire.Cache.dll" preservelastmodified="true" todir="${product.dir}/bin"/>
+        <copy file="${build.dir}/build-${cmake-build-type}/clicache/${cmake-build-type}/GemStone.GemFire.Cache.xml" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <copy file="${hiddenlib.dir}/Gemstone.Gemfire.Plugins.SqLite.dll" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <copy file="${sqlite.dir}/lib/System.Data.SQLite.dll" preservelastmodified="true" todir="${osbuild.ext.dir}/tests/clicache/UnitTests"/> 
+      <antcall target="vcbuild-solution">
+        <param name="vs.buildtool" value="msbuild.exe"/>
+        <param name="vs.commandline" value="${vs.solution.dir}/gfclicache/gfclicache.sln /p:Configuration=sanctionedBuildDebug /p:Platform=&quot;Mixed Platforms&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+      </antcall>
+    </conditional>
+  </target>
+  
+  <!--This target is added to built the .NET 2.0 binaries linking with VS 2010 generated gfcppcache.lib 
+  This target should be built with only ./build_vc8.sh and ./build64_vc8.sh -->
+  <target depends="props" name="vcbuild-gfclicache-net20" if="isWindows" unless="vs.2010">
+    <if><available file="${osbuild.dir}/product/lib/gfcppcache.lib"/>
+      <then>
+        <conditional if="do64bit">
+          <antcall target="vcbuild-solution">
+            <param name="vs.buildtool" value="msbuild.exe"/>
+            <param name="vs.commandline" value="${osbuild.dir}/gfclicache/gfclicache.sln /p:Configuration=ReleaseNet20 /p:Platform=&quot;${platforms}&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+          </antcall>
+          <copy file="${hiddenlib.dir}/GemStone.GemFire.Cache.dll" preservelastmodified="true" todir="${osbuild.dir}/product/bin/Net20"/>
+          <copy file="${hiddenlib.dir}/GemStone.GemFire.Cache.xml" preservelastmodified="true" todir="${osbuild.dir}/product/bin/Net20"/>
+          <antcall target="vcbuild-solution">
+            <param name="vs.buildtool" value="msbuild.exe"/>
+            <param name="vs.commandline" value="${vs.solution.dir}/gfclicache/gfclicache.sln /p:Configuration=DebugNet20 /p:Platform=&quot;${platforms}&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+          </antcall>
+        </conditional>
+      
+        <conditional unless="do64bit">
+          <antcall target="vcbuild-solution">
+            <param name="vs.buildtool" value="msbuild.exe"/>
+            <param name="vs.commandline" value="${vs.solution.dir}/gfclicache/gfclicache.sln /p:Configuration=ReleaseNet20 /p:Platform=&quot;Mixed Platforms&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+          </antcall>
+          <copy file="${build.dir}/build-${cmake-build-type}/clicache/${cmake-build-type}/GemStone.GemFire.Cache.dll" preservelastmodified="true" todir="${osbuild.dir}/product/bin/Net20"/>
+          <copy file="${build.dir}/build-${cmake-build-type}/clicache/${cmake-build-type}/GemStone.GemFire.Cache.xml" preservelastmodified="true" todir="${osbuild.dir}/product/bin/Net20"/>
+          <antcall target="vcbuild-solution">
+            <param name="vs.buildtool" value="msbuild.exe"/>
+            <param name="vs.commandline" value="${vs.solution.dir}/gfclicache/gfclicache.sln /p:Configuration=DebugNet20 /p:Platform=&quot;Mixed Platforms&quot; /p:OutputDir=${osbuild.ext.dir}"/>
+          </antcall>
+        </conditional>
+      </then>
+    </if>
+  </target>
+
+  <target depends="props, make-last-update" name="vcbuild-solution"
+     description="Builds the .sln|.vcproj file pointed to by the vs.file property">
+     <!-- vs.moreargs is used to pass additional args to the vs.buildtool
+          for example: /rebuild 
+       -->
+     <property name="vs.moreargs" value=""/>
+     <property name="vs.configuration" value="Release"/>
+     <conditional unless="vs.2010">
+        <property name="vs.buildtool" value="${myenv.VCINSTALLDIR}/vcpackages/VCBuild.exe"/>
+        <property name="vs.config.build" value="${vs.configuration}|${platforms}"/>
+        <property name="vs.commandline" value="${vs.file} '&quot;${vs.config.build}&quot;' /M8 /nologo ${vs.moreargs}"/>
+     </conditional>
+     <conditional if="vs.2010">
+        <property name="vs.buildtool" value="msbuild.exe"/>
+        <property name="vs.commandline" value="${vs.file} /p:Configuration=${vs.configuration} /p:Platform=&quot;${platforms}&quot; /nologo ${vs.moreargs}"/>
+        <echo message="Building application with VS 2010 libraries. Command Line: ${vs.commandline}" level="info"/>
+     </conditional>
+     <!-- not.exec.spawn = NOT(exec.spawn) ie true=>false and false=>true -->
+     <property name="exec.spawn" value="false"/>
+     <condition property="not.exec.spawn" value="false">
+       <istrue value="${exec.spawn}"/> 
+     </condition>
+     <condition property="not.exec.spawn" value="true">
+       <isfalse value="${exec.spawn}"/> 
+     </condition>
+     <!-- Create a properties file to pass info to the ant calls done within the Microsoft build environment. -->
+     <available file="${vs.propertyfile}" property="vs.propertyfile.exists" /> 
+     <conditional if="vs.propertyfile.exists">
+       <delete file="${vs.propertyfile}" quiet="true" />
+     </conditional>
+     <propertyfile comment="pass ant properties to be used inside devenv|VCBuild" file="${vs.propertyfile}" >
+       <entry key="osbuild.dir" value="${osbuild.ext.dir}" />
+       <entry key="ace.dir" value="${ace.dir}" />
+       <entry key="sqlite.dir" value="${sqlite.dir}" />
+       <entry key="antlr.dir" value="${antlr.dir}" />
+       <entry key="stlport.dir" value="${stlport.dir}" />
+       <entry key="stacktrace.dir" value="${stacktrace.dir}" />
+       <entry key="xerces.dir" value="${xerces.dir}" />
+       <entry key="xml.dir" value="${xml.dir}" />
+       <entry key="nunit.dir" value="${nunit.dir}" />
+       <entry key="thirdparty.dir" value="${thirdparty.dir}" />
+       <entry key="cPointerModel" value="${cPointerModel}" />
+     </propertyfile> 
+
+     <!--failonerror="true"-->
+     <exec dir="${basedir}" 
+           executable="${vs.buildtool}" 
+           failonerror="${not.exec.spawn}"
+           spawn="${exec.spawn}"
+           vmlauncher="false">
+           <arg line="${vs.commandline}"/>
+       <env key="OSBUILDDIR" value="${osbuild.ext.dir}"/>
+       <env key="OSBUILDEXTDIR" value="${osbuild.dir}"/>
+       <env key="ACE_DIR" value="${ace.dir}"/>
+       <env key="ACELINKNAME" value="${acelinkname}"/>
+       <env key="SQLITE" value="${sqlite.dir}"/>
+       <env key="ANTLR" value="${antlr.dir}"/>
+       <env key="STLPORT" value="${stlport.dir}"/>
+       <env key="STACKTRACE" value="${stacktrace.dir}"/>
+       <env key="XERCESDIR" value="${xerces.dir}"/>
+       <env key="XML" value="${xml.dir}"/>
+       <env key="NUNIT" value="${nunit.dir}"/>
+       <env key="ZZIP" value="${zzip.dir}"/>
+       <env key="ZLIB" value="${zlib.dir}"/>
+       <env key="FASTDEPEXE" value="${fastdep.exe}"/>
+       <env key="GEMFIRE_PRODUCTNAME" value="${gemfire.productname}"/>
+       <env key="GEMFIRE_VERSION" value="${gemfire.version}"/>
+       <env key="GEMFIRE_BITS" value="${gemfire.bits}"/>
+       <env key="GEMFIRE_BUILDID" value="${userName} ${build.number}"/>
+       <env key="GEMFIRE_BUILDDATE" value="${build.time}"/>
+       <env key="GEMFIRE_SOURCE_REVISION" value="${source.revision}"/>
+       <env key="GEMFIRE_SOURCE_REPOSITORY" value="${source.branch}"/>
+       <env key="LICENSE_VERSION" value="${license.version}"/>
+       <env key="GFCPP" file="${product.dir}"/>
+       <env key="OPENSSL" file="${openssl.dir}"/>
+       <env key="GFE_DIR" file="${gfe.dir}"/>
+       <env key="HIDDENDIR" value="${hidden.dir}"/>
+       <env key="FRAMEWORK" value="${framework.dir}"/>
+       <env key="CPPDEVEL" value="${cpp.devel}"/>
+     </exec>
+  </target>
+
+  <target depends="props, native-client, pack-core, templates, pack-noncore, quickstart" name="build-product"
+          description="Build all that is required to create the product directory and its contents."/>
+ 
+  <target depends="props, src, pack-core" name="build-product-nodocs"/>
+
+  <target depends="pack-core, pack-noncore" name="quick-build-product"/>
+
+  <target depends="props, cppref-doxygen, cliref-doxygen, cliref-sandcastle" name="pack-noncore">
+    <property name="packTargetDir" value="${product.dir}"/>
+    <mkdir dir="${packTargetDir}/docs"/>
+
+    <copy file="${basedir}/release/docfiles/copyright.html" preservelastmodified="true" todir="${packTargetDir}/docs"/>
+    <copy file="${basedir}/release/docfiles/support.html" preservelastmodified="true" todir="${packTargetDir}/docs"/>
+    <copy file="${basedir}/release/docfiles/DocIndex.css" preservelastmodified="true" todir="${packTargetDir}/docs"/>
+    <copy file="${basedir}/release/images/PIVOTAL_GemFire_190x81.png" preservelastmodified="true" todir="${packTargetDir}/docs"/>
+
+    <copy preservelastmodified="true" todir="${packTargetDir}/docs/cppdocs">
+      <fileset dir="${docs.dir}/cppreference/html">
+      </fileset>
+    </copy>
+
+    <!-- Only pack cppdocs to unix -->
+    <conditional unless="isWindows">
+      <!-- other C interface files -->
+      <copy file="${basedir}/release/docfiles/unix_index.html" preservelastmodified="true" tofile="${packTargetDir}/docs/Index.html"/>
+    </conditional>
+
+    <!-- sandcastle docs packed only on windows -->
+    <conditional if="isWindows" >
+      <conditional if="runsandcastle">
+        <mkdir dir="${packTargetDir}/docs/DotNetDocs"/>
+        <copy preservelastmodified="true" todir="${packTargetDir}/docs/DotNetDocs">
+          <fileset dir="${docs.dir}/clireference-sandcastle">
+            <exclude name="LastBuild.log"/>
+            <!-- Don't copy scripts or styles directories as they need to be capitalized for use on Linux/Unix -->
+            <exclude name="scripts/**"/>
+            <exclude name="styles/**"/>
+          </fileset>
+        </copy>
+        <copy file="${basedir}/release/docfiles/win_index.html" preservelastmodified="true" tofile="${packTargetDir}/docs/Index.html"/>
+        <!-- Fix capitalization for hosting/viewing on Unix/Linux -->
+        <move todir="${packTargetDir}/docs/DotNetDocs/Styles">
+          <fileset dir="${docs.dir}/clireference-sandcastle/styles"/>
+        </move>
+        <move todir="${packTargetDir}/docs/DotNetDocs/Scripts">
+          <fileset dir="${docs.dir}/clireference-sandcastle/scripts"/>
+        </move>
+      </conditional>
+    </conditional>      
+
+    <!-- Pack SSL libs to product -->
+    <mkdir dir="${packTargetDir}/ssl_libs"/>
+    <conditional unless="isWindows">
+      <copy preservelastmodified="true" todir="${packTargetDir}/ssl_libs">
+        <fileset dir="${hiddenlib.dir}">
+          <include name="libACE.*"/>
+        </fileset>
+      </copy>
+    </conditional>
+
+    <conditional if="isWindows">
+      <copy preservelastmodified="true" todir="${packTargetDir}/ssl_libs">
+        <fileset dir="${hiddenlib.dir}">
+          <include name="ACE*.dll"/>
+        </fileset>
+      </copy>
+    </conditional>
+
+    <!-- Add 3rd Party license files to product-->
+    <copy file="${basedir}/release/3rdparty_licenses/open_source_licenses-Pivotal_GemFire_NativeClient_8.2.0.txt"
+      todir="${productlib.dir}"/>
+
+    <copy file="${basedir}/release/docfiles/Pivotal_EULA.txt"
+            tofile="${packTargetDir}/EULA.txt"/>
+
+  </target>
+
+  <target depends="props" name="pack-RNotes">
+    <copy file="${basedir}/release/docfiles/ReleaseNotes.txt" preservelastmodified="true" todir="${osbuild.dir}/product"/>
+  </target>
+
+  <target depends="props, javaobject-library" name="pack-core">
+    <description>Packs corefiles to the gemfire product tree</description>
+
+    <property name="packTargetDir" value="${product.dir}"/>
+    <mkdir dir="${packTargetDir}"/>
+    <mkdir dir="${packTargetDir}/bin"/>
+    <mkdir dir="${packTargetDir}/lib"/>
+    <mkdir dir="${packTargetDir}/dtd"/>
+    <mkdir dir="${packTargetDir}/include"/>
+    <mkdir dir="${packTargetDir}/defaultSystem"/>
+
+    <copy file="${basedir}/release/scripts/gfcpp.properties" preservelastmodified="true" todir="${packTargetDir}/defaultSystem"/>
+
+    <mkdir dir="${hidden.dir}/bin"/>
+
+    <copy todir="${packTargetDir}/dtd" preservelastmodified="true">
+      <fileset dir="${basedir}/src/dtds">
+        <include name="*.dtd"/>
+      </fileset>
+    </copy>
+
+    <conditional unless="isWindows">
+      <!-- gfcpp -->
+      <copy file="${scripts.dir}/gfcpp" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <chmod file="${product.dir}/bin/gfcpp" perm="a+x"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/gfcpp/gfcpp" preservelastmodified="true" tofile="${product.dir}/lib/gfcpp"/>
+      <chmod file="${product.dir}/lib/gfcpp" perm="a+x"/>
+
+      <!-- pdxautoserializer -->
+      <copy file="${build.dir}/build-${cmake-build-type}/pdxautoserializer/pdxautoserializer" preservelastmodified="true" todir="${product.dir}/bin"/>
+
+    </conditional>
+
+    <conditional if="isWindows">
+      <!-- gfcpp -->
+      <copy file="${scripts.dir}/gfcpp.bat" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <!--TODO make the dest dir consistent between platforms-->
+      <copy file="${build.dir}/build-${cmake-build-type}/gfcpp/${cmake-build-type}/gfcpp.exe" preservelastmodified="true" tofile="${product.dir}/bin/gfcpp.exe"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/pdxautoserializer/${cmake-build-type}/pdxautoserializer.exe" preservelastmodified="true" tofile="${product.dir}/bin/pdxautoserializer.exe"/>
+      <!-- libs -->
+      <copy file="${build.dir}/build-${cmake-build-type}/clicache/${cmake-build-type}/GemStone.GemFire.Cache.dll" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <!-- TODO: find/generate this .xml file and turn the copy below back on... -->
+      <copy file="${build.dir}/build-${cmake-build-type}/clicache/${cmake-build-type}/GemStone.GemFire.Cache.xml" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/plugins/SQLiteCLI/${cmake-build-type}/Gemstone.Gemfire.Plugins.SQLite.dll" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/dependencies/sqlite-netFx/sqlite-netFx-prefix/System.Data.SQLite.dll" preservelastmodified="true" todir="${osbuild.ext.dir}/tests/clicache/UnitTests"/>
+
+    </conditional>
+
+    <!-- C++ interface -->
+    <echo message="DEBUG: cppcache.dir=${cppcache.dir}" />
+    <echo message="DEBUG: packTargetDir=${packTargetDir}" />
+    <copy todir="${packTargetDir}/include/gfcpp" preservelastmodified="true">
+      <fileset dir="${cppcache.dir}">
+        <include name="*.hpp"/>
+        <include name="*.inl"/>
+        <include name="*.cc"/>
+      </fileset>
+    </copy>
+    <copy todir="${packTargetDir}/include/gfcpp/statistics" preservelastmodified="true">
+      <fileset dir="${cppcache.dir}/statistics">
+        <include name="StatisticDescriptor.hpp"/>
+        <include name="Statistics.hpp"/>
+        <include name="StatisticsFactory.hpp"/>
+        <include name="StatisticsType.hpp"/>
+        <include name="StatisticsTypeFactory.hpp"/>
+<!--
+        <include name="GemfireStatisticsFactory.hpp"/>
+-->
+        <include name="*.inl"/>
+        <include name="*.cc"/>
+      </fileset>
+    </copy>
+    <!-- end of C++ interface -->
+
+    <condition property="libExt" value=".so">
+      <os family="unix"/>
+    </condition>
+    <condition property="libExt" value=".dll">
+      <os family="windows"/>
+    </condition>
+    <condition property="libPrefix" value="lib">
+      <os family="unix"/>
+    </condition>
+    <condition property="libPrefix" value="">
+      <os family="windows"/>
+    </condition>
+  <!-- TODO: define ${ace.dir} to be src/dependencies/ACE -->
+        <!-- copy ace to hidden lib, renamed -->
+
+    <chmod type="file" perm="a+x">
+      <fileset dir="${product.dir}"/>
+    </chmod>
+
+    <!--copy file="${hiddenlib.dir}/${libPrefix}gfcppcache${libExt}" preservelastmodified="true" todir="${packTargetDir}/lib"/-->
+    <echo message="DEBUG:build.dir : ${build.dir}" />
+    <echo message="DEBUG:osbuildir : ${osbuild.dir}" />
+    <!-- FYI: osbuild.dir is "build-artifacts/<os>" -->
+<!--TODO: local var for destdir-->
+
+
+    <!-- TODO consolidate used of these two properties... redundddddantttt-->
+    <echo message="DEBUG**  :product.dir : ${product.dir}" />
+    <echo message="DEBUG**  :packTargetDir : ${packTargetDir}" />
+    
+    <conditional unless="isWindows">
+      <copy file="${build.dir}/build-${cmake-build-type}/cppcache/${libPrefix}gfcppcache${libExt}" preservelastmodified="true" todir="${product.dir}/lib"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/cryptoimpl/${libPrefix}cryptoImpl${libExt}" preservelastmodified="true" todir="${product.dir}/lib"/>
+    </conditional>
+    <conditional if="isWindows">
+      <copy file="${build.dir}/build-${cmake-build-type}/cppcache/${cmake-build-type}/${libPrefix}gfcppcache${libExt}" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/cppcache/${cmake-build-type}/${libPrefix}gfcppcache.lib" preservelastmodified="true" todir="${product.dir}/lib"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/cryptoimpl/${cmake-build-type}/${libPrefix}cryptoImpl${libExt}" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <copy file="${build.dir}/build-${cmake-build-type}/cryptoimpl/${cmake-build-type}/${libPrefix}cryptoImpl.lib" preservelastmodified="true" todir="${product.dir}/lib"/>
+      <copy file="${basedir}/release/images/gemfire.ico" preservelastmodified="true" todir="${product.dir}/bin"/>
+    </conditional>
+
+    <copy file="${build.dir}/build-${cmake-build-type}/cppcache/config.h" preservelastmodified="true" todir="${packTargetDir}/include"/>
+
+
+
+    <conditional unless="isWindows">
+      <copy preservelastmodified="true"
+      file="${framework.dir}/lib/javaobject.jar" 
+      tofile="${build.dir}/build-${cmake-build-type}/javaobject.jar"/>
+      <copy preservelastmodified="true"
+      file="${framework.dir}/lib/javaobject.jar" 
+      tofile="${build.dir}/build-${cmake-build-type}/javaobject.jar"/>
+    </conditional>
+    
+      <copy preservelastmodified="true"
+      file="${framework.dir}/lib/javaobject.jar" 
+      tofile="${osbuild.dir}/product/SampleCode/quickstart/lib/javaobject.jar"/>
+      <copy todir="${osbuild.dir}/product/SampleCode/quickstart">
+        <fileset dir="${basedir}/quickstart">
+          <include name="**"/>
+          <exclude name="**/csharp/**"/>
+        </fileset>
+      </copy>
+
+    <conditional if="isWindows">
+      <copy todir="${osbuild.dir}/product/SampleCode/quickstart">
+        <fileset dir="${basedir}/quickstart">
+          <include name="**"/>
+        </fileset>
+      </copy>
+      <copy todir="${osbuild.dir}/product/SampleCode/quickstart/csharp">
+      <fileset dir="${tests.src.dir}/clicache/TestObject">
+        <include name="Po*N.cs"/>
+      </fileset>
+    </copy>
+      <copy todir="${osbuild.dir}/product/SampleCode/quickstart/csharp">
+      <fileset dir="${tests.src.dir}/clicache/PdxClassLibrary">
+        <include name="PortfolioPdx.cs"/>
+        <include name="PositionPdx.cs"/>
+      </fileset>
+    </copy>
+
+    </conditional>
+
+<!-- begin framework copy-->
+
+
+    <property name="sqliteimpllinkname" value="SqLiteImpl"/>
+    <property name="sqliteimpllibname" value="${libPrefix}${sqliteimpllinkname}${libExt}"/>
+
+    <conditional if="isWindows">
+
+      <conditional if="isDebug">
+        <property name="sqlitelinkname" value="sqlite3d" />
+        <property name="xerceslinkname" value="xerces-c_3_1D" />
+      </conditional>
+      <conditional unless="isDebug">
+        <property name="sqlitelinkname" value="sqlite3" />
+        <property name="xerceslinkname" value="xerces-c_3_1" />
+      </conditional>
+    
+      <property name="sqlitelibname" value="${libPrefix}${sqlitelinkname}${libExt}"/>
+      <property name="xerceslibname" value="${libPrefix}${xerceslinkname}${libExt}"/>
+
+      <property name="xercessrclib" value="${xerces.dir}/bin/${xerceslibname}" />
+
+      <property name="sqlitesrclib" value="${sqlite.dir}/bin/${sqlitelibname}" />
+
+      <property name="sqliteimplsrclib" value="${build.dir}/build-${cmake-build-type}/sqliteimpl/${cmake-build-type}"/>
+
+      <copy file="${sqliteimplsrclib}/${sqliteimpllibname}" preservelastmodified="true" todir="${product.dir}/bin"/>
+      <copy file="${sqliteimplsrclib}/${libPrefix}${sqliteimpllinkname}.lib" preservelastmodified="true" todir="${product.dir}/lib"/>
+      
+      <copy preservelastmodified="true" todir="${framework.dir}/lib/" file="${sqliteimplsrclib}/${sqliteimpllibname}"/>
+
+    </conditional> 
+    
+    <conditional unless="isWindows">
+
+      <conditional if="isDebug">
+        <property name="sqlitelinkname" value="sqlite3d" />
+      </conditional>
+      <conditional unless="isDebug">
+        <property name="sqlitelinkname" value="sqlite3" />
+      </conditional>
+      <property name="xerceslinkname" value="xerces-c-3.1" />
+    
+      <property name="sqliteimpllinkname" value="SqLiteImpl"/>
+      <property name="sqlitelibname" value="${libPrefix}${sqlitelinkname}${libExt}"/>
+      <property name="xerceslibname" value="${libPrefix}${xerceslinkname}${libExt}"/>
+
+      <property name="xercessrclib" value="${xerces.dir}/lib/${xerceslibname}" />
+
+      <property name="sqlitesrclib" value="${sqlite.dir}/lib/${sqlitelibname}" />
+
+      <property name="sqliteimplsrclib" value="${build.dir}/build-${cmake-build-type}/sqliteimpl"/>
+
+      <copy file="${sqliteimplsrclib}/${sqliteimpllibname}" preservelastmodified="true" todir="${product.dir}/lib"/>
+      
+      <copy preservelastmodified="true" todir="${framework.dir}/lib/" file="${sqliteimplsrclib}/${sqliteimpllibname}"/>
+      <copy todir="${product.dir}/SampleCode/quickstart" >
+          <fileset dir="${tests.cppcache.src.dir}">
+            <include name="keystore/**"/>
+          </fileset>
+      </copy>
+      <copy todir="${product.dir}/SampleCode/quickstart/XMLs" >
+          <fileset dir="${basedir}/src/templates/security">
+            <include name="*.xml"/>
+            <include name="*.dtd"/>
+          </fileset>
+      </copy>
+    </conditional>
+
+
+      <conditional if="do64bit">
+      <property name="xerceLinuxsversion" value="28"/>
+      <property name="xercesWinversion" value="2_8"/>
+      <property name="sqliteversion" value="0"/>
+    </conditional>
+      <property name="xerceLinuxsversion" value="26"/>
+      <property name="xercesWinversion" value="2_6"/>
+      <property name="sqliteversion" value="0"/>
+ 
+    <copy preservelastmodified="true"
+        tofile="${framework.dir}/lib"
+        file="${xercessrclib}"/>
+<!--
+    <copy preservelastmodified="true"
+    tofile="${framework.dir}/lib/lib${xerceslinkname}.so.${xerceLinuxsversion}"
+    file="${xercessrclib}"/>
+    <copy preservelastmodified="true"
+    tofile="${framework.dir}/lib/debug/lib${xerceslinkname}.so"
+    file="${xercessrclib}"/>
+    <copy preservelastmodified="true"
+    tofile="${framework.dir}/lib/debug/lib${xerceslinkname}.so.${xerceLinuxsversion}"
+    file="${xercessrclib}"/>
+    -->
+    <copy preservelastmodified="true"
+        tofile="${framework.dir}/lib"
+        file="${sqlitesrclib}"/>
+    <!--
+    <copy preservelastmodified="true"
+    tofile="${framework.dir}/lib/lib${sqlitelinkname}.so.${sqliteversion}"
+    file="${sqlitesrclib}"/>
+    <copy preservelastmodified="true"
+    tofile="${framework.dir}/lib/debug/lib${sqlitelinkname}.so"
+    file="${sqlitesrclib}"/>
+    <copy preservelastmodified="true"
+    tofile="${framework.dir}/lib/debug/lib${sqlitelinkname}.so.${sqliteversion}"
+    file="${sqlitesrclib}"/>
+    -->
+    <!--
+    <copy preservelastmodified="true"
+        todir="${product.dir}/lib"
+        file="${sqlitesrclib}"/>
+    -->
+
+<!-- end framework copy -->
+
+    <mkdir dir="${packTargetDir}/lib"/>
+    <antcall target="create-version-file"/>
+
+  </target>
+
+  <target depends="props" name="create-version-file">
+    <echo message="DEBUG: create-version-file: ${build.dir}" />
+
+    <property file="${build.dir}/lastUpdate.txt"/>
+    <property file="${build.dir}/build.number"/>
+    <property name="version.resource.file" value="${packTargetDir}/lib/Version.properties"/>
+    <delete file="${version.resource.file}" quiet="true"/>
+    <propertyfile file="${version.resource.file}" comment="Properties that control what version GemFire will think it is. Changing these values may cause GemFire to no longer function.">
+        <entry key="Product-Name" value="${gemfire.productname}"/>
+        <entry key="Product-Version" value="${gemfire.version}"/>
+        <entry key="License-Version" value="${license.version}"/>
+        <entry key="Build-Id" value="${userName} ${build.number}"/>
+        <entry key="Build-Date" value="${build.time}"/>
+        <entry key="Build-Platform" value="${os.name} ${os.version} ${os.arch}"/>
+        <entry key="Source-Date" value="${source.date}"/>
+        <entry key="Source-Revision" value="${source.revision}"/>
+        <entry key="Source-Repository" value="${source.branch}"/>
+      </propertyfile>
+  </target>
+
+  <target depends="props" name="build-installer">
+    <!-- Remove the bdbimpl from the final installer -->
+    <conditional if="isWindows">
+    <delete file="${product.dir}/bin/bdbimpl.dll"/>
+    </conditional>
+    <conditional unless="isWindows">
+    <delete file="${product.dir}/lib/libBDBImpl.so"/>
+    </conditional>
+    
+    <description>Creates an distribution based upon the product tree</description>
+    <chmod type="file" perm="a+x">
+      <fileset dir="${product.dir}/bin"/>
+    </chmod>
+    <property environment="myenv" />
+    <property name="gfcpp_installer.dir" value="${osbuild.ext.dir}/installer"/>
+    <property file="${basedir}/build-artifacts/build.number"/>
+
+    <delete dir="${gfcpp_installer.dir}"/>
+    <mkdir dir="${gfcpp_installer.dir}"/>
+    <touch file="${gfcpp_installer.dir}/vernum"/>
+    <echo file="${gfcpp_installer.dir}/vernum">
+      vernum=${gemfire.version}
+    </echo>
+    <replace file="${gfcpp_installer.dir}/vernum" token="." value=""/>
+    <property file="${gfcpp_installer.dir}/vernum"/>
+
+    <conditional if="do64bit">
+      <property name="bits" value="64bit"/>
+    </conditional>
+    <property name="bits" value="32bit"/>    
+
+    <condition property="plat.vernum" value="sparc_Solaris_${bits}_${vernum}_b${build.number}">
+      <and>
+      <os name="SunOs"/>
+      <os arch="sparcv9"/>
+      </and>
+    </condition>
+
+    <condition property="plat.vernum" value="x86_Solaris_${bits}_${vernum}_b${build.number}">
+      <and>
+      <os name="SunOs"/>
+      <os arch="amd64"/>
+      </and>
+    </condition>
+
+    <condition property="plat.vernum" value="Linux_${bits}_${vernum}_b${build.number}">
+      <os name="Linux"/>
+    </condition>
+
+    <condition property="plat.vernum" value="Windows_${bits}_${vernum}_b${build.number}">
+      <os family="windows"/>
+    </condition>
+
+    <conditional if="isWindows">
+      <exec dir="${basedir}" executable="bash" failonerror="true">
+        <arg value="release/scripts/makeProductMSI.sh"/>
+        <env key="VERSION" value="${gemfire.version}"/>
+        <env key="BNUMBER" value="${build.number}"/>
+        <env key="OSBUILDDIR" value="${osbuild.ext.dir}"/>
+        <env key="WIX" value="${wix.dir}"/>
+        <env key="BITS" value="${bits}"/>
+        <env key="VCVER" value="${VCVER}"/>
+      </exec>
+      <!-- zip installer for debug libs -->
+      <property name="installer.zip" 
+                value="Pivotal_GemFire_NativeClient_debug_${plat.vernum}.zip"/>
+      <zip destfile="${gfcpp_installer.dir}/${installer.zip}">
+      <zipfileset dir="${hidden.dir}/lib"
+        prefix="NativeClient_${plat.vernum}" filemode="755">
+          <include name="debug/*.dll"/>
+          <include name="debug/*.lib"/>
+          <include name="debug/*.pdb"/>
+        </zipfileset>
+      </zip>
+    </conditional>
+    <conditional unless="isWindows">
+      <property name="installer.zip" value="Pivotal_GemFire_NativeClient_${plat.vernum}.zip"/>
+      <zip destfile="${gfcpp_installer.dir}/${installer.zip}">
+        <zipfileset dir="${product.dir}"
+          prefix="NativeClient_${plat.vernum}" filemode="755"/>
+      </zip>
+    </conditional>
+    <!-- clean up msi generation cruft -->
+    <delete>
+      <fileset dir="${gfcpp_installer.dir}" includes="fragment.** installer_gen.** ui.wixobj vernum">
+      </fileset>
+    </delete>
+  </target>
+
+  
+  <!-- Templates -->
+  <target name="templates" depends="props">
+    <mkdir dir="${product.dir}/templates"/>
+    <antcall target="templates-security"/>
+  </target>
+
+  <target name="templates-security" depends="props">
+    <!-- Windows specific code to copy security related files -->
+    <conditional if="isWindows">
+      <copy todir="${product.dir}/templates/security" preservelastmodified="true">
+        <fileset dir="${basedir}/src/templates/security">
+          <include name="**"/>
+          <exclude name="*/openssl/Linux/**"/>
+          <exclude name="*/openssl/SunOS/**"/>
+          <exclude name="*.sh"/>
+          <exclude name="*.csh"/>
+          <exclude name="CMake*.*" />
+        </fileset>
+      </copy>
+    </conditional>
+
+    <!-- Linux specific code to build security with the buildit.sh -->
+    <conditional unless="isWindows">
+      <copy todir="${product.dir}/templates/security" preservelastmodified="true">
+        <fileset dir="${basedir}/src/templates/security">
+          <include name="**"/>
+          <exclude name="*/openssl/Windows/**"/>
+          <exclude name="*.bat"/>
+          <exclude name="csharp/**"/>
+        <exclude name="CMake*.*" />
+        </fileset>
+      </copy>
+      <updateBuildScript file="${product.dir}/templates/security/buildit.sh"/>
+      <chmod perm="a+x">
+        <fileset dir="${product.dir}/templates/security" excludes="CMake*.*">
+          <include name="*.sh"/>
+        </fileset>
+      </chmod>
+    </conditional>
+  </target>
+  
+  <macrodef name="updateBuildScript">
+    <attribute name="file"/>
+    <sequential>
+      <conditional if="do64bit">
+        <replace file="@{file}" token="__IS_64_BIT__" value="1"/>
+        <replace file="@{file}" token="__BUILD_BITS__" value="64"/>
+      </conditional>
+      <replace file="@{file}" token="__IS_64_BIT__" value="0"/>
+      <replace file="@{file}" token="__BUILD_BITS__" value="32"/>
+      <conditional if="useCpp11">
+        <replace file="@{file}" token="__USE_CPP11__" value="1"/>
+      </conditional>
+      <replace file="@{file}" token="__USE_CPP11__" value="0"/>
+    </sequential>
+  </macrodef>
+   
+  <target name="build-pdxobject" depends="props,-build-pdxobject-windows,-build-pdxobject-unix"/>
+  <target name="-build-pdxobject-windows" depends="props" if="isWindows">
+    <mkdir dir="${tests.autopdx.out.dir}"/>
+    <copy todir="${tests.autopdx.out.dir}">
+      <fileset dir="${tests.autopdx.src.dir}">
+        <include name="**"/>
+      </fileset>
+    </copy>
+    <updateBuildScript file="${tests.autopdx.out.dir}/buildit.bat"/>
+    <exec dir="${tests.autopdx.out.dir}"
+          executable="cmd"
+          failonerror="true">
+      <env key="GFCPP" value="${product.dir}"/>
+        <env key="OSBUILDDIR" value="${osbuild.ext.dir}"/>
+        <env key="PLATFORM" value="${platforms}"/>
+      <arg value="/c"/>
+      <arg path="${tests.autopdx.out.dir}/buildit.bat"/>
+    </exec>
+  </target>
+
+  <target name="-build-pdxobject-unix" depends="props" unless="isWindows">
+    <mkdir dir="${tests.autopdx.out.dir}"/>
+    <copy todir="${tests.autopdx.out.dir}">
+      <fileset dir="${tests.autopdx.src.dir}">
+        <include name="**"/>
+      </fileset>
+    </copy>
+    <exec dir="${tests.autopdx.out.dir}" executable="${ant.make}" failonerror="true">
+      <arg value="${ant.make.threads}"/>
+      <arg value="all"/>
+      <arg value="OSNAME=${os.name}"/>
+      <arg value="GFLIB_MODEL=${cPointerModel}"/>
+      <arg value="base=${basedir}"/>
+      <arg value="product=${product.dir}"/>
+      <arg value="GFCPP=${product.dir}"/>
+      <arg value="OSBUILDDIR=${osbuild.ext.dir}"/>
+    </exec>    
+  </target>
+
+  <target name="build-templates" depends="props, templates, build-templates-security" />
+  <target name="build-templates-security" depends="props, templates-security">
+    <!-- Windows specific code to build security with the buildit.bat -->
+    <conditional if="isWindows">
+      <exec dir="${product.dir}/templates/security"
+            executable="cmd"
+            failonerror="true">
+        <env key="GEMFIRE" value="${gfe.dir}"/>
+        <env key="GFCPP" value="${product.dir}"/>
+        <env key="OPENSSL" value="${openssl.dir}"/>
+        <env key="PLATFORM" value="${platforms}"/>
+        <arg value="/c"/>
+        <arg path="${product.dir}/templates/security/buildit.bat"/>
+      </exec>
+    </conditional>
+
+   
+    <!-- Linux specific code to build security with the buildit.sh -->
+    <conditional unless="isWindows">
+     <updateBuildScript file="${product.dir}/templates/security/buildit.sh"/>
+      <exec dir="${product.dir}/templates/security"
+          executable="bash"
+          failonerror="true">
+        <env key="GEMFIRE" value="${gfe.dir}"/>
+        <env key="GFCPP" value="${product.dir}"/>
+        <env key="OPENSSL" value="${openssl.dir}"/>
+       <arg path="${product.dir}/templates/security/buildit.sh"/>
+      </exec>
+    </conditional>
+  </target>
+
+  <target name="quickstart" depends="props,javaobject-library,-quickstart-windows"/>
+  <!-- TODO EB: add back in the depndency of -quickstart-unix -->
+
+  <target name="-quickstart-windows" depends="props" if="isWindows">
+    <mkdir dir="${quickstart.dir}"/>
+    <copy todir="${quickstart.dir}">
+      <fileset dir="${basedir}/quickstart">
+        <include name="**"/>
+        <exclude name="**/*.sh"/>
+        <exclude name="quickstart.xml"/>
+        <exclude name="quickstart_csharp.sln"/>
+        <exclude name="quickstart_cpp.sln"/>
+        <exclude name="csharp/vsprojects/**"/>
+        <exclude name="cpp/vsprojects/**"/>
+        <exclude name="buildit${quickstart.exclude.ext}.bat"/>
+      </fileset>
+      <fileset dir="${framework.dir}" includes="lib/javaobject.jar"/>
+      <fileset dir="${tests.cppcache.src.dir}" includes="keystore/**"/>
+    </copy>
+    <!--copy todir="${quickstart.dir}/XMLs">
+      <fileset dir="${basedir}/templates/security" includes="*.xml"/>
+      <fileset dir="${basedir}/templates/security" includes="*.dtd"/>
+    </copy-->
+    <copy todir="${quickstart.dir}/csharp">
+      <fileset dir="${tests.src.dir}/clicache/TestObject">
+        <include name="Po*N.cs"/>
+      </fileset>
+    </copy>
+    <copy todir="${quickstart.dir}/csharp">
+      <fileset dir="${tests.src.dir}/clicache/PdxClassLibrary">
+        <include name="PortfolioPdx.cs"/>
+        <include name="PositionPdx.cs"/>
+      </fileset>
+    </copy>
+    <updateBuildScript file="${quickstart.dir}/buildit${quickstart.ext}.bat"/>
+    <!--exec dir="${quickstart.dir}"
+          executable="cmd"
+          failonerror="true">
+      <env key="GEMFIRE" value="${gfe.dir}"/>
+      <env key="GFCPP" value="${product.dir}"/>
+      <env key="PATH" value="${java.home}/bin;${java.home}/jre/bin;${myenv.PATH}"/>
+      <arg value="/c"/>
+      <arg path="${quickstart.dir}/buildit${quickstart.ext}.bat"/>
+    </exec-->
+    <!--delete includeemptydirs="true" >
+      <fileset dir="${quickstart.dir}/cpp/vsprojects">
+        <include name="*/Release/**"/>
+        <include name="*/*.${vcp.file.ext}.ADMIN.*"/>
+        <include name="*/*.${vcp.file.ext}.user"/>
+      </fileset>
+      <fileset dir="${quickstart.dir}/csharp/vsprojects">
+        <include name="*/bin/**"/>
+        <include name="*/obj/**"/>
+      </fileset>
+    </delete-->
+    <for param="file">
+      <path>
+        <fileset dir="${quickstart.dir}/csharp" includes="*.exe"/>
+      </path> 
+      <sequential>
+        <copy file="${basedir}/release/keys/generic.exe.config" tofile="@{file}.config"/>
+      </sequential>
+    </for>
+    <copy file="${basedir}/release/keys/generic.exe.config" tofile="${quickstart.dir}/interop/InteropCSHARP.exe.config"/>
+    <copy file="${basedir}/tests/javaobject/DeltaExample.java" tofile="${quickstart.dir}/cpp/deltaobjects/DeltaExample.java"/>
+
+    <copy preservelastmodified="true" todir="${product.dir}/SampleCode/quickstart">
+      <fileset dir="${quickstart.dir}"/>
+    </copy>
+
+  </target>
+
+  <!-- @TODO EB: consolidate with pack-core copying of quickstarts -->
+  <!--target name="-quickstart-unix" depends="props" unless="isWindows">
+    <mkdir dir="${quickstart.dir}"/>
+    <copy todir="${quickstart.dir}">
+      <fileset dir="${basedir}/quickstart">
+        <include name="**"/>
+        <exclude name="**/*.bat"/>
+        <exclude name="*.sln"/>
+        <exclude name="csharp/**"/>
+        <exclude name="cpp/vsprojects/**"/>
+        <exclude name="cpp/vsprojects_10/**"/>
+        <exclude name="interop/InteropCSHARP.*"/>
+        <exclude name="quickstart.xml"/> 
+      </fileset>
+      <fileset dir="${framework.dir}" includes="lib/javaobject.jar"/>
+      <fileset dir="${tests.cppcache.src.dir}" includes="keystore/**"/>
+    </copy>
+    <copy todir="${quickstart.dir}/XMLs">
+      <fileset dir="${basedir}/templates/security" includes="*.xml"/>
+      <fileset dir="${basedir}/templates/security" includes="*.dtd"/>
+    </copy>
+    <updateBuildScript file="${quickstart.dir}/buildit.sh"/>
+    <chmod perm="a+x">
+      <fileset dir="${quickstart.dir}">
+        <include name="*.sh"/>
+      </fileset>
+    </chmod>
+    <exec dir="${quickstart.dir}"
+          executable="bash"
+          failonerror="true">
+      <env key="GEMFIRE" value="${gfe.dir}"/>
+      <env key="GFCPP" value="${product.dir}"/>
+      <env key="PATH" value="${java.home}/bin:${java.home}/jre/bin:${myenv.PATH}"/>
+      <arg value="-c"/>
+      <arg path="${quickstart.dir}/buildit.sh"/>
+    </exec>
+    <copy file="${basedir}/tests/javaobject/DeltaExample.java" tofile="${quickstart.dir}/cpp/deltaobjects/DeltaExample.java"/>
+
+    <copy preservelastmodified="true" todir="${product.dir}/SampleCode/quickstart">
+      <fileset dir="${quickstart.dir}"/>
+    </copy>
+  </target-->
+  <target name="gen-cpp-parser" depends="props"
+  description="Running antlr to generate C++ parser files">
+
+  <delete file="${basedir}/src/executables/pdxautoserializer/impl/CPPParser/CPPLexer.hpp" quiet="false"/>
+  <delete file="${basedir}/src/executables/pdxautoserializer/impl/CPPParser/CPPLexer.cpp" quiet="false"/>
+
+  <delete file="${basedir}/src/executables/pdxautoserializer/impl/CPPParser/CPPParser.hpp" quiet="false"/>
+  <delete file="${basedir}/src/executables/pdxautoserializer/impl/CPPParser/CPPParser.cpp" quiet="false"/>
+
+  <exec executable="${java.home}/bin/java"
+        failonerror="true">
+    <env key="CLASSPATH" path="${antlr.dir}/lib/antlr.jar" />
+    <arg value="antlr.Tool"/>
+    <arg value="-o" />
+    <arg value="${basedir}/src/executables/pdxautoserializer/impl/CPPParser"/>
+    <arg value="${basedir}/src/executables/pdxautoserializer/impl/CPPParser/CPP_parser.g"/>
+  </exec>
+</target>
+  <!-- ================  Running Cpp Unit Tests  ================= -->
+
+  <target name="check-public-headers" depends="props"
+          description="verify that each shipped header file can compile individually">
+    <mkdir dir="${tests.out.dir}/headercheck"/>
+    <exec dir="${tests.out.dir}/headercheck" executable="bash"
+          failonerror="true">
+          <arg value="${basedir}/src/tests/cppcache/testHeaders.sh"/>
+          <arg path="${product.dir}"/>
+          <arg path="${tests.out.dir}"/>
+    </exec>
+
+  </target>
+
+  <target name="compare-perf" depends="props">
+    <property name="baselines.dir" value="${basedir}/src/tests/cppcache/baselines"/>
+    <exec dir="${tests.out.dir}/results/cpp/unicast" executable="perl"
+          failonerror="true" failifexecutionfails="true">
+          <arg value="${basedir}/src/tests/cppcache/comparePerf.pl"/>
+          <arg value="${baselines.dir}/testPutGetPerf.${host.name}"/>
+          <arg value="${tests.out.dir}/results/cpp/unicast/testPutGetPerf.out"/>
+    </exec>
+  </target>
+
+  <target name="-error-grep">
+    <description>Search the log files of a test result directory for errors. The param property &quot;grepDir&quot; must be defined.</description>
+    <exec dir="${basedir}" executable="perl5" failifexecutionfails="false" output="${grepDir}/errors.grep" resultproperty="grepResult">
+      <arg value="${basedir}/release/build/grepLogs.pl"/>
+      <arg value="${grepDir}"/>
+    </exec>
+    <condition property="grepFailed">
+      <not>
+         <equals arg1="${grepResult}" arg2="0"/>
+      </not>
+    </condition>
+    <conditional if="grepFailed">
+      <echo level="info" message="FAILED: grep found possible logged errors. Check ${grepDir}/errors.grep for details."/>
+    </conditional>
+    <conditional unless="grepFailed">
+      <delete file="${grepDir}/errors.grep" quiet="true"/>
+    </conditional>
+  </target>
+
+  <target depends="props" name="grep-test-results">
+    <antcall target="-error-grep">
+      <param name="grepDir" value="${tests.out.dir}/results/cpp/unicast"/>
+    </antcall>
+  </target>
+  
+  <target name="compile-doc-tests">
+
+    <mkdir dir="${tests.docExample.out.dir}"/>
+    <echo message="osbuild.dir=${osbuild.ext.dir}" level="info"/>
+
+    <!-- gnumake to compile C++ test programs -->
+    <exec dir="${tests.docExample.src.dir}" executable="${ant.make}" failonerror="true">
+      <arg value="${ant.make.threads}"/>
+      <arg value="${cppcacheTarget}"/>
+      <arg value="OSNAME=${os.name}"/>
+      <arg value="GFLIB_MODEL=${cPointerModel}"/>
+      <arg value="base=${basedir}"/>
+      <arg value="product=${product.dir}"/>
+      <arg value="OSBUILDDIR=${osbuild.ext.dir}"/>
+      <arg value="ACE_DIR=${ace.dir}"/>
+      <arg value="ACEDIR=${ace.dir}"/>
+      <arg value="ACELINKNAME=${acelinkname}"/>
+      <arg value="XERCESDIR=${xerces.dir}"/>
+      <arg value="CPPDEBUG=${cpp-debug}"/>
+      <arg value="CPPDEVEL=${cpp.devel}"/>
+      <arg value="STACKTRACE=${stacktrace.dir}"/>
+      <arg value="XML=${xml.dir}"/>
+      <arg value="TESTOBJECTLIB=testobject"/>
+      <arg value="ZZIP=${zzip.dir}"/>
+      <env key="MAKE_MODE" value="unix"/>
+      <env key="FASTDEPEXE" value="${fastdep.exe}"/>
+      <env key="FRAMEWORK" value="${framework.dir}"/>
+      <env key="EXTRA_CLASSPATH" value="${framework.dir}/lib/javaobject.jar:${gfe.dir}/lib/gfSecurityImpl.jar"/>
+    </exec>
+    <copy todir="${tests.docExample.out.dir}" >
+      <fileset dir="${product.dir}/templates/security" includes="authz*.*" excludes="CMake*.*"/>
+      <fileset dir="${tests.docExample.src.dir}">
+        <include name="*.xml"/>
+        <include name="keystore/**"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target depends="props, test_props" name="run-doc-examples" description="Run doc examples">
+    <antcall target="run-cpp-tests-impl">
+      <param name="test.type" value="example"/>
+      <param name="tests.cppcache.src.dir" value="${tests.src.dir}/docExamples"/>
+      <param name="tst_res" value="${tst_res}/docExample"/>
+    </antcall>
+    <antcall target="-fail-if-any-cpp-test-failures">
+      <param name="test.type" value="example"/>
+      <param name="test.method" value="doc example"/>
+      <param name="tst_res" value="${tst_res}/docExample"/>
+    </antcall>
+  </target>
+
+  <target name="native-client-cmake" unless="target.native-client-cmake.done" depends="-props, assert-build-type-set">
+    <property name="target.native-client-cmake.done" value="true" />
+    <property name="cmake" value="cmake" />
+    
+    <local name="cmake.args" />
+    <mkdir dir="${build.dir}" />
+    <mkdir dir="${build.dir}/build-${cmake-build-type}" />
+    <echo message="GEMFIREHOME = ${gfe.dir}"/>
+    <property name="cmake.args" value="-DCMAKE_BUILD_TYPE='${cmake-build-type}' -DGEMFIRE_HOME='${gfe.dir}'"/>
+    <if>
+      <isset property="isWindows" />
+      <then>
+        <exec dir="${build.dir}/build-${cmake-build-type}"
+            executable="cmd"
+            failifexecutionfails="true"
+            failonerror="true">
+          <arg value="/c" />
+          <arg value="${vcvars.path}" />
+          <arg value="&amp;&amp;" />
+          <arg value="${cmake}" />
+          <arg value="-G" />
+          <arg value="Visual Studio 12 2013 Win64"/>
+          <!--<arg value="NMake Makefiles JOM"/>-->
+          <arg line="${cmake.args}" />
+          <arg path="src" />
+        </exec>
+      </then>
+      <else>
+        <!-- NOT Windows -->
+
+        <exec dir="${build.dir}/build-${cmake-build-type}"
+            executable="${cmake}"
+            failifexecutionfails="true"
+            failonerror="true">
+          <arg line="${cmake.args}" />
+          <arg path="src" />
+        </exec>
+      </else>
+    </if>   
+  </target>
+
+  <target name="native-client-make" unless="target.native-client-make.done" depends="-props, native-client-cmake">
+    <property name="target.native-client-make.done" value="true" />
+    <if>
+      <isset property="isWindows" />
+      <then>
+        <property name="solution.dir" value="${build.dir}/build-${cmake-build-type}"/>
+
+        <exec dir="${build.dir}/build-${cmake-build-type}"
+            executable="cmd"
+            failifexecutionfails="true"
+            failonerror="true">
+          <arg value="/c" />
+          <arg value="${vcvars.path}" />
+          <arg value="&amp;&amp;" />
+          <arg value="${cmake}" />
+          <arg value="--build" />
+          <arg value="." />
+          <arg value="--config" />
+          <arg value="${cmake-build-type}" />
+          <arg value="--" />
+          <arg value="/maxcpucount" />
+        </exec>
+      </then>
+      <else>
+        <!-- NOT Windows -->
+
+        <exec dir="${build.dir}/build-${cmake-build-type}" executable="${ant.make}" failonerror="true">
+          <arg value="${ant.make.threads}"/>
+          <arg value="all"/>
+        </exec>
+      </else>
+    </if>   
+  </target>
+
+  <target name="assert-build-type-set">
+    <fail message="cmake-build-type is not set.">
+      <condition>
+        <not>
+          <isset property="cmake-build-type" />
+        </not>
+      </condition>
+    </fail>
+  </target>
+
+  <target name="native-client" description="Build Native Client" unless="target.native-client.done" depends="-props, native-client-make">
+    <echo message="in target native-client" />
+    <property name="target.native-client.done" value="true" />
+  </target>
+
+  <target name="-props-dependencies" unless="target.props-dependencies.done" depends="native-client-cmake" >
+    <property name="target.-props-dependencies.done" value="true" />
+
+    <property file="${build.dir}/build-${cmake-build-type}/dependencies/thirdparty.properties" />    
+  </target>
+
+  <target name="clean-dependencies" unless="target.clean-dependencies.done" depends="-props">
+    <property name="target.clean-dependencies.done" value="true" />
+    <property name="target.dependencies.done" value="false" />
+    
+    <if>
+      <resourceexists>
+        <file file="${build.dir}/build-${cmake-build-type}/dependencies/Makefile"/>
+      </resourceexists>
+      <then>
+        <exec dir="${build.dir}/build-${cmake-build-type}/dependencies" executable="${ant.make}" failonerror="true">
+          <arg value="${ant.make.threads}"/>
+          <arg value="clean"/>
+        </exec>
+      </then>
+    </if>
+    
+  </target>
+    
+</project>

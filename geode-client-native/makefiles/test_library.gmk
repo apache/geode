@@ -1,0 +1,173 @@
+include $(BASEDIR)/makefiles/platform.gmk
+
+# dirs
+
+ifeq ($(VARIANT),FAST)
+  OBJDIR = $(OSBUILDDIR)/tests/objects/$(LIBRARY)
+else
+  OBJDIR = $(OSBUILDDIR)/tests/objects_g/$(LIBRARY)
+endif
+
+# objects
+
+DIRS := $(sort $(shell find . -type d \( -name ".git" -prune -o -print \)))
+
+FILES_CPP := $(subst ./,,$(sort $(foreach dir,$(DIRS),$(wildcard $(dir)/*.cpp))))
+
+SRC_INCLUDES := $(foreach file_include,. $(OSBUILDDIR)/product/include $(OSBUILDDIR)/product/include/gfcpp $(BASEDIR)/src/com/gemstone/gemfire/internal/cppcache/impl $(BASEDIR)/tests/fwklib $(BASEDIR)/tests,-I$(call NATIVEDIR_FUNC,$(file_include)))
+
+FILES_O = $(foreach src,$(FILES_CPP),$(OBJDIR)/$(subst .cpp,$(OBJ),$(src)))
+
+ifdef WINDOWS
+#####################
+# WINDOWS
+#####################
+else
+ifdef LINUX
+#####################
+# LINUX 
+CXX = $(GccCCompiler)
+#WARN_OPTIONS = -Wall -Wconversion -Wno-long-long 
+WARN_OPTIONS = -Wswitch \
+   -Wunused-variable -Wcomments \
+   -Wparentheses -Wsign-compare -Wconversion -Wno-long-long 
+NOT_USED = \
+ -W -Wabi -Woverloaded-virtual -Wundef \
+ -Wpointer-arith -Wold-style-cast -Wcast-qual -Wcast-align -Wwrite-strings \
+ -Wconversion -Wno-long-long -Wdisabled-optimization -Wcomment -Wtrigraphs \
+ -Wimport -Winline -Werror
+SLOW_OPTIONS = -g -O0 -DDEBUG=1 -DASSERT_LEVEL=4 -fno-inline
+FAST_OPTIONS = -O3 -DNDEBUG=1 -DASSERT_LEVEL=1
+CXX_OPTIONS = $(CFLAGS_MODEL) $(FPIC) -MD -c -ansi -fno-nonansi-builtins -ftemplate-depth-17 -D_LINUX \
+  $(WARN_OPTIONS) -D_REENTRANT -D_LARGEFILE64_SOURCE -D_REENTRANT $($(VARIANT)_OPTIONS) -o $@
+LIBS = -ldl -lm -lpthread -lc -lxerces-c $(XTRA_LIBS)
+FAST_LD_OPTIONS =
+SLOW_LD_OPTIONS =
+TP_LIB_PATH = -L$(XERCESDIR)/lib
+FAST_LIB_PATH = $(TP_LIB_PATH) -L$(OSBUILDDIR)/product/lib/ -L$(OSBUILDDIR)/framework/lib/ -L$(OSBUILDDIR)/hidden/lib/
+SLOW_LIB_PATH = $(TP_LIB_PATH) -L$(OSBUILDDIR)/framework/lib/debug/ -L$(OSBUILDDIR)/hidden/lib/debug -L$(OSBUILDDIR)/hidden/lib/ -L$(OSBUILDDIR)/product/lib/
+LIB_PATH = $($(VARIANT)_LIB_PATH) $(XTRA_LIB_PATHS)
+LINK_OPTIONS = $(CFLAGS_MODEL) --shared $($(VARIANT)_LD_OPTIONS)
+LIB_OPTIONS = $(LIB_PATH) $(LIBS)
+LINK_COMMAND = gcc -o $@ $(LINK_OPTIONS) $(FILES_O) $(LIB_OPTIONS)
+# 
+#####################
+else
+ifdef SOLARIS
+#####################
+# SOLARIS 
+  UNAME_P := $(shell uname -p)
+  ifeq ($(UNAME_P),sparc)
+    HOSTTYPE_OSTYPE=sparc.Solaris
+  else
+    HOSTTYPE_OSTYPE=x86.Solaris  
+  endif    
+	
+CXX = $(SunCompilerDir)/CC
+WARN_OPTIONS = 
+NOT_USED = \
+ -W -Wabi -Woverloaded-virtual -Wundef \
+ -Wpointer-arith -Wold-style-cast -Wcast-qual -Wcast-align -Wwrite-strings \
+ -Wconversion -Wno-long-long -Wdisabled-optimization -Wcomment -Wtrigraphs \
+ -Wimport -Winline -Werror
+SLOW_OPTIONS = -g -O0 -DDEBUG=1 -DASSERT_LEVEL=4
+FAST_OPTIONS = -O3 -DNDEBUG=1 -DASSERT_LEVEL=1
+
+ifdef USE_CPP11
+  CFLAGS_STD = -std=c++11 -DUSE_CPP11
+else
+  CFLAGS_STD = -library=Cstd
+endif
+
+CXX_OPTIONS = $(CFLAGS_MODEL) $(CFLAGS_STD) -c \
+  -mt -KPIC -xMD -D_SOLARIS \
+  -D_POSIX_PTHREAD_SEMANTICS \
+  -D_RWSTD_MULTI_THREAD -DTHREAD=MULTI \
+  $(WARN_OPTIONS) -D_REENTRANT -D_LARGEFILE64_SOURCE $($(VARIANT)_OPTIONS) -o $@
+
+ifeq ($(HOSTTYPE_OSTYPE), sparc.Solaris)
+  CXX_OPTIONS += -D_SPARC_SOLARIS
+  # TODO jbarrett - -dalign -D_POSIX_PTHREAD_SEMANTICS \
+  # TODO jbarrett - CXX_OPTIONS += -xmemalign=4s
+else
+  CXX_OPTIONS += -D_X86_SOLARIS
+endif
+  
+LIBS = -ldl -lpthread -lc -lxerces-c -lsocket -lnsl -ldemangle $(XTRA_LIBS)
+FAST_LD_OPTIONS =
+SLOW_LD_OPTIONS =
+TP_LIB_PATH = -L$(XERCESDIR)/lib
+FAST_LIB_PATH = $(TP_LIB_PATH) -L$(OSBUILDDIR)/product/lib/ -L$(OSBUILDDIR)/framework/lib/ -L$(OSBUILDDIR)/hidden/lib/
+SLOW_LIB_PATH = $(TP_LIB_PATH) -L$(OSBUILDDIR)/framework/lib/debug/ -L$(OSBUILDDIR)/hidden/lib/debug -L$(OSBUILDDIR)/hidden/lib/ -L$(OSBUILDDIR)/product/lib/
+LIB_PATH = $($(VARIANT)_LIB_PATH) $(XTRA_LIB_PATHS)
+LINK_OPTIONS = -mt $(CFLAGS_MODEL) -G -KPIC $($(VARIANT)_LD_OPTIONS) $(CFLAGS_STD)
+
+ifdef USE_CPP11
+  LIBS += -lstdc++ -lgcc_s -lCrunG3 
+else
+  LIBS += -lCstd -lCrun
+endif
+
+
+LIB_OPTIONS = $(LIB_PATH) $(LIBS)
+LINK_COMMAND = CC -o $@ $(LINK_OPTIONS) $(FILES_O) $(LIB_OPTIONS)
+# 
+#####################
+endif
+endif
+endif
+THIRD_PARTY_INCLUDES = -I$(ACEDIR)/include -I$(XERCESDIR)/include  
+VERSION_INFO_DEFINES =  \
+                    '-DGEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)"' \
+                    '-DGEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)"'
+CXX_OPTIONS += -DACE_NLOGGING -DACE_NDEBUG -D__ACE_INLINE__ 
+CXX_OPTIONS += $(VERSION_INFO_DEFINES)
+CXX_OPTIONS += $(CPP_OPTIONS)
+CXX_OPTIONS +=  $(XTRA_INCS) $(THIRD_PARTY_INCLUDES) $(SRC_INCLUDES)
+
+ifeq ($(CPPDEVEL),1)
+  CXX_OPTIONS += -DGF_DEVEL_ASSERTS=1
+endif
+
+CXX_COMPILE = $(CXX) $(CXX_OPTIONS)
+
+showCompileCommand:
+	@echo "compile command: $(CXX_COMPILE)"
+
+$(OBJDIR)/%$(OBJ): %.cpp
+	@mkdir -p $(dir $@)
+	@echo $(CURRENTDIR)/$<
+	$(CXX_COMPILE) $(CURRENTDIR)/$<
+
+# target setup
+
+ifeq ($(VARIANT),FAST)
+  LIBFILE = $(OSBUILDDIR)/framework/lib/$(libPrefix)$(LIBRARY)$(libSuffix)
+else
+  LIBFILE = $(OSBUILDDIR)/framework/lib/debug/$(libPrefix)$(LIBRARY)$(libSuffix)
+endif
+
+library: $(LIBFILE)
+
+$(LIBFILE): showCompileCommand $(FILES_O)
+	@mkdir -p $(dir $@)
+	@echo linking...
+	$(LINK_COMMAND)
+	$(MT_COMMAND)
+
+all: makeslow makefast
+
+makeslow:
+	@$(MAKE) VARIANT=SLOW library
+
+makefast:
+	@$(MAKE) VARIANT=FAST library
+
+# dependency checking
+-include $(FILES_o:.o=.d)
+
+# phony list targets that are not in the filesystem.
+
+.phony += all library $(LIBFILE) showCompileCommand
+
+

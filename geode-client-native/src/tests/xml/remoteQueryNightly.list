@@ -1,0 +1,9 @@
+RemoteQuery/distributedDataValidationQueryTest.xml
+RemoteQuery/entryOperationQueryTest.xml
+RemoteQuery/dataValidationQueryTest.xml
+RemoteQuery/serverEvictionQueryTest.xml
+RemoteQuery/serverOverflowToDiskQueryTest.xml
+RemoteQuery/clientEventsQueryTest.xml
+RemoteQuery/clientEventsFailoverQueryTest.xml
+RemoteQuery/failoverQueryTest.xml
+RemoteQuery/regexAndQueryTest.xml

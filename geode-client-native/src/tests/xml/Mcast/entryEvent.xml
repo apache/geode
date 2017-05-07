@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="keySize">
+    <range low="4" high="12"/>
+  </data>
+  <client-set count="20" name="Client"/>
+  <data name="distinctKeys">10000</data>
+  <data name="valueSizes">low="0" high="8000"</data>
+  <!-- Number of add ops is equal to number of destroy ops -->
+  <data name="entryOps">
+    <oneof>
+      <item>add</item>
+      <item>add</item>
+      <item>update</item>
+      <item>update</item>
+      <item>update</item>
+      <item>read</item>
+      <item>read</item>
+      <item>read</item>
+      <item>invalidate</item>
+      <item>localInvalidate</item>
+      <item>destroy</item>
+      <item>localDestroy</item>
+    </oneof>
+  </data>
+  <data name="opCount">
+    <range low="1" high="10"/>
+  </data>
+  <data name="workTime">120</data>
+  <data name="maxRegions">100</data>
+  
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNcacheNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNcacheNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  <test name="All" description="Entry Event test" waitTime="5400">
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionSpec">Local</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>AckNmirrorNil</item>
+          <item>AckMirrorNil</item>
+          <item>AckNmirrorNcacheNil</item>
+        </oneof>
+      </data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="1200" continueOnError="true" threadCount="4">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackNmirrorNil</item>
+          <item>NackMirrorNil</item>
+          <item>NackNmirrorNcacheNil</item>
+        </oneof>
+      </data>
+    </task>
+  </test>
+</test-driver>
+

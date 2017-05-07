@@ -1,0 +1,30 @@
+chrgn listenerWriterLoader
+# comments
+get entry1
+put entry3 value=1234605616436508552 long
+create entry4 
+ls
+chrgn sub1
+put entry2 value=2 int
+verify entry2 value=2 int
+ls
+des -l entry2
+get entry2
+reg entry2 entry1
+reg ALL_KEYS
+unreg entry2
+mput keytype=int keyrange=25-30 valuesize=10 seqid=1
+clear
+mget keytype=int keyrange=25-30 seqid=2 waittime=2
+clear
+mverify keytype=int keyrange=25-30 valuesize=10
+#mget keytype=int keyrange=0-10000
+mput keytype=str base=ExampleObject keyrange=100-200 value=15 valuetype=obj seqid=3
+mput keytype=str base=User keyrange=100-200 value=15 valuetype=usr seqid=4
+mverify keytype=str base=ExampleObject keyrange=100-200 value=15 valuetype=obj seqid=7
+mverify keytype=str base=User keyrange=100-200 value=15 valuetype=usr seqid=8
+chrgn
+chrgn listenerWriterLoader
+ls
+#commends
+quit

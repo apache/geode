@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="maxTestTime">10200</data>
+  <data name="valueSizes">2000</data>
+  <data name="entryOps">read</data>
+	<data name="workTime">60</data>
+	<data name="regionName">EntryLRUTestRegion</data>
+	<data name="randomKey">
+	  <range low="1" high="9999"/>
+	</data>
+  <client-set name="All">
+    <client name="Origin"/>
+    <client name="Nmirror1"/>
+    <client name="Nmirror2"/>
+    <client name="Nmirror3"/>
+  </client-set>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false" 
+          lru-entries-limit="1000"/> 
+      </region>
+    </snippet>
+  </data>
+	
+  <test name="EntryEventLRUTest" description="entry event LRU test" waitTime="780">
+    <task name="CreateOrigin" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionSpec">AckMirrorNil</data>
+      <client-set>
+        <client name="Origin"/>
+      </client-set>
+    </task>
+    <task name="AddEntryToOrigin" action="doAddEntry" container="eventtest" waitTime="600">
+      <data name="EntryCount">10000</data>
+      <client-set>
+        <client name="Origin"/>
+      </client-set>
+    </task>    
+    
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="300" continueOnError="true" parallel="true">
+      <data name="regionSpec">AckNmirrorNil</data>
+      <client-set exclude="true">
+        <client name="Origin"/>
+      </client-set>
+    </task>
+    
+  </test>
+</test-driver>

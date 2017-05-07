@@ -1,0 +1,788 @@
+#=========================================================================
+# Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+# This product is protected by U.S. and international copyright
+# and intellectual property laws. Pivotal products are covered by
+# more patents listed at http://www.pivotal.io/patents.
+#========================================================================
+
+ifdef LIBRARY
+
+ifeq ($(LIBRARY),gfcppcache)
+  CFLAGS_COMMON = -DBUILD_CPPCACHE -DACE_NLOGGING -DACE_NDEBUG -D__ACE_INLINE__
+endif
+
+ifeq ($(CPPDEVEL),1)
+  CFLAGS_COMMON += -DGF_DEVEL_ASSERTS=1
+endif
+
+# default rule
+ifdef WINDIR
+all: bothlibs
+else
+all: makeslow makefast
+endif
+
+ifdef WINDIR
+  WINDOWS = true
+else
+  UNAME := $(shell uname)
+  ifeq ($(UNAME),Linux)
+    LINUX = true
+  else
+    ifeq ($(UNAME),SunOS)
+      SOLARIS = true
+    endif
+  endif
+endif
+
+#ifeq ($(LINUX),true)
+#  MAKE_THREADS = -j16
+#else
+#  ifeq ($(UNAME),SunOS)
+#    MAKE_THREADS = -j8
+#  endif
+#endif
+#ifeq ($(WINDOWS),true)
+#  ifndef WIN_MAKE_THREADS
+#    WIN_MAKE_THREADS = 1
+#  endif
+#endif
+
+makeslow:
+	$(MAKE) $(MAKE_THREADS) VARIANT=slow library
+
+makefast:
+	$(MAKE) $(MAKE_THREADS) VARIANT=fast library
+
+bothlibs:
+	$(MAKE) -j$(WIN_MAKE_THREADS) makeslow makefast
+  
+.PHONY: bothlibs makeslow makefast all jniheaders
+
+endif # LIBRARY
+
+ifeq ($(VARIANT),slow)
+  LIBDIR=$(OSBUILDDIR)/hidden/lib/debug
+  DEBUGSUFFIX = _g
+else
+  LIBDIR=$(OSBUILDDIR)/hidden/lib
+  # DEBUGSUFFIX is empty
+endif
+
+ifdef TESTBUILD
+  OBJDIR=$(OSBUILDDIR)/tests/cpp_objects$(DEBUGSUFFIX)
+
+  GENERATEDDIR=$(OSBUILDDIR)/tests/generated
+  ENHANCEDDIR=$(OSBUILDDIR)/tests/enhanced-classes
+  CLASSESDIR=$(OSBUILDDIR)/tests/classes
+else
+  # src build
+  OBJDIR=$(OSBUILDDIR)/src/cpp_objects$(DEBUGSUFFIX)
+
+  GENERATEDDIR=$(OSBUILDDIR)/src/generated
+  ENHANCEDDIR=$(OSBUILDDIR)/src/enhanced-classes
+  CLASSESDIR=$(OSBUILDDIR)/classes
+endif
+TMPARDIR=$(OSBUILDDIR)/src
+
+BINDIR=$(OSBUILDDIR)/product/bin
+
+ifeq ($(OSNAME),SunOS)
+  UNAME_P := $(shell uname -p)
+  ifeq ($(UNAME_P),sparc)
+    HOSTTYPE_OSTYPE=sparc.Solaris
+    NATIVEINC=solaris
+  else
+    HOSTTYPE_OSTYPE=x86.Solaris
+    NATIVEINC=solaris
+  endif
+else
+  ifeq ($(OSNAME),Linux)
+    HOSTTYPE_OSTYPE=intel.Linux
+    NATIVEINC=linux
+  else
+    HOSTTYPE_OSTYPE=intel.Windows
+    NATIVEINC=win32
+  endif
+endif
+
+CINCLUDES = \
+  -I$(GENERATEDDIR) \
+  -I$(ACE_DIR)/include \
+  -I$(XML)/include/libxml2 \
+  -I$(OPENSSL)/include 
+#  -I$(ZZIP)/product/include
+
+ifndef USE_CPP11
+  CINCLUDES += -I$(STLPORT)/stlport 
+endif
+
+ZZIPLIBDIR = $(ZZIP)/product/lib
+
+INTERNAL_SRC_DIR = $(base)/src/com/gemstone/gemfire/internal
+
+ifdef CPPCACHE_INCLUDES
+  CINCLUDES += $(CPPCACHE_INCLUDES)
+endif
+
+#  FILES_FIRST_c should be the first one in the FILES_o list
+#  FILES_LAST_c must be not be in FILES_o, because we want it linked after
+#   the last object brought in from .a terms within LIBS
+#
+FILES_o = $(patsubst %.c,$(OBJDIR)/%.$(OBJEXT),$(FILES_FIRST_c)) \
+ $(patsubst %.c,$(OBJDIR)/%.$(OBJEXT),$(FILES_c)) \
+ $(patsubst %.cpp,$(OBJDIR)/%.$(OBJEXT),$(FILES_cpp)) \
+ $(patsubst statistics/%.cpp,$(OBJDIR)/statistics/%.$(OBJEXT),$(STATISTICS_FILES_cpp)) \
+ $(patsubst impl/%.cpp,$(OBJDIR)/impl/%.$(OBJEXT),$(IMPL_FILES_cpp)) \
+ $(patsubst %.asm,$(OBJDIR)/%.$(OBJEXT),$(FILES_asm)) \
+ $(patsubst admin/%.cpp,$(OBJDIR)/admin/%.$(OBJEXT),$(ADMIN_FILES_cpp)) \
+ $(patsubst admin/impl/%.cpp,$(OBJDIR)/admin/impl/%.$(OBJEXT),$(ADMIN_IMPL_FILES_cpp))
+
+LAST_o = $(patsubst %.c,$(OBJDIR)/%.$(OBJEXT),$(FILES_LAST_c)) 
+
+# By default NATIVEDIR_FUNC does nothing
+NATIVEDIR_FUNC = $(1)
+UNIXDIR_FUNC = $(1)
+NATIVEPATH_FUNC = $(1)
+
+ifeq ($(OSNAME),SunOS)
+  # JAVA_HOME must be a jdk , jre's do not include javah
+  # JAVA_HOME is set in build.sh, not here
+
+  #  SunCompilerDir is set in build.sh
+  CC  = $(SunCompilerDir)/cc  
+  CXX = $(SunCompilerDir)/CC
+
+  # Notes 
+  # TODO jbarrett -  -xcode=pic13 is small model position-independent (max 2*11 external syms)
+  # TODO jbarrett - -xcode=pic32 is large model position-independent (max 2*30 external syms)
+
+  # GFLIB_MODEL  is defined in build.xml
+  ifeq ($(GFLIB_MODEL),64bit)
+    # 64 bit model
+    CFLAGS_MODEL = -m64
+  else
+    # TODO jbarrett - 32bit model, but require int64 data  to be 8-byte-aligned
+    CFLAGS_MODEL = -m32
+  endif
+
+  CFLAGS_COMMON += -D_REENTRANT $(CFLAGS_EXTRA) \
+     '-DGEMFIRE_PRODUCTNAME="$(GEMFIRE_PRODUCTNAME)"' \
+     '-DGEMFIRE_VERSION="$(GEMFIRE_VERSION)"' \
+     '-DGEMFIRE_BITS="$(GEMFIRE_BITS)"' \
+     '-DGEMFIRE_BUILDID="$(GEMFIRE_BUILDID)"' \
+     '-DGEMFIRE_BUILDDATE="$(GEMFIRE_BUILDDATE)"' \
+     '-DGEMFIRE_BUILDOS="$(GEMFIRE_BUILDOS)"' \
+     '-DGEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)"' \
+     '-DGEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)"' \
+     '-DLICENSE_VERSION="$(LICENSE_VERSION)"'
+
+  ifdef USE_CPP11
+    CFLAGS_STD = -std=c++11
+  else
+    CFLAGS_STD = -library=no%Cstd,no%iostream
+  endif
+  
+  CFLAGS_COMMON += $(CFLAGS_MODEL) -features=rtti 
+  CFLAGS_COMMON += -mt -D_POSIX_PTHREAD_SEMANTICS
+  CFLAGS_COMMON += $(CFLAGS_COMMON_M_ALIGN) -KPIC
+  CFLAGS_COMMON += $(CFLAGS_STD)
+  CFLAGS_COMMON += -xMD
+
+  CFLAGS_slow = -g -DDEBUG -DGF_DEBUG_ASSERTS=1 -KPIC
+  COpt_slow/default = -g 
+  COpt_slow/fast = -O2   # not currently used
+  COpt_slow/debug = -g 
+
+  # if there is no file-specific variable defined
+  #   then COpt_slow/byfile evaluates to value of COpt_slow/default
+  COpt_slow/byfile = $(COpt_slow/$<)$(COpt_slow/default$(COpt_slow/$<))
+
+  #    file-specific optimization controls for slow library
+  # COpt_slow/hostunix.c = $(COpt_slow/debug)
+
+  CFLAGS_fast = -g -xwe
+  ifdef USE_CPP11
+    # -xO4 causes sigaborts on some exceptions thrown due to automatic inlining.
+    COpt_fast/default = -xO3
+    COpt_fast/big_pic = -xO3
+  else
+    COpt_fast/default = -xO4
+    COpt_fast/big_pic = -xO4
+  endif
+  COpt_fast/slower = -xO2
+  COpt_fast/debug = -g
+  COpt_fast/byfile = $(COpt_fast/$(notdir $<))$(COpt_fast/default$(COpt_fast/$(notdir $<)))
+
+  #    file-specific optimization controls for fast library
+  #  for safety compile signal handlers with O2
+  COpt_fast/AttributesFactory.cpp = $(COpt_fast/big_pic)
+  COpt_fast/AttributesMutator.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Cache.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheFactory.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheAttributes.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheAttributesFactory.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheCallback.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheEvent.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Cacheable.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheableToken.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheableString.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheableKey.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheFactory.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheListener.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheLoader.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheStatistics.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheWriter.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqAttributesMutator.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqAttributesFactory.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqAttributes.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqAttributesImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqState.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqQuery.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqListener.cpp = $(COpt_fast/big_pic)
+  COpt_fast/DistributedSystem.cpp = $(COpt_fast/big_pic)
+  COpt_fast/EntryEvent.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Exception.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ExceptionTypes.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ExpirationAction.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ExpirationAttributes.cpp = $(COpt_fast/big_pic)
+  COpt_fast/HostAsm.cpp = $(COpt_fast/big_pic)
+  COpt_fast/InterestResultPolicy.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LoaderHelper.cpp = $(COpt_fast/big_pic)
+  COpt_fast/License.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LicenseFeatureSet.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LicenseSet.cpp = $(COpt_fast/big_pic)
+  COpt_fast/RegionAttributes.cpp = $(COpt_fast/big_pic)
+  COpt_fast/RegionEvent.cpp = $(COpt_fast/big_pic)
+  COpt_fast/RegionEntry.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Region.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ResultSet.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ResultSetImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ScopeType.cpp = $(COpt_fast/big_pic)
+  COpt_fast/SelectResultsIterator.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Serializable.cpp = $(COpt_fast/big_pic)
+  COpt_fast/SerializationHelper.cpp = $(COpt_fast/big_pic)
+  COpt_fast/StatisticsFactory.cpp = $(COpt_fast/big_pic)
+  COpt_fast/StructSet.cpp = $(COpt_fast/big_pic)
+  COpt_fast/StructSetImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/UserData.cpp = $(COpt_fast/big_pic)
+  COpt_fast/BridgeLoader.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Blowfish.cpp = $(COpt_fast/big_pic)
+  COpt_fast/MD5.cpp = $(COpt_fast/big_pic)
+  COpt_fast/VectorOfSharedBase.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Version.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Utils.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LocalRegion.cpp = $(COpt_fast/big_pic)
+  COpt_fast/StackTrace.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ProxyCache.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ProxyRegion.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ProxyRemoteQueryService.cpp = $(COpt_fast/big_pic)
+  COpt_fast/UserAttributes.cpp = $(COpt_fast/big_pic)
+  COpt_fast/FunctionServiceImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/GetAllServersRequest.cpp = $(COpt_fast/big_pic)
+  COpt_fast/GetAllServersResponse.cpp = $(COpt_fast/big_pic)
+
+  COpt_fast/LocatorImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheApplicationImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheRegionImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Statistic.cpp = $(COpt_fast/big_pic)
+  COpt_fast/StatisticEvent.cpp = $(COpt_fast/big_pic)
+  COpt_fast/StatisticListener.cpp = $(COpt_fast/big_pic)
+  COpt_fast/StatisticResource.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Struct.cpp = $(COpt_fast/big_pic)
+  COpt_fast/SystemProperties.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LogEvent.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LogListener.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrCSVersion.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrDistributionManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrHADistributionManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrEndpoint.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrConnectionManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrConnection.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrMessage.cpp = $(COpt_fast/big_pic)
+  COpt_fast/gfcppBanner.cpp = $(COpt_fast/big_pic)
+  COpt_fast/SpinLock.cpp = $(COpt_fast/big_pic)
+  COpt_fast/dllMain.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcpConn.cpp = $(COpt_fast/big_pic)
+  COpt_fast/UserPasswordAuthInit.cpp = $(COpt_fast/big_pic)
+  COpt_fast/AdminRegion.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ClientHealthStats.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientPoolDM.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ServerLocationRequest.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ClientConnectionResponse.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ClientConnectionRequest.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientLocatorHelper.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ServerLocationResponse.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ServerLocation.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientBaseDM.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientPoolRegion.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientRedundancyManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/QueueConnectionResponse.cpp = $(COpt_fast/big_pic)
+  COpt_fast/QueueConnectionRequest.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientHARegion.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientDistributionManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientCacheDistributionManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientPoolHADM.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CacheImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/PoolFactory.cpp = $(COpt_fast/big_pic)
+  COpt_fast/PoolManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/Pool.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqAttributesImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqAttributesMutatorImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqEventImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqQueryImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqQueryVsdStats.cpp = $(COpt_fast/big_pic)
+  COpt_fast/CqService.cpp = $(COpt_fast/big_pic)
+  COpt_fast/FunctionService.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ExecutionImpl.cpp = $(COpt_fast/big_pic)
+  COpt_fast/EventId.cpp = $(COpt_fast/big_pic)
+  COpt_fast/EventIdMap.cpp = $(COpt_fast/big_pic)
+  COpt_fast/MapEntry.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ExpMapEntry.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LRUMapEntry.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LRUExpMapEntry.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TrackedMapEntry.cpp = $(COpt_fast/big_pic)
+  COpt_fast/LRUEntriesMap.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientPoolStickyDM.cpp = $(COpt_fast/big_pic)
+  COpt_fast/TcrPoolEndPoint.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientPoolStickyHADM.cpp = $(COpt_fast/big_pic)
+  COpt_fast/ThinClientStickyManager.cpp = $(COpt_fast/big_pic)
+  COpt_fast/RegionConfig.cpp = $(COpt_fast/big_pic)
+  COpt_fast/EntryExpiryHandler.cpp = $(COpt_fast/big_pic)
+  COpt_fast/MapSegment.cpp = $(COpt_fast/big_pic)
+  COpt_fast/PoolXmlCreation.cpp = $(COpt_fast/big_pic)
+  
+  CFLAGSnoop = -g
+
+  COptFlag = $(COpt_$(VARIANT)/byfile)
+  CFLAGS += $(CFLAGS_COMMON) $(CFLAGS_OPT) $(CFLAGS_$(VARIANT)) $(COptFlag) $(CINCLUDES)
+
+  # use -noex to disallow C++ exceptions
+  CXXFLAGS = $(CFLAGS_COMMON) $(CFLAGS_OPT) $(CFLAGS_$(VARIANT)) $(COptFlag) $(CINCLUDES)
+
+  LDFLAGS_MODEL = $(CFLAGS_MODEL)
+  LDFLAGSfast= -mt $(LDFLAGS_MODEL)
+  LDFLAGSslow= -g -mt $(LDFLAGS_MODEL)
+  LDFLAGSnoop= -g -mt $(LDFLAGS_MODEL)
+
+
+  ifeq ($(LIBRARY),gfcppcache)
+    THIRDPARTY_STATICS = $(ACE_STATIC_DIR)/lib/libACE.a $(XML)/lib/libxml2.a
+    LIBS = -ldl -lpthread -lc -L$(LIBDIR) -lm -lsocket -lrt -lnsl -ldemangle -lkstat -lz
+  else
+    THIRDPARTY_STATICS =
+    LIBS = -ldl -lpthread -lc -L$(LIBDIR) -lsocket -lrt -lnsl -ldemangle -lkstat -lz
+  endif
+
+  ifeq ($(GFLIB_MODEL),64bit)
+    PROG_LDFLAGS += $(CFLAGS_MODEL)
+  endif
+
+  ifeq ($(LIBRARY),framework)
+    LIBS += -L$(LIBDIR) $(CFLAGS_STD) -lgfcppcache -lpthread -lrt -lkstat
+  endif
+
+  ifeq ($(VARIANT),slow)
+    LIBS += -L $(LIBDIR)/..
+  endif
+
+  #https://docs.oracle.com/cd/E37069_01/html/E37075/bkamq.html#scrolltoc
+  ifdef USE_CPP11
+    LIB_LDFLAGS_STD = $(CFLAGS_STD) -lstdc++ -lgcc_s -lCrunG3 -lc
+  else
+    LIB_LDFLAGS_STD = $(CFLAGS_STD) -lCstd -lCrun -lc
+  endif
+
+
+  LIB_LDFLAGS = $(LIB_LDFLAGS_STD) $(LIBFLAGS) $(LDFLAGS$(VARIANT))
+  PROG_LDFLAGS = -ldl -lpthread $(LDFLAGS$(VARIANT)) $(EXTRA_PROGLDFLAGS)
+
+  OUT.c = -o $@
+
+  MAKE_RESOURCEDIR=if [ ! -d $(RESOURCEDIR) ]; then mkdir $(RESOURCEDIR) ; fi
+  MAKE_CLASSDIR=if [ ! -d $(CLASSDIR) ]; then mkdir $(CLASSDIR) ; fi; $(MAKE_GENERATEDDIR)
+  MAKE_GENERATEDDIR=if [ ! -d $(GENERATEDDIR) ]; then mkdir $(GENERATEDDIR) ; fi
+  OBJEXT=o
+  MAKE_OBJDIR=if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR) ; fi
+  MAKE_LIBDIR=if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR) ; fi
+  #MAKE_DELAYFILE=if [ ! -f $(LIBDIR)/delaycoredump.txt ]; then touch $(LIBDIR)/delaycoredump.txt ; fi
+  MAKE_LOCALBINDIR=if [ ! -d $(LOCALBINDIR) ]; then mkdir -p $(LOCALBINDIR) ; fi
+  OBJLIB=$(LIBDIR)/lib$(LIBRARY).so
+  OBJLIBA=$(LIBDIR)/lib$(LIBRARY).a
+  PROGBIN=$(LOCALBINDIR)/$(PROGRAM)
+  # end Solaris
+else
+ifeq ($(HOSTTYPE_OSTYPE),intel.Linux)
+  # JAVA_HOME must be a jdk , jre's do not include javah
+  # JAVA_HOME is set in build.sh, not here
+
+  #  GccCompiler is set in build.sh
+  CC  = $(GccCCompiler)
+  CXX = $(GccCCompiler)
+
+  ifeq ($(GFLIB_MODEL),64bit)
+    # 64 bit model
+    CFLAGS_MODEL = -m64
+    #avoids issue with ACE static library
+    # relocation R_X86_64_32 against `a local symbol' can not be used when making a
+    # shared object
+    FPIC = -fPIC -DPIC
+  else
+    # 32bit model, but require int64 data  to be 8-byte-aligned
+    CFLAGS_MODEL = -m32
+    FPIC =
+  endif
+
+  # Notes 
+  #  std=iso9899:1990
+  CFLAGS_COMMON += $(CFLAGS_EXTRA) -D_REENTRANT \
+    '-D_LARGEFILE64_SOURCE' \
+    '-DGEMFIRE_PRODUCTNAME="$(GEMFIRE_PRODUCTNAME)"' \
+    '-DGEMFIRE_VERSION="$(GEMFIRE_VERSION)"' \
+    '-DGEMFIRE_BITS="$(GEMFIRE_BITS)"' \
+    '-DGEMFIRE_BUILDID="$(GEMFIRE_BUILDID)"' \
+    '-DGEMFIRE_BUILDDATE="$(GEMFIRE_BUILDDATE)"' \
+    '-DGEMFIRE_BUILDOS="$(GEMFIRE_BUILDOS)"' \
+    '-DGEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)"' \
+    '-DGEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)"' \
+    '-DLICENSE_VERSION="$(LICENSE_VERSION)"'
+
+  CFLAGS_COMMON += $(CFLAGS_MODEL) $(FPIC)
+  CFLAGS_COMMON += -MD
+
+  # removed -Wshadow because of ACE
+  CWarnings = -Wswitch \
+   -Wunused-variable -Wcomments \
+   -Wparentheses -Wsign-compare
+
+  # flags to use only when compiling non-C++ code   
+  nonCPPOpts = -Wimplicit-int -Wmissing-declarations 
+
+  CFLAGS_slow =  -g -DDEBUG -DGF_DEBUG_ASSERTS=1 $(CWarnings) -fno-implement-inlines
+  # COpt_slow/default = -O2
+  COpt_slow/default =
+  COpt_slow/slower =
+  COpt_slow/debug =
+
+  # if there is no file-specific variable defined 
+  #   then COpt_slow/byfile evaluates to value of COpt_slow/default
+  COpt_slow/byfile = $(COpt_slow/$<)$(COpt_slow/default$(COpt_slow/$<))
+
+  #    file-specific optimization controls for slow library
+  COpt_slow/hostsignal_unix.cpp = $(COpt_slow/slower)
+
+  CFLAGSnoop = 
+
+  CFLAGS_fast = -g $(CWarnings) -Wuninitialized
+  # note on  linux fast, can't get line numbers with -O3
+  COpt_fast/default = -O3 -Werror
+  COpt_fast/slower = -O2 -Werror 
+  COpt_fast/debug =
+  COpt_fast/byfile = $(COpt_fast/$<)$(COpt_fast/default$(COpt_fast/$<))
+
+  #    file-specific optimization controls for fast library
+  #  As of Jan, 2003, with gcc 2.96 must use -O2 on signal handlers 
+  COpt_fast/hostsignal_unix.cpp = $(COpt_fast/slower)
+
+  COptFlag = $(COpt_$(VARIANT)/byfile)
+  CFLAGS += $(CFLAGS_COMMON) $(CFLAGS_OPT) $(CFLAGS_$(VARIANT)) $(COptFlag) $(CINCLUDES)
+  CXXFLAGS = $(CFLAGS_COMMON) $(CFLAGS_OPT) $(CFLAGS_$(VARIANT)) $(COptFlag) $(CINCLUDES) -Wreturn-type -Wsign-promo
+
+  LDFLAGSfast= -g
+  LDFLAGSslow= -g
+  LDFLAGSnoop= -g
+
+  ifeq ($(LIBRARY),gfcppcache)
+    THIRDPARTY_STATICS = $(ACE_STATIC_DIR)/lib/libACE.a $(XML)/lib/libxml2.a
+    LIBS = -ldl -lm -lpthread -lc -L$(LIBDIR) -lz -lrt
+  else
+    THIRDPARTY_STATICS =
+    LIBS = -ldl -lm -lpthread -lc -L$(LIBDIR)
+  endif
+
+  ifeq ($(LIBRARY),framework)
+    LIBS += -L $(LIBDIR) -lgfcppcache -lpthread
+  endif
+
+  ifeq ($(VARIANT),slow)
+    LIBS += -L $(LIBDIR)/..
+  endif
+
+# -z defs doesn't work when linking a shared library 
+  LIB_LDFLAGS = -Wl,--warn-once -Wl,--no-as-needed $(LIBFLAGS) $(LDFLAGS$(VARIANT))
+  PROG_LDFLAGS = -ldl -lpthread $(LDFLAGS$(VARIANT)) $(EXTRA_PROGLDFLAGS)
+
+  LIB_LDFLAGS += $(CFLAGS_MODEL) 
+  OUT.c = -o $@
+
+  MAKE_RESOURCEDIR=if [ ! -d $(RESOURCEDIR) ]; then mkdir $(RESOURCEDIR) ; fi
+  MAKE_CLASSDIR=if [ ! -d $(CLASSDIR) ]; then mkdir $(CLASSDIR) ; fi; $(MAKE_GENERATEDDIR)
+  MAKE_GENERATEDDIR=if [ ! -d $(GENERATEDDIR) ]; then mkdir $(GENERATEDDIR) ; fi
+  OBJEXT=o
+  MAKE_OBJDIR=if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR) ; fi
+  MAKE_LIBDIR=if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR) ; fi
+  #MAKE_DELAYFILE=if [ ! -f $(LIBDIR)/delaycoredump.txt ]; then touch $(LIBDIR)/delaycoredump.txt ; fi
+  MAKE_LOCALBINDIR=if [ ! -d $(LOCALBINDIR) ]; then mkdir -p $(LOCALBINDIR) ; fi
+  OBJLIB=$(LIBDIR)/lib$(LIBRARY).so
+  OBJLIBA=$(LIBDIR)/lib$(LIBRARY).a
+  PROGBIN=$(LOCALBINDIR)/$(PROGRAM)
+  # end Linux
+
+else
+
+  # begin Win2K
+  ifeq ($(MAKE_MODE),unix)
+    NATIVEDIR_FUNC = '$(strip $(shell cygpath -w "$(1)"))'
+    UNIXDIR_FUNC = $(shell cygpath -u '$(1)')
+    NATIVEPATH_FUNC = '$(strip $(shell cygpath -p -w "$(1)"))'
+    override base := $(call UNIXDIR_FUNC,$(base))
+    override OSBUILDDIR := $(call UNIXDIR_FUNC,$(OSBUILDDIR))
+    # must use a jdk here, jre will not have javah 
+    ifndef JAVA_HOME
+      JAVA_HOME=//n080-fil01/NT_build_resources/java/jdk1.4.1.01
+    else
+      override JAVA_HOME := $(call UNIXDIR_FUNC,$(JAVA_HOME))
+    endif
+  endif
+  CINCLUDES +=  -I$(STACKTRACE)\include
+  CINCLUDES := $(foreach dir,$(subst -I,,$(CINCLUDES)),-I$(call NATIVEDIR_FUNC,$(dir)))
+  
+  # VCINCDIRS should be defined in environment before starting build
+  #  if you do not have VC++ include dirs in system environment variables
+  VCINCLUDES=
+  ifdef VCINCDIRS
+    VCINCLUDES = $(foreach dir,$(subst -I,,$(VCINCDIRS)),-I$(call NATIVEDIR_FUNC,$(dir)))
+  endif
+
+  CC = cl
+  CXX = cl
+  ifeq ($(VCVER),vc8)
+    CFLAGSvc8 = /wd4996 -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NON_CONFORMING_SWPRINTFS
+    MT_COMMAND = mt /nologo -manifest $(call NATIVEDIR_FUNC,$@).manifest -outputresource:$(call NATIVEDIR_FUNC,$@) 
+  else
+    ifeq ($(VCVER),vc7)
+      CFLAGSvc7slow = /Ge
+      CFLAGSvc7fast = /G6 /Zd
+    endif
+  endif
+  CFLAGS_COMMON += -nologo /GR /EHac /W3 $(CFLAGS$(VCVER)) /WX /WL\
+     /DWINVER=0x0500 /D_WIN32_WINNT=0x500 \
+     -Fd$(call NATIVEDIR_FUNC,$(OBJDIR)/vc60.pdb) \
+     '-DGEMFIRE_PRODUCTNAME="$(GEMFIRE_PRODUCTNAME)"' \
+     '-DGEMFIRE_VERSION="$(GEMFIRE_VERSION)"' \
+     '-DGEMFIRE_BITS="$(GEMFIRE_BITS)"' \
+     '-DGEMFIRE_BUILDID="$(GEMFIRE_BUILDID)"' \
+     '-DGEMFIRE_BUILDDATE="$(GEMFIRE_BUILDDATE)"' \
+     '-DGEMFIRE_BUILDOS="$(GEMFIRE_BUILDOS)"' \
+     '-DGEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)"' \
+     '-DGEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)"' \
+     '-DLICENSE_VERSION="$(LICENSE_VERSION)"'
+
+  CFLAGSfast = /MD /Ox $(CFLAGS$(VCVER)$(VARIANT))
+  CFLAGSslow = /MDd /Od /Zi $(CFLAGS$(VCVER)$(VARIANT)) /GS /RTC1 -DDEBUG -DGF_DEBUG_ASSERTS=1
+  CFLAGS += $(CFLAGS_COMMON) $(CFLAGS_OPT) $(CFLAGS$(VARIANT)) $(CINCLUDES)
+  LDFLAGSslow = -debug
+  LDFLAGSnoop = -debug
+  LDFLAGSfast = -debug -opt:ref
+
+  # VCLIBDIRS should be defined in environment before starting build
+  #  if you do not have VC++ lib dirs in system environment variables
+  LIBPATH=
+  ifdef VCLIBDIRS
+    LIBPATH += $(foreach dir,$(VCLIBDIRS),/LIBPATH:$(call NATIVEDIR_FUNC,$(dir)))
+  endif
+
+  LIBPATH += /LIBPATH:$(call NATIVEDIR_FUNC,$(STLPORT)/lib) /LIBPATH:$(call NATIVEDIR_FUNC,$(LIBDIR))
+
+  ifeq ($(VARIANT),slow)
+    LIBPATH += /LIBPATH:$(call NATIVEDIR_FUNC,$(LIBDIR)/..) 
+  endif
+
+  ifeq ($(VARIANT),slow)
+    ZZIPLIB=zziplibd.lib
+  else
+    ZZIPLIB=zziplib.lib
+  endif
+
+  LIBPATH +=/LIBPATH:$(call NATIVEDIR_FUNC,$(STACKTRACE)/LIB,$(XML)/lib)
+  LIBPATH +=/LIBPATH:$(call NATIVEDIR_FUNC,$(ZZIP)/product/lib)
+
+  ifdef TESTBUILD
+
+    LIB_LDFLAGS = -dll -entry:_DllMainCRTStartup@12 -OPT:REF -INCREMENTAL:NO -MAP $(LDFLAGS$(VARIANT)) $(LIBPATH)
+  else
+    LIB_LDFLAGS = -dll -entry:DLLMain@12 -OPT:REF -INCREMENTAL:NO -MAP $(LDFLAGS$(VARIANT)) $(LIBPATH)
+  endif
+  PROG_LDFLAGS = -INCREMENTAL:NO -MAP -STACK:1048576 $(LDFLAGS$(VARIANT)) $(EXTRA_PROGLDFLAGS) $(LIBPATH)
+  LOADLIBES = wsock32.lib netapi32.lib advapi32.lib \
+              comdlg32.lib user32.lib gdi32.lib kernel32.lib \
+              winspool.lib dbghelp.lib \
+              libxml2.lib $(ZZIPLIB) zlib.lib
+  
+  ifeq ($(VARIANT),slow)
+    ifeq ($(HOSTTYPE_OSTYPE),intel.Windows)
+      LOADLIBES += ACEd.lib
+    else
+      LOADLIBES += ACE.lib
+    endif
+  else
+    LOADLIBES += ACE.lib
+  endif
+
+  ifeq ($(LIBRARY),framework)
+    LOADLIBES += gfcppcache.lib
+  endif
+
+  COMPILE.cpp=$(COMPILE.c)
+  OUT.c = -Fo$(call NATIVEDIR_FUNC,$@)
+
+  OBJEXT=obj
+  ifeq ($(MAKE_MODE),unix)
+    MAKE_GENERATEDDIR=if [ ! -d $(GENERATEDDIR) ]; then mkdir -p $(GENERATEDDIR) ; fi
+    MAKE_OBJDIR=if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR) ; fi
+    MAKE_LIBDIR=if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR) ; fi
+    #MAKE_DELAYFILE=if [ ! -f $(LIBDIR)/delaycoredump.txt ]; then touch $(LIBDIR)/delaycoredump.txt ; fi
+    MAKE_BINDIR=if [ ! -d $(BINDIR) ]; then mkdir -p $(BINDIR) ; fi
+  else
+    MAKE_GENERATEDDIR=if not exist $(GENERATEDDIR) mkdir -p $(GENERATEDDIR)
+    MAKE_OBJDIR=if not exist $(OBJDIR) mkdir $(OBJDIR)
+    MAKE_LIBDIR=if not exist $(LIBDIR) mkdir $(LIBDIR)
+    MAKE_BINDIR=if not exist $(BINDIR) mkdir $(BINDIR)
+  endif
+  OBJLIB=$(LIBDIR)/$(LIBRARY).dll
+  PROGBIN=$(LOCALBINDIR)/$(PROGRAM).exe
+  #end Win2K
+endif
+endif
+
+JAVAH_CLASSES=$(JNI_files)
+JAVAH=$(JAVA_HOME)/bin/javah
+JAVAH_ACTION=$(JAVAH) $(JAVAH_ARGS) $(JAVAH_CLASSES)
+JAVAH_ARGS = -classpath $(call NATIVEPATH_FUNC,$(ENHANCEDDIR):$(CLASSESDIR)) -d $(call NATIVEDIR_FUNC,$(GENERATEDDIR))
+
+ifdef JNI_files
+
+jniheaders:
+	@echo running javah
+	$(MAKE_GENERATEDDIR)
+	$(JAVAH_ACTION)
+
+JAVAH_H = $(foreach class,$(JAVAH_CLASSES),$(GENERATEDDIR)/$(subst .,_,$(class)).h)
+$(JAVAH_H): jniheaders
+
+endif # JNI_files
+
+
+ifdef LIBRARY
+
+library: makedirectories jniheaders $(OBJLIB)
+
+makedirectories:
+	@$(MAKE_LIBDIR)
+	@$(MAKE_OBJDIR)
+	@mkdir -p $(OBJDIR)/admin/impl
+	@mkdir -p $(OBJDIR)/impl
+	@mkdir -p $(OBJDIR)/statistics
+
+
+$(OBJLIB): $(FILES_o) $(LAST_o)
+	$(MAKE_DELAYFILE)
+
+ifeq ($(OSNAME),SunOS)
+
+# the SolarisMapFile.mak consists of
+#  the global section from SolarisMapFile_global.mak
+#  and the local section from SolarisMapFile_local.mak
+
+ifeq ($(LIBRARY),gfcppcache)
+	@echo linking cppcache library $@
+	$(CXX) -G $(LIB_LDFLAGS) -KPIC -o $@ $(LIBS) $(FILES_o) $(LAST_o) $(THIRDPARTY_STATICS)
+#	@echo linking static $(OBJLIBA)
+#	cd $(TMPARDIR) && $(base)/buildfiles/composit-ar.sh rcs $(OBJLIBA) $(THIRDPARTY_STATICS) $(FILES_o) $(LAST_o) 
+endif # LIBRARY
+
+else  # not Solaris
+ifeq ($(HOSTTYPE_OSTYPE),intel.Linux)
+ifeq ($(LIBRARY),gfcppcache)
+	@echo linking cppcache library $@
+	$(CXX) -shared -Wl,--version-script=$(base)/makefiles/ver_script $(LIB_LDFLAGS) -o $@ $(LIBS) $(FILES_o) $(LAST_o) $(THIRDPARTY_STATICS) 
+#	@echo linking static $(OBJLIBA)
+#	cd $(TMPARDIR) && $(base)/buildfiles/composit-ar.sh rcs $(OBJLIBA) $(THIRDPARTY_STATICS) $(FILES_o) $(LAST_o)
+endif
+
+else  # not Linux , so it must be Windows
+	@echo linking dll $@
+	link -out:$(call NATIVEDIR_FUNC,$@) $(LIB_LDFLAGS) $(LOADLIBES) $(foreach obj,$^,$(call NATIVEDIR_FUNC,$(obj))) /MAP
+	$(MT_COMMAND)	
+endif # Linux
+endif # Solaris
+
+$(OBJDIR)/%.$(OBJEXT): %.cpp
+	@echo compiling $(VARIANT) $<
+	$(COMPILE.cpp) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/statistics/%.$(OBJEXT): statistics/%.cpp
+	@echo compiling $(VARIANT) $<
+	$(COMPILE.cpp) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/admin/%.$(OBJEXT): admin/%.cpp
+	@echo compiling $(VARIANT) $<
+	$(COMPILE.cpp) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/admin/impl/%.$(OBJEXT): admin/impl/%.cpp
+	@echo compiling $(VARIANT) $<
+	$(COMPILE.cpp) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/impl/%.$(OBJEXT): impl/%.cpp
+	@echo compiling $(VARIANT) $<
+	$(COMPILE.cpp) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/statistics/%.$(OBJEXT): statistics/%.c
+	@echo compiling C3 $<
+	$(COMPILE.c) $(nonCPPOpts) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/admin/%.$(OBJEXT): admin/%.c
+	@echo compiling C3 $<
+	$(COMPILE.c) $(nonCPPOpts) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/admin/impl/%.$(OBJEXT): admin/impl/%.c
+	@echo compiling C3 $<
+	$(COMPILE.c) $(nonCPPOpts) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+$(OBJDIR)/impl/%.$(OBJEXT): impl/%.c
+	@echo compiling C3 $<
+	$(COMPILE.c) $(nonCPPOpts) $(OUT.c) $(call NATIVEDIR_FUNC,$<)
+
+ifeq ($(OSNAME),SunOS)
+# Solaris 
+  asArch = $(CFLAGS_MODEL)
+
+  # TODO - Remove after upgrading as on build machine
+  ifeq ($(UNAME_P),sparc)
+    ifeq ($(GFLIB_MODEL),64bit)
+      asArch = -xarch=v9
+    else
+      asArch = -xarch=v8plus
+    endif
+  endif 
+
+$(OBJDIR)/%.$(OBJEXT): %.asm
+	@echo assembling $<
+	@as $(asArch)  -K PIC -L -s -P -o $@ $(call NATIVEDIR_FUNC,$<)
+else
+# Linux
+
+# for now linux asm is 32 bit <<< fix for AMD Opteron
+asArch = -32
+
+$(OBJDIR)/%.$(OBJEXT): %.asm
+	@echo assembling $<
+	@as $(asArch) -o $@ $(call NATIVEDIR_FUNC,$<)
+endif
+
+endif # LIBRARY
+
+showme:
+	@echo $(COMPILE.cpp)
+
+

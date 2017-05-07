@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+This is the XML DTD for the GemFire Native Client declarative caching XML file.  
+
+The contents of a declarative XML file correspond to APIs found in the
+Gemfire Native Client product, more specifically in the
+Cache.hpp and Region.hpp files in the product include directory
+
+A declarative caching XML file is used to populate a Cache
+when it is created.
+
+-->
+
+
+<!--
+The "client-cache" element is the root element of the declarative cache file.
+This element configures a GemFire Native Client Cache and describes the 
+root regions it contains, if any.
+-->
+
+<!ELEMENT client-cache (pool*, root-region*, region*, pdx?)>
+<!ATTLIST client-cache
+  endpoints CDATA #IMPLIED
+  redundancy-level CDATA #IMPLIED
+>
+
+<!--
+A "locator" element specifies the host and port that a server locator is listening on
+-->
+<!ELEMENT locator EMPTY>
+<!ATTLIST locator
+  host  CDATA #REQUIRED
+  port  CDATA #REQUIRED
+>
+
+<!--
+A "server" element specifies the host and port that a cache server is listening on
+-->
+<!ELEMENT server EMPTY>
+<!ATTLIST server
+  host  CDATA #REQUIRED
+  port  CDATA #REQUIRED
+>
+
+<!-- A "pdx" element specifies the properties related to pdx types -->
+<!ELEMENT pdx EMPTY>
+<!ATTLIST 
+  ignore-unread-fields  (false | true) #IMPLIED
+  read-serialized (false | true) #IMPLIED
+  >
+
+<!--
+A "pool" element specifies a client-server connection pool.
+-->
+<!ELEMENT pool (locator+|server+)>
+<!ATTLIST pool
+  free-connection-timeout        CDATA #IMPLIED
+  load-conditioning-interval     CDATA #IMPLIED
+  min-connections                CDATA #IMPLIED
+  max-connections                CDATA #IMPLIED
+  retry-attempts                 CDATA #IMPLIED
+  idle-timeout                   CDATA #IMPLIED
+  ping-interval                  CDATA #IMPLIED
+  name                           CDATA #REQUIRED
+  read-timeout                   CDATA #IMPLIED
+  server-group                   CDATA #IMPLIED
+  socket-buffer-size             CDATA #IMPLIED
+  subscription-enabled                  (false | true) #IMPLIED
+  subscription-message-tracking-timeout CDATA #IMPLIED
+  subscription-ack-interval             CDATA #IMPLIED
+  subscription-redundancy        CDATA #IMPLIED
+  statistic-interval             CDATA #IMPLIED
+  pr-single-hop-enabled          (true | false) #IMPLIED
+  thread-local-connections       (false | true) #IMPLIED
+  multiuser-authentication          (false | true) #IMPLIED
+>
+
+<!--
+A root-region" element describes a root region whose entries and
+subregions will be stored in memory.
+Note that the "name" attribute specifies the simple name of the region;
+it cannot contain a "/".
+-->
+
+<!ELEMENT root-region (region-attributes?, region*)>
+<!ATTLIST root-region
+  name CDATA #REQUIRED
+>
+
+
+<!--
+A "region" element describes a region (and its entries) in GemFire
+Native Client cache. Note that the "name" attribute specifies the simple
+name of the region; it cannot contain a "/".
+-->
+
+<!ELEMENT region (region-attributes?, region*)>
+<!ATTLIST region
+  name CDATA #REQUIRED
+  refid CDATA #IMPLIED
+>
+
+
+
+<!--
+A "region-attributes" element describes the attributes of a region to
+be created. For more details see the RegionFactory header in the
+product include directory
+-->
+
+<!ELEMENT region-attributes ((region-time-to-live |
+  region-idle-time | entry-time-to-live | entry-idle-time |
+  partition-resolver |
+  cache-loader | cache-listener | cache-writer | persistence-manager)*)>
+<!ATTLIST region-attributes
+  caching-enabled (true | TRUE | false | FALSE) #IMPLIED
+  cloning-enabled (true | TRUE | false | FALSE) #IMPLIED
+  scope (local | distributed-no-ack | distributed-ack ) #IMPLIED
+  initial-capacity CDATA #IMPLIED
+  load-factor CDATA #IMPLIED
+  concurrency-level CDATA #IMPLIED
+  lru-entries-limit CDATA #IMPLIED
+  disk-policy (none | overflows | persist ) #IMPLIED
+  endpoints CDATA #IMPLIED
+  client-notification (true | TRUE | false | FALSE) #IMPLIED
+  pool-name CDATA #IMPLIED
+  concurrency-checks-enabled (true | TRUE | false | FALSE) #IMPLIED
+  id CDATA #IMPLIED
+  refid CDATA #IMPLIED
+>
+
+
+
+
+
+
+<!--
+A "region-time-to-live" element specifies a Region's time to live
+-->
+
+<!ELEMENT region-time-to-live (expiration-attributes)>
+
+
+
+<!--
+A "region-idle-time" element specifies a Region's idle time
+-->
+
+<!ELEMENT region-idle-time (expiration-attributes)>
+
+
+
+<!--
+A "entry-time-to-live" element specifies a Region's entries' time to
+live
+-->
+
+<!ELEMENT entry-time-to-live (expiration-attributes)>
+
+
+
+<!--
+A "entry-idle-time" element specifies a Region's entries' idle time
+-->
+
+<!ELEMENT entry-idle-time (expiration-attributes)>
+
+
+<!--
+A "properties" element specifies a persistence properties 
+-->
+
+<!ELEMENT properties (property*)>
+
+<!-- 
+An "expiration-attributes" element describes expiration 
+-->
+
+<!ELEMENT expiration-attributes EMPTY>
+<!ATTLIST expiration-attributes
+  timeout CDATA #REQUIRED
+  action (invalidate | destroy | local-invalidate | local-destroy) #IMPLIED
+>
+
+
+
+<!--
+A "cache-loader" element describes a region's CacheLoader
+-->
+
+<!ELEMENT cache-loader  EMPTY >
+<!ATTLIST cache-loader 
+ library-name CDATA #IMPLIED
+ library-function-name CDATA #REQUIRED
+>
+
+
+
+<!--
+A "cache-listener" element describes a region's CacheListener
+-->
+
+<!ELEMENT cache-listener EMPTY>
+<!ATTLIST cache-listener 
+ library-name CDATA #IMPLIED
+ library-function-name CDATA #REQUIRED
+>
+
+
+
+<!--
+A "cache-writer" element describes a region's CacheListener
+-->
+
+<!ELEMENT cache-writer EMPTY>
+<!ATTLIST cache-writer 
+ library-name CDATA #IMPLIED
+ library-function-name CDATA #REQUIRED
+>
+
+<!--
+A "partition-resolver" element describes a region's PartitionResolver
+-->
+
+<!ELEMENT partition-resolver EMPTY>
+<!ATTLIST partition-resolver 
+ library-name CDATA #IMPLIED
+ library-function-name CDATA #REQUIRED
+>
+
+<!--
+A "persistence-manager" element describes a region's persistence feature
+-->
+
+<!ELEMENT persistence-manager (properties)>
+<!ATTLIST persistence-manager 
+ library-name CDATA #IMPLIED
+ library-function-name CDATA #REQUIRED
+>
+
+
+
+<!--
+A "property" element describes a persistence property
+-->
+
+<!ELEMENT property EMPTY>
+<!ATTLIST property 
+ name CDATA #REQUIRED
+ value CDATA #REQUIRED
+>

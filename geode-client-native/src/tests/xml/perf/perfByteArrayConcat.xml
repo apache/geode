@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <client-set name="Client1" />
+
+  <test name="ByteArrayConcats" description="Byte Array Concatenation Test">
+
+    <task name="ByteArrayConcats" action="doByteArrayConcat" container="perftests" waitTime="1h">
+      <data name="arraySize">
+        <list>
+          <item>10</item>
+          <item>100</item>
+          <item>1000</item>
+          <item>10000</item>
+          <item>100000</item>
+          <item>1000000</item>
+        </list>
+      </data>
+      <data name="totalSize">
+        <list>
+          <item>5000000</item>
+          <item>10000000</item>
+          <item>50000000</item>
+          <item>100000000</item>
+        </list>
+      </data>
+      <data name="algorithm">
+        <list>
+          <item>vector</item>
+          <item>deque</item>
+          <item>slist</item>
+          <item>string</item>
+          <item>rope</item>
+          <item>DataOutput</item>
+        </list>
+      </data>
+    </task>
+
+  </test>
+
+</test-driver>

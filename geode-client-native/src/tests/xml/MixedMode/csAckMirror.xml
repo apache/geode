@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.0//EN"
+  "http://www.gemstone.com/dtd/cache5_0.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true"/>
+  <region name="TestTCR1">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values">
+      <eviction-attributes>
+        <lru-memory-size maximum="$LRU_MEM" action="overflow-to-disk"/>
+      </eviction-attributes>
+    </region-attributes>
+    <entry>
+      <key><string>1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaclient.ExampleObject</class-name>
+          <parameter name="id"><string>111</string></parameter>
+        </declarable>
+      </value>
+    </entry>
+  </region>
+</cache> 
