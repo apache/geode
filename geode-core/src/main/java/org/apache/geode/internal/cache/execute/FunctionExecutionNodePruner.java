@@ -54,6 +54,14 @@ public class FunctionExecutionNodePruner {
     try {
       for (Integer bucketId : buckets) {
         Set<InternalDistributedMember> nodes = pr.getRegionAdvisor().getBucketOwners(bucketId);
+        if (nodes.isEmpty()) {
+          if (isDebugEnabled) {
+            logger.debug(
+                "FunctionExecutionNodePruner: The buckets owners of the bucket: {} are empty, double check if they are all offline",
+                bucketId);
+          }
+          nodes.add(pr.getOrCreateNodeForBucketRead(bucketId));
+        }
 
         if (isDebugEnabled) {
           logger.debug("FunctionExecutionNodePruner: The buckets owners of the bucket: {} are: {}",
