@@ -179,7 +179,6 @@ public class GfshParser extends SimpleParser {
   @Override
   public GfshParseResult parse(String userInput) {
     String rawInput = convertToSimpleParserInput(userInput);
-    logWrapper.info("Sending raw input [" + rawInput + "] to SimpleParser");
 
     // User SimpleParser to parse the input
     ParseResult result = super.parse(rawInput);
