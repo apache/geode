@@ -99,8 +99,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       // Execute the partitioned touch function on the primary server(s)
       Execution execution = FunctionService.onRegion(getSessionRegion()).withFilter(sessionIds);
       try {
-        ResultCollector collector =
-            execution.execute(TouchPartitionedRegionEntriesFunction.ID, true, false, true);
+        ResultCollector collector = execution.execute(TouchPartitionedRegionEntriesFunction.ID);
         collector.getResult();
       } catch (Exception e) {
         // If an exception occurs in the function, log it.
@@ -111,8 +110,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       Execution execution = FunctionService.onServers(getCache())
           .setArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
       try {
-        ResultCollector collector =
-            execution.execute(TouchReplicatedRegionEntriesFunction.ID, true, false, false);
+        ResultCollector collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID);
         collector.getResult();
       } catch (Exception e) {
         // If an exception occurs in the function, log it.
@@ -144,7 +142,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
     // Execute the function on the session region
     Execution execution = FunctionService.onRegion(getSessionRegion()).withFilter(filters);
-    ResultCollector collector = execution.execute(RegionSizeFunction.ID, true, true, true);
+    ResultCollector collector = execution.execute(RegionSizeFunction.ID);
     List<Integer> result = (List<Integer>) collector.getResult();
 
     // Return the first (and only) element

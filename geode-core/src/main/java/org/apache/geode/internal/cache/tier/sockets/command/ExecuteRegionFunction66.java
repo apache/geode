@@ -249,16 +249,16 @@ public class ExecuteRegionFunction66 extends BaseCommand {
         if (function instanceof String) {
           switch (functionState) {
             case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function, true, false, false).getResult();
+              execution.execute((String) function).getResult();
               break;
             case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function, true, true, false).getResult();
+              execution.execute((String) function).getResult();
               break;
             case AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE:
-              execution.execute((String) function, true, true, true).getResult();
+              execution.execute((String) function).getResult();
               break;
             case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
-              execution.execute((String) function, true, false, true).getResult();
+              execution.execute((String) function).getResult();
               break;
           }
         } else {
@@ -268,10 +268,10 @@ public class ExecuteRegionFunction66 extends BaseCommand {
         if (function instanceof String) {
           switch (functionState) {
             case AbstractExecution.NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function, false, false, false);
+              execution.execute((String) function);
               break;
             case AbstractExecution.NO_HA_NO_HASRESULT_OPTIMIZEFORWRITE:
-              execution.execute((String) function, false, false, true);
+              execution.execute((String) function);
               break;
           }
         } else {
