@@ -121,8 +121,8 @@ public class CommandProcessor {
         }
       } catch (CommandProcessingException e) { // expected from Parser
         setLastExecutionStatus(1);
-        if (logWrapper.infoEnabled()) {
-          logWrapper.info("Could not parse \"" + cmdStmt.getCommandString() + "\".", e);
+        if (logWrapper.warningEnabled()) {
+          logWrapper.warning("Could not parse \"" + cmdStmt.getCommandString() + "\".", e);
         }
         return ResultBuilder.createParsingErrorResult(e.getMessage());
       } catch (NotAuthorizedException e) {
