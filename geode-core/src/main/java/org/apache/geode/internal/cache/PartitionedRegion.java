@@ -7136,7 +7136,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * This method returns true if region is closed.
+   * This method checks if region is closed.
    * 
    */
   public void checkClosed() {
@@ -7144,6 +7144,17 @@ public class PartitionedRegion extends LocalRegion
       throw new RegionDestroyedException(
           LocalizedStrings.PartitionedRegion_PR_0_IS_LOCALLY_CLOSED.toLocalizedString(this),
           getFullPath());
+    }
+  }
+
+  /**
+   * This method checks if region is closed or destroyed.
+   *
+   */
+  public void checkClosedOrDestroyed() {
+    checkClosed();
+    if (isDestroyed()) {
+      throw new RegionDestroyedException(toString(), getFullPath());
     }
   }
 

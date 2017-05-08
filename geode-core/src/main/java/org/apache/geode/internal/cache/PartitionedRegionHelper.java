@@ -501,6 +501,7 @@ public class PartitionedRegionHelper {
       return getHashKey(null, pr, operation, key, value, callbackArgument);
     } catch (IllegalStateException e) { // bug #43651 - check for shutdown before throwing this
       pr.getCache().getCancelCriterion().checkCancelInProgress(e);
+      pr.checkClosedOrDestroyed(); // GEODE-2282 - check for region destroyed before throwing it
       throw e;
     }
   }
