@@ -1128,7 +1128,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   public static void executeFunctionFunctionInvocationTargetExceptionWithoutHA() {
     try {
       ResultCollector rc1 = FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistribuedRegionFunctionFunctionInvocationException", true, false);
+          .execute("DistribuedRegionFunctionFunctionInvocationException");
       rc1.getResult();
       fail("Function Invocation Target Exception should be thrown");
     } catch (Exception e) {
@@ -1154,7 +1154,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   public static void executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA() {
     try {
       FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistribuedRegionFunctionFunctionInvocationException", true, false).getResult();
+          .execute("DistribuedRegionFunctionFunctionInvocationException").getResult();
       fail("Function Invocation Target Exception should be thrown");
     } catch (Exception e) {
       e.printStackTrace();

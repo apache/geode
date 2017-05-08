@@ -243,8 +243,7 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
             .info("The function name to execute : (without Register) " + function.getId());
         Execution me = member.setArguments(args);
         LogWriterUtils.getLogWriter().info("The args passed  : " + args);
-        return me.execute(function.getId(), function.hasResult(), function.isHA(),
-            function.optimizeForWrite());
+        return me.execute(function.getId());
       }
     } else { // By Instance
       return member.setArguments(args).execute(function);
