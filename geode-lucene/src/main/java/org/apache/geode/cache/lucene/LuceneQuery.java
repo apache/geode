@@ -17,7 +17,12 @@ package org.apache.geode.cache.lucene;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.geode.annotations.Experimental;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.internal.cache.PrimaryBucketException;
 
 /**
  * <p>
@@ -37,21 +42,34 @@ import org.apache.geode.annotations.Experimental;
  * Results are returned in order of their score with respect to this query.
  * </p>
  */
-@Experimental
 public interface LuceneQuery<K, V> {
   /**
    * Execute the query and return the region keys that match this query, up to the limit specified
    * by {@link #getLimit()}.
-   * 
+   *
+   * @return Collection of Apache Geode region keys that satisfy the Lucene query.
    * @throws LuceneQueryException if the query could not be parsed or executed.
+   * @throws CacheClosedException if the cache was closed while the Lucene query was being executed.
+   * @throws FunctionException if the function execution mechanism encounters an error while
+   *         executing the Lucene query.
+   * @throws PartitionOfflineException if the node containing the buckets required to execute the
+   *         Lucene query goes offline.
+   * @throws CancelException if a cancel is in progress while the Lucene query was being executed.
    */
   public Collection<K> findKeys() throws LuceneQueryException;
 
   /**
    * Execute the query and return the region values that match this query, up to the limit specified
    * by {@link #getLimit()}
-   * 
+   *
+   * @return a Collection of Apache Geode region values that satisfy the Lucene query.
    * @throws LuceneQueryException if the query could not be parsed or executed.
+   * @throws CacheClosedException if the cache was closed while the Lucene query was being executed.
+   * @throws FunctionException if the function execution mechanism encounters an error while
+   *         executing the Lucene query.
+   * @throws PartitionOfflineException if the node containing the buckets required to execute the
+   *         Lucene query goes offline.
+   * @throws CancelException if a cancel is in progress while the Lucene query was being executed.
    */
   public Collection<V> findValues() throws LuceneQueryException;
 
@@ -60,7 +78,14 @@ public interface LuceneQuery<K, V> {
    * the limit specified by {@link #getLimit()} A {@link LuceneResultStruct} contains the region
    * key, value, and a score for that entry.
    *
+   * @return a List of LuceneResultStruct that match the Lucene query
    * @throws LuceneQueryException if the query could not be parsed or executed.
+   * @throws CacheClosedException if the cache was closed while the Lucene query was being executed.
+   * @throws FunctionException if the function execution mechanism encounters an error while
+   *         executing the Lucene query.
+   * @throws PartitionOfflineException if the node containing the buckets required to execute the
+   *         Lucene query goes offline.
+   * @throws CancelException if a cancel is in progress while the Lucene query was being executed.
    */
   public List<LuceneResultStruct<K, V>> findResults() throws LuceneQueryException;
 
@@ -69,17 +94,31 @@ public interface LuceneQuery<K, V> {
    * {@link PageableLuceneQueryResults} provides the ability to fetch a page of results at a time,
    * as specified by {@link #getPageSize()}
    *
+   * @return a PageableLuceneQuery that can be used to fetch one page of result at a time.
    * @throws LuceneQueryException if the query could not be parsed or executed.
+   * @throws CacheClosedException if the cache was closed while the Lucene query was being executed.
+   * @throws FunctionException if the function execution mechanism encounters an error while
+   *         executing the Lucene query.
+   * @throws PartitionOfflineException if the node containing the buckets required to execute the
+   *         Lucene query goes offline.
+   * @throws CancelException if a cancel is in progress while the Lucene query was being executed.
    */
   public PageableLuceneQueryResults<K, V> findPages() throws LuceneQueryException;
 
   /**
-   * Get page size setting of current query.
+   * Gets the page size setting of current query. This page size is set while creating
+   * {@link LuceneQueryImpl} object
+   *
+   * @return int value representing the page size of the current query
    */
   public int getPageSize();
 
   /**
-   * Get limit size setting of current query.
+   * Get limit size setting of current query. This value is the maximum number of results that can
+   * be returned by the Lucene query. This value is set while creating the {@link LuceneQueryImpl}
+   * object
+   *
+   * @return int value representing the limit of the current query
    */
   public int getLimit();
 

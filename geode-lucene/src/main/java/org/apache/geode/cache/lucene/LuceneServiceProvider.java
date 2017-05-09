@@ -15,19 +15,22 @@
 
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.internal.cache.InternalCache;
 
 /**
- * Class for retrieving or creating the currently running instance of the LuceneService.
+ * Class for retrieving or creating the currently running instance of the LuceneService. For more
+ * information about LuceneService see {@link LuceneService}
  *
  */
-@Experimental
 public class LuceneServiceProvider {
   /**
    * Retrieve or create the Lucene service for this cache
+   *
+   * @param cache - the Apache Geode cache on which the LuceneService instance is created or already
+   *        running.
+   * @return the LuceneService instance
    */
   public static LuceneService get(GemFireCache cache) {
     InternalCache internalCache = (InternalCache) cache;

@@ -15,9 +15,6 @@
 package org.apache.geode.cache.lucene;
 
 import org.apache.geode.cache.query.Query;
-import org.apache.lucene.queryparser.classic.ParseException;
-
-import org.apache.geode.annotations.Experimental;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 
 /**
@@ -31,7 +28,6 @@ import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
  * based on a custom Lucene {@link Query} object.
  *
  */
-@Experimental
 public interface LuceneQueryFactory {
 
   /**

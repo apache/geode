@@ -14,16 +14,13 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -95,7 +92,6 @@ import java.util.concurrent.TimeUnit;
  * </p>
  * 
  */
-@Experimental
 public interface LuceneService {
 
   /**
