@@ -33,8 +33,8 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.assertj.core.api.Assertions;
 import org.jgroups.util.UUID;
 import org.junit.After;
@@ -51,7 +51,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category({IntegrationTest.class, MembershipTest.class})
 public class GMSMembershipManagerJUnitTest {
 
   private static final long WAIT_FOR_REPLIES_MILLIS = 2000;
