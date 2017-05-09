@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.springframework.shell.converters.ArrayConverter;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Completion;
@@ -48,6 +49,7 @@ public class GfshParser extends SimpleParser {
 
   // Make use of LogWrapper
   private static final LogWrapper logWrapper = LogWrapper.getInstance();
+  private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
 
   // pattern used to split the user input with whitespaces except those in quotes (single or double)
   private static Pattern PATTERN =
@@ -178,8 +180,10 @@ public class GfshParser extends SimpleParser {
 
   @Override
   public GfshParseResult parse(String userInput) {
+    logger.info("parser user input: <" + userInput + ">");
     String rawInput = convertToSimpleParserInput(userInput);
 
+    logger.info("parser raw input: <" + rawInput + ">");
     // User SimpleParser to parse the input
     ParseResult result = super.parse(rawInput);
 
