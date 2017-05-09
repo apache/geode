@@ -74,7 +74,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   /**
    * A transient deque, but should be treated like as a fifo queue to maintain the eventSeqNum of
-   * the events that are to be sent to remote site.  It is cleared when the queue is cleared.
+   * the events that are to be sent to remote site. It is cleared when the queue is cleared.
    */
   private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
 
