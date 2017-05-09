@@ -814,12 +814,17 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
     }
   }
+  
+  boolean isShuttingDown() {
+    return services.getCancelCriterion().isCancelInProgress()
+        || services.getManager().shutdownInProgress()
+        || services.getManager().isShutdownStarted();
+  }
 
   boolean prepareView(NetView view, List<InternalDistributedMember> newMembers)
       throws InterruptedException {
-    if (services.getCancelCriterion().isCancelInProgress()
-        || services.getManager().shutdownInProgress()
-        || services.getManager().isShutdownStarted()) {
+    // GEODE-2193 - don't send a view with new members if we're shutting down
+    if (isShuttingDown()) {
       throw new InterruptedException("shutting down");
     }
     return sendView(view, true, this.prepareProcessor);
@@ -827,9 +832,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   void sendView(NetView view, List<InternalDistributedMember> newMembers)
       throws InterruptedException {
-    if (services.getCancelCriterion().isCancelInProgress()
-        || services.getManager().shutdownInProgress()
-        || services.getManager().isShutdownStarted()) {
+    if (isShuttingDown()) {
       throw new InterruptedException("shutting down");
     }
     sendView(view, false, this.viewProcessor);
@@ -873,17 +876,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return true;
     }
 
-    StringBuilder stringBuilder = new StringBuilder();
-    int[] ports = view.getFailureDetectionPorts();
-    int numMembers = view.size();
-    for (int i = 0; i < numMembers; i++) {
-      if (i > 0) {
-        stringBuilder.append(' ');
-      }
-      stringBuilder.append(ports[i]);
-    }
-    logger.info((preparing ? "preparing" : "sending") + " new view " + view
-        + "\nfailure detection ports: " + stringBuilder.toString());
+    logger.info((preparing ? "preparing" : "sending") + " new view " + view);
 
     msg.setRecipients(recips);
 
@@ -2373,34 +2366,38 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         List<InternalDistributedMember> failures =
             new ArrayList<>(currentView.getCrashedMembers().size() + unresponsive.size());
 
-        if (conflictingView != null && !conflictingView.getCreator().equals(localAddress)
-            && conflictingView.getViewId() > newView.getViewId() && (lastConflictingView == null
-                || conflictingView.getViewId() > lastConflictingView.getViewId())) {
-          lastConflictingView = conflictingView;
-          logger.info(
-              "adding these crashed members from a conflicting view to the crash-set for the next view: {}\nconflicting view: {}",
-              unresponsive, conflictingView);
-          failures.addAll(conflictingView.getCrashedMembers());
-          // this member may have been kicked out of the conflicting view
-          if (failures.contains(localAddress)) {
-            forceDisconnect("I am no longer a member of the distributed system");
-            shutdown = true;
-            return;
-          }
-          List<InternalDistributedMember> newMembers = conflictingView.getNewMembers();
-          if (!newMembers.isEmpty()) {
-            logger.info("adding these new members from a conflicting view to the new view: {}",
-                newMembers);
-            for (InternalDistributedMember mbr : newMembers) {
-              int port = conflictingView.getFailureDetectionPort(mbr);
-              newView.add(mbr);
-              newView.setFailureDetectionPort(mbr, port);
-              joinReqs.add(mbr);
+        boolean conflictingViewNotFromMe = conflictingView != null && !conflictingView.getCreator().equals(localAddress)
+            && conflictingView.getViewId() > newView.getViewId();
+        if (conflictingViewNotFromMe) {
+          boolean conflictingViewIsMostRecent = (lastConflictingView == null
+              || conflictingView.getViewId() > lastConflictingView.getViewId());
+          if (conflictingViewIsMostRecent) {
+            lastConflictingView = conflictingView;
+            logger.info(
+                "adding these crashed members from a conflicting view to the crash-set for the next view: {}\nconflicting view: {}",
+                unresponsive, conflictingView);
+            failures.addAll(conflictingView.getCrashedMembers());
+            // this member may have been kicked out of the conflicting view
+            if (failures.contains(localAddress)) {
+              forceDisconnect("I am no longer a member of the distributed system");
+              shutdown = true;
+              return;
             }
-          }
-          // trump the view ID of the conflicting view so mine will be accepted
-          if (conflictingView.getViewId() >= newView.getViewId()) {
-            newView = new NetView(newView, conflictingView.getViewId() + 1);
+            List<InternalDistributedMember> newMembers = conflictingView.getNewMembers();
+            if (!newMembers.isEmpty()) {
+              logger.info("adding these new members from a conflicting view to the new view: {}",
+                  newMembers);
+              for (InternalDistributedMember mbr : newMembers) {
+                int port = conflictingView.getFailureDetectionPort(mbr);
+                newView.add(mbr);
+                newView.setFailureDetectionPort(mbr, port);
+                joinReqs.add(mbr);
+              }
+            }
+            // trump the view ID of the conflicting view so mine will be accepted
+            if (conflictingView.getViewId() >= newView.getViewId()) {
+              newView = new NetView(newView, conflictingView.getViewId() + 1);
+            }
           }
         }
 

@@ -1862,8 +1862,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       useMcast = (msg.getMulticast() || allDestinations);
     }
 
-    boolean sendViaMessenger = isForceUDPCommunications(); // enable when bug #46438 is fixed: ||
-    // msg.sendViaUDP();
+    boolean sendViaMessenger = isForceUDPCommunications() || msg.sendViaUDP();
 
     if (useMcast || tcpDisabled || sendViaMessenger) {
       checkAddressesForUUIDs(destinations);
