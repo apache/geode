@@ -180,10 +180,9 @@ public class GfshParser extends SimpleParser {
 
   @Override
   public GfshParseResult parse(String userInput) {
-    logger.info("parser user input: <" + userInput + ">");
+    logger.debug("parser user input: <" + userInput + ">");
     String rawInput = convertToSimpleParserInput(userInput);
 
-    logger.info("parser raw input: <" + rawInput + ">");
     // User SimpleParser to parse the input
     ParseResult result = super.parse(rawInput);
 
