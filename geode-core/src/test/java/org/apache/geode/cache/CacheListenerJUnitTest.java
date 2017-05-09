@@ -157,11 +157,11 @@ public class CacheListenerJUnitTest {
     }
 
     // commented this test as this is no more valid test scenario with new APIs
-//    try {
-//      am.setCacheListener(cl1);
-//      fail("expected IllegalStateException");
-//    } catch (IllegalStateException expected) {
-//    }
+    // try {
+    // am.setCacheListener(cl1);
+    // fail("expected IllegalStateException");
+    // } catch (IllegalStateException expected) {
+    // }
     am.removeCacheListener(cl1);
     assertEquals(Arrays.asList(new CacheListener[] {cl2}), Arrays.asList(ra.getCacheListeners()));
     am.removeCacheListener(cl1);

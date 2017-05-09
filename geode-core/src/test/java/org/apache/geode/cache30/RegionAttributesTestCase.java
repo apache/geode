@@ -140,7 +140,7 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
     ExpirationAttributes regionIdle2 = new ExpirationAttributes(7, ExpirationAction.DESTROY);
     ExpirationAttributes regionTTL2 = new ExpirationAttributes(8, ExpirationAction.INVALIDATE);
 
-    mutator.initCacheListeners(new CacheListener[]{listener2});
+    mutator.initCacheListeners(new CacheListener[] {listener2});
     assertEquals(listener2, attrs.getCacheListener());
     assertEquals(loader, mutator.setCacheLoader(loader2));
     assertEquals(writer, mutator.setCacheWriter(writer2));
