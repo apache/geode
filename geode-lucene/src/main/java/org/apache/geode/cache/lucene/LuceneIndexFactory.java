@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.lucene.analysis.Analyzer;
 
 import java.util.Map;
@@ -26,7 +25,6 @@ import java.util.Map;
  * Configure the index using the add methods, and then call {@link #create(String, String)} to
  * create the index.
  */
-@Experimental
 public interface LuceneIndexFactory {
 
   /**

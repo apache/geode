@@ -15,29 +15,37 @@
 
 package org.apache.geode.cache.lucene.internal.repository;
 
-import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.lucene.internal.distributed.CollectorManager;
 
 /**
- * Interface for collection results of a query on an IndexRepository. See
- * {@link IndexRepository#query(org.apache.lucene.search.Query, int, IndexResultCollector)}
+ * Interface for the collection that stores the results of a Lucene query executed on an
+ * IndexRepository. See
+ * {@link IndexRepository#query(org.apache.lucene.search.Query, int, IndexResultCollector)} to
+ * understand how Lucene Queries are executed.
  */
-@Experimental
 public interface IndexResultCollector {
   /**
+   * Returns the name of the Lucene IndexResultCollector that will store the results of the Lucene
+   * query executed on the IndexRepository. The name is set while creating the IndexResultCollector
+   * using {@link CollectorManager#newCollector(String)}
+   *
    * @return Name/identifier of this collector
    */
   public String getName();
 
   /**
-   * @return Number of results collected by this collector
+   * Returns the number of Lucene query results that are being stored in the IndexResultCollector
+   *
+   * @return number of results collected by this collector
    */
   public int size();
 
   /**
-   * Collect a single document
+   * Collects a corresponding pair of Apache Geode key and Lucene score assigned to the document
+   * which is returned by execution of a Lucene query. This is stored in the IndexResultCollector.
    * 
-   * @param key the gemfire key of the object
-   * @param score the lucene score of this object
+   * @param key - Apache Geode key of the object stored in the region
+   * @param score the score of this result document assigned by Lucene
    */
   void collect(Object key, float score);
 }

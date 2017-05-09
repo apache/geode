@@ -15,10 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import java.io.IOException;
 import java.util.Collection;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 
@@ -34,10 +32,11 @@ import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
  * 
  * @param <C> Type of IndexResultCollector created by this manager
  */
-@Experimental
 public interface CollectorManager<C extends IndexResultCollector> {
   /**
-   * @param name Name/Identifier for this collector. For e.g. region/bucketId.
+   * Creates a new collector to store the results of a Lucene query.
+   *
+   * @param name Name/Identifier for this collector. For e.g. region name/bucketId.
    * @return a new {@link IndexResultCollector}. This must return a different instance on each call.
    *         A new collector would be created for each bucket on a member node.
    */
@@ -46,6 +45,9 @@ public interface CollectorManager<C extends IndexResultCollector> {
   /**
    * Reduce the results of individual collectors into a meaningful result. This method must be
    * called after collection is finished on all provided collectors.
+   *
+   * @param results - Collection of the results of a Lucene query execution.
+   * @return IndexResultCollector containing a reduced set of the results of the Lucene query.
    * 
    */
   C reduce(Collection<C> results);
