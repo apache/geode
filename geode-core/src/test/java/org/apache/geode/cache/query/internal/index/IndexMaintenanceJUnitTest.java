@@ -482,27 +482,6 @@ public class IndexMaintenanceJUnitTest {
   }
 
   /**
-   * Tests Index maintenance on method entries(boolean ) as iterator ( with focus on behaviour if
-   * not implemented in DummyQRegion
-   */
-  @Test
-  public void testIndexMaintenanceWithIndexOnMethodEntries() {
-    try {
-      Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "entries.value.getID",
-          "/portfolio.entries(false) entries");
-      CacheUtils.getCache();
-      region = CacheUtils.getRegion("/portfolio");
-      region.put("4", new Portfolio(4));
-      region.put("5", new Portfolio(5));
-      CompactRangeIndex ri = (CompactRangeIndex) i1;
-      validateIndexForEntries(ri);
-    } catch (Exception e) {
-      CacheUtils.getLogger().error(e);
-      fail(e.toString());
-    }
-  }
-
-  /**
    * Tests Index maintenance on method getEntries( ) as iterator ( with focus on behaviour if not
    * implemented in DummyQRegion
    */

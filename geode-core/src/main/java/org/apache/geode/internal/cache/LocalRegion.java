@@ -1888,7 +1888,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return new SubregionsSet(recursive);
   }
 
-  public Set entries(boolean recursive) {
+  public Set entrySet(boolean recursive) {
     checkReadiness();
     checkForNoAccess();
     return basicEntries(recursive);
@@ -3724,7 +3724,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     DataOutputStream out = new DataOutputStream(outputStream);
     try {
       out.writeByte(SNAPSHOT_VERSION);
-      for (Iterator itr = entries(false).iterator(); itr.hasNext();) {
+      for (Iterator itr = entrySet(false).iterator(); itr.hasNext();) {
         Region.Entry entry = (Region.Entry) itr.next();
         try {
           Object key = entry.getKey();
@@ -4255,7 +4255,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @see #registerInterest(Object)
    */
   private void clearViaList(List keys) {
-    for (Iterator it = this.entries(false).iterator(); it.hasNext();) {
+    for (Iterator it = this.entrySet(false).iterator(); it.hasNext();) {
       Region.Entry entry = (Region.Entry) it.next();
       try {
         Object entryKey = entry.getKey();
@@ -4286,7 +4286,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private void clearViaRegEx(String key) {
     // @todo: if (key.equals(".*)) then cmnClearRegionNoCallbacks
     Pattern keyPattern = Pattern.compile(key);
-    for (Iterator it = this.entries(false).iterator(); it.hasNext();) {
+    for (Iterator it = this.entrySet(false).iterator(); it.hasNext();) {
       Region.Entry entry = (Region.Entry) it.next();
       try {
         Object entryKey = entry.getKey();
@@ -4323,7 +4323,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           LocalizedStrings.LocalRegion_CLASS_0_COULD_NOT_BE_INSTANTIATED.toLocalizedString(key), e);
     }
 
-    for (Iterator it = this.entries(false).iterator(); it.hasNext();) {
+    for (Iterator it = this.entrySet(false).iterator(); it.hasNext();) {
       Region.Entry entry = (Region.Entry) it.next();
       try {
         Object entryKey = entry.getKey();
@@ -9211,7 +9211,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   public Set entrySet() {
     // entries(false) takes care of open transactions
-    return entries(false);
+    return entrySet(false);
   }
 
 

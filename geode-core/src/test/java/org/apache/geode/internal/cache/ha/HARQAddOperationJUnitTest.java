@@ -290,7 +290,7 @@ public class HARQAddOperationJUnitTest {
       // After the expiry of the data , AvaialbleIds size should be 0,
       // entry
       // removed from Region, LastDispatchedWrapperSet should have size 0.
-      assertEquals(0, regionqueue.getRegion().entries(false).size());
+      assertEquals(0, regionqueue.getRegion().entrySet(false).size());
       assertEquals(0, regionqueue.getAvalaibleIds().size());
       assertNull(regionqueue.getCurrentCounterSet(id1));
 

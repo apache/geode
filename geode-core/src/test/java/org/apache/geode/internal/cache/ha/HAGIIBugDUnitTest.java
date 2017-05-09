@@ -233,7 +233,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     HARegion regionForQueue = (HARegion) cache.getRegion(
         Region.SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
     LogWriterUtils.getLogWriter().info("Region Queue size : " + regionForQueue.keys().size());
-    Iterator itr = regionForQueue.entries(false).iterator();
+    Iterator itr = regionForQueue.entrySet(false).iterator();
     while (itr.hasNext()) {
       Entry entry = (Entry) itr.next();
       if (entry.getKey() instanceof Long) {
