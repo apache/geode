@@ -187,20 +187,6 @@ public class RegionEventImpl
     return true;
   }
 
-  /**
-   * @see org.apache.geode.cache.CacheEvent#isExpiration()
-   */
-  public boolean isExpiration() {
-    return this.op.isExpiration();
-  }
-
-  /**
-   * @see org.apache.geode.cache.CacheEvent#isDistributed()
-   */
-  public boolean isDistributed() {
-    return this.op.isDistributed();
-  }
-
   @Override
   public Object clone() {
     try {

@@ -1706,7 +1706,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   @Override
   void basicInvalidateRegion(RegionEventImpl event) {
     // disallow local invalidation for replicated regions
-    if (!event.isDistributed() && getScope().isDistributed() && getDataPolicy().withReplication()) {
+    if (!event.getOperation().isDistributed() && getScope().isDistributed()
+        && getDataPolicy().withReplication()) {
       throw new IllegalStateException(
           LocalizedStrings.DistributedRegion_NOT_ALLOWED_TO_DO_A_LOCAL_INVALIDATION_ON_A_REPLICATED_REGION
               .toLocalizedString());
@@ -1725,7 +1726,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * @return true if {@link InvalidateRegionOperation} should be distributed, false otherwise
    */
   protected boolean shouldDistributeInvalidateRegion(RegionEventImpl event) {
-    return event.isDistributed() && !event.isOriginRemote();
+    return event.getOperation().isDistributed() && !event.isOriginRemote();
   }
 
   /**
@@ -1960,7 +1961,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
           try {
             obtainWriteLocksForClear(regionEvent, participants);
             clearRegionLocally(regionEvent, cacheWrite, null);
-            if (!regionEvent.isOriginRemote() && regionEvent.isDistributed()) {
+            if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
               DistributedClearOperation.clear(regionEvent, null, participants);
             }
           } finally {
@@ -1973,7 +1974,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
         Set<InternalDistributedMember> participants =
             getCacheDistributionAdvisor().adviseInvalidateRegion();
         clearRegionLocally(regionEvent, cacheWrite, null);
-        if (!regionEvent.isOriginRemote() && regionEvent.isDistributed()) {
+        if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
           DistributedClearOperation.clear(regionEvent, null, participants);
         }
       }
