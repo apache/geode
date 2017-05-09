@@ -448,7 +448,8 @@ public abstract class OffHeapRegionBase {
         r.put("key4", new Long(0xFF8000000L));
         assertEquals(4, r.size());
         r.close();
-        assertEquals(0, ma.getUsedMemory());
+        Awaitility.await().atMost(60, TimeUnit.SECONDS)
+            .until(() -> assertEquals(0, ma.getUsedMemory()));
         // simple test of recovery
         r = gfc.createRegionFactory(rs).setOffHeap(true).create(rName);
         assertEquals(4, r.size());
