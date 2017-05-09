@@ -676,7 +676,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
   private static void addCacheListener(int expectedCreates) {
     // Add a cache listener to count the number of create and update events
     Region region = cache.getRegion(REGION_NAME);
-    region.getAttributesMutator().setCacheListener(new EventCountingCacheListener(expectedCreates));
+    region.getAttributesMutator().addCacheListener(new EventCountingCacheListener(expectedCreates));
   }
 
   private static void doGets(int numGets) {

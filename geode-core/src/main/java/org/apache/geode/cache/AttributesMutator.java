@@ -107,19 +107,6 @@ public interface AttributesMutator<K, V> {
   public CustomExpiry<K, V> setCustomEntryIdleTimeout(CustomExpiry<K, V> custom);
 
   /**
-   * Changes the CacheListener for the region. Removes listeners already added and calls
-   * {@link CacheCallback#close} on each of them.
-   * 
-   * @param aListener a user defined cache listener
-   * @return the previous CacheListener if a single one exists; otherwise null.
-   * @throws IllegalStateException if more than one cache listener has already been added
-   * @deprecated as of GemFire 5.0, use {@link #addCacheListener} or {@link #initCacheListeners}
-   *             instead.
-   */
-  @Deprecated
-  public CacheListener<K, V> setCacheListener(CacheListener<K, V> aListener);
-
-  /**
    * Adds a cache listener to the end of the list of cache listeners on this region.
    * 
    * @param aListener the user defined cache listener to add to the region.

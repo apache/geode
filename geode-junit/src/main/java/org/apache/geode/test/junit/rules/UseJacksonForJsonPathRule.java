@@ -14,9 +14,6 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.Defaults;
 import com.jayway.jsonpath.Option;
@@ -24,8 +21,10 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * JUnit Rule that configures json-path to use the {@code JacksonJsonProvider}

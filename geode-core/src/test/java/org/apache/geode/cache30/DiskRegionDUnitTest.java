@@ -493,7 +493,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void close2() {}
     };
 
-    region.getAttributesMutator().setCacheListener(listener);
+    region.getAttributesMutator().addCacheListener(listener);
 
     for (int i = 0; i < total; i++) {
       String value = (String) region.get(new Integer(i));
@@ -513,7 +513,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    region.getAttributesMutator().setCacheListener(listener);
+    region.getAttributesMutator().addCacheListener(listener);
 
     for (int i = 0; i < 20; i++) {
       region.put(new Integer(i), new byte[i]);

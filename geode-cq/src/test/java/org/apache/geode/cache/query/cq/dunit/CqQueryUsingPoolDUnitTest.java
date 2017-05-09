@@ -843,7 +843,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         try {
           region = getRootRegion().getSubregion(regionName);
           region.getAttributesMutator()
-              .setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+              .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
         } catch (Exception cqe) {
           fail("Failed to get Region.", cqe);
         }

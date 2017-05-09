@@ -1526,7 +1526,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
       }
     });
 
-    region.getAttributesMutator().setCacheListener(new CacheListenerAdapter() {
+    region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
       public void afterCreate(EntryEvent event) {
         th.start();
       }
