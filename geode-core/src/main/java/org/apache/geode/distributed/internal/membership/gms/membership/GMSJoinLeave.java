@@ -814,11 +814,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
     }
   }
-  
+
   boolean isShuttingDown() {
     return services.getCancelCriterion().isCancelInProgress()
-        || services.getManager().shutdownInProgress()
-        || services.getManager().isShutdownStarted();
+        || services.getManager().shutdownInProgress() || services.getManager().isShutdownStarted();
   }
 
   boolean prepareView(NetView view, List<InternalDistributedMember> newMembers)
@@ -2366,8 +2365,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         List<InternalDistributedMember> failures =
             new ArrayList<>(currentView.getCrashedMembers().size() + unresponsive.size());
 
-        boolean conflictingViewNotFromMe = conflictingView != null && !conflictingView.getCreator().equals(localAddress)
-            && conflictingView.getViewId() > newView.getViewId();
+        boolean conflictingViewNotFromMe =
+            conflictingView != null && !conflictingView.getCreator().equals(localAddress)
+                && conflictingView.getViewId() > newView.getViewId();
         if (conflictingViewNotFromMe) {
           boolean conflictingViewIsMostRecent = (lastConflictingView == null
               || conflictingView.getViewId() > lastConflictingView.getViewId());
