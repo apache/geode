@@ -1356,7 +1356,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         if (!region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
           iterator.remove();
           getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId)
-              .enqueueKeyToFront(event.getShadowKey());
+              .pushKeyIntoQueue(event.getShadowKey());
         }
       }
 

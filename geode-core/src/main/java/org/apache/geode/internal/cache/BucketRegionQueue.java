@@ -73,8 +73,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   private final Map indexes;
 
   /**
-   * A transient queue to maintain the eventSeqNum of the events that are to be sent to remote site.
-   * It is cleared when the queue is cleared.
+   * A transient deque, but should be treated like as a fifo queue to maintain the eventSeqNum of
+   * the events that are to be sent to remote site.  It is cleared when the queue is cleared.
    */
   private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
 
@@ -458,7 +458,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  public void enqueueKeyToFront(Object key) {
+  public void pushKeyIntoQueue(Object key) {
     eventSeqNumDeque.addFirst(key);
   }
 
