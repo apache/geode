@@ -320,7 +320,7 @@ public class QRegion implements SelectResults {
     this.region.destroyRegion(aCallbackArgument);
   }
 
-  public Set entries(boolean recursive) {
+  public Set entrySet(boolean recursive) {
     return this.region.entrySet(recursive);
   }
 

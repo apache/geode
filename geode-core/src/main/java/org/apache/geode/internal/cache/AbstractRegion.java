@@ -1698,12 +1698,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
     return result.iterator().next();
   }
 
-  public Set entrySet(boolean recursive) {
-    return entries(recursive);
-  }
-
-  public abstract Set entries(boolean recursive);
-
   public EvictionAttributes getEvictionAttributes() {
     return this.evictionAttributes;
   }

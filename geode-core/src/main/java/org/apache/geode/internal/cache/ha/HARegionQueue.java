@@ -432,7 +432,7 @@ public class HARegionQueue implements RegionQueue {
    * @throws InterruptedException
    */
   void putGIIDataInRegion() throws CacheException, InterruptedException {
-    Set entrySet = this.region.entries(false);
+    Set entrySet = this.region.entrySet(false);
     // check if the region is not empty. if there is
     // data, then the relevant data structures have to
     // be populated
