@@ -20,7 +20,11 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.sql.Time;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -34,6 +38,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -41,6 +46,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -296,6 +302,73 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
         cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
+  }
+
+  /**
+   * GEODE-2898: A non-responsive SSL client can block a server's "acceptor" thread
+   * <p>
+   * Start a server and then connect to it without completing the SSL handshake
+   * </p>
+   * <p>
+   * Attempt to connect to the server using a real SSL client, demonstrating that the server is not
+   * blocked and can process the new connection request.
+   * </p>
+   */
+  @Test
+  public void clientSlowToHandshakeDoesNotBlockServer() throws Throwable {
+    final Host host = Host.getHost(0);
+    VM serverVM = host.getVM(1);
+    VM clientVM = host.getVM(2);
+    VM slowClientVM = host.getVM(3);
+    getBlackboard().initBlackboard();
+
+    // a plain-text socket is used to connect to an ssl server & the handshake
+    // is never performed. The server will log this exception & it should be ignored
+    IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException", serverVM);
+
+    boolean cacheServerSslenabled = true;
+    boolean cacheClientSslenabled = true;
+    boolean cacheClientSslRequireAuth = true;
+
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, true));
+    int port = serverVM.invoke(() -> createServerTask());
+
+    String hostName = host.getHostName();
+
+    AsyncInvocation slowAsync = slowClientVM.invokeAsync(() -> connectToServer(hostName, port));
+    try {
+      getBlackboard().waitForGate("serverIsBlocked", 60, TimeUnit.SECONDS);
+
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+      clientVM.invoke(() -> doClientRegionTestTask());
+      serverVM.invoke(() -> doServerRegionTestTask());
+
+    } finally {
+      getBlackboard().signalGate("testIsCompleted");
+      try {
+        if (slowAsync.isAlive()) {
+          slowAsync.join(60000);
+        }
+        if (slowAsync.exceptionOccurred()) {
+          throw slowAsync.getException();
+        }
+      } finally {
+        assertFalse(slowAsync.isAlive());
+      }
+    }
+
+  }
+
+  private void connectToServer(String hostName, int port) throws Exception {
+    Socket sock = new Socket();
+    sock.connect(new InetSocketAddress(hostName, port));
+    try {
+      getBlackboard().signalGate("serverIsBlocked");
+      getBlackboard().waitForGate("testIsCompleted", 60, TimeUnit.SECONDS);
+    } finally {
+      sock.close();
+    }
   }
 
   @Test
