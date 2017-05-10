@@ -288,10 +288,6 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     return new PartitionedRegionFunctionExecutor(this, args);
   }
 
-  public Execution withArgs(Object args) {
-    return setArguments(args);
-  }
-
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
