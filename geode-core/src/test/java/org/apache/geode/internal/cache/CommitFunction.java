@@ -101,8 +101,7 @@ public class CommitFunction implements Function {
       ArrayList args = new ArrayList();
       args.add(txId);
       args.add(NestedTransactionFunction.COMMIT);
-      Execution ex =
-          FunctionService.onMember(cache.getDistributedSystem(), member).setArguments(args);
+      Execution ex = FunctionService.onMember(member).setArguments(args);
       if (isDebugEnabled) {
         logger.debug(
             "CommitFunction: for transaction: {} executing NestedTransactionFunction on member: {}",

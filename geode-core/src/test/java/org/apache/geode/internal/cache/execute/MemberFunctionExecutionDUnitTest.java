@@ -171,8 +171,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     Constructor<Function> constructor = clazz.getConstructor();
     Function function = (Function) constructor.newInstance();
 
-    DistributedSystem distributedSystem = getSystem();
-    Execution execution = FunctionService.onMembers(distributedSystem);
+    Execution execution = FunctionService.onMembers();
     ResultCollector resultCollector = execution.execute(function);
     try {
       resultCollector.getResult();
@@ -203,7 +202,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     member3.invoke(() -> MemberFunctionExecutionDUnitTest.connectToDistributedSystem(props));
     member4.invoke(() -> MemberFunctionExecutionDUnitTest.connectToDistributedSystem(props));
     connectToDistributedSystem(props);
-    AbstractExecution exe = (AbstractExecution) FunctionService.onMembers(getSystem());
+    AbstractExecution exe = (AbstractExecution) FunctionService.onMembers();
     exe.setIgnoreDepartedMembers(true);
     ResultCollector rs = exe.execute(new FunctionAdapter() {
       @Override
@@ -378,7 +377,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
     DistributedMember localmember = ds.getDistributedMember();
     Execution memberExcution = null;
-    memberExcution = FunctionService.onMember(ds, localmember);
+    memberExcution = FunctionService.onMember(localmember);
     Execution executor = memberExcution.setArguments("Key");
     try {
       ResultCollector rc = executor.execute(new FunctionAdapter() {
@@ -427,12 +426,12 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     Map memArgs = new HashMap();
     if (noOfMembers.intValue() == 1) { // Local VM
       DistributedMember localmember = ds.getDistributedMember();
-      memberExcution = (InternalExecution) FunctionService.onMember(ds, localmember);
+      memberExcution = (InternalExecution) FunctionService.onMember(localmember);
       memArgs.put(localmember.getId(), localmember.getId());
       MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
       executor = memberExcution.withMemberMappedArgument(args);
     } else if (noOfMembers.intValue() == 5) {
-      memberExcution = (InternalExecution) FunctionService.onMembers(ds);
+      memberExcution = (InternalExecution) FunctionService.onMembers();
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
       Iterator iter = memberSet.iterator();
       while (iter.hasNext()) {
@@ -451,7 +450,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
         memArgs.put(member.getId(), member.getId());
       }
       MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
-      memberExcution = (InternalExecution) FunctionService.onMembers(ds, memberSet);
+      memberExcution = (InternalExecution) FunctionService.onMembers(memberSet);
       executor = memberExcution.withMemberMappedArgument(args);
     }
     try {
@@ -478,9 +477,9 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     Map memArgs = new HashMap();
     if (noOfMembers.intValue() == 1) { // Local VM
       DistributedMember localmember = ds.getDistributedMember();
-      memberExcution = (InternalExecution) FunctionService.onMember(ds, localmember);
+      memberExcution = (InternalExecution) FunctionService.onMember(localmember);
     } else if (noOfMembers.intValue() == 5) {
-      memberExcution = (InternalExecution) FunctionService.onMembers(ds);
+      memberExcution = (InternalExecution) FunctionService.onMembers();
     } else {
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
       InternalDistributedMember localVM = ds.getDistributionManager().getDistributionManagerId();
@@ -489,7 +488,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       while (iter.hasNext()) {
         InternalDistributedMember member = (InternalDistributedMember) iter.next();
       }
-      memberExcution = (InternalExecution) FunctionService.onMembers(ds, memberSet);
+      memberExcution = (InternalExecution) FunctionService.onMembers(memberSet);
     }
     try {
       ResultCollector rc = memberExcution.setArguments(Boolean.TRUE).execute(function);
@@ -515,12 +514,12 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     Map memArgs = new HashMap();
     if (noOfMembers.intValue() == 1) { // Local VM
       DistributedMember localmember = ds.getDistributedMember();
-      memberExcution = (InternalExecution) FunctionService.onMember(ds, localmember);
+      memberExcution = (InternalExecution) FunctionService.onMember(localmember);
       memArgs.put(localmember.getId(), localmember.getId());
       MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
       executor = memberExcution.withMemberMappedArgument(args);
     } else if (noOfMembers.intValue() == 5) {
-      memberExcution = (InternalExecution) FunctionService.onMembers(ds);
+      memberExcution = (InternalExecution) FunctionService.onMembers();
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
       Iterator iter = memberSet.iterator();
       while (iter.hasNext()) {
@@ -539,7 +538,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
         memArgs.put(member.getId(), member.getId());
       }
       MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
-      memberExcution = (InternalExecution) FunctionService.onMembers(ds, memberSet);
+      memberExcution = (InternalExecution) FunctionService.onMembers(memberSet);
       executor = memberExcution.withMemberMappedArgument(args);
     }
     try {
@@ -560,14 +559,14 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     Execution memberExcution = null;
     if (noOfMembers.intValue() == 1) { // Local VM
       DistributedMember localmember = ds.getDistributedMember();
-      memberExcution = FunctionService.onMember(ds, localmember);
+      memberExcution = FunctionService.onMember(localmember);
     } else if (noOfMembers.intValue() == 5) {
-      memberExcution = FunctionService.onMembers(ds);
+      memberExcution = FunctionService.onMembers();
     } else {
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
       InternalDistributedMember localVM = ds.getDistributionManager().getDistributionManagerId();
       memberSet.remove(localVM);
-      memberExcution = FunctionService.onMembers(ds, memberSet);
+      memberExcution = FunctionService.onMembers(memberSet);
     }
     Execution executor = memberExcution.setArguments("Key");
     try {
@@ -611,7 +610,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   public static void excuteOnMembersNoResult() {
     assertNotNull(ds);
     Function function = new TestFunction(false, TEST_FUNCTION6);
-    Execution memberExcution = FunctionService.onMembers(ds);
+    Execution memberExcution = FunctionService.onMembers();
     Execution executor = memberExcution.setArguments("Key");
     try {
       ResultCollector rc = executor.execute(function.getId());
