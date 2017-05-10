@@ -213,11 +213,6 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   // Changing the object!!
-  public Execution withArgs(Object args) {
-    return setArguments(args);
-  }
-
-  // Changing the object!!
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
