@@ -17,6 +17,7 @@ package org.apache.geode.internal.offheap;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -71,7 +72,24 @@ public class OffHeapLRURecoveryRegressionTest {
       try {
         createDiskStore(gfc);
         try {
-          assertEquals(10, MemoryAllocatorImpl.getAllocator().getStats().getObjects());
+          int offHeapObjects = MemoryAllocatorImpl.getAllocator().getStats().getObjects();
+          if (offHeapObjects < 10) {
+            fail("expected at least 10 offheap values to be recovered but only did "
+                + offHeapObjects);
+          }
+          if (offHeapObjects > 15) {
+            // Why "> 15" instead of "== 10"?
+            // As we recover values we asynchronously notify the resource manager
+            // of how much off-heap memory was consumed. Once it sees we are over
+            // the LRU limit then recovery of values will stop happening.
+            // Since it is async it can allow us to exceed the LRU limit.
+            // So far this test usually sees 10 but sometimes sees 11.
+            // I allow up to 15 just to prevent intermittent test failures.
+            // We should consider changing this async notification to be sync so
+            // that the limit can not be exceeded.
+            fail("expected at most 15 offheap values to be recovered but actually did "
+                + offHeapObjects);
+          }
         } finally {
           DiskStore ds = gfc.findDiskStore(DS_NAME);
           ds.destroy();
