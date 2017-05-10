@@ -551,12 +551,12 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
                 BucketRegion bucket = qpr.getDataStore().getLocalBucketById(bucketId);
                 if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
                   event.setPossibleDuplicate(true);
+                  if (isDebugEnabled) {
+                    logger.debug(
+                        "Bucket id: {} is no longer primary on this node. The event: {} will be dispatched from this node with possibleDuplicate set to true.",
+                        bucketId, event);
+                  }
                 }
-              }
-              if (isDebugEnabled) {
-                logger.debug(
-                    "Bucket id: {} is no longer primary on this node. The event {} will be dispatched from this node with possibleDuplicate set to true.",
-                    bucketId, event);
               }
             }
           }
