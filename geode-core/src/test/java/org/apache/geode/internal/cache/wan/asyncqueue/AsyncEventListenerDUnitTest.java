@@ -29,6 +29,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -1674,56 +1680,118 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).until(() -> getBucketMoved(vm2, "ln"));
   }
 
+  @Test
+  public void testParallelAsyncEventQueueMovePrimaryAndMoveItBackDuringDispatching() {
+    Integer lnPort =
+        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+
+    String regionName = getTestMethodName() + "_PR";
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
+
+    SerializableRunnableIF createPartitionedRegion = () -> {
+      AttributesFactory fact = new AttributesFactory();
+      PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+      pfact.setTotalNumBuckets(1);
+      pfact.setRedundantCopies(1);
+      fact.setPartitionAttributes(pfact.create());
+      Region r = cache.createRegionFactory(fact.create()).addAsyncEventQueueId("ln")
+          .create(regionName);
+
+    };
+
+    final DistributedMember member1 =
+        vm1.invoke(() -> cache.getDistributedSystem().getDistributedMember());
+    final DistributedMember member2 =
+        vm2.invoke(() -> cache.getDistributedSystem().getDistributedMember());
+
+
+    //Create a PR with 1 bucket in vm1. Pause the sender and put some data in it
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", true, 100, 10, false,
+        false, null, false, new PrimaryMovingAsyncEventListener(member2)));
+    vm1.invoke(createPartitionedRegion);
+    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln"));
+    vm1.invoke(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_PR", 113));
+
+    //Create the PR in vm2. This will create a redundant copy, but will be the secondary
+    vm2.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", true, 100, 10, false,
+        false, null, false, new PrimaryMovingAsyncEventListener(member1)));
+    vm2.invoke(createPartitionedRegion);
+    //do a rebalance just to make sure we have restored redundancy
+    vm2.invoke(() -> {cache.getResourceManager().createRebalanceFactory().start().getResults();});
+
+    //Resume the AEQ. This should trigger the primary to move to vm2, which will then move it back
+    vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
+
+    Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).until(() -> getBucketMoved(vm1, "ln"));
+    Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).until(() -> getBucketMoved(vm2, "ln"));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty("ln"));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty("ln"));
+
+    Set<Object> allKeys = new HashSet<Object>();
+    allKeys.addAll(getKeysSeen(vm1, "ln"));
+    allKeys.addAll(getKeysSeen(vm2, "ln"));
+
+    final Set<Long> expectedKeys =
+        LongStream.range(0, 113).mapToObj(Long::valueOf).collect(Collectors.toSet());
+    assertEquals(expectedKeys, allKeys);
+
+  }
+
   private static Set<Object> getKeysSeen(VM vm, String asyncEventQueueId) {
     return vm.invoke(() -> {
-      final BucketMovingAsyncEventListener listener =
-          (BucketMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
+      final AbstractMovingAsyncEventListener listener =
+          (AbstractMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
       return listener.keysSeen;
     });
   }
 
   private static boolean getBucketMoved(VM vm, String asyncEventQueueId) {
     return vm.invoke(() -> {
-      final BucketMovingAsyncEventListener listener =
-          (BucketMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
+      final AbstractMovingAsyncEventListener listener =
+          (AbstractMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
       return listener.moved;
     });
   }
 
-  private static final class BucketMovingAsyncEventListener implements AsyncEventListener {
-    private final DistributedMember destination;
-    private boolean moved;
-    private Set<Object> keysSeen = new HashSet<Object>();
+  private static final class BucketMovingAsyncEventListener
+      extends AbstractMovingAsyncEventListener {
 
     public BucketMovingAsyncEventListener(final DistributedMember destination) {
-      this.destination = destination;
+      super(destination);
     }
 
     @Override
-    public boolean processEvents(final List<AsyncEvent> events) {
-      if (!moved) {
-
-        AsyncEvent event1 = events.get(0);
-        moveBucket(destination, event1.getKey());
-        moved = true;
-        return false;
-      }
-
-      events.stream().map(AsyncEvent::getKey).forEach(keysSeen::add);
-      return true;
-    }
-
-    @Override
-    public void close() {
-
-    }
-
-    private static void moveBucket(final DistributedMember destination, final Object key) {
+    protected void move(final AsyncEvent event1) {
+      Object key = event1.getKey();
       Region<Object, Object> region = cache.getRegion(getTestMethodName() + "_PR");
       DistributedMember source = cache.getDistributedSystem().getDistributedMember();
       PartitionRegionHelper.moveBucketByKey(region, source, destination, key);
     }
   }
+
+  private static final class PrimaryMovingAsyncEventListener
+      extends AbstractMovingAsyncEventListener {
+
+    public PrimaryMovingAsyncEventListener(final DistributedMember destination) {
+      super(destination);
+    }
+
+    @Override
+    protected void move(final AsyncEvent event1) {
+      Object key = event1.getKey();
+      PartitionedRegion region = (PartitionedRegion) event1.getRegion();
+      DistributedMember source = cache.getDistributedSystem().getDistributedMember();
+
+      BecomePrimaryBucketResponse response =
+          BecomePrimaryBucketMessage.send((InternalDistributedMember) destination, region,
+              region.getKeyInfo(key).getBucketId(), true);
+      assertNotNull(response);
+      assertTrue(response.waitForResponse());
+    }
+  }
+
 
 
 }
