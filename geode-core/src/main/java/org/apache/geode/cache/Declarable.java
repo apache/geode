@@ -50,7 +50,7 @@ import java.util.Properties;
  * See <a href="package-summary.html#declarative">package introduction</a>.
  *
  *
- * 
+ *
  * @since GemFire 2.0
  */
 public interface Declarable {
@@ -64,5 +64,5 @@ public interface Declarable {
    * @throws IllegalArgumentException If one of the configuration options in <code>props</code> is
    *         illegal or malformed.
    */
-  public void init(Properties props);
+  public default void init(Properties props) {};
 }

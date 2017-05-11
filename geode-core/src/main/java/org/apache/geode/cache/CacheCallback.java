@@ -21,7 +21,7 @@ package org.apache.geode.cache;
  *
  * @since GemFire 3.0
  */
-public interface CacheCallback {
+public interface CacheCallback extends Declarable {
   /**
    * Called when the region containing this callback is closed or destroyed, when the cache is
    * closed, or when a callback is removed from a region using an <code>AttributesMutator</code>.

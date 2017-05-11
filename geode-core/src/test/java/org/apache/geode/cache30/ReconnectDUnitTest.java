@@ -1282,6 +1282,10 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
    * auto-reconnect to fail.
    */
   public static class NonDeclarableListener extends CacheListenerAdapter {
+    @Override
+    public void init(Properties props) {
+      throw new RuntimeException("Simulate non-declarable listener");
+    };
   }
 
   /**

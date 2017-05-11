@@ -4171,21 +4171,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing an XML file that specifies a cache listener that is not {@link Declarable}.
    */
   @Test
-  public void testCallbackNotDeclarable() throws Exception {
+  public void testCallbackNotExplicitlyDeclarableIsStillOK() {
     setXmlFile(findFile("callbackNotDeclarable.xml"));
 
-    IgnoredException expectedException =
-        IgnoredException.addIgnoredException("While reading Cache XML file");
-    try {
-      getCache();
-      fail("Should have thrown a CacheXmlException");
-
-    } catch (CacheXmlException ex) {
-      Throwable cause = ex.getCause();
-      assertNull(cause);
-    } finally {
-      expectedException.remove();
-    }
+    getCache();
   }
 
   /**
@@ -4483,7 +4472,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   /**
    * A cache listener that is not {@link Declarable}
    *
-   * @see #testCallbackNotDeclarable()
+   * @see #testCallbackNotExplicitlyDeclarableIsStillOK()
    */
   public static class NotDeclarableCacheListener extends TestCacheListener {
     // empty
