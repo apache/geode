@@ -260,6 +260,10 @@ public class ServerFunctionExecutor extends AbstractExecution {
     return new ServerFunctionExecutor(this, args);
   }
 
+  public Execution withArgs(Object args) {
+    return setArguments(args);
+  }
+
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(

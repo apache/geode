@@ -318,6 +318,10 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     return new ServerRegionFunctionExecutor(this, args);
   }
 
+  public Execution withArgs(Object args) {
+    return setArguments(args);
+  }
+
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(

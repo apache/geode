@@ -152,6 +152,10 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     return new MultiRegionFunctionExecutor(this, args);
   }
 
+  public Execution withArgs(Object args) {
+    return setArguments(args);
+  }
+
   public Execution withCollector(ResultCollector rc) {
     if (rc == null) {
       throw new IllegalArgumentException(

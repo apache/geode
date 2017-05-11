@@ -250,6 +250,10 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     return new DistributedRegionFunctionExecutor(this, args);
   }
 
+  public Execution withArgs(Object args) {
+    return setArguments(args);
+  }
+
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(

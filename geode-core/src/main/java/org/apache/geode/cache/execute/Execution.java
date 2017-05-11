@@ -66,6 +66,19 @@ public interface Execution<IN, OUT, AGG> {
   public Execution<IN, OUT, AGG> setArguments(IN args);
 
   /**
+   * Specifies the user data passed to the function when it is executed. The function can retrieve
+   * these arguments using {@link FunctionContext#getArguments()}
+   *
+   * @param args user data passed to the function execution
+   * @return an Execution with args
+   * @throws IllegalArgumentException if the input parameter is null
+   * @since GemFire 6.0
+   * @deprecated use {@link #setArguments(Object)} instead
+   *
+   */
+  public Execution<IN, OUT, AGG> withArgs(IN args);
+
+  /**
    * Specifies the {@link ResultCollector} that will receive the results after the function has been
    * executed. Collector will receive results as they are sent from the
    * {@link Function#execute(FunctionContext)} using {@link ResultSender}.
