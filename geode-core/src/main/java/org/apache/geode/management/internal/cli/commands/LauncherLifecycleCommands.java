@@ -116,6 +116,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -685,18 +686,17 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
     try {
       final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
+      InetSocketAddress inetSockAddr = new InetSocketAddress(networkAddress, locatorPort);
 
       TcpClient client = new TcpClient();
-      SharedConfigurationStatusResponse statusResponse =
-          (SharedConfigurationStatusResponse) client.requestToServer(networkAddress, locatorPort,
-              new SharedConfigurationStatusRequest(), 10000, true);
+      SharedConfigurationStatusResponse statusResponse = (SharedConfigurationStatusResponse) client
+          .requestToServer(inetSockAddr, new SharedConfigurationStatusRequest(), 10000, true);
 
       for (int i = 0; i < NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS; i++) {
         if (statusResponse.getStatus().equals(SharedConfigurationStatus.STARTED)
             || statusResponse.getStatus().equals(SharedConfigurationStatus.NOT_STARTED)) {
-          statusResponse =
-              (SharedConfigurationStatusResponse) client.requestToServer(networkAddress,
-                  locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
+          statusResponse = (SharedConfigurationStatusResponse) client.requestToServer(inetSockAddr,
+              new SharedConfigurationStatusRequest(), 10000, true);
           try {
             Thread.sleep(5000);
           } catch (InterruptedException e) {

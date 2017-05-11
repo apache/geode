@@ -204,12 +204,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   private ServerLocationResponse queryOneLocator(InetSocketAddress locator,
       ServerLocationRequest request) {
-    InetAddress addr = locator.getAddress();
-    int port = locator.getPort();
     Object returnObj = null;
     try {
       pool.getStats().incLocatorRequests();
-      returnObj = tcpClient.requestToServer(addr, port, request, connectionTimeout);
+      returnObj = tcpClient.requestToServer(locator, request, connectionTimeout, true);
       ServerLocationResponse response = (ServerLocationResponse) returnObj;
       pool.getStats().incLocatorResponses();
       if (response != null) {
@@ -218,6 +216,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       return response;
     } catch (IOException ioe) {
       reportDeadLocator(locator, ioe);
+      updateLocatorInLocatorList(locator);
       return null;
     } catch (ClassNotFoundException e) {
       logger.warn(
@@ -232,6 +231,45 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       reportDeadLocator(locator, e);
       return null;
     }
+  }
+
+  /**
+   * If connecting to the locator fails with an IOException, this may be because the locator's IP
+   * has changed. Add the locator back to the list of locators using host address rather than IP.
+   * This will cause another DNS lookup, hopefully finding the locator.
+   * 
+   * @param locator
+   */
+  protected void updateLocatorInLocatorList(InetSocketAddress locator) {
+    if (locator.getHostName() != null) {
+      LocatorList locatorList = locators.get();
+      List<InetSocketAddress> newLocatorsList = new ArrayList<>();
+
+      for (InetSocketAddress tloc : locatorList.getLocators()) {
+        if (tloc.equals(locator)) {
+          /**
+           * This call doesn't throw UnknownHostException;
+           */
+          InetSocketAddress changeLoc =
+              new InetSocketAddress(locator.getHostName(), locator.getPort());
+          newLocatorsList.add(changeLoc);
+          logger.info("updateLocatorInLocatorList changing locator list: loc form: " + locator
+              + " ,loc to: " + changeLoc);
+        } else {
+          newLocatorsList.add(tloc);
+        }
+      }
+
+      logger.info("updateLocatorInLocatorList locator list from:" + locatorList.getLocators()
+          + " to: " + newLocatorsList);
+
+      LocatorList newLocatorList = new LocatorList(newLocatorsList);
+      locators.set(newLocatorList);
+    }
+  }
+
+  protected List<InetSocketAddress> getCurrentLocators() {
+    return locators.get().locators;
   }
 
   protected ServerLocationResponse queryLocators(ServerLocationRequest request) {
@@ -276,7 +314,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       badLocators.remove(address);
     }
 
-    newLocators.addAll(badLocators);
+    addbadLocators(newLocators, badLocators);
 
     if (logger.isInfoEnabled()) {
       LocatorList oldLocators = (LocatorList) locators.get();
@@ -300,9 +338,35 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       }
     }
     LocatorList newLocatorList = new LocatorList(newLocators);
+
     locators.set(newLocatorList);
     onlineLocators.set(new LocatorList(newOnlineLocators));
     pool.getStats().setLocatorCount(newLocators.size());
+  }
+
+  /**
+   * This method will add bad locator only when locator with hostname and port is not already in
+   * list.
+   */
+  protected void addbadLocators(List<InetSocketAddress> newLocators,
+      Set<InetSocketAddress> badLocators) {
+    for (InetSocketAddress badLoc : badLocators) {
+      boolean addIt = true;
+      for (InetSocketAddress goodloc : newLocators) {
+        boolean isSameHost = badLoc.getHostName().equals(goodloc.getHostName());
+        if (isSameHost) {
+          boolean isSamePort = badLoc.getPort() == goodloc.getPort();
+          if (isSamePort) {
+            // ip has been changed so don't add this in current list
+            addIt = false;
+            break;
+          }
+        }
+      }
+      if (addIt) {
+        newLocators.add(badLoc);
+      }
+    }
   }
 
   public void start(InternalPool pool) {
