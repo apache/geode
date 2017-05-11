@@ -32,6 +32,8 @@ dependencies {
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
     testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
     testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
+    testCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
+    testCompile 'commons-codec:commons-codec:' + project.'codec.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
     testCompile files(project(':geode-core').sourceSets.test.output)
 }
