@@ -15,8 +15,6 @@
 
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticsFactory;
@@ -37,13 +35,10 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 
 /**
  * A "connection" to a GemFire distributed system. A <code>DistributedSystem</code> is created by
@@ -425,25 +420,25 @@ public abstract class DistributedSystem implements StatisticsFactory {
    */
   public abstract boolean isConnected();
 
-  /**
-   * Returns the id of this connection to the distributed system.
-   *
-   * @deprecated {@link #getDistributedMember} provides an identity for this connection that is
-   *             unique across the entire distributed system.
-   */
-  @Deprecated
-  public abstract long getId();
+  // /**
+  // * Returns the id of this connection to the distributed system.
+  // *
+  // * @deprecated {@link #getDistributedMember} provides an identity for this connection that is
+  // * unique across the entire distributed system.
+  // */
+  // @Deprecated
+  // public abstract long getId();
 
-  /**
-   * Returns a string that uniquely identifies this connection to the distributed system.
-   *
-   * @see org.apache.geode.admin.SystemMembershipEvent#getMemberId
-   *
-   * @since GemFire 4.0
-   * @deprecated as of GemFire 5.0, use {@link #getDistributedMember} instead
-   */
-  @Deprecated
-  public abstract String getMemberId();
+  // /**
+  // * Returns a string that uniquely identifies this connection to the distributed system.
+  // *
+  // * @see org.apache.geode.admin.SystemMembershipEvent#getMemberId
+  // *
+  // * @since GemFire 4.0
+  // * @deprecated as of GemFire 5.0, use {@link #getDistributedMember} instead
+  // */
+  // @Deprecated
+  // public abstract String getMemberId();
 
   /**
    * Returns the {@link DistributedMember} that identifies this connection to the distributed

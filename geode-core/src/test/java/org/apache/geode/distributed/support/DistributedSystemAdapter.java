@@ -14,20 +14,16 @@
  */
 package org.apache.geode.distributed.support;
 
+import org.apache.geode.*;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.LogWriter;
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * The DistributedSystemAdapter class is an adapter extending DistributedSystem to provide default
@@ -90,16 +86,6 @@ public abstract class DistributedSystemAdapter extends DistributedSystem {
   @Override
   public DistributedSystem getReconnectedSystem() {
     return null;
-  }
-
-  @Override
-  public long getId() {
-    throw new UnsupportedOperationException("Not Implemented!");
-  }
-
-  @Override
-  public String getMemberId() {
-    throw new UnsupportedOperationException("Not Implemented!");
   }
 
   @Override

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
@@ -42,7 +40,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.fail;
 
 /**
@@ -273,8 +271,8 @@ public class DataBrowserJSONValidationJUnitTest {
       i++;
     }
 
-    queryData(QUERY_1, cache.getDistributedSystem().getMemberId() + ","
-        + cache.getDistributedSystem().getMemberId(), 0);
+    queryData(QUERY_1, cache.getDistributedSystem().getDistributedMember().toString() + ","
+        + cache.getDistributedSystem().getDistributedMember().toString(), 0);
 
   }
 

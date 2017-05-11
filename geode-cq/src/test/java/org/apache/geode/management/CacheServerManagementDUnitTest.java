@@ -14,14 +14,6 @@
  */
 package org.apache.geode.management;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.query.*;
@@ -37,6 +29,10 @@ import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import javax.management.*;
 import java.io.File;
@@ -47,6 +43,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 /**
  * Cache Server related management test cases
@@ -318,8 +315,10 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
             assertTrue(bean.isRunning());
             TestCacheServerNotif nt = new TestCacheServerNotif();
             try {
-              mbeanServer.addNotificationListener(MBeanJMXAdapter.getClientServiceMBeanName(
-                  serverPort, cache.getDistributedSystem().getMemberId()), nt, null, null);
+              mbeanServer.addNotificationListener(
+                  MBeanJMXAdapter.getClientServiceMBeanName(serverPort,
+                      cache.getDistributedSystem().getDistributedMember().toString()),
+                  nt, null, null);
             } catch (InstanceNotFoundException e) {
               fail("Failed With Exception " + e);
             }

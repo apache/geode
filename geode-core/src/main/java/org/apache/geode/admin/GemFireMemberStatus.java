@@ -606,7 +606,7 @@ public class GemFireMemberStatus implements Serializable {
 
   protected void initializeDistributedSystem(DistributedSystem distributedSystem) {
     InternalDistributedSystem ids = (InternalDistributedSystem) distributedSystem;
-    setMemberId(ids.getMemberId());
+    setMemberId(ids.getDistributedMember().toString());
     DistributionConfig config = ids.getConfig();
     setMemberName(config.getName());
     setMcastPort(config.getMcastPort());

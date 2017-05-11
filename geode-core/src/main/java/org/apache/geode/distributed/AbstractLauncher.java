@@ -15,8 +15,6 @@
 
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
@@ -37,25 +35,19 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and
@@ -304,7 +296,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   public String getMemberId() {
     final InternalDistributedSystem distributedSystem =
         InternalDistributedSystem.getConnectedInstance();
-    return (distributedSystem != null ? distributedSystem.getMemberId() : null);
+    return (distributedSystem != null ? distributedSystem.getDistributedMember().toString() : null);
   }
 
   /**

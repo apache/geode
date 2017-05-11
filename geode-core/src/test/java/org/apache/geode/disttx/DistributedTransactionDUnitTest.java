@@ -14,7 +14,23 @@
  */
 package org.apache.geode.disttx;
 
-import static org.junit.Assert.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.cache.execute.data.Customer;
+import org.apache.geode.internal.cache.execute.data.Order;
+import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,49 +38,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheTransactionManager;
-import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.cache.CommitIncompleteException;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.InterestPolicy;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.SubscriptionAttributes;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.DistTXState;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.internal.cache.TXStateInterface;
-import org.apache.geode.internal.cache.TXStateProxyImpl;
-import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
-import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.internal.cache.execute.data.Customer;
-import org.apache.geode.internal.cache.execute.data.Order;
-import org.apache.geode.internal.cache.execute.data.OrderId;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import static org.junit.Assert.*;
 
 @SuppressWarnings("deprecation")
 @Category(DistributedTest.class)
@@ -1319,7 +1293,8 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         String primaryMember = br.getBucketAdvisor().getPrimary().toString();
         getGemfireCache().getLoggerI18n().fine("TEST:PRIMARY:" + primaryMember);
 
-        String memberId = getGemfireCache().getDistributedSystem().getMemberId();
+        String memberId =
+            getGemfireCache().getDistributedSystem().getDistributedMember().toString();
         getGemfireCache().getLoggerI18n().fine("TEST:MEMBERID:" + memberId);
 
         return null;
@@ -1338,7 +1313,8 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         String primaryMember = br.getBucketAdvisor().getPrimary().toString();
         getGemfireCache().getLoggerI18n().fine("TEST:PRIMARY:" + primaryMember);
 
-        String memberId = getGemfireCache().getDistributedSystem().getMemberId();
+        String memberId =
+            getGemfireCache().getDistributedSystem().getDistributedMember().toString();
         getGemfireCache().getLoggerI18n().fine("TEST:MEMBERID:" + memberId);
 
         return memberId.equals(primaryMember);

@@ -138,13 +138,13 @@ public class EntryLogger {
   }
 
   private static Object getDest() {
-    return InternalDistributedSystem.getAnyInstance().getMemberId();
+    return InternalDistributedSystem.getAnyInstance().getDistributionManager().toString();
   }
 
   private static Object getSource() {
     Object source = SOURCE.get();
     if (source == null) {
-      source = InternalDistributedSystem.getAnyInstance().getMemberId();
+      source = InternalDistributedSystem.getAnyInstance().getDistributionManager().toString();
     }
     return source;
   }
