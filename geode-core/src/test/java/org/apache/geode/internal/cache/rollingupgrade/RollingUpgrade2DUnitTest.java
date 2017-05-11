@@ -1915,6 +1915,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   public static class GetDataSerializableFunction implements Function {
     String dsClassName = "org.apache.geode.management.internal.configuration.domain.XmlEntity";
+
     @Override
     public void execute(FunctionContext context) {
       try {
