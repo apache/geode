@@ -69,10 +69,6 @@ public class DeltaEvent implements DataSerializable {
   }
 
   private void blobifyValue() {
-    if (value instanceof byte[]) {
-      LOG.warn("Session attribute is already a byte[] - problems may "
-          + "occur transmitting this delta.");
-    }
     try {
       value = BlobHelper.serializeToBlob(value);
     } catch (IOException iox) {
