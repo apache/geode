@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.execute.Execution;
@@ -27,6 +28,7 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,6 +38,12 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Category(DistributedTest.class)
 public class DeployCommandRedeployDUnitTest implements Serializable {
@@ -102,6 +110,23 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
   }
 
+  @Test
+  public void hotDeployShouldNotResultInAnyFailedFunctionExecutions() throws Exception {
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion1.getCanonicalPath());
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
+
+    server.invoke(() -> LoopingFunctionExecutor.startExecuting(FUNCTION_A));
+    server.invoke(() -> LoopingFunctionExecutor.waitForExecutions(100));
+
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion2.getCanonicalPath());
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
+
+    server.invoke(() -> LoopingFunctionExecutor.waitForExecutions(100));
+    server.invoke(LoopingFunctionExecutor::stopExecutionAndThrowAnyException);
+  }
+
   // Note that jar A is a Declarable Function, while jar B is only a Function.
   // Also, the function for jar A resides in the default package, whereas jar B specifies a package.
   // This ensures that this test has identical coverage to some tests that it replaced.
@@ -150,5 +175,47 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNotNull();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+  }
+
+  private static class LoopingFunctionExecutor implements Serializable {
+    private static final AtomicInteger COUNT_OF_EXECUTIONS = new AtomicInteger();
+    private static final AtomicReference<Exception> EXCEPTION = new AtomicReference<>();
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
+
+    public static void startExecuting(String functionId) {
+      EXECUTOR_SERVICE.submit(() -> {
+        GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
+        DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
+
+        while (!Thread.currentThread().isInterrupted()) {
+          try {
+            COUNT_OF_EXECUTIONS.incrementAndGet();
+
+            FunctionService.onMember(distributedSystem.getDistributedMember()).execute(functionId)
+                .getResult();
+          } catch (Exception e) {
+            EXCEPTION.set(e);
+          }
+        }
+      });
+    }
+
+    public static void waitForExecutions(int numberOfExecutions) {
+      int initialCount = COUNT_OF_EXECUTIONS.get();
+      int countToWaitFor = initialCount + numberOfExecutions;
+      Callable<Boolean> doneWaiting = () -> COUNT_OF_EXECUTIONS.get() >= countToWaitFor;
+
+      Awaitility.await().atMost(3, TimeUnit.MINUTES).until(doneWaiting);
+    }
+
+    public static void stopExecutionAndThrowAnyException() throws Exception {
+      EXECUTOR_SERVICE.shutdownNow();
+      Exception e = EXCEPTION.get();
+      if (e != null) {
+        throw e;
+      }
+    }
+
+
   }
 }

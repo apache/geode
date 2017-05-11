@@ -14,6 +14,19 @@
  */
 package org.apache.geode.internal;
 
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.logging.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,22 +47,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
-
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Declarable;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.pdx.internal.TypeRegistry;
+import java.util.stream.Stream;
 
 /**
  * ClassLoader for a single JAR file.
@@ -156,15 +158,10 @@ public class DeployedJar {
   }
 
   /**
-   * Scan the JAR file and attempt to load all classes and register any function classes found.
+   * Scan the JAR file and attempt to register any function classes found.
    */
-  // This method will process the contents of the JAR file as stored in this.jarByteContent
-  // instead of reading from the original JAR file. This is done because we can't open up
-  // the original file and then close it without releasing the shared lock that was obtained
-  // in the constructor. Once this method is finished, all classes will have been loaded and
-  // there will no longer be a need to hang on to the original contents so they will be
-  // discarded.
-  synchronized void loadClassesAndRegisterFunctions() throws ClassNotFoundException {
+
+  public synchronized void registerFunctions() throws ClassNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("Registering functions with DeployedJar: {}", this);
@@ -227,12 +224,28 @@ public class DeployedJar {
     }
   }
 
-  synchronized void cleanUp() {
-    for (Function function : this.registeredFunctions) {
-      FunctionService.unregisterFunction(function.getId());
-    }
-    this.registeredFunctions.clear();
+  /**
+   * Unregisters all functions from this jar if it was undeployed (i.e. newVersion == null), or all
+   * functions not present in the new version if it was redeployed.
+   *
+   * @param newVersion The new version of this jar that was deployed, or null if this jar was
+   *        undeployed.
+   */
+  protected synchronized void cleanUp(DeployedJar newVersion) {
+    Stream<String> oldFunctions = this.registeredFunctions.stream().map(Function::getId);
 
+    Stream<String> removedFunctions;
+    if (newVersion == null) {
+      removedFunctions = oldFunctions;
+    } else {
+      Predicate<String> isRemoved =
+          (String oldFunctionId) -> !newVersion.hasFunctionWithId(oldFunctionId);
+
+      removedFunctions = oldFunctions.filter(isRemoved);
+    }
+
+    removedFunctions.forEach(FunctionService::unregisterFunction);
+    this.registeredFunctions.clear();
     try {
       TypeRegistry typeRegistry = ((InternalCache) CacheFactory.getAnyInstance()).getPdxRegistry();
       if (typeRegistry != null) {
@@ -394,6 +407,15 @@ public class DeployedJar {
       logger.warn(e);
     }
     return null;
+  }
+
+  private boolean hasFunctionWithId(String id) {
+    if (CollectionUtils.isEmpty(this.registeredFunctions)) {
+      return false;
+    }
+
+    return this.registeredFunctions.stream().map(Function::getId)
+        .anyMatch(functionId -> functionId.equals(id));
   }
 
   @Override

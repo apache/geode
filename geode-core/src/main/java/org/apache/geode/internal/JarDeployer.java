@@ -33,6 +33,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -459,23 +460,30 @@ public class JarDeployer implements Serializable {
       throws ClassNotFoundException {
     lock.lock();
     try {
+      Map<DeployedJar, DeployedJar> newVersionToOldVersion = new HashMap<>();
+
       for (DeployedJar deployedJar : deployedJars) {
         if (deployedJar != null) {
           logger.info("Registering new version of jar: {}", deployedJar);
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
-          if (oldJar != null) {
-            oldJar.cleanUp();
-          }
+          newVersionToOldVersion.put(deployedJar, oldJar);
         }
       }
 
       ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
 
-      for (DeployedJar deployedJar : deployedJars) {
-        if (deployedJar != null) {
-          deployedJar.loadClassesAndRegisterFunctions();
+      // Finally, unregister functions that were removed
+      for (Map.Entry<DeployedJar, DeployedJar> entry : newVersionToOldVersion.entrySet()) {
+        DeployedJar newjar = entry.getKey();
+        DeployedJar oldJar = entry.getValue();
+
+        newjar.registerFunctions();
+
+        if (oldJar != null) {
+          oldJar.cleanUp(newjar);
         }
       }
+
     } finally {
       lock.unlock();
     }
@@ -583,7 +591,7 @@ public class JarDeployer implements Serializable {
 
       ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
 
-      deployedJar.cleanUp();
+      deployedJar.cleanUp(null);
 
       deleteAllVersionsOfJar(jarName);
       return deployedJar.getFileCanonicalPath();
