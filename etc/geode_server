@@ -1,0 +1,62 @@
+#!/bin/bash  
+#
+# /etc/init.d/geode_server
+#
+#
+# chkconfig: 345 98 90 
+# description: Starts or Stops Geode Server 
+
+
+####################################################################################
+##                           SYSTEM PROPERTIES
+#################################################################################### 
+export JAVA_HOME=/usr/java/jdk1.7.0_79
+
+######################################################################################
+##                          APACHE GEODE PROPERTIES
+######################################################################################
+## if SERVER_PORT=0 then wildcard
+SERVER_PORT=0   
+SERVER_DIR=/var/run/geode/server
+GEODE=/opt/apache/geode/incubator-geode 
+GFSH=$GEODE/bin/gfsh 
+GFSH_USER="geode"
+## must add --server-properities-file=$GFSH_PROP in start() if not default
+#GFSH_PROP=<PATH TO GEODE>/geode.properties
+GFSH_OPTIONS="server --name=server "
+#####################################################################################
+
+# Source function library. 
+. /etc/init.d/functions 
+
+
+start() { 
+    echo -n "Starting : Geode Server " 
+    daemon --user=$GFSH_USER "$GFSH -e \"connect\" -e \"start $GFSH_OPTIONS --server-port=$SERVER_PORT --dir=$SERVER_DIR\" >> /dev/null"  
+    RETVAL=$? 
+    echo 
+    return $RETVAL  
+}
+
+stop() { 
+    echo -n "Shutting down : Geode Server " 
+    daemon "$GFSH -e \"connect\" -e \"stop $GFSH_OPTIONS --dir=$SERVER_DIR\" >> /dev/null"  
+    
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+case "$1" in 
+start) 
+    start 
+    ;; 
+stop) 
+    stop 
+    ;; 
+*) 
+    echo "Usage: gf_server {start|stop}" 
+    exit 1 
+    ;; 
+esac 
+exit $? 

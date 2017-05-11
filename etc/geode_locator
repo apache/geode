@@ -1,0 +1,61 @@
+#!/bin/bash  
+#
+# /etc/init.d/geode_locator
+#
+#
+# chkconfig: 345 96 92 
+# description: Starts or Stops Geode Locator 
+ 
+####################################################################################
+##                             System Properties
+####################################################################################
+export JAVA_HOME=/usr/java/jdk1.7.0_79
+
+####################################################################################
+##                             Apache Geode Properties
+####################################################################################
+## if not set default port is 10334 
+# LOCATOR_PORT=
+LOCATOR_DIR=/var/run/geode/locator
+GEODE=/opt/apache/geode/incubator-geode
+GFSH=$GEODE/bin/gfsh 
+GFSH_USER="geode"
+## must add --properities-file=$GFSH_PROP in start() if not default
+# GFSH_PROP=<PATH TO GEODE>/geode.properties
+GFSH_OPTIONS="locator --name=locator "
+#####################################################################################
+
+# Source function library. 
+. /etc/init.d/functions 
+
+
+start() { 
+    echo -n "Starting : Geode Locator " 
+    daemon --user=$GFSH_USER "$GFSH start $GFSH_OPTIONS --dir=$LOCATOR_DIR >> /dev/null"  
+    RETVAL=$? 
+    echo 
+    return $RETVAL  
+}
+
+stop() { 
+    echo -n "Shutting down : Geode Locator " 
+    daemon "$GFSH -e \"connect\" -e \"stop $GFSH_OPTIONS --dir=$LOCATOR_DIR\" >> /dev/null"  
+    
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+case "$1" in 
+start) 
+    start 
+    ;; 
+stop) 
+    stop 
+    ;; 
+*) 
+    echo "Usage: gf_locator {start|stop}" 
+    exit 1 
+    ;; 
+esac 
+exit $? 
