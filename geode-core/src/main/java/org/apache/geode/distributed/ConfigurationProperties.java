@@ -309,6 +309,17 @@ public interface ConfigurationProperties {
    */
   String CLUSTER_SSL_TRUSTSTORE_PASSWORD = "cluster-ssl-truststore-password";
   /**
+   * The static String definition of the <i>"connect-timeout"</i> property <a
+   * name="connect-timeout"/a>
+   * </p>
+   * <U>Description</U>: The number of milli seconds specified as socket timeout when the client
+   * connects to the servers/locators. A timeout of zero is interpreted as an infinite timeout. The
+   * connection will then block until established or an error occurs. <U>Default</U>: "59000"
+   * </p>
+   * <U>Since</U>: Geode 1.2
+   */
+  String CONNECT_TIMEOUT = "connect-timeout";
+  /**
    * The static String definition of the <i>"conflate-events"</i> property <a
    * name="conflate-events"/a>
    * </p>
