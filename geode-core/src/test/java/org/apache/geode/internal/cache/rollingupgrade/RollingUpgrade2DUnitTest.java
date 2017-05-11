@@ -1161,7 +1161,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       DistributedMember... members) {
     Set<DistributedMember> membersSet = new HashSet<>();
     Collections.addAll(membersSet, members);
-    Execution execution = FunctionService.onMembers(membersSet).setArguments(dsClassName);
+    Execution execution = FunctionService.onMembers(membersSet);
     ResultCollector rc = execution.execute(functionId);
     List result = (List) rc.getResult();
     assertEquals(membersSet.size(), result.size());
@@ -1914,10 +1914,9 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static class GetDataSerializableFunction implements Function {
-
+    String dsClassName = "org.apache.geode.management.internal.configuration.domain.XmlEntity";
     @Override
     public void execute(FunctionContext context) {
-      String dsClassName = (String) context.getArguments();
       try {
         Class aClass = Thread.currentThread().getContextClassLoader().loadClass(dsClassName);
         Constructor constructor = aClass.getConstructor(new Class[0]);
