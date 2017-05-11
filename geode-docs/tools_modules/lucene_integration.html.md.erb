@@ -65,7 +65,7 @@ LuceneService luceneService = LuceneServiceProvider.get(cache);
 // Create Index on fields with default analyzer:
 luceneService.createIndex(indexName, regionName, "field1", "field2", "field3");
  
-Region region = cache.createRegionFactory(RegionShutcut.PARTITION).create(regionName);
+Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
  
 ```
 
@@ -93,7 +93,7 @@ The gfsh command-line utility supports five Apache Lucene actions:
 <dt><a href="gfsh/command-pages/list.html#list_lucene_indexes"><b>list lucene indexes</b></a></dt>
     <dd>List Lucene indexes created for all members.</dd>
 <dt><a href="gfsh/command-pages/search.html#search_lucene"><b>search lucene</b></a></dt>
-    <dd>Search a Lucene index</dd>
+    <dd>Search a Lucene index.</dd>
 
 **Gfsh command-line examples:**
 
