@@ -52,15 +52,15 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * a point in time. Currently this is fixed at the time the member using this operation exchanged
  * profiles with other users of the Region, and is useful only for ensuring consistency for
  * InitialImageOperation.
- * 
+ *
  * StateFlushOperation works with distribution advisors and with the membership manager to flush
  * cache operations from threads to communications channels and then from the communications
  * channels to the cache of the member selected to be an initial image provider.
- * 
+ *
  * To make an operation subject to StateFlushOperation you must encapsulate the message part of the
  * operation (prior to asking for distribution advice) in a try/finally block. The try/finally block
  * must work with the distribution manager like this:
- * 
+ *
  * <pre>
  * try {
  *   long version = advisor.startOperation();
@@ -74,22 +74,22 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  *   }
  * }
  * </pre>
- * 
+ *
  * On the receiving side the messaging system will look at the result of invoking
  * containsCacheContentChange() on the message. If the message does not return true from this
  * message then state-flush will not wait for it to be applied to the cache before GII starts.
- * 
+ *
  * <pre>
  * \@Override
  * public boolean containsCacheContentChange() {
  *   return true;
  * }
  * </pre>
- * 
+ *
  * The messaging infrastructure will handle the rest for you. For examples look at the uses of
  * startOperation() and endOperation(). There are some complex examples in transaction processing
  * and a more straightforward example in DistributedCacheOperation.
- * 
+ *
  * @since GemFire 5.0.1
  */
 public class StateFlushOperation {
@@ -108,7 +108,7 @@ public class StateFlushOperation {
     boolean initialized = r.isInitialized();
     if (initialized) {
       r.getDistributionAdvisor().forceNewMembershipVersion(); // force a new "view" so we can track
-                                                              // current ops
+      // current ops
       try {
         r.getDistributionAdvisor().waitForCurrentOperations();
       } catch (RegionDestroyedException e) {
@@ -153,7 +153,7 @@ public class StateFlushOperation {
 
   /**
    * Constructor for StateFlushOperation
-   * 
+   *
    * @param r The region whose state is to be flushed
    */
   public StateFlushOperation(DistributedRegion r) {
@@ -163,7 +163,7 @@ public class StateFlushOperation {
 
   /**
    * Constructor for StateFlushOperation for flushing all regions
-   * 
+   *
    * @param dm the distribution manager to use in distributing the operation
    */
   public StateFlushOperation(DM dm) {
@@ -173,7 +173,7 @@ public class StateFlushOperation {
 
   /**
    * flush state to the given target
-   * 
+   *
    * @param recipients The members who may be making state changes to the region. This is typically
    *        taken from a CacheDistributionAdvisor membership set
    * @param target The member who should have all state flushed to it
@@ -187,7 +187,7 @@ public class StateFlushOperation {
    * @return true if the state was flushed, false if not
    */
   public boolean flush(Set recipients, DistributedMember target, int processorType,
-      boolean flushNewOps) throws InterruptedException {
+                       boolean flushNewOps) throws InterruptedException {
 
     Set recips = recipients; // do not use recipients parameter past this point
     if (Thread.interrupted()) {
@@ -260,16 +260,16 @@ public class StateFlushOperation {
    * sent to all members holding the region, and has the effect of causing those members to send a
    * serial distribution message (a StateStabilizationMessage) to the image provider. The provider
    * then sends a reply message back to this process on behalf of the member receiving the .
-   * 
+   *
    * <pre>
    * requestor ----> member1 --StateStabilizationMessage--> provider --StateStabilizedMessage--> requestor
    *           ----> member2 --StateStabilizationMessage--> provider --StateStabilizedMessage--> requestor
    *           ----> provider --StateStabilizedMessage--> requestor
    * </pre>
-   * 
+   *
    * This flushes the ordered messages in flight between members and the gii provider, so we don't
    * miss data when the image is requested.
-   * 
+   *
    * @since GemFire 5.0.1
    * @see StateFlushOperation.StateStabilizationMessage
    * @see StateFlushOperation.StateStabilizedMessage
@@ -395,8 +395,8 @@ public class StateFlushOperation {
               if (initialized) {
                 if (this.flushNewOps) {
                   r.getDistributionAdvisor().forceNewMembershipVersion(); // force a new "view" so
-                                                                          // we can track current
-                                                                          // ops
+                  // we can track current
+                  // ops
                 }
                 try {
                   r.getDistributionAdvisor().waitForCurrentOperations();
@@ -503,7 +503,7 @@ public class StateFlushOperation {
    * StateStabilizationMessage when all state has been flushed to it.
    * <p>
    * author bruce
-   * 
+   *
    * @see StateFlushOperation.StateStabilizedMessage
    * @see StateFlushOperation.StateMarkerMessage
    * @since GemFire 5.0.1
@@ -650,7 +650,7 @@ public class StateFlushOperation {
    * before the initial image is requested.
    * <p>
    * author bruce
-   * 
+   *
    * @see StateFlushOperation.StateMarkerMessage
    * @see StateFlushOperation.StateStabilizationMessage
    * @since GemFire 5.0.1
@@ -740,7 +740,7 @@ public class StateFlushOperation {
       this.targetMember = (InternalDistributedMember) target;
       this.originalCount = initMembers.size();
       this.targetMemberHasLeft = targetMemberHasLeft // bug #43583 - perform an initial membership
-                                                     // check
+          // check
           || !manager.isCurrentMember((InternalDistributedMember) target);
     }
 

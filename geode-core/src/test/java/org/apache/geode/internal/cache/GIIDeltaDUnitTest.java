@@ -771,7 +771,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     // now P's RVV=P9,R6(3-6), RVVGC=P8,R0, R's RVV=P9(7-9), R6
     waitForToVerifyRVV(P, memberP, 9, null, 8); // P's rvv=p9, gc=8
     waitForToVerifyRVV(P, memberR, 6, exceptionlist, 0); // P's rvv=r6(3-6), gc=0
-
+    P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
+    
     // restart and gii, R's rvv should be the same as P's
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, true);
     createDistributedRegion(R);
