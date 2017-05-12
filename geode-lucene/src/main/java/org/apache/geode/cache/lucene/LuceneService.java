@@ -30,7 +30,8 @@ import java.util.concurrent.TimeUnit;
  * entries are updated in the associated regions.
  *
  * <p>
- * To obtain an instance of LuceneService, use {@link LuceneServiceProvider#get(GemFireCache)}.
+ * To obtain an instance of LuceneService, use
+ * {@link LuceneServiceProvider#get(GemFireCache cache)}.
  * </p>
  * <p>
  * Lucene indexes can be created using gfsh, xml, or the java API. Below is an example of creating a
@@ -41,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  * <pre>
  * {
  *   &#64;code
-*       luceneService.createIndexFactory()
+ *       luceneService.createIndexFactory()
  *        .addField("name")
  *        .addField("zipcode")
  *        .addField("email", new KeywordAnalyzer())
@@ -51,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * You can also specify what {@link Analyzer} to use for each field. In the example above, email is
  * being tokenized with the KeywordAnalyzer so it is treated as a single word. The default analyzer
- * if non is specified is the {@link StandardAnalyzer}
+ * if none is specified is the {@link StandardAnalyzer}.
  * </p>
  * 
  *
@@ -68,7 +69,7 @@ import java.util.concurrent.TimeUnit;
  *   &#64;code
  *   LuceneQuery query = luceneService.createLuceneQueryFactory().setLimit(200).create(indexName,
  *       regionName, "name:John AND zipcode:97006", defaultField);
- *   Collection<Object> results = query.findValues();
+ *   Collection results = query.findValues();
  * }
  * </pre>
  *
