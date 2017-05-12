@@ -57,7 +57,7 @@ public interface LuceneQueryFactory {
    * @return itself
    * @throws IllegalArgumentException if the value is less than or equal to zero.
    */
-  LuceneQueryFactory setResultLimit(int limit);
+  LuceneQueryFactory setLimit(int limit);
 
   /**
    * Creates a query based on a query string which is parsed by Lucene's

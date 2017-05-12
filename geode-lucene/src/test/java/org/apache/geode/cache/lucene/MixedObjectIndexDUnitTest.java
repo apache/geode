@@ -65,7 +65,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     accessor.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneQuery luceneQuery = luceneService.createLuceneQueryFactory().setResultLimit(100)
+      LuceneQuery luceneQuery = luceneService.createLuceneQueryFactory().setLimit(100)
           .create(INDEX_NAME, REGION_NAME, "world", "text");
       List resultList = luceneQuery.findResults();
       int objectType_1_count = 0;
@@ -108,13 +108,13 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     accessor.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneQuery luceneQueryForTextField = luceneService.createLuceneQueryFactory()
-          .setResultLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
+      LuceneQuery luceneQueryForTextField = luceneService.createLuceneQueryFactory().setLimit(100)
+          .create(INDEX_NAME, REGION_NAME, "world", "text");
       List luceneResults = luceneQueryForTextField.findResults();
       validateObjectResultCounts(luceneResults, TestObject.class, NUM_BUCKETS,
           TestObjectWithSameFieldName.class, NUM_BUCKETS, TestObjectWithNoCommonField.class, 0);
 
-      luceneQueryForTextField = luceneService.createLuceneQueryFactory().setResultLimit(100)
+      luceneQueryForTextField = luceneService.createLuceneQueryFactory().setLimit(100)
           .create(INDEX_NAME, REGION_NAME, "world", "data");
       luceneResults = luceneQueryForTextField.findResults();
       validateObjectResultCounts(luceneResults, TestObject.class, 0,
@@ -149,8 +149,8 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     accessor.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneQuery luceneQueryForTextField = luceneService.createLuceneQueryFactory()
-          .setResultLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
+      LuceneQuery luceneQueryForTextField = luceneService.createLuceneQueryFactory().setLimit(100)
+          .create(INDEX_NAME, REGION_NAME, "world", "text");
       List luceneResults = luceneQueryForTextField.findResults();
       validateObjectResultCounts(luceneResults, TestObject.class, NUM_BUCKETS,
           TestObjectWithSameFieldName.class, NUM_BUCKETS, TestObjectWithNoCommonField.class, 0);
@@ -184,8 +184,8 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
     accessor.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
 
-      LuceneQuery luceneQueryForTextField = luceneService.createLuceneQueryFactory()
-          .setResultLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
+      LuceneQuery luceneQueryForTextField = luceneService.createLuceneQueryFactory().setLimit(100)
+          .create(INDEX_NAME, REGION_NAME, "world", "text");
 
       List luceneResults = luceneQueryForTextField.findResults();
       validateObjectResultCounts(luceneResults, TestObject.class, NUM_BUCKETS,
@@ -194,7 +194,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
       FloatRangeQueryProvider floatRangeQueryProvider =
           new FloatRangeQueryProvider("text", 999.0f, 999.2f);
-      luceneQueryForTextField = luceneService.createLuceneQueryFactory().setResultLimit(100)
+      luceneQueryForTextField = luceneService.createLuceneQueryFactory().setLimit(100)
           .create(INDEX_NAME, REGION_NAME, floatRangeQueryProvider);
 
       luceneResults = luceneQueryForTextField.findResults();
@@ -203,7 +203,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
           TestObjectSameFieldNameButDifferentDataTypeInteger.class, 0);
 
       IntRangeQueryProvider intRangeQueryProvider = new IntRangeQueryProvider("text", 1000, 1000);
-      luceneQueryForTextField = luceneService.createLuceneQueryFactory().setResultLimit(100)
+      luceneQueryForTextField = luceneService.createLuceneQueryFactory().setLimit(100)
           .create(INDEX_NAME, REGION_NAME, intRangeQueryProvider);
 
       luceneResults = luceneQueryForTextField.findResults();

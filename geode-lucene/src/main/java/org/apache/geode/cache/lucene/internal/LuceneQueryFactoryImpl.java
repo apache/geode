@@ -41,7 +41,7 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   }
 
   @Override
-  public LuceneQueryFactory setResultLimit(int limit) {
+  public LuceneQueryFactory setLimit(int limit) {
     if (limit <= 0) {
       throw new IllegalArgumentException("Limit is <= 0: " + limit);
     }

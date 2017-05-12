@@ -26,7 +26,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -79,7 +78,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
       Cache cache = getCache();
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneQuery<Integer, TestObject> query;
-      query = service.createLuceneQueryFactory().setResultLimit(1000).setPageSize(PAGE_SIZE)
+      query = service.createLuceneQueryFactory().setLimit(1000).setPageSize(PAGE_SIZE)
           .create(INDEX_NAME, REGION_NAME, "world", "text");
       PageableLuceneQueryResults<Integer, TestObject> pages = query.findPages();
       assertTrue(pages.hasNext());
@@ -121,7 +120,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
       Cache cache = getCache();
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneQuery<Integer, TestObject> query;
-      query = service.createLuceneQueryFactory().setResultLimit(1000).setPageSize(PAGE_SIZE)
+      query = service.createLuceneQueryFactory().setLimit(1000).setPageSize(PAGE_SIZE)
           .create(INDEX_NAME, REGION_NAME, "world", "text");
       PageableLuceneQueryResults<Integer, TestObject> pages = query.findPages();
       assertTrue(pages.hasNext());

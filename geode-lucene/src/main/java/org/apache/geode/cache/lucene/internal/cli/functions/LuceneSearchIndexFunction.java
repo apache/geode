@@ -15,11 +15,9 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -35,7 +33,6 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneSearchResults;
-import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.InternalEntity;
 
 /**
@@ -74,7 +71,7 @@ public class LuceneSearchIndexFunction<K, V> extends FunctionAdapter implements 
             + queryInfo.getRegionPath());
       }
       final LuceneQuery<K, V> query = luceneService.createLuceneQueryFactory()
-          .setResultLimit(queryInfo.getLimit()).create(queryInfo.getIndexName(),
+          .setLimit(queryInfo.getLimit()).create(queryInfo.getIndexName(),
               queryInfo.getRegionPath(), queryInfo.getQueryString(), queryInfo.getDefaultField());
       if (queryInfo.getKeysOnly()) {
         query.findKeys().forEach(key -> result.add(new LuceneSearchResults(key.toString())));

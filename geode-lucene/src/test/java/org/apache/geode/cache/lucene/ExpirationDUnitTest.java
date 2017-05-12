@@ -30,7 +30,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import junitparams.JUnitParamsRunner;
@@ -73,7 +72,7 @@ public class ExpirationDUnitTest extends LuceneQueriesAccessorBase {
         .atMost(EXPIRATION_TIMEOUT_SEC + EXTRA_WAIT_TIME_SEC, TimeUnit.SECONDS).until(() -> {
           LuceneService luceneService = LuceneServiceProvider.get(getCache());
           LuceneQuery<Integer, TestObject> luceneQuery = luceneService.createLuceneQueryFactory()
-              .setResultLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
+              .setLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
 
           Collection luceneResultList = null;
           try {

@@ -572,7 +572,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   private void executeQuery(String indexName, String queryString, String field,
       int expectedResultsSize) throws LuceneQueryException {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
-    LuceneQuery query = luceneService.createLuceneQueryFactory().setResultLimit(expectedResultsSize)
+    LuceneQuery query = luceneService.createLuceneQueryFactory().setLimit(expectedResultsSize)
         .create(indexName, REGION_NAME, queryString, field);
     Collection results = query.findValues();
     assertEquals(expectedResultsSize, results.size());

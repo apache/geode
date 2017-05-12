@@ -43,7 +43,7 @@ public class LuceneQueryFactoryImplJUnitTest {
     when(cache.getRegion(any())).thenReturn(region);
     LuceneQueryFactoryImpl f = new LuceneQueryFactoryImpl(cache);
     f.setPageSize(5);
-    f.setResultLimit(25);
+    f.setLimit(25);
     LuceneQuery<Object, Object> query =
         f.create("index", "region", new StringQueryProvider("test", DEFAULT_FIELD));
     assertEquals(25, query.getLimit());

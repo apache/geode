@@ -93,7 +93,7 @@ public class LuceneSearchIndexFunctionJUnitTest {
 
     doReturn(mock(LuceneIndex.class)).when(service).getIndex(anyString(), anyString());
     doReturn(mockQueryFactory).when(service).createLuceneQueryFactory();
-    doReturn(mockQueryFactory).when(mockQueryFactory).setResultLimit(anyInt());
+    doReturn(mockQueryFactory).when(mockQueryFactory).setLimit(anyInt());
     doReturn(mockQuery).when(mockQueryFactory).create(any(), any(), any(), any());
     when(mockQuery.findPages()).thenReturn(pageableLuceneQueryResults);
     when(pageableLuceneQueryResults.hasNext()).thenReturn(true).thenReturn(false);

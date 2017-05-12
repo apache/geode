@@ -122,7 +122,7 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
     accessor.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       LuceneQuery<Integer, TestObject> query = luceneService.createLuceneQueryFactory()
-          .setResultLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
+          .setLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
       List<LuceneResultStruct<Integer, TestObject>> resultList = query.findResults();
       assertEquals(NUM_BUCKETS, resultList.size());
     });
