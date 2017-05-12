@@ -26,7 +26,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -34,6 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
@@ -52,10 +52,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
   public void verifySearchIndexPermissions(
       LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse user) {
     // Start server
-    int serverPort = dataStore1.invoke(startCacheServer());
-
-    // Create index and region
-    dataStore1.invoke(() -> createIndexAndRegion());
+    int serverPort = dataStore1.invoke(() -> startCacheServer());
 
     // Start client
     accessor.invoke(() -> startClient(user.getUserName(), serverPort));
@@ -65,58 +62,43 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
         () -> executeTextSearch(user.getExpectAuthorizationError(), user.getExpectedResponse()));
   }
 
-  private SerializableCallableIF<Integer> startCacheServer() {
-    return () -> {
-      Properties props = new Properties();
-      props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-      final Cache cache = getCache(props);
-      final CacheServer server = cache.addCacheServer();
-      server.setPort(0);
-      server.start();
-      LuceneService luceneService = LuceneServiceProvider.get(cache);
-      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-      return server.getPort();
-    };
+  private int startCacheServer() throws IOException {
+    Properties props = new Properties();
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    final Cache cache = getCache(props);
+    final CacheServer server = cache.addCacheServer();
+    server.setPort(0);
+    server.start();
+    LuceneService luceneService = LuceneServiceProvider.get(cache);
+    luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
+    cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    return server.getPort();
   }
 
-  private SerializableRunnableIF createIndexAndRegion() {
-    return () -> {
-      Cache cache = getCache();
-      LuceneService luceneService = LuceneServiceProvider.get(cache);
-      luceneService.createIndexFactory().setFields("field1").create(INDEX_NAME, REGION_NAME);
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    };
+  private void startClient(String userName, int serverPort) {
+    Properties props = new Properties();
+    props.setProperty("security-username", userName);
+    props.setProperty("security-password", userName);
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
+    ClientCacheFactory clientCacheFactory = new ClientCacheFactory(props);
+    clientCacheFactory.addPoolServer("localhost", serverPort);
+    ClientCache clientCache = getClientCache(clientCacheFactory);
+    clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(REGION_NAME);
   }
 
-  private SerializableRunnableIF startClient(String userName, int serverPort) {
-    return () -> {
-      Properties props = new Properties();
-      props.setProperty("security-username", userName);
-      props.setProperty("security-password", userName);
-      props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
-      ClientCacheFactory clientCacheFactory = new ClientCacheFactory(props);
-      clientCacheFactory.addPoolServer("localhost", serverPort);
-      ClientCache clientCache = getClientCache(clientCacheFactory);
-      clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(REGION_NAME);
-    };
-  }
-
-  private SerializableRunnableIF executeTextSearch(boolean expectAuthorizationError,
-      String expectedResponse) {
-    return () -> {
-      LuceneService service = LuceneServiceProvider.get(getCache());
-      LuceneQuery<Integer, TestObject> query =
-          service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "test", "text");
-      try {
-        query.findKeys();
-        assertFalse(expectAuthorizationError);
-      } catch (ServerOperationException e) {
-        assertTrue(e.getCause() != null && e.getCause() instanceof NotAuthorizedException);
-        assertTrue(expectAuthorizationError);
-        assertTrue(e.getLocalizedMessage().contains(expectedResponse));
-      }
-    };
+  private void executeTextSearch(boolean expectAuthorizationError, String expectedResponse)
+      throws LuceneQueryException {
+    LuceneService service = LuceneServiceProvider.get(getCache());
+    LuceneQuery<Integer, TestObject> query =
+        service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "test", "text");
+    try {
+      query.findKeys();
+      assertFalse(expectAuthorizationError);
+    } catch (ServerOperationException e) {
+      assertTrue(e.getCause() != null && e.getCause() instanceof NotAuthorizedException);
+      assertTrue(expectAuthorizationError);
+      assertTrue(e.getLocalizedMessage().contains(expectedResponse));
+    }
   }
 
   protected LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse[] getSearchIndexUserNameAndExpectedResponses() {
