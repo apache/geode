@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -109,6 +110,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
   @After
   public void tearDown() {
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL");
     background.shutdownNow();
     try {
       cache.close();
@@ -237,6 +239,31 @@ public class AutoConnectionSourceImplJUnitTest {
       }
       server.join(60 * 1000);
     }
+  }
+
+  @Test
+  public void testSysPropLocatorUpdateInterval() throws Exception {
+    long updateLocatorInterval = 543;
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
+        String.valueOf(updateLocatorInterval));
+    source.start(pool);
+    assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
+  }
+
+  @Test
+  public void testDefaultLocatorUpdateInterval() throws Exception {
+    long updateLocatorInterval = pool.getPingInterval();
+    source.start(pool);
+    assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
+  }
+
+  @Test
+  public void testLocatorUpdateIntervalZero() throws Exception {
+    long updateLocatorInterval = 0;
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
+        String.valueOf(updateLocatorInterval));
+    source.start(pool);
+    assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
   }
 
   private void startFakeLocator() throws UnknownHostException, IOException, InterruptedException {

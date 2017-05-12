@@ -32,7 +32,6 @@ import org.apache.geode.internal.*;
 import org.apache.geode.internal.cache.*;
 import org.apache.geode.management.membership.*;
 import org.apache.geode.test.dunit.*;
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.*;
 
 /**
@@ -44,10 +43,6 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   protected static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";
   private static final long MAX_WAIT = 60000;
-
-  @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -426,40 +421,6 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     Assert.assertEquals(0, serverListener.getJoins());
   }
 
-  @Test
-  public void testUpdateLocatorListInterval() throws Exception {
-    final Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String hostName = NetworkUtils.getServerHostName(vm0.getHost());
-    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
-
-    Properties props = new Properties();
-    long updateLocatorInterval;
-
-    vm1.invoke("StartBridgeClient", () -> startBridgeClient("group1",
-        NetworkUtils.getServerHostName(vm0.getHost()), locatorPort, props));
-    checkUpdateLocatorListInterval(vm1, 200);
-    stopBridgeMemberVM(vm1);
-
-    updateLocatorInterval = 0;
-    props.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
-        String.valueOf(updateLocatorInterval));
-    vm1.invoke("StartBridgeClient", () -> startBridgeClient("group2",
-        NetworkUtils.getServerHostName(vm0.getHost()), locatorPort, props));
-    checkUpdateLocatorListInterval(vm1, updateLocatorInterval);
-    stopBridgeMemberVM(vm1);
-
-    updateLocatorInterval = 543;
-    props.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
-        String.valueOf(updateLocatorInterval));
-    vm1.invoke("StartBridgeClient", () -> startBridgeClient("group2",
-        NetworkUtils.getServerHostName(vm0.getHost()), locatorPort, props));
-    checkUpdateLocatorListInterval(vm1, updateLocatorInterval);
-  }
-
   protected Object getInVM(VM vm, final Serializable key) {
     return getInVM(vm, REGION_NAME, key);
   }
@@ -571,22 +532,6 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
           Assert.assertEquals(expectedOne, locator);
         }
       }
-    });
-  }
-
-  protected void startBridgeClient(final String group, final String host, final int port,
-      Properties systemProperties) throws Exception {
-    systemProperties.entrySet().forEach(
-        entry -> System.setProperty(entry.getKey().toString(), entry.getValue().toString()));
-    startBridgeClient(group, host, port, new String[] {REGION_NAME});
-  }
-
-  protected void checkUpdateLocatorListInterval(VM vm, final long expected) {
-    vm.invoke(() -> {
-      PoolImpl pool = (PoolImpl) PoolManager.find(POOL_NAME);
-      long actual = AutoConnectionSourceImpl.class.cast(pool.getConnectionSource())
-          .getLocatorUpdateInterval();
-      Assert.assertEquals(expected, actual);
     });
   }
 
