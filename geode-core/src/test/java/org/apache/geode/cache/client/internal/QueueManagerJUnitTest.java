@@ -37,6 +37,7 @@ import org.junit.experimental.categories.Category;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -376,6 +377,10 @@ public class QueueManagerJUnitTest {
       return null;
     }
 
+    public List getOnlineLocators() {
+      return new ArrayList();
+    }
+
     public int getMaxConnections() {
       return 0;
     }
@@ -595,6 +600,11 @@ public class QueueManagerJUnitTest {
 
     @Override
     public List<ServerLocation> getAllServers() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public List<InetSocketAddress> getOnlineLocators() {
       return Collections.emptyList();
     }
   }

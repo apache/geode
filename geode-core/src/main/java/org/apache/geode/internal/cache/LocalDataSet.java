@@ -83,16 +83,13 @@ public class LocalDataSet implements Region, QueryExecutor {
     this.buckets = buckets;
   }
 
+  @Override
   public Set<Region.Entry> entrySet(boolean recursive) {
-    return entries(recursive);
+    return this.proxy.entrySet(getBucketSet());
   }
 
   public Set<Region.Entry> entrySet() {
-    return entries(false);
-  }
-
-  public Set<Region.Entry> entries(boolean recursive) {
-    return this.proxy.entries(getBucketSet());
+    return entrySet(false);
   }
 
   public Collection values() {

@@ -826,7 +826,7 @@ public abstract class DynamicRegionFactory {
 
     // Ignore the callback if it originated in this process (because the region
     // will already have been created) and the event is not a client event
-    if (!event.isOriginRemote() && !event.isBridgeEvent())
+    if (!event.isOriginRemote() && !event.hasClientOrigin())
       return;
     //
     DynamicRegionAttributes dra = (DynamicRegionAttributes) event.getNewValue();

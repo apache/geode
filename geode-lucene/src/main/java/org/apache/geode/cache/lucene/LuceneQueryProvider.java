@@ -21,8 +21,6 @@ import java.io.Serializable;
 import org.apache.geode.DataSerializer;
 import org.apache.lucene.search.Query;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.query.QueryException;
 
 /**
  * <p>
@@ -33,7 +31,6 @@ import org.apache.geode.cache.query.QueryException;
  * Instances of this interface are serialized using the standard
  * {@link DataSerializer#writeObject(Object, DataOutput)},
  */
-@Experimental
 @FunctionalInterface
 public interface LuceneQueryProvider extends Serializable {
   /**

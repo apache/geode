@@ -15,8 +15,6 @@
 
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.annotations.Experimental;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,15 +32,18 @@ import java.util.List;
  * @param <K> The type of the key
  * @param <V> The type of the value
  */
-@Experimental
 public interface PageableLuceneQueryResults<K, V> extends Iterator<List<LuceneResultStruct<K, V>>> {
   /**
-   * @return total number of hits for this query across all pages.
+   * Total number of hits matching the Lucene query across all pages.
+   *
+   * @return int value representing total number of hits for this query across all pages.
    */
   public int size();
 
   /**
    * Returns the maximum score value across all pages.
+   *
+   * @return float value representing the maximum score across all the Lucene result pages.
    */
   public float getMaxScore();
 
@@ -54,7 +55,9 @@ public interface PageableLuceneQueryResults<K, V> extends Iterator<List<LuceneRe
   public List<LuceneResultStruct<K, V>> next();
 
   /**
-   * True if there another page of results.
+   * True if there is another page of results in PageableLuceneQueryResults.
+   *
+   * @return boolean value, true if another Lucene result page is present, false otherwise.
    */
   public boolean hasNext();
 }

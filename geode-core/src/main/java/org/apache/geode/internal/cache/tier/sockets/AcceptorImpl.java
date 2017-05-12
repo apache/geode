@@ -1235,7 +1235,6 @@ public class AcceptorImpl extends Acceptor implements Runnable {
             break;
           }
         }
-        this.socketCreator.configureServerSSLSocket(s);
         this.loggedAcceptError = false;
 
         handOffNewClientConnection(s);
@@ -1408,6 +1407,7 @@ public class AcceptorImpl extends Acceptor implements Runnable {
       }
     } else {
       s.setSoTimeout(this.acceptTimeout);
+      this.socketCreator.configureServerSSLSocket(s);
       communicationMode = (byte) s.getInputStream().read();
       if (logger.isTraceEnabled()) {
         logger.trace("read communications mode(2) ", communicationMode);

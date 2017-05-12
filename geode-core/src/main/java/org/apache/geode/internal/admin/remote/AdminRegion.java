@@ -252,7 +252,8 @@ public class AdminRegion implements Region {
     throw new UnsupportedOperationException();
   }
 
-  public Set keys() {
+  @Override
+  public Set keySet() {
     try {
       ObjectNamesResponse resp = (ObjectNamesResponse) sendAndWait(ObjectNamesRequest.create());
       return resp.getNameSet();
@@ -262,10 +263,6 @@ public class AdminRegion implements Region {
   }
 
   public Collection values() {
-    throw new UnsupportedOperationException();
-  }
-
-  public Set entries(boolean recursive) {
     throw new UnsupportedOperationException();
   }
 
@@ -519,10 +516,6 @@ public class AdminRegion implements Region {
   }
 
   public Set entrySet() {
-    throw new UnsupportedOperationException();
-  }
-
-  public Set keySet() {
     throw new UnsupportedOperationException();
   }
 

@@ -215,7 +215,7 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
-    public Set entries(boolean recursive) {
+    public Set entrySet(boolean recursive) {
       throw new UnsupportedOperationException();
     }
 

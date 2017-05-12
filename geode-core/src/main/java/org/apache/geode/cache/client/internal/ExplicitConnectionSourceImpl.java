@@ -263,4 +263,9 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     list.addAll(this.serverList);
     return list;
   }
+
+  @Override
+  public List<InetSocketAddress> getOnlineLocators() {
+    return Collections.emptyList();
+  }
 }

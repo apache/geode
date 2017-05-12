@@ -368,6 +368,10 @@ public class AutoConnectionSourceImplJUnitTest {
       return new ArrayList();
     }
 
+    public List/* <InetSocketAddress> */ getOnlineLocators() {
+      return new ArrayList();
+    }
+
     public List/* <InetSocketAddress> */ getServers() {
       return new ArrayList();
     }

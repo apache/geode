@@ -217,7 +217,7 @@ public class DummyQRegion extends QRegion {
   }
 
   @Override
-  public Set entries(boolean recursive) {
+  public Set entrySet(boolean recursive) {
     return (ResultsSet) getEntries();
   }
 

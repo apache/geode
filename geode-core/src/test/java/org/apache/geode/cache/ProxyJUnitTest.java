@@ -189,10 +189,10 @@ public class ProxyJUnitTest {
       assertEquals(getKey(), other.getKey());
       assertEquals(getOldValue(), other.getOldValue());
       assertEquals(getNewValue(), other.getNewValue());
-      assertEquals(isLocalLoad(), other.isLocalLoad());
-      assertEquals(isNetLoad(), other.isNetLoad());
-      assertEquals(isLoad(), other.isLoad());
-      assertEquals(isNetSearch(), other.isNetSearch());
+      assertEquals(isLocalLoad(), other.getOperation().isLocalLoad());
+      assertEquals(isNetLoad(), other.getOperation().isNetLoad());
+      assertEquals(isLoad(), other.getOperation().isLoad());
+      assertEquals(isNetSearch(), other.getOperation().isNetSearch());
       assertEquals(getTransactionId(), other.getTransactionId());
     }
 

@@ -27,7 +27,6 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
   /**
    * Normal happy scenario test case.
    */
-  @Category(FlakyTest.class) // GEODE-1775: fails intermittently
   @Test
   public void testParallelPropagationWithClientServer() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));

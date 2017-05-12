@@ -14,14 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import org.apache.geode.cache.Cache;
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.cli.Result;
@@ -36,6 +33,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -98,15 +95,17 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     createCache(vm1);
     createCache(new Properties());
 
-    String fileName = "dependency.txt";
+    String filename = "dependency.txt";
     GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
     assertEquals(null, detect.find().findCycle());
 
-    CommandProcessor commandProcessor = new CommandProcessor();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK);
-    csb.addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, fileName);
-    Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
 
+    String showDeadlockCommand = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK)
+        .addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, filename).toString();
+
+    CommandProcessor commandProcessor = new CommandProcessor();
+    Result result =
+        commandProcessor.createCommandStatement(showDeadlockCommand, EMPTY_ENV).process();
     String deadLockOutputFromCommand = getResultAsString(result);
 
     getLogWriter().info("output = " + deadLockOutputFromCommand);
@@ -115,7 +114,7 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     assertEquals(true,
         deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK));
     result.saveIncomingFiles(null);
-    File file = new File(fileName);
+    File file = new File(filename);
     assertTrue(file.exists());
     file.delete();
 
@@ -140,40 +139,34 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     // This thread locks the lock member2 first, then member1.
     lockTheLocks(vm1, member1);
 
-    Thread.sleep(5000);
+    String showDeadlockCommand = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK)
+        .addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, filename).toString();
+
     CommandProcessor commandProcessor = new CommandProcessor();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK);
-    csb.addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, filename);
-    Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
 
-    String deadLockOutputFromCommand = getResultAsString(result);
-    getLogWriter().info("Deadlock = " + deadLockOutputFromCommand);
-    result.saveIncomingFiles(null);
-    assertEquals(true,
-        deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED));
-    assertEquals(true, result.getStatus().equals(Status.OK));
-    File file = new File(filename);
-    assertTrue(file.exists());
-    file.delete();
-
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+      Result result =
+          commandProcessor.createCommandStatement(showDeadlockCommand, EMPTY_ENV).process();
+      String deadLockOutputFromCommand = getResultAsString(result);
+      File fileResult = new File(filename);
+      FileUtils.deleteQuietly(fileResult);
+      try {
+        result.saveIncomingFiles(null);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      assertEquals(true,
+          deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED));
+      assertEquals(true, result.getStatus().equals(Status.OK));
+      assertTrue(fileResult.exists());
+      fileResult.delete();
+    });
   }
 
 
   private void createCache(Properties props) {
     getSystem(props);
-    final Cache cache = getCache();
-  }
-
-  private Properties createProperties(Host host, int locatorPort) {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    // props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" +
-    // locatorPort + "]");
-    props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
-    props.setProperty(ENABLE_TIME_STATISTICS, "true");
-    props.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    return props;
+    getCache();
   }
 
   private void lockTheLocks(VM vm0, final InternalDistributedMember member) {
@@ -183,35 +176,12 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
 
       public void run() {
         lock.lock();
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          fail("interrupted", e);
-        }
-        ResultCollector collector = FunctionService.onMember(member).execute(new TestFunction());
+
+        ResultCollector collector =
+            FunctionService.onMember(member).execute(new TestFunction());
         // wait the function to lock the lock on member.
         collector.getResult();
         lock.unlock();
-      }
-    });
-  }
-
-  private void lockTheDLocks(VM vm, final String first, final String second) {
-    vm.invokeAsync(new SerializableRunnable() {
-
-      private static final long serialVersionUID = 1L;
-
-      public void run() {
-        getCache();
-        DistributedLockService dls = DistributedLockService.create("deadlock_test", getSystem());
-        dls.lock(first, 10 * 1000, -1);
-
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        dls.lock(second, 10 * 1000, -1);
       }
     });
   }

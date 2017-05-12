@@ -463,6 +463,11 @@ public class PoolFactoryImpl implements PoolFactory {
       return Collections.unmodifiableList(new ArrayList(this.locators));
     }
 
+    @Override
+    public List<InetSocketAddress> getOnlineLocators() {
+      throw new UnsupportedOperationException();
+    }
+
     public List/* <InetSocketAddress> */ getServers() {
       if (this.locators.size() == 0 && this.servers.size() == 0) {
         throw new IllegalStateException(

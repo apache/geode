@@ -442,6 +442,11 @@ public class PoolImpl implements InternalPool {
     return this.locators;
   }
 
+  @Override
+  public List<InetSocketAddress> getOnlineLocators() {
+    return this.source.getOnlineLocators();
+  }
+
   public List<InetSocketAddress> getServers() {
     return this.servers;
   }

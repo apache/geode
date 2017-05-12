@@ -34,7 +34,9 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
+import org.apache.lucene.analysis.phonetic.DoubleMetaphoneFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -455,6 +457,27 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   }
 
+  @Test()
+  public void soundexQueryReturnExpectedTruePositiveAndFalsePositive() throws Exception {
+    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    fields.put("field1", new DoubleMetaphoneAnalyzer());
+    fields.put("field2", null);
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    region.put("A", new TestObject("Stefan", "soundex"));
+    region.put("B", new TestObject("Steph", "soundex"));
+    region.put("C", new TestObject("Stephen", "soundex"));
+    region.put("D", new TestObject("Steve", "soundex"));
+    region.put("E", new TestObject("Steven", "soundex"));
+    region.put("F", new TestObject("Stove", "soundex"));
+    region.put("G", new TestObject("Stuffin", "soundex"));
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
+
+    verifyQuery("field1:Stephen", DEFAULT_FIELD, "A", "C", "E", "G");
+  }
+
   private PdxInstance insertAJson(Region region, String key) {
     String jsonCustomer = "{" + "\"name\": \"" + key + "\"," + "\"lastName\": \"Smith\","
         + " \"age\": 25," + "\"address\":" + "{" + "\"streetAddress\": \"21 2nd Street\","
@@ -505,6 +528,15 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
       Tokenizer tokenizer = new MyCharacterTokenizer();
       TokenStream filter = new LowerCaseFilter(tokenizer);
       return new TokenStreamComponents(tokenizer, filter);
+    }
+  }
+
+  private static class DoubleMetaphoneAnalyzer extends Analyzer {
+    @Override
+    protected TokenStreamComponents createComponents(final String field) {
+      Tokenizer tokenizer = new StandardTokenizer();
+      TokenStream stream = new DoubleMetaphoneFilter(tokenizer, 6, false);
+      return new TokenStreamComponents(tokenizer, stream);
     }
   }
 }

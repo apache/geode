@@ -14,22 +14,24 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.annotations.Experimental;
 
 /**
- * A single result of a Lucene query.
+ * An interface which stores a single result obtained by executing a Lucene query.
  * 
  */
-@Experimental
 public interface LuceneResultStruct<K, V> {
 
   /**
+   * Returns the Apache Geode region key of the result matching the Lucene Query
+   *
    * @return The region key of the entry matching the query
    *
    */
   public K getKey();
 
   /**
+   * Returns the Apache Geode region key of the result matching the Lucene Query
+   *
    * @return the region value of the entry matching the query.
    *
    */
@@ -37,8 +39,10 @@ public interface LuceneResultStruct<K, V> {
 
   /**
    * Return score the score of the entry matching the query. Scores are computed by Lucene based on
-   * how closely documents match the query.
+   * how closely the entry matches the query.
    *
+   * @return float value representing the score of the entry obtained as a result of executing the
+   *         Lucene query.
    */
   public float getScore();
 }

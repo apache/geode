@@ -476,6 +476,13 @@ public class GfshParserIntegrationTest {
     assertThat(memberIdValue).isNull();
   }
 
+  @Test
+  public void testDeployCommand() throws Exception {
+    String command = "deploy --jar=/tmp/junit7552412945092669041/jar1.jar";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result).isNotNull();
+  }
+
   private String getCompleted(String buffer, int cursor, Completion completed) {
     return buffer.substring(0, cursor) + completed.getValue();
   }

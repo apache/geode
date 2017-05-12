@@ -6039,12 +6039,12 @@ public class PartitionedRegion extends LocalRegion
    *         OVERRIDES
    */
   @Override
-  public Set entries(boolean recursive) {
+  public Set entrySet(boolean recursive) {
     checkReadiness();
     return Collections.unmodifiableSet(new PREntriesSet());
   }
 
-  public Set<Region.Entry> entries(Set<Integer> bucketIds) {
+  public Set<Region.Entry> entrySet(Set<Integer> bucketIds) {
     return new PREntriesSet(bucketIds);
   }
 
