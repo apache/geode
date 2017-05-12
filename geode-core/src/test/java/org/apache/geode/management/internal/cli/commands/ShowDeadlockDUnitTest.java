@@ -14,6 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -39,14 +44,14 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command
@@ -79,7 +84,6 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
         }
       }
     });
-    CliUtil.isGfshVM = true;
   }
 
   @Test

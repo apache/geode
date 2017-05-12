@@ -29,6 +29,7 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -48,8 +49,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,6 +114,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     preTearDownCliCommandTestBase();
+    CliUtil.isGfshVM = false;
     destroyDefaultSetup();
   }
 
