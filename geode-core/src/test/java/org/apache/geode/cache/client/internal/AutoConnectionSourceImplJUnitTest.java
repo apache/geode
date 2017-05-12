@@ -40,7 +40,9 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
@@ -80,6 +82,9 @@ public class AutoConnectionSourceImplJUnitTest {
   private ScheduledExecutorService background;
   private PoolStats poolStats;
 
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
@@ -110,7 +115,6 @@ public class AutoConnectionSourceImplJUnitTest {
 
   @After
   public void tearDown() {
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL");
     background.shutdownNow();
     try {
       cache.close();
