@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -71,10 +73,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   private final Map indexes;
 
   /**
-   * A transient queue to maintain the eventSeqNum of the events that are to be sent to remote site.
-   * It is cleared when the queue is cleared.
+   * A transient deque, but should be treated like as a fifo queue to maintain the eventSeqNum of
+   * the events that are to be sent to remote site. It is cleared when the queue is cleared.
    */
-  private final BlockingQueue<Object> eventSeqNumQueue = new LinkedBlockingQueue<Object>();
+  private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
 
   // private final BlockingQueue<EventID> eventSeqNumQueueWithEventId = new
   // LinkedBlockingQueue<EventID>();
@@ -139,7 +141,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
             }
           });
           for (EventID eventID : keys) {
-            eventSeqNumQueue.add(eventID);
+            eventSeqNumDeque.addLast(eventID);
           }
         } else {
           TreeSet<Long> sortedKeys = new TreeSet<Long>(this.keySet());
@@ -150,7 +152,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
           // fix for #49679 NoSuchElementException thrown from BucketRegionQueue.initialize
           if (!sortedKeys.isEmpty()) {
             for (Long key : sortedKeys) {
-              eventSeqNumQueue.add(key);
+              eventSeqNumDeque.addLast(key);
             }
             lastKeyRecovered = sortedKeys.last();
             if (this.getEventSeqNum() != null) {
@@ -162,7 +164,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "For bucket {} ,total keys recovered are : {} last key recovered is : {} and the seqNo is ",
-              getId(), eventSeqNumQueue.size(), lastKeyRecovered, getEventSeqNum());
+              getId(), eventSeqNumDeque.size(), lastKeyRecovered, getEventSeqNum());
         }
       }
       this.initialized = true;
@@ -211,7 +213,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   @Override
   public void beforeAcquiringPrimaryState() {
     int batchSize = this.getPartitionedRegion().getParallelGatewaySender().getBatchSize();
-    Iterator<Object> itr = eventSeqNumQueue.iterator();
+    Iterator<Object> itr = eventSeqNumDeque.iterator();
     markEventsAsDuplicate(batchSize, itr);
   }
 
@@ -224,7 +226,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
     });
     this.indexes.clear();
-    this.eventSeqNumQueue.clear();
+    this.eventSeqNumDeque.clear();
   }
 
   @Override
@@ -236,7 +238,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         result.set(BucketRegionQueue.super.clearEntries(rvv));
       }
     });
-    this.eventSeqNumQueue.clear();
+    this.eventSeqNumDeque.clear();
     return result.get();
   }
 
@@ -250,7 +252,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     getInitializationLock().writeLock().lock();
     try {
       this.indexes.clear();
-      this.eventSeqNumQueue.clear();
+      this.eventSeqNumDeque.clear();
     } finally {
       getInitializationLock().writeLock().unlock();
     }
@@ -377,7 +379,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       if (logger.isDebugEnabled()) {
         logger.debug(" removing the key {} from eventSeqNumQueue", event.getKey());
       }
-      this.eventSeqNumQueue.remove(event.getKey());
+      this.eventSeqNumDeque.remove(event.getKey());
     }
   }
 
@@ -412,7 +414,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      key = this.eventSeqNumQueue.peek();
+      key = this.eventSeqNumDeque.peekFirst();
       if (key != null) {
         object = optimalGet(key);
         if (object == null && !this.getPartitionedRegion().isConflationEnabled()) {
@@ -431,7 +433,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         // RegionQueue[1])[0];
         // //queue.addToPeekedKeys(key);
         // }
-        this.eventSeqNumQueue.remove(key);
+        this.eventSeqNumDeque.remove(key);
       }
       return object; // OFFHEAP: ok since callers are careful to do destroys on
                      // region queue after finished with peeked object.
@@ -443,7 +445,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
     if (didPut) {
       if (this.initialized) {
-        this.eventSeqNumQueue.add(key);
+        this.eventSeqNumDeque.addLast(key);
         updateLargestQueuedKey((Long) key);
       }
       if (logger.isDebugEnabled()) {
@@ -454,6 +456,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     if (this.getBucketAdvisor().isPrimary()) {
       incQueueSize(1);
     }
+  }
+
+  public void pushKeyIntoQueue(Object key) {
+    eventSeqNumDeque.addFirst(key);
   }
 
   private void updateLargestQueuedKey(Long key) {
@@ -510,7 +516,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * @throws ForceReattemptException
    */
   public Object remove() throws ForceReattemptException {
-    Object key = this.eventSeqNumQueue.remove();
+    Object key = this.eventSeqNumDeque.removeFirst();
     if (key != null) {
       destroyKey(key);
     }
@@ -586,7 +592,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   public boolean isReadyForPeek() {
     return !this.getPartitionedRegion().isDestroyed() && !this.isEmpty()
-        && !this.eventSeqNumQueue.isEmpty() && getBucketAdvisor().isPrimary();
+        && !this.eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
   }
 
 }

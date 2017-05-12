@@ -357,6 +357,16 @@ public class StateFlushOperation {
       if (dm.getDistributionManagerId().equals(relayRecipient)) {
         // no need to send a relay request to this process - just send the
         // ack back to the sender
+        Set<DistributedRegion> regions = getRegions(dm);
+        for (DistributedRegion r : regions) {
+          if (r != null) {
+            if (this.allRegions && r.doesNotDistribute()) {
+              // no need to flush a region that does no distribution
+              continue;
+            }
+            waitForCurrentOperations(r, r.isInitialized());
+          }
+        }
         StateStabilizedMessage ga = new StateStabilizedMessage();
         ga.sendingMember = relayRecipient;
         ga.setRecipient(this.getSender());
@@ -374,12 +384,7 @@ public class StateFlushOperation {
         gr.requestingMember = this.getSender();
         gr.processorId = processorId;
         try {
-          Set<DistributedRegion> regions;
-          if (this.allRegions) {
-            regions = getAllRegions(dm);
-          } else {
-            regions = Collections.singleton(this.getRegion(dm));
-          }
+          Set<DistributedRegion> regions = getRegions(dm);
           for (DistributedRegion r : regions) {
             if (r == null) {
               if (logger.isTraceEnabled(LogMarker.DM)) {
@@ -392,18 +397,7 @@ public class StateFlushOperation {
                 continue;
               }
               boolean initialized = r.isInitialized();
-              if (initialized) {
-                if (this.flushNewOps) {
-                  r.getDistributionAdvisor().forceNewMembershipVersion(); // force a new "view" so
-                                                                          // we can track current
-                                                                          // ops
-                }
-                try {
-                  r.getDistributionAdvisor().waitForCurrentOperations();
-                } catch (RegionDestroyedException e) {
-                  // continue with the next region
-                }
-              }
+              waitForCurrentOperations(r, initialized);
               boolean useMulticast =
                   r.getMulticastEnabled() && r.getSystem().getConfig().getMcastPort() != 0;
               if (initialized) {
@@ -453,6 +447,31 @@ public class StateFlushOperation {
           dm.putOutgoing(gr);
         }
       }
+    }
+
+    private void waitForCurrentOperations(final DistributedRegion r, final boolean initialized) {
+      if (initialized) {
+        if (this.flushNewOps) {
+          r.getDistributionAdvisor().forceNewMembershipVersion(); // force a new "view" so
+                                                                  // we can track current
+                                                                  // ops
+        }
+        try {
+          r.getDistributionAdvisor().waitForCurrentOperations();
+        } catch (RegionDestroyedException e) {
+          // continue with the next region
+        }
+      }
+    }
+
+    private Set<DistributedRegion> getRegions(final DistributionManager dm) {
+      Set<DistributedRegion> regions;
+      if (this.allRegions) {
+        regions = getAllRegions(dm);
+      } else {
+        regions = Collections.singleton(this.getRegion(dm));
+      }
+      return regions;
     }
 
     @Override
