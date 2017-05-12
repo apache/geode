@@ -42,6 +42,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.awaitility.Awaitility;
 import org.apache.geode.ForcedDisconnectException;
@@ -90,6 +91,7 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -828,6 +830,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           (DistributionManager) ((InternalDistributedSystem) sys).getDistributionManager();
       MyMembershipListener listener = new MyMembershipListener();
       dm.addMembershipListener(listener);
+      // ensure there is an unordered reader thread for the member
+      new HighPriorityAckedMessage().send(Collections.singleton(mem1), false);
 
       // disconnect the first vm and demonstrate that the third vm and the
       // locator notice the failure and exit
