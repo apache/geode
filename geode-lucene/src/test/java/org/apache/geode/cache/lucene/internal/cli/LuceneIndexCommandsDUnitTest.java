@@ -459,7 +459,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     String resultAsString = commandResultToString(commandResult);
     writeToLog("Result String :\n ", resultAsString);
     assertEquals(Status.ERROR, commandResult.getStatus());
-    assertTrue(resultAsString.contains("Index " + INDEX_NAME + " not found"));
+    assertEquals("Unexpected CommandResult string :" + resultAsString, true,
+        resultAsString.contains("Index " + INDEX_NAME + " not found"));
   }
 
   @Test
