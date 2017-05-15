@@ -22,6 +22,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
+import org.springframework.shell.converters.SimpleFileConverter;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
@@ -205,7 +206,9 @@ public class CommandManager {
           .loadAndGet("org.apache.geode.management.internal.cli.converters", Converter.class, true);
       for (Class<?> klass : foundClasses) {
         try {
-          add((Converter<?>) klass.newInstance());
+          Converter<?> object = (Converter<?>) klass.newInstance();
+          add(object);
+
         } catch (Exception e) {
           logWrapper.warning(
               "Could not load Converter from: " + klass + " due to " + e.getLocalizedMessage()); // continue
@@ -217,11 +220,13 @@ public class CommandManager {
       foundClasses = ClasspathScanLoadHelper.loadAndGet("org.springframework.shell.converters",
           Converter.class, true);
       for (Class<?> klass : foundClasses) {
-        try {
-          add((Converter<?>) klass.newInstance());
-        } catch (Exception e) {
-          logWrapper.warning(
-              "Could not load Converter from: " + klass + " due to " + e.getLocalizedMessage()); // continue
+        if (!SHL_CONVERTERS_TOSKIP.contains(klass)) {
+          try {
+            add((Converter<?>) klass.newInstance());
+          } catch (Exception e) {
+            logWrapper.warning(
+                "Could not load Converter from: " + klass + " due to " + e.getLocalizedMessage()); // continue
+          }
         }
       }
       raiseExceptionIfEmpty(foundClasses, "Basic Converters");
@@ -233,6 +238,13 @@ public class CommandManager {
       logWrapper.warning(e.getMessage(), e);
       throw e;
     }
+  }
+
+  /** Skip some of the Converters from Spring Shell for our customization */
+  private static List<Class> SHL_CONVERTERS_TOSKIP = new ArrayList();
+  static {
+    // skip springs SimpleFileConverter to use our own FilePathConverter
+    SHL_CONVERTERS_TOSKIP.add(SimpleFileConverter.class);
   }
 
   public List<Converter<?>> getConverters() {
@@ -249,6 +261,9 @@ public class CommandManager {
    * @param converter
    */
   void add(Converter<?> converter) {
+    if (CommandManagerAware.class.isAssignableFrom(converter.getClass())) {
+      ((CommandManagerAware) converter).setCommandManager(this);
+    }
     converters.add(converter);
   }
 
@@ -258,6 +273,9 @@ public class CommandManager {
    * @param commandMarker
    */
   void add(CommandMarker commandMarker) {
+    if (CommandManagerAware.class.isAssignableFrom(commandMarker.getClass())) {
+      ((CommandManagerAware) commandMarker).setCommandManager(this);
+    }
     commandMarkers.add(commandMarker);
     for (Method method : commandMarker.getClass().getMethods()) {
       CliCommand cliCommand = method.getAnnotation(CliCommand.class);

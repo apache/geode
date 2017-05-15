@@ -23,23 +23,26 @@ import org.springframework.shell.core.annotation.CliOption;
  * @since GemFire 8.0
  */
 public interface ConverterHint {
-  public static final String DIR_PATHSTRING = "converter.hint.dir.path.string";
-  public static final String DISKSTORE_ALL = "converter.hint.cluster.diskstore";
-  public static final String FILE = "converter.hint.file";
-  public static final String FILE_PATHSTRING = "converter.hint.file.path.string";
-  public static final String HINTTOPIC = "converter.hint.gfsh.hint.topic";
-  public static final String MEMBERGROUP = "converter.hint.member.groups";
+  public static final String DISABLE_STRING_CONVERTER = ":disable-string-converter";
+  public static final String DISKSTORE =
+      "geode.converter.cluster.diskstore" + DISABLE_STRING_CONVERTER;
+  public static final String FILE = "geode.converter.file";
+  public static final String FILE_PATH = "geode.converter.file.path" + DISABLE_STRING_CONVERTER;
+  public static final String HINT = "geode.converter.hint" + DISABLE_STRING_CONVERTER;
+  public static final String HELP = "geode.converter.help" + DISABLE_STRING_CONVERTER;
+  public static final String MEMBERGROUP = "geode.converter.member.groups";
   /** Hint to be used for all types of GemFire cluster members */
-  public static final String ALL_MEMBER_IDNAME = "converter.hint.all.member.idOrName";
+  public static final String ALL_MEMBER_IDNAME = "geode.converter.all.member.idOrName";
   /** Hint to be used for all non locator GemFire cluster members */
-  public static final String MEMBERIDNAME = "converter.hint.member.idOrName";
+  public static final String MEMBERIDNAME = "geode.converter.member.idOrName";
   /** Hint to be used for GemFire stand-alone locator members */
-  public static final String LOCATOR_MEMBER_IDNAME = "converter.hint.locatormember.idOrName";
+  public static final String LOCATOR_MEMBER_IDNAME = "geode.converter.locatormember.idOrName";
   /** Hint to be used for configured locators for discovery */
-  public static final String LOCATOR_DISCOVERY_CONFIG = "converter.hint.locators.discovery.config";
-  public static final String REGIONPATH = "converter.hint.region.path";
-  public static final String INDEX_TYPE = "converter.hint.index.type";
-  public static final String GATEWAY_SENDER_ID = "converter.hint.gateway.senderid";
-  public static final String GATEWAY_RECEIVER_ID = "converter.hint.gateway.receiverid";
-  public static final String LOG_LEVEL = "converter.hint.log.levels:disable-string-converter";
+  public static final String LOCATOR_DISCOVERY_CONFIG = "geode.converter.locators.discovery.config";
+  public static final String REGION_PATH = "geode.converter.region.path" + DISABLE_STRING_CONVERTER;
+  public static final String INDEX_TYPE = "geode.converter.index.type";
+  public static final String GATEWAY_SENDER_ID = "geode.converter.gateway.senderid";
+  public static final String GATEWAY_RECEIVER_ID = "geode.converter.gateway.receiverid";
+  public static final String LOG_LEVEL = "geode.converter.log.levels" + DISABLE_STRING_CONVERTER;
+
 }

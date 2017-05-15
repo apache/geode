@@ -16,8 +16,11 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.CommandManagerAware;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -25,20 +28,28 @@ import org.springframework.shell.core.annotation.CliOption;
 /**
  * @since GemFire 7.0
  */
-public class GfshHelpCommands implements CommandMarker {
+public class GfshHelpCommands implements CommandMarker, CommandManagerAware {
+  private CommandManager commandManager = null;
+
+  public void setCommandManager(CommandManager commandManager) {
+    this.commandManager = commandManager;
+  }
+
   @CliCommand(value = CliStrings.HELP, help = CliStrings.HELP__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP})
-  public void obtainHelp(@CliOption(key = {"", CliStrings.SH__COMMAND},
-      help = "Command name to provide help for") String buffer) {
-    Gfsh.getCurrentInstance().getGfshParser().obtainHelp(buffer);
+  public Result obtainHelp(
+      @CliOption(key = {"", CliStrings.SH__COMMAND}, optionContext = ConverterHint.HELP,
+          help = "Command name to provide help for") String buffer) {
+
+    return ResultBuilder.createInfoResult(commandManager.obtainHelp(buffer));
   }
 
   @CliCommand(value = CliStrings.HINT, help = CliStrings.HINT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP})
-  public void hint(
-      @CliOption(key = {"", CliStrings.HINT__TOPICNAME}, optionContext = ConverterHint.HINTTOPIC,
-          help = CliStrings.HINT__TOPICNAME) String topicName) {
-    Gfsh.getCurrentInstance().getGfshParser().obtainHint(topicName);
+  public Result hint(@CliOption(key = {"", CliStrings.HINT__TOPICNAME},
+      optionContext = ConverterHint.HINT, help = CliStrings.HINT__TOPICNAME) String topicName) {
+
+    return ResultBuilder.createInfoResult(commandManager.obtainHint(topicName));
   }
 
 }

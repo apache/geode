@@ -14,16 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.List;
-
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.cli.ConverterHint;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.management.cli.ConverterHint;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 
@@ -32,100 +32,64 @@ import org.apache.geode.management.cli.ConverterHint;
 public class FilePathStringConverter implements Converter<String> {
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    // System.out.println("FilePathConverter.supports() : type :: "+type+", optionContext ::
-    // "+optionContext);
-    return String.class.equals(type) && ConverterHint.FILE_PATHSTRING.equals(optionContext);
+    return String.class.equals(type) && optionContext.contains(ConverterHint.FILE_PATH);
   }
 
   @Override
   public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    // System.out.println("FilePathConverter.convertFromText() : optionContext :: "+optionContext);
     return value;
+  }
+
+  public List<String> getRoots() {
+    File[] roots = File.listRoots();
+    return Arrays.stream(roots).map(File::getAbsolutePath).collect(Collectors.toList());
+  }
+
+  /**
+   * if path is a dir, it will return the list of files under this dir. if path is a filename, it
+   * will return all the siblings of this file
+   */
+  public List<String> getSiblings(String path) {
+    File currentFile = new File(path);
+
+    // if currentFile is not a dir, convert currentFile to it's parent dir
+    if (!currentFile.isDirectory()) {
+      currentFile = currentFile.getParentFile();
+      // a file needs to be in a directory, if the file's parent is null, that means user
+      // typed a filename without "./" prefix, but meant to find the file in the current dir.
+      if (currentFile == null) {
+        currentFile = new File("./");
+        path = null;
+      } else {
+        path = currentFile.getPath();
+      }
+    }
+
+    // at this point, currentFile should be a directory, we need to return all the files
+    // under this directory
+    String prefix;
+    if (path == null) {
+      prefix = "";
+    } else {
+      prefix = path.endsWith(File.separator) ? path : path + File.separator;
+    }
+    return Arrays.stream(currentFile.list()).map(s -> prefix + s).collect(Collectors.toList());
   }
 
   @Override
   public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
       String existingData, String optionContext, MethodTarget target) {
-    // prefix is needed while comparing Completion Candidates as potential matches
-    String prefixToUse = "";
-    boolean prependAbsolute = true;
-    File parentDir = null; // directory to be searched for file(s)
-
-    if (existingData != null) {
-      // System.out.println("FilePathConverter.getAllPossibleValues() : optionContext ::
-      // "+optionContext+", existingData : "+existingData);
-      String[] completionValues = new String[0];
-
-      if (ConverterHint.FILE_PATHSTRING.equals(optionContext)) {
-        // if existingData is empty, start from root
-        if (existingData != null && existingData.trim().isEmpty()) {
-          File[] listRoots = File.listRoots();
-          completionValues = new String[listRoots.length];
-          for (int i = 0; i < listRoots.length; i++) {
-            completionValues[i] = listRoots[i].getPath();
-          }
-          prefixToUse = File.separator;
-        } else {
-          // Create a file from existing data
-          File file = new File(existingData);
-          if (file.isDirectory()) {
-            // For a directory, list files/sub-dirsin the directory
-            parentDir = file;
-            completionValues = parentDir.list();
-          } else if (!file.exists()) {
-            parentDir = file.getParentFile();
-            if (parentDir == null) {
-              try {
-                parentDir = file.getCanonicalFile().getParentFile();
-              } catch (IOException e) {
-                parentDir = null;
-              }
-            }
-            if (parentDir != null) {
-              completionValues = parentDir.list(new FileNameFilterImpl(parentDir, file.getName()));
-            }
-          }
-          // whether the file path is absolute
-          prependAbsolute = file.isAbsolute();
-        }
-      }
-
-      if (completionValues.length > 0) {
-        // use directory path as prefix for completion of names of the contained files
-        if (parentDir != null) {
-          if (existingData.startsWith(".")) { // handle . & ..
-            prefixToUse = parentDir.getPath();
-          } else if (prependAbsolute) {
-            prefixToUse = parentDir.getAbsolutePath();
-          }
-        }
-        // add File.separator in the end
-        if (!prefixToUse.endsWith(File.separator)
-            && (prependAbsolute || existingData.startsWith("."))) {
-          prefixToUse += File.separator;
-        }
-        for (int i = 0; i < completionValues.length; i++) {
-          completions.add(new Completion(prefixToUse + completionValues[i]));
-        }
-      }
+    if (StringUtils.isBlank(existingData)) {
+      getRoots().stream().forEach(path -> completions.add(new Completion(path)));
+      return !completions.isEmpty();
     }
+
+    getSiblings(existingData).stream().filter(string -> string.startsWith(existingData))
+        .forEach(path -> {
+          completions.add(new Completion(path));
+        });
 
     return !completions.isEmpty();
-  }
-
-  class FileNameFilterImpl implements FilenameFilter {
-    private File parentDirectory;
-    private String userInput;
-
-    public FileNameFilterImpl(File parentDirectory, String userInput) {
-      this.parentDirectory = parentDirectory;
-      this.userInput = userInput;
-    }
-
-    @Override
-    public boolean accept(File dir, String name) {
-      return parentDirectory.equals(dir) && name.startsWith(userInput);
-    }
   }
 
 }

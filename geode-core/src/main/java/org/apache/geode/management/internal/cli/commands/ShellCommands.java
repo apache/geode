@@ -304,7 +304,7 @@ public class ShellCommands implements CommandMarker {
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__SSL_PROTOCOLS__HELP) String sslProtocols,
       @CliOption(key = CliStrings.CONNECT__SECURITY_PROPERTIES,
-          optionContext = ConverterHint.FILE_PATHSTRING,
+          optionContext = ConverterHint.FILE_PATH,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__SECURITY_PROPERTIES__HELP) final String gfSecurityPropertiesPath,
       @CliOption(key = {CliStrings.CONNECT__USE_SSL}, specifiedDefaultValue = "true",

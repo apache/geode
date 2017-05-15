@@ -14,122 +14,45 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.List;
-
+import org.apache.geode.management.cli.ConverterHint;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.management.cli.ConverterHint;
+import java.io.File;
+import java.util.List;
 
 /**
  * 
  * @since GemFire 7.0
  */
 public class FilePathConverter implements Converter<File> {
+  private FilePathStringConverter delegate;
+
+  public FilePathConverter() {
+    this.delegate = new FilePathStringConverter();
+  }
+
+  public void setDelegate(FilePathStringConverter delegate) {
+    this.delegate = delegate;
+  }
+
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    // System.out.println("FilePathConverter.supports() : type :: "+type+", optionContext ::
-    // "+optionContext);
-    return File.class.equals(type) && ConverterHint.FILE.equals(optionContext);
+    return File.class.equals(type) && optionContext.contains(ConverterHint.FILE);
   }
 
   @Override
   public File convertFromText(String value, Class<?> targetType, String optionContext) {
-    // System.out.println("FilePathConverter.convertFromText() : optionContext :: "+optionContext);
-    File filePath = null;
-    if (ConverterHint.FILE.equals(optionContext)) {
-      filePath = new File(value);
-    }
-    return filePath;
+    return new File(value);
   }
 
   @Override
   public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
       String existingData, String optionContext, MethodTarget target) {
-    // prefix is needed while comparing Completion Candidates as potential matches
-    String prefixToUse = "";
-    boolean prependAbsolute = true;
-    File parentDir = null; // directory to be searched for file(s)
-
-    if (existingData != null) {
-      // System.out.println("FilePathConverter.getAllPossibleValues() : optionContext ::
-      // "+optionContext+", existingData : "+existingData);
-      String[] completionValues = new String[0];
-
-      if (ConverterHint.FILE.equals(optionContext)) {
-        // if existingData is empty, start from root
-        if (existingData != null && existingData.trim().isEmpty()) {
-          File[] listRoots = File.listRoots();
-          completionValues = new String[listRoots.length];
-          for (int i = 0; i < listRoots.length; i++) {
-            completionValues[i] = listRoots[i].getPath();
-          }
-          prefixToUse = File.separator;
-        } else {
-          // Create a file from existing data
-          File file = new File(existingData);
-          if (file.isDirectory()) {
-            // For a directory, list files/sub-dirsin the directory
-            parentDir = file;
-            completionValues = parentDir.list();
-          } else if (!file.exists()) {
-            parentDir = file.getParentFile();
-            if (parentDir == null) {
-              try {
-                parentDir = file.getCanonicalFile().getParentFile();
-              } catch (IOException e) {
-                parentDir = null;
-              }
-            }
-            if (parentDir != null) {
-              completionValues = parentDir.list(new FileNameFilterImpl(parentDir, file.getName()));
-            }
-          }
-          // whether the file path is absolute
-          prependAbsolute = file.isAbsolute();
-        }
-      }
-
-      if (completionValues.length > 0) {
-        // use directory path as prefix for completion of names of the contained files
-        if (parentDir != null) {
-          if (existingData.startsWith(".")) { // handle . & ..
-            prefixToUse = parentDir.getPath();
-          } else if (prependAbsolute) {
-            prefixToUse = parentDir.getAbsolutePath();
-          }
-        }
-        // add File.separator in the end
-        if (!prefixToUse.endsWith(File.separator)
-            && (prependAbsolute || existingData.startsWith("."))) {
-          prefixToUse += File.separator;
-        }
-        for (int i = 0; i < completionValues.length; i++) {
-          completions.add(new Completion(prefixToUse + completionValues[i]));
-        }
-      }
-    }
-
-    return !completions.isEmpty();
+    return delegate.getAllPossibleValues(completions, targetType, existingData, optionContext,
+        target);
   }
 
-  class FileNameFilterImpl implements FilenameFilter {
-    private File parentDirectory;
-    private String userInput;
-
-    public FileNameFilterImpl(File parentDirectory, String userInput) {
-      this.parentDirectory = parentDirectory;
-      this.userInput = userInput;
-    }
-
-    @Override
-    public boolean accept(File dir, String name) {
-      return parentDirectory.equals(dir) && name.startsWith(userInput);
-    }
-  }
 
 }

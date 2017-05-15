@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.converters.ArrayConverter;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Completion;
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,17 +47,12 @@ public class GfshParser extends SimpleParser {
   public static final String COMMAND_DELIMITER = ";";
   public static final String CONTINUATION_CHARACTER = "\\";
 
-  // Make use of LogWrapper
-  private static final LogWrapper logWrapper = LogWrapper.getInstance();
-  private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   // pattern used to split the user input with whitespaces except those in quotes (single or double)
   private static Pattern PATTERN =
       Pattern.compile("\\s*([^\\s']*)'([^']*)'\\s+|\\s*([^\\s\"]*)\"([^\"]*)\"\\s+|\\S+");
-  /**
-   * Used for warning messages
-   */
-  private Logger consoleLogger;
+
 
   private CommandManager commandManager = null;
 
@@ -66,12 +61,6 @@ public class GfshParser extends SimpleParser {
   }
 
   public GfshParser(Properties cacheProperties) {
-    if (CliUtil.isGfshVM()) {
-      consoleLogger = Logger.getLogger(this.getClass().getCanonicalName());
-    } else {
-      consoleLogger = logWrapper.getLogger();
-    }
-
     this.commandManager = new CommandManager(cacheProperties);
 
     for (CommandMarker command : commandManager.getCommandMarkers()) {
@@ -282,7 +271,9 @@ public class GfshParser extends SimpleParser {
       // strip off the beginning part of the candidates from the cursor point
       potentials.replaceAll(
           completion -> new Completion(completion.getValue().substring(candidateBeginAt)));
-    } else {
+    }
+    // if the completed values are option, and the userInput doesn't ends with an "=" sign,
+    else if (!userInput.endsWith("=")) {
       // these potentials do not have "=" in front of them, manually add them
       potentials.replaceAll(completion -> new Completion("=" + completion.getValue()));
     }
@@ -321,17 +312,5 @@ public class GfshParser extends SimpleParser {
     // trimming the candidates
     candidates.replaceAll(completion -> new Completion(completion.getValue().trim()));
     return candidates;
-  }
-
-  @Override
-  public void obtainHelp(String command) {
-    if (StringUtils.isBlank(command))
-      super.obtainHelp(command);
-    else
-      consoleLogger.info(commandManager.obtainHelp(command));
-  }
-
-  public void obtainHint(String topic) {
-    consoleLogger.info(commandManager.obtainHint(topic));
   }
 }

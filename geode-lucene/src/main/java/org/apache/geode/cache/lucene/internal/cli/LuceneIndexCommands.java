@@ -172,7 +172,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__REGION_HELP) final String regionPath,
 
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, mandatory = true,
@@ -231,7 +231,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
           help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__REGION_HELP) final String regionPath) {
     try {
       LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath);
@@ -270,7 +270,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__REGION_HELP) final String regionPath,
 
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, mandatory = true,
@@ -323,7 +323,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
           help = LuceneCliStrings.LUCENE_DESTROY_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_DESTROY_INDEX__REGION_HELP) final String regionPath) {
     if (StringUtils.isBlank(regionPath) || regionPath.equals(Region.SEPARATOR)) {
       return ResultBuilder.createInfoResult(

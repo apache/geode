@@ -294,7 +294,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createDiskStore(
       @CliOption(key = CliStrings.CREATE_DISK_STORE__NAME, mandatory = true,
-          optionContext = ConverterHint.DISKSTORE_ALL,
+          optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.CREATE_DISK_STORE__NAME__HELP) String name,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
@@ -418,7 +418,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result compactDiskStore(
       @CliOption(key = CliStrings.COMPACT_DISK_STORE__NAME, mandatory = true,
-          optionContext = ConverterHint.DISKSTORE_ALL,
+          optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.COMPACT_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.COMPACT_DISK_STORE__GROUP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -872,7 +872,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESCRIBE_DISK_STORE__MEMBER__HELP) final String memberName,
       @CliOption(key = CliStrings.DESCRIBE_DISK_STORE__NAME, mandatory = true,
-          optionContext = ConverterHint.DISKSTORE_ALL,
+          optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.DESCRIBE_DISK_STORE__NAME__HELP) final String diskStoreName) {
     try {
       return toCompositeResult(getDiskStoreDescription(memberName, diskStoreName));

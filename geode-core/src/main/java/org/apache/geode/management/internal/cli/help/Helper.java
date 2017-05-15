@@ -59,6 +59,8 @@ public class Helper {
   static final String VALUE_FIELD = "value";
   static final String TRUE_TOKEN = "true";
   static final String FALSE_TOKEN = "false";
+  static final String AVAILABLE = "Available";
+  static final String NOT_AVAILABLE = "Not Available";
 
   private final Map<String, Topic> topics = new HashMap<>();
   private final Map<String, Method> commands = new TreeMap<String, Method>();
@@ -123,12 +125,23 @@ public class Helper {
     });
   }
 
+  /**
+   * get help string for a specific command, or a brief description of all the commands if buffer is
+   * null or empty
+   */
   public String getHelp(String buffer, int terminalWidth) {
+    if (StringUtils.isBlank(buffer)) {
+      return getHelp().toString(terminalWidth);
+    }
+
     Method method = commands.get(buffer);
     if (method == null) {
       return "no help exists for this command.";
     }
-    return getHelp(method).toString(terminalWidth);
+
+    HelpBlock helpBlock = getHelp(method.getDeclaredAnnotation(CliCommand.class),
+        method.getParameterAnnotations(), method.getParameterTypes());
+    return helpBlock.toString(terminalWidth);
   }
 
   public String getHint(String buffer) {
@@ -157,13 +170,45 @@ public class Helper {
     return builder.toString();
   }
 
-  private HelpBlock getHelp(Method method) {
-    return getHelp(method.getDeclaredAnnotation(CliCommand.class), method.getParameterAnnotations(),
-        method.getParameterTypes());
+  public Set<String> getTopicNames() {
+    return topics.keySet();
   }
 
+  boolean isAvailable(String command) {
+    MethodTarget target = availabilityIndicators.get(command);
+    if (target == null) {
+      return true;
+    }
+    try {
+      return (Boolean) target.getMethod().invoke(target.getTarget());
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  HelpBlock getHelp() {
+    HelpBlock root = new HelpBlock();
+    commands.keySet().stream().sorted().map(commands::get).forEach(method -> {
+      root.addChild(getHelp(method.getDeclaredAnnotation(CliCommand.class), null, null));
+    });
+    return root;
+  }
+
+  /**
+   * returns a short description and help string of the command if annotations is null or returns a
+   * details description of the command with the syntax and parameter description
+   */
   HelpBlock getHelp(CliCommand cliCommand, Annotation[][] annotations, Class<?>[] parameterTypes) {
     String commandName = cliCommand.value()[0];
+    boolean isAvailable = isAvailable(commandName);
+
+    if (annotations == null && parameterTypes == null) {
+      String available = isAvailable ? AVAILABLE : NOT_AVAILABLE;
+      HelpBlock help = new HelpBlock(commandName + " (" + available + ")");
+      help.addChild(new HelpBlock(cliCommand.help()));
+      return help;
+    }
+
     HelpBlock root = new HelpBlock();
     // First we will have the block for NAME of the command
     HelpBlock name = new HelpBlock(NAME_NAME);
@@ -172,15 +217,7 @@ public class Helper {
 
     // add the availability flag
     HelpBlock availability = new HelpBlock(IS_AVAILABLE_NAME);
-    boolean available = true;
-    MethodTarget target = availabilityIndicators.get(commandName);
-    if (target != null) {
-      try {
-        available = (Boolean) target.getMethod().invoke(target.getTarget());
-      } catch (Exception e) {
-      }
-    }
-    availability.addChild(new HelpBlock(available + ""));
+    availability.addChild(new HelpBlock(isAvailable + ""));
     root.addChild(availability);
 
     // Now add synonyms if any

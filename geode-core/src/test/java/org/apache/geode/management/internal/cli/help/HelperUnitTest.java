@@ -69,7 +69,7 @@ public class HelperUnitTest {
   }
 
   @Test
-  public void testGetHelp() {
+  public void testGetLongHelp() {
     HelpBlock helpBlock = helper.getHelp(cliCommand, annotations, parameterType);
     String[] helpLines = helpBlock.toString().split("\n");
     assertThat(helpLines.length).isEqualTo(14);
@@ -79,6 +79,15 @@ public class HelperUnitTest {
     assertThat(helpLines[6]).isEqualTo(Helper.SYNOPSIS_NAME);
     assertThat(helpLines[8]).isEqualTo(Helper.SYNTAX_NAME);
     assertThat(helpLines[10]).isEqualTo(Helper.OPTIONS_NAME);
+  }
+
+  @Test
+  public void testGetShortHelp() {
+    HelpBlock helpBlock = helper.getHelp(cliCommand, null, null);
+    String[] helpLines = helpBlock.toString().split("\n");
+    assertThat(helpLines.length).isEqualTo(2);
+    assertThat(helpLines[0]).isEqualTo("test (Available)");
+    assertThat(helpLines[1]).isEqualTo("This is a test description");
   }
 
   @Test

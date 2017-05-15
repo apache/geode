@@ -181,7 +181,7 @@ public class IndexCommands extends AbstractCommandsSupport {
           help = CliStrings.CREATE_INDEX__EXPRESSION__HELP) final String indexedExpression,
 
       @CliOption(key = CliStrings.CREATE_INDEX__REGION, mandatory = true,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_INDEX__REGION__HELP) String regionPath,
 
       @CliOption(key = CliStrings.CREATE_INDEX__MEMBER, mandatory = false,
@@ -330,7 +330,7 @@ public class IndexCommands extends AbstractCommandsSupport {
       help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = CliStrings.DESTROY_INDEX__REGION, mandatory = false,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESTROY_INDEX__REGION__HELP) final String regionPath,
 
       @CliOption(key = CliStrings.DESTROY_INDEX__MEMBER, mandatory = false,
@@ -472,7 +472,7 @@ public class IndexCommands extends AbstractCommandsSupport {
           help = CliStrings.DEFINE_INDEX__EXPRESSION__HELP) final String indexedExpression,
 
       @CliOption(key = CliStrings.DEFINE_INDEX__REGION, mandatory = true,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DEFINE_INDEX__REGION__HELP) String regionPath,
 
       @CliOption(key = CliStrings.DEFINE_INDEX__TYPE, mandatory = false,

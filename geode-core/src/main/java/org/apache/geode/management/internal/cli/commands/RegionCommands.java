@@ -154,7 +154,7 @@ public class RegionCommands implements CommandMarker {
       relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeRegion(
-      @CliOption(key = CliStrings.DESCRIBE_REGION__NAME, optionContext = ConverterHint.REGIONPATH,
+      @CliOption(key = CliStrings.DESCRIBE_REGION__NAME, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESCRIBE_REGION__NAME__HELP, mandatory = true) String regionName) {
 
     Result result = null;

@@ -15,29 +15,27 @@
 package org.apache.geode.management.internal.cli.converters;
 
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.CommandManagerAware;
+import org.apache.geode.management.internal.cli.help.Helper;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * 
- * 
  * @since GemFire 7.0
  */
-public class DiskStoreNameConverter implements Converter<String> {
+public class HintTopicConverter implements Converter<String>, CommandManagerAware {
+
+  private CommandManager commandManager;
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && optionContext.contains(ConverterHint.DISKSTORE);
+    return String.class.equals(type) && optionContext.contains(ConverterHint.HINT);
   }
 
   @Override
@@ -48,39 +46,30 @@ public class DiskStoreNameConverter implements Converter<String> {
   @Override
   public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
       String existingData, String optionContext, MethodTarget target) {
-    Set<String> diskStoreNames = getDiskStoreNames();
+    Helper helper = commandManager.getHelper();
+    Set<String> topicNames = helper.getTopicNames();
 
-    for (String diskStoreName : diskStoreNames) {
-      if (existingData != null) {
-        if (diskStoreName.startsWith(existingData)) {
-          completions.add(new Completion(diskStoreName));
+    for (String topicName : topicNames) {
+      if (existingData != null && !existingData.isEmpty()) {
+        if (topicName.startsWith(existingData)) { // match exact case
+          completions.add(new Completion(topicName));
+        } else if (topicName.toLowerCase().startsWith(existingData.toLowerCase())) { // match
+          // case
+          // insensitive
+          String completionStr = existingData + topicName.substring(existingData.length());
+
+          completions.add(new Completion(completionStr));
         }
       } else {
-        completions.add(new Completion(diskStoreName));
+        completions.add(new Completion(topicName));
       }
     }
 
     return !completions.isEmpty();
   }
 
-  public Set<String> getDiskStoreNames() {
-    SortedSet<String> diskStoreNames = new TreeSet<String>();
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh != null && gfsh.isConnectedAndReady()) { // gfsh exists & is not null
-      Map<String, String[]> diskStoreInfo =
-          gfsh.getOperationInvoker().getDistributedSystemMXBean().listMemberDiskstore();
-      if (diskStoreInfo != null) {
-        Set<Entry<String, String[]>> entries = diskStoreInfo.entrySet();
-        for (Entry<String, String[]> entry : entries) {
-          String[] value = entry.getValue();
-          if (value != null) {
-            diskStoreNames.addAll(Arrays.asList(value));
-          }
-        }
-      }
-    }
-
-    return diskStoreNames;
+  @Override
+  public void setCommandManager(CommandManager commandManager) {
+    this.commandManager = commandManager;
   }
-
 }

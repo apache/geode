@@ -119,7 +119,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__REGIONSHORTCUT__HELP) RegionShortcut regionShortcut,
       @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String useAttributesFrom,
       @CliOption(key = CliStrings.CREATE_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
@@ -140,7 +140,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CREATE_REGION__CACHEWRITER,
           help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) String cacheWriter,
       @CliOption(key = CliStrings.CREATE_REGION__COLOCATEDWITH,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP) String prColocatedWith,
       @CliOption(key = CliStrings.CREATE_REGION__COMPRESSOR,
@@ -1036,7 +1036,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result destroyRegion(
-      @CliOption(key = CliStrings.DESTROY_REGION__REGION, optionContext = ConverterHint.REGIONPATH,
+      @CliOption(key = CliStrings.DESTROY_REGION__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.DESTROY_REGION__REGION__HELP) String regionPath) {
 
     if (regionPath == null) {

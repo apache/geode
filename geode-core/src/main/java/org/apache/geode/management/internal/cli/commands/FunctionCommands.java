@@ -94,7 +94,7 @@ public class FunctionCommands implements CommandMarker {
           help = CliStrings.EXECUTE_FUNCTION__ONMEMBER__HELP) String onMember,
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONREGION,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.EXECUTE_FUNCTION__ONREGION__HELP) String onRegion,
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ARGUMENTS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,

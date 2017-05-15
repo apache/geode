@@ -775,7 +775,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   public Result exportData(
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true,
-          optionContext = ConverterHint.REGIONPATH,
+          optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.EXPORT_DATA__FILE,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true,
@@ -832,7 +832,7 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   public Result importData(
-      @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGIONPATH,
+      @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -900,7 +900,7 @@ public class DataCommands implements CommandMarker {
           help = CliStrings.PUT__VALUE__HELP) String value,
       @CliOption(key = {CliStrings.PUT__REGIONNAME}, mandatory = true,
           help = CliStrings.PUT__REGIONNAME__HELP,
-          optionContext = ConverterHint.REGIONPATH) String regionPath,
+          optionContext = ConverterHint.REGION_PATH) String regionPath,
       @CliOption(key = {CliStrings.PUT__KEYCLASS},
           help = CliStrings.PUT__KEYCLASS__HELP) String keyClass,
       @CliOption(key = {CliStrings.PUT__VALUEKLASS},
@@ -968,7 +968,7 @@ public class DataCommands implements CommandMarker {
           help = CliStrings.GET__KEY__HELP) String key,
       @CliOption(key = {CliStrings.GET__REGIONNAME}, mandatory = true,
           help = CliStrings.GET__REGIONNAME__HELP,
-          optionContext = ConverterHint.REGIONPATH) String regionPath,
+          optionContext = ConverterHint.REGION_PATH) String regionPath,
       @CliOption(key = {CliStrings.GET__KEYCLASS},
           help = CliStrings.GET__KEYCLASS__HELP) String keyClass,
       @CliOption(key = {CliStrings.GET__VALUEKLASS},
@@ -1031,7 +1031,7 @@ public class DataCommands implements CommandMarker {
           help = CliStrings.LOCATE_ENTRY__KEY__HELP) String key,
       @CliOption(key = {CliStrings.LOCATE_ENTRY__REGIONNAME}, mandatory = true,
           help = CliStrings.LOCATE_ENTRY__REGIONNAME__HELP,
-          optionContext = ConverterHint.REGIONPATH) String regionPath,
+          optionContext = ConverterHint.REGION_PATH) String regionPath,
       @CliOption(key = {CliStrings.LOCATE_ENTRY__KEYCLASS},
           help = CliStrings.LOCATE_ENTRY__KEYCLASS__HELP) String keyClass,
       @CliOption(key = {CliStrings.LOCATE_ENTRY__VALUEKLASS},
@@ -1083,7 +1083,7 @@ public class DataCommands implements CommandMarker {
           specifiedDefaultValue = "") String key,
       @CliOption(key = {CliStrings.REMOVE__REGION}, mandatory = true,
           help = CliStrings.REMOVE__REGION__HELP,
-          optionContext = ConverterHint.REGIONPATH) String regionPath,
+          optionContext = ConverterHint.REGION_PATH) String regionPath,
       @CliOption(key = CliStrings.REMOVE__ALL, help = CliStrings.REMOVE__ALL__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean removeAllKeys,
       @CliOption(key = {CliStrings.REMOVE__KEYCLASS},
