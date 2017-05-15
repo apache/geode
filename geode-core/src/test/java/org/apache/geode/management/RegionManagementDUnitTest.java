@@ -47,6 +47,7 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.After;
@@ -231,6 +232,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
    * Tests a Distributed Region at Managing Node side while region is created in a member node
    * asynchronously.
    */
+  @Category(FlakyTest.class) // GEODE-1930
   @Test
   public void testRegionAggregate() throws Exception {
     createManagersAndThenMembers_tmp();
@@ -310,6 +312,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
     verifySpecialRegion(this.managerVM);
   }
 
+  @Category(FlakyTest.class) // GEODE-1930
   @Test
   public void testLruStats() throws Exception {
     createMembersAndThenManagers_tmp();
