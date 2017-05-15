@@ -15,10 +15,69 @@
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import static org.apache.geode.distributed.internal.membership.gms.GMSUtil.replaceStrings;
-import static org.apache.geode.internal.DataSerializableFixedID.JOIN_REQUEST;
-import static org.apache.geode.internal.DataSerializableFixedID.JOIN_RESPONSE;
 import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
 import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
+import static org.apache.geode.internal.DataSerializableFixedID.JOIN_REQUEST;
+import static org.apache.geode.internal.DataSerializableFixedID.JOIN_RESPONSE;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.internal.cache.DistributedCacheOperation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.tcp.MemberShunnedException;
+import org.apache.logging.log4j.Logger;
+import org.jgroups.Address;
+import org.jgroups.Event;
+import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.Message.Flag;
+import org.jgroups.Message.TransientFlag;
+import org.jgroups.ReceiverAdapter;
+import org.jgroups.View;
+import org.jgroups.ViewId;
+import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.UDP;
+import org.jgroups.protocols.pbcast.NAKACK2;
+import org.jgroups.protocols.pbcast.NakAckHeader2;
+import org.jgroups.stack.IpAddress;
+import org.jgroups.util.Digest;
+import org.jgroups.util.UUID;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -44,60 +103,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.Logger;
-import org.jgroups.Address;
-import org.jgroups.Event;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.Message.Flag;
-import org.jgroups.Message.TransientFlag;
-import org.jgroups.ReceiverAdapter;
-import org.jgroups.View;
-import org.jgroups.ViewId;
-import org.jgroups.conf.ClassConfigurator;
-import org.jgroups.protocols.UDP;
-import org.jgroups.protocols.pbcast.NAKACK2;
-import org.jgroups.stack.IpAddress;
-import org.jgroups.util.Digest;
-import org.jgroups.util.UUID;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.SystemConnectException;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
-import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
-import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
-import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.cache.DirectReplyMessage;
-import org.apache.geode.internal.cache.DistributedCacheOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.tcp.MemberShunnedException;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 
 @SuppressWarnings("StatementWithEmptyBody")
@@ -138,6 +143,11 @@ public class JGroupsMessenger implements Messenger {
   private final GMSPingPonger pingPonger = new GMSPingPonger();
 
   protected final AtomicLong pongsReceived = new AtomicLong(0);
+
+  /** tracks multicast messages that have been scheduled for processing */
+  protected final Map<DistributedMember, MessageTracker> scheduledMcastSeqnos = new HashMap<>();
+
+  protected short nackack2HeaderId;
 
   /**
    * A set that contains addresses that we have logged JGroups IOExceptions for in the current
@@ -323,6 +333,8 @@ public class JGroupsMessenger implements Messenger {
     Transport transport = (Transport) myChannel.getProtocolStack().getTransport();
     transport.setMessenger(this);
 
+    nackack2HeaderId = ClassConfigurator.getProtocolId(NAKACK2.class);
+
     try {
       myChannel.setReceiver(null);
       myChannel.setReceiver(new JGroupsReceiver());
@@ -400,6 +412,14 @@ public class JGroupsMessenger implements Messenger {
     addressesWithIoExceptionsProcessed.clear();
     if (encrypt != null) {
       encrypt.installView(v);
+    }
+    synchronized (scheduledMcastSeqnos) {
+      for (DistributedMember mbr : v.getCrashedMembers()) {
+        scheduledMcastSeqnos.remove(mbr);
+      }
+      for (DistributedMember mbr : v.getShutdownMembers()) {
+        scheduledMcastSeqnos.remove(mbr);
+      }
     }
   }
 
@@ -556,48 +576,39 @@ public class JGroupsMessenger implements Messenger {
   @Override
   public void waitForMessageState(InternalDistributedMember sender, Map state)
       throws InterruptedException {
-    NAKACK2 nakack = (NAKACK2) myChannel.getProtocolStack().findProtocol("NAKACK2");
     Long seqno = (Long) state.get("JGroups.mcastState");
-    if (nakack != null && seqno != null) {
-      waitForMessageState(nakack, sender, seqno);
+    if (seqno == null) {
+      return;
     }
-  }
-
-  /**
-   * wait for the mcast state from the given member to reach the given seqno
-   */
-  protected void waitForMessageState(NAKACK2 nakack, InternalDistributedMember sender, Long seqno)
-      throws InterruptedException {
     long timeout = services.getConfig().getDistributionConfig().getAckWaitThreshold() * 1000L;
     long startTime = System.currentTimeMillis();
     long warnTime = startTime + timeout;
     long quitTime = warnTime + timeout - 1000L;
     boolean warned = false;
 
-    JGAddress jgSender = new JGAddress(sender);
-
     for (;;) {
-      Digest digest = nakack.getDigest(jgSender);
-      if (digest == null) {
-        return;
-      }
       String received = "none";
-      long[] senderSeqnos = digest.get(jgSender);
-      if (senderSeqnos == null) {
-        break;
+      long highSeqno = 0;
+      synchronized (scheduledMcastSeqnos) {
+        MessageTracker tracker = scheduledMcastSeqnos.get(sender);
+        if (tracker == null) { // no longer in the membership view
+          break;
+        }
+        highSeqno = tracker.get();
       }
+
       if (logger.isDebugEnabled()) {
         logger.debug(
             "waiting for multicast messages from {}.  Current seqno={} and expected seqno={}",
-            sender, senderSeqnos[0], seqno);
+            sender, highSeqno, seqno);
       }
-      if (senderSeqnos[0] >= seqno.longValue()) {
+      if (highSeqno >= seqno.longValue()) {
         break;
       }
       long now = System.currentTimeMillis();
       if (!warned && now >= warnTime) {
         warned = true;
-        received = String.valueOf(senderSeqnos[0]);
+        received = String.valueOf(highSeqno);
         logger.warn(
             "{} seconds have elapsed while waiting for multicast messages from {}.  Received {} but expecting at least {}.",
             Long.toString((warnTime - startTime) / 1000L), sender, received, seqno);
@@ -931,18 +942,17 @@ public class JGroupsMessenger implements Messenger {
   }
 
   void setMessageFlags(DistributionMessage gfmsg, Message msg) {
-    // GemFire uses its own reply processors so there is no need
-    // to maintain message order
-    msg.setFlag(Flag.OOB);
     // Bundling is mostly only useful if we're doing no-ack work,
     // which is fairly rare
     msg.setFlag(Flag.DONT_BUNDLE);
 
     if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
         || gfmsg instanceof HighPriorityDistributionMessage || AlertAppender.isThreadAlerting()) {
+      msg.setFlag(Flag.OOB);
       msg.setFlag(Flag.NO_FC);
       msg.setFlag(Flag.SKIP_BARRIER);
     }
+
     if (gfmsg instanceof DistributedCacheOperation.CacheOperationMessage) {
       // we don't want to see our own cache operation messages
       msg.setTransientFlag(Message.TransientFlag.DONT_LOOPBACK);
@@ -1281,15 +1291,37 @@ public class JGroupsMessenger implements Messenger {
         msg.setBytesRead(jgmsg.getLength());
 
         try {
-          logger.trace("JGroupsMessenger dispatching {} from {}", msg, msg.getSender());
+
+          if (logger.isTraceEnabled()) {
+            logger.trace("JGroupsMessenger dispatching {} from {}", msg, msg.getSender());
+          }
           filterIncomingMessage(msg);
           getMessageHandler(msg).processMessage(msg);
+
+          // record the scheduling of broadcast messages
+          NakAckHeader2 header = (NakAckHeader2) jgmsg.getHeader(nackack2HeaderId);
+          if (header != null && !jgmsg.isFlagSet(Flag.OOB)) {
+            recordScheduledSeqno(msg.getSender(), header.getSeqno());
+          }
+
         } catch (MemberShunnedException e) {
           // message from non-member - ignore
         }
+
       } finally {
         long delta = DistributionStats.getStatTime() - startTime;
         JGroupsMessenger.this.services.getStatistics().incUDPDispatchRequestTime(delta);
+      }
+    }
+
+    private void recordScheduledSeqno(DistributedMember member, long seqno) {
+      synchronized (scheduledMcastSeqnos) {
+        MessageTracker counter = scheduledMcastSeqnos.get(member);
+        if (counter == null) {
+          counter = new MessageTracker(seqno);
+          scheduledMcastSeqnos.put(member, counter);
+        }
+        counter.record(seqno);
       }
     }
 
@@ -1380,6 +1412,24 @@ public class JGroupsMessenger implements Messenger {
         encrypt.initClusterSecretKey();
       } catch (Exception e) {
         throw new RuntimeException("unable to create cluster key ", e);
+      }
+    }
+  }
+
+  static class MessageTracker {
+    long highestSeqno;
+
+    MessageTracker(long seqno) {
+      highestSeqno = seqno;
+    }
+
+    long get() {
+      return highestSeqno;
+    }
+
+    void record(long seqno) {
+      if (seqno > highestSeqno) {
+        highestSeqno = seqno;
       }
     }
   }

@@ -440,7 +440,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
   public static void startLocatorInVM(final int locatorPort) {
 
-    File logFile = new File("locator-" + locatorPort + ".log");
+    File logFile = new File("");
 
     Properties props = new Properties();
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");

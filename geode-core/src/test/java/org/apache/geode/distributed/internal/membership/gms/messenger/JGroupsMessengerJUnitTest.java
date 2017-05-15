@@ -896,18 +896,19 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testWaitForMessageStateSucceeds() throws Exception {
     initMocks(true/* multicast */);
-    NAKACK2 nakack = mock(NAKACK2.class);
-    Digest digest = mock(Digest.class);
-    when(nakack.getDigest(any(Address.class))).thenReturn(digest);
-    when(digest.get(any(Address.class))).thenReturn(new long[] {0, 0}, new long[] {2, 50},
-        new long[] {49, 50}, new long[] {50, 80}, new long[] {80, 120});
-    messenger.waitForMessageState(nakack, createAddress(1234), Long.valueOf(50));
-    verify(digest, times(4)).get(isA(Address.class));
+    JGroupsMessenger.MessageTracker tracker = mock(JGroupsMessenger.MessageTracker.class);
+    InternalDistributedMember mbr = createAddress(1234);
+    messenger.scheduledMcastSeqnos.put(mbr, tracker);
+    when(tracker.get()).thenReturn(0l, 2l, 49l, 50l, 80l);
+    Map state = new HashMap();
+    state.put("JGroups.mcastState", Long.valueOf(50));
+    messenger.waitForMessageState(mbr, state);
+    verify(tracker, times(4)).get();
 
-    reset(digest);
-    when(digest.get(any(Address.class))).thenReturn(new long[] {0, 0}, new long[] {2, 50}, null);
-    messenger.waitForMessageState(nakack, createAddress(1234), Long.valueOf(50));
-    verify(digest, times(3)).get(isA(Address.class));
+    reset(tracker);
+    when(tracker.get()).thenReturn(0l, 2l, 60l);
+    messenger.waitForMessageState(mbr, state);
+    verify(tracker, times(3)).get();
   }
 
   @Test
@@ -920,7 +921,11 @@ public class JGroupsMessengerJUnitTest {
         new long[] {49, 50});
     try {
       // message 50 will never arrive
-      messenger.waitForMessageState(nakack, createAddress(1234), Long.valueOf(50));
+      Map state = new HashMap();
+      state.put("JGroups.mcastState", Long.valueOf(50));
+      InternalDistributedMember mbr = createAddress(1234);
+      messenger.scheduledMcastSeqnos.put(mbr, new JGroupsMessenger.MessageTracker(30));
+      messenger.waitForMessageState(mbr, state);
       fail("expected a GemFireIOException to be thrown");
     } catch (GemFireIOException e) {
       // pass

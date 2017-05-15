@@ -28,6 +28,7 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -109,7 +110,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     // schedule a message in order to create a queue for the fake member
     DistributionManager distributionManager = (DistributionManager) system.getDistributionManager();
-    FakeMessage message = new FakeMessage(null);
+    final FakeMessage message = new FakeMessage(null);
 
     distributionManager.getExecutor(SERIAL_EXECUTOR, member).execute(new SizeableRunnable(100) {
 
@@ -124,10 +125,9 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    // TODO: assert that queue was created or this test is just broken
-
-    assertThat(distributionManager.getMembershipManager().waitForDeparture(member))
-        .as("expected the serial queue to be flushed").isTrue();
+    Assert.assertTrue("expected the serial queue to be flushed",
+        distributionManager.getMembershipManager().waitForDeparture(member));
+    Assert.assertTrue(message.processed);
   }
 
   /**

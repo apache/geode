@@ -2199,6 +2199,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       dc.waitForChannelState(otherMember, state);
     }
     services.getMessenger().waitForMessageState((InternalDistributedMember) otherMember, state);
+
+    if (services.getConfig().getTransport().isMcastEnabled()
+        && !services.getConfig().getDistributionConfig().getDisableTcp()) {
+      // GEODE-2865: wait for scheduled multicast messages to be applied to the cache
+      waitForSerialMessageProcessing((InternalDistributedMember) otherMember);
+    }
   }
 
   /*
@@ -2242,27 +2248,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         }
       }
       if (!wait) {
-        // run a message through the member's serial execution queue to ensure that all of its
-        // current messages have been processed
-        OverflowQueueWithDMStats serialQueue = listener.getDM().getSerialQueue(idm);
-        if (serialQueue != null) {
-          final boolean done[] = new boolean[1];
-          final FlushingMessage msg = new FlushingMessage(done);
-          serialQueue.add(new SizeableRunnable(100) {
-            public void run() {
-              msg.invoke();
-            }
-
-            public String toString() {
-              return "Processing fake message";
-            }
-          });
-          synchronized (done) {
-            while (!done[0]) {
-              done.wait(10);
-            }
-            result = true;
-          }
+        if (waitForSerialMessageProcessing(idm)) {
+          result = true;
         }
       }
       if (wait) {
@@ -2277,6 +2264,37 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         && !services.getCancelCriterion().isCancelInProgress());
     if (logger.isDebugEnabled()) {
       logger.debug("operations for {} should all be in the cache at this point", mbr);
+    }
+    return result;
+  }
+
+  /**
+   * wait for serial executor messages from the given member to be processed
+   */
+  public boolean waitForSerialMessageProcessing(InternalDistributedMember idm)
+      throws InterruptedException {
+    // run a message through the member's serial execution queue to ensure that all of its
+    // current messages have been processed
+    boolean result = false;
+    OverflowQueueWithDMStats serialQueue = listener.getDM().getSerialQueue(idm);
+    if (serialQueue != null) {
+      final boolean done[] = new boolean[1];
+      final FlushingMessage msg = new FlushingMessage(done);
+      serialQueue.add(new SizeableRunnable(100) {
+        public void run() {
+          msg.invoke();
+        }
+
+        public String toString() {
+          return "Processing fake message";
+        }
+      });
+      synchronized (done) {
+        while (!done[0]) {
+          done.wait(10);
+        }
+        result = true;
+      }
     }
     return result;
   }
