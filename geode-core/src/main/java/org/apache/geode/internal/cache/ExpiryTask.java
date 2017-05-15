@@ -107,7 +107,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Return the absolute time when TTL expiration occurs, or 0 if not used */
-  public final long getTTLExpirationTime() throws EntryNotFoundException {
+  public long getTTLExpirationTime() throws EntryNotFoundException {
     long ttl = getTTLAttributes().getTimeout();
     long tilt = 0;
     if (ttl > 0) {
@@ -120,7 +120,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Return the absolute time when idle expiration occurs, or 0 if not used */
-  public final long getIdleExpirationTime() throws EntryNotFoundException {
+  public long getIdleExpirationTime() throws EntryNotFoundException {
     long idle = getIdleAttributes().getTimeout();
     long tilt = 0;
     if (idle > 0) {
@@ -136,7 +136,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * Returns the number of milliseconds until this task should expire. The return value will never
    * be negative.
    */
-  final long getExpiryMillis() throws EntryNotFoundException {
+  long getExpiryMillis() throws EntryNotFoundException {
     long extm = getExpirationTime() - getNow();
     if (extm < 0L)
       return 0L;
@@ -185,13 +185,13 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * 
    * @since GemFire 5.0
    */
-  public final static void suspendExpiration() {
+  public static void suspendExpiration() {
     synchronized (suspendLock) {
       expirationSuspended = true;
     }
   }
 
-  public final static void permitExpiration() {
+  public static void permitExpiration() {
     synchronized (suspendLock) {
       expirationSuspended = false;
       suspendLock.notifyAll();
@@ -204,7 +204,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * 
    * @since GemFire 5.0
    */
-  private final void waitOnExpirationSuspension() {
+  private void waitOnExpirationSuspension() {
     for (;;) {
       getLocalRegion().getCancelCriterion().checkCancelInProgress(null);
       synchronized (suspendLock) {
@@ -227,7 +227,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     } // for
   }
 
-  protected final boolean expire(boolean isPending) throws CacheException {
+  protected boolean expire(boolean isPending) throws CacheException {
     ExpirationAction action = getAction();
     if (action == null)
       return false;
@@ -268,12 +268,12 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     return action != null && (action.isInvalidate() || action.isDestroy());
   }
 
-  final LocalRegion getLocalRegion() {
+  LocalRegion getLocalRegion() {
     return this.region;
   }
 
 
-  protected final boolean expire(ExpirationAction action, boolean isPending) throws CacheException {
+  protected boolean expire(ExpirationAction action, boolean isPending) throws CacheException {
     if (action.isInvalidate())
       return invalidate();
     if (action.isDestroy())

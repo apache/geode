@@ -91,8 +91,7 @@ public abstract class OpenTypeConverter {
 
   private final Class openClass;
 
-  private static final class ConverterMap
-      extends WeakHashMap<Type, WeakReference<OpenTypeConverter>> {
+  private static class ConverterMap extends WeakHashMap<Type, WeakReference<OpenTypeConverter>> {
   }
 
   private static final ConverterMap converterMap = new ConverterMap();
@@ -118,7 +117,7 @@ public abstract class OpenTypeConverter {
    * @return the java type object
    * @throws InvalidObjectException
    */
-  public final Object fromOpenValue(Object value) throws InvalidObjectException {
+  public Object fromOpenValue(Object value) throws InvalidObjectException {
     if (value == null)
       return null;
     else
@@ -144,7 +143,7 @@ public abstract class OpenTypeConverter {
    * @return open class object
    * @throws OpenDataException
    */
-  final Object toOpenValue(Object value) throws OpenDataException {
+  Object toOpenValue(Object value) throws OpenDataException {
     if (value == null)
       return null;
     else
@@ -162,15 +161,15 @@ public abstract class OpenTypeConverter {
     return false;
   }
 
-  final Type getTargetType() {
+  Type getTargetType() {
     return targetType;
   }
 
-  final OpenType getOpenType() {
+  OpenType getOpenType() {
     return openType;
   }
 
-  final Class getOpenClass() {
+  Class getOpenClass() {
     return openClass;
   }
 
@@ -513,7 +512,7 @@ public abstract class OpenTypeConverter {
    * 
    * 
    */
-  protected static final class CompositeBuilderViaFrom extends CompositeBuilder {
+  protected static class CompositeBuilderViaFrom extends CompositeBuilder {
 
     CompositeBuilderViaFrom(Class targetClass, String[] itemNames) {
       super(targetClass, itemNames);
@@ -595,8 +594,7 @@ public abstract class OpenTypeConverter {
       return possibleCause;
     }
 
-    final Object fromCompositeData(CompositeData cd, String[] itemNames,
-        OpenTypeConverter[] converters) {
+    Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters) {
       throw new Error();
     }
 
@@ -669,7 +667,7 @@ public abstract class OpenTypeConverter {
    * 
    * 
    */
-  protected static final class CompositeBuilderViaConstructor extends CompositeBuilder {
+  protected static class CompositeBuilderViaConstructor extends CompositeBuilder {
 
     CompositeBuilderViaConstructor(Class targetClass, String[] itemNames) {
       super(targetClass, itemNames);
@@ -853,7 +851,7 @@ public abstract class OpenTypeConverter {
    * 
    * 
    */
-  protected static final class CompositeBuilderViaProxy extends CompositeBuilder {
+  protected static class CompositeBuilderViaProxy extends CompositeBuilder {
 
     CompositeBuilderViaProxy(Class targetClass, String[] itemNames) {
       super(targetClass, itemNames);

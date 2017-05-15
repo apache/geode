@@ -44,7 +44,7 @@ public class HeapLRUStatistics extends LRUStatistics {
    * @see EnableLRU#mustEvict
    */
   @Override
-  final public void updateCounter(long delta) {
+  public void updateCounter(long delta) {
     super.updateCounter(delta);
   }
 
@@ -54,7 +54,7 @@ public class HeapLRUStatistics extends LRUStatistics {
    * <b>NOT</b> reset the counter value.
    */
   @Override
-  final public void resetCounter() {
+  public void resetCounter() {
     super.resetCounter();
   }
 }

@@ -416,7 +416,7 @@ public abstract class StreamingOperation {
     }
   }
 
-  public static final class StreamingReplyMessage extends ReplyMessage {
+  public static class StreamingReplyMessage extends ReplyMessage {
 
     /** the number of this message */
     protected int msgNum;

@@ -461,8 +461,7 @@ public class AbstractSignalNotificationHandlerJUnitTest {
     // notification verification handled by mockContext.assertIsSatisfied in tearDown()
   }
 
-  private static final class TestSignalNotificationHandler
-      extends AbstractSignalNotificationHandler {
+  private static class TestSignalNotificationHandler extends AbstractSignalNotificationHandler {
   }
 
 }

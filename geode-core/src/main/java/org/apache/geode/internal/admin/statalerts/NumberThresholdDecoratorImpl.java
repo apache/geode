@@ -29,7 +29,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
  * Implementation of {@link StatAlertDefinition}, represents threshold as number
  * 
  */
-public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
+public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
     implements DataSerializableFixedID {
 
   private static final long serialVersionUID = -1799140125261894306L;

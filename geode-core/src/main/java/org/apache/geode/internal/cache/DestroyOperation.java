@@ -217,7 +217,7 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
   }
 
-  public static final class DestroyWithContextMessage extends DestroyMessage {
+  public static class DestroyWithContextMessage extends DestroyMessage {
     transient ClientProxyMembershipID context;
 
     public DestroyWithContextMessage() {}

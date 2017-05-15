@@ -26,7 +26,7 @@ import org.apache.geode.GemFireException;
  * @see org.apache.geode.GemFireException
  * @since GemFire 7.0
  */
-public final class ProcessTerminatedAbnormallyException extends GemFireException {
+public class ProcessTerminatedAbnormallyException extends GemFireException {
   private static final long serialVersionUID = -1181367425266595492L;
   private final int exitValue;
 

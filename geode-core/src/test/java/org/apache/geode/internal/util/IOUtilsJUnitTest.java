@@ -286,7 +286,7 @@ public class IOUtilsJUnitTest {
     }
   }
 
-  private static final class MockFile extends File {
+  private static class MockFile extends File {
 
     private boolean isGetAbsoluteFileCalled = false;
     private boolean isGetCanonicalFileCalled = false;

@@ -47,7 +47,7 @@ import com.sun.tools.attach.VirtualMachine;
  * @since GemFire 7.0
  * @deprecated as of 8.0 please use {@link ControllableProcess} instead
  */
-public final class LocalProcessController {
+public class LocalProcessController {
 
   /** Property name for the JMX local connector address (from sun.management.Agent) */
   private static final String LOCAL_CONNECTOR_ADDRESS_PROP =

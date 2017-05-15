@@ -76,7 +76,7 @@ public class GemFireSecurityException extends GemFireException {
   }
 
   @Override
-  public final synchronized Throwable getCause() {
+  public synchronized Throwable getCause() {
     return (this.cause == this ? null : this.cause);
   }
 
@@ -86,7 +86,7 @@ public class GemFireSecurityException extends GemFireException {
    * @param object the {@code object} to test for implementing {@code Serializable}.
    * @return true if the provided {@code object} implements {@code Serializable}.
    */
-  protected final boolean isSerializable(final Object object) {
+  protected boolean isSerializable(final Object object) {
     if (object == null) {
       return true;
     }
@@ -100,7 +100,7 @@ public class GemFireSecurityException extends GemFireException {
    * @return {@code NamingException#getResolvedObj()} if the {@code cause} is a
    *         {@code NamingException}.
    */
-  protected final Object getResolvedObj() {
+  protected Object getResolvedObj() {
     final Throwable thisCause = this.cause;
     if (thisCause != null && NamingException.class.isInstance(thisCause)) {
       return ((NamingException) thisCause).getResolvedObj();

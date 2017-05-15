@@ -744,14 +744,14 @@ public class AutoSerializableManager {
 
     public abstract void orderedDeserialize(InternalPdxReader reader, Object obj);
 
-    protected final Object readTransformIf(Object o, Object serializedValue)
+    protected Object readTransformIf(Object o, Object serializedValue)
         throws IllegalArgumentException, IllegalAccessException {
       if (!transform())
         return serializedValue;
       return readTransform(o, serializedValue);
     }
 
-    protected final Object readTransform(Object o, Object serializedValue)
+    protected Object readTransform(Object o, Object serializedValue)
         throws IllegalArgumentException, IllegalAccessException {
       return this.owner.getOwner().readTransform(getField(), o.getClass(), serializedValue);
     }
@@ -850,7 +850,7 @@ public class AutoSerializableManager {
     }
   }
 
-  public static final class IntField extends PdxFieldWrapper {
+  public static class IntField extends PdxFieldWrapper {
     public IntField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -907,7 +907,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class ByteField extends PdxFieldWrapper {
+  public static class ByteField extends PdxFieldWrapper {
     public ByteField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -964,7 +964,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class LongField extends PdxFieldWrapper {
+  public static class LongField extends PdxFieldWrapper {
     public LongField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1021,7 +1021,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class BooleanField extends PdxFieldWrapper {
+  public static class BooleanField extends PdxFieldWrapper {
     public BooleanField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1078,7 +1078,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class CharField extends PdxFieldWrapper {
+  public static class CharField extends PdxFieldWrapper {
     public CharField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1135,7 +1135,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class ShortField extends PdxFieldWrapper {
+  public static class ShortField extends PdxFieldWrapper {
     public ShortField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1192,7 +1192,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class FloatField extends PdxFieldWrapper {
+  public static class FloatField extends PdxFieldWrapper {
     public FloatField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1249,7 +1249,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class DoubleField extends PdxFieldWrapper {
+  public static class DoubleField extends PdxFieldWrapper {
     public DoubleField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1306,7 +1306,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class ObjectField extends PdxFieldWrapper {
+  public static class ObjectField extends PdxFieldWrapper {
     public ObjectField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1351,7 +1351,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class StringField extends PdxFieldWrapper {
+  public static class StringField extends PdxFieldWrapper {
     public StringField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1396,7 +1396,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class DateField extends PdxFieldWrapper {
+  public static class DateField extends PdxFieldWrapper {
     public DateField(AutoSerializableManager owner, Field f, String name, boolean transformValue,
         boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1441,7 +1441,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class ByteArrayField extends PdxFieldWrapper {
+  public static class ByteArrayField extends PdxFieldWrapper {
     public ByteArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1486,7 +1486,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class BooleanArrayField extends PdxFieldWrapper {
+  public static class BooleanArrayField extends PdxFieldWrapper {
     public BooleanArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1531,7 +1531,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class ShortArrayField extends PdxFieldWrapper {
+  public static class ShortArrayField extends PdxFieldWrapper {
     public ShortArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1576,7 +1576,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class CharArrayField extends PdxFieldWrapper {
+  public static class CharArrayField extends PdxFieldWrapper {
     public CharArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1621,7 +1621,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class IntArrayField extends PdxFieldWrapper {
+  public static class IntArrayField extends PdxFieldWrapper {
     public IntArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1666,7 +1666,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class LongArrayField extends PdxFieldWrapper {
+  public static class LongArrayField extends PdxFieldWrapper {
     public LongArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1711,7 +1711,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class FloatArrayField extends PdxFieldWrapper {
+  public static class FloatArrayField extends PdxFieldWrapper {
     public FloatArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1756,7 +1756,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class DoubleArrayField extends PdxFieldWrapper {
+  public static class DoubleArrayField extends PdxFieldWrapper {
     public DoubleArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1801,7 +1801,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class StringArrayField extends PdxFieldWrapper {
+  public static class StringArrayField extends PdxFieldWrapper {
     public StringArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1846,7 +1846,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class ByteArrayArrayField extends PdxFieldWrapper {
+  public static class ByteArrayArrayField extends PdxFieldWrapper {
     public ByteArrayArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);
@@ -1891,7 +1891,7 @@ public class AutoSerializableManager {
       }
     }
   }
-  public static final class ObjectArrayField extends PdxFieldWrapper {
+  public static class ObjectArrayField extends PdxFieldWrapper {
     public ObjectArrayField(AutoSerializableManager owner, Field f, String name,
         boolean transformValue, boolean isIdentityField) {
       super(owner, f, name, transformValue, isIdentityField);

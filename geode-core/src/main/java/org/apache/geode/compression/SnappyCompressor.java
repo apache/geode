@@ -26,7 +26,7 @@ import org.iq80.snappy.Snappy;
  * 
  * @since GemFire 8.0
  */
-public final class SnappyCompressor implements Compressor, Serializable {
+public class SnappyCompressor implements Compressor, Serializable {
   private static final long serialVersionUID = 496609875302446099L;
 
   /**

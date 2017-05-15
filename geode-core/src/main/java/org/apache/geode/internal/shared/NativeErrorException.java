@@ -33,7 +33,7 @@ public class NativeErrorException extends Exception {
     this.errorCode = errorCode;
   }
 
-  public final int getErrorCode() {
+  public int getErrorCode() {
     return this.errorCode;
   }
 }

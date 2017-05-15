@@ -22,7 +22,7 @@ import org.apache.geode.internal.shared.NativeCalls;
  * 
  * @since GemFire 8.0
  */
-final class NativeProcessUtils implements InternalProcessUtils {
+class NativeProcessUtils implements InternalProcessUtils {
 
   private final static NativeCalls nativeCalls = NativeCalls.getInstance();
 

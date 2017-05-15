@@ -755,7 +755,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * 
    * @return True if the member's heap memory is in a critical state, false otherwise.
    */
-  public final boolean isMemberHeapCritical(final InternalDistributedMember member) {
+  public boolean isMemberHeapCritical(final InternalDistributedMember member) {
     if (member.equals(this.cache.getMyId())) {
       return this.mostRecentEvent.getState().isCritical();
     }

@@ -64,11 +64,11 @@ public class KeyInfo {
     this.key = keyInfo.key;
   }
 
-  public final Object getKey() {
+  public Object getKey() {
     return this.key;
   }
 
-  public final Object getCallbackArg() {
+  public Object getCallbackArg() {
     return this.callbackArg;
   }
 
@@ -77,19 +77,19 @@ public class KeyInfo {
     return this.value;
   }
 
-  public final int getBucketId() {
+  public int getBucketId() {
     return this.bucketId;
   }
 
-  public final void setKey(Object key) {
+  public void setKey(Object key) {
     this.key = key;
   }
 
-  public final void setBucketId(int bucketId) {
+  public void setBucketId(int bucketId) {
     this.bucketId = bucketId;
   }
 
-  public final void setCallbackArg(Object callbackArg) {
+  public void setCallbackArg(Object callbackArg) {
     this.callbackArg = callbackArg;
   }
 

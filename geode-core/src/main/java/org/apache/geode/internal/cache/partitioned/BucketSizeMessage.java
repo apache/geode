@@ -46,7 +46,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * @since GemFire 5.0
  */
 
-public final class BucketSizeMessage extends PartitionMessage {
+public class BucketSizeMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The list of buckets whose size is needed, if null, then all buckets */
@@ -66,7 +66,7 @@ public final class BucketSizeMessage extends PartitionMessage {
   }
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.STANDARD_EXECUTOR;
   }
 
@@ -135,7 +135,7 @@ public final class BucketSizeMessage extends PartitionMessage {
     out.writeInt(this.bucketId); // fix for bug 38228
   }
 
-  public static final class BucketSizeReplyMessage extends HighPriorityDistributionMessage {
+  public static class BucketSizeReplyMessage extends HighPriorityDistributionMessage {
     /** The shared obj id of the ReplyProcessor */
     private int processorId;
 

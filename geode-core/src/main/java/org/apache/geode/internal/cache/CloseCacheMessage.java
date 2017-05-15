@@ -35,8 +35,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 
 /** Creates a new instance of CloseCacheMessage */
-public final class CloseCacheMessage extends HighPriorityDistributionMessage
-    implements MessageWithReply {
+public class CloseCacheMessage extends HighPriorityDistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   private int processorId;

@@ -212,7 +212,7 @@ public class TXEntry implements Region.Entry {
     }
   }
 
-  private final TXEntryUserAttrState txReadUA(KeyInfo ki) {
+  private TXEntryUserAttrState txReadUA(KeyInfo ki) {
     TXRegionState txr = this.myTX.txReadRegion(this.localRegion);
     if (txr != null) {
       return txr.readEntryUserAttr(ki.getKey());
@@ -221,7 +221,7 @@ public class TXEntry implements Region.Entry {
     }
   }
 
-  protected final TXEntryUserAttrState txWriteUA(KeyInfo ki) {
+  protected TXEntryUserAttrState txWriteUA(KeyInfo ki) {
     TXRegionState txr = myTX.txWriteRegion(this.localRegion, ki);
     if (txr != null) {
       return txr.writeEntryUserAttr(ki.getKey(), this.localRegion);

@@ -394,7 +394,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
    * Writes snapshot data to a {@link SnapshotWriter}. Caller is responsible for invoking
    * {@link SnapshotWriter#snapshotComplete()}.
    */
-  static final class SnapshotWriterSink implements ExportSink {
+  static class SnapshotWriterSink implements ExportSink {
     private final SnapshotWriter writer;
     private long bytes;
 
@@ -419,7 +419,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
    * Forwards snapshot data to a {@link ResultSender}. Caller is responsible for invoking
    * {@link ResultSender#lastResult(Object)}.
    */
-  static final class ResultSenderSink implements ExportSink {
+  static class ResultSenderSink implements ExportSink {
     /** the fowarding destination */
     private final ResultSender<SnapshotRecord[]> sender;
 

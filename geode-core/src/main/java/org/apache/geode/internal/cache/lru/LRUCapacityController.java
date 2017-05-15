@@ -51,7 +51,7 @@ import java.util.*;
  *
  * @since GemFire 2.0.2
  */
-public final class LRUCapacityController extends LRUAlgorithm implements Declarable {
+public class LRUCapacityController extends LRUAlgorithm implements Declarable {
 
   private static final long serialVersionUID = -4383074909189355938L;
 

@@ -39,7 +39,7 @@ import org.apache.geode.pdx.internal.PdxType;
  */
 public class DataType implements DSCODE {
 
-  public static final String getDataType(byte[] bytes) {
+  public static String getDataType(byte[] bytes) {
     final DataInput in = getDataInput(bytes);
     byte header = 0;
     try {

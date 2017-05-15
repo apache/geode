@@ -638,7 +638,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private static final String ILLEGAL_REMOTE_COMMAND_RSH_OR_SSH =
       "Allowed remote commands include \"rsh {HOST} {CMD}\" or \"ssh {HOST} {CMD}\" with valid rsh or ssh switches. Invalid: ";
 
-  private final void checkRemoteCommand(final String remoteCommand) {
+  private void checkRemoteCommand(final String remoteCommand) {
     if (remoteCommand == null || remoteCommand.isEmpty()) {
       return;
     }

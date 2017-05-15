@@ -1267,7 +1267,7 @@ public class SystemAdmin {
    *
    */
   @SuppressWarnings("serial")
-  private static final class CombinedResources extends ArrayList<ResourceInst> {
+  private static class CombinedResources extends ArrayList<ResourceInst> {
     public CombinedResources(StatValue v) {
       super(Arrays.asList(v.getResources()));
     }

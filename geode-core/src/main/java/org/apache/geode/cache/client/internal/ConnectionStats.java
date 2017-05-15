@@ -3256,11 +3256,11 @@ public class ConnectionStats implements MessageStats {
     this.sendStats.close();
   }
 
-  public final void incReceivedBytes(long v) {
+  public void incReceivedBytes(long v) {
     this.stats.incLong(receivedBytesId, v);
   }
 
-  public final void incSentBytes(long v) {
+  public void incSentBytes(long v) {
     this.stats.incLong(sentBytesId, v);
     // if (this.gatewayStats != null) {
     // this.gatewayStats.incSentBytes(v);

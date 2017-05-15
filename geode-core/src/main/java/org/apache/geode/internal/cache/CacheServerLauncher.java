@@ -274,7 +274,7 @@ public class CacheServerLauncher {
   public static final String EVICTION_OFF_HEAP_PERCENTAGE = "eviction-off-heap-percentage";
   protected static final String LOCK_MEMORY = ConfigurationProperties.LOCK_MEMORY;
 
-  protected final File processDirOption(final Map<String, Object> options, final String dirValue)
+  protected File processDirOption(final Map<String, Object> options, final String dirValue)
       throws FileNotFoundException {
     final File inputWorkingDirectory = new File(dirValue);
 

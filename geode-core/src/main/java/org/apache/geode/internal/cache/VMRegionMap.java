@@ -22,7 +22,7 @@ package org.apache.geode.internal.cache;
  *
  *
  */
-final class VMRegionMap extends AbstractRegionMap {
+class VMRegionMap extends AbstractRegionMap {
 
   VMRegionMap(Object owner, Attributes attr, InternalRegionArguments internalRegionArgs) {
     super(internalRegionArgs);

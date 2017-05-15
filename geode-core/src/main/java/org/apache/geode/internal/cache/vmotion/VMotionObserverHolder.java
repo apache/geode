@@ -37,7 +37,7 @@ public class VMotionObserverHolder {
   /**
    * Set the given observer to be notified of events. Returns the current observer.
    */
-  public static final VMotionObserver setInstance(VMotionObserver observer) {
+  public static VMotionObserver setInstance(VMotionObserver observer) {
     Support.assertArg(observer != null, "setInstance expects a non-null argument!");
     VMotionObserver oldObserver = _instance;
     _instance = observer;
@@ -45,7 +45,7 @@ public class VMotionObserverHolder {
   }
 
   /** Return the current VMotionObserver instance */
-  public static final VMotionObserver getInstance() {
+  public static VMotionObserver getInstance() {
     return _instance;
   }
 

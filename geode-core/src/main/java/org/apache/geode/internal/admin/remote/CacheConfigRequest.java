@@ -31,7 +31,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class CacheConfigRequest extends AdminRequest {
+public class CacheConfigRequest extends AdminRequest {
   private byte attributeCode;
   private int newValue;
   private int cacheId;

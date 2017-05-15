@@ -827,7 +827,7 @@ public class ServerLauncherTest {
     serverLauncher.startCacheServer(mockCache);
   }
 
-  private final class ServerWaitMultiThreadedTestCase extends MultithreadedTestCase {
+  private class ServerWaitMultiThreadedTestCase extends MultithreadedTestCase {
 
     private final AtomicBoolean connectionStateHolder = new AtomicBoolean(true);
 

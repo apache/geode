@@ -593,7 +593,7 @@ public class DiskStoreImpl implements DiskStore {
    * Initializes the contents of any regions on this DiskStore that have been registered but are not
    * yet initialized.
    */
-  final void initializeOwner(LocalRegion lr) {
+  void initializeOwner(LocalRegion lr) {
     DiskRegion dr = lr.getDiskRegion();
     // We don't need to do recovery for overflow regions.
     if (!lr.getDataPolicy().withPersistence() || !dr.isRecreated()) {
@@ -686,7 +686,7 @@ public class DiskStoreImpl implements DiskStore {
    *         completed successfully, resulting in the put operation to abort.
    * @throws IllegalArgumentException If {@code id} is less than zero
    */
-  final void put(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async)
+  void put(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async)
       throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
@@ -754,7 +754,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  final void putVersionTagOnly(LocalRegion region, VersionTag tag, boolean async) {
+  void putVersionTagOnly(LocalRegion region, VersionTag tag, boolean async) {
     DiskRegion dr = region.getDiskRegion();
     // this method will only be called by backup oplog
     assert dr.isBackup();
@@ -792,7 +792,7 @@ public class DiskStoreImpl implements DiskStore {
    * {@linkplain DiskRegionStats statistics}
    * 
    */
-  final Object get(DiskRegion dr, DiskId id) {
+  Object get(DiskRegion dr, DiskId id) {
     acquireReadLock(dr);
     try {
       int count = 0;
@@ -851,7 +851,7 @@ public class DiskStoreImpl implements DiskStore {
    * 
    * @return an instance of BytesAndBits or Token.REMOVED_PHASE1
    */
-  final Object getRaw(DiskRegionView dr, DiskId id) {
+  Object getRaw(DiskRegionView dr, DiskId id) {
     if (dr.isRegionClosed()) {
       throw new RegionDestroyedException(
           LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
@@ -926,7 +926,7 @@ public class DiskStoreImpl implements DiskStore {
    * @return value of the entry or CLEAR_BB if it is detected that the entry was removed by a
    *         concurrent region clear.
    */
-  final BytesAndBits getBytesAndBitsWithoutLock(DiskRegionView dr, DiskId id, boolean faultIn,
+  BytesAndBits getBytesAndBitsWithoutLock(DiskRegionView dr, DiskId id, boolean faultIn,
       boolean bitOnly) {
     long oplogId = id.getOplogId();
     OplogSet oplogSet = getOplogSet(dr);
@@ -943,7 +943,7 @@ public class DiskStoreImpl implements DiskStore {
     return oplog.getBytesAndBits(dr, id, faultIn, bitOnly);
   }
 
-  final BytesAndBits getBytesAndBits(DiskRegion dr, DiskId id, boolean faultingIn) {
+  BytesAndBits getBytesAndBits(DiskRegion dr, DiskId id, boolean faultingIn) {
     acquireReadLock(dr);
     try {
       if (dr.isRegionClosed()) {
@@ -977,7 +977,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * @since GemFire 3.2.1
    */
-  final byte getBits(DiskRegion dr, DiskId id) {
+  byte getBits(DiskRegion dr, DiskId id) {
     acquireReadLock(dr);
     try {
       if (dr.isRegionClosed()) {
@@ -1016,7 +1016,7 @@ public class DiskStoreImpl implements DiskStore {
    * @return null if entry has nothing stored on disk (id == INVALID_ID)
    * @throws IllegalArgumentException If {@code id} is less than zero, no action is taken.
    */
-  public final Object getNoBuffer(DiskRegion dr, DiskId id) {
+  public Object getNoBuffer(DiskRegion dr, DiskId id) {
     BytesAndBits bb = null;
     acquireReadLock(dr);
     try {
@@ -1055,7 +1055,7 @@ public class DiskStoreImpl implements DiskStore {
    * @throws IllegalArgumentException If {@code id} is {@linkplain #INVALID_ID invalid}or is less
    *         than zero, no action is taken.
    */
-  final void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
+  void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
       throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     if (!async) {
@@ -2009,7 +2009,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * Reads the oplogs files and loads them into regions that are ready to be recovered.
    */
-  public final void recoverRegionsThatAreReady() {
+  public void recoverRegionsThatAreReady() {
     persistentOplogs.recoverRegionsThatAreReady();
   }
 
@@ -2052,7 +2052,7 @@ public class DiskStoreImpl implements DiskStore {
 
   private final boolean isCompactionPossible;
 
-  final boolean isCompactionPossible() {
+  boolean isCompactionPossible() {
     return this.isCompactionPossible;
   }
 
@@ -2311,7 +2311,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  final DiskAccessException getDiskAccessException() {
+  DiskAccessException getDiskAccessException() {
     return diskException.get();
   }
 
@@ -4728,11 +4728,11 @@ public class DiskStoreImpl implements DiskStore {
     oplogSet.updateDiskRegion(dr);
   }
 
-  public final Version getRecoveredGFVersion() {
+  public Version getRecoveredGFVersion() {
     return getRecoveredGFVersion(this.initFile);
   }
 
-  final Version getRecoveredGFVersion(DiskInitFile initFile) {
+  Version getRecoveredGFVersion(DiskInitFile initFile) {
     return initFile.currentRecoveredGFVersion();
   }
 

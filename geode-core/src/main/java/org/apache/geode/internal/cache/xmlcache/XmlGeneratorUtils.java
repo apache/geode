@@ -29,7 +29,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * @since GemFire 8.1
  */
 // UnitTest XmlGeneratorUtilsTest
-public final class XmlGeneratorUtils {
+public class XmlGeneratorUtils {
 
   private XmlGeneratorUtils() {
     // statics only

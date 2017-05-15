@@ -29,7 +29,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class CacheInfoRequest extends AdminRequest {
+public class CacheInfoRequest extends AdminRequest {
   /**
    * Returns a <code>CacheInfoRequest</code>.
    */

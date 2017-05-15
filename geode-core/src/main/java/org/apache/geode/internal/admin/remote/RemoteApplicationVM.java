@@ -22,7 +22,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * Represents an application VM (member of the distributed system).
  */
-public final class RemoteApplicationVM extends RemoteGemFireVM implements ApplicationVM {
+public class RemoteApplicationVM extends RemoteGemFireVM implements ApplicationVM {
 
   // constructors
 

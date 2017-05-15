@@ -27,7 +27,7 @@ import java.io.*;
  * A message that is sent to a particular app vm to request all the subregions of a given parent
  * region.
  */
-public final class SubRegionRequest extends RegionAdminRequest {
+public class SubRegionRequest extends RegionAdminRequest {
   // instance variables
 
   /**

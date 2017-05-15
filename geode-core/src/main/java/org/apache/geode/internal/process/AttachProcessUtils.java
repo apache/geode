@@ -23,7 +23,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  * 
  * @since GemFire 8.0
  */
-final class AttachProcessUtils implements InternalProcessUtils {
+class AttachProcessUtils implements InternalProcessUtils {
 
   AttachProcessUtils() {}
 

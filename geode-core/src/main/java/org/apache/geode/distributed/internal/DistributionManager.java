@@ -4280,7 +4280,7 @@ public class DistributionManager implements DM {
    * A simple class used for locking the list of members of the distributed system. We give this
    * lock its own class so that it shows up nicely in stack traces.
    */
-  private static final class MembersLock {
+  private static class MembersLock {
     protected MembersLock() {
 
     }
@@ -4290,7 +4290,7 @@ public class DistributionManager implements DM {
    * A simple class used for locking the list of membership listeners. We give this lock its own
    * class so that it shows up nicely in stack traces.
    */
-  private static final class MembershipListenersLock {
+  private static class MembershipListenersLock {
     protected MembershipListenersLock() {}
   }
 
@@ -4298,7 +4298,7 @@ public class DistributionManager implements DM {
    * This is the listener implementation for responding from events from the Membership Manager.
    *
    */
-  private final class MyListener implements DistributedMembershipListener {
+  private class MyListener implements DistributedMembershipListener {
     DistributionManager dm;
 
     public MyListener(DistributionManager dm) {
@@ -4438,7 +4438,7 @@ public class DistributionManager implements DM {
    * 
    *
    */
-  private static final class MemberJoinedEvent extends MemberEvent {
+  private static class MemberJoinedEvent extends MemberEvent {
     MemberJoinedEvent(InternalDistributedMember id) {
       super(id);
     }
@@ -4458,7 +4458,7 @@ public class DistributionManager implements DM {
    * This is an event reflecting that a InternalDistributedMember has left the system.
    *
    */
-  private static final class MemberDepartedEvent extends MemberEvent {
+  private static class MemberDepartedEvent extends MemberEvent {
     String reason;
 
     MemberDepartedEvent(InternalDistributedMember id, String r) {
@@ -4483,7 +4483,7 @@ public class DistributionManager implements DM {
    * 
    *
    */
-  private static final class MemberCrashedEvent extends MemberEvent {
+  private static class MemberCrashedEvent extends MemberEvent {
     String reason;
 
     MemberCrashedEvent(InternalDistributedMember id, String r) {
@@ -4506,7 +4506,7 @@ public class DistributionManager implements DM {
    * This is an event reflecting that a InternalDistributedMember may be missing but has not yet
    * left the system.
    */
-  private static final class MemberSuspectEvent extends MemberEvent {
+  private static class MemberSuspectEvent extends MemberEvent {
     InternalDistributedMember whoSuspected;
     String reason;
 
@@ -4536,7 +4536,7 @@ public class DistributionManager implements DM {
     }
   }
 
-  private static final class ViewInstalledEvent extends MemberEvent {
+  private static class ViewInstalledEvent extends MemberEvent {
     NetView view;
 
     ViewInstalledEvent(NetView view) {
@@ -4564,7 +4564,7 @@ public class DistributionManager implements DM {
     }
   }
 
-  private static final class QuorumLostEvent extends MemberEvent {
+  private static class QuorumLostEvent extends MemberEvent {
     Set<InternalDistributedMember> failures;
     List<InternalDistributedMember> remaining;
 

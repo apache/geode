@@ -54,29 +54,29 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   }
 
   @Override
-  public final boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
+  public boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
       ByteArrayDataInput in, DM mgr) {
     return Helper.fillInValue(this, entry, r.getDiskRegion(), mgr, in, r);
   }
 
   @Override
-  public final boolean isOverflowedToDisk(LocalRegion r, DistributedRegion.DiskPosition dp) {
+  public boolean isOverflowedToDisk(LocalRegion r, DistributedRegion.DiskPosition dp) {
     return Helper.isOverflowedToDisk(this, r.getDiskRegion(), dp, r);
   }
 
   @Override
-  public final Object getValue(RegionEntryContext context) {
+  public Object getValue(RegionEntryContext context) {
     return Helper.faultInValue(this, (LocalRegion) context); // OFFHEAP returned to callers
   }
 
   @Override
   @Retained
-  public final Object getValueRetain(RegionEntryContext context) {
+  public Object getValueRetain(RegionEntryContext context) {
     return Helper.faultInValueRetain(this, (LocalRegion) context);
   }
 
   @Override
-  public final Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
+  public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
     return Helper.getValueInVMOrDiskWithoutFaultIn(this, owner);
   }
 
@@ -87,17 +87,17 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   }
 
   @Override
-  public final Object getValueOnDisk(LocalRegion r) throws EntryNotFoundException {
+  public Object getValueOnDisk(LocalRegion r) throws EntryNotFoundException {
     return Helper.getValueOnDisk(this, r.getDiskRegion());
   }
 
   @Override
-  public final Object getSerializedValueOnDisk(LocalRegion r) throws EntryNotFoundException {
+  public Object getSerializedValueOnDisk(LocalRegion r) throws EntryNotFoundException {
     return Helper.getSerializedValueOnDisk(this, r.getDiskRegion());
   }
 
   @Override
-  public final Object getValueOnDiskOrBuffer(LocalRegion r) throws EntryNotFoundException {
+  public Object getValueOnDiskOrBuffer(LocalRegion r) throws EntryNotFoundException {
     // @todo darrel if value is Token.REMOVED || Token.DESTROYED throw
     // EntryNotFoundException
     return Helper.getValueOnDiskOrBuffer(this, r.getDiskRegion(), r);

@@ -38,7 +38,7 @@ public class ClientServerObserverHolder {
   /**
    * Set the given observer to be notified of events. Returns the current observer.
    */
-  public static final ClientServerObserver setInstance(ClientServerObserver observer) {
+  public static ClientServerObserver setInstance(ClientServerObserver observer) {
     Support.assertArg(observer != null, "setInstance expects a non-null argument!");
     ClientServerObserver oldObserver = _instance;
     _instance = observer;
@@ -46,7 +46,7 @@ public class ClientServerObserverHolder {
   }
 
   /** Return the current BridgeObserver instance */
-  public static final ClientServerObserver getInstance() {
+  public static ClientServerObserver getInstance() {
     return _instance;
   }
 

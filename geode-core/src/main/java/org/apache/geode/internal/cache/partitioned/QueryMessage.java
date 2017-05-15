@@ -54,7 +54,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.cache.query.Struct;
 
-public final class QueryMessage extends StreamingPartitionOperation.StreamingPartitionMessage {
+public class QueryMessage extends StreamingPartitionOperation.StreamingPartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private volatile String queryString;

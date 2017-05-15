@@ -134,7 +134,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
     out.writeInt(this.bucketId);
   }
 
-  public static final class DeposePrimaryBucketReplyMessage extends ReplyMessage {
+  public static class DeposePrimaryBucketReplyMessage extends ReplyMessage {
 
     /**
      * Empty constructor to conform to DataSerializable interface

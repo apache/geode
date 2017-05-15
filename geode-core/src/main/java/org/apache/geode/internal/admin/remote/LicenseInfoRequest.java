@@ -26,7 +26,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular distribution manager to get its current license info.
  */
-public final class LicenseInfoRequest extends AdminRequest {
+public class LicenseInfoRequest extends AdminRequest {
   /**
    * Returns a <code>LicenseInfoRequest</code>.
    */

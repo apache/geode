@@ -29,7 +29,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * 
  * @since GemFire 3.5
  */
-public final class VersionInfoResponse extends AdminResponse {
+public class VersionInfoResponse extends AdminResponse {
   // instance variables
   private String verInfo;
 

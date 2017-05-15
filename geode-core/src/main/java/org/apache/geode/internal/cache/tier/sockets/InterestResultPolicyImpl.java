@@ -28,7 +28,7 @@ import java.io.*;
  *
  * @since GemFire 5.7
  */
-public final class InterestResultPolicyImpl extends InterestResultPolicy
+public class InterestResultPolicyImpl extends InterestResultPolicy
     implements DataSerializableFixedID {
   private static final long serialVersionUID = -7456596794818237831L;
 

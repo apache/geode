@@ -595,7 +595,7 @@ public class GeodeRedisServer {
     }
   }
 
-  private final class MetaCacheListener extends CacheListenerAdapter<String, RedisDataType> {
+  private class MetaCacheListener extends CacheListenerAdapter<String, RedisDataType> {
 
     @Override
     public void afterCreate(EntryEvent<String, RedisDataType> event) {

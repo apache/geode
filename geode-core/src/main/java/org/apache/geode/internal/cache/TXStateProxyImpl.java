@@ -86,15 +86,15 @@ public class TXStateProxyImpl implements TXStateProxy {
     return this.lock;
   }
 
-  final boolean isJTA() {
+  boolean isJTA() {
     return isJTA;
   }
 
-  final public TXId getTxId() {
+  public TXId getTxId() {
     return txId;
   }
 
-  public final TXManagerImpl getTxMgr() {
+  public TXManagerImpl getTxMgr() {
     return txMgr;
   }
 

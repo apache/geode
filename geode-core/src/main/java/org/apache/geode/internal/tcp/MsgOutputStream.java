@@ -44,13 +44,13 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
 
   /** write the low-order 8 bits of the given int */
   @Override
-  public final void write(int b) {
+  public void write(int b) {
     buffer.put((byte) b);
   }
 
   /** override OutputStream's write() */
   @Override
-  public final void write(byte[] source, int offset, int len) {
+  public void write(byte[] source, int offset, int len) {
     this.buffer.put(source, offset, len);
   }
 
@@ -61,13 +61,13 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
   /**
    * write the header after the message has been written to the stream
    */
-  public final void setMessageHeader(int msgType, int processorType, short msgId) {
+  public void setMessageHeader(int msgType, int processorType, short msgId) {
     buffer.putInt(Connection.MSG_HEADER_SIZE_OFFSET, Connection.calcHdrSize(size()));
     buffer.put(Connection.MSG_HEADER_TYPE_OFFSET, (byte) (msgType & 0xff));
     buffer.putShort(Connection.MSG_HEADER_ID_OFFSET, msgId);
   }
 
-  public final void reset() {
+  public void reset() {
     this.buffer.clear();
     this.buffer.position(Connection.MSG_HEADER_BYTES);
   }
@@ -76,7 +76,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * gets the content ByteBuffer, ready for reading. The stream should not be written to past this
    * point until it has been reset.
    */
-  public final ByteBuffer getContentBuffer() {
+  public ByteBuffer getContentBuffer() {
     buffer.flip();
     return buffer;
   }
@@ -92,7 +92,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the boolean to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeBoolean(boolean v) throws IOException {
+  public void writeBoolean(boolean v) throws IOException {
     write(v ? 1 : 0);
   }
 
@@ -106,7 +106,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the byte value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeByte(int v) throws IOException {
+  public void writeByte(int v) throws IOException {
     write(v);
   }
 
@@ -129,7 +129,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>short</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeShort(int v) throws IOException {
+  public void writeShort(int v) throws IOException {
     buffer.putShort((short) v);
   }
 
@@ -152,7 +152,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>char</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeChar(int v) throws IOException {
+  public void writeChar(int v) throws IOException {
     buffer.putChar((char) v);
   }
 
@@ -176,7 +176,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>int</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeInt(int v) throws IOException {
+  public void writeInt(int v) throws IOException {
     buffer.putInt(v);
   }
 
@@ -204,7 +204,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>long</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeLong(long v) throws IOException {
+  public void writeLong(long v) throws IOException {
     buffer.putLong(v);
   }
 
@@ -219,7 +219,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>float</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeFloat(float v) throws IOException {
+  public void writeFloat(float v) throws IOException {
     buffer.putFloat(v);
   }
 
@@ -234,7 +234,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>double</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeDouble(double v) throws IOException {
+  public void writeDouble(double v) throws IOException {
     buffer.putDouble(v);
   }
 
@@ -252,7 +252,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param str the string of bytes to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeBytes(String str) throws IOException {
+  public void writeBytes(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 0) {
       // I know this is a deprecated method but it is PERFECT for this impl.
@@ -283,7 +283,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param s the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeChars(String s) throws IOException {
+  public void writeChars(String s) throws IOException {
     int len = s.length();
     if (len > 0) {
       for (int i = 0; i < len; i++) {
@@ -343,11 +343,11 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param str the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeUTF(String str) throws IOException {
+  public void writeUTF(String str) throws IOException {
     writeFullUTF(str);
   }
 
-  private final void writeFullUTF(String str) throws IOException {
+  private void writeFullUTF(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 65535) {
       throw new UTFDataFormatException(

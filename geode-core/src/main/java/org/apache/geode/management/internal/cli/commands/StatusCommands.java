@@ -83,7 +83,7 @@ public class StatusCommands extends AbstractCommandsSupport implements CommandMa
   }
 
   @CliAvailabilityIndicator({CliStrings.STATUS_SHARED_CONFIG})
-  public final boolean isConnected() {
+  public boolean isConnected() {
     if (!CliUtil.isGfshVM()) {
       return true;
     }

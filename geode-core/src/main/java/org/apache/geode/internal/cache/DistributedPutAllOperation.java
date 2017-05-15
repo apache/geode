@@ -268,7 +268,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
   /**
    * Data that represents a single entry being putall'd.
    */
-  public static final class PutAllEntryData {
+  public static class PutAllEntryData {
 
     final Object key;
 
@@ -398,7 +398,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      * {@link PutAllPRMessage#toData(DataOutput)} <br>
      * {@link RemotePutAllMessage#toData(DataOutput)} <br>
      */
-    public final void toData(final DataOutput out) throws IOException {
+    public void toData(final DataOutput out) throws IOException {
       Object key = this.key;
       final Object v = this.value;
       DataSerializer.writeObject(key, out);
@@ -589,7 +589,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     }
   }
 
-  public static final class EntryVersionsList extends ArrayList<VersionTag>
+  public static class EntryVersionsList extends ArrayList<VersionTag>
       implements DataSerializableFixedID, Externalizable {
 
     public EntryVersionsList() {

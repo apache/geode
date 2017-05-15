@@ -30,7 +30,7 @@ import org.apache.geode.internal.Version;
  * 
  */
 
-public final class Undefined implements DataSerializableFixedID, Comparable, Serializable {
+public class Undefined implements DataSerializableFixedID, Comparable, Serializable {
 
   private static final long serialVersionUID = 6643107525908324141L;
 

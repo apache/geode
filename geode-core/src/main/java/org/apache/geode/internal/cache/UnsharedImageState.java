@@ -256,7 +256,7 @@ public class UnsharedImageState implements ImageState {
   }
 
   /** tracks RVV versions applied to the region during GII */
-  private static final class VersionTagEntryImpl implements ImageState.VersionTagEntry {
+  private static class VersionTagEntryImpl implements ImageState.VersionTagEntry {
     Object key;
     VersionSource member;
     long regionVersion;

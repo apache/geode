@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 
-public final class Stock implements Serializable {
+public class Stock implements Serializable {
   private String key;
   private double value;
 

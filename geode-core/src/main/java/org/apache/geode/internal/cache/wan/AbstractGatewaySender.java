@@ -701,7 +701,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return null;
   }
 
-  final public Set<RegionQueue> getQueuesForConcurrentSerialGatewaySender() {
+  public Set<RegionQueue> getQueuesForConcurrentSerialGatewaySender() {
     if (this.eventProcessor != null
         && (this.eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
       return ((ConcurrentSerialGatewaySenderEventProcessor) this.eventProcessor).getQueues();
@@ -709,7 +709,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return null;
   }
 
-  final protected void waitForRunningStatus() {
+  protected void waitForRunningStatus() {
     synchronized (this.eventProcessor.runningStateLock) {
       while (this.eventProcessor.getException() == null && this.eventProcessor.isStopped()) {
         try {
@@ -728,7 +728,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
-  final public void pause() {
+  public void pause() {
     if (this.eventProcessor != null) {
       this.getLifeCycleLock().writeLock().lock();
       try {
@@ -750,7 +750,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
-  final public void resume() {
+  public void resume() {
     if (this.eventProcessor != null) {
       this.getLifeCycleLock().writeLock().lock();
       try {
@@ -773,21 +773,21 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
-  final public boolean isPaused() {
+  public boolean isPaused() {
     if (this.eventProcessor != null) {
       return this.eventProcessor.isPaused();
     }
     return false;
   }
 
-  final public boolean isRunning() {
+  public boolean isRunning() {
     if (this.eventProcessor != null) {
       return !this.eventProcessor.isStopped();
     }
     return false;
   }
 
-  final public AbstractGatewaySenderEventProcessor getEventProcessor() {
+  public AbstractGatewaySenderEventProcessor getEventProcessor() {
     return this.eventProcessor;
   }
 

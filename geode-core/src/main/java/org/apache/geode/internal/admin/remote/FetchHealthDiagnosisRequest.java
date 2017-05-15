@@ -27,7 +27,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class FetchHealthDiagnosisRequest extends AdminRequest {
+public class FetchHealthDiagnosisRequest extends AdminRequest {
   // instance variables
   private int id = 0;
 

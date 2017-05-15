@@ -75,7 +75,7 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.EN
  *
  * @since GemFire 5.0
  */
-public final class PutMessage extends PartitionMessageWithDirectReply implements NewValueImporter {
+public class PutMessage extends PartitionMessageWithDirectReply implements NewValueImporter {
   private static final Logger logger = LogService.getLogger();
 
   /** The key associated with the value that must be sent */
@@ -437,15 +437,15 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     return e2;
   }
 
-  public final Object getKey() {
+  public Object getKey() {
     return this.key;
   }
 
-  public final void setKey(Object key) {
+  public void setKey(Object key) {
     this.key = key;
   }
 
-  public final byte[] getValBytes() {
+  public byte[] getValBytes() {
     return this.valBytes;
   }
 
@@ -468,16 +468,16 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     }
   }
 
-  public final Object getCallbackArg() {
+  public Object getCallbackArg() {
     return this.cbArg;
   }
 
-  protected final Operation getOperation() {
+  protected Operation getOperation() {
     return this.op;
   }
 
   @Override
-  public final void setOperation(Operation operation) {
+  public void setOperation(Operation operation) {
     this.op = operation;
   }
 
@@ -509,7 +509,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
 
     final int extraFlags = in.readUnsignedByte();
@@ -567,7 +567,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
    * buff.append("; oldvalue object="+this.oldValObj); buff.toString(); return buff.toString(); }
    */
   @Override
-  public final void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     PartitionedRegion region = null;
     try {
       boolean flag = internalDs.getConfig().getDeltaPropagation();
@@ -675,7 +675,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
    * indefinitely for the acknowledgement
    */
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
       long startTime) throws EntryExistsException, DataLocationException, IOException {
     this.setInternalDs(r.getSystem());// set the internal DS. Required to
                                       // checked DS level delta-enabled property
@@ -823,7 +823,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
 
 
   @Override
-  protected final void appendFields(StringBuilder buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(getKey()).append("; value=");
     // buff.append(getValBytes());
@@ -864,11 +864,11 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     }
   }
 
-  public final InternalDistributedSystem getInternalDs() {
+  public InternalDistributedSystem getInternalDs() {
     return internalDs;
   }
 
-  public final void setInternalDs(InternalDistributedSystem internalDs) {
+  public void setInternalDs(InternalDistributedSystem internalDs) {
     this.internalDs = internalDs;
   }
 
@@ -877,7 +877,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     return _mayAddToMultipleSerialGateways(dm);
   }
 
-  public static final class PutReplyMessage extends ReplyMessage implements OldValueImporter {
+  public static class PutReplyMessage extends ReplyMessage implements OldValueImporter {
     /** Result of the Put operation */
     boolean result;
 

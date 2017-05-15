@@ -54,7 +54,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
 import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
 
-public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
+public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -261,7 +261,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
   }
 
 
-  public static final class InvalidateReplyMessage extends ReplyMessage {
+  public static class InvalidateReplyMessage extends ReplyMessage {
     private VersionTag versionTag;
 
     private static final byte HAS_VERSION = 0x01;

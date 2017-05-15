@@ -42,7 +42,7 @@ import org.apache.geode.internal.tcp.ReenteredConnectException;
  * to the log file.
  * 
  */
-public final class AlertAppender extends AbstractAppender implements PropertyChangeListener {
+public class AlertAppender extends AbstractAppender implements PropertyChangeListener {
   private static final String APPENDER_NAME = AlertAppender.class.getName();
   private static final Logger logger = LogService.getLogger();
   private static final AlertAppender instance = createAlertAppender();

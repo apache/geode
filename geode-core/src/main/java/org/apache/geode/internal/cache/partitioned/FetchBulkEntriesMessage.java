@@ -63,7 +63,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 8.0
  */
-public final class FetchBulkEntriesMessage extends PartitionMessage {
+public class FetchBulkEntriesMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private HashSet<Integer> bucketIds;
@@ -174,7 +174,7 @@ public final class FetchBulkEntriesMessage extends PartitionMessage {
     DataSerializer.writePrimitiveBoolean(this.allowTombstones, out);
   }
 
-  public static final class FetchBulkEntriesReplyMessage extends ReplyMessage {
+  public static class FetchBulkEntriesReplyMessage extends ReplyMessage {
 
     /** Whether this message is the last of a series of chunk responses */
     boolean lastInSeries;

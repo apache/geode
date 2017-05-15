@@ -1752,31 +1752,31 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     // Prevent this region from participating in a TX, bug 38709
     @Override
-    final public boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 
     // Prevent this region from using concurrency checks
     @Override
-    final public boolean supportsConcurrencyChecks() {
+    public boolean supportsConcurrencyChecks() {
       return false;
     }
 
     @Override
-    final protected boolean shouldNotifyBridgeClients() {
+    protected boolean shouldNotifyBridgeClients() {
       return false;
     }
 
     @Override
-    final public boolean generateEventID() {
+    public boolean generateEventID() {
       return false;
     }
 
-    final public boolean isUsedForParallelGatewaySenderQueue() {
+    public boolean isUsedForParallelGatewaySenderQueue() {
       return true;
     }
 
-    final public AbstractGatewaySender getParallelGatewaySender() {
+    public AbstractGatewaySender getParallelGatewaySender() {
       return this.sender;
     }
   }

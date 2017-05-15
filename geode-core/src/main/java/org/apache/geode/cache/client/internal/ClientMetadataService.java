@@ -52,7 +52,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * 
  * @since GemFire 6.5
  */
-public final class ClientMetadataService {
+public class ClientMetadataService {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -539,7 +539,7 @@ public final class ClientMetadataService {
     }
   }
 
-  public final void getClientPRMetadata(LocalRegion region) {
+  public void getClientPRMetadata(LocalRegion region) {
     final String regionFullPath = region.getFullPath();
     ClientPartitionAdvisor advisor = null;
     InternalPool pool = region.getServerProxy().getPool();

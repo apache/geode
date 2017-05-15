@@ -21,7 +21,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
-public final class LuceneServiceXmlGenerator implements XmlGenerator<Cache> {
+public class LuceneServiceXmlGenerator implements XmlGenerator<Cache> {
   @Override
   public String getNamspaceUri() {
     return LuceneXmlConstants.NAMESPACE;

@@ -46,7 +46,7 @@ public class HashIndexSet implements Set {
    * optional statistics object to track number of hash collisions and time spent probing based on
    * hash collisions
    */
-  final class HashIndexSetProperties {
+  class HashIndexSetProperties {
     /** the set of Objects */
     final protected transient Object[] set;
     /** used for hashing into the table **/
@@ -484,7 +484,7 @@ public class HashIndexSet implements Set {
     return false;
   }
 
-  public final boolean areObjectsEqual(Object o1, Object o2) {
+  public boolean areObjectsEqual(Object o1, Object o2) {
     if (o1 == null) {
       return o2 == null;
     }
@@ -658,7 +658,7 @@ public class HashIndexSet implements Set {
   /**
    * After insert, allows for calculating metadata
    */
-  protected final void postInsertHook(boolean usedFreeSlot) {
+  protected void postInsertHook(boolean usedFreeSlot) {
     if (usedFreeSlot) {
       hashIndexSetProperties.free--;
     } else {
@@ -671,7 +671,7 @@ public class HashIndexSet implements Set {
   /**
    * Before inserting we can ensure we have capacity
    */
-  protected final void preInsertHook() {
+  protected void preInsertHook() {
     if (hashIndexSetProperties.size > hashIndexSetProperties.maxSize
         || hashIndexSetProperties.free == 0 || TEST_ALWAYS_REHASH) {
       rehash(arraySize(hashIndexSetProperties.size + 1, _loadFactor));

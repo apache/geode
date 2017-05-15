@@ -82,7 +82,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
       Boolean.getBoolean("GemFire.ALWAYS_REPLICATE_UPDATES");
 
   /** @return whether we should do a local create for a remote one */
-  private static final boolean shouldDoRemoteCreate(LocalRegion rgn, EntryEventImpl ev) {
+  private static boolean shouldDoRemoteCreate(LocalRegion rgn, EntryEventImpl ev) {
     DataPolicy dp = rgn.getAttributes().getDataPolicy();
     if (!rgn.isAllEvents() || (dp.withReplication() && rgn.isInitialized()
         && ev.getOperation().isUpdate() && !rgn.concurrencyChecksEnabled // misordered CREATE and

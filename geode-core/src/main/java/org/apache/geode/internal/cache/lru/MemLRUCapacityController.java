@@ -74,7 +74,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 2.0.2
  */
-public final class MemLRUCapacityController extends LRUAlgorithm implements Declarable {
+public class MemLRUCapacityController extends LRUAlgorithm implements Declarable {
 
   private static final long serialVersionUID = 6364183985590572514L;
 

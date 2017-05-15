@@ -152,23 +152,23 @@ public class StatisticsTypeImpl implements StatisticsType {
 
   ////////////////////// StatisticsType Methods //////////////////////
 
-  public final String getName() {
+  public String getName() {
     return this.name;
   }
 
-  public final String getDescription() {
+  public String getDescription() {
     return this.description;
   }
 
-  public final StatisticDescriptor[] getStatistics() {
+  public StatisticDescriptor[] getStatistics() {
     return this.stats;
   }
 
-  public final int nameToId(String name) {
+  public int nameToId(String name) {
     return nameToDescriptor(name).getId();
   }
 
-  public final StatisticDescriptor nameToDescriptor(String name) {
+  public StatisticDescriptor nameToDescriptor(String name) {
     StatisticDescriptorImpl stat = (StatisticDescriptorImpl) statsMap.get(name);
     if (stat == null) {
       throw new IllegalArgumentException(

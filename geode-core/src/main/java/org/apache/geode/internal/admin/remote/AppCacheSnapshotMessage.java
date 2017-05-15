@@ -24,7 +24,7 @@ import org.apache.geode.cache.*;
 import org.apache.geode.*;
 // import java.util.*;
 
-public final class AppCacheSnapshotMessage extends RegionAdminMessage {
+public class AppCacheSnapshotMessage extends RegionAdminMessage {
   // private int numResults;
   // private static Map consolesToSnapshots = new HashMap();
   private int snapshotId;

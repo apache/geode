@@ -188,7 +188,7 @@ public class LifecycleListenerJUnitTest {
     assertEquals(2, this.beforeCloseCallbacks.size());
   }
 
-  private static final class LifecycleListenerCallback {
+  private static class LifecycleListenerCallback {
     private final MemoryAllocatorImpl allocator;
     private final long timeStamp;
     private final Throwable creationTime;

@@ -224,7 +224,7 @@ public abstract class CollectionUtils {
    * @since GemFire 8.1
    * @see Collection#addAll(Collection)
    */
-  public static final <T> boolean addAll(final Collection<T> collection,
+  public static <T> boolean addAll(final Collection<T> collection,
       final Enumeration<T> enumeration) {
     if (null == enumeration) {
       return false;
@@ -247,7 +247,7 @@ public abstract class CollectionUtils {
    * @return unmodifiable {@link Iterable}
    * @since GemFire 8.1
    */
-  public static final <T> Iterable<T> unmodifiableIterable(final Iterable<T> iterable) {
+  public static <T> Iterable<T> unmodifiableIterable(final Iterable<T> iterable) {
     return new UnmodifiableIterable<T>(iterable);
   }
 

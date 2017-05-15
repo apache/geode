@@ -38,8 +38,7 @@ import java.util.Set;
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
  */
-public final class StartupMessage extends HighPriorityDistributionMessage
-    implements AdminMessageType {
+public class StartupMessage extends HighPriorityDistributionMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005

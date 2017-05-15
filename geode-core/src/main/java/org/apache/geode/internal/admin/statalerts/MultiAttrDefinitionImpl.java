@@ -30,7 +30,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
  * Implementation of {@link StatAlertDefinition} This provides the definition for multiple statistic
  * 
  */
-public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
+public class MultiAttrDefinitionImpl implements StatAlertDefinition {
   private static final long serialVersionUID = 2508805676076940969L;
 
   protected String _name;

@@ -85,7 +85,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  *
  * @since GemFire 5.5
  */
-public final class CqServiceImpl implements CqService {
+public class CqServiceImpl implements CqService {
   private static final Logger logger = LogService.getLogger();
 
   private static final Integer MESSAGE_TYPE_LOCAL_CREATE = MessageType.LOCAL_CREATE;

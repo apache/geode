@@ -52,19 +52,19 @@ public class BytesAndBitsForCompactor {
   }
 
 
-  public final StoredObject getOffHeapData() {
+  public StoredObject getOffHeapData() {
     return this.offHeapData;
   }
 
-  public final byte[] getBytes() {
+  public byte[] getBytes() {
     return this.data;
   }
 
-  public final byte getBits() {
+  public byte getBits() {
     return this.userBits;
   }
 
-  public final int getValidLength() {
+  public int getValidLength() {
     return this.validLength;
   }
 

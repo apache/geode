@@ -46,7 +46,7 @@ import org.apache.logging.log4j.Logger;
  * The StatisticsManager is implemented by DistributedSystem.
  * 
  */
-public final class GemFireStatSampler extends HostStatSampler {
+public class GemFireStatSampler extends HostStatSampler {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -78,7 +78,7 @@ public final class GemFireStatSampler extends HostStatSampler {
    *
    * @since GemFire 3.5
    */
-  public final ProcessStats getProcessStats() {
+  public ProcessStats getProcessStats() {
     return this.processStats;
   }
 
@@ -157,12 +157,12 @@ public final class GemFireStatSampler extends HostStatSampler {
   }
 
   @Override
-  public final File getArchiveFileName() {
+  public File getArchiveFileName() {
     return this.con.getConfig().getStatisticArchiveFile();
   }
 
   @Override
-  public final long getArchiveFileSizeLimit() {
+  public long getArchiveFileSizeLimit() {
     if (fileSizeLimitInKB()) {
       // use KB instead of MB to speed up rolling for testing
       return ((long) this.con.getConfig().getArchiveFileSizeLimit()) * (1024);
@@ -172,7 +172,7 @@ public final class GemFireStatSampler extends HostStatSampler {
   }
 
   @Override
-  public final long getArchiveDiskSpaceLimit() {
+  public long getArchiveDiskSpaceLimit() {
     if (fileSizeLimitInKB()) {
       // use KB instead of MB to speed up removal for testing
       return ((long) this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024);
@@ -216,27 +216,27 @@ public final class GemFireStatSampler extends HostStatSampler {
   }
 
   @Override
-  protected final int getSampleRate() {
+  protected int getSampleRate() {
     return this.con.getConfig().getStatisticSampleRate();
   }
 
   @Override
-  public final boolean isSamplingEnabled() {
+  public boolean isSamplingEnabled() {
     return this.con.getConfig().getStatisticSamplingEnabled();
   }
 
   @Override
-  protected final StatisticsManager getStatisticsManager() {
+  protected StatisticsManager getStatisticsManager() {
     return this.con;
   }
 
   @Override
-  protected final OsStatisticsFactory getOsStatisticsFactory() {
+  protected OsStatisticsFactory getOsStatisticsFactory() {
     return this.con;
   }
 
   @Override
-  protected final long getSpecialStatsId() {
+  protected long getSpecialStatsId() {
     long statId = OSProcess.getId();
     if (statId == 0 || statId == -1) {
       statId = getStatisticsManager().getId();
@@ -245,7 +245,7 @@ public final class GemFireStatSampler extends HostStatSampler {
   }
 
   @Override
-  protected final void initProcessStats(long id) {
+  protected void initProcessStats(long id) {
     if (PureJavaMode.osStatsAreAvailable()) {
       if (osStatsDisabled()) {
         logger.info(LogMarker.STATISTICS, LocalizedMessage.create(
@@ -269,7 +269,7 @@ public final class GemFireStatSampler extends HostStatSampler {
   }
 
   @Override
-  protected final void sampleProcessStats(boolean prepareOnly) {
+  protected void sampleProcessStats(boolean prepareOnly) {
     if (prepareOnly || osStatsDisabled() || !PureJavaMode.osStatsAreAvailable()) {
       return;
     }
@@ -292,7 +292,7 @@ public final class GemFireStatSampler extends HostStatSampler {
   }
 
   @Override
-  protected final void closeProcessStats() {
+  protected void closeProcessStats() {
     if (PureJavaMode.osStatsAreAvailable()) {
       if (!osStatsDisabled()) {
         if (this.processStats != null) {
@@ -415,12 +415,12 @@ public final class GemFireStatSampler extends HostStatSampler {
     private InternalDistributedMember recipient;
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
       return listenerId;
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
       if (o == null) {
         return false;
       }

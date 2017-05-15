@@ -31,7 +31,7 @@ import java.io.*;
  *
  * @since GemFire 5.5
  */
-public final class ClientMarkerMessageImpl implements ClientMessage {
+public class ClientMarkerMessageImpl implements ClientMessage {
   private static final long serialVersionUID = 5423895238521508743L;
 
   /**

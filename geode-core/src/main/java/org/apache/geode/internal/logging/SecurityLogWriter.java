@@ -28,7 +28,7 @@ import org.apache.geode.i18n.StringId;
  * 
  * @since GemFire 5.5
  */
-public final class SecurityLogWriter extends LogWriterImpl implements InternalLogWriter {
+public class SecurityLogWriter extends LogWriterImpl implements InternalLogWriter {
 
   public static final String SECURITY_PREFIX = DistributionConfig.SECURITY_PREFIX_NAME;
 

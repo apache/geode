@@ -116,8 +116,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
   public static final byte HA_HASRESULT_OPTIMIZEFORWRITE_REEXECUTE = 15;
 
-  public static final byte getFunctionState(boolean isHA, boolean hasResult,
-      boolean optimizeForWrite) {
+  public static byte getFunctionState(boolean isHA, boolean hasResult, boolean optimizeForWrite) {
     if (isHA) {
       if (hasResult) {
         if (optimizeForWrite) {
@@ -144,7 +143,7 @@ public abstract class AbstractExecution implements InternalExecution {
     }
   }
 
-  public static final byte getReexecuteFunctionState(byte fnState) {
+  public static byte getReexecuteFunctionState(byte fnState) {
     if (fnState == HA_HASRESULT_NO_OPTIMIZEFORWRITE) {
       return HA_HASRESULT_NO_OPTIMIZEFORWRITE_REEXECUTE;
     } else if (fnState == HA_HASRESULT_OPTIMIZEFORWRITE) {
@@ -238,16 +237,16 @@ public abstract class AbstractExecution implements InternalExecution {
     return isFnSerializationReqd;
   }
 
-  public final Collection<InternalDistributedMember> getExecutionNodes() {
+  public Collection<InternalDistributedMember> getExecutionNodes() {
     return this.executionNodes;
   }
 
-  public final void setRequireExecutionNodes(ExecutionNodesListener listener) {
+  public void setRequireExecutionNodes(ExecutionNodesListener listener) {
     this.executionNodes = Collections.emptySet();
     this.executionNodesListener = listener;
   }
 
-  public final void setExecutionNodes(Set<InternalDistributedMember> nodes) {
+  public void setExecutionNodes(Set<InternalDistributedMember> nodes) {
     if (this.executionNodes != null) {
       this.executionNodes = nodes;
       if (this.executionNodesListener != null) {
@@ -256,7 +255,7 @@ public abstract class AbstractExecution implements InternalExecution {
     }
   }
 
-  public final void executeFunctionOnLocalPRNode(final Function fn, final FunctionContext cx,
+  public void executeFunctionOnLocalPRNode(final Function fn, final FunctionContext cx,
       final PartitionedRegionFunctionResultSender sender, DM dm, boolean isTx) {
     if (dm instanceof DistributionManager && !isTx) {
       if (ServerConnection.isExecuteFunctionOnLocalNodeOnly().byteValue() == 1) {
@@ -294,7 +293,7 @@ public abstract class AbstractExecution implements InternalExecution {
   // Bug41118 : in case of lonerDistribuedSystem do local execution through
   // main thread otherwise give execution to FunctionExecutor from
   // DistributionManager
-  public final void executeFunctionOnLocalNode(final Function fn, final FunctionContext cx,
+  public void executeFunctionOnLocalNode(final Function fn, final FunctionContext cx,
       final ResultSender sender, DM dm, final boolean isTx) {
     if (dm instanceof DistributionManager && !isTx) {
       final DistributionManager newDM = (DistributionManager) dm;
@@ -318,7 +317,7 @@ public abstract class AbstractExecution implements InternalExecution {
     }
   }
 
-  public final void executeFunctionLocally(final Function fn, final FunctionContext cx,
+  public void executeFunctionLocally(final Function fn, final FunctionContext cx,
       final ResultSender sender, DM dm) {
 
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
@@ -396,7 +395,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return executeFunction(function);
   }
 
-  public final void setWaitOnExceptionFlag(boolean waitOnException) {
+  public void setWaitOnExceptionFlag(boolean waitOnException) {
     this.setForwardExceptions(waitOnException);
     this.waitOnException = waitOnException;
   }
@@ -438,7 +437,7 @@ public abstract class AbstractExecution implements InternalExecution {
    */
   public abstract void validateExecution(Function function, Set targetMembers);
 
-  public final LocalResultCollector<?, ?> getLocalResultCollector(Function function,
+  public LocalResultCollector<?, ?> getLocalResultCollector(Function function,
       final ResultCollector<?, ?> rc) {
     if (rc instanceof LocalResultCollector) {
       return (LocalResultCollector) rc;

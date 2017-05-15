@@ -32,7 +32,7 @@ import org.xml.sax.ext.EntityResolver2;
  * 
  * @since GemFire 8.1
  */
-public final class GeodeEntityResolver extends DefaultEntityResolver2 {
+public class GeodeEntityResolver extends DefaultEntityResolver2 {
 
   private static final String SYSTEM_ID_ROOT = "http://geode.apache.org/";
 

@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
  * 
  * @since GemFire 5.1
  */
-public final class ClientRegionEventImpl extends RegionEventImpl {
+public class ClientRegionEventImpl extends RegionEventImpl {
 
   /**
    * The originating membershipId of this event.

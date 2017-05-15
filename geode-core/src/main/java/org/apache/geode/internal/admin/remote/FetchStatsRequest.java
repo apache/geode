@@ -23,7 +23,7 @@ import org.apache.geode.distributed.internal.*;
 import java.io.*;
 // import java.util.*;
 
-public final class FetchStatsRequest extends AdminRequest {
+public class FetchStatsRequest extends AdminRequest {
 
   private String statisticsTypeName;
 

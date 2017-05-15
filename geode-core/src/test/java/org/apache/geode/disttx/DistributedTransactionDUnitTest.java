@@ -1849,7 +1849,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
       // spawn a new thread modify and custIdOne in another tx
       // so that outer thread fails
-      final class TxThread extends Thread {
+      class TxThread extends Thread {
         public void run() {
           CacheTransactionManager mgr = getGemfireCache().getTxManager();
           mgr.setDistributed(true);
@@ -1931,7 +1931,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
 
-  final class TxConflictRunnable implements Runnable {
+  class TxConflictRunnable implements Runnable {
     final String regionName;
 
     public TxConflictRunnable(String regionName) {
@@ -1942,7 +1942,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     public void run() {
       // spawn a new thread modify and custIdOne in another tx
       // so that outer thread fails
-      final class TxThread extends Thread {
+      class TxThread extends Thread {
         public boolean gotConflict = false;
         public boolean gotOtherException = false;
         public Exception ex = new Exception();
@@ -2071,7 +2071,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
 
-  final class TxRunnable implements Runnable {
+  class TxRunnable implements Runnable {
     final String regionName;
 
     public TxRunnable(String regionName) {
@@ -2080,7 +2080,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void run() {
-      final class TxThread extends Thread {
+      class TxThread extends Thread {
         public boolean gotException = false;
         public Exception ex = new Exception();
 

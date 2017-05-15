@@ -1344,7 +1344,7 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     protected int count;
 
-    public final int getSampleCount() {
+    public int getSampleCount() {
       return this.count;
     }
 

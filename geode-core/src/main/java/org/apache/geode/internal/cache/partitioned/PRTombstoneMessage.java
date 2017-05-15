@@ -50,7 +50,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 7.0
  */
-public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
+public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     implements SerializationVersions {
 
   private static final Logger logger = LogService.getLogger();
@@ -93,8 +93,8 @@ public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(final DistributionManager dm,
-      PartitionedRegion r, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(final DistributionManager dm, PartitionedRegion r,
+      long startTime) throws ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.debug("PRTombstoneMessage operateOnRegion: {}", r.getFullPath());
     }

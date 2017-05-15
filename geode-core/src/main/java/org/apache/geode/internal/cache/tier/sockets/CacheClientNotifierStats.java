@@ -199,23 +199,23 @@ public class CacheClientNotifierStats {
     }
   }
 
-  public final void incClientRegisterRequests() {
+  public void incClientRegisterRequests() {
     this._stats.incInt(_clientHealthMonitorRegisterId, 1);
   }
 
-  public final int getClientRegisterRequests() {
+  public int getClientRegisterRequests() {
     return this._stats.getInt(_clientHealthMonitorRegisterId);
   }
 
-  public final int get_durableReconnectionCount() {
+  public int get_durableReconnectionCount() {
     return this._stats.getInt(_durableReconnectionCount);
   }
 
-  public final int get_queueDroppedCount() {
+  public int get_queueDroppedCount() {
     return this._stats.getInt(_queueDroppedCount);
   }
 
-  public final int get_eventEnqueuedWhileClientAwayCount() {
+  public int get_eventEnqueuedWhileClientAwayCount() {
     return this._stats.getInt(_eventEnqueuedWhileClientAwayCount);
   }
 
@@ -231,31 +231,31 @@ public class CacheClientNotifierStats {
     return this._stats.getLong(_compiledQueryUsedCount);
   }
 
-  public final void incDurableReconnectionCount() {
+  public void incDurableReconnectionCount() {
     this._stats.incInt(_durableReconnectionCount, 1);
   }
 
-  public final void incQueueDroppedCount() {
+  public void incQueueDroppedCount() {
     this._stats.incInt(_queueDroppedCount, 1);
   }
 
-  public final void incEventEnqueuedWhileClientAwayCount() {
+  public void incEventEnqueuedWhileClientAwayCount() {
     this._stats.incInt(_eventEnqueuedWhileClientAwayCount, 1);
   }
 
-  public final void incClientUnRegisterRequests() {
+  public void incClientUnRegisterRequests() {
     this._stats.incInt(_clientHealthMonitorUnRegisterId, 1);
   }
 
-  public final void incCompiledQueryCount(long count) {
+  public void incCompiledQueryCount(long count) {
     this._stats.incLong(_compiledQueryCount, count);
   }
 
-  public final void incCompiledQueryUsedCount(long count) {
+  public void incCompiledQueryUsedCount(long count) {
     this._stats.incLong(_compiledQueryUsedCount, count);
   }
 
-  public final int getClientUnRegisterRequests() {
+  public int getClientUnRegisterRequests() {
     return this._stats.getInt(_clientHealthMonitorUnRegisterId);
   }
 

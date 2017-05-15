@@ -132,7 +132,7 @@ public class FunctionHelper {
    * 
    * @param vals Array of number
    */
-  public static final Number SUM(Number[] vals) {
+  public static Number SUM(Number[] vals) {
     try {
       double sum = 0.0;
       for (int i = 0; i < vals.length; i++) {
@@ -160,7 +160,7 @@ public class FunctionHelper {
    * 
    * @param vals Array of number
    */
-  public static final Number AVG(Number[] vals) {
+  public static Number AVG(Number[] vals) {
     try {
       return Double.valueOf(SUM(vals).doubleValue() / vals.length);
     } catch (VirtualMachineError err) {
@@ -184,7 +184,7 @@ public class FunctionHelper {
    * 
    * @param vals Array of number
    */
-  public static final Number MIN(Number[] vals) {
+  public static Number MIN(Number[] vals) {
     try {
       Collection col = Arrays.asList(vals);
       Number min = (Number) Collections.max(col);
@@ -211,7 +211,7 @@ public class FunctionHelper {
    * 
    * @param vals Array of number
    */
-  public static final Number MAX(Number[] vals) {
+  public static Number MAX(Number[] vals) {
     try {
       Collection col = Arrays.asList(vals);
       Number max = (Number) Collections.max(col);

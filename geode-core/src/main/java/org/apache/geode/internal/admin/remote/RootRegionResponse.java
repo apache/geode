@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.InternalCache;
 /**
  * Responds to {@link RootRegionResponse}.
  */
-public final class RootRegionResponse extends AdminResponse {
+public class RootRegionResponse extends AdminResponse {
 
   private String[] regions;
   private String[] userAttrs;

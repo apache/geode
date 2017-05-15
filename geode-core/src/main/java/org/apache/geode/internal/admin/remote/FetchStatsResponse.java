@@ -32,7 +32,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * Provides a response of remote statistic resources for a <code>FetchStatsRequest</code>
  *
  */
-public final class FetchStatsResponse extends AdminResponse {
+public class FetchStatsResponse extends AdminResponse {
 
   // instance variables
   private RemoteStatResource[] stats;

@@ -127,7 +127,7 @@ public class TXRemoteCommitMessage extends TXMessage {
    * 
    * @since GemFire 6.5
    */
-  public static final class TXRemoteCommitReplyMessage extends ReplyMessage {
+  public static class TXRemoteCommitReplyMessage extends ReplyMessage {
 
     private transient TXCommitMessage commitMessage;
 

@@ -883,7 +883,7 @@ public class FreeListManager {
   /**
    * Used to represent an address from a tiny free list as a MemoryBlock
    */
-  protected static final class TinyMemoryBlock implements MemoryBlock {
+  protected static class TinyMemoryBlock implements MemoryBlock {
     private final long address;
     private final int freeListId;
 

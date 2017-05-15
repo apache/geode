@@ -31,7 +31,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * Removed implementations of hashCode() and equals() that were throwing
  * UnsupportedOperationException. See bug #50939 if you need to override those.
  */
-public final class DistributionConfigSnapshot extends DistributionConfigImpl {
+public class DistributionConfigSnapshot extends DistributionConfigImpl {
   private static final long serialVersionUID = 7445728132965092798L;
 
   private HashSet modifiable;

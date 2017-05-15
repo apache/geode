@@ -23,7 +23,7 @@ package org.apache.geode.internal.cache;
  * 
  * @since GemFire 6.6
  */
-public final class OpType {
+public class OpType {
 
   private OpType() {}
 

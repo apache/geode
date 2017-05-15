@@ -57,7 +57,7 @@ public class OverflowOplogSet implements OplogSet {
   }
 
   @Override
-  public final void modify(LocalRegion lr, DiskEntry entry, ValueWrapper value, boolean async) {
+  public void modify(LocalRegion lr, DiskEntry entry, ValueWrapper value, boolean async) {
     DiskRegion dr = lr.getDiskRegion();
     synchronized (this.overflowMap) {
       if (this.lastOverflowWrite != null) {
@@ -157,11 +157,11 @@ public class OverflowOplogSet implements OplogSet {
     return new OverflowOplog(id, this, getDirectories()[idx], minSize);
   }
 
-  final void addOverflow(OverflowOplog oo) {
+  void addOverflow(OverflowOplog oo) {
     this.overflowMap.put(oo.getOplogId(), oo);
   }
 
-  final void removeOverflow(OverflowOplog oo) {
+  void removeOverflow(OverflowOplog oo) {
     if (!basicRemoveOverflow(oo)) {
       synchronized (this.compactableOverflowMap) {
         this.compactableOverflowMap.remove(oo.getOplogId());
@@ -169,7 +169,7 @@ public class OverflowOplogSet implements OplogSet {
     }
   }
 
-  final boolean basicRemoveOverflow(OverflowOplog oo) {
+  boolean basicRemoveOverflow(OverflowOplog oo) {
     if (this.lastOverflowWrite == oo) {
       this.lastOverflowWrite = null;
     }
@@ -189,7 +189,7 @@ public class OverflowOplogSet implements OplogSet {
     }
   }
 
-  final private void removeOverflow(DiskRegion dr, DiskEntry entry) {
+  private void removeOverflow(DiskRegion dr, DiskEntry entry) {
     // find the overflow oplog that it is currently in and remove the entry from it
     DiskId id = entry.getDiskId();
     synchronized (id) {
@@ -223,13 +223,13 @@ public class OverflowOplogSet implements OplogSet {
     }
   }
 
-  public final OverflowOplog getChild(long oplogId) {
+  public OverflowOplog getChild(long oplogId) {
     // the oplog id is cast to an integer because the overflow
     // map uses integer oplog ids.
     return getChild((int) oplogId);
   }
 
-  public final OverflowOplog getChild(int oplogId) {
+  public OverflowOplog getChild(int oplogId) {
     OverflowOplog result = this.overflowMap.get(oplogId);
     if (result == null) {
       synchronized (this.compactableOverflowMap) {

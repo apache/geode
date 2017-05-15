@@ -99,14 +99,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    */
   private final AtomicLongWithTerminalState bytesInMemory = new AtomicLongWithTerminalState();
 
-  public static final class RawValue {
+  public static class RawValue {
     private final Object rawValue;
 
     public RawValue(Object rawVal) {
       this.rawValue = rawVal;
     }
 
-    public final boolean isValueByteArray() {
+    public boolean isValueByteArray() {
       return this.rawValue instanceof byte[];
     }
 
@@ -1017,7 +1017,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  final void performExpiryTimeout(ExpiryTask expiryTask) throws CacheException {
+  void performExpiryTimeout(ExpiryTask expiryTask) throws CacheException {
     ExpiryTask task = expiryTask;
     boolean isEvictDestroy = isEntryEvictDestroyEnabled();
     // Fix for bug 43805 - get the primary lock before
@@ -1049,7 +1049,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         && EvictionAction.LOCAL_DESTROY.equals(getEvictionAttributes().getAction());
   }
 
-  protected final void processPendingSecondaryExpires() {
+  protected void processPendingSecondaryExpires() {
     ExpiryTask[] tasks;
     while (true) {
       // note we just keep looping until no more pendingExpires exist

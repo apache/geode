@@ -77,7 +77,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
  *
  * @since GemFire 8.1
  */
-public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
+public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private RemoveAllEntryData[] removeAllPRData;
@@ -307,7 +307,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
       long startTime) throws EntryExistsException, ForceReattemptException, DataLocationException {
     boolean sendReply = true;
 
@@ -358,7 +358,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
    * @return If succeeds, return true, otherwise, throw exception
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IMSE_DONT_CATCH_IMSE")
-  public final boolean doLocalRemoveAll(PartitionedRegion r, InternalDistributedMember eventSender,
+  public boolean doLocalRemoveAll(PartitionedRegion r, InternalDistributedMember eventSender,
       boolean cacheWrite)
       throws EntryExistsException, ForceReattemptException, DataLocationException {
     boolean didRemove = false;
@@ -647,15 +647,15 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     }
   }
 
-  public final InternalDistributedSystem getInternalDs() {
+  public InternalDistributedSystem getInternalDs() {
     return internalDs;
   }
 
-  public final void setInternalDs(InternalDistributedSystem internalDs) {
+  public void setInternalDs(InternalDistributedSystem internalDs) {
     this.internalDs = internalDs;
   }
 
-  public final void setDirectAck(boolean directAck) {
+  public void setDirectAck(boolean directAck) {
     this.directAck = directAck;
   }
 
@@ -664,7 +664,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     return _mayAddToMultipleSerialGateways(dm);
   }
 
-  public static final class RemoveAllReplyMessage extends ReplyMessage {
+  public static class RemoveAllReplyMessage extends ReplyMessage {
     /** Result of the RemoveAll operation */
     boolean result;
     VersionedObjectList versions;

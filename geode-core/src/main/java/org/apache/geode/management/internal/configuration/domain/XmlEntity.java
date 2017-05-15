@@ -174,7 +174,7 @@ public class XmlEntity implements VersionedDataSerializable {
    * 
    * @since GemFire 8.1
    */
-  private final void init() {
+  private void init() {
     Assert.assertTrue(!StringUtils.isBlank(type));
     Assert.assertTrue(!StringUtils.isBlank(prefix));
     Assert.assertTrue(!StringUtils.isBlank(namespace));
@@ -190,7 +190,7 @@ public class XmlEntity implements VersionedDataSerializable {
    * 
    * @return XML string representation of the entity.
    */
-  private final String loadXmlDefinition() {
+  private String loadXmlDefinition() {
     final Cache cache = CacheFactory.getAnyInstance();
 
     final StringWriter stringWriter = new StringWriter();
@@ -208,7 +208,7 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return XML for {@link XmlEntity} if found, otherwise <code>null</code>.
    * @since GemFire 8.1
    */
-  private final String loadXmlDefinition(final String xmlDocument) {
+  private String loadXmlDefinition(final String xmlDocument) {
     final Cache cache = CacheFactory.getAnyInstance();
     try {
       InputSource inputSource = new InputSource(new StringReader(xmlDocument));
@@ -229,7 +229,7 @@ public class XmlEntity implements VersionedDataSerializable {
    * @throws TransformerFactoryConfigurationError
    * @since GemFire 8.1
    */
-  private final String loadXmlDefinition(final Document document)
+  private String loadXmlDefinition(final Document document)
       throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
     final Cache cache = CacheFactory.getAnyInstance();
 
@@ -446,7 +446,7 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return new {@link XmlEntityBuilder}.
    * @since GemFire 8.1
    */
-  public static final XmlEntityBuilder builder() {
+  public static XmlEntityBuilder builder() {
     return new XmlEntityBuilder();
   }
 
@@ -461,7 +461,7 @@ public class XmlEntity implements VersionedDataSerializable {
    *
    * @since GemFire 8.1
    */
-  public static final class XmlEntityBuilder {
+  public static class XmlEntityBuilder {
     private XmlEntity xmlEntity;
 
     /**

@@ -99,7 +99,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
 
   /////////////// Inner message classes //////////////////
 
-  public static final class DeposeGrantorMessage extends PooledDistributionMessage
+  public static class DeposeGrantorMessage extends PooledDistributionMessage
       implements MessageWithReply {
     private int processorId;
     private String serviceName;

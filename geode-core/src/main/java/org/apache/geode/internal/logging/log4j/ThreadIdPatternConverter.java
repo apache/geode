@@ -24,7 +24,7 @@ import org.apache.logging.log4j.core.pattern.LogEventPatternConverter;
  */
 @Plugin(name = "ThreadIdPatternConverter", category = "Converter")
 @ConverterKeys({"tid", "threadId"})
-public final class ThreadIdPatternConverter extends LogEventPatternConverter {
+public class ThreadIdPatternConverter extends LogEventPatternConverter {
   /**
    * Singleton.
    */

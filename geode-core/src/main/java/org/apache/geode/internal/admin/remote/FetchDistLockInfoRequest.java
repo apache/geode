@@ -23,7 +23,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.io.*;
 // import java.util.*;
 
-public final class FetchDistLockInfoRequest extends AdminRequest {
+public class FetchDistLockInfoRequest extends AdminRequest {
   /**
    * Returns a <code>FetchDistLockInfoRequest</code> to be sent to the specified recipient.
    */

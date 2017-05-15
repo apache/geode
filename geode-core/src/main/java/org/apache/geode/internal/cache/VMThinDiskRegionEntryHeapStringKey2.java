@@ -15,13 +15,19 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+
+
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
 import org.apache.geode.internal.cache.lru.EnableLRU;
+
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: DISK
+// disk: 1
 // lru: LRU
 // stats: STATS
 // versioned: VERSIONED
@@ -32,17 +38,33 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
-// key string2: KEY_STRING2
+// key string2: 1
+
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHeap {
-  public VMThinDiskRegionEntryHeapStringKey2(RegionEntryContext context, String key, Object value,
-      boolean byteEncode) {
-    super(context, (value instanceof RecoveredEntry ? null : value));
+  public VMThinDiskRegionEntryHeapStringKey2(RegionEntryContext context, String key,
+
+
+
+      Object value
+
+      , boolean byteEncode
+
+  ) {
+    super(context,
+
+        (value instanceof RecoveredEntry ? null : value)
+
+
+
+    );
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
     initialize(context, value);
+
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
     long tmpBits1 = 0L;
     long tmpBits2 = 0L;
@@ -73,9 +95,11 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
     tmpBits1 |= key.length();
     this.bits1 = tmpBits1;
     this.bits2 = tmpBits2;
+
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -83,10 +107,11 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMThinDiskRegionEntryHeapStringKey2> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMThinDiskRegionEntryHeapStringKey2.class, "lastModified");
+
   private volatile Object value;
 
   @Override
-  protected final Object getValueField() {
+  protected Object getValueField() {
     return this.value;
   }
 
@@ -106,7 +131,7 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
   /**
    * @see HashEntry#getEntryHash()
    */
-  public final int getEntryHash() {
+  public int getEntryHash() {
     return this.hash;
   }
 
@@ -117,19 +142,22 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
   /**
    * @see HashEntry#getNextEntry()
    */
-  public final HashEntry<Object, Object> getNextEntry() {
+  public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
   /**
    * @see HashEntry#setNextEntry
    */
-  public final void setNextEntry(final HashEntry<Object, Object> n) {
+  public void setNextEntry(final HashEntry<Object, Object> n) {
     this.next = n;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // disk code
+
   protected void initialize(RegionEntryContext context, Object value) {
     diskInitialize(context, value);
   }
@@ -139,7 +167,9 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
     throw new IllegalStateException("should never be called");
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -164,7 +194,6 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
   void setDiskId(RegionEntry old) {
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
-
   // // inlining DiskId
   // // always have these fields
   // /**
@@ -204,8 +233,13 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
   // // persistent
   // /** unique entry identifier * */
   // private long keyId;
+
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // key code
+
   // strlen is encoded in lowest 6 bits (max strlen is 63)
   // character encoding info is in bits 7 and 8
   // The other bits are used to encoded character data.
@@ -224,7 +258,7 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
   }
 
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     int keylen = getKeyLength();
     char[] chars = new char[keylen];
     long tmpBits1 = this.bits1;
@@ -254,6 +288,7 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   @Override
   public boolean isKeyEqual(Object k) {
     if (k instanceof String) {
@@ -296,5 +331,7 @@ public class VMThinDiskRegionEntryHeapStringKey2 extends VMThinDiskRegionEntryHe
     }
     return false;
   }
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
+

@@ -134,8 +134,7 @@ public class LoginHandlerInterceptorJUnitTest {
     TestFramework.runOnce(new HandlerInterceptorThreadSafetyMultiThreadedTestCase());
   }
 
-  private final class HandlerInterceptorThreadSafetyMultiThreadedTestCase
-      extends MultithreadedTestCase {
+  private class HandlerInterceptorThreadSafetyMultiThreadedTestCase extends MultithreadedTestCase {
 
     private LoginHandlerInterceptor handlerInterceptor;
 

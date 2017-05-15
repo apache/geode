@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.LogService;
  * 
  * @since GemFire 6.6
  */
-public final class AllBucketProfilesUpdateMessage extends DistributionMessage
+public class AllBucketProfilesUpdateMessage extends DistributionMessage
     implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
@@ -54,7 +54,7 @@ public final class AllBucketProfilesUpdateMessage extends DistributionMessage
   public AllBucketProfilesUpdateMessage() {}
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.WAITING_POOL_EXECUTOR;
   }
 

@@ -905,7 +905,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * @return String value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
-  public static final String getString(final Attributes attributes, final String name) {
+  public static String getString(final Attributes attributes, final String name) {
     return getString(attributes, name, null);
   }
 
@@ -917,7 +917,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * @return String value for named attribute or <code>defaultValue</code> if attribute not defined.
    * @since GemFire 8.1
    */
-  public static final String getString(final Attributes attributes, final String name,
+  public static String getString(final Attributes attributes, final String name,
       final String defaultValue) {
     final String value = attributes.getValue(name);
     if (null == value) {
@@ -933,7 +933,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * @return Integer value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
-  public static final Integer getInteger(final Attributes attributes, final String name) {
+  public static Integer getInteger(final Attributes attributes, final String name) {
     return getInteger(attributes, name, null);
   }
 
@@ -946,7 +946,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    *         defined.
    * @since GemFire 8.1
    */
-  public static final Integer getInteger(final Attributes attributes, final String name,
+  public static Integer getInteger(final Attributes attributes, final String name,
       final Integer defaultValue) {
     final String value = attributes.getValue(name);
     if (null == value) {
@@ -962,7 +962,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * @return Boolean value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
-  public static final Boolean getBoolean(final Attributes attributes, final String name) {
+  public static Boolean getBoolean(final Attributes attributes, final String name) {
     return getBoolean(attributes, name, null);
   }
 
@@ -975,7 +975,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    *         defined.
    * @since GemFire 8.1
    */
-  public static final Boolean getBoolean(final Attributes attributes, final String name,
+  public static Boolean getBoolean(final Attributes attributes, final String name,
       final Boolean defaultValue) {
     final String value = attributes.getValue(name);
     if (null == value) {
@@ -992,7 +992,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * @return Enum value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
-  public static final <E extends Enum<E>> E getEnum(final Attributes attributes, final String name,
+  public static <E extends Enum<E>> E getEnum(final Attributes attributes, final String name,
       final Class<E> clazz) {
     return getEnum(attributes, name, clazz, null);
   }
@@ -1006,7 +1006,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * @return Enum value for named attribute or <code>defaultValue</code> if attribute not defined.
    * @since GemFire 8.1
    */
-  public static final <E extends Enum<E>> E getEnum(final Attributes attributes, final String name,
+  public static <E extends Enum<E>> E getEnum(final Attributes attributes, final String name,
       final Class<E> clazz, E defaultValue) {
     String value = attributes.getValue(name);
     if (null == value) {

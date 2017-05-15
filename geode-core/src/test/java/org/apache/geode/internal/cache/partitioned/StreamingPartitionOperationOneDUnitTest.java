@@ -218,7 +218,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
     }
   }
 
-  public static final class TestStreamingPartitionMessageOneProviderNoExceptions
+  public static class TestStreamingPartitionMessageOneProviderNoExceptions
       extends StreamingPartitionOperation.StreamingPartitionMessage {
     private int nextInt = -10;
     private int count = 0;

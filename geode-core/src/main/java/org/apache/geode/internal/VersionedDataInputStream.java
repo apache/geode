@@ -25,7 +25,7 @@ import java.io.InputStream;
  * 
  * @since GemFire 7.1
  */
-public final class VersionedDataInputStream extends DataInputStream implements VersionedDataStream {
+public class VersionedDataInputStream extends DataInputStream implements VersionedDataStream {
 
   private final Version version;
 

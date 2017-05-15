@@ -171,7 +171,7 @@ public class DistTXCommitMessage extends TXMessage {
    * stub to the tx host. This is the reply to a {@link DistTXCommitMessage}.
    * 
    */
-  public static final class DistTXCommitReplyMessage extends ReplyMessage {
+  public static class DistTXCommitReplyMessage extends ReplyMessage {
     private transient TXCommitMessage commitMessage;
 
     /**
@@ -274,7 +274,7 @@ public class DistTXCommitMessage extends TXMessage {
    * 
    *      [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
-  public static final class DistTxCommitReplyProcessor extends ReplyProcessor21 {
+  public static class DistTxCommitReplyProcessor extends ReplyProcessor21 {
     private HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
     private Map<DistributedMember, TXCommitMessage> commitResponseMap;
     private transient TXId txIdent = null;

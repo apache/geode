@@ -481,7 +481,7 @@ public class ByteBufferInputStream extends InputStream
       return this.chunk.getDataSize();
     }
 
-    private final int nextGetIndex() {
+    private int nextGetIndex() {
       int p = this.position;
       if (p >= this.limit) {
         throw new BufferUnderflowException();
@@ -490,7 +490,7 @@ public class ByteBufferInputStream extends InputStream
       return p;
     }
 
-    private final int nextGetIndex(int nb) {
+    private int nextGetIndex(int nb) {
       int p = this.position;
       if (this.limit - p < nb) {
         throw new BufferUnderflowException();
@@ -503,13 +503,13 @@ public class ByteBufferInputStream extends InputStream
      * Checks the given index against the limit, throwing an {@link IndexOutOfBoundsException} if it
      * is not smaller than the limit or is smaller than zero.
      */
-    private final void checkIndex(int i) {
+    private void checkIndex(int i) {
       if ((i < 0) || (i >= this.limit)) {
         throw new IndexOutOfBoundsException();
       }
     }
 
-    private final void checkIndex(int i, int nb) {
+    private void checkIndex(int i, int nb) {
       if ((i < 0) || (nb > this.limit - i)) {
         throw new IndexOutOfBoundsException();
       }
@@ -802,14 +802,14 @@ public class ByteBufferInputStream extends InputStream
     this.buffer = ByteSourceFactory.create(blob);
   }
 
-  public final void setBuffer(ByteSource buffer) {
+  public void setBuffer(ByteSource buffer) {
     if (buffer == null) {
       throw new NullPointerException();
     }
     this.buffer = buffer;
   }
 
-  public final void setBuffer(ByteBuffer bb) {
+  public void setBuffer(ByteBuffer bb) {
     if (bb == null) {
       throw new NullPointerException();
     }
@@ -821,7 +821,7 @@ public class ByteBufferInputStream extends InputStream
    * the wrapped ByteBuffer is done this method throws BufferUnderflowException
    */
   @Override
-  public final int read() {
+  public int read() {
     return (buffer.get() & 0xff);
   }
 
@@ -832,7 +832,7 @@ public class ByteBufferInputStream extends InputStream
    * BufferUnderflowException
    */
   @Override
-  public final int read(byte b[], int off, int len) {
+  public int read(byte b[], int off, int len) {
     buffer.get(b, off, len);
     return len;
   }

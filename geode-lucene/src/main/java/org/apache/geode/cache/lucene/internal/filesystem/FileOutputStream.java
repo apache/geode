@@ -20,7 +20,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-final class FileOutputStream extends OutputStream {
+class FileOutputStream extends OutputStream {
 
   private final File file;
   private ByteBuffer buffer;

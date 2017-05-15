@@ -86,7 +86,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     SpyAuthenticator.clear();
   }
 
-  protected static final class AuthInitCreateReturnsNull implements AuthInitialize {
+  protected static class AuthInitCreateReturnsNull implements AuthInitialize {
 
     public static AuthInitialize create() {
       return null;
@@ -106,7 +106,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     public void close() {}
   }
 
-  protected static final class SpyAuthInit implements AuthInitialize {
+  protected static class SpyAuthInit implements AuthInitialize {
 
     private static SpyAuthInit instance = null;
     private static int createCount = 0;
@@ -151,7 +151,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
         throws AuthenticationFailedException {}
   }
 
-  protected static final class AuthInitGetCredentialsAndInitThrow implements AuthInitialize {
+  protected static class AuthInitGetCredentialsAndInitThrow implements AuthInitialize {
 
     public static AuthInitialize create() {
       return new AuthInitGetCredentialsAndInitThrow();
@@ -173,7 +173,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     public void close() {}
   }
 
-  protected static final class AuthInitGetCredentialsThrows implements AuthInitialize {
+  protected static class AuthInitGetCredentialsThrows implements AuthInitialize {
 
     public static AuthInitialize create() {
       return new AuthInitGetCredentialsThrows();
@@ -193,7 +193,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     public void close() {}
   }
 
-  protected static final class AuthenticatorReturnsNulls implements Authenticator {
+  protected static class AuthenticatorReturnsNulls implements Authenticator {
 
     public static Authenticator create() {
       return null;
@@ -213,7 +213,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     public void close() {}
   }
 
-  protected static final class AuthenticatorInitThrows implements Authenticator {
+  protected static class AuthenticatorInitThrows implements Authenticator {
 
     public static Authenticator create() {
       return new AuthenticatorInitThrows();
@@ -235,7 +235,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     public void close() {}
   }
 
-  protected static final class AuthenticatorAuthenticateThrows implements Authenticator {
+  protected static class AuthenticatorAuthenticateThrows implements Authenticator {
 
     public static Authenticator create() {
       return new AuthenticatorAuthenticateThrows();
@@ -255,7 +255,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     public void close() {}
   }
 
-  protected static final class SpyAuthenticator implements Authenticator {
+  protected static class SpyAuthenticator implements Authenticator {
 
     private static Authenticator instance = null;
     private static int createCount = 0;

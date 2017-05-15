@@ -66,11 +66,11 @@ public class ServerLocation implements DataSerializable, Comparable {
     this.port = port;
   }
 
-  public final String getHostName() {
+  public String getHostName() {
     return hostName;
   }
 
-  public final int getPort() {
+  public int getPort() {
     return port;
   }
 

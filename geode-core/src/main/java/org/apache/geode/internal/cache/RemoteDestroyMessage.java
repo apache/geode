@@ -173,11 +173,11 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     this.oldValBytes = valBytes;
   }
 
-  private final void setOldValObj(@Unretained(ENTRY_EVENT_OLD_VALUE) Object o) {
+  private void setOldValObj(@Unretained(ENTRY_EVENT_OLD_VALUE) Object o) {
     this.oldValObj = o;
   }
 
-  public final byte[] getOldValueBytes() {
+  public byte[] getOldValueBytes() {
     return this.oldValBytes;
   }
 
@@ -523,19 +523,19 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     buff.append("; hasOldValue= ").append(this.hasOldValue);
   }
 
-  protected final Object getKey() {
+  protected Object getKey() {
     return this.key;
   }
 
-  private final void setKey(Object key) {
+  private void setKey(Object key) {
     this.key = key;
   }
 
-  public final Operation getOperation() {
+  public Operation getOperation() {
     return this.op;
   }
 
-  protected final Object getCallbackArg() {
+  protected Object getCallbackArg() {
     return this.cbArg;
   }
 

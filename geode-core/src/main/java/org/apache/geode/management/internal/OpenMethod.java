@@ -108,15 +108,15 @@ public class OpenMethod {
     return sig;
   }
 
-  final Object toOpenReturnValue(Object ret) throws OpenDataException {
+  Object toOpenReturnValue(Object ret) throws OpenDataException {
     return returnTypeConverter.toOpenValue(ret);
   }
 
-  final Object fromOpenReturnValue(Object ret) throws InvalidObjectException {
+  Object fromOpenReturnValue(Object ret) throws InvalidObjectException {
     return returnTypeConverter.fromOpenValue(ret);
   }
 
-  final Object[] toOpenParameters(Object[] params) throws OpenDataException {
+  Object[] toOpenParameters(Object[] params) throws OpenDataException {
     if (paramConversionIsIdentity || params == null)
       return params;
     final Object[] oparams = new Object[params.length];
@@ -125,7 +125,7 @@ public class OpenMethod {
     return oparams;
   }
 
-  final Object[] fromOpenParameters(Object[] params) throws InvalidObjectException {
+  Object[] fromOpenParameters(Object[] params) throws InvalidObjectException {
     if (paramConversionIsIdentity || params == null)
       return params;
     final Object[] jparams = new Object[params.length];
@@ -134,11 +134,11 @@ public class OpenMethod {
     return jparams;
   }
 
-  final Object toOpenParameter(Object param, int paramNo) throws OpenDataException {
+  Object toOpenParameter(Object param, int paramNo) throws OpenDataException {
     return paramTypeConverters[paramNo].toOpenValue(param);
   }
 
-  final Object fromOpenParameter(Object param, int paramNo) throws InvalidObjectException {
+  Object fromOpenParameter(Object param, int paramNo) throws InvalidObjectException {
     return paramTypeConverters[paramNo].fromOpenValue(param);
   }
 

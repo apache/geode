@@ -86,7 +86,7 @@ public class LocatorDiscovery {
   private static final int FAILURE_LOG_MAX_INTERVAL = Integer.getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "LocatorDiscovery.FAILURE_LOG_MAX_INTERVAL", 300000);
 
-  public final boolean skipFailureLogging(DistributionLocatorId locatorId) {
+  public boolean skipFailureLogging(DistributionLocatorId locatorId) {
     boolean skipLogging = false;
     if (this.failureLogInterval.size() < FAILURE_MAP_MAXSIZE) {
       long[] logInterval = this.failureLogInterval.get(locatorId);

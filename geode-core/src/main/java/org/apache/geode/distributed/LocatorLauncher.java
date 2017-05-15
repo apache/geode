@@ -63,7 +63,7 @@ import java.util.logging.Level;
  * @since GemFire 7.0
  */
 @SuppressWarnings({"unused"})
-public final class LocatorLauncher extends AbstractLauncher<String> {
+public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * @deprecated This is specific to the internal implementation and may go away in a future
@@ -1962,7 +1962,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * 
    * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
    */
-  public static final class LocatorState extends ServiceState<String> {
+  public static class LocatorState extends ServiceState<String> {
 
     /**
      * Unmarshals a LocatorState instance from the JSON String.

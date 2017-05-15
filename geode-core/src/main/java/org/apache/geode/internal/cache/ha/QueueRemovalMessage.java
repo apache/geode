@@ -44,7 +44,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * that have been dispatched by this node. The messages are received by other nodes and the
  * processing is handed over to an executor
  */
-public final class QueueRemovalMessage extends PooledDistributionMessage {
+public class QueueRemovalMessage extends PooledDistributionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /**

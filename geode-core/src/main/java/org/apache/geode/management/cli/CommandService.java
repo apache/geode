@@ -105,7 +105,7 @@ public abstract class CommandService {
    * @param cache Underlying <code>Cache</code> instance to be used to create a Command Service.
    * @throws CommandServiceException If command service could not be initialized.
    */
-  public static final CommandService createLocalCommandService(Cache cache)
+  public static CommandService createLocalCommandService(Cache cache)
       throws CommandServiceException {
     if (cache == null || cache.isClosed()) {
       throw new CacheClosedException(
@@ -136,7 +136,7 @@ public abstract class CommandService {
    *
    * @return A usable <code>CommandService</code> or null if one cannot be found.
    */
-  public static final CommandService getUsableLocalCommandService() {
+  public static CommandService getUsableLocalCommandService() {
     if (localCommandService != null && localCommandService.isUsable()) {
       return localCommandService;
     }

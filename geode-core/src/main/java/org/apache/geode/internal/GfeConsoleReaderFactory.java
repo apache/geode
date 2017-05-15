@@ -32,11 +32,11 @@ import org.apache.geode.management.internal.cli.util.GfshConsoleReader;
 public class GfeConsoleReaderFactory {
   private static GfeConsoleReader defaultConsoleReader = createConsoleReader();
 
-  public static final GfeConsoleReader getDefaultConsoleReader() {
+  public static GfeConsoleReader getDefaultConsoleReader() {
     return defaultConsoleReader;
   }
 
-  public static final GfeConsoleReader createConsoleReader() {
+  public static GfeConsoleReader createConsoleReader() {
     GfeConsoleReader consoleReader = null;
 
     if (CliUtil.isGfshVM()) {

@@ -392,21 +392,21 @@ public class QueueStateImpl implements QueueState {
     /**
      * @return Returns the creationTime.
      */
-    public final long getCreationTime() {
+    public long getCreationTime() {
       return creationTime;
     }
 
     /**
      * @return Returns the sequenceId.
      */
-    public final long getSequenceId() {
+    public long getSequenceId() {
       return sequenceId;
     }
 
     /**
      * @return Returns the putAllSequenceId.
      */
-    public final long getPutAllSequenceId() {
+    public long getPutAllSequenceId() {
       return putAllSequenceId;
     }
 

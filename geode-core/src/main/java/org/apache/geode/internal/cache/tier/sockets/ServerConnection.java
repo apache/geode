@@ -669,7 +669,7 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  static final class Counter {
+  static class Counter {
     int cnt;
 
     void incr() {

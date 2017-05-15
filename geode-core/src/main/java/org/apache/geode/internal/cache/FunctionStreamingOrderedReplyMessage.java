@@ -53,7 +53,7 @@ public class FunctionStreamingOrderedReplyMessage extends FunctionStreamingReply
     return FUNCTION_STREAMING_ORDERED_REPLY_MESSAGE;
   }
 
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.SERIAL_EXECUTOR;
   }
 }

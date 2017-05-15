@@ -361,7 +361,7 @@ public class PutOp {
      *         exception.
      * @since GemFire 6.1
      */
-    private final void processAck(Message msg, String opName, Connection con) throws Exception {
+    private void processAck(Message msg, String opName, Connection con) throws Exception {
       final int msgType = msg.getMessageType();
       // Update delta stats
       if (this.deltaSent && this.region != null) {

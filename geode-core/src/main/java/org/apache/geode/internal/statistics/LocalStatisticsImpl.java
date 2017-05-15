@@ -165,7 +165,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   ////////////////////// Instance Methods //////////////////////
 
   @Override
-  public final boolean isAtomic() {
+  public boolean isAtomic() {
     return intLocks != null || longLocks != null || doubleLocks != null;
   }
 
@@ -180,41 +180,41 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   //////////////////////// store() Methods ///////////////////////
 
   @Override
-  protected final void _setInt(int offset, int value) {
+  protected void _setInt(int offset, int value) {
     this.intStorage[offset] = value;
   }
 
   @Override
-  protected final void _setLong(int offset, long value) {
+  protected void _setLong(int offset, long value) {
     this.longStorage[offset] = value;
   }
 
   @Override
-  protected final void _setDouble(int offset, double value) {
+  protected void _setDouble(int offset, double value) {
     this.doubleStorage[offset] = value;
   }
 
   /////////////////////// get() Methods ///////////////////////
 
   @Override
-  protected final int _getInt(int offset) {
+  protected int _getInt(int offset) {
     return this.intStorage[offset];
   }
 
   @Override
-  protected final long _getLong(int offset) {
+  protected long _getLong(int offset) {
     return this.longStorage[offset];
   }
 
   @Override
-  protected final double _getDouble(int offset) {
+  protected double _getDouble(int offset) {
     return this.doubleStorage[offset];
   }
 
   //////////////////////// inc() Methods ////////////////////////
 
   @Override
-  protected final void _incInt(int offset, int delta) {
+  protected void _incInt(int offset, int delta) {
     if (this.intLocks != null) {
       synchronized (this.intLocks[offset]) {
         this.intStorage[offset] += delta;
@@ -225,7 +225,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   }
 
   @Override
-  protected final void _incLong(int offset, long delta) {
+  protected void _incLong(int offset, long delta) {
     if (this.longLocks != null) {
       synchronized (this.longLocks[offset]) {
         this.longStorage[offset] += delta;
@@ -236,7 +236,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   }
 
   @Override
-  protected final void _incDouble(int offset, double delta) {
+  protected void _incDouble(int offset, double delta) {
     if (this.doubleLocks != null) {
       synchronized (this.doubleLocks[offset]) {
         this.doubleStorage[offset] += delta;
@@ -248,15 +248,15 @@ public class LocalStatisticsImpl extends StatisticsImpl {
 
   /////////////////// internal package methods //////////////////
 
-  final int[] _getIntStorage() {
+  int[] _getIntStorage() {
     return this.intStorage;
   }
 
-  final long[] _getLongStorage() {
+  long[] _getLongStorage() {
     return this.longStorage;
   }
 
-  final double[] _getDoubleStorage() {
+  double[] _getDoubleStorage() {
     return this.doubleStorage;
   }
 }

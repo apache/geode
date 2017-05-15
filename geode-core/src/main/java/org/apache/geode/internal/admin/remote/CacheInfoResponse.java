@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.InternalCache;
  * 
  * @since GemFire 3.5
  */
-public final class CacheInfoResponse extends AdminResponse {
+public class CacheInfoResponse extends AdminResponse {
 
   private RemoteCacheInfo info;
 

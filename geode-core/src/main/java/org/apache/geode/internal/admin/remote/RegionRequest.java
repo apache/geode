@@ -28,7 +28,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class RegionRequest extends AdminRequest {
+public class RegionRequest extends AdminRequest {
 
   /** Request to get a region */
   static final int GET_REGION = 10;

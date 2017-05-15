@@ -59,32 +59,32 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   public void close() {}
 
   @Override
-  public final String getName() {
+  public String getName() {
     return this.name;
   }
 
   @Override
-  public final long getId() {
+  public long getId() {
     return this.id;
   }
 
   @Override
-  public final long getStartTime() {
+  public long getStartTime() {
     return this.startTime;
   }
 
   @Override
-  public final int getStatListModCount() {
+  public int getStatListModCount() {
     return this.statsListModCount;
   }
 
   @Override
-  public final List<Statistics> getStatsList() {
+  public List<Statistics> getStatsList() {
     return this.statsList;
   }
 
   @Override
-  public final int getStatisticsCount() {
+  public int getStatisticsCount() {
     int result = 0;
     List<Statistics> statsList = this.statsList;
     if (statsList != null) {
@@ -94,7 +94,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public final Statistics findStatistics(long id) {
+  public Statistics findStatistics(long id) {
     List<Statistics> statsList = this.statsList;
     synchronized (statsList) {
       for (Statistics s : statsList) {
@@ -108,7 +108,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public final boolean statisticsExists(long id) {
+  public boolean statisticsExists(long id) {
     List<Statistics> statsList = this.statsList;
     for (Statistics s : statsList) {
       if (s.getUniqueId() == id) {
@@ -119,7 +119,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public final Statistics[] getStatistics() {
+  public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
     return (Statistics[]) statsList.toArray(new Statistics[statsList.size()]);
   }
@@ -127,17 +127,17 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   // StatisticsFactory methods
 
   @Override
-  public final Statistics createStatistics(StatisticsType type) {
+  public Statistics createStatistics(StatisticsType type) {
     return createOsStatistics(type, null, 0, 0);
   }
 
   @Override
-  public final Statistics createStatistics(StatisticsType type, String textId) {
+  public Statistics createStatistics(StatisticsType type, String textId) {
     return createOsStatistics(type, textId, 0, 0);
   }
 
   @Override
-  public final Statistics createStatistics(StatisticsType type, String textId, long numericId) {
+  public Statistics createStatistics(StatisticsType type, String textId, long numericId) {
     return createOsStatistics(type, textId, 0, 0);
   }
 
@@ -157,7 +157,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public final Statistics[] findStatisticsByType(StatisticsType type) {
+  public Statistics[] findStatisticsByType(StatisticsType type) {
     List<Statistics> hits = new ArrayList<Statistics>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
@@ -171,7 +171,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public final Statistics[] findStatisticsByTextId(String textId) {
+  public Statistics[] findStatisticsByTextId(String textId) {
     List<Statistics> hits = new ArrayList<Statistics>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
@@ -185,7 +185,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public final Statistics[] findStatisticsByNumericId(long numericId) {
+  public Statistics[] findStatisticsByNumericId(long numericId) {
     List<Statistics> hits = new ArrayList<Statistics>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
@@ -198,7 +198,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     return (Statistics[]) hits.toArray(result);
   }
 
-  public final Statistics findStatisticsByUniqueId(long uniqueId) {
+  public Statistics findStatisticsByUniqueId(long uniqueId) {
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
       Statistics s = (Statistics) it.next();
@@ -211,7 +211,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   /** for internal use only. Its called by {@link LocalStatisticsImpl#close}. */
   @Override
-  public final void destroyStatistics(Statistics stats) {
+  public void destroyStatistics(Statistics stats) {
     synchronized (statsList) {
       if (statsList.remove(stats)) {
         statsListModCount++;
@@ -220,12 +220,12 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public final Statistics createAtomicStatistics(StatisticsType type) {
+  public Statistics createAtomicStatistics(StatisticsType type) {
     return createAtomicStatistics(type, null, 0);
   }
 
   @Override
-  public final Statistics createAtomicStatistics(StatisticsType type, String textId) {
+  public Statistics createAtomicStatistics(StatisticsType type, String textId) {
     return createAtomicStatistics(type, textId, 0);
   }
 
@@ -249,86 +249,82 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
    * Creates or finds a StatisticType for the given shared class.
    */
   @Override
-  public final StatisticsType createType(String name, String description,
-      StatisticDescriptor[] stats) {
+  public StatisticsType createType(String name, String description, StatisticDescriptor[] stats) {
     return tf.createType(name, description, stats);
   }
 
   @Override
-  public final StatisticsType findType(String name) {
+  public StatisticsType findType(String name) {
     return tf.findType(name);
   }
 
   @Override
-  public final StatisticsType[] createTypesFromXml(Reader reader) throws IOException {
+  public StatisticsType[] createTypesFromXml(Reader reader) throws IOException {
     return tf.createTypesFromXml(reader);
   }
 
   @Override
-  public final StatisticDescriptor createIntCounter(String name, String description, String units) {
+  public StatisticDescriptor createIntCounter(String name, String description, String units) {
     return tf.createIntCounter(name, description, units);
   }
 
   @Override
-  public final StatisticDescriptor createLongCounter(String name, String description,
-      String units) {
+  public StatisticDescriptor createLongCounter(String name, String description, String units) {
     return tf.createLongCounter(name, description, units);
   }
 
   @Override
-  public final StatisticDescriptor createDoubleCounter(String name, String description,
-      String units) {
+  public StatisticDescriptor createDoubleCounter(String name, String description, String units) {
     return tf.createDoubleCounter(name, description, units);
   }
 
   @Override
-  public final StatisticDescriptor createIntGauge(String name, String description, String units) {
+  public StatisticDescriptor createIntGauge(String name, String description, String units) {
     return tf.createIntGauge(name, description, units);
   }
 
   @Override
-  public final StatisticDescriptor createLongGauge(String name, String description, String units) {
+  public StatisticDescriptor createLongGauge(String name, String description, String units) {
     return tf.createLongGauge(name, description, units);
   }
 
   @Override
-  public final StatisticDescriptor createDoubleGauge(String name, String description,
-      String units) {
+  public StatisticDescriptor createDoubleGauge(String name, String description, String units) {
     return tf.createDoubleGauge(name, description, units);
   }
 
   @Override
-  public final StatisticDescriptor createIntCounter(String name, String description, String units,
+  public StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean largerBetter) {
     return tf.createIntCounter(name, description, units, largerBetter);
   }
 
   @Override
-  public final StatisticDescriptor createLongCounter(String name, String description, String units,
+  public StatisticDescriptor createLongCounter(String name, String description, String units,
       boolean largerBetter) {
     return tf.createLongCounter(name, description, units, largerBetter);
   }
 
   @Override
-  public final StatisticDescriptor createDoubleCounter(String name, String description,
-      String units, boolean largerBetter) {
+  public StatisticDescriptor createDoubleCounter(String name, String description, String units,
+      boolean largerBetter) {
     return tf.createDoubleCounter(name, description, units, largerBetter);
   }
 
   @Override
-  public final StatisticDescriptor createIntGauge(String name, String description, String units,
+  public StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean largerBetter) {
     return tf.createIntGauge(name, description, units, largerBetter);
   }
 
   @Override
-  public final StatisticDescriptor createLongGauge(String name, String description, String units,
+  public StatisticDescriptor createLongGauge(String name, String description, String units,
       boolean largerBetter) {
     return tf.createLongGauge(name, description, units, largerBetter);
   }
 
   @Override
-  public final StatisticDescriptor createDoubleGauge(String name, String description, String units,
+  public StatisticDescriptor createDoubleGauge(String name, String description, String units,
       boolean largerBetter) {
     return tf.createDoubleGauge(name, description, units, largerBetter);
   }

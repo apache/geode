@@ -205,7 +205,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static final class TestRequestStreamingMessageManyProviderNoExceptions
+  public static class TestRequestStreamingMessageManyProviderNoExceptions
       extends StreamingOperation.RequestStreamingMessage {
     private int nextInt = -10;
     private int count = 0;

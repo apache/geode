@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
  * 
  * 
  */
-public final class VMStatsMonitor extends MBeanStatsMonitor {
+public class VMStatsMonitor extends MBeanStatsMonitor {
 
   private volatile float cpuUsage = 0;
 

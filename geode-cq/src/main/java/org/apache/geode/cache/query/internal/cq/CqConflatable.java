@@ -124,70 +124,70 @@ public class CqConflatable implements Conflatable, Serializable {
   /**
    * @return Returns the conflate.
    */
-  final boolean isConflate() {
+  boolean isConflate() {
     return conflate;
   }
 
   /**
    * @param conflate The conflate to set.
    */
-  final void setConflate(boolean conflate) {
+  void setConflate(boolean conflate) {
     this.conflate = conflate;
   }
 
   /**
    * @return Returns the id.
    */
-  final EventID getId() {
+  EventID getId() {
     return id;
   }
 
   /**
    * @param id The id to set.
    */
-  final void setId(EventID id) {
+  void setId(EventID id) {
     this.id = id;
   }
 
   /**
    * @return Returns the key.
    */
-  final Object getKey() {
+  Object getKey() {
     return key;
   }
 
   /**
    * @param key The key to set.
    */
-  final void setKey(Object key) {
+  void setKey(Object key) {
     this.key = key;
   }
 
   /**
    * @return Returns the regionname.
    */
-  final String getRegionname() {
+  String getRegionname() {
     return regionname;
   }
 
   /**
    * @param regionname The regionname to set.
    */
-  final void setRegionname(String regionname) {
+  void setRegionname(String regionname) {
     this.regionname = regionname;
   }
 
   /**
    * @return Returns the value.
    */
-  final Object getValue() {
+  Object getValue() {
     return value;
   }
 
   /**
    * @param value The value to set.
    */
-  final void setValue(Object value) {
+  void setValue(Object value) {
     this.value = value;
   }
 }

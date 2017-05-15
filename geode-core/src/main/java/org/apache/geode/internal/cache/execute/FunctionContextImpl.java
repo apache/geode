@@ -63,7 +63,7 @@ public class FunctionContextImpl implements FunctionContext {
    * 
    * @return the arguments or null if there are no arguments
    */
-  public final Object getArguments() {
+  public Object getArguments() {
     return this.args;
   }
 

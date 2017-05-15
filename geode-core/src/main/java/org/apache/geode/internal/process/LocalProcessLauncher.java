@@ -34,7 +34,7 @@ import java.io.IOException;
  * 
  * @since GemFire 7.0
  */
-public final class LocalProcessLauncher {
+public class LocalProcessLauncher {
 
   public static final String PROPERTY_IGNORE_IS_PID_ALIVE =
       DistributionConfig.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";

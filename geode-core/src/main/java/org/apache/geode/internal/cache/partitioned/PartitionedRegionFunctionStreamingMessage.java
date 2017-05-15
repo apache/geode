@@ -66,7 +66,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
   }
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 

@@ -31,8 +31,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 
  * 
  */
-public final class DistTXStateOnCoordinator extends DistTXState
-    implements DistTXCoordinatorInterface {
+public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoordinatorInterface {
 
   private ArrayList<DistTxEntryEvent> primaryTransactionalOperations = null;
   private ArrayList<DistTxEntryEvent> secondaryTransactionalOperations = null;
@@ -46,12 +45,12 @@ public final class DistTXStateOnCoordinator extends DistTXState
     secondaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
   }
 
-  public final ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
+  public ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
       throws UnsupportedOperationInTransactionException {
     return primaryTransactionalOperations;
   }
 
-  private final void addPrimaryTransactionalOperations(DistTxEntryEvent dtop) {
+  private void addPrimaryTransactionalOperations(DistTxEntryEvent dtop) {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove these
       logger.debug("DistTXStateOnCoordinator.addPrimaryTransactionalOperations add " + dtop
@@ -75,7 +74,7 @@ public final class DistTXStateOnCoordinator extends DistTXState
     }
   }
 
-  public final void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
+  public void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
       throws UnsupportedOperationInTransactionException {
     secondaryTransactionalOperations.add(dtop);
   }

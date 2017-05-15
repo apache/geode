@@ -29,7 +29,7 @@ public class UnregisterAllInterest implements Serializable {
   /**
    * Return the only instance of this class.
    */
-  public static final UnregisterAllInterest singleton() {
+  public static UnregisterAllInterest singleton() {
     return SINGLETON;
   }
 

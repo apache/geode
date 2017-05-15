@@ -22,7 +22,7 @@ import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class StringExecutor extends AbstractExecutor {
 
-  protected final void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
+  protected void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
     Object oldVal = context.getRegionProvider().metaPutIfAbsent(key, RedisDataType.REDIS_STRING);
     if (oldVal == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");

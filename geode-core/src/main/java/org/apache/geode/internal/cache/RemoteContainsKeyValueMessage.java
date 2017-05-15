@@ -45,7 +45,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 6.5
  */
-public final class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDirectReply {
+public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private boolean valueCheck;
@@ -164,7 +164,7 @@ public final class RemoteContainsKeyValueMessage extends RemoteOperationMessageW
     return flags;
   }
 
-  public static final class RemoteContainsKeyValueReplyMessage extends ReplyMessage {
+  public static class RemoteContainsKeyValueReplyMessage extends ReplyMessage {
 
     /** Propagated exception from remote node to operation initiator */
     private boolean containsKeyValue;

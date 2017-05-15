@@ -20,7 +20,7 @@ package org.apache.geode.internal.process;
  * 
  * @since GemFire 7.0
  */
-public final class PidUnavailableException extends Exception {
+public class PidUnavailableException extends Exception {
   private static final long serialVersionUID = -1660269538268828059L;
 
   /**

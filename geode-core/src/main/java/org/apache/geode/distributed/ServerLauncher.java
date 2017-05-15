@@ -2603,7 +2603,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * 
    * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
    */
-  public static final class ServerState extends ServiceState<String> {
+  public static class ServerState extends ServiceState<String> {
 
     /**
      * Unmarshals a ServerState instance from the JSON String.

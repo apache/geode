@@ -281,8 +281,7 @@ public class XmlUtils {
    * @return {@link Map} of schema namespace URIs to location URLs.
    * @since GemFire 8.1
    */
-  public static final Map<String, List<String>> buildSchemaLocationMap(
-      final String schemaLocation) {
+  public static Map<String, List<String>> buildSchemaLocationMap(final String schemaLocation) {
     return buildSchemaLocationMap(new HashMap<String, List<String>>(), schemaLocation);
   }
 
@@ -298,7 +297,7 @@ public class XmlUtils {
    * @return {@link Map} of schema namespace URIs to location URLs.
    * @since GemFire 8.1
    */
-  static final Map<String, List<String>> buildSchemaLocationMap(
+  static Map<String, List<String>> buildSchemaLocationMap(
       Map<String, List<String>> schemaLocationMap, final String schemaLocation) {
     if (null == schemaLocation) {
       return schemaLocationMap;
@@ -419,14 +418,14 @@ public class XmlUtils {
     return transform(transformer, doc);
   }
 
-  public static final String elementToString(Node element)
+  public static String elementToString(Node element)
       throws TransformerFactoryConfigurationError, TransformerException {
     Transformer transformer = TransformerFactory.newInstance().newTransformer();
 
     return transform(transformer, element);
   }
 
-  private static final String transform(Transformer transformer, Node element)
+  private static String transform(Transformer transformer, Node element)
       throws TransformerException {
     StreamResult result = new StreamResult(new StringWriter());
     DOMSource source = new DOMSource(element);
@@ -585,8 +584,7 @@ public class XmlUtils {
    * @param schemaLocationMap {@link Map} to get schema locations from.
    * @since GemFire 8.1
    */
-  private static final String getSchemaLocationValue(
-      final Map<String, List<String>> schemaLocationMap) {
+  private static String getSchemaLocationValue(final Map<String, List<String>> schemaLocationMap) {
     final StringBuilder sb = new StringBuilder();
     for (final Map.Entry<String, List<String>> entry : schemaLocationMap.entrySet()) {
       for (final String schemaLocation : entry.getValue()) {
@@ -606,7 +604,7 @@ public class XmlUtils {
    * @return {@link Map} of namespace URIs to prefixes.
    * @since GemFire 8.1
    */
-  private static final Map<String, String> buildNamespacePrefixMap(final Element root) {
+  private static Map<String, String> buildNamespacePrefixMap(final Element root) {
     final HashMap<String, String> namespacePrefixMap = new HashMap<>();
 
     // Look for all of the attributes of cache that start with
@@ -646,7 +644,7 @@ public class XmlUtils {
    * @return the modified version of the passed in node.
    * @since GemFire 8.1
    */
-  static final Node changeNamespace(final Node node, final String oldNamespaceUri,
+  static Node changeNamespace(final Node node, final String oldNamespaceUri,
       final String newNamespaceUri) throws XPathExpressionException {
     Node result = null;
     final NodeList nodes = query(node, "//*");

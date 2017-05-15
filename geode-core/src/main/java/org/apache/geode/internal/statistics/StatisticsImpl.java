@@ -124,19 +124,19 @@ public abstract class StatisticsImpl implements Statistics {
 
   ////////////////////// Instance Methods //////////////////////
 
-  public final boolean usesSystemCalls() {
+  public boolean usesSystemCalls() {
     return this.osStatFlags != 0;
   }
 
-  public final int getOsStatFlags() {
+  public int getOsStatFlags() {
     return this.osStatFlags;
   }
 
-  public final int nameToId(String name) {
+  public int nameToId(String name) {
     return this.type.nameToId(name);
   }
 
-  public final StatisticDescriptor nameToDescriptor(String name) {
+  public StatisticDescriptor nameToDescriptor(String name) {
     return this.type.nameToDescriptor(name);
   }
 
@@ -144,27 +144,27 @@ public abstract class StatisticsImpl implements Statistics {
     this.closed = true;
   }
 
-  public final boolean isClosed() {
+  public boolean isClosed() {
     return this.closed;
   }
 
   public abstract boolean isAtomic();
 
-  private final boolean isOpen() { // fix for bug 29973
+  private boolean isOpen() { // fix for bug 29973
     return !this.closed;
   }
 
   //////////////////////// attribute Methods ///////////////////////
 
-  public final StatisticsType getType() {
+  public StatisticsType getType() {
     return this.type;
   }
 
-  public final String getTextId() {
+  public String getTextId() {
     return this.textId;
   }
 
-  public final long getNumericId() {
+  public long getNumericId() {
     return this.numericId;
   }
 
@@ -184,15 +184,15 @@ public abstract class StatisticsImpl implements Statistics {
 
   //////////////////////// set() Methods ///////////////////////
 
-  public final void setInt(String name, int value) {
+  public void setInt(String name, int value) {
     setInt(nameToDescriptor(name), value);
   }
 
-  public final void setInt(StatisticDescriptor descriptor, int value) {
+  public void setInt(StatisticDescriptor descriptor, int value) {
     setInt(getIntId(descriptor), value);
   }
 
-  public final void setInt(int id, int value) {
+  public void setInt(int id, int value) {
     if (isOpen()) {
       _setInt(id, value);
     }
@@ -204,15 +204,15 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _setInt(int offset, int value);
 
-  public final void setLong(String name, long value) {
+  public void setLong(String name, long value) {
     setLong(nameToDescriptor(name), value);
   }
 
-  public final void setLong(StatisticDescriptor descriptor, long value) {
+  public void setLong(StatisticDescriptor descriptor, long value) {
     setLong(getLongId(descriptor), value);
   }
 
-  public final void setLong(int id, long value) {
+  public void setLong(int id, long value) {
     if (isOpen()) {
       _setLong(id, value);
     }
@@ -224,15 +224,15 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _setLong(int offset, long value);
 
-  public final void setDouble(String name, double value) {
+  public void setDouble(String name, double value) {
     setDouble(nameToDescriptor(name), value);
   }
 
-  public final void setDouble(StatisticDescriptor descriptor, double value) {
+  public void setDouble(StatisticDescriptor descriptor, double value) {
     setDouble(getDoubleId(descriptor), value);
   }
 
-  public final void setDouble(int id, double value) {
+  public void setDouble(int id, double value) {
     if (isOpen()) {
       _setDouble(id, value);
     }
@@ -246,15 +246,15 @@ public abstract class StatisticsImpl implements Statistics {
 
   /////////////////////// get() Methods ///////////////////////
 
-  public final int getInt(String name) {
+  public int getInt(String name) {
     return getInt(nameToDescriptor(name));
   }
 
-  public final int getInt(StatisticDescriptor descriptor) {
+  public int getInt(StatisticDescriptor descriptor) {
     return getInt(getIntId(descriptor));
   }
 
-  public final int getInt(int id) {
+  public int getInt(int id) {
     if (isOpen()) {
       return _getInt(id);
     } else {
@@ -269,15 +269,15 @@ public abstract class StatisticsImpl implements Statistics {
   protected abstract int _getInt(int offset);
 
 
-  public final long getLong(String name) {
+  public long getLong(String name) {
     return getLong(nameToDescriptor(name));
   }
 
-  public final long getLong(StatisticDescriptor descriptor) {
+  public long getLong(StatisticDescriptor descriptor) {
     return getLong(getLongId(descriptor));
   }
 
-  public final long getLong(int id) {
+  public long getLong(int id) {
     if (isOpen()) {
       return _getLong(id);
     } else {
@@ -292,15 +292,15 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract long _getLong(int offset);
 
-  public final double getDouble(String name) {
+  public double getDouble(String name) {
     return getDouble(nameToDescriptor(name));
   }
 
-  public final double getDouble(StatisticDescriptor descriptor) {
+  public double getDouble(StatisticDescriptor descriptor) {
     return getDouble(getDoubleId(descriptor));
   }
 
-  public final double getDouble(int id) {
+  public double getDouble(int id) {
     if (isOpen()) {
       return _getDouble(id);
     } else {
@@ -314,7 +314,7 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract double _getDouble(int offset);
 
-  public final Number get(StatisticDescriptor descriptor) {
+  public Number get(StatisticDescriptor descriptor) {
     if (isOpen()) {
       return _get((StatisticDescriptorImpl) descriptor);
     } else {
@@ -322,7 +322,7 @@ public abstract class StatisticsImpl implements Statistics {
     }
   }
 
-  public final Number get(String name) {
+  public Number get(String name) {
     return get(nameToDescriptor(name));
   }
 
@@ -340,15 +340,15 @@ public abstract class StatisticsImpl implements Statistics {
 
   //////////////////////// inc() Methods ////////////////////////
 
-  public final void incInt(String name, int delta) {
+  public void incInt(String name, int delta) {
     incInt(nameToDescriptor(name), delta);
   }
 
-  public final void incInt(StatisticDescriptor descriptor, int delta) {
+  public void incInt(StatisticDescriptor descriptor, int delta) {
     incInt(getIntId(descriptor), delta);
   }
 
-  public final void incInt(int id, int delta) {
+  public void incInt(int id, int delta) {
     if (isOpen()) {
       _incInt(id, delta);
     }
@@ -360,15 +360,15 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _incInt(int offset, int delta);
 
-  public final void incLong(String name, long delta) {
+  public void incLong(String name, long delta) {
     incLong(nameToDescriptor(name), delta);
   }
 
-  public final void incLong(StatisticDescriptor descriptor, long delta) {
+  public void incLong(StatisticDescriptor descriptor, long delta) {
     incLong(getLongId(descriptor), delta);
   }
 
-  public final void incLong(int id, long delta) {
+  public void incLong(int id, long delta) {
     if (isOpen()) {
       _incLong(id, delta);
     }
@@ -380,15 +380,15 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _incLong(int offset, long delta);
 
-  public final void incDouble(String name, double delta) {
+  public void incDouble(String name, double delta) {
     incDouble(nameToDescriptor(name), delta);
   }
 
-  public final void incDouble(StatisticDescriptor descriptor, double delta) {
+  public void incDouble(StatisticDescriptor descriptor, double delta) {
     incDouble(getDoubleId(descriptor), delta);
   }
 
-  public final void incDouble(int id, double delta) {
+  public void incDouble(int id, double delta) {
     if (isOpen()) {
       _incDouble(id, delta);
     }
@@ -533,22 +533,22 @@ public abstract class StatisticsImpl implements Statistics {
     return this.uniqueId == other.getUniqueId();
   }
 
-  private final static int getIntId(StatisticDescriptor descriptor) {
+  private static int getIntId(StatisticDescriptor descriptor) {
     return ((StatisticDescriptorImpl) descriptor).checkInt();
   }
 
-  private final static int getLongId(StatisticDescriptor descriptor) {
+  private static int getLongId(StatisticDescriptor descriptor) {
     return ((StatisticDescriptorImpl) descriptor).checkLong();
   }
 
-  private final static int getDoubleId(StatisticDescriptor descriptor) {
+  private static int getDoubleId(StatisticDescriptor descriptor) {
     return ((StatisticDescriptorImpl) descriptor).checkDouble();
   }
 
   /**
    * Returns the value of the specified statistic descriptor.
    */
-  private final Number _get(StatisticDescriptorImpl stat) {
+  private Number _get(StatisticDescriptorImpl stat) {
     switch (stat.getTypeCode()) {
       case StatisticDescriptorImpl.INT:
         return Integer.valueOf(_getInt(stat.getId()));
@@ -566,7 +566,7 @@ public abstract class StatisticsImpl implements Statistics {
   /**
    * Returns the bits that represent the raw value of the specified statistic descriptor.
    */
-  private final long _getRawBits(StatisticDescriptorImpl stat) {
+  private long _getRawBits(StatisticDescriptorImpl stat) {
     switch (stat.getTypeCode()) {
       case StatisticDescriptorImpl.INT:
         return _getInt(stat.getId());

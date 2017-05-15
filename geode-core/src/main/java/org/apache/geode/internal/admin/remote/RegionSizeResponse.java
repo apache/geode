@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * Responds to {@link RegionSizeRequest}.
  */
-public final class RegionSizeResponse extends AdminResponse implements Cancellable {
+public class RegionSizeResponse extends AdminResponse implements Cancellable {
   // instance variables
   private int entryCount;
   private int subregionCount;

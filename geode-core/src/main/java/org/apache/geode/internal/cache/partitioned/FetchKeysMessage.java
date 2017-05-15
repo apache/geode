@@ -52,7 +52,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 
 
-public final class FetchKeysMessage extends PartitionMessage {
+public class FetchKeysMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private Integer bucketId;
@@ -217,7 +217,7 @@ public final class FetchKeysMessage extends PartitionMessage {
     out.writeBoolean(this.allowTombstones);
   }
 
-  public static final class FetchKeysReplyMessage extends ReplyMessage {
+  public static class FetchKeysReplyMessage extends ReplyMessage {
     /** The number of the series */
     int seriesNum;
     /** The message number in the series */

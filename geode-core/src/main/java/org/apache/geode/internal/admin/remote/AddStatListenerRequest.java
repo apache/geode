@@ -28,7 +28,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular distribution manager to add a statistic listener.
  */
-public final class AddStatListenerRequest extends AdminRequest {
+public class AddStatListenerRequest extends AdminRequest {
   // instance variables
   private long resourceId;
   private String statName;

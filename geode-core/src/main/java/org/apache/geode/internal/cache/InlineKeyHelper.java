@@ -33,7 +33,7 @@ public class InlineKeyHelper {
    * Given the number of longs used to encode the inline string return the maximum number of
    * characters that can be encoded into that many longs.
    */
-  public static final int getMaxInlineStringKey(int longCount, boolean byteEncoded) {
+  public static int getMaxInlineStringKey(int longCount, boolean byteEncoded) {
     return (longCount * (byteEncoded ? 8 : 4)) - 1;
   }
 

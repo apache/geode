@@ -27,7 +27,7 @@ import java.io.*;
  * A message that is sent to a particular distribution manager to get rid of a previously added
  * statistic listener.
  */
-public final class CancelStatListenerRequest extends AdminRequest {
+public class CancelStatListenerRequest extends AdminRequest {
   // instance variables
   private int listenerId;
 

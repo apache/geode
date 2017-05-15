@@ -30,7 +30,7 @@ import java.util.Properties;
 /**
  * A message that is sent in response to a {@link LicenseInfoRequest}.
  */
-public final class LicenseInfoResponse extends AdminResponse {
+public class LicenseInfoResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();
 
   // instance variables

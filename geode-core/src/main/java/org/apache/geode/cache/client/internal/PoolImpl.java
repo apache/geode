@@ -1310,7 +1310,7 @@ public class PoolImpl implements InternalPool {
 
   public static abstract class PoolTask implements Runnable {
 
-    public final void run() {
+    public void run() {
       try {
         run2();
       } catch (VirtualMachineError e) {

@@ -132,19 +132,19 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return new DistributionConfigImpl(props);
   }
 
-  public final AdminDistributedSystem getDistributedSystem() {
+  public AdminDistributedSystem getDistributedSystem() {
     return this.system;
   }
 
-  public final InternalDistributedMember getInternalId() {
+  public InternalDistributedMember getInternalId() {
     return internalId;
   }
 
-  public final String getId() {
+  public String getId() {
     return this.id;
   }
 
-  public final String getName() {
+  public String getName() {
     return this.name;
   }
 
@@ -152,7 +152,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return this.host;
   }
 
-  public final InetAddress getHostAddress() {
+  public InetAddress getHostAddress() {
     return InetAddressUtil.toInetAddress(this.getHost());
   }
 
@@ -160,7 +160,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   // Operations
   // -------------------------------------------------------------------------
 
-  public final String getLog() {
+  public String getLog() {
     String childTail = null;
     String mainTail = null;
     GemFireVM vm = getGemFireVM();
@@ -189,14 +189,14 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
   }
 
-  public final java.util.Properties getLicense() {
+  public java.util.Properties getLicense() {
     GemFireVM vm = getGemFireVM();
     if (vm == null)
       return null;
     return new Properties();
   }
 
-  public final String getVersion() {
+  public String getVersion() {
     GemFireVM vm = getGemFireVM();
     if (vm == null)
       return null;
@@ -220,7 +220,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return statsImpl;
   }
 
-  public final boolean hasCache() {
+  public boolean hasCache() {
     GemFireVM member = getGemFireVM();
     if (member == null) {
       return false;
@@ -230,7 +230,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
   }
 
-  public final SystemMemberCache getCache() throws org.apache.geode.admin.AdminException {
+  public SystemMemberCache getCache() throws org.apache.geode.admin.AdminException {
     GemFireVM vm = getGemFireVM(); // fix for bug 33505
     if (vm == null)
       return null;
@@ -256,7 +256,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
    * Sets the value of this system member's distribution-related configuration based on the given
    * <code>Config</code> object.
    */
-  public final void refreshConfig(Config config) throws org.apache.geode.admin.AdminException {
+  public void refreshConfig(Config config) throws org.apache.geode.admin.AdminException {
     if (config == null) {
       throw new AdminException(
           LocalizedStrings.SystemMemberImpl_FAILED_TO_REFRESH_CONFIGURATION_PARAMETERS_FOR_0
@@ -285,7 +285,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
   }
 
-  public final ConfigurationParameter[] getConfiguration() {
+  public ConfigurationParameter[] getConfiguration() {
     ConfigurationParameter[] array = new ConfigurationParameter[this.parms.size()];
     this.parms.values().toArray(array);
     return array;
@@ -368,7 +368,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   /**
    * Returns the <code>GemFireVM</code> that underlies this <code>SystemMember</code>.
    */
-  protected final GemFireVM getGemFireVM() {
+  protected GemFireVM getGemFireVM() {
     return this.vm;
   }
 

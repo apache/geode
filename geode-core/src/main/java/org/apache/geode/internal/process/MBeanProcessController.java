@@ -42,7 +42,7 @@ import com.sun.tools.attach.VirtualMachine;
  * 
  * @since GemFire 8.0
  */
-public final class MBeanProcessController implements ProcessController {
+public class MBeanProcessController implements ProcessController {
 
   /** Property name for the JMX local connector address (from sun.management.Agent) */
   private static final String LOCAL_CONNECTOR_ADDRESS_PROP =

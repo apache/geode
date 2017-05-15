@@ -325,7 +325,7 @@ public class Part {
    * Write the contents of this part to the specified byte buffer. Precondition: caller has already
    * checked the length of this part and it will fit into "buf".
    */
-  public final void writeTo(ByteBuffer buf) {
+  public void writeTo(ByteBuffer buf) {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         buf.put((byte[]) this.part);
@@ -356,7 +356,7 @@ public class Part {
    * buffer. This is only called for parts that will not fit into the commBuffer so they need to be
    * written directly to the socket. Precondition: buf contains nothing that needs to be sent
    */
-  public final void writeTo(SocketChannel sc, ByteBuffer buf) throws IOException {
+  public void writeTo(SocketChannel sc, ByteBuffer buf) throws IOException {
     if (getLength() > 0) {
       final int BUF_MAX = buf.capacity();
       if (this.part instanceof byte[]) {

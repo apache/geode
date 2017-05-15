@@ -38,7 +38,7 @@ import java.util.logging.Handler;
  * 
  */
 @SuppressWarnings("unused")
-public final class LogWriterLogger extends FastLogger implements InternalLogWriter, GemFireLogger {
+public class LogWriterLogger extends FastLogger implements InternalLogWriter, GemFireLogger {
 
   private static final long serialVersionUID = 446081244292135L;
 

@@ -38,7 +38,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  * advertising that it never should receive a request to rebalance.
  * 
  */
-public final class Node extends ExternalizableDSFID {
+public class Node extends ExternalizableDSFID {
   private InternalDistributedMember memberId;
 
   public static final int NONE = 0;

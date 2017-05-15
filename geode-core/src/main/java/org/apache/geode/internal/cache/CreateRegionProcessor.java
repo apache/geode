@@ -306,7 +306,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
   }
 
-  public static final class CreateRegionMessage extends HighPriorityDistributionMessage
+  public static class CreateRegionMessage extends HighPriorityDistributionMessage
       implements MessageWithReply {
 
     public boolean concurrencyChecksEnabled;
@@ -768,7 +768,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
   }
 
-  public static final class CreateRegionReplyMessage extends ReplyMessage {
+  public static class CreateRegionReplyMessage extends ReplyMessage {
     protected CacheProfile profile;
     protected ArrayList bucketProfiles;
     protected Object eventState;

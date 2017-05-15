@@ -804,11 +804,11 @@ public abstract class DistributedCacheOperation {
     return getRegion().scope.isAck();
   }
 
-  protected final DistributedRegion getRegion() {
+  protected DistributedRegion getRegion() {
     return (DistributedRegion) this.event.getRegion();
   }
 
-  protected final EntryEventImpl getEvent() {
+  protected EntryEventImpl getEvent() {
     return (EntryEventImpl) this.event;
   }
 

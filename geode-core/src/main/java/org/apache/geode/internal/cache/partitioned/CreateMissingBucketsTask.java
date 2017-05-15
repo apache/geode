@@ -24,7 +24,7 @@ import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
  * A task for creating buckets in a child colocated region that are present in the leader region.
  *
  */
-public final class CreateMissingBucketsTask extends RecoveryRunnable {
+public class CreateMissingBucketsTask extends RecoveryRunnable {
   public CreateMissingBucketsTask(PRHARedundancyProvider prhaRedundancyProvider) {
     super(prhaRedundancyProvider);
   }

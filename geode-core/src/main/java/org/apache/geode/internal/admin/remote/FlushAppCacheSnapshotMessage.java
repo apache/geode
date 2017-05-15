@@ -26,7 +26,7 @@ import java.io.*;
  * A message to cause a remote application to release any snapshot info it was holding on behalf of
  * a console.
  */
-public final class FlushAppCacheSnapshotMessage extends PooledDistributionMessage {
+public class FlushAppCacheSnapshotMessage extends PooledDistributionMessage {
 
   public static FlushAppCacheSnapshotMessage create() {
     FlushAppCacheSnapshotMessage m = new FlushAppCacheSnapshotMessage();

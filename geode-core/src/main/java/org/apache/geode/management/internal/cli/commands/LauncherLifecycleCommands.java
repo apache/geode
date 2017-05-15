@@ -2614,7 +2614,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return true;
   }
 
-  protected static final class LauncherSignalListener implements SignalListener {
+  protected static class LauncherSignalListener implements SignalListener {
 
     private volatile boolean signaled = false;
 

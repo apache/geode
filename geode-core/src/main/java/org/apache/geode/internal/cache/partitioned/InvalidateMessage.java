@@ -53,7 +53,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 
-public final class InvalidateMessage extends DestroyMessage {
+public class InvalidateMessage extends DestroyMessage {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -247,7 +247,7 @@ public final class InvalidateMessage extends DestroyMessage {
     return PR_INVALIDATE_MESSAGE;
   }
 
-  public static final class InvalidateReplyMessage extends ReplyMessage {
+  public static class InvalidateReplyMessage extends ReplyMessage {
     VersionTag versionTag;
 
     /**

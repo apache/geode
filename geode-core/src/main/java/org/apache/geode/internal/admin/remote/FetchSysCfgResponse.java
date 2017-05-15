@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * A message that is sent to a particular distribution manager to get its current {@link Config}.
  */
-public final class FetchSysCfgResponse extends AdminResponse {
+public class FetchSysCfgResponse extends AdminResponse {
   // instance variables
   Config sc;
 

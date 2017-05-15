@@ -36,7 +36,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * A message that is sent to a particular distribution manager to let it know that the sender is an
  * administation console that just connected.
  */
-public final class DestroyRegionMessage extends RegionAdminMessage {
+public class DestroyRegionMessage extends RegionAdminMessage {
 
   private static final Logger logger = LogService.getLogger();
 

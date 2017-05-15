@@ -17,7 +17,7 @@ package org.apache.geode.internal.concurrent;
 /**
  * AL implementation for JDK 5.
  */
-public final class AtomicLong5 extends java.util.concurrent.atomic.AtomicLong implements AL {
+public class AtomicLong5 extends java.util.concurrent.atomic.AtomicLong implements AL {
   private static final long serialVersionUID = -1915700199064062938L;
 
   public AtomicLong5() {

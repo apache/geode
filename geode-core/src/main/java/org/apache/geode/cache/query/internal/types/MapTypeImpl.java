@@ -25,7 +25,7 @@ import org.apache.geode.DataSerializer;
  * 
  * @since GemFire 4.0
  */
-public final class MapTypeImpl extends CollectionTypeImpl implements MapType {
+public class MapTypeImpl extends CollectionTypeImpl implements MapType {
   private static final long serialVersionUID = -705688605389537058L;
   private ObjectType keyType;
 

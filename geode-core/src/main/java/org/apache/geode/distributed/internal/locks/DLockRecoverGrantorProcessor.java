@@ -187,7 +187,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // DLockRecoverGrantorMessage
   // -------------------------------------------------------------------------
-  public static final class DLockRecoverGrantorMessage extends PooledDistributionMessage
+  public static class DLockRecoverGrantorMessage extends PooledDistributionMessage
       implements MessageWithReply {
 
     /** The name of the DistributedLockService */
@@ -312,7 +312,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // DLockRecoverGrantorReplyMessage
   // -------------------------------------------------------------------------
-  public static final class DLockRecoverGrantorReplyMessage extends ReplyMessage {
+  public static class DLockRecoverGrantorReplyMessage extends ReplyMessage {
 
     public static final int OK = 0;
     public static final int GRANTOR_DISPUTE = 1;

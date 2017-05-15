@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * A message that is sent to a particular distribution manager to modify its current
  * {@link org.apache.geode.internal.Config}.
  */
-public final class StoreSysCfgResponse extends AdminResponse {
+public class StoreSysCfgResponse extends AdminResponse {
   // instance variables
 
 

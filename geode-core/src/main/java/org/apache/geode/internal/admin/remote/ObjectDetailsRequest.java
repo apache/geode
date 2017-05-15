@@ -27,7 +27,7 @@ import java.io.*;
  * A message that is sent to a particular app vm to request the value, stats, and attributes of a
  * given region entry.
  */
-public final class ObjectDetailsRequest extends RegionAdminRequest implements Cancellable {
+public class ObjectDetailsRequest extends RegionAdminRequest implements Cancellable {
   // instance variables
   private Object objName;
   private int inspectionType;

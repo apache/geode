@@ -367,11 +367,11 @@ public class CacheClientProxyStats implements MessageStats {
     this._stats.incInt(_deltaFullMessagesSentId, 1);
   }
 
-  public final void incReceivedBytes(long v) {
+  public void incReceivedBytes(long v) {
     // noop since we never receive
   }
 
-  public final void incSentBytes(long v) {
+  public void incSentBytes(long v) {
     this._stats.incLong(_sentBytesId, v);
   }
 

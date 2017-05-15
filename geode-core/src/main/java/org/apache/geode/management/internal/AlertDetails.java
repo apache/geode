@@ -142,7 +142,7 @@ public class AlertDetails {
    * @param intLevel int alert level to convert
    * @return A string representation of the alert level
    */
-  public static final String getAlertLevelAsString(final int intLevel) {
+  public static String getAlertLevelAsString(final int intLevel) {
     if (intLevel == Alert.SEVERE) {
       return "severe";
     } else if (intLevel == Alert.ERROR) {

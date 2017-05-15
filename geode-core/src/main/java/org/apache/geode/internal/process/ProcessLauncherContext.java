@@ -28,7 +28,7 @@ import java.util.Properties;
  * 
  * @since GemFire 7.0
  */
-public final class ProcessLauncherContext {
+public class ProcessLauncherContext {
 
   public static final String OVERRIDDEN_DEFAULTS_PREFIX =
       DistributionConfig.GEMFIRE_PREFIX + "default.";

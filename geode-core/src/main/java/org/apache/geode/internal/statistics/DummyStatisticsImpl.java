@@ -49,137 +49,137 @@ public class DummyStatisticsImpl implements Statistics {
     this.numericId = numericId;
   }
 
-  public final void close() {}
+  public void close() {}
 
   //////////////////////// accessor Methods ///////////////////////
 
-  public final int nameToId(String name) {
+  public int nameToId(String name) {
     return this.type.nameToId(name);
   }
 
-  public final StatisticDescriptor nameToDescriptor(String name) {
+  public StatisticDescriptor nameToDescriptor(String name) {
     return this.type.nameToDescriptor(name);
   }
 
-  public final long getUniqueId() {
+  public long getUniqueId() {
     return 0;
   }
 
-  public final StatisticsType getType() {
+  public StatisticsType getType() {
     return this.type;
   }
 
-  public final String getTextId() {
+  public String getTextId() {
     return this.textId;
   }
 
-  public final long getNumericId() {
+  public long getNumericId() {
     return this.numericId;
   }
 
-  public final boolean isAtomic() {
+  public boolean isAtomic() {
     return true;
   }
 
-  public final boolean isClosed() {
+  public boolean isClosed() {
     return false;
   }
 
   //////////////////////// set() Methods ///////////////////////
 
-  public final void setInt(int id, int value) {}
+  public void setInt(int id, int value) {}
 
-  public final void setInt(StatisticDescriptor descriptor, int value) {}
+  public void setInt(StatisticDescriptor descriptor, int value) {}
 
-  public final void setInt(String name, int value) {}
+  public void setInt(String name, int value) {}
 
-  public final void setLong(int id, long value) {}
+  public void setLong(int id, long value) {}
 
-  public final void setLong(StatisticDescriptor descriptor, long value) {}
+  public void setLong(StatisticDescriptor descriptor, long value) {}
 
-  public final void setLong(String name, long value) {}
+  public void setLong(String name, long value) {}
 
-  public final void setDouble(int id, double value) {}
+  public void setDouble(int id, double value) {}
 
-  public final void setDouble(StatisticDescriptor descriptor, double value) {}
+  public void setDouble(StatisticDescriptor descriptor, double value) {}
 
-  public final void setDouble(String name, double value) {}
+  public void setDouble(String name, double value) {}
 
   /////////////////////// get() Methods ///////////////////////
 
-  public final int getInt(int id) {
+  public int getInt(int id) {
     return 0;
   }
 
-  public final int getInt(StatisticDescriptor descriptor) {
+  public int getInt(StatisticDescriptor descriptor) {
     return 0;
   }
 
-  public final int getInt(String name) {
+  public int getInt(String name) {
     return 0;
   }
 
-  public final long getLong(int id) {
+  public long getLong(int id) {
     return 0;
   }
 
-  public final long getLong(StatisticDescriptor descriptor) {
+  public long getLong(StatisticDescriptor descriptor) {
     return 0;
   }
 
-  public final long getLong(String name) {
+  public long getLong(String name) {
     return 0;
   }
 
-  public final double getDouble(int id) {
+  public double getDouble(int id) {
     return 0.0;
   }
 
-  public final double getDouble(StatisticDescriptor descriptor) {
+  public double getDouble(StatisticDescriptor descriptor) {
     return 0.0;
   }
 
-  public final double getDouble(String name) {
+  public double getDouble(String name) {
     return 0.0;
   }
 
   private static final Number dummyNumber = Integer.valueOf(0);
 
-  public final Number get(StatisticDescriptor descriptor) {
+  public Number get(StatisticDescriptor descriptor) {
     return dummyNumber;
   }
 
-  public final Number get(String name) {
+  public Number get(String name) {
     return dummyNumber;
   }
 
-  public final long getRawBits(StatisticDescriptor descriptor) {
+  public long getRawBits(StatisticDescriptor descriptor) {
     return 0;
   }
 
-  public final long getRawBits(String name) {
+  public long getRawBits(String name) {
     return 0;
   }
 
   //////////////////////// inc() Methods ////////////////////////
 
-  public final void incInt(int id, int delta) {}
+  public void incInt(int id, int delta) {}
 
-  public final void incInt(StatisticDescriptor descriptor, int delta) {}
+  public void incInt(StatisticDescriptor descriptor, int delta) {}
 
-  public final void incInt(String name, int delta) {}
+  public void incInt(String name, int delta) {}
 
-  public final void incLong(int id, long delta) {}
+  public void incLong(int id, long delta) {}
 
-  public final void incLong(StatisticDescriptor descriptor, long delta) {}
+  public void incLong(StatisticDescriptor descriptor, long delta) {}
 
-  public final void incLong(String name, long delta) {}
+  public void incLong(String name, long delta) {}
 
-  public final void incDouble(int id, double delta) {}
+  public void incDouble(int id, double delta) {}
 
-  public final void incDouble(StatisticDescriptor descriptor, double delta) {}
+  public void incDouble(StatisticDescriptor descriptor, double delta) {}
 
-  public final void incDouble(String name, double delta) {}
+  public void incDouble(String name, double delta) {}
 
   @Override
   public IntSupplier setIntSupplier(final int id, final IntSupplier supplier) {

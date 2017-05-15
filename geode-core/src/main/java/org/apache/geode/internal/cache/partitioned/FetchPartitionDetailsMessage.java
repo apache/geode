@@ -145,7 +145,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     DataSerializer.writeObject(loadProbe, out);
   }
 
-  public static final class FetchPartitionDetailsReplyMessage extends ReplyMessage {
+  public static class FetchPartitionDetailsReplyMessage extends ReplyMessage {
 
     static final byte NO_PARTITION = 0;
     static final byte OK = 1;

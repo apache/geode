@@ -65,7 +65,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 
-public final class FetchEntriesMessage extends PartitionMessage {
+public class FetchEntriesMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private int bucketId;
@@ -150,7 +150,7 @@ public final class FetchEntriesMessage extends PartitionMessage {
     out.writeInt(this.bucketId);
   }
 
-  public static final class FetchEntriesReplyMessage extends ReplyMessage {
+  public static class FetchEntriesReplyMessage extends ReplyMessage {
 
     /** The bucket id */
     int bucketId;

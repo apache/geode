@@ -24,7 +24,7 @@ import java.io.ObjectOutput;
  * 
  * @since GemFire 7.1
  */
-public final class VersionedObjectOutput implements ObjectOutput, VersionedDataStream {
+public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream {
 
   private final ObjectOutput out;
   private final Version version;

@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  * 
  * @since GemFire 8.0
  */
-public final class ProcessControllerFactory {
+public class ProcessControllerFactory {
 
   public static final String PROPERTY_DISABLE_ATTACH_API =
       DistributionConfig.GEMFIRE_PREFIX + "test.ProcessControllerFactory.DisableAttachApi";

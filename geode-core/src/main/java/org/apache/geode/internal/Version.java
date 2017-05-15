@@ -34,7 +34,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 
  * @since GemFire 5.7
  */
-public final class Version implements Comparable<Version> {
+public class Version implements Comparable<Version> {
 
   /** The name of this version */
   private final transient String name;
@@ -318,7 +318,7 @@ public final class Version implements Comparable<Version> {
    *        {@link #readOrdinal(DataInput)} can deal with both compressed/uncompressed cases
    *        seemlessly
    */
-  public final void writeOrdinal(DataOutput out, boolean compressed) throws IOException {
+  public void writeOrdinal(DataOutput out, boolean compressed) throws IOException {
     writeOrdinal(out, this.ordinal, compressed);
   }
 
@@ -326,7 +326,7 @@ public final class Version implements Comparable<Version> {
    * Fixed number of bytes required for serializing this version when "compressed" flag is false in
    * {@link #writeOrdinal(DataOutput, boolean)}.
    */
-  public static final int uncompressedSize() {
+  public static int uncompressedSize() {
     return 3;
   }
 
@@ -334,7 +334,7 @@ public final class Version implements Comparable<Version> {
    * Fixed number of bytes required for serializing this version when "compressed" flag is true in
    * {@link #writeOrdinal(DataOutput, boolean)}.
    */
-  public final int compressedSize() {
+  public int compressedSize() {
     if (ordinal <= Byte.MAX_VALUE) {
       return 1;
     } else {
@@ -438,35 +438,35 @@ public final class Version implements Comparable<Version> {
     return this.gemfireVersion != null ? this.gemfireVersion : this;
   }
 
-  public final String getMethodSuffix() {
+  public String getMethodSuffix() {
     return this.methodSuffix;
   }
 
-  public final String getProductName() {
+  public String getProductName() {
     return this.productName;
   }
 
-  public final String getName() {
+  public String getName() {
     return this.name;
   }
 
-  public final short getMajorVersion() {
+  public short getMajorVersion() {
     return this.majorVersion;
   }
 
-  public final short getMinorVersion() {
+  public short getMinorVersion() {
     return this.minorVersion;
   }
 
-  public final short getRelease() {
+  public short getRelease() {
     return this.release;
   }
 
-  public final short getPatch() {
+  public short getPatch() {
     return this.patch;
   }
 
-  public final short ordinal() {
+  public short ordinal() {
     return this.ordinal;
   }
 
@@ -488,7 +488,7 @@ public final class Version implements Comparable<Version> {
    * @return negative if this version is older, positive if this version is newer, 0 if this is the
    *         same version
    */
-  public final int compareTo(short other) {
+  public int compareTo(short other) {
     // first try to find the actual Version object
     Version v = fromOrdinalNoThrow(other, false);
     if (v == null) {
@@ -502,7 +502,7 @@ public final class Version implements Comparable<Version> {
    * {@inheritDoc}
    */
   @Override
-  public final int compareTo(Version other) {
+  public int compareTo(Version other) {
     if (other != null) {
       // [bruce] old implementation used ordinals for comparison, but this requires
       // ordinals to be in increasing order, which may not always be possible

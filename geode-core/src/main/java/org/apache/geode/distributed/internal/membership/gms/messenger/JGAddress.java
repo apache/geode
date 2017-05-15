@@ -77,19 +77,19 @@ public class JGAddress extends UUID {
   }
 
 
-  public final InetAddress getInetAddress() {
+  public InetAddress getInetAddress() {
     return ip_addr;
   }
 
-  public final int getPort() {
+  public int getPort() {
     return port;
   }
 
-  public final int getVmViewId() {
+  public int getVmViewId() {
     return this.vmViewId;
   }
 
-  protected final void setVmViewId(int id) {
+  protected void setVmViewId(int id) {
     this.vmViewId = id;
   }
 

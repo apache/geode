@@ -91,7 +91,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
  * @deprecated in favor of just writing a test without this class
  */
 @Deprecated
-public final class SecurityTestUtils {
+public class SecurityTestUtils {
 
   private final JUnit4DistributedTestCase distributedTestCase = new JUnit4DistributedTestCase() {};
 

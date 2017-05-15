@@ -434,7 +434,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     }
   }
 
-  private static final class TestCommandRequest extends CommandRequest {
+  private static class TestCommandRequest extends CommandRequest {
 
     private final Map<String, String> commandParameters = new TreeMap<String, String>();
 

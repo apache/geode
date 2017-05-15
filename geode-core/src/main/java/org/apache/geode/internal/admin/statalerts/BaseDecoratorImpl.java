@@ -48,7 +48,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     this._def = definition;
   }
 
-  public final int getId() {
+  public int getId() {
     return _def.getId();
   }
 
@@ -74,11 +74,11 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     _def.setName(name);
   }
 
-  public final StatisticInfo[] getStatisticInfo() {
+  public StatisticInfo[] getStatisticInfo() {
     return _def.getStatisticInfo();
   }
 
-  public final void setStatisticInfo(StatisticInfo[] info) {
+  public void setStatisticInfo(StatisticInfo[] info) {
     _def.setStatisticInfo(info);
   }
 

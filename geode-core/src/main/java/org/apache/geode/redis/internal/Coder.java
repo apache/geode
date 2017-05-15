@@ -107,7 +107,7 @@ public class Coder {
    */
   public static final String N_INF = "-inf";
 
-  public static final ByteBuf getBulkStringResponse(ByteBufAllocator alloc, byte[] value) {
+  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, byte[] value) {
     ByteBuf response = alloc.buffer(value.length + 20);
     response.writeByte(BULK_STRING_ID);
     response.writeBytes(intToBytes(value.length));
@@ -117,7 +117,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getBulkStringResponse(ByteBufAllocator alloc, double value) {
+  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, double value) {
     ByteBuf response = alloc.buffer();
     byte[] doub = doubleToBytes(value);
     response.writeByte(BULK_STRING_ID);
@@ -128,7 +128,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getBulkStringResponse(ByteBufAllocator alloc, String value) {
+  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, String value) {
     byte[] valueAr = stringToBytes(value);
     int length = valueAr == null ? 0 : valueAr.length;
     ByteBuf response = alloc.buffer(length + 20);
@@ -140,8 +140,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc,
-      List<String> items) {
+  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, List<String> items) {
     Iterator<String> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
@@ -158,7 +157,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc,
+  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc,
       Collection<ByteArrayWrapper> items) {
     Iterator<ByteArrayWrapper> it = items.iterator();
     ByteBuf response = alloc.buffer();
@@ -180,7 +179,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getKeyValArrayResponse(ByteBufAllocator alloc,
+  public static ByteBuf getKeyValArrayResponse(ByteBufAllocator alloc,
       Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> items) {
     Iterator<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> it = items.iterator();
     ByteBuf response = alloc.buffer();
@@ -220,7 +219,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
+  public static ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(2));
@@ -258,12 +257,12 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getEmptyArrayResponse(ByteBufAllocator alloc) {
+  public static ByteBuf getEmptyArrayResponse(ByteBufAllocator alloc) {
     ByteBuf buf = alloc.buffer().writeBytes(bEMPTY_ARRAY);
     return buf;
   }
 
-  public static final ByteBuf getSimpleStringResponse(ByteBufAllocator alloc, String string) {
+  public static ByteBuf getSimpleStringResponse(ByteBufAllocator alloc, String string) {
     byte[] simpAr = stringToBytes(string);
 
     ByteBuf response = alloc.buffer(simpAr.length + 20);
@@ -273,7 +272,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getErrorResponse(ByteBufAllocator alloc, String error) {
+  public static ByteBuf getErrorResponse(ByteBufAllocator alloc, String error) {
     byte[] errorAr = stringToBytes(error);
     ByteBuf response = alloc.buffer(errorAr.length + 25);
     response.writeByte(ERROR_ID);
@@ -283,7 +282,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getNoAuthResponse(ByteBufAllocator alloc, String error) {
+  public static ByteBuf getNoAuthResponse(ByteBufAllocator alloc, String error) {
     byte[] errorAr = stringToBytes(error);
     ByteBuf response = alloc.buffer(errorAr.length + 25);
     response.writeByte(ERROR_ID);
@@ -293,7 +292,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getWrongTypeResponse(ByteBufAllocator alloc, String error) {
+  public static ByteBuf getWrongTypeResponse(ByteBufAllocator alloc, String error) {
     byte[] errorAr = stringToBytes(error);
     ByteBuf response = alloc.buffer(errorAr.length + 31);
     response.writeByte(ERROR_ID);
@@ -303,7 +302,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getIntegerResponse(ByteBufAllocator alloc, int integer) {
+  public static ByteBuf getIntegerResponse(ByteBufAllocator alloc, int integer) {
     ByteBuf response = alloc.buffer(15);
     response.writeByte(INTEGER_ID);
     response.writeBytes(intToBytes(integer));
@@ -311,7 +310,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getIntegerResponse(ByteBufAllocator alloc, long l) {
+  public static ByteBuf getIntegerResponse(ByteBufAllocator alloc, long l) {
     ByteBuf response = alloc.buffer(25);
     response.writeByte(INTEGER_ID);
     response.writeBytes(longToBytes(l));
@@ -319,7 +318,7 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getNilResponse(ByteBufAllocator alloc) {
+  public static ByteBuf getNilResponse(ByteBufAllocator alloc) {
     ByteBuf buf = alloc.buffer().writeBytes(bNIL);
     return buf;
   }

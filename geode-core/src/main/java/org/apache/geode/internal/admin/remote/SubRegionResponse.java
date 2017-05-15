@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * Responds to {@link SubRegionResponse}.
  */
-public final class SubRegionResponse extends AdminResponse {
+public class SubRegionResponse extends AdminResponse {
   // instance variables
   String[] subRegionNames;
   String[] userAttributes;

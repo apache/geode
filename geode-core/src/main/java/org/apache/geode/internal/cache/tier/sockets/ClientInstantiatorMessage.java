@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
  * 
  * @since GemFire 5.0
  */
-public final class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
+public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
   private static final long serialVersionUID = 2949326125521840437L;
   /**
    * Serialized 2D array of the instantiators

@@ -31,7 +31,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * 
  * @since GemFire 3.5
  */
-public final class RegionResponse extends AdminResponse {
+public class RegionResponse extends AdminResponse {
   // instance variables
 
   /** The name of the region returned in the response. */

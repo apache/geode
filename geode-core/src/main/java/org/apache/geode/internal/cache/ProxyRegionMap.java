@@ -365,7 +365,7 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public final boolean lruLimitExceeded(DiskRegionView drv) {
+  public boolean lruLimitExceeded(DiskRegionView drv) {
     return false;
   }
 

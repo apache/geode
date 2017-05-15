@@ -38,40 +38,40 @@ public class GrantorInfo {
   }
 
   /** Caller is sync'ed on ElderState */
-  public final void setInitiatingTransfer(boolean initiatingTransfer) {
+  public void setInitiatingTransfer(boolean initiatingTransfer) {
     this.initiatingTransfer = initiatingTransfer;
   }
 
   /** Caller is sync'ed on ElderState */
-  public final boolean isInitiatingTransfer() {
+  public boolean isInitiatingTransfer() {
     return this.initiatingTransfer;
   }
 
   /**
    * Gets the member id of this grantor.
    */
-  public final InternalDistributedMember getId() {
+  public InternalDistributedMember getId() {
     return this.id;
   }
 
   /**
    * Returns true if the current grantor needs to do lock recovery.
    */
-  public final boolean needsRecovery() {
+  public boolean needsRecovery() {
     return this.needsRecovery;
   }
 
   /**
    * Returns the elder version id of this grantor.
    */
-  public final long getVersionId() {
+  public long getVersionId() {
     return this.versionId;
   }
 
   /**
    * Returns the DLockService serial number of this grantor.
    */
-  public final int getSerialNumber() {
+  public int getSerialNumber() {
     return this.serialNumber;
   }
 

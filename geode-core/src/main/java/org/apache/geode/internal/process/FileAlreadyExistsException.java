@@ -20,7 +20,7 @@ package org.apache.geode.internal.process;
  * 
  * @since GemFire 7.0
  */
-public final class FileAlreadyExistsException extends Exception {
+public class FileAlreadyExistsException extends Exception {
   private static final long serialVersionUID = 5471082555536094256L;
 
   /**

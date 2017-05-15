@@ -139,8 +139,7 @@ public class Bug39356DUnitTest extends JUnit4CacheTestCase {
     vm2.invoke(verifyBuckets);
   }
 
-  protected final class MyRegionObserver extends DistributionMessageObserver
-      implements Serializable {
+  protected class MyRegionObserver extends DistributionMessageObserver implements Serializable {
     private final VM vm0;
 
     /**

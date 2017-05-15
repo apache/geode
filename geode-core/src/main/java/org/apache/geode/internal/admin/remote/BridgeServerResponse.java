@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.InternalCache;
  *
  * @since GemFire 4.0
  */
-public final class BridgeServerResponse extends AdminResponse {
+public class BridgeServerResponse extends AdminResponse {
 
   /** Information about the bridge server that was operated on */
   private RemoteBridgeServer bridgeInfo;

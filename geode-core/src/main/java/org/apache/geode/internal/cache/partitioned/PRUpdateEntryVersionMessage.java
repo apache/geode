@@ -221,7 +221,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
    * Response for PartitionMessage {@link PRUpdateEntryVersionMessage}.
    * 
    */
-  public static final class UpdateEntryVersionResponse extends PartitionResponse {
+  public static class UpdateEntryVersionResponse extends PartitionResponse {
 
     private volatile boolean versionUpdated;
     private final Object key;

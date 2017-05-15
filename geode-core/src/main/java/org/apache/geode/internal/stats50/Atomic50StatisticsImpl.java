@@ -135,7 +135,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   ////////////////////// Instance Methods //////////////////////
 
   @Override
-  public final boolean isAtomic() {
+  public boolean isAtomic() {
     return true;
   }
 
@@ -150,13 +150,13 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   /**
    * Queue of new ThreadStorage instances.
    */
-  private final ConcurrentLinkedQueue<ThreadStorage> threadStoreQ =
+  private ConcurrentLinkedQueue<ThreadStorage> threadStoreQ =
       new ConcurrentLinkedQueue<ThreadStorage>();
   /**
    * List of ThreadStorage instances that will be used to roll up stat values on this instance. They
    * come from the threadStoreQ.
    */
-  private final CopyOnWriteArrayList<ThreadStorage> threadStoreList =
+  private CopyOnWriteArrayList<ThreadStorage> threadStoreList =
       new CopyOnWriteArrayList<ThreadStorage>();
 
   /**
@@ -225,17 +225,17 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   //////////////////////// store() Methods ///////////////////////
 
   @Override
-  protected final void _setInt(int offset, int value) {
+  protected void _setInt(int offset, int value) {
     doIntWrite(offset, value);
   }
 
   @Override
-  protected final void _setLong(int offset, long value) {
+  protected void _setLong(int offset, long value) {
     doLongWrite(offset, value);
   }
 
   @Override
-  protected final void _setDouble(int offset, double value) {
+  protected void _setDouble(int offset, double value) {
     throw new IllegalStateException(
         LocalizedStrings.Atomic50StatisticsImpl_DOUBLE_STATS_NOT_ON_ATOMIC50.toLocalizedString());
   }
@@ -243,17 +243,17 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   /////////////////////// get() Methods ///////////////////////
 
   @Override
-  protected final int _getInt(int offset) {
+  protected int _getInt(int offset) {
     return doIntRead(offset);
   }
 
   @Override
-  protected final long _getLong(int offset) {
+  protected long _getLong(int offset) {
     return doLongRead(offset);
   }
 
   @Override
-  protected final double _getDouble(int offset) {
+  protected double _getDouble(int offset) {
     throw new IllegalStateException(
         LocalizedStrings.Atomic50StatisticsImpl_DOUBLE_STATS_NOT_ON_ATOMIC50.toLocalizedString());
   }
@@ -261,19 +261,19 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   //////////////////////// inc() Methods ////////////////////////
 
   @Override
-  protected final void _incInt(int offset, int delta) {
+  protected void _incInt(int offset, int delta) {
     getThreadIntStorage().getAndAdd(offset, delta);
     setIntDirty(offset);
   }
 
   @Override
-  protected final void _incLong(int offset, long delta) {
+  protected void _incLong(int offset, long delta) {
     getThreadLongStorage().getAndAdd(offset, delta);
     setLongDirty(offset);
   }
 
   @Override
-  protected final void _incDouble(int offset, double delta) {
+  protected void _incDouble(int offset, double delta) {
     throw new IllegalStateException(
         LocalizedStrings.Atomic50StatisticsImpl_DOUBLE_STATS_NOT_ON_ATOMIC50.toLocalizedString());
   }
@@ -355,29 +355,29 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
     }
   }
 
-  private final boolean isIntDirty(final int idx) {
+  private boolean isIntDirty(final int idx) {
     return this.intDirty.get(idx) != 0;
   }
 
-  private final boolean isLongDirty(final int idx) {
+  private boolean isLongDirty(final int idx) {
     return this.longDirty.get(idx) != 0;
   }
 
-  private final boolean clearIntDirty(final int idx) {
+  private boolean clearIntDirty(final int idx) {
     if (!this.intDirty.weakCompareAndSet(idx, 1/* expected */, 0/* update */)) {
       return this.intDirty.compareAndSet(idx, 1/* expected */, 0/* update */);
     }
     return true;
   }
 
-  private final boolean clearLongDirty(final int idx) {
+  private boolean clearLongDirty(final int idx) {
     if (!this.longDirty.weakCompareAndSet(idx, 1/* expected */, 0/* update */)) {
       return this.longDirty.compareAndSet(idx, 1/* expected */, 0/* update */);
     }
     return true;
   }
 
-  private final void setIntDirty(final int idx) {
+  private void setIntDirty(final int idx) {
     if (!this.intDirty.weakCompareAndSet(idx, 0/* expected */, 1/* update */)) {
       if (!isIntDirty(idx)) {
         this.intDirty.set(idx, 1);
@@ -385,7 +385,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
     }
   }
 
-  private final void setLongDirty(final int idx) {
+  private void setLongDirty(final int idx) {
     if (!this.longDirty.weakCompareAndSet(idx, 0/* expected */, 1/* update */)) {
       if (!isLongDirty(idx)) {
         this.longDirty.set(idx, 1);
@@ -393,7 +393,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
     }
   }
 
-  private final int doIntRead(final int idx) {
+  private int doIntRead(final int idx) {
     // early out for sampler; it called prepareForSample
     if (samplerThread.get() != null) {
       return this.intStorage.get(idx);
@@ -423,7 +423,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
     }
   }
 
-  private final void doIntWrite(final int idx, int value) {
+  private void doIntWrite(final int idx, int value) {
     synchronized (this.intReadPrepLock[idx]) {
       if (!isIntDirty(idx)) {
         // no need to prepare if not dirty
@@ -444,7 +444,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
     }
   }
 
-  private final long doLongRead(final int idx) {
+  private long doLongRead(final int idx) {
     if (samplerThread.get() != null) {
       return this.longStorage.get(idx);
     }
@@ -473,7 +473,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
     }
   }
 
-  private final void doLongWrite(int idx, long value) {
+  private void doLongWrite(int idx, long value) {
     synchronized (this.longReadPrepLock[idx]) {
       if (!isLongDirty(idx)) {
         // no need to prepare if not dirty
@@ -497,17 +497,17 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
 
   /////////////////// internal package methods //////////////////
 
-  final int[] _getIntStorage() {
+  int[] _getIntStorage() {
     throw new IllegalStateException(
         LocalizedStrings.Atomic50StatisticsImpl_DIRECT_ACCESS_NOT_ON_ATOMIC50.toLocalizedString());
   }
 
-  final long[] _getLongStorage() {
+  long[] _getLongStorage() {
     throw new IllegalStateException(
         LocalizedStrings.Atomic50StatisticsImpl_DIRECT_ACCESS_NOT_ON_ATOMIC50.toLocalizedString());
   }
 
-  final double[] _getDoubleStorage() {
+  double[] _getDoubleStorage() {
     throw new IllegalStateException(
         LocalizedStrings.Atomic50StatisticsImpl_DIRECT_ACCESS_NOT_ON_ATOMIC50.toLocalizedString());
   }

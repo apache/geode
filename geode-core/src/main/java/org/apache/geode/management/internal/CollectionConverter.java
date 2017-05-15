@@ -35,7 +35,7 @@ import javax.management.openmbean.OpenDataException;
  * 
  * 
  */
-public final class CollectionConverter extends OpenTypeConverter {
+public class CollectionConverter extends OpenTypeConverter {
   CollectionConverter(Type targetType, ArrayType openArrayType, Class openArrayClass,
       OpenTypeConverter elementConverter) {
     super(targetType, openArrayType, openArrayClass);
@@ -60,7 +60,7 @@ public final class CollectionConverter extends OpenTypeConverter {
     }
   }
 
-  final Object toNonNullOpenValue(Object value) throws OpenDataException {
+  Object toNonNullOpenValue(Object value) throws OpenDataException {
     final Collection valueCollection = (Collection) value;
     if (valueCollection instanceof SortedSet) {
       Comparator comparator = ((SortedSet) valueCollection).comparator();
@@ -77,7 +77,7 @@ public final class CollectionConverter extends OpenTypeConverter {
     return openArray;
   }
 
-  public final Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
+  public Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
     final Object[] openArray = (Object[]) openValue;
     final Collection<Object> valueCollection;
     try {

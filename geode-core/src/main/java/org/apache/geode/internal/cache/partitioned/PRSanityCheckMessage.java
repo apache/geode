@@ -39,7 +39,7 @@ import java.util.Set;
  * 
  *
  */
-public final class PRSanityCheckMessage extends PartitionMessage {
+public class PRSanityCheckMessage extends PartitionMessage {
 
   private String regionName;
 

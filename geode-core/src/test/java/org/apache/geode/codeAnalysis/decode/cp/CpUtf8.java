@@ -49,7 +49,7 @@ public class CpUtf8 extends Cp {
   }
 
   /**
-   * decode the class name of the given argument, or the final class name if the argument is zero
+   * decode the class name of the given argument, or the class name if the argument is zero
    */
   public String decodeClassName(int argNo) {
     int idx;

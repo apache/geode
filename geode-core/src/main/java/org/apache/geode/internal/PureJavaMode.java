@@ -20,7 +20,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 /**
  * Used to determine if product should use pure java mode.
  */
-public final class PureJavaMode {
+public class PureJavaMode {
   /**
    * System property to set to true to force pure java mode
    */
@@ -67,11 +67,11 @@ public final class PureJavaMode {
     osStatsAreAvailable = osName.startsWith("Linux") || !isPure;
   }
 
-  public final static boolean isPure() {
+  public static boolean isPure() {
     return isPure;
   }
 
-  public final static boolean is64Bit() {
+  public static boolean is64Bit() {
     return is64Bit;
   }
 
@@ -79,7 +79,7 @@ public final class PureJavaMode {
    * Linux has OsStats even in PureJava mode but other platforms require the native code to provide
    * OS Statistics. return true if OSStatistics are available
    */
-  public final static boolean osStatsAreAvailable() {
+  public static boolean osStatsAreAvailable() {
     return osStatsAreAvailable;
   }
 }

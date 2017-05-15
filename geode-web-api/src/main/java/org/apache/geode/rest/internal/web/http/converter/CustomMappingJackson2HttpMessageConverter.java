@@ -45,8 +45,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
     outputMessageWrapper.flush();
   }
 
-  protected static final class BufferingHttpOutputMessageWrapper
-      implements HttpOutputMessageWrapper {
+  protected static class BufferingHttpOutputMessageWrapper implements HttpOutputMessageWrapper {
 
     private final ByteArrayOutputStream outputStream;
 
@@ -125,7 +124,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
 
   }
 
-  protected static final class ByteCountingOutputStream extends OutputStream {
+  protected static class ByteCountingOutputStream extends OutputStream {
 
     private AtomicLong byteCount = new AtomicLong(0l);
 

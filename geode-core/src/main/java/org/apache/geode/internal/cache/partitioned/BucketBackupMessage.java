@@ -37,7 +37,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 5.0
  */
-public final class BucketBackupMessage extends PartitionMessage {
+public class BucketBackupMessage extends PartitionMessage {
 
   private static final Logger logger = LogService.getLogger();
 

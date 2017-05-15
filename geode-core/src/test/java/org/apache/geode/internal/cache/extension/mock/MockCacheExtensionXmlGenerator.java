@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
  *
  * @since GemFire 8.1
  */
-public final class MockCacheExtensionXmlGenerator extends AbstractMockExtensionXmlGenerator<Cache> {
+public class MockCacheExtensionXmlGenerator extends AbstractMockExtensionXmlGenerator<Cache> {
   public MockCacheExtensionXmlGenerator(MockCacheExtension extension) {
     super(extension);
   }

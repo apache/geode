@@ -181,7 +181,7 @@ public class EntryExpiryTask extends ExpiryTask {
   }
 
   @Override
-  final protected void reschedule() throws CacheException {
+  protected void reschedule() throws CacheException {
     if (isCacheClosing() || getLocalRegion().isClosed() || getLocalRegion().isDestroyed()
         || !isExpirationAllowed()) {
       return;

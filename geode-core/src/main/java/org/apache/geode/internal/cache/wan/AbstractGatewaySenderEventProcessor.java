@@ -349,7 +349,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   protected static final int FAILURE_LOG_MAX_INTERVAL = Integer.getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.FAILURE_LOG_MAX_INTERVAL", 300000);
 
-  public final boolean skipFailureLogging(Integer batchId) {
+  public boolean skipFailureLogging(Integer batchId) {
     boolean skipLogging = false;
     // if map has become large then give up on new events but we don't expect
     // it to become too large in practise
@@ -387,7 +387,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
    * After a successful batch execution remove from failure map if present (i.e. if the event had
    * failed on a previous try).
    */
-  public final boolean removeEventFromFailureMap(Integer batchId) {
+  public boolean removeEventFromFailureMap(Integer batchId) {
     return this.failureLogInterval.remove(batchId) != null;
   }
 

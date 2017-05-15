@@ -1220,7 +1220,7 @@ public class TXState implements TXStateInterface {
    * @param ifNew only write the entry if it currently does not exist
    * @param expectedOldValue the required old value or null
    */
-  final TXEntryState txWriteEntry(LocalRegion region, EntryEventImpl event, boolean ifNew,
+  TXEntryState txWriteEntry(LocalRegion region, EntryEventImpl event, boolean ifNew,
       boolean requireOldValue, Object expectedOldValue) throws EntryNotFoundException {
     boolean createIfAbsent = true;
     if (event.getOperation() == Operation.REPLACE) {

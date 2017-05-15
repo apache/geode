@@ -475,7 +475,7 @@ public class RegionProvider implements Closeable {
    * @param delay The delay in milliseconds of the expiration
    * @return True is expiration set, false otherwise
    */
-  public final boolean setExpiration(ByteArrayWrapper key, long delay) {
+  public boolean setExpiration(ByteArrayWrapper key, long delay) {
     RedisDataType type = getRedisDataType(key);
     if (type == null)
       return false;
@@ -492,7 +492,7 @@ public class RegionProvider implements Closeable {
    * @param delay Delay in milliseconds to reset the expiration to
    * @return True if reset, false if not
    */
-  public final boolean modifyExpiration(ByteArrayWrapper key, long delay) {
+  public boolean modifyExpiration(ByteArrayWrapper key, long delay) {
     /*
      * Attempt to cancel future task
      */
@@ -517,7 +517,7 @@ public class RegionProvider implements Closeable {
    * @param key Key
    * @return True is expiration cancelled on the key, false otherwise
    */
-  public final boolean cancelKeyExpiration(ByteArrayWrapper key) {
+  public boolean cancelKeyExpiration(ByteArrayWrapper key) {
     ScheduledFuture<?> future = expirationsMap.remove(key);
     if (future == null)
       return false;
@@ -544,7 +544,7 @@ public class RegionProvider implements Closeable {
    * @param key Key
    * @return Remaining time in milliseconds or 0 if no delay or key doesn't exist
    */
-  public final long getExpirationDelayMillis(ByteArrayWrapper key) {
+  public long getExpirationDelayMillis(ByteArrayWrapper key) {
     ScheduledFuture<?> future = this.expirationsMap.get(key);
     return future != null ? future.getDelay(TimeUnit.MILLISECONDS) : 0L;
   }

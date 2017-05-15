@@ -30,7 +30,7 @@ import org.apache.geode.management.internal.cli.domain.PartitionAttributesInfo;
  * Contains the default values for the region attributes
  *
  */
-public final class RegionAttributesDefault {
+public class RegionAttributesDefault {
   public static final Scope SCOPE = AbstractRegion.DEFAULT_SCOPE.DISTRIBUTED_NO_ACK;
   public static final DataPolicy DATA_POLICY = DataPolicy.DEFAULT;
   public static final boolean CLONING_ENABLED = false;

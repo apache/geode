@@ -1460,7 +1460,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the distribution manager without checking for connected or not so can also return null.
    */
-  public final DM getDM() {
+  public DM getDM() {
     return this.dm;
   }
 
@@ -1471,7 +1471,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * 
    * @return the quorum checking service
    */
-  public final QuorumChecker getQuorumChecker() {
+  public QuorumChecker getQuorumChecker() {
     return this.quorumChecker;
   }
 
@@ -1743,7 +1743,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   @Override
-  public final int getStatisticsCount() {
+  public int getStatisticsCount() {
     int result = 0;
     List<Statistics> statsList = this.statsList;
     if (statsList != null) {
@@ -1753,7 +1753,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   @Override
-  public final Statistics findStatistics(long id) {
+  public Statistics findStatistics(long id) {
     List<Statistics> statsList = this.statsList;
     for (Statistics s : statsList) {
       if (s.getUniqueId() == id) {
@@ -1765,7 +1765,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   @Override
-  public final boolean statisticsExists(long id) {
+  public boolean statisticsExists(long id) {
     List<Statistics> statsList = this.statsList;
     for (Statistics s : statsList) {
       if (s.getUniqueId() == id) {
@@ -1776,7 +1776,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   @Override
-  public final Statistics[] getStatistics() {
+  public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
     return (Statistics[]) statsList.toArray(new Statistics[0]);
   }

@@ -1690,7 +1690,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     });
   }
 
-  private static final class BucketMovingAsyncEventListener implements AsyncEventListener {
+  private static class BucketMovingAsyncEventListener implements AsyncEventListener {
     private final DistributedMember destination;
     private boolean moved;
     private Set<Object> keysSeen = new HashSet<Object>();

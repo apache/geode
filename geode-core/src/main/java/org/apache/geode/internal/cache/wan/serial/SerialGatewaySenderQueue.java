@@ -1171,7 +1171,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     // Prevent this region from using concurrency checks
     @Override
-    final public boolean supportsConcurrencyChecks() {
+    public boolean supportsConcurrencyChecks() {
       return false;
     }
 
@@ -1182,7 +1182,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     // Prevent this region from participating in a TX, bug 38709
     @Override
-    final public boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 
@@ -1191,22 +1191,22 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     public void createEventTracker() {}
 
     @Override
-    final protected boolean shouldNotifyBridgeClients() {
+    protected boolean shouldNotifyBridgeClients() {
       return false;
     }
 
     @Override
-    final public boolean generateEventID() {
+    public boolean generateEventID() {
       return false;
     }
 
     @Override
-    final public boolean isUsedForSerialGatewaySenderQueue() {
+    public boolean isUsedForSerialGatewaySenderQueue() {
       return true;
     }
 
     @Override
-    final public AbstractGatewaySender getSerialGatewaySender() {
+    public AbstractGatewaySender getSerialGatewaySender() {
       return sender;
     }
 

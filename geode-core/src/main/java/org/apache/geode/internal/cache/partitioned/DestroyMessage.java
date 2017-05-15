@@ -442,19 +442,19 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
   }
 
-  protected final Object getKey() {
+  protected Object getKey() {
     return this.key;
   }
 
-  private final void setKey(Object key) {
+  private void setKey(Object key) {
     this.key = key;
   }
 
-  public final Operation getOperation() {
+  public Operation getOperation() {
     return this.op;
   }
 
-  protected final Object getCallbackArg() {
+  protected Object getCallbackArg() {
     return this.cbArg;
   }
 

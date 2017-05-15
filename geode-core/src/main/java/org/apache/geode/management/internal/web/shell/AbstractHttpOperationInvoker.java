@@ -362,7 +362,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @return an instance of the ScheduledExecutorService for scheduling periodic or delayed tasks.
    * @see java.util.concurrent.ScheduledExecutorService
    */
-  protected final ScheduledExecutorService getExecutorService() {
+  protected ScheduledExecutorService getExecutorService() {
     assertState(this.executorService != null,
         "The ExecutorService for this HTTP OperationInvoker (%1$s) was not properly initialized!",
         getClass().getName());
@@ -377,7 +377,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    *         OperationInvoker to process commands.
    * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
-  protected final Gfsh getGfsh() {
+  protected Gfsh getGfsh() {
     return this.gfsh;
   }
 
@@ -388,7 +388,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @return an instance of the Spring RestTemplate used to make REST API web service calls.
    * @see org.springframework.web.client.RestTemplate
    */
-  protected final RestTemplate getRestTemplate() {
+  protected RestTemplate getRestTemplate() {
     return this.restTemplate;
   }
 

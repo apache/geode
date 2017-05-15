@@ -203,12 +203,12 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
     return this.key;
   }
 
-  public final Object getValue(RegionEntryContext context) {
+  public Object getValue(RegionEntryContext context) {
     return this.value;
   }
 
   @Override
-  public final Object getValueRetain(RegionEntryContext context) {
+  public Object getValueRetain(RegionEntryContext context) {
     return this.value;
   }
 

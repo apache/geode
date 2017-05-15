@@ -27,8 +27,7 @@ import java.io.*;
  * A message that is sent to a particular console distribution manager when changes have been
  * detected that will be of interest to registered stat listeners.
  */
-public final class StatListenerMessage extends PooledDistributionMessage
-    implements AdminMessageType {
+public class StatListenerMessage extends PooledDistributionMessage implements AdminMessageType {
 
   // instance variables
   private long timestamp;

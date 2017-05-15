@@ -1454,8 +1454,7 @@ public class InitialImageOperation {
   /**
    * This is the message that initiates a request for an image
    */
-  public static final class RequestImageMessage extends DistributionMessage
-      implements MessageWithReply {
+  public static class RequestImageMessage extends DistributionMessage implements MessageWithReply {
 
     /**
      * a version vector is transmitted with the request if we are merely synchronizing with an
@@ -2142,7 +2141,7 @@ public class InitialImageOperation {
   /**
    * This is the message thats sent to get Filter information.
    */
-  public static final class RequestFilterInfoMessage extends DistributionMessage
+  public static class RequestFilterInfoMessage extends DistributionMessage
       implements MessageWithReply {
 
     /**
@@ -2409,8 +2408,7 @@ public class InitialImageOperation {
   /**
    * This is the message thats sent to get RVV from GII provider.
    */
-  public static final class RequestRVVMessage extends DistributionMessage
-      implements MessageWithReply {
+  public static class RequestRVVMessage extends DistributionMessage implements MessageWithReply {
 
     /**
      * Name of the region.
@@ -2540,7 +2538,7 @@ public class InitialImageOperation {
   /**
    * This is the message thats sent to get RVV from GII provider.
    */
-  public static final class RequestSyncMessage extends HighPriorityDistributionMessage {
+  public static class RequestSyncMessage extends HighPriorityDistributionMessage {
 
     /**
      * Name of the region.
@@ -2633,7 +2631,7 @@ public class InitialImageOperation {
 
   }
 
-  public static final class ImageReplyMessage extends ReplyMessage {
+  public static class ImageReplyMessage extends ReplyMessage {
     /** the next entries in this chunk. Null means abort. */
     protected List entries;
 
@@ -2857,7 +2855,7 @@ public class InitialImageOperation {
   /**
    * Represents a key/value pair returned from a peer as part of an {@link InitialImageOperation}
    */
-  public static final class Entry implements DataSerializableFixedID {
+  public static class Entry implements DataSerializableFixedID {
     /**
      * key for this entry. Null if "end of chunk" marker entry
      */

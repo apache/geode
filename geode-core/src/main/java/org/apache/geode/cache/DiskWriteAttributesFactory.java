@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
  * @deprecated as of 6.5 use {@link DiskStoreFactory} instead
  */
 @Deprecated
-public final class DiskWriteAttributesFactory implements java.io.Serializable {
+public class DiskWriteAttributesFactory implements java.io.Serializable {
   private static final long serialVersionUID = -4077746249663727235L;
 
   private final Properties props = new Properties();

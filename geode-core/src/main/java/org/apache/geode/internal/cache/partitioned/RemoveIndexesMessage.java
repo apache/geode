@@ -49,7 +49,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * 
  */
-public final class RemoveIndexesMessage extends PartitionMessage {
+public class RemoveIndexesMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -109,7 +109,7 @@ public final class RemoveIndexesMessage extends PartitionMessage {
    * of the initialization
    */
   @Override
-  protected final boolean failIfRegionMissing() {
+  protected boolean failIfRegionMissing() {
     return false;
   }
 
@@ -220,7 +220,7 @@ public final class RemoveIndexesMessage extends PartitionMessage {
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.removeSingleIndex = in.readBoolean();
     if (this.removeSingleIndex)
@@ -228,7 +228,7 @@ public final class RemoveIndexesMessage extends PartitionMessage {
   }
 
   @Override
-  public final void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     super.toData(out);
     out.writeBoolean(this.removeSingleIndex);
     if (this.removeSingleIndex)
@@ -239,7 +239,7 @@ public final class RemoveIndexesMessage extends PartitionMessage {
    * Processes remove index on the receiver.
    */
   @Override
-  public final void process(final DistributionManager dm) {
+  public void process(final DistributionManager dm) {
 
     Throwable thr = null;
     boolean sendReply = true;
@@ -413,7 +413,7 @@ public final class RemoveIndexesMessage extends PartitionMessage {
    * index creation.
    *
    */
-  public static final class RemoveIndexesReplyMessage extends ReplyMessage {
+  public static class RemoveIndexesReplyMessage extends ReplyMessage {
 
     /** Indexes removed or not. */
     private boolean result;
@@ -502,7 +502,7 @@ public final class RemoveIndexesMessage extends PartitionMessage {
      * @param dm distribution manager
      */
     @Override
-    public final void process(final DM dm, final ReplyProcessor21 p) {
+    public void process(final DM dm, final ReplyProcessor21 p) {
       RemoveIndexesResponse processor = (RemoveIndexesResponse) p;
       if (processor != null) {
         processor.setResponse(this.result, this.numBucketsIndexesRemoved, this.numTotalBuckets);

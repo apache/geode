@@ -23,7 +23,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.filesystem.SeekableInputStream;
 
-final class FileIndexInput extends IndexInput {
+class FileIndexInput extends IndexInput {
 
   private final File file;
   SeekableInputStream in;

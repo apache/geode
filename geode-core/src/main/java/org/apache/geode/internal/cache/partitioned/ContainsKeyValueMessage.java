@@ -44,7 +44,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-public final class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
+public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private boolean valueCheck;
@@ -169,7 +169,7 @@ public final class ContainsKeyValueMessage extends PartitionMessageWithDirectRep
     out.writeInt(this.bucketId.intValue());
   }
 
-  public static final class ContainsKeyValueReplyMessage extends ReplyMessage {
+  public static class ContainsKeyValueReplyMessage extends ReplyMessage {
 
     /** Propagated exception from remote node to operation initiator */
     private boolean containsKeyValue;

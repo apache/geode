@@ -141,7 +141,7 @@ public class AbstractXmlParserJUnitTest {
     new MockXmlParser().skippedEntity(null);
   }
 
-  private static final class MockXmlParser extends AbstractXmlParser {
+  private static class MockXmlParser extends AbstractXmlParser {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts)
         throws SAXException {

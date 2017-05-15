@@ -492,7 +492,7 @@ public class MsgDestreamer {
     }
 
     @Override
-    public final void close() {
+    public void close() {
       signalDone();
     }
 
@@ -501,7 +501,7 @@ public class MsgDestreamer {
      * the wrapped ByteBuffer is done this method throws BufferUnderflowException
      */
     @Override
-    public final int read() throws IOException {
+    public int read() throws IOException {
       ByteBuffer bb = waitForAvailableData();
       // logit("read result=" + result);
       return (bb.get() & 0xff);
@@ -514,7 +514,7 @@ public class MsgDestreamer {
      * BufferUnderflowException
      */
     @Override
-    public final int read(byte b[], int off, int len) throws IOException {
+    public int read(byte b[], int off, int len) throws IOException {
       ByteBuffer bb = waitForAvailableData();
       int remaining = bb.remaining();
       int bytesToRead = len;

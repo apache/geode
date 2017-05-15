@@ -480,7 +480,7 @@ public class PRQueryProcessor {
   /**
    * Status token placed in results stream to track completion of query results for a given bucket
    */
-  public static final class EndOfBucket implements DataSerializableFixedID {
+  public static class EndOfBucket implements DataSerializableFixedID {
 
     private int bucketId;
 
@@ -525,7 +525,7 @@ public class PRQueryProcessor {
    * 
    */
   @SuppressWarnings("synthetic-access")
-  private final class QueryTask implements Callable {
+  private class QueryTask implements Callable {
     private final DefaultQuery query;
     private final Object[] parameters;
     private final PartitionedRegionDataStore _prDs;
@@ -574,7 +574,7 @@ public class PRQueryProcessor {
      * Encapsulates the result for the query on the bucket.
      * 
      */
-    private final class BucketQueryResult {
+    private class BucketQueryResult {
 
       private int _buk;
       private Exception _ex = null;

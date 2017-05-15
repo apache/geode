@@ -32,7 +32,7 @@ import org.apache.logging.log4j.message.ParameterizedMessage;
  * Geode changes include changing class name and package. Additional changes are commented with "//
  * GEODE: note"
  */
-public final class GemFireParameterizedMessageFactory extends AbstractMessageFactory {
+public class GemFireParameterizedMessageFactory extends AbstractMessageFactory {
 
   private static final long serialVersionUID = 1L;
 

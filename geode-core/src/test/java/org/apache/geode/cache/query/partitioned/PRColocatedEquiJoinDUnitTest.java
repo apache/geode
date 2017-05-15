@@ -279,7 +279,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
       public void run2() throws CacheException {
 
         // Helper classes and function
-        final class TestQueryFunction extends FunctionAdapter {
+        class TestQueryFunction extends FunctionAdapter {
 
           @Override
           public boolean hasResult() {
@@ -1539,7 +1539,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
       public void run2() throws CacheException {
 
         // Helper classes and function
-        final class TestQueryFunction extends FunctionAdapter {
+        class TestQueryFunction extends FunctionAdapter {
 
           @Override
           public boolean hasResult() {

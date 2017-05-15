@@ -147,7 +147,7 @@ public abstract class BaseCommand implements Command {
 
   protected SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
-  final public void execute(Message msg, ServerConnection servConn) {
+  public void execute(Message msg, ServerConnection servConn) {
     // Read the request and update the statistics
     long start = DistributionStats.getStatTime();
     // servConn.resetTransientData();

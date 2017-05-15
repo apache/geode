@@ -54,7 +54,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @see org.apache.geode.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(int)
  */
-public final class DumpB2NRegion extends PartitionMessage {
+public class DumpB2NRegion extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private int bucketId;
@@ -167,7 +167,7 @@ public final class DumpB2NRegion extends PartitionMessage {
 
 
 
-  public static final class DumpB2NReplyMessage extends ReplyMessage {
+  public static class DumpB2NReplyMessage extends ReplyMessage {
     private PrimaryInfo primaryInfo;
 
     public DumpB2NReplyMessage() {}

@@ -49,32 +49,32 @@ abstract class RegionExpiryTask extends ExpiryTask {
   }
 
   @Override
-  protected final long getLastAccessedTime() {
+  protected long getLastAccessedTime() {
     return getLocalRegion().getLastAccessedTime();
   }
 
   @Override
-  protected final long getLastModifiedTime() {
+  protected long getLastModifiedTime() {
     return getLocalRegion().getLastModifiedTime();
   }
 
   @Override
-  protected final boolean destroy(boolean isPending) throws CacheException {
+  protected boolean destroy(boolean isPending) throws CacheException {
     return getLocalRegion().expireRegion(this, true, true);
   }
 
   @Override
-  protected final boolean invalidate() throws TimeoutException {
+  protected boolean invalidate() throws TimeoutException {
     return getLocalRegion().expireRegion(this, true, false);
   }
 
   @Override
-  protected final boolean localDestroy() throws CacheException {
+  protected boolean localDestroy() throws CacheException {
     return getLocalRegion().expireRegion(this, false, true);
   }
 
   @Override
-  protected final boolean localInvalidate() {
+  protected boolean localInvalidate() {
     return getLocalRegion().expireRegion(this, false, false);
   }
 
@@ -85,7 +85,7 @@ abstract class RegionExpiryTask extends ExpiryTask {
   }
 
   @Override
-  protected final void performTimeout() throws CacheException {
+  protected void performTimeout() throws CacheException {
     if (isCanceled) {
       return;
     }
@@ -93,7 +93,7 @@ abstract class RegionExpiryTask extends ExpiryTask {
   }
 
   @Override
-  protected final void basicPerformTimeout(boolean isPending) throws CacheException {
+  protected void basicPerformTimeout(boolean isPending) throws CacheException {
     if (isCanceled) {
       return;
     }
@@ -110,7 +110,7 @@ abstract class RegionExpiryTask extends ExpiryTask {
   }
 
   @Override
-  final protected void reschedule() throws CacheException {
+  protected void reschedule() throws CacheException {
     if (isCacheClosing() || getLocalRegion().isClosed() || getLocalRegion().isDestroyed()
         || !isExpirationAllowed()) {
       return;

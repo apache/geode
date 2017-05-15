@@ -178,7 +178,7 @@ public class ThreadUtilsJUnitTest {
     TestFramework.runOnce(new SleepInterruptedMultithreadedTestCase(10 * 1000));
   }
 
-  protected static final class SleepInterruptedMultithreadedTestCase extends MultithreadedTestCase {
+  protected static class SleepInterruptedMultithreadedTestCase extends MultithreadedTestCase {
 
     private final long sleepDuration;
 

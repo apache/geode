@@ -39,7 +39,7 @@ import java.util.concurrent.locks.Lock;
  * 
  * @since GemFire 5.1
  */
-public final class DistributedMemberLock implements Lock {
+public class DistributedMemberLock implements Lock {
 
   /** Lock lease timeout value that never expires. */
   public static final long NON_EXPIRING_LEASE = -1;

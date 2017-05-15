@@ -33,7 +33,7 @@ import org.apache.geode.internal.lang.StringUtils;
  * @since GemFire 5.0.2
  *
  */
-public final class PreferBytesCachedDeserializable
+public class PreferBytesCachedDeserializable
     implements CachedDeserializable, DataSerializableFixedID {
 
 

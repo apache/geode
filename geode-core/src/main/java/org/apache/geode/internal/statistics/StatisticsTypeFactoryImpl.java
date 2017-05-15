@@ -38,11 +38,11 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   /**
    * Returns the single instance of this class.
    */
-  public final static StatisticsTypeFactory singleton() {
+  public static StatisticsTypeFactory singleton() {
     return singleton;
   }
 
-  protected final static void clear() {
+  protected static void clear() {
     singleton.statTypes.clear();
   }
 

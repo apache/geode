@@ -106,7 +106,7 @@ public abstract class HostStatSampler
     this.timer = timer;
   }
 
-  public final StatSamplerStats getStatSamplerStats() {
+  public StatSamplerStats getStatSamplerStats() {
     return this.samplerStats;
   }
 
@@ -114,7 +114,7 @@ public abstract class HostStatSampler
    * Returns the number of times a statistics resource has been add or deleted.
    */
   @Override
-  public final int getStatisticsModCount() {
+  public int getStatisticsModCount() {
     return getStatisticsManager().getStatListModCount();
   }
 
@@ -122,7 +122,7 @@ public abstract class HostStatSampler
    * Returns an array of all the current statistic resource instances.
    */
   @Override
-  public final Statistics[] getStatistics() {
+  public Statistics[] getStatistics() {
     return getStatisticsManager().getStatistics();
   }
 
@@ -130,7 +130,7 @@ public abstract class HostStatSampler
    * Returns a unique id for the sampler's system.
    */
   @Override
-  public final long getSystemId() {
+  public long getSystemId() {
     return getStatisticsManager().getId();
   }
 
@@ -138,7 +138,7 @@ public abstract class HostStatSampler
    * Returns the time this sampler's system was started.
    */
   @Override
-  public final long getSystemStartTime() {
+  public long getSystemStartTime() {
     return getStatisticsManager().getStartTime();
   }
 
@@ -146,7 +146,7 @@ public abstract class HostStatSampler
    * Returns the path to this sampler's system directory; if it has one.
    */
   @Override
-  public final String getSystemDirectoryPath() {
+  public String getSystemDirectoryPath() {
     try {
       return SocketCreator.getHostName(SocketCreator.getLocalHost());
     } catch (UnknownHostException ignore) {
@@ -179,7 +179,7 @@ public abstract class HostStatSampler
    * This service's main loop
    */
   @Override
-  public final void run() {
+  public void run() {
     final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
     if (isDebugEnabled_STATISTICS) {
       logger.trace(LogMarker.STATISTICS, "HostStatSampler started");
@@ -275,7 +275,7 @@ public abstract class HostStatSampler
    * @throws IllegalStateException if an instance of the {@link #statThread} is still running from a
    *         previous DistributedSystem.
    */
-  public final void start() {
+  public void start() {
     synchronized (HostStatSampler.class) {
       if (statThread != null) {
         try {
@@ -311,11 +311,11 @@ public abstract class HostStatSampler
   /**
    * Tell this service's main thread to terminate.
    */
-  public final void stop() {
+  public void stop() {
     stop(true);
   }
 
-  private final void stop(boolean interruptIfAlive) {
+  private void stop(boolean interruptIfAlive) {
     synchronized (HostStatSampler.class) {
       this.callbackSampler.stop();
       if (statThread == null) {
@@ -354,7 +354,7 @@ public abstract class HostStatSampler
     }
   }
 
-  public final boolean isAlive() {
+  public boolean isAlive() {
     synchronized (HostStatSampler.class) {
       return statThread != null && statThread.isAlive();
     }
@@ -367,7 +367,7 @@ public abstract class HostStatSampler
    * @see #initSpecialStats
    * @since GemFire 3.5
    */
-  public final void waitForInitialization() throws InterruptedException {
+  public void waitForInitialization() throws InterruptedException {
     this.statSamplerInitializedLatch.await();
   }
 
@@ -378,7 +378,7 @@ public abstract class HostStatSampler
    * @see #initSpecialStats
    * @since GemFire 7.0
    */
-  public final boolean waitForInitialization(long ms) throws InterruptedException {
+  public boolean waitForInitialization(long ms) throws InterruptedException {
     return awaitInitialization(ms, TimeUnit.MILLISECONDS);
   }
 
@@ -387,12 +387,12 @@ public abstract class HostStatSampler
    *
    * @see #initSpecialStats
    */
-  public final boolean awaitInitialization(final long timeout, final TimeUnit unit)
+  public boolean awaitInitialization(final long timeout, final TimeUnit unit)
       throws InterruptedException {
     return this.statSamplerInitializedLatch.await(timeout, unit);
   }
 
-  public final void changeArchive(File newFile) {
+  public void changeArchive(File newFile) {
     this.sampleCollector.changeArchive(newFile, timer.getTime());
   }
 
@@ -401,7 +401,7 @@ public abstract class HostStatSampler
    *
    * @since GemFire 3.5
    */
-  public final VMStatsContract getVMStats() {
+  public VMStatsContract getVMStats() {
     return this.vmStats;
   }
 
@@ -449,19 +449,19 @@ public abstract class HostStatSampler
     return getStatisticsManager().getId();
   }
 
-  protected final boolean fileSizeLimitInKB() {
+  protected boolean fileSizeLimitInKB() {
     return this.fileSizeLimitInKB;
   }
 
-  protected final boolean osStatsDisabled() {
+  protected boolean osStatsDisabled() {
     return this.osStatsDisabled;
   }
 
-  protected final boolean stopRequested() {
+  protected boolean stopRequested() {
     return stopper.isCancelInProgress() || this.stopRequested;
   }
 
-  public final SampleCollector getSampleCollector() {
+  public SampleCollector getSampleCollector() {
     return this.sampleCollector;
   }
 

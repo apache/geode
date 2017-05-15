@@ -258,7 +258,7 @@ public class UpdateAttributesProcessor {
   }
 
 
-  public static final class UpdateAttributesMessage extends HighPriorityDistributionMessage
+  public static class UpdateAttributesMessage extends HighPriorityDistributionMessage
       implements MessageWithReply {
 
     protected String adviseePath;
@@ -376,7 +376,7 @@ public class UpdateAttributesProcessor {
   }
 
 
-  public final static class ProfileReplyMessage extends ReplyMessage {
+  public static class ProfileReplyMessage extends ReplyMessage {
     Profile profile;
 
     public static void send(InternalDistributedMember recipient, int processorId,

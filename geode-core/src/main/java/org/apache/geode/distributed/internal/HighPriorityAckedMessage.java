@@ -44,7 +44,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * 
  * @since GemFire 5.1
  */
-public final class HighPriorityAckedMessage extends HighPriorityDistributionMessage
+public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 

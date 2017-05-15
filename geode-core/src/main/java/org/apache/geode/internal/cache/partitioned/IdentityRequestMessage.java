@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 5.0
  */
-public final class IdentityRequestMessage extends DistributionMessage implements MessageWithReply {
+public class IdentityRequestMessage extends DistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   private static final int UNINITIALIZED = -1;
@@ -166,7 +166,7 @@ public final class IdentityRequestMessage extends DistributionMessage implements
    * 
    * @since GemFire 5.0
    */
-  public static final class IdentityReplyMessage extends HighPriorityDistributionMessage {
+  public static class IdentityReplyMessage extends HighPriorityDistributionMessage {
     private int Id = UNINITIALIZED;
 
     /** The shared obj id of the ReplyProcessor */

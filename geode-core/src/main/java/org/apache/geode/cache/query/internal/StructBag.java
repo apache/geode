@@ -41,7 +41,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 
  * @since GemFire 5.1
  */
-public final class StructBag extends ResultsBag implements StructFields {
+public class StructBag extends ResultsBag implements StructFields {
   /**
    * Holds value of property modifiable.
    */
@@ -52,12 +52,12 @@ public final class StructBag extends ResultsBag implements StructFields {
    */
   protected static class ObjectArrayHashingStrategy implements HashingStrategy {
 
-    public final int hashCode(Object o) {
+    public int hashCode(Object o) {
       Object[] oa = (Object[]) o;
       return Arrays.deepHashCode(oa);
     }
 
-    public final boolean equals(Object o1, Object o2) {
+    public boolean equals(Object o1, Object o2) {
       if (o1 == null)
         return o2 == null;
       if (!(o1 instanceof Object[]) || !(o2 instanceof Object[])) {
@@ -73,7 +73,7 @@ public final class StructBag extends ResultsBag implements StructFields {
   protected static class ObjectArrayFUHashingStrategy implements Hash.Strategy<Object> {
     private static final long serialVersionUID = 8975047264555337042L;
 
-    public final int hashCode(Object o) {
+    public int hashCode(Object o) {
       // throws ClassCastException if not Object[]
       // compute hash code based on all elements
       if (!(o instanceof Object[])) {
@@ -90,7 +90,7 @@ public final class StructBag extends ResultsBag implements StructFields {
       return h;
     }
 
-    public final boolean equals(Object o1, Object o2) {
+    public boolean equals(Object o1, Object o2) {
       // throws ClassCastException if not Object[]
       if (o1 == null)
         return o2 == null;

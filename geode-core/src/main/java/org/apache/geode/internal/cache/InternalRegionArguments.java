@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
  * 
  * @since GemFire 4.2.3
  */
-public final class InternalRegionArguments {
+public class InternalRegionArguments {
   private boolean isUsedForPartitionedRegionAdmin;
   private boolean isUsedForSerialGatewaySenderQueue;
   private boolean isUsedForParallelGatewaySenderQueue;

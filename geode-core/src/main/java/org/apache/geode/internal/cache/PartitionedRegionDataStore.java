@@ -2481,7 +2481,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * 
    * @return a List of all entries gathered across all buckets in this data store
    */
-  public final List getEntries() {
+  public List getEntries() {
     final ArrayList al = new ArrayList();
     visitEntries(new EntryVisitor() {
       @Override
@@ -2503,7 +2503,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * 
    * @param validateOnly only perform bucket-to-node validation
    */
-  public final void dumpEntries(final boolean validateOnly) {
+  public void dumpEntries(final boolean validateOnly) {
     if (logger.isDebugEnabled()) {
       logger.debug("[dumpEntries] dumping {}", this);
     }
@@ -2519,7 +2519,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
   }
 
-  public final void dumpBackingMaps() {
+  public void dumpBackingMaps() {
     if (logger.isDebugEnabled()) {
       logger.debug("Bucket maps in {}\n", this);
     }
@@ -2550,7 +2550,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Dump all the bucket names in this data store to the logger
    * 
    */
-  public final void dumpBuckets() {
+  public void dumpBuckets() {
     final StringBuffer buf = new StringBuffer("Buckets in ").append(this).append("\n");
     visitBuckets(new BucketVisitor() {
       @Override
@@ -2566,7 +2566,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Return the list of all the bucket names in this data store.
    * 
    */
-  public final List getLocalBucketsListTestOnly() {
+  public List getLocalBucketsListTestOnly() {
     final List bucketList = new ArrayList();
     visitBuckets(new BucketVisitor() {
       @Override
@@ -2581,7 +2581,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Return the list of all the primary bucket ids in this data store.
    * 
    */
-  public final List getLocalPrimaryBucketsListTestOnly() {
+  public List getLocalPrimaryBucketsListTestOnly() {
     final List primaryBucketList = new ArrayList();
     visitBuckets(new BucketVisitor() {
       @Override
@@ -2600,7 +2600,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Return the list of all the non primary bucket ids in this data store.
    * 
    */
-  public final List getLocalNonPrimaryBucketsListTestOnly() {
+  public List getLocalNonPrimaryBucketsListTestOnly() {
     final List nonPrimaryBucketList = new ArrayList();
     visitBuckets(new BucketVisitor() {
       @Override
@@ -2621,7 +2621,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @param bucketId the id of the bucket to dump
    * @param bucket the Region containing the bucket data
    */
-  public final void dumpBucket(int bucketId, final LocalRegion bucket) {
+  public void dumpBucket(int bucketId, final LocalRegion bucket) {
     Integer buckId = Integer.valueOf(bucketId);
     visitBucket(buckId, bucket, new EntryVisitor() {
       final StringBuffer buf = new StringBuffer("Entries in bucket ").append(bucket).append("\n");

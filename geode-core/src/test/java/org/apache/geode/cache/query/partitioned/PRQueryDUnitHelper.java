@@ -2425,7 +2425,7 @@ public class PRQueryDUnitHelper implements Serializable {
   }
 
   // Helper classes and function
-  final class TestQueryFunction extends FunctionAdapter {
+  class TestQueryFunction extends FunctionAdapter {
 
     @Override
     public boolean hasResult() {

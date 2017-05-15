@@ -83,7 +83,7 @@ public class TXFarSideCMTracker {
     this.lastHistoryItem = 0;
   }
 
-  public final int getHistorySize() {
+  public int getHistorySize() {
     return this.txHistory.length;
   }
 
@@ -91,7 +91,7 @@ public class TXFarSideCMTracker {
    * Answers fellow "Far Siders" question about an DACK transaction when the transaction originator
    * died before it sent the CommitProcess message.
    */
-  public final boolean commitProcessReceived(Object key, DM dm) {
+  public boolean commitProcessReceived(Object key, DM dm) {
     // Assume that after the member has departed that we have all its pending
     // transaction messages
     if (key instanceof TXLockId) {
@@ -137,7 +137,7 @@ public class TXFarSideCMTracker {
    * Answers new Grantor query regarding whether it can start handing out new locks. Waits until
    * txInProgress is empty.
    */
-  public final void waitForAllToProcess() throws InterruptedException {
+  public void waitForAllToProcess() throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException(); // wisest to do this before the synchronize below
     // Assume that a thread interrupt is only sent in the
@@ -155,7 +155,7 @@ public class TXFarSideCMTracker {
    * departed/ing Originator (this will most likely be called nearly the same time as
    * commitProcessReceived
    */
-  public final void waitToProcess(TXLockId lk, DM dm) {
+  public void waitToProcess(TXLockId lk, DM dm) {
     waitForMemberToDepart(lk.getMemberId(), dm);
     final TXCommitMessage mess;
     synchronized (this.txInProgress) {
@@ -189,7 +189,7 @@ public class TXFarSideCMTracker {
   /**
    * Register a <code>MemberhipListener</code>, wait until the member is gone.
    */
-  private final void waitForMemberToDepart(final InternalDistributedMember memberId, DM dm) {
+  private void waitForMemberToDepart(final InternalDistributedMember memberId, DM dm) {
     if (!dm.getDistributionManagerIds().contains(memberId)) {
       return;
     }
@@ -239,7 +239,7 @@ public class TXFarSideCMTracker {
    * Indicate that the transaction message has been processed and to place it in the transaction
    * history
    */
-  public final TXCommitMessage processed(TXCommitMessage processedMess) {
+  public TXCommitMessage processed(TXCommitMessage processedMess) {
     final TXCommitMessage mess;
     final Object key = processedMess.getTrackerKey();
     synchronized (this.txInProgress) {
@@ -269,7 +269,7 @@ public class TXFarSideCMTracker {
    * Indicate that this message is never going to be processed, typically used in the case where
    * none of the FarSiders received the CommitProcessMessage
    **/
-  public final void removeMessage(TXCommitMessage deadMess) {
+  public void removeMessage(TXCommitMessage deadMess) {
     synchronized (this.txInProgress) {
       this.txInProgress.remove(deadMess.getTrackerKey());
       // For any waitForAllToComplete
@@ -282,7 +282,7 @@ public class TXFarSideCMTracker {
   /**
    * Retrieve the commit message associated with the lock
    */
-  public final TXCommitMessage get(Object key) {
+  public TXCommitMessage get(Object key) {
     final TXCommitMessage mess;
     synchronized (this.txInProgress) {
       mess = (TXCommitMessage) this.txInProgress.get(key);
@@ -290,7 +290,7 @@ public class TXFarSideCMTracker {
     return mess;
   }
 
-  public final TXCommitMessage waitForMessage(Object key, DM dm) {
+  public TXCommitMessage waitForMessage(Object key, DM dm) {
     TXCommitMessage msg = null;
     synchronized (this.txInProgress) {
       msg = (TXCommitMessage) this.txInProgress.get(key);
@@ -310,7 +310,7 @@ public class TXFarSideCMTracker {
   /**
    * The transcation commit message has been received
    */
-  public final void add(TXCommitMessage msg) {
+  public void add(TXCommitMessage msg) {
     synchronized (this.txInProgress) {
       final Object key = msg.getTrackerKey();
       if (key == null) {

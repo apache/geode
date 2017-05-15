@@ -800,85 +800,85 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       this.dataOut = new DataOutputStream(out);
     }
 
-    public final long getBytesWritten() {
+    public long getBytesWritten() {
       return this.bytesWritten;
     }
 
-    public final void flush() throws IOException {
+    public void flush() throws IOException {
       this.dataOut.flush();
     }
 
     @SuppressWarnings("unused")
-    public final void close() throws IOException {
+    public void close() throws IOException {
       this.dataOut.close();
     }
 
-    public final void write(int b) throws IOException {
+    public void write(int b) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void write(byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void write(byte[] b) throws IOException {
+    public void write(byte[] b) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void writeBytes(String v) throws IOException {
+    public void writeBytes(String v) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void writeChar(int v) throws IOException {
+    public void writeChar(int v) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void writeChars(String v) throws IOException {
+    public void writeChars(String v) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void writeDouble(double v) throws IOException {
+    public void writeDouble(double v) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void writeFloat(float v) throws IOException {
+    public void writeFloat(float v) throws IOException {
       throw new RuntimeException(
           LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
     }
 
-    public final void writeBoolean(boolean v) throws IOException {
+    public void writeBoolean(boolean v) throws IOException {
       this.dataOut.writeBoolean(v);
       this.bytesWritten += 1;
     }
 
-    public final void writeByte(int v) throws IOException {
+    public void writeByte(int v) throws IOException {
       this.dataOut.writeByte(v);
       this.bytesWritten += 1;
     }
 
-    public final void writeShort(int v) throws IOException {
+    public void writeShort(int v) throws IOException {
       this.dataOut.writeShort(v);
       this.bytesWritten += 2;
     }
 
-    public final void writeInt(int v) throws IOException {
+    public void writeInt(int v) throws IOException {
       this.dataOut.writeInt(v);
       this.bytesWritten += 4;
     }
 
-    public final void writeLong(long v) throws IOException {
+    public void writeLong(long v) throws IOException {
       this.dataOut.writeLong(v);
       this.bytesWritten += 8;
     }
 
-    public final void writeUTF(String v) throws IOException {
+    public void writeUTF(String v) throws IOException {
       this.dataOut.writeUTF(v);
       this.bytesWritten += v.length() + 2; // this is the minimum. The max is v.size()*3 +2
     }

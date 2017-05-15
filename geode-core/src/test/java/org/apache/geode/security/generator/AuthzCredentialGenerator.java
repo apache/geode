@@ -290,7 +290,7 @@ public abstract class AuthzCredentialGenerator {
    *
    * @since GemFire 5.5
    */
-  public static final class ClassCode {
+  public static class ClassCode {
 
     private static byte nextOrdinal = 0;
 

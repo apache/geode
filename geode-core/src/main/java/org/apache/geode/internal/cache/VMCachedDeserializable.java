@@ -34,7 +34,7 @@ import org.apache.geode.pdx.PdxInstance;
  * then on keep a reference to the deserialized form. So it "prefers deserialization".
  *
  */
-public final class VMCachedDeserializable implements CachedDeserializable, DataSerializableFixedID {
+public class VMCachedDeserializable implements CachedDeserializable, DataSerializableFixedID {
 
   /** The cached value */
   private volatile Object value;

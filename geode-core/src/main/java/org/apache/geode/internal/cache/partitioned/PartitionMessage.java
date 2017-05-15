@@ -227,7 +227,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * @return the compact value that will be sent which represents the PartitionedRegion
    * @see PartitionedRegion#getPRId()
    */
-  public final int getRegionId() {
+  public int getRegionId() {
     return regionId;
   }
 
@@ -236,7 +236,7 @@ public abstract class PartitionMessage extends DistributionMessage
    *         is required.
    */
   @Override
-  public final int getProcessorId() {
+  public int getProcessorId() {
     return this.processorId;
   }
 
@@ -244,7 +244,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * @param processorId1 the {@link org.apache.geode.distributed.internal.ReplyProcessor21} id
    *        associated with the message, null if no acknowlegement is required.
    */
-  public final void registerProcessor(int processorId1) {
+  public void registerProcessor(int processorId1) {
     this.processorId = processorId1;
   }
 
@@ -677,7 +677,7 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * @return the txUniqId
    */
-  public final int getTXUniqId() {
+  public int getTXUniqId() {
     return txUniqId;
   }
 
@@ -694,7 +694,7 @@ public abstract class PartitionMessage extends DistributionMessage
     return true;
   }
 
-  protected final boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
+  protected boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
     try {
       PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
       if (pr == null) {
@@ -786,7 +786,7 @@ public abstract class PartitionMessage extends DistributionMessage
      * @throws ForceReattemptException if the recipient left the distributed system before the
      *         response was received.
      */
-    final public void waitForCacheException()
+    public void waitForCacheException()
         throws CacheException, ForceReattemptException, PrimaryBucketException {
       try {
         waitForRepliesUninterruptibly();

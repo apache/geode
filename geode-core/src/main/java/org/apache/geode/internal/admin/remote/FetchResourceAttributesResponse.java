@@ -21,7 +21,7 @@ import org.apache.geode.*;
 import java.io.*;
 import org.apache.geode.distributed.internal.membership.*;
 
-public final class FetchResourceAttributesResponse extends AdminResponse {
+public class FetchResourceAttributesResponse extends AdminResponse {
 
   // instance variables
   private RemoteStat[] stats;

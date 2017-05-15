@@ -90,7 +90,7 @@ public class IndexCreationMsg extends PartitionMessage {
    * of the initialization
    */
   @Override
-  protected final boolean failIfRegionMissing() {
+  protected boolean failIfRegionMissing() {
     return false;
   }
 
@@ -179,7 +179,7 @@ public class IndexCreationMsg extends PartitionMessage {
    * Process this index creation message on the receiver.
    */
   @Override
-  public final void process(final DistributionManager dm) {
+  public void process(final DistributionManager dm) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -413,7 +413,7 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.indexDefinitions = DataSerializer.readHashSet(in);
   }
@@ -424,7 +424,7 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   @Override
-  public final void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeHashSet(this.indexDefinitions, out);
   }
@@ -433,7 +433,7 @@ public class IndexCreationMsg extends PartitionMessage {
    * String representation of this message.
    */
   @Override
-  public final String toString() {
+  public String toString() {
     StringBuffer sb = new StringBuffer();
     for (IndexCreationData icd : indexDefinitions) {
       sb.append(icd.getIndexName()).append(" ");
@@ -546,7 +546,7 @@ public class IndexCreationMsg extends PartitionMessage {
    * 
    * 
    */
-  public static final class IndexCreationReplyMsg extends ReplyMessage {
+  public static class IndexCreationReplyMsg extends ReplyMessage {
 
     /** Index created or not. */
     private boolean result;
@@ -634,7 +634,7 @@ public class IndexCreationMsg extends PartitionMessage {
      * @param dm distribution manager
      */
     @Override
-    public final void process(final DM dm, final ReplyProcessor21 p) {
+    public void process(final DM dm, final ReplyProcessor21 p) {
       if (logger.isDebugEnabled()) {
         logger.debug("Processor id is : {}", this.processorId);
       }

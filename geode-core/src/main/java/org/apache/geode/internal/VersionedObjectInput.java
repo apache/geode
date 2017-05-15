@@ -24,7 +24,7 @@ import java.io.ObjectInput;
  * 
  * @since GemFire 7.1
  */
-public final class VersionedObjectInput implements ObjectInput, VersionedDataStream {
+public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
 
   private final ObjectInput in;
   private final Version version;

@@ -26,7 +26,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 3.0
  */
-public final class StatisticDescriptorImpl implements StatisticDescriptor {
+public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   /** A constant for an <code>byte</code> type */
   static final byte BYTE = (byte) 3;
@@ -82,7 +82,7 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
    *
    * @throws IllegalArgumentException <code>code</code> is an unknown type
    */
-  public final static String getTypeCodeName(int code) {
+  public static String getTypeCodeName(int code) {
     switch (code) {
       case BYTE:
         return "byte";
@@ -108,7 +108,7 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
    *
    * @throws IllegalArgumentException <code>code</code> is an unknown type
    */
-  public final static int getTypeCodeBits(int code) {
+  public static int getTypeCodeBits(int code) {
     switch (code) {
       case BYTE:
         return 8;
@@ -134,7 +134,7 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
    *
    * @throws IllegalArgumentException <code>code</code> is an unknown type
    */
-  public final static Class<?> getTypeCodeClass(byte code) {
+  public static Class<?> getTypeCodeClass(byte code) {
     switch (code) {
       case BYTE:
         return byte.class;
@@ -227,35 +227,35 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
 
   //////////////////// StatisticDescriptor Methods ////////////////////
 
-  public final String getName() {
+  public String getName() {
     return this.name;
   }
 
-  public final String getDescription() {
+  public String getDescription() {
     return this.description;
   }
 
-  public final Class<?> getType() {
+  public Class<?> getType() {
     return getTypeCodeClass(this.typeCode);
   }
 
-  public final int getStorageBits() {
+  public int getStorageBits() {
     return getTypeCodeBits(this.typeCode);
   }
 
-  public final boolean isCounter() {
+  public boolean isCounter() {
     return this.isCounter;
   }
 
-  public final boolean isLargerBetter() {
+  public boolean isLargerBetter() {
     return this.isLargerBetter;
   }
 
-  public final String getUnit() {
+  public String getUnit() {
     return this.unit;
   }
 
-  public final int getId() {
+  public int getId() {
     // if (this.id == INVALID_OFFSET) {
     // String s = "The id has not been initialized yet.";
     // throw new IllegalStateException(s);
@@ -265,7 +265,7 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
     return this.id;
   }
 
-  public final Number getNumberForRawBits(long bits) {
+  public Number getNumberForRawBits(long bits) {
     switch (this.typeCode) {
       case StatisticDescriptorImpl.INT:
         return (int) bits;
@@ -285,14 +285,14 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
   /**
    * Returns the type code of this statistic
    */
-  public final byte getTypeCode() {
+  public byte getTypeCode() {
     return this.typeCode;
   }
 
   /**
    * Sets the id of this descriptor
    */
-  final void setId(int id) {
+  void setId(int id) {
     // Assert.assertTrue(id >= 0);
     this.id = id;
   }
@@ -309,7 +309,7 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
     return this.getName().compareTo(o.getName());
   }
 
-  public final int checkInt() {
+  public int checkInt() {
     if (this.typeCode != INT) {
       throw new IllegalArgumentException(
           LocalizedStrings.StatisticDescriptorImpl_THE_STATISTIC_0_WITH_ID_1_IS_OF_TYPE_2_AND_IT_WAS_EXPECTED_TO_BE_AN_INT
@@ -319,7 +319,7 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
     return this.id;
   }
 
-  public final int checkLong() {
+  public int checkLong() {
     if (this.typeCode != LONG) {
       StringBuffer sb = new StringBuffer();
       sb.append("The statistic " + getName() + " with id ");
@@ -333,7 +333,7 @@ public final class StatisticDescriptorImpl implements StatisticDescriptor {
     return this.id;
   }
 
-  public final int checkDouble() {
+  public int checkDouble() {
     if (this.typeCode != DOUBLE) {
       throw new IllegalArgumentException(
           LocalizedStrings.StatisticDescriptorImpl_THE_STATISTIC_0_WITH_ID_1_IS_OF_TYPE_2_AND_IT_WAS_EXPECTED_TO_BE_A_DOUBLE

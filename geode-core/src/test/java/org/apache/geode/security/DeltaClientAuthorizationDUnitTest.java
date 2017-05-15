@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  * @since GemFire 6.1
  */
 @Category({DistributedTest.class, SecurityTest.class})
-public final class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
+public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   private DeltaTestImpl[] deltas = new DeltaTestImpl[8];
 

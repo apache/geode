@@ -113,8 +113,8 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm,
-      PartitionedRegion region, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
+      long startTime) throws ForceReattemptException {
 
     // this is executing in the WAITING_POOL_EXECUTOR
     byte responseCode = BecomePrimaryBucketReplyMessage.NOT_SECONDARY;
@@ -158,7 +158,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     out.writeBoolean(this.isRebalance);
   }
 
-  public static final class BecomePrimaryBucketReplyMessage extends ReplyMessage {
+  public static class BecomePrimaryBucketReplyMessage extends ReplyMessage {
 
     static final byte NOT_SECONDARY = 0;
     static final byte OK = 1;

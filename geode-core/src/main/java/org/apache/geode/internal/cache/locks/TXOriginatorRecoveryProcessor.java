@@ -120,7 +120,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // TXOriginatorRecoveryMessage
   // -------------------------------------------------------------------------
-  public static final class TXOriginatorRecoveryMessage extends PooledDistributionMessage
+  public static class TXOriginatorRecoveryMessage extends PooledDistributionMessage
       implements MessageWithReply {
 
     /** The transaction lock for which the originator orphaned */
@@ -266,7 +266,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // TXOriginatorRecoveryReplyMessage
   // -------------------------------------------------------------------------
-  public static final class TXOriginatorRecoveryReplyMessage extends ReplyMessage {
+  public static class TXOriginatorRecoveryReplyMessage extends ReplyMessage {
 
     /** The transaction lock for which the originator orphaned */
     protected TXLockId txLockId; // only for the toString

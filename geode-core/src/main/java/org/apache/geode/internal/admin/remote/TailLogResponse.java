@@ -33,7 +33,7 @@ import java.io.*;
 // import org.apache.geode.distributed.DistributedSystem;
 // import java.util.*;
 
-public final class TailLogResponse extends AdminResponse {
+public class TailLogResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();
 
   private String tail;

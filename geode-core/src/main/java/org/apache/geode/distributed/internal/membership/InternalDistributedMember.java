@@ -1166,12 +1166,12 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * index)); } else { sb.append(hostname); } }
    */
 
-  public final void setVersionObjectForTest(Version v) {
+  public void setVersionObjectForTest(Version v) {
     this.versionObj = v;
     netMbr.setVersion(v);
   }
 
-  public final Version getVersionObject() {
+  public Version getVersionObject() {
     return this.versionObj;
   }
 

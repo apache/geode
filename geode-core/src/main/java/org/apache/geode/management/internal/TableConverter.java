@@ -34,7 +34,7 @@ import javax.management.openmbean.TabularType;
  * 
  * 
  */
-public final class TableConverter extends OpenTypeConverter {
+public class TableConverter extends OpenTypeConverter {
   TableConverter(Type targetType, boolean sortedMap, TabularType tabularType,
       OpenTypeConverter keyConverter, OpenTypeConverter valueConverter) {
     super(targetType, tabularType, TabularData.class);
@@ -43,7 +43,7 @@ public final class TableConverter extends OpenTypeConverter {
     this.valueConverter = valueConverter;
   }
 
-  final Object toNonNullOpenValue(Object value) throws OpenDataException {
+  Object toNonNullOpenValue(Object value) throws OpenDataException {
     final Map<Object, Object> valueMap = (Map<Object, Object>) value;
     if (valueMap instanceof SortedMap) {
       Comparator comparator = ((SortedMap) valueMap).comparator();
@@ -68,7 +68,7 @@ public final class TableConverter extends OpenTypeConverter {
     return table;
   }
 
-  public final Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
+  public Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
     final TabularData table = (TabularData) openValue;
     final Collection<CompositeData> rows = (Collection<CompositeData>) table.values();
     final Map<Object, Object> valueMap =

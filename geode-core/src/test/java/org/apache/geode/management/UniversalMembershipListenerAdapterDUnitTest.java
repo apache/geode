@@ -2114,7 +2114,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   // Simple DistributedMember implementation
-  static final class TestDistributedMember implements DistributedMember {
+  static class TestDistributedMember implements DistributedMember {
 
     private final String host;
 

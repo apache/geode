@@ -1969,7 +1969,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     super.basicLocalClear(rEvent);
   }
 
-  public final DistributionConfig getDistributionConfig() {
+  public DistributionConfig getDistributionConfig() {
     return getSystem().getDistributionManager().getConfig();
   }
 
@@ -3544,7 +3544,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * Implementation of {@link ProfileVisitor} that selects a random replicated member from the
    * available ones for this region.
    */
-  static final class GetRandomReplicate implements ProfileVisitor<DistributedMember> {
+  static class GetRandomReplicate implements ProfileVisitor<DistributedMember> {
 
     private boolean onlyPersistent = false;
 

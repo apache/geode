@@ -182,11 +182,11 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
    * @param dm the distribution manager that is processing the message.
    */
   @Override
-  protected final void process(final DistributionManager dm) {
+  protected void process(final DistributionManager dm) {
     dmProcess(dm);
   }
 
-  public final void dmProcess(final DM dm) {
+  public void dmProcess(final DM dm) {
     final long startTime = getTimestamp();
     ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
     try {
@@ -262,7 +262,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
   public static final byte OBJECT_FLAG = 0x40;
   public static final byte INTERNAL_FLAG = (byte) 0x80;
 
-  private static final boolean testFlag(byte status, byte flag) {
+  private static boolean testFlag(byte status, byte flag) {
     return (status & flag) != 0;
   }
 

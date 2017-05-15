@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  * used to track the events received by <code>AsyncEventListener</code>. If the event has already
  * been seen, <code>AsyncEventListener</code> can choose to ignore it.
  */
-public final class EventSequenceID {
+public class EventSequenceID {
   /**
    * Uniquely identifies the distributed member VM in which the Event is produced
    */

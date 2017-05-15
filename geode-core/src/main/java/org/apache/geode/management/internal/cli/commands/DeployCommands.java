@@ -57,7 +57,7 @@ import java.util.Set;
  * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
  * @since GemFire 7.0
  */
-public final class DeployCommands extends AbstractCommandsSupport {
+public class DeployCommands extends AbstractCommandsSupport {
 
   private final DeployFunction deployFunction = new DeployFunction();
   private final UndeployFunction undeployFunction = new UndeployFunction();
@@ -75,7 +75,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
-  public final Result deploy(
+  public Result deploy(
       @CliOption(key = {CliStrings.DEPLOY__GROUP}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = {CliStrings.DEPLOY__JAR}, help = CliStrings.DEPLOY__JAR__HELP) String jar,
@@ -153,7 +153,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
   @CliCommand(value = {CliStrings.UNDEPLOY}, help = CliStrings.UNDEPLOY__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public final Result undeploy(
+  public Result undeploy(
       @CliOption(key = {CliStrings.UNDEPLOY__GROUP}, help = CliStrings.UNDEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = {CliStrings.UNDEPLOY__JAR}, help = CliStrings.UNDEPLOY__JAR__HELP,
@@ -223,7 +223,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
   @CliCommand(value = {CliStrings.LIST_DEPLOYED}, help = CliStrings.LIST_DEPLOYED__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public final Result listDeployed(@CliOption(key = {CliStrings.LIST_DEPLOYED__GROUP},
+  public Result listDeployed(@CliOption(key = {CliStrings.LIST_DEPLOYED__GROUP},
       help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String group) {
 
     try {
@@ -277,7 +277,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
   }
 
   @CliAvailabilityIndicator({CliStrings.DEPLOY, CliStrings.UNDEPLOY, CliStrings.LIST_DEPLOYED})
-  public final boolean isConnected() {
+  public boolean isConnected() {
     if (!CliUtil.isGfshVM()) {
       return true;
     }

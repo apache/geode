@@ -106,7 +106,7 @@ public class Connection implements Runnable {
   /** true if connection is a shared resource that can be used by more than one thread */
   private boolean sharedResource;
 
-  public final boolean isSharedResource() {
+  public boolean isSharedResource() {
     return this.sharedResource;
   }
 
@@ -115,7 +115,7 @@ public class Connection implements Runnable {
 
   private final static ThreadLocal isReaderThread = new ThreadLocal();
 
-  public final static void makeReaderThread() {
+  public static void makeReaderThread() {
     // mark this thread as a reader thread
     makeReaderThread(true);
   }
@@ -125,7 +125,7 @@ public class Connection implements Runnable {
   }
 
   // return true if this thread is a reader thread
-  public final static boolean isReaderThread() {
+  public static boolean isReaderThread() {
     Object o = isReaderThread.get();
     if (o == null) {
       return false;
@@ -156,7 +156,7 @@ public class Connection implements Runnable {
   private final static ThreadLocal isDominoThread = new ThreadLocal();
 
   // return true if this thread is a reader thread
-  public final static boolean tipDomino() {
+  public static boolean tipDomino() {
     if (DOMINO_THREAD_OWNED_SOCKETS) {
       // mark this thread as one who wants to send ALL on TO sockets
       ConnectionTable.threadWantsOwnResources();
@@ -167,7 +167,7 @@ public class Connection implements Runnable {
     }
   }
 
-  public final static boolean isDominoThread() {
+  public static boolean isDominoThread() {
     Object o = isDominoThread.get();
     if (o == null) {
       return false;
@@ -1917,7 +1917,7 @@ public class Connection implements Runnable {
    * checks to see if an exception should not be logged: i.e., "forcibly closed", "reset by peer",
    * or "connection reset"
    */
-  public static final boolean isIgnorableIOException(Exception e) {
+  public static boolean isIgnorableIOException(Exception e) {
     if (e instanceof ClosedChannelException) {
       return true;
     }
@@ -2476,7 +2476,7 @@ public class Connection implements Runnable {
   }
 
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DE_MIGHT_IGNORE")
-  final int readFully(InputStream input, byte[] buffer, int len) throws IOException {
+  int readFully(InputStream input, byte[] buffer, int len) throws IOException {
     int bytesSoFar = 0;
     while (bytesSoFar < len) {
       this.owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
@@ -3994,21 +3994,21 @@ public class Connection implements Runnable {
   }
 
 
-  protected final void accessed() {
+  protected void accessed() {
     this.accessed = true;
   }
 
   /**
    * return the DM id of the guy on the other side of this connection.
    */
-  public final InternalDistributedMember getRemoteAddress() {
+  public InternalDistributedMember getRemoteAddress() {
     return this.remoteAddr;
   }
 
   /**
    * Return the version of the guy on the other side of this connection.
    */
-  public final Version getRemoteVersion() {
+  public Version getRemoteVersion() {
     return this.remoteVersion;
   }
 

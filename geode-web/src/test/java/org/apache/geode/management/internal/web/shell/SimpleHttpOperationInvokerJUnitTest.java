@@ -186,7 +186,7 @@ public class SimpleHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     }
   }
 
-  private static final class TestCommandRequest extends CommandRequest {
+  private static class TestCommandRequest extends CommandRequest {
 
     private final String command;
 

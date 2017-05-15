@@ -25,7 +25,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 
-public final class TestDelta implements Delta, DataSerializable, Cloneable {
+public class TestDelta implements Delta, DataSerializable, Cloneable {
 
   public boolean hasDelta;
   public String info;

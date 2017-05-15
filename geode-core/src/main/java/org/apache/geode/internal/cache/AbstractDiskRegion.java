@@ -249,7 +249,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     this.versionVector = new DiskRegionVersionVector(ds.getDiskStoreID());
   }
 
-  public final long getId() {
+  public long getId() {
     return this.id;
   }
 
@@ -739,7 +739,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     this.readyForRecovery = false;
   }
 
-  public final boolean isReadyForRecovery() {
+  public boolean isReadyForRecovery() {
     // better name for this method would be isRecovering
     return this.readyForRecovery;
   }
@@ -808,11 +808,11 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
    * Returns true if this region maintains a backup of all its keys and values on disk. Returns
    * false if only values that will not fit in memory are written to disk.
    */
-  public final boolean isBackup() {
+  public boolean isBackup() {
     return this.backup;
   }
 
-  protected final void setBackup(boolean v) {
+  protected void setBackup(boolean v) {
     this.backup = v;
   }
 

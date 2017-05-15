@@ -156,7 +156,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     when(pa.getColocatedWith()).thenReturn(null);
 
-    // final classes cannot be mocked
+    // classes cannot be mocked
     ProxyBucketRegion pbr = new ProxyBucketRegion(BUCKET_ID, this.queueRegion, pbrIra);
 
     when(ba.getProxyBucketRegion()).thenReturn(pbr);

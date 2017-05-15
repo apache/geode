@@ -46,7 +46,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  *
  */
-public final class PrimaryRequestMessage extends PartitionMessage {
+public class PrimaryRequestMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -136,7 +136,7 @@ public final class PrimaryRequestMessage extends PartitionMessage {
   /**
    * The reply to a PrimarRequestMessage, indicating if the sender is the primary
    */
-  static public final class PrimaryRequestReplyMessage extends ReplyMessage {
+  static public class PrimaryRequestReplyMessage extends ReplyMessage {
     private static final long serialVersionUID = 1L;
 
     public volatile boolean isPrimary;

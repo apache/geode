@@ -293,7 +293,7 @@ public class SampleCollector {
     }
   }
 
-  public final void changeArchive(File newFile, long nanosTimeStamp) {
+  public void changeArchive(File newFile, long nanosTimeStamp) {
     synchronized (this.sampleHandlers) {
       if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
         logger.trace(LogMarker.STATISTICS,

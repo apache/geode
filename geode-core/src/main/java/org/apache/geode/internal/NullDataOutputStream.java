@@ -27,7 +27,7 @@ import org.apache.geode.DataSerializer;
  * @since GemFire 5.0.2
  * 
  */
-public final class NullDataOutputStream extends OutputStream implements ObjToByteArraySerializer {
+public class NullDataOutputStream extends OutputStream implements ObjToByteArraySerializer {
 
   private int size;
 
@@ -37,17 +37,17 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
 
   /** write the low-order 8 bits of the given int */
   @Override
-  public final void write(int b) {
+  public void write(int b) {
     this.size++;
   }
 
   /** override OutputStream's write() */
   @Override
-  public final void write(byte[] source, int offset, int len) {
+  public void write(byte[] source, int offset, int len) {
     this.size += len;
   }
 
-  public final int size() {
+  public int size() {
     return this.size;
   }
 
@@ -68,7 +68,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the boolean to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeBoolean(boolean v) throws IOException {
+  public void writeBoolean(boolean v) throws IOException {
     write(v ? 1 : 0);
   }
 
@@ -82,7 +82,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the byte value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeByte(int v) throws IOException {
+  public void writeByte(int v) throws IOException {
     write(v);
   }
 
@@ -105,7 +105,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the <code>short</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeShort(int v) throws IOException {
+  public void writeShort(int v) throws IOException {
     this.size += 2;
   }
 
@@ -128,7 +128,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the <code>char</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeChar(int v) throws IOException {
+  public void writeChar(int v) throws IOException {
     this.size += 2;
   }
 
@@ -152,7 +152,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the <code>int</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeInt(int v) throws IOException {
+  public void writeInt(int v) throws IOException {
     this.size += 4;
   }
 
@@ -180,7 +180,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the <code>long</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeLong(long v) throws IOException {
+  public void writeLong(long v) throws IOException {
     this.size += 8;
   }
 
@@ -195,7 +195,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the <code>float</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeFloat(float v) throws IOException {
+  public void writeFloat(float v) throws IOException {
     this.size += 4;
   }
 
@@ -210,7 +210,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param v the <code>double</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeDouble(double v) throws IOException {
+  public void writeDouble(double v) throws IOException {
     this.size += 8;
   }
 
@@ -228,7 +228,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param str the string of bytes to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeBytes(String str) throws IOException {
+  public void writeBytes(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 0) {
       this.size += strlen;
@@ -246,7 +246,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param s the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeChars(String s) throws IOException {
+  public void writeChars(String s) throws IOException {
     int len = s.length();
     if (len > 0) {
       this.size += len * 2;
@@ -304,7 +304,7 @@ public final class NullDataOutputStream extends OutputStream implements ObjToByt
    * @param str the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeUTF(String str) throws IOException {
+  public void writeUTF(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 65535) {
       throw new UTFDataFormatException();

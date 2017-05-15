@@ -112,7 +112,7 @@ public class LocatorStats {
   }
 
 
-  public final void setServerCount(int sc) {
+  public void setServerCount(int sc) {
     if (this._stats == null) {
       this.endpoints_known.set(sc);
     } else {
@@ -120,7 +120,7 @@ public class LocatorStats {
     }
   }
 
-  public final void setLocatorCount(int lc) {
+  public void setLocatorCount(int lc) {
     if (this._stats == null) {
       this.known_locators.set(lc);
     } else {
@@ -128,7 +128,7 @@ public class LocatorStats {
     }
   }
 
-  public final void endLocatorRequest(long startTime) {
+  public void endLocatorRequest(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
     if (this._stats == null) {
       this.requests_to_locator.incrementAndGet();
@@ -143,7 +143,7 @@ public class LocatorStats {
     }
   }
 
-  public final void endLocatorResponse(long startTime) {
+  public void endLocatorResponse(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
     if (this._stats == null) {
       this.responses_from_locator.incrementAndGet();
@@ -160,7 +160,7 @@ public class LocatorStats {
 
 
 
-  public final void setLocatorRequests(long rl) {
+  public void setLocatorRequests(long rl) {
     if (this._stats == null) {
       this.requests_to_locator.set(rl);
     } else {
@@ -168,7 +168,7 @@ public class LocatorStats {
     }
   }
 
-  public final void setLocatorResponses(long rl) {
+  public void setLocatorResponses(long rl) {
     if (this._stats == null) {
       this.responses_from_locator.set(rl);
     } else {
@@ -176,7 +176,7 @@ public class LocatorStats {
     }
   }
 
-  public final void setServerLoadUpdates(long v) {
+  public void setServerLoadUpdates(long v) {
     if (this._stats == null) {
       this.serverLoadUpdates.set(v);
     } else {
@@ -184,7 +184,7 @@ public class LocatorStats {
     }
   }
 
-  public final void incServerLoadUpdates() {
+  public void incServerLoadUpdates() {
     if (this._stats == null) {
       this.serverLoadUpdates.incrementAndGet();
     } else {

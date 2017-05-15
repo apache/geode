@@ -379,7 +379,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   /**
    * Basic idea is to base id off of host and port of GridProfile
    */
-  public static final class GridProfileId implements ProfileId {
+  public static class GridProfileId implements ProfileId {
 
     private final GridProfile gp;
 
@@ -387,15 +387,15 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       this.gp = gp;
     }
 
-    public final InternalDistributedMember getMemberId() {
+    public InternalDistributedMember getMemberId() {
       return this.gp.getDistributedMember();
     }
 
-    public final String getHost() {
+    public String getHost() {
       return this.gp.getHost();
     }
 
-    public final int getPort() {
+    public int getPort() {
       return this.gp.getPort();
     }
 

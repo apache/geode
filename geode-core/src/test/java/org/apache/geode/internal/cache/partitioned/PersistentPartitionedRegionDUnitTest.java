@@ -2238,8 +2238,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     vm3.invoke(createPersistentReplicate);
   }
 
-  private static final class RecoveryObserver
-      extends InternalResourceManager.ResourceObserverAdapter {
+  private static class RecoveryObserver extends InternalResourceManager.ResourceObserverAdapter {
     final CountDownLatch recoveryDone = new CountDownLatch(1);
 
     @Override

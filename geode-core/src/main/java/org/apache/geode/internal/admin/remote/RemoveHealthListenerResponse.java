@@ -29,7 +29,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * 
  * @since GemFire 3.5
  */
-public final class RemoveHealthListenerResponse extends AdminResponse {
+public class RemoveHealthListenerResponse extends AdminResponse {
   // instance variables
 
   /**

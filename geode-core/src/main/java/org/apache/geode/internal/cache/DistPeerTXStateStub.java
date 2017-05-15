@@ -39,8 +39,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 
  *
  */
-public final class DistPeerTXStateStub extends PeerTXStateStub
-    implements DistTXCoordinatorInterface {
+public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordinatorInterface {
   private ArrayList<DistTxEntryEvent> primaryTransactionalOperations = null;
   private ArrayList<DistTxEntryEvent> secondaryTransactionalOperations = null;
   private DistTXPrecommitMessage precommitDistTxMsg = null;
@@ -114,7 +113,7 @@ public final class DistPeerTXStateStub extends PeerTXStateStub
     return primaryTransactionalOperations;
   }
 
-  private final void addPrimaryTransactionalOperations(DistTxEntryEvent dtop) {
+  private void addPrimaryTransactionalOperations(DistTxEntryEvent dtop) {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove these
       logger.debug("DistPeerTXStateStub.addPrimaryTransactionalOperations add " + dtop
@@ -129,7 +128,7 @@ public final class DistPeerTXStateStub extends PeerTXStateStub
   }
 
   @Override
-  public final void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
+  public void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
       throws UnsupportedOperationInTransactionException {
     secondaryTransactionalOperations.add(dtop);
   }

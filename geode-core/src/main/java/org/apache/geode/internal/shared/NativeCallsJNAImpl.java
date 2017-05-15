@@ -59,7 +59,7 @@ import java.util.HashMap;
  * 
  * @since GemFire 8.0
  */
-public final class NativeCallsJNAImpl {
+public class NativeCallsJNAImpl {
 
   // no instance allowed
   private NativeCallsJNAImpl() {}
@@ -69,7 +69,7 @@ public final class NativeCallsJNAImpl {
    */
   private static final NativeCalls instance = getImplInstance();
 
-  private static final NativeCalls getImplInstance() {
+  private static NativeCalls getImplInstance() {
     if (Platform.isLinux()) {
       return new LinuxNativeCalls();
     }
@@ -895,7 +895,7 @@ public final class NativeCallsJNAImpl {
   /**
    * Implementation of {@link NativeCalls} for Windows platforms.
    */
-  private static final class WinNativeCalls extends NativeCalls {
+  private static class WinNativeCalls extends NativeCalls {
 
     static {
       // for socket operations
@@ -903,7 +903,7 @@ public final class NativeCallsJNAImpl {
     }
 
     @SuppressWarnings("unused")
-    public static final class TcpKeepAlive extends Structure {
+    public static class TcpKeepAlive extends Structure {
       public int onoff;
       public int keepalivetime;
       public int keepaliveinterval;
@@ -921,7 +921,7 @@ public final class NativeCallsJNAImpl {
     static final int WSAENOPROTOOPT = 10042;
     static final int SIO_KEEPALIVE_VALS = -1744830460;
 
-    private static final class Kernel32 {
+    private static class Kernel32 {
 
       static {
         // kernel32 requires stdcall calling convention

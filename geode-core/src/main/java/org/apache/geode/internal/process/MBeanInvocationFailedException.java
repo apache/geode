@@ -19,7 +19,7 @@ package org.apache.geode.internal.process;
  * 
  * @since GemFire 7.0
  */
-public final class MBeanInvocationFailedException extends Exception {
+public class MBeanInvocationFailedException extends Exception {
   private static final long serialVersionUID = 7991096466859690801L;
 
   /**

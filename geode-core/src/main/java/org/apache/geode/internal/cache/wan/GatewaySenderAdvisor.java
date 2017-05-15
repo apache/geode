@@ -488,7 +488,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
   /**
    * Profile information for a remote counterpart.
    */
-  public static final class GatewaySenderProfile extends DistributionAdvisor.Profile {
+  public static class GatewaySenderProfile extends DistributionAdvisor.Profile {
     public String Id;
 
     public long startTime;

@@ -151,14 +151,14 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   }
 
   @Override
-  protected final void beforeExecute(Thread t, Runnable r) {
+  protected void beforeExecute(Thread t, Runnable r) {
     if (this.stats != null) {
       this.stats.startJob();
     }
   }
 
   @Override
-  protected final void afterExecute(Runnable r, Throwable ex) {
+  protected void afterExecute(Runnable r, Throwable ex) {
     if (this.stats != null) {
       this.stats.endJob();
     }

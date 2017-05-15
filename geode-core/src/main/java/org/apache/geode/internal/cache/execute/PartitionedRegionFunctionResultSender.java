@@ -40,7 +40,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * 
  */
 
-public final class PartitionedRegionFunctionResultSender implements InternalResultSender {
+public class PartitionedRegionFunctionResultSender implements InternalResultSender {
 
   private static final Logger logger = LogService.getLogger();
 

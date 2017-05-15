@@ -660,7 +660,7 @@ public class Message {
   /**
    * Read the actual bytes of the header off the socket
    */
-  protected final void fetchHeader() throws IOException {
+  protected void fetchHeader() throws IOException {
     final ByteBuffer cb = getCommBuffer();
     cb.clear();
     // msgType is invalidated here and can be used as an indicator

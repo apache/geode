@@ -141,7 +141,7 @@ public class NewLRUClockHand {
    *
    * @param aNode Description of the Parameter
    */
-  public final void appendEntry(final LRUClockNode aNode) {
+  public void appendEntry(final LRUClockNode aNode) {
     synchronized (this.lock) {
       if (aNode.nextLRUNode() != null || aNode.prevLRUNode() != null) {
         return;
@@ -408,7 +408,7 @@ public class NewLRUClockHand {
   protected static class HeadLock extends Object {
   }
 
-  private static final class GuardNode implements LRUClockNode {
+  private static class GuardNode implements LRUClockNode {
 
     private LRUClockNode next;
     LRUClockNode prev;

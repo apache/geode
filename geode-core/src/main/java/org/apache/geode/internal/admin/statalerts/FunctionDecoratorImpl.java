@@ -28,7 +28,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
  * all the statistic Threshold is valid for value evaluated by function
  * 
  */
-public final class FunctionDecoratorImpl extends BaseDecoratorImpl {
+public class FunctionDecoratorImpl extends BaseDecoratorImpl {
   private static final long serialVersionUID = -4857857489413081553L;
 
   protected short functorId = -1;

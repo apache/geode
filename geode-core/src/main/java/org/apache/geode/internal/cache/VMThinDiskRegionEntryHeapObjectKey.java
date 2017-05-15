@@ -15,37 +15,63 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+
+
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
 import org.apache.geode.internal.cache.lru.EnableLRU;
+
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: DISK
+// disk: 1
 // lru: LRU
 // stats: STATS
 // versioned: VERSIONED
 // offheap: OFFHEAP
 // One of the following key macros must be defined:
-// key object: KEY_OBJECT
+// key object: 1
 // key int: KEY_INT
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
 // key string2: KEY_STRING2
+
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinDiskRegionEntryHeapObjectKey extends VMThinDiskRegionEntryHeap {
-  public VMThinDiskRegionEntryHeapObjectKey(RegionEntryContext context, Object key, Object value) {
-    super(context, (value instanceof RecoveredEntry ? null : value));
+  public VMThinDiskRegionEntryHeapObjectKey(RegionEntryContext context, Object key,
+
+
+
+      Object value
+
+
+
+  ) {
+    super(context,
+
+        (value instanceof RecoveredEntry ? null : value)
+
+
+
+    );
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
     initialize(context, value);
+
+
     this.key = key;
+
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -53,10 +79,11 @@ public class VMThinDiskRegionEntryHeapObjectKey extends VMThinDiskRegionEntryHea
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMThinDiskRegionEntryHeapObjectKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMThinDiskRegionEntryHeapObjectKey.class, "lastModified");
+
   private volatile Object value;
 
   @Override
-  protected final Object getValueField() {
+  protected Object getValueField() {
     return this.value;
   }
 
@@ -76,7 +103,7 @@ public class VMThinDiskRegionEntryHeapObjectKey extends VMThinDiskRegionEntryHea
   /**
    * @see HashEntry#getEntryHash()
    */
-  public final int getEntryHash() {
+  public int getEntryHash() {
     return this.hash;
   }
 
@@ -87,19 +114,22 @@ public class VMThinDiskRegionEntryHeapObjectKey extends VMThinDiskRegionEntryHea
   /**
    * @see HashEntry#getNextEntry()
    */
-  public final HashEntry<Object, Object> getNextEntry() {
+  public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
   /**
    * @see HashEntry#setNextEntry
    */
-  public final void setNextEntry(final HashEntry<Object, Object> n) {
+  public void setNextEntry(final HashEntry<Object, Object> n) {
     this.next = n;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // disk code
+
   protected void initialize(RegionEntryContext context, Object value) {
     diskInitialize(context, value);
   }
@@ -109,7 +139,9 @@ public class VMThinDiskRegionEntryHeapObjectKey extends VMThinDiskRegionEntryHea
     throw new IllegalStateException("should never be called");
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -134,7 +166,6 @@ public class VMThinDiskRegionEntryHeapObjectKey extends VMThinDiskRegionEntryHea
   void setDiskId(RegionEntry old) {
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
-
   // // inlining DiskId
   // // always have these fields
   // /**
@@ -174,13 +205,21 @@ public class VMThinDiskRegionEntryHeapObjectKey extends VMThinDiskRegionEntryHea
   // // persistent
   // /** unique entry identifier * */
   // private long keyId;
+
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // key code
+
   private final Object key;
 
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     return this.key;
   }
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
+

@@ -515,7 +515,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   /**
    * Profile information for a remote counterpart.
    */
-  public static final class PartitionProfile extends CacheProfile {
+  public static class PartitionProfile extends CacheProfile {
 
     /**
      * The number of Mb the VM is allowed to use for the PR
@@ -568,7 +568,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
 
     @Override
-    protected final int getIntInfo() {
+    protected int getIntInfo() {
       int s = super.getIntInfo();
       if (this.requiresNotification)
         s |= REQUIRES_NOTIFICATION_MASK;
@@ -576,7 +576,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
 
     @Override
-    protected final void setIntInfo(int s) {
+    protected void setIntInfo(int s) {
       super.setIntInfo(s);
       this.requiresNotification = (s & REQUIRES_NOTIFICATION_MASK) != 0;
     }
@@ -598,7 +598,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       out.writeInt(this.shutDownAllStatus);
     }
 
-    // public final StoppableReentrantReadWriteLock.StoppableReadLock
+    // public StoppableReentrantReadWriteLock.StoppableReadLock
     // getIsClosingReadLock(CancelCriterion stopper) {
     // synchronized (this) {
     // if (isClosingLock == null) {
@@ -608,7 +608,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     // return this.isClosingLock.readLock();
     // }
 
-    // public final Lock getIsClosingWriteLock() {
+    // public Lock getIsClosingWriteLock() {
     // return this.isClosingLock.writeLock();
     // }
 
@@ -1055,7 +1055,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   @Override
-  final synchronized public boolean putProfile(Profile p) {
+  synchronized public boolean putProfile(Profile p) {
     assert p instanceof CacheProfile;
     CacheProfile profile = (CacheProfile) p;
     PartitionedRegion pr = getPartitionedRegion();
@@ -1072,7 +1072,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     return super.putProfile(profile);
   }
 
-  final public PartitionProfile getPartitionProfile(InternalDistributedMember id) {
+  public PartitionProfile getPartitionProfile(InternalDistributedMember id) {
     return (PartitionProfile) getProfile(id);
   }
 
@@ -1209,7 +1209,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param bucketId
    * @return the Node managing the primary copy of the bucket
    */
-  final public InternalDistributedMember getPrimaryMemberForBucket(int bucketId) {
+  public InternalDistributedMember getPrimaryMemberForBucket(int bucketId) {
     Assert.assertTrue(this.buckets != null);
     Bucket b = this.buckets[bucketId];
     return b.getBucketAdvisor().getPrimary();

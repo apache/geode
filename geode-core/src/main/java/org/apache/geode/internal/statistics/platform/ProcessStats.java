@@ -40,11 +40,11 @@ public abstract class ProcessStats {
    *
    * @see Statistics#close
    */
-  public final void close() {
+  public void close() {
     this.stats.close();
   }
 
-  public final Statistics getStatistics() {
+  public Statistics getStatistics() {
     return this.stats;
   }
 

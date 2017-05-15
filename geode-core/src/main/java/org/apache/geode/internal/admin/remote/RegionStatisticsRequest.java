@@ -26,7 +26,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular app vm to request the region statistics of a given region.
  */
-public final class RegionStatisticsRequest extends RegionAdminRequest {
+public class RegionStatisticsRequest extends RegionAdminRequest {
   // instance variables
 
   /**

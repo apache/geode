@@ -23,7 +23,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.io.*;
 // import java.util.*;
 
-public final class FetchResourceAttributesRequest extends AdminRequest {
+public class FetchResourceAttributesRequest extends AdminRequest {
 
   // instance variables
   private long resourceUniqueId;

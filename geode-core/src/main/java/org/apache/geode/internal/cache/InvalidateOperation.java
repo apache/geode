@@ -159,7 +159,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
     }
   }
 
-  public static final class InvalidateWithContextMessage extends InvalidateMessage {
+  public static class InvalidateWithContextMessage extends InvalidateMessage {
     transient ClientProxyMembershipID context;
 
     @Override

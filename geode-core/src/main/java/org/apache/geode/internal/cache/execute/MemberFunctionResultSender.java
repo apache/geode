@@ -33,7 +33,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * 
  *
  */
-public final class MemberFunctionResultSender implements InternalResultSender {
+public class MemberFunctionResultSender implements InternalResultSender {
 
   private static final Logger logger = LogService.getLogger();
 

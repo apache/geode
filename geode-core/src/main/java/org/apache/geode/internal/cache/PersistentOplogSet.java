@@ -92,7 +92,7 @@ public class PersistentOplogSet implements OplogSet {
   /**
    * returns the active child
    */
-  public final Oplog getChild() {
+  public Oplog getChild() {
     return this.child;
   }
 
@@ -335,7 +335,7 @@ public class PersistentOplogSet implements OplogSet {
     }
   }
 
-  public final void recoverRegionsThatAreReady() {
+  public void recoverRegionsThatAreReady() {
     // The following sync also prevents concurrent recoveries by multiple regions
     // which is needed currently.
     synchronized (this.alreadyRecoveredOnce) {
@@ -547,7 +547,7 @@ public class PersistentOplogSet implements OplogSet {
     }
   }
 
-  private final void initOplogEntryId() {
+  private void initOplogEntryId() {
     this.oplogEntryId.set(DiskStoreImpl.INVALID_ID);
   }
 
@@ -555,7 +555,7 @@ public class PersistentOplogSet implements OplogSet {
    * Sets the last created oplogEntryId to the given value if and only if the given value is greater
    * than the current last created oplogEntryId
    */
-  private final void updateOplogEntryId(long v) {
+  private void updateOplogEntryId(long v) {
     long curVal;
     do {
       curVal = this.oplogEntryId.get();
@@ -569,7 +569,7 @@ public class PersistentOplogSet implements OplogSet {
   /**
    * Returns the last created oplogEntryId. Returns INVALID_ID if no oplogEntryId has been created.
    */
-  final long getOplogEntryId() {
+  long getOplogEntryId() {
     parent.initializeIfNeeded();
     return this.oplogEntryId.get();
   }
@@ -581,7 +581,7 @@ public class PersistentOplogSet implements OplogSet {
    * 
    * @return A disk id that can be used to access this key/value pair on disk
    */
-  final long newOplogEntryId() {
+  long newOplogEntryId() {
     long result = this.oplogEntryId.incrementAndGet();
     return result;
   }

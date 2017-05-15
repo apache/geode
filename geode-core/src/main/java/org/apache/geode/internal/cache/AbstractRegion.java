@@ -347,32 +347,32 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
       EntryEventImpl clientEvent) throws TimeoutException, CacheLoaderException;
 
   @Override
-  public final void localDestroy(Object key) throws EntryNotFoundException {
+  public void localDestroy(Object key) throws EntryNotFoundException {
     localDestroy(key, null);
   }
 
   @Override
-  public final void destroyRegion() throws CacheWriterException, TimeoutException {
+  public void destroyRegion() throws CacheWriterException, TimeoutException {
     destroyRegion(null);
   }
 
   @Override
-  public final void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
+  public void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
     invalidate(key, null);
   }
 
   @Override
-  public final void localInvalidate(Object key) throws EntryNotFoundException {
+  public void localInvalidate(Object key) throws EntryNotFoundException {
     localInvalidate(key, null);
   }
 
   @Override
-  public final void localInvalidateRegion() {
+  public void localInvalidateRegion() {
     localInvalidateRegion(null);
   }
 
   @Override
-  public final void invalidateRegion() throws TimeoutException {
+  public void invalidateRegion() throws TimeoutException {
     invalidateRegion(null);
   }
 

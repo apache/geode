@@ -40,7 +40,7 @@ import org.apache.geode.tools.pulse.tests.PulseTestData;
 import org.apache.geode.tools.pulse.tests.PulseTestLocators;
 import org.apache.geode.tools.pulse.tests.Region;
 
-public final class PulseTestUtils {
+public class PulseTestUtils {
   private static Supplier<WebDriver> driverProvider;
 
   public static void setDriverProvider(Supplier<WebDriver> driverProvider) {

@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * A response to a failed request.
  */
-public final class AdminFailureResponse extends AdminResponse {
+public class AdminFailureResponse extends AdminResponse {
   // instance variables
   Exception cause;
 

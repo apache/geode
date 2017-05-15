@@ -26,7 +26,7 @@ import org.apache.geode.internal.logging.log4j.LogWriterLogger;
  * Implementation of the standard JDK handler that publishes a log record to a LogWriterImpl. Note
  * this handler ignores any installed handler.
  */
-public final class GemFireHandler extends Handler {
+public class GemFireHandler extends Handler {
 
   /**
    * Use the log writer to use some of its formatting code.

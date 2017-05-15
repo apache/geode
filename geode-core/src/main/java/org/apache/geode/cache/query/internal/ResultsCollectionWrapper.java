@@ -35,7 +35,7 @@ import org.apache.geode.internal.Version;
  * 
  * @since GemFire 4.0
  */
-public final class ResultsCollectionWrapper implements SelectResults, DataSerializableFixedID {
+public class ResultsCollectionWrapper implements SelectResults, DataSerializableFixedID {
 
   private Collection base;
   private CollectionType collectionType;

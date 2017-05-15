@@ -34,7 +34,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * @see TXManagerImpl#begin
  * @see org.apache.geode.cache.CacheTransactionManager#getTransactionId
  */
-public final class TXId extends ExternalizableDSFID implements TransactionId {
+public class TXId extends ExternalizableDSFID implements TransactionId {
   /** The domain of a transaction, currently the VM's unique identifier */
   private InternalDistributedMember memberId;
   /** Per unique identifier within the transactions memberId */

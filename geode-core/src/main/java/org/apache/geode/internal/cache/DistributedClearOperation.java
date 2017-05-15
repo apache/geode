@@ -262,13 +262,13 @@ public class DistributedClearOperation extends DistributedCacheOperation {
 
   }
 
-  public static final class ClearRegionWithContextMessage extends ClearRegionMessage {
+  public static class ClearRegionWithContextMessage extends ClearRegionMessage {
     protected transient Object context;
     protected RegionVersionVector rvv;
 
 
     @Override
-    final public RegionEventImpl createRegionEvent(DistributedRegion rgn) {
+    public RegionEventImpl createRegionEvent(DistributedRegion rgn) {
 
       ClientRegionEventImpl event = new ClientRegionEventImpl(rgn, getOperation(), this.callbackArg,
           true /* originRemote */, getSender(), (ClientProxyMembershipID) this.context);

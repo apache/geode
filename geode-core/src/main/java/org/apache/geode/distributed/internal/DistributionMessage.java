@@ -144,7 +144,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     return mask;
   }
 
-  public static final byte getNumBits(final int maxValue) {
+  public static byte getNumBits(final int maxValue) {
     byte numBits = 1;
     while ((1 << numBits) <= maxValue) {
       numBits++;
@@ -345,7 +345,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   /**
    * Scheduled action to take when on this message when we are ready to process it.
    */
-  protected final void scheduleAction(final DistributionManager dm) {
+  protected void scheduleAction(final DistributionManager dm) {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "Processing '{}'", this);
     }
@@ -411,7 +411,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   /**
    * Schedule this message's process() method in a thread determined by getExecutor()
    */
-  protected final void schedule(final DistributionManager dm) {
+  protected void schedule(final DistributionManager dm) {
     boolean inlineProcess = DistributionManager.INLINE_PROCESS
         && getProcessorType() == DistributionManager.SERIAL_EXECUTOR && !isPreciousThread();
 

@@ -114,7 +114,7 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
   }
 
 
-  private static final class MyClass implements DataSerializable {
+  private static class MyClass implements DataSerializable {
 
 
     public MyClass() {}

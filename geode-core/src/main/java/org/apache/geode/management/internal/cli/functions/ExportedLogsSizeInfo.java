@@ -22,7 +22,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-public final class ExportedLogsSizeInfo implements DataSerializable {
+public class ExportedLogsSizeInfo implements DataSerializable {
   private long logsSize;
   private long diskAvailable;
   private long diskSize;

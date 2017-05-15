@@ -633,7 +633,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  public static final class StatCompressor implements Compressor, Serializable {
+  public static class StatCompressor implements Compressor, Serializable {
     private static final long serialVersionUID = 8116784819434199537L;
 
     private final byte[] POST_COMPRESS_BYTES =
@@ -697,7 +697,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
   /**
    * Used to record compression statistics.
    */
-  private static final class CompressionStats {
+  private static class CompressionStats {
     long vmTotalCompressionTime = 0;
     long region1TotalCompressionTime = 0;
     long region2TotalCompressionTime = 0;

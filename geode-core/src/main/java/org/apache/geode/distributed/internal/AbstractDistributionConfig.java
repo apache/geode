@@ -1241,7 +1241,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     return dcAttDescriptions;
   }
 
-  public static final InetAddress _getDefaultMcastAddress() {
+  public static InetAddress _getDefaultMcastAddress() {
     // Default MCast address can be just IPv4 address.
     // On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
     String ipLiteral = "239.192.81.1";

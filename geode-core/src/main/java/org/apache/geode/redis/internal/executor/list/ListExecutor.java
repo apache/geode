@@ -32,7 +32,7 @@ public abstract class ListExecutor extends AbstractExecutor {
     LEFT, RIGHT
   };
 
-  protected final static QueryService getQueryService() {
+  protected static QueryService getQueryService() {
     return GemFireCacheImpl.getInstance().getQueryService();
   }
 

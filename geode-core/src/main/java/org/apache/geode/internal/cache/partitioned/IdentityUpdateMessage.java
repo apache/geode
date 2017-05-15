@@ -34,7 +34,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 
-public final class IdentityUpdateMessage extends DistributionMessage implements MessageWithReply {
+public class IdentityUpdateMessage extends DistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   private int processorId;

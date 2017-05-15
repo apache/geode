@@ -434,38 +434,38 @@ public class TXEntryState implements Releasable {
     return v;
   }
 
-  private final boolean isOpCreate() {
+  private boolean isOpCreate() {
     return this.op >= OP_CREATE_LI && this.op <= OP_LOCAL_CREATE;
   }
 
-  final boolean isOpCreateEvent() {
+  boolean isOpCreateEvent() {
     return isOpCreate();
   }
 
-  private final boolean isOpPut() {
+  private boolean isOpPut() {
     return this.op >= OP_PUT;
   }
 
-  protected final boolean isOpPutEvent() {
+  protected boolean isOpPutEvent() {
     return isOpPut();
   }
 
-  private final boolean isOpInvalidate() {
+  private boolean isOpInvalidate() {
     // Note that OP_CREATE_LI, OP_LLOAD_CREATE_LI, and OP_NLOAD_CREATE_LI
     // do not return true here because they are actually creates
     // with a value of LOCAL_INVALID locally and some other value remotely.
     return this.op <= OP_D_INVALIDATE && this.op >= OP_L_INVALIDATE;
   }
 
-  final boolean isOpInvalidateEvent() {
+  boolean isOpInvalidateEvent() {
     return isOpInvalidate();
   }
 
-  private final boolean isOpDestroy() {
+  private boolean isOpDestroy() {
     return this.op <= OP_D_DESTROY && this.op >= OP_L_DESTROY;
   }
 
-  final boolean isOpDestroyEvent(LocalRegion r) {
+  boolean isOpDestroyEvent(LocalRegion r) {
     // Note that if the region is a proxy then we go ahead and distributed
     // the destroy because we can't eliminate it based on committed state
     return isOpDestroy()
@@ -477,31 +477,31 @@ public class TXEntryState implements Releasable {
    * 
    * @since GemFire 5.0
    */
-  final boolean isOpAnyEvent(LocalRegion r) {
+  boolean isOpAnyEvent(LocalRegion r) {
     return isOpPutEvent() || isOpCreateEvent() || isOpInvalidateEvent() || isOpDestroyEvent(r);
   }
 
-  final boolean isOpSearchOrLoad() {
+  boolean isOpSearchOrLoad() {
     return this.op >= OP_SEARCH_CREATE && this.op != OP_PUT && this.op != OP_LOCAL_CREATE;
   }
 
-  final boolean isOpSearch() {
+  boolean isOpSearch() {
     return this.op == OP_SEARCH_CREATE || this.op == OP_SEARCH_PUT;
   }
 
-  final boolean isOpLocalLoad() {
+  boolean isOpLocalLoad() {
     return this.op == OP_LLOAD_CREATE || this.op == OP_LLOAD_PUT;
   }
 
-  final boolean isOpNetLoad() {
+  boolean isOpNetLoad() {
     return this.op == OP_NLOAD_CREATE || this.op == OP_NLOAD_PUT;
   }
 
-  final boolean isOpLoad() {
+  boolean isOpLoad() {
     return isOpLocalLoad() || isOpNetLoad();
   }
 
-  // private final boolean isLocalEventDistributed()
+  // private boolean isLocalEventDistributed()
   // {
   // return this.op == OP_D_DESTROY
   // || (this.op >= OP_D_INVALIDATE && this.op != OP_SEARCH_CREATE
@@ -1490,11 +1490,11 @@ public class TXEntryState implements Releasable {
     return "<" + StringUtils.forceToString(o) + ">";
   }
 
-  private final boolean didDestroy() {
+  private boolean didDestroy() {
     return this.destroy != DESTROY_NONE;
   }
 
-  private final boolean didDistributedDestroy() {
+  private boolean didDistributedDestroy() {
     return this.destroy == DESTROY_DISTRIBUTED;
   }
 
@@ -1553,7 +1553,7 @@ public class TXEntryState implements Releasable {
     return isOpCreate();
   }
 
-  private final void txApplyDestroyLocally(LocalRegion r, Object key, TXState txState) {
+  private void txApplyDestroyLocally(LocalRegion r, Object key, TXState txState) {
     boolean invokeCallbacks = isOpDestroyEvent(r);
     List<EntryEventImpl> pendingCallbacks =
         invokeCallbacks ? txState.getPendingCallbacks() : new ArrayList<EntryEventImpl>();
@@ -1571,7 +1571,7 @@ public class TXEntryState implements Releasable {
     // transaction listener that no destroy was done.
   }
 
-  private final void txApplyInvalidateLocally(LocalRegion r, Object key, Object newValue,
+  private void txApplyInvalidateLocally(LocalRegion r, Object key, Object newValue,
       boolean didDestroy, TXState txState) {
     try {
       r.txApplyInvalidate(key, newValue, didDestroy, txState.getTransactionId(), null,
@@ -1583,7 +1583,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  private final void txApplyPutLocally(LocalRegion r, Operation putOp, Object key, Object newValue,
+  private void txApplyPutLocally(LocalRegion r, Operation putOp, Object key, Object newValue,
       boolean didDestroy, TXState txState) {
     try {
       r.txApplyPut(putOp, key, newValue, didDestroy, txState.getTransactionId(), null,
@@ -1929,7 +1929,7 @@ public class TXEntryState implements Releasable {
    * 
    * @since GemFire 5.0
    */
-  public final class TxEntryEventImpl extends EntryEventImpl implements Comparable {
+  public class TxEntryEventImpl extends EntryEventImpl implements Comparable {
     /**
      * Creates a local tx entry event
      */

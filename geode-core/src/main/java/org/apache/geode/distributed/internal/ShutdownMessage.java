@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * 
  * N.B. -- this is a SerialDistributionMessage due to bug32980
  */
-public final class ShutdownMessage extends HighPriorityDistributionMessage
+public class ShutdownMessage extends HighPriorityDistributionMessage
     implements AdminMessageType, MessageWithReply {
   /** The is of the distribution manager that is shutting down */
   protected InternalDistributedMember id;

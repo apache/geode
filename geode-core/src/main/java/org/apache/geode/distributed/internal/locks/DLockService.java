@@ -255,15 +255,15 @@ public class DLockService extends DistributedLockService {
     }
   }
 
-  private final boolean isCurrentThreadDoingDestroy() {
+  private boolean isCurrentThreadDoingDestroy() {
     return Boolean.TRUE.equals(this.destroyingThread.get());
   }
 
-  private final void setDestroyingThread() {
+  private void setDestroyingThread() {
     this.destroyingThread.set(Boolean.TRUE);
   }
 
-  private final void clearDestroyingThread() {
+  private void clearDestroyingThread() {
     this.destroyingThread.remove();
   }
 
@@ -2102,7 +2102,7 @@ public class DLockService extends DistributedLockService {
   // Public instance methods
   // -------------------------------------------------------------------------
 
-  public final DistributedLockStats getStats() {
+  public DistributedLockStats getStats() {
     return this.dlockStats;
   }
 
@@ -2299,11 +2299,11 @@ public class DLockService extends DistributedLockService {
   }
 
   /** The name of this service */
-  public final String getName() {
+  public String getName() {
     return this.serviceName;
   }
 
-  public final DM getDistributionManager() {
+  public DM getDistributionManager() {
     return this.dm;
   }
 
@@ -3180,7 +3180,7 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
 
   /** Used as the name (key) for the suspend locking entry in the tokens map */
-  public static final class SuspendLockingToken implements DataSerializableFixedID {
+  public static class SuspendLockingToken implements DataSerializableFixedID {
     public SuspendLockingToken() {}
 
     @Override
@@ -3270,7 +3270,7 @@ public class DLockService extends DistributedLockService {
 
   }
 
-  public final CancelCriterion getCancelCriterion() {
+  public CancelCriterion getCancelCriterion() {
     return stopper;
   }
 

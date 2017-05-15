@@ -321,7 +321,7 @@ public class HandShake implements ClientHandShake {
     }
   }
 
-  public final Version getClientVersion() {
+  public Version getClientVersion() {
     return this.clientVersion;
   }
 

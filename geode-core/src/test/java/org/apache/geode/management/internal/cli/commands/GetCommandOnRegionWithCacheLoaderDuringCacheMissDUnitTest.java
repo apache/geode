@@ -262,7 +262,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     }
   }
 
-  private static final class Peer implements Serializable {
+  private static class Peer implements Serializable {
 
     private final Properties distributedSystemProperties;
     private final VM vm;

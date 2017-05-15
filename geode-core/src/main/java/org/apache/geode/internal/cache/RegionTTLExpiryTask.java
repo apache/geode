@@ -60,7 +60,7 @@ class RegionTTLExpiryTask extends RegionExpiryTask {
   }
 
   @Override
-  protected final void addExpiryTask() {
+  protected void addExpiryTask() {
     getLocalRegion().addTTLExpiryTask(this);
   }
 

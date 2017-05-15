@@ -272,8 +272,7 @@ public class StateFlushOperation {
    * @see StateFlushOperation.StateStabilizedMessage
    *
    */
-  public static final class StateMarkerMessage extends DistributionMessage
-      implements MessageWithReply {
+  public static class StateMarkerMessage extends DistributionMessage implements MessageWithReply {
     /** roll the membership version to force flushing of new ops */
     public boolean flushNewOps;
     /** the member acting as the relay point */
@@ -525,7 +524,7 @@ public class StateFlushOperation {
    * @see StateFlushOperation.StateMarkerMessage
    * @since GemFire 5.0.1
    */
-  public static final class StateStabilizationMessage extends SerialDistributionMessage {
+  public static class StateStabilizationMessage extends SerialDistributionMessage {
     /** the member that requested StateStabilizedMessages */
     protected DistributedMember requestingMember;
     /** the processor id for the requesting member */
@@ -673,7 +672,7 @@ public class StateFlushOperation {
    * @since GemFire 5.0.1
    *
    */
-  public static final class StateStabilizedMessage extends ReplyMessage {
+  public static class StateStabilizedMessage extends ReplyMessage {
     /** the member for whom this ack is being sent */
     protected DistributedMember sendingMember;
 

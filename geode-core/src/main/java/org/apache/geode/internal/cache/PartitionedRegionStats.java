@@ -738,7 +738,7 @@ public class PartitionedRegionStats {
   // messaging stats
   // ------------------------------------------------------------------------
 
-  public final long startPartitionMessageProcessing() {
+  public long startPartitionMessageProcessing() {
     this.stats.incInt(partitionMessagesReceivedId, 1);
     return startTime();
   }

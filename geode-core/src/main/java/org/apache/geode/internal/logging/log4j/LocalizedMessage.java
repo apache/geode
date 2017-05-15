@@ -23,7 +23,7 @@ import org.apache.geode.i18n.StringId;
  * An implementation of a Log4j {@link Message} that wraps a {@link StringId}.
  * 
  */
-public final class LocalizedMessage implements Message {
+public class LocalizedMessage implements Message {
   private static final long serialVersionUID = -8893339995741536401L;
 
   private final StringId stringId;
@@ -41,19 +41,19 @@ public final class LocalizedMessage implements Message {
     return new LocalizedMessage(stringId, null, null);
   }
 
-  public static final LocalizedMessage create(final StringId stringId, final Object[] params) {
+  public static LocalizedMessage create(final StringId stringId, final Object[] params) {
     return new LocalizedMessage(stringId, params, null);
   }
 
-  public static final LocalizedMessage create(final StringId stringId, final Throwable throwable) {
+  public static LocalizedMessage create(final StringId stringId, final Throwable throwable) {
     return new LocalizedMessage(stringId, null, throwable);
   }
 
-  public static final LocalizedMessage create(final StringId stringId, final Object object) {
+  public static LocalizedMessage create(final StringId stringId, final Object object) {
     return new LocalizedMessage(stringId, new Object[] {object}, null);
   }
 
-  public static final LocalizedMessage create(final StringId stringId, final Object[] params,
+  public static LocalizedMessage create(final StringId stringId, final Object[] params,
       final Throwable throwable) {
     return new LocalizedMessage(stringId, params, throwable);
   }

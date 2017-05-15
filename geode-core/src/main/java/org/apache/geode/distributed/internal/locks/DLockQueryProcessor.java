@@ -123,7 +123,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // DLockQueryMessage
   // -------------------------------------------------------------------------
-  public static final class DLockQueryMessage extends PooledDistributionMessage
+  public static class DLockQueryMessage extends PooledDistributionMessage
       implements MessageWithReply {
     /** The name of the DistributedLockService */
     protected String serviceName;
@@ -348,7 +348,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // DLockQueryReplyMessage
   // -------------------------------------------------------------------------
-  public static final class DLockQueryReplyMessage extends ReplyMessage {
+  public static class DLockQueryReplyMessage extends ReplyMessage {
 
     static final int NOT_GRANTOR = 0;
     static final int OK = 1;

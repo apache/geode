@@ -29,7 +29,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
  * Implementation of {@link StatAlertDefinition} This provides the definition for single statistic
  * 
  */
-public final class SingleAttrDefinitionImpl implements StatAlertDefinition {
+public class SingleAttrDefinitionImpl implements StatAlertDefinition {
   private static final long serialVersionUID = 3292417185742697896L;
 
   protected String name;

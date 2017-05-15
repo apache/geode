@@ -26,7 +26,7 @@ import java.io.*;
 import java.util.*;
 import org.apache.geode.distributed.internal.membership.*;
 
-public final class FetchDistLockInfoResponse extends AdminResponse {
+public class FetchDistLockInfoResponse extends AdminResponse {
   // instance variables
   DLockInfo[] lockInfos;
 

@@ -231,9 +231,8 @@ public class DirectChannel {
    * @throws ConnectExceptions if message could not be send to its <code>destination</code>
    * @throws NotSerializableException If the msg cannot be serialized
    */
-  private final int sendToOne(final MembershipManager mgr,
-      InternalDistributedMember[] p_destinations, final DistributionMessage msg,
-      long ackWaitThreshold, long ackSAThreshold)
+  private int sendToOne(final MembershipManager mgr, InternalDistributedMember[] p_destinations,
+      final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
     return sendToMany(mgr, p_destinations, msg, ackWaitThreshold, ackSAThreshold);
   }

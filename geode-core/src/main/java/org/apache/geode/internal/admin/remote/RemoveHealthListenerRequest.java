@@ -29,7 +29,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class RemoveHealthListenerRequest extends AdminRequest {
+public class RemoveHealthListenerRequest extends AdminRequest {
   // instance variables
   private int id;
 

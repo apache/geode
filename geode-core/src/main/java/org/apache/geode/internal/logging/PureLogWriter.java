@@ -252,7 +252,7 @@ public class PureLogWriter extends LogWriterImpl {
     }
   }
 
-  public final void close() {
+  public void close() {
     this.closed = true;
     try {
       if (this.logWriter != null) {
@@ -263,7 +263,7 @@ public class PureLogWriter extends LogWriterImpl {
     }
   }
 
-  public final boolean isClosed() {
+  public boolean isClosed() {
     return this.closed;
   }
 

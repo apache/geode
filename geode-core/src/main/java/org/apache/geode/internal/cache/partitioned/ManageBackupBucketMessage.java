@@ -48,7 +48,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * @since GemFire 5.0
  *
  */
-public final class ManageBackupBucketMessage extends PartitionMessage {
+public class ManageBackupBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The key associated with the value that must be sent */
@@ -85,7 +85,7 @@ public final class ManageBackupBucketMessage extends PartitionMessage {
   }
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.WAITING_POOL_EXECUTOR;
   }
 
@@ -217,7 +217,7 @@ public final class ManageBackupBucketMessage extends PartitionMessage {
    * 
    * @since GemFire 5.0
    */
-  public static final class ManageBackupBucketReplyMessage extends ReplyMessage {
+  public static class ManageBackupBucketReplyMessage extends ReplyMessage {
 
     protected boolean acceptedBucket;
 

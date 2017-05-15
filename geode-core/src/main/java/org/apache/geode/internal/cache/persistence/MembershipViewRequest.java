@@ -91,7 +91,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
   }
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return this.targetReinitializing ? DistributionManager.WAITING_POOL_EXECUTOR
         : DistributionManager.HIGH_PRIORITY_EXECUTOR;
   }

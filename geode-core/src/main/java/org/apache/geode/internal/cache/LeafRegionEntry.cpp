@@ -246,7 +246,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
 #else    
   private volatile Object value;
   @Override
-  protected final Object getValueField() {
+  protected Object getValueField() {
     return this.value;
   }
   @Override
@@ -263,7 +263,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
   /**
    * @see HashEntry#getEntryHash()
    */
-  public final int getEntryHash() {
+  public int getEntryHash() {
     return this.hash;
   }
   protected void setEntryHash(int v) {
@@ -272,13 +272,13 @@ public class LEAF_CLASS extends PARENT_CLASS {
   /**
    * @see HashEntry#getNextEntry()
    */
-  public final HashEntry<Object, Object> getNextEntry() {
+  public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
   /**
    * @see HashEntry#setNextEntry
    */
-  public final void setNextEntry(final HashEntry<Object, Object> n) {
+  public void setNextEntry(final HashEntry<Object, Object> n) {
     this.next = n;
   }
 #ifdef DISK
@@ -302,7 +302,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     }
   }
   @Override
-  public final synchronized int updateAsyncEntrySize(EnableLRU capacityController) {
+  public synchronized int updateAsyncEntrySize(EnableLRU capacityController) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize( getKeyForSizing(), null);
     setEntrySize(newSize);
@@ -398,43 +398,37 @@ public class LEAF_CLASS extends PARENT_CLASS {
   // nothing needed for LRUs with no disk
 #endif
   }
-  public final synchronized int updateEntrySize(EnableLRU capacityController) {
+  public synchronized int updateEntrySize(EnableLRU capacityController) {
     return updateEntrySize(capacityController, _getValue());  // OFHEAP: _getValue ok w/o incing refcount because we are synced and only getting the size
   }
   
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   
-  public final synchronized int updateEntrySize(EnableLRU capacityController,
+  public synchronized int updateEntrySize(EnableLRU capacityController,
                                                 Object value) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize( getKeyForSizing(), value);
     setEntrySize(newSize);
     int delta = newSize - oldSize;
-  //   if ( debug ) log( "updateEntrySize key=" + getKey()
-  //                     + (_getValue() == Token.INVALID ? " invalid" :
-  //                        (_getValue() == Token.LOCAL_INVALID ? "local_invalid" :
-  //                         (_getValue()==null ? " evicted" : " valid")))
-  //                     + " oldSize=" + oldSize
-  //                     + " newSize=" + this.size );
     return delta;
   }
-  public final boolean testRecentlyUsed() {
+  public boolean testRecentlyUsed() {
     return areAnyBitsSet(RECENTLY_USED);
   }
   @Override
-  public final void setRecentlyUsed() {
+  public void setRecentlyUsed() {
     setBits(RECENTLY_USED);
   }
-  public final void unsetRecentlyUsed() {
+  public void unsetRecentlyUsed() {
     clearBits(~RECENTLY_USED);
   }
-  public final boolean testEvicted() {
+  public boolean testEvicted() {
     return areAnyBitsSet(EVICTED);
   }
-  public final void setEvicted() {
+  public void setEvicted() {
     setBits(EVICTED);
   }
-  public final void unsetEvicted() {
+  public void unsetEvicted() {
     clearBits(~EVICTED);
   }
 
@@ -443,34 +437,26 @@ public class LEAF_CLASS extends PARENT_CLASS {
   private LRUClockNode nextLRU;
   private LRUClockNode prevLRU;
   private int size;
-  public final void setNextLRUNode( LRUClockNode next ) {
+  public void setNextLRUNode( LRUClockNode next ) {
     this.nextLRU = next;
   }
-  public final LRUClockNode nextLRUNode() {
+  public LRUClockNode nextLRUNode() {
     return this.nextLRU;
   }
-  public final void setPrevLRUNode( LRUClockNode prev ) {
+  public void setPrevLRUNode( LRUClockNode prev ) {
     this.prevLRU = prev;
   }
-  public final LRUClockNode prevLRUNode() {
+  public LRUClockNode prevLRUNode() {
     return this.prevLRU;
   }
-  public final int getEntrySize() {
+  public int getEntrySize() {
     return this.size;
   }
-  protected final void setEntrySize(int size) {
+  protected void setEntrySize(int size) {
     this.size = size;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-  
-//@Override
-//public StringBuilder appendFieldsToString(final StringBuilder sb) {
-//  StringBuilder result = super.appendFieldsToString(sb);
-//  result.append("; prev=").append(this.prevLRU==null?"null":"not null");
-//  result.append("; next=").append(this.nextLRU==null?"null":"not null");
-//  return result;
-//}
   
   @Override
   public Object getKeyForSizing() {
@@ -489,8 +475,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
   
   // stats code
   @Override
-  public final void updateStatsForGet(boolean hit, long time)
-  {
+  public void updateStatsForGet(boolean hit, long time) {
     setLastAccessed(time);
     if (hit) {
       incrementHitCount();
@@ -499,7 +484,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     }
   }
   @Override
-  protected final void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
+  protected void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
     _setLastModified(lastModified);
     if (!DISABLE_ACCESS_TIME_UPDATE_ON_PUT) { 
       setLastAccessed(lastAccessed);
@@ -515,18 +500,18 @@ public class LEAF_CLASS extends PARENT_CLASS {
     = AtomicIntegerFieldUpdater.newUpdater(LEAF_CLASS.class, "missCount");
   
   @Override
-  public final long getLastAccessed() throws InternalStatisticsDisabledException {
+  public long getLastAccessed() throws InternalStatisticsDisabledException {
     return this.lastAccessed;
   }
   private void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
   @Override
-  public final long getHitCount() throws InternalStatisticsDisabledException {
+  public long getHitCount() throws InternalStatisticsDisabledException {
     return this.hitCount & 0xFFFFFFFFL;
   }
   @Override
-  public final long getMissCount() throws InternalStatisticsDisabledException {
+  public long getMissCount() throws InternalStatisticsDisabledException {
     return this.missCount & 0xFFFFFFFFL;
   }
   private void incrementHitCount() {
@@ -536,7 +521,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     missCountUpdater.incrementAndGet(this);
   }
   @Override
-  public final void resetCounts() throws InternalStatisticsDisabledException {
+  public void resetCounts() throws InternalStatisticsDisabledException {
     hitCountUpdater.set(this,0);
     missCountUpdater.set(this,0);
   }
@@ -544,7 +529,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   
   @Override
-  public final void txDidDestroy(long currTime) {
+  public void txDidDestroy(long currTime) {
     setLastModified(currTime);
     setLastAccessed(currTime);
     this.hitCount = 0;
@@ -662,14 +647,14 @@ public class LEAF_CLASS extends PARENT_CLASS {
 #ifdef KEY_OBJECT
   private final Object key;
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     return this.key;
   }
 
 #elif defined(KEY_INT)
   private final int key;
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     return this.key;
   }
   @Override
@@ -683,7 +668,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
 #elif defined(KEY_LONG)
   private final long key;
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     return this.key;
   }
   @Override
@@ -698,7 +683,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
   private final long keyMostSigBits;
   private final long keyLeastSigBits;
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
   }
   @Override
@@ -722,7 +707,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     return (int) (this.bits1 >> 6) & 0x03;
   }
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     int keylen = getKeyLength();
     char[] chars = new char[keylen];
     long tmpBits1 = this.bits1;
@@ -788,7 +773,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     return (int) (this.bits1 >> 6) & 0x03;
   }
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     int keylen = getKeyLength();
     char[] chars = new char[keylen];
     long tmpBits1 = this.bits1;

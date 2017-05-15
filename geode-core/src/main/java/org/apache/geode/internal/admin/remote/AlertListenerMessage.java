@@ -30,8 +30,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * A message that is sent to a particular console distribution manager to notify it of an alert.
  */
-public final class AlertListenerMessage extends PooledDistributionMessage
-    implements AdminMessageType {
+public class AlertListenerMessage extends PooledDistributionMessage implements AdminMessageType {
   // instance variables
   private int msgLevel;
   private Date msgDate;

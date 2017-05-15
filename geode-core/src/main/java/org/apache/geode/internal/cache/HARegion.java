@@ -54,7 +54,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
  * @since GemFire 4.3
  * 
  */
-public final class HARegion extends DistributedRegion {
+public class HARegion extends DistributedRegion {
   private static final Logger logger = LogService.getLogger();
 
   CachePerfStats haRegionStats;
@@ -211,7 +211,7 @@ public final class HARegion extends DistributedRegion {
   }
 
   @Override
-  public final Object put(Object key, Object value, Object aCallbackArgument)
+  public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
     checkReadiness();
 
@@ -291,7 +291,7 @@ public final class HARegion extends DistributedRegion {
   }
 
   @Override
-  final protected boolean shouldNotifyBridgeClients() {
+  protected boolean shouldNotifyBridgeClients() {
     return false;
   }
 
@@ -323,7 +323,7 @@ public final class HARegion extends DistributedRegion {
    * Never genearte EventID for any Entry or Region operation on the HARegion
    */
   @Override
-  final public boolean generateEventID() {
+  public boolean generateEventID() {
     return false;
   }
 

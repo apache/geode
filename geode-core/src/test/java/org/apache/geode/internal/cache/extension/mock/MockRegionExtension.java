@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
  *
  * @since GemFire 8.1
  */
-public final class MockRegionExtension extends AbstractMockExtension<Region<?, ?>> {
+public class MockRegionExtension extends AbstractMockExtension<Region<?, ?>> {
   public MockRegionExtension(final String value) {
     super(value);
   }

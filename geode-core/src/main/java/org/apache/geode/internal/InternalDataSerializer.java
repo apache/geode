@@ -3230,7 +3230,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * A distribution message that alerts other members of the distributed cache of a new
    * {@code DataSerializer} being registered.
    */
-  public static final class RegistrationMessage extends SerialDistributionMessage {
+  public static class RegistrationMessage extends SerialDistributionMessage {
     /**
      * The id of the {@code DataSerializer} that was registered since 5.7 an int instead of a byte
      */
@@ -3465,21 +3465,21 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    */
   protected abstract static class WellKnownDS extends DataSerializer {
     @Override
-    public final int getId() {
+    public int getId() {
       // illegal for a customer to use but since our WellKnownDS is never registered
       // with this id it gives us one to use
       return 0;
     }
 
     @Override
-    public final Class[] getSupportedClasses() {
+    public Class[] getSupportedClasses() {
       // illegal for a customer to return null but we can do it since we never register
       // this serializer.
       return null;
     }
 
     @Override
-    public final Object fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
       throw new IllegalStateException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
     }
     // subclasses need to implement toData

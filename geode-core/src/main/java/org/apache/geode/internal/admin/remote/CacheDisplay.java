@@ -20,7 +20,7 @@ package org.apache.geode.internal.admin.remote;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-public final class CacheDisplay {
+public class CacheDisplay {
   public static Object getCachedObjectDisplay(Object obj, int inspectionType) {
     switch (inspectionType) {
       case GemFireVM.LIGHTWEIGHT_CACHE_VALUE:

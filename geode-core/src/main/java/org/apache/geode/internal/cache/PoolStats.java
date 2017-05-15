@@ -198,39 +198,39 @@ public class PoolStats {
     return DistributionStats.getStatTime();
   }
 
-  public final void setInitialContacts(int ic) {
+  public void setInitialContacts(int ic) {
     this._stats.setInt(_INITIAL_CONTACTS, ic);
   }
 
-  public final void setServerCount(int sc) {
+  public void setServerCount(int sc) {
     this._stats.setInt(_ENDPOINTS_KNOWN, sc);
   }
 
-  public final void setSubscriptionCount(int qc) {
+  public void setSubscriptionCount(int qc) {
     this._stats.setInt(_SUBSCRIPTION_SERVERS, qc);
   }
 
-  public final void setLocatorCount(int lc) {
+  public void setLocatorCount(int lc) {
     this._stats.setInt(_KNOWN_LOCATORS, lc);
   }
 
-  public final long getLocatorRequests() {
+  public long getLocatorRequests() {
     return this._stats.getLong(_REQUESTS_TO_LOCATOR);
   }
 
-  public final void incLocatorRequests() {
+  public void incLocatorRequests() {
     this._stats.incLong(_REQUESTS_TO_LOCATOR, 1);
   }
 
-  public final void incLocatorResponses() {
+  public void incLocatorResponses() {
     this._stats.incLong(_RESPONSES_FROM_LOCATOR, 1);
   }
 
-  public final void setLocatorRequests(long rl) {
+  public void setLocatorRequests(long rl) {
     this._stats.setLong(_REQUESTS_TO_LOCATOR, rl);
   }
 
-  public final void setLocatorResponses(long rl) {
+  public void setLocatorResponses(long rl) {
     this._stats.setLong(_RESPONSES_FROM_LOCATOR, rl);
   }
 

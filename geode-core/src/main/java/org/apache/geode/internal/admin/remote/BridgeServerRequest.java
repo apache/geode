@@ -27,7 +27,7 @@ import java.io.*;
  *
  * @since GemFire 4.0
  */
-public final class BridgeServerRequest extends AdminRequest {
+public class BridgeServerRequest extends AdminRequest {
 
   /** Add a new bridge server */
   static final int ADD_OPERATION = 10;

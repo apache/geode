@@ -143,7 +143,7 @@ public class MoveBucketMessage extends PartitionMessage {
     DataSerializer.writeObject(this.source, out);
   }
 
-  public static final class MoveBucketReplyMessage extends ReplyMessage {
+  public static class MoveBucketReplyMessage extends ReplyMessage {
 
     private boolean moved;
 

@@ -27,14 +27,14 @@ import javax.management.openmbean.OpenDataException;
  * 
  * 
  */
-public final class ArrayConverter extends OpenTypeConverter {
+public class ArrayConverter extends OpenTypeConverter {
   ArrayConverter(Type targetType, ArrayType openArrayType, Class openArrayClass,
       OpenTypeConverter elementConverter) {
     super(targetType, openArrayType, openArrayClass);
     this.elementConverter = elementConverter;
   }
 
-  final Object toNonNullOpenValue(Object value) throws OpenDataException {
+  Object toNonNullOpenValue(Object value) throws OpenDataException {
     Object[] valueArray = (Object[]) value;
     final int len = valueArray.length;
     final Object[] openArray = (Object[]) Array.newInstance(getOpenClass().getComponentType(), len);
@@ -44,7 +44,7 @@ public final class ArrayConverter extends OpenTypeConverter {
     return openArray;
   }
 
-  public final Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
+  public Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
     final Object[] openArray = (Object[]) openValue;
     final Type targetType = getTargetType();
     final Object[] valueArray;

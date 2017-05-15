@@ -25,7 +25,7 @@ import java.io.*;
  * A message that is sent to a particular distribution manager to get its current
  * {@link org.apache.geode.internal.Config}.
  */
-public final class FetchSysCfgRequest extends AdminRequest {
+public class FetchSysCfgRequest extends AdminRequest {
   /**
    * Returns a <code>FetchSysCfgRequest</code> to be sent to the specified recipient.
    */

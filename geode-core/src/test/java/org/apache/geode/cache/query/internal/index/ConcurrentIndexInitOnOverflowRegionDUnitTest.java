@@ -375,7 +375,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
       }
     });
 
-    final class LocalTestHook implements TestHook {
+    class LocalTestHook implements TestHook {
 
       @Override
       public void hook(int spot) throws RuntimeException {

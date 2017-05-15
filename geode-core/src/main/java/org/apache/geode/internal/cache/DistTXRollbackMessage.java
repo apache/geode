@@ -52,7 +52,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * 
  */
-public final class DistTXRollbackMessage extends TXMessage {
+public class DistTXRollbackMessage extends TXMessage {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -132,7 +132,7 @@ public final class DistTXRollbackMessage extends TXMessage {
   /**
    * This is the reply to a {@link DistTXRollbackMessage}.
    */
-  public static final class DistTXRollbackReplyMessage extends ReplyMessage {
+  public static class DistTXRollbackReplyMessage extends ReplyMessage {
     private transient Boolean rollbackState;
 
     /**
@@ -283,7 +283,7 @@ public final class DistTXRollbackMessage extends TXMessage {
    * 
    *      [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
-  public static final class DistTxRollbackReplyProcessor extends ReplyProcessor21 {
+  public static class DistTxRollbackReplyProcessor extends ReplyProcessor21 {
     private HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
     private Map<DistributedMember, Boolean> rollbackResponseMap;
     private transient TXId txIdent = null;

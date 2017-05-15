@@ -36,7 +36,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * A message that is sent to a particular distribution manager to let it know that the sender is an
  * administation console that just disconnected.
  */
-public final class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
+public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
   private static final Logger logger = LogService.getLogger();
 
   // instance variables

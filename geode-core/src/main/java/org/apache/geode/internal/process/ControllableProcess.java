@@ -30,7 +30,7 @@ import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandl
  * 
  * @since GemFire 8.0
  */
-public final class ControllableProcess {
+public class ControllableProcess {
   private static final Logger logger = LogService.getLogger();
 
   private final File workingDir;

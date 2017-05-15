@@ -1346,7 +1346,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * A QueryMessage is broadcast to every node that has the region defined, to find out who has a
    * valid copy of the requested object.
    */
-  public static final class QueryMessage extends SerialDistributionMessage {
+  public static class QueryMessage extends SerialDistributionMessage {
 
     /**
      * The object id of the processor object on the initiator node. This will be communicated back
@@ -1593,7 +1593,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * The ResponseMessage is a reply to a QueryMessage, and contains the object's value, if it is
    * below the byte limit, otherwise an indication of whether the sender has the value.
    */
-  public static final class ResponseMessage extends HighPriorityDistributionMessage {
+  public static class ResponseMessage extends HighPriorityDistributionMessage {
 
     private Object key;
 
@@ -1722,7 +1722,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /********************* NetSearchRequestMessage ***************************************/
 
-  public static final class NetSearchRequestMessage extends PooledDistributionMessage {
+  public static class NetSearchRequestMessage extends PooledDistributionMessage {
 
     /**
      * The object id of the processor object on the initiator node. This will be communicated back
@@ -1949,7 +1949,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * The NetSearchReplyMessage is a reply to a NetSearchRequestMessage, and contains the object's
    * value.
    */
-  public static final class NetSearchReplyMessage extends HighPriorityDistributionMessage {
+  public static class NetSearchReplyMessage extends HighPriorityDistributionMessage {
     private static final byte SERIALIZED = 0x01;
     private static final byte REQUESTOR_TIMEOUT = 0x02;
     private static final byte AUTHORATIVE = 0x04;
@@ -2105,7 +2105,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /******************************** NetLoadRequestMessage **********************/
 
-  public static final class NetLoadRequestMessage extends PooledDistributionMessage {
+  public static class NetLoadRequestMessage extends PooledDistributionMessage {
 
     /**
      * The object id of the processor object on the initiator node. This will be communicated back
@@ -2282,7 +2282,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   /**
    * The NetLoadReplyMessage is a reply to a RequestMessage, and contains the object's value.
    */
-  public static final class NetLoadReplyMessage extends HighPriorityDistributionMessage {
+  public static class NetLoadReplyMessage extends HighPriorityDistributionMessage {
 
     /** The gemfire id of the SearchLoadAndWrite object waiting for response */
     private int processorId;
@@ -2386,7 +2386,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /********************* NetWriteRequestMessage *******************************/
 
-  public static final class NetWriteRequestMessage extends PooledDistributionMessage {
+  public static class NetWriteRequestMessage extends PooledDistributionMessage {
 
     /**
      * The object id of the processor object on the initiator node. This will be communicated back
@@ -2587,7 +2587,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * The NetWriteReplyMessage is a reply to a NetWriteRequestMessage, and contains the success code
    * or exception that is propagated back to the requestor
    */
-  public static final class NetWriteReplyMessage extends HighPriorityDistributionMessage {
+  public static class NetWriteReplyMessage extends HighPriorityDistributionMessage {
 
     /** The gemfire id of the SearchLoadAndWrite object waiting for response */
     private int processorId;

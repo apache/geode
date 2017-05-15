@@ -2496,7 +2496,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     releaseLatch(this.initializationLatchBeforeGetInitialImage);
   }
 
-  final void releaseAfterGetInitialImageLatch() {
+  void releaseAfterGetInitialImageLatch() {
     if (logger.isDebugEnabled()) {
       logger.debug("Releasing Initialization Latch (after initial image) for {}", getFullPath());
     }
@@ -5562,7 +5562,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return false if ifNew is true and there is an existing key, or ifOld is true and there is no
    *         existing entry; otherwise return true.
    */
-  final boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
+  boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       final long lastModified, final boolean overwriteDestroyed)
       throws TimeoutException, CacheWriterException {
 

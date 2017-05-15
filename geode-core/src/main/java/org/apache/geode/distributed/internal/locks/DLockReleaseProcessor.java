@@ -132,7 +132,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // DLockReleaseMessage
   // -------------------------------------------------------------------------
-  public static final class DLockReleaseMessage extends HighPriorityDistributionMessage
+  public static class DLockReleaseMessage extends HighPriorityDistributionMessage
       implements MessageWithReply {
     /** The name of the DistributedLockService */
     protected String serviceName;
@@ -372,7 +372,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
   // DLockReleaseReplyMessage
   // -------------------------------------------------------------------------
-  public static final class DLockReleaseReplyMessage extends ReplyMessage {
+  public static class DLockReleaseReplyMessage extends ReplyMessage {
 
     static final int NOT_GRANTOR = 0;
     static final int OK = 1;

@@ -107,7 +107,7 @@ public class TXReservationMgr {
     }
   }
 
-  private final Object getRegionObject(TXRegionLockRequestImpl lr) {
+  private Object getRegionObject(TXRegionLockRequestImpl lr) {
     if (local) {
       return lr.getLocalRegion();
     } else {

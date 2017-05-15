@@ -47,11 +47,11 @@ public class HttpInvocationHandler implements InvocationHandler {
     this.objectName = objectName;
   }
 
-  protected final ObjectName getObjectName() {
+  protected ObjectName getObjectName() {
     return objectName;
   }
 
-  protected final HttpOperationInvoker getOperationInvoker() {
+  protected HttpOperationInvoker getOperationInvoker() {
     return operationInvoker;
   }
 

@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * Responds to {@link RegionStatisticsResponse}.
  */
-public final class RegionStatisticsResponse extends AdminResponse {
+public class RegionStatisticsResponse extends AdminResponse {
   // instance variables
   RemoteCacheStatistics regionStatistics;
 

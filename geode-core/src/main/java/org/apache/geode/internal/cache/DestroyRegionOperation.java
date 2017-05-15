@@ -466,12 +466,12 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     }
   }
 
-  public static final class DestroyRegionWithContextMessage extends DestroyRegionMessage {
+  public static class DestroyRegionWithContextMessage extends DestroyRegionMessage {
 
     protected transient Object context;
 
     @Override
-    final public RegionEventImpl createRegionEvent(DistributedRegion rgn) {
+    public RegionEventImpl createRegionEvent(DistributedRegion rgn) {
       return new ClientRegionEventImpl(rgn, getOperation(), this.callbackArg,
           true /* originRemote */, getSender(), (ClientProxyMembershipID) this.context);
     }

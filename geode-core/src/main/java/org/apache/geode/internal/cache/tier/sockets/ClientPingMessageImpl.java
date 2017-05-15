@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
  * 
  * @since GemFire 6.6.2.x
  */
-public final class ClientPingMessageImpl implements ClientMessage {
+public class ClientPingMessageImpl implements ClientMessage {
 
   private static final long serialVersionUID = 5423895238521508743L;
 

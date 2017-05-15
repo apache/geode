@@ -47,7 +47,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 7.0
  */
-public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
+public class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -144,7 +144,7 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
    * This message is used to send a reply for RemoteFetchVersionMessage.
    * 
    */
-  public static final class FetchVersionReplyMessage extends ReplyMessage {
+  public static class FetchVersionReplyMessage extends ReplyMessage {
     private VersionTag tag;
 
     /** for deserialization */

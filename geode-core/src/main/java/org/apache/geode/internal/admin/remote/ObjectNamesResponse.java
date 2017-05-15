@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * Responds to {@link ObjectNamesResponse}.
  */
-public final class ObjectNamesResponse extends AdminResponse implements Cancellable {
+public class ObjectNamesResponse extends AdminResponse implements Cancellable {
   // instance variables
   private HashSet objectNames;
   private transient boolean cancelled;

@@ -55,7 +55,7 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
     return false;
   }
 
-  public static final class InvalidateRegionMessage extends CacheOperationMessage {
+  public static class InvalidateRegionMessage extends CacheOperationMessage {
 
     protected EventID eventID;
 

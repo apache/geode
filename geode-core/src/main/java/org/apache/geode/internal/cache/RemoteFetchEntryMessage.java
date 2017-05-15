@@ -53,7 +53,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 5.1
  */
-public final class RemoteFetchEntryMessage extends RemoteOperationMessage {
+public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   private static final Logger logger = LogService.getLogger();
 
   private Object key;
@@ -172,7 +172,7 @@ public final class RemoteFetchEntryMessage extends RemoteOperationMessage {
    * 
    * @since GemFire 5.0
    */
-  public static final class FetchEntryReplyMessage extends ReplyMessage {
+  public static class FetchEntryReplyMessage extends ReplyMessage {
     /** Propagated exception from remote node to operation initiator */
     private EntrySnapshot value;
 

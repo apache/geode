@@ -64,7 +64,7 @@ import java.util.Set;
  * 
  * @since GemFire 5.0
  */
-public final class GetMessage extends PartitionMessageWithDirectReply {
+public class GetMessage extends PartitionMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private Object key;
@@ -102,7 +102,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply {
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "order-pr-gets");
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     if (!forceUseOfPRExecutor && !ORDER_PR_GETS && !isDirectAck()) {
       try {
         PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
@@ -145,8 +145,8 @@ public final class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(final DistributionManager dm,
-      PartitionedRegion r, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(final DistributionManager dm, PartitionedRegion r,
+      long startTime) throws ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "GetMessage operateOnRegion: {}", r.getFullPath());
     }
@@ -298,7 +298,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply {
    * 
    * @since GemFire 5.0
    */
-  public static final class GetReplyMessage extends ReplyMessage {
+  public static class GetReplyMessage extends ReplyMessage {
     /**
      * The raw value in the cache which may be serialized to the output stream, if it is NOT already
      * a byte array

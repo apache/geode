@@ -399,7 +399,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   }
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 
@@ -421,7 +421,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     return txUniqId;
   }
 
-  public final InternalDistributedMember getMemberToMasqueradeAs() {
+  public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
     } else {

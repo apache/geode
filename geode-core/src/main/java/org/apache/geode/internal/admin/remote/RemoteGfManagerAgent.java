@@ -49,7 +49,7 @@ import java.util.concurrent.*;
 public
 // Note that since we export the instances in a public list,
 // I'm not permitting subclasses
-final class RemoteGfManagerAgent implements GfManagerAgent {
+class RemoteGfManagerAgent implements GfManagerAgent {
 
   private static final Logger logger = LogService.getLogger();
 

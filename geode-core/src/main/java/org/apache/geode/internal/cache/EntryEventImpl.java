@@ -491,11 +491,11 @@ public class EntryEventImpl
     return result;
   }
 
-  private final boolean testEventFlag(short mask) {
+  private boolean testEventFlag(short mask) {
     return EventFlags.isSet(this.eventFlags, mask);
   }
 
-  private final void setEventFlag(short mask, boolean on) {
+  private void setEventFlag(short mask, boolean on) {
     this.eventFlags = EventFlags.set(this.eventFlags, mask, on);
   }
 
@@ -603,19 +603,19 @@ public class EntryEventImpl
     return this.op.isEviction();
   }
 
-  public final void setEvicted() {
+  public void setEvicted() {
     this.isEvicted = true;
   }
 
-  public final boolean isEvicted() {
+  public boolean isEvicted() {
     return this.isEvicted;
   }
 
-  public final boolean isPendingSecondaryExpireDestroy() {
+  public boolean isPendingSecondaryExpireDestroy() {
     return this.isPendingSecondaryExpireDestroy;
   }
 
-  public final void setPendingSecondaryExpireDestroy(boolean value) {
+  public void setPendingSecondaryExpireDestroy(boolean value) {
     this.isPendingSecondaryExpireDestroy = value;
   }
 
@@ -670,7 +670,7 @@ public class EntryEventImpl
    * 
    * @return null if no event id has been set
    */
-  public final EventID getEventId() {
+  public EventID getEventId() {
     return this.eventID;
   }
 
@@ -720,7 +720,7 @@ public class EntryEventImpl
    *
    * @return the value in the cache prior to this event.
    */
-  public final Object getOldValue() {
+  public Object getOldValue() {
     try {
       if (isOriginRemote() && this.region.isProxy()) {
         return null;
@@ -763,7 +763,7 @@ public class EntryEventImpl
    * Like getRawNewValue except that if the result is an off-heap reference then copy it to the
    * heap. Note: to prevent the heap copy use getRawNewValue instead
    */
-  public final Object getRawNewValueAsHeapObject() {
+  public Object getRawNewValueAsHeapObject() {
     Object result = basicGetNewValue();
     if (mayHaveOffHeapReferences()) {
       result = OffHeapHelper.copyIfNeeded(result);
@@ -777,7 +777,7 @@ public class EntryEventImpl
    * lifetime of the EntryEventImpl instance that returned the value. Else return the raw form.
    */
   @Unretained(ENTRY_EVENT_NEW_VALUE)
-  public final Object getRawNewValue() {
+  public Object getRawNewValue() {
     return basicGetNewValue();
   }
 
@@ -809,7 +809,7 @@ public class EntryEventImpl
   }
 
   @Unretained
-  protected final Object basicGetNewValue() {
+  protected Object basicGetNewValue() {
     Object result = this.newValue;
     if (!this.offHeapOk && isOffHeapReference(result)) {
       // this.region.getCache().getLogger().info("DEBUG new value already freed " +
@@ -914,7 +914,7 @@ public class EntryEventImpl
    * Like getRawOldValue except that if the result is an off-heap reference then copy it to the
    * heap. To avoid the heap copy use getRawOldValue instead.
    */
-  public final Object getRawOldValueAsHeapObject() {
+  public Object getRawOldValueAsHeapObject() {
     Object result = basicGetOldValue();
     if (mayHaveOffHeapReferences()) {
       result = OffHeapHelper.copyIfNeeded(result);
@@ -928,7 +928,7 @@ public class EntryEventImpl
    * lifetime of the EntryEventImpl instance that returned the value. Else return the raw form.
    */
   @Unretained
-  public final Object getRawOldValue() {
+  public Object getRawOldValue() {
     return basicGetOldValue();
   }
 
@@ -936,7 +936,7 @@ public class EntryEventImpl
    * Just like getRawOldValue except if the raw old value is off-heap deserialize it.
    */
   @Unretained(ENTRY_EVENT_OLD_VALUE)
-  public final Object getOldValueAsOffHeapDeserializedOrRaw() {
+  public Object getOldValueAsOffHeapDeserializedOrRaw() {
     Object result = basicGetOldValue();
     if (mayHaveOffHeapReferences() && result instanceof StoredObject) {
       result = ((CachedDeserializable) result).getDeserializedForReading();
@@ -957,7 +957,7 @@ public class EntryEventImpl
    *
    * @return the value in the cache after this event.
    */
-  public final Object getNewValue() {
+  public Object getNewValue() {
 
     boolean doCopyOnRead = getRegion().isCopyOnRead();
     Object nv = basicGetNewValue();
@@ -1010,16 +1010,16 @@ public class EntryEventImpl
 
   private final Object offHeapLock = new Object();
 
-  public final String getNewValueStringForm() {
+  public String getNewValueStringForm() {
     return StringUtils.forceToString(basicGetNewValue());
   }
 
-  public final String getOldValueStringForm() {
+  public String getOldValueStringForm() {
     return StringUtils.forceToString(basicGetOldValue());
   }
 
   /** Set a deserialized value */
-  public final void setNewValue(@Retained(ENTRY_EVENT_NEW_VALUE) Object obj) {
+  public void setNewValue(@Retained(ENTRY_EVENT_NEW_VALUE) Object obj) {
     basicSetNewValue(obj);
   }
 
@@ -1047,7 +1047,7 @@ public class EntryEventImpl
   /**
    * @see org.apache.geode.cache.CacheEvent#getRegion()
    */
-  public final LocalRegion getRegion() {
+  public LocalRegion getRegion() {
     return region;
   }
 
@@ -1179,7 +1179,7 @@ public class EntryEventImpl
   /**
    * Export the event's new value to the given importer.
    */
-  public final void exportNewValue(NewValueImporter importer) {
+  public void exportNewValue(NewValueImporter importer) {
     final boolean prefersSerialized = importer.prefersNewSerialized();
     if (prefersSerialized) {
       if (getCachedSerializedNewValue() != null) {
@@ -1271,7 +1271,7 @@ public class EntryEventImpl
   /**
    * Export the event's old value to the given importer.
    */
-  public final void exportOldValue(OldValueImporter importer) {
+  public void exportOldValue(OldValueImporter importer) {
     final boolean prefersSerialized = importer.prefersOldSerialized();
     if (prefersSerialized) {
       if (this.oldValueBytes != null && this.oldValue instanceof CachedDeserializable) {
@@ -1310,7 +1310,7 @@ public class EntryEventImpl
    * Just like getRawNewValue(true) except if the raw new value is off-heap deserialize it.
    */
   @Unretained(ENTRY_EVENT_NEW_VALUE)
-  public final Object getNewValueAsOffHeapDeserializedOrRaw() {
+  public Object getNewValueAsOffHeapDeserializedOrRaw() {
     Object result = getRawNewValue();
     if (mayHaveOffHeapReferences() && result instanceof StoredObject) {
       result = ((CachedDeserializable) result).getDeserializedForReading();
@@ -1352,7 +1352,7 @@ public class EntryEventImpl
     return result;
   }
 
-  public final Object getDeserializedValue() {
+  public Object getDeserializedValue() {
     final Object val = basicGetNewValue();
     if (val instanceof CachedDeserializable) {
       return ((CachedDeserializable) val).getDeserializedForReading();
@@ -1361,7 +1361,7 @@ public class EntryEventImpl
     }
   }
 
-  public final byte[] getSerializedValue() {
+  public byte[] getSerializedValue() {
     if (this.newValueBytes == null) {
       final Object val;
       val = basicGetNewValue();
@@ -1392,7 +1392,7 @@ public class EntryEventImpl
   /**
    * @param isSynced true if RegionEntry currently under synchronization
    */
-  private final void makeSerializedNewValue(boolean isSynced) {
+  private void makeSerializedNewValue(boolean isSynced) {
     Object obj = basicGetNewValue();
 
     // ezoerner:20080611 In the case where there is an unapplied
@@ -1448,7 +1448,7 @@ public class EntryEventImpl
     return this.cachedSerializedNewValue;
   }
 
-  public final void setSerializedNewValue(byte[] serializedValue) {
+  public void setSerializedNewValue(byte[] serializedValue) {
     Object newVal = null;
     if (serializedValue != null) {
       newVal = CachedDeserializableFactory.create(serializedValue);
@@ -1880,11 +1880,11 @@ public class EntryEventImpl
     return tmp != null && tmp != Token.NOT_AVAILABLE;
   }
 
-  public final boolean hasOldValue() {
+  public boolean hasOldValue() {
     return this.oldValue != null && this.oldValue != Token.NOT_AVAILABLE;
   }
 
-  public final boolean isOldValueAToken() {
+  public boolean isOldValueAToken() {
     return this.oldValue instanceof Token;
   }
 
@@ -2173,12 +2173,12 @@ public class EntryEventImpl
         | FLAG_INHIBIT_LISTENER_NOTIFICATION | FLAG_SERIALIZATION_DEFERRED | FLAG_FROM_SERVER
         | FLAG_FROM_RI_LOCAL_DESTROY | FLAG_INHIBIT_DISTRIBUTION | FLAG_REDESTROYED_TOMBSTONE);
 
-    protected static final boolean isSet(short flags, short mask) {
+    protected static boolean isSet(short flags, short mask) {
       return (flags & mask) != 0;
     }
 
     /** WARNING: Does not set the bit in place, returns new short with bit set */
-    protected static final short set(short flags, short mask, boolean on) {
+    protected static short set(short flags, short mask, boolean on) {
       return (short) (on ? (flags | mask) : (flags & ~mask));
     }
   }
@@ -2187,7 +2187,7 @@ public class EntryEventImpl
    * @return null if old value is not serialized; otherwise returns a SerializedCacheValueImpl
    *         containing the old value.
    */
-  public final SerializedCacheValue<?> getSerializedOldValue() {
+  public SerializedCacheValue<?> getSerializedOldValue() {
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     final Object tmp = basicGetOldValue();
     if (tmp instanceof CachedDeserializable) {
@@ -2525,7 +2525,7 @@ public class EntryEventImpl
     return result;
   }
 
-  public static final class SerializedCacheValueImpl
+  public static class SerializedCacheValueImpl
       implements SerializedCacheValue, CachedDeserializable, Sendable {
     private final EntryEventImpl event;
     @Unretained

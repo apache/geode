@@ -31,11 +31,11 @@ public class BytesAndBits {
     this.userBits = userBits;
   }
 
-  public final byte[] getBytes() {
+  public byte[] getBytes() {
     return this.data;
   }
 
-  public final byte getBits() {
+  public byte getBits() {
     return this.userBits;
   }
 

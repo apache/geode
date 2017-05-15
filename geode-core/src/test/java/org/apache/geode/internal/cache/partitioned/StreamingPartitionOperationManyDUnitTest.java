@@ -243,7 +243,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     }
   }
 
-  public static final class TestStreamingPartitionMessageManyProviderNoExceptions
+  public static class TestStreamingPartitionMessageManyProviderNoExceptions
       extends StreamingPartitionOperation.StreamingPartitionMessage {
     private int nextInt = -10;
     private int count = 0;

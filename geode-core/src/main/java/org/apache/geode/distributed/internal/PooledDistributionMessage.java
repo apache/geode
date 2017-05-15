@@ -23,7 +23,7 @@ package org.apache.geode.distributed.internal;
 public abstract class PooledDistributionMessage extends DistributionMessage {
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.STANDARD_EXECUTOR;
   }
 

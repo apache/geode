@@ -66,7 +66,7 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.EN
  *
  * @since GemFire 6.5
  */
-public final class RemotePutMessage extends RemoteOperationMessageWithDirectReply
+public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     implements NewValueImporter, OldValueImporter {
   private static final Logger logger = LogService.getLogger();
 
@@ -412,30 +412,30 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
     return processor;
   }
 
-  // public final boolean needsDirectAck()
+  // public boolean needsDirectAck()
   // {
   // return this.directAck;
   // }
 
-  // final public int getProcessorType() {
+  // public int getProcessorType() {
   // return DistributionManager.PARTITIONED_REGION_EXECUTOR;
   // }
 
 
 
-  public final Object getKey() {
+  public Object getKey() {
     return this.key;
   }
 
-  public final void setKey(Object key) {
+  public void setKey(Object key) {
     this.key = key;
   }
 
-  public final byte[] getValBytes() {
+  public byte[] getValBytes() {
     return this.valBytes;
   }
 
-  public final byte[] getOldValueBytes() {
+  public byte[] getOldValueBytes() {
 
     return this.oldValBytes;
   }
@@ -460,16 +460,16 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
     this.oldValObj = o;
   }
 
-  public final Object getCallbackArg() {
+  public Object getCallbackArg() {
     return this.cbArg;
   }
 
-  protected final Operation getOperation() {
+  protected Operation getOperation() {
     return this.op;
   }
 
   @Override
-  public final void setOperation(Operation operation) {
+  public void setOperation(Operation operation) {
     this.op = operation;
   }
 
@@ -486,7 +486,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     setKey(DataSerializer.readObject(in));
 
@@ -544,7 +544,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  public final void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     this.hasDelta = false;
     super.toData(out);
     DataSerializer.writeObject(getKey(), out);
@@ -616,7 +616,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
    * indefinitely for the acknowledgement
    */
   @Override
-  protected final boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
       throws EntryExistsException, RemoteOperationException {
     this.setInternalDs(r.getSystem());// set the internal DS. Required to
                                       // checked DS level delta-enabled property
@@ -733,7 +733,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  protected final void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
     buff.append("; key=").append(getKey()).append("; value=");
     // buff.append(getValBytes());
@@ -768,15 +768,15 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
     buff.append(this.applyDeltaBytes);
   }
 
-  public final InternalDistributedSystem getInternalDs() {
+  public InternalDistributedSystem getInternalDs() {
     return internalDs;
   }
 
-  public final void setInternalDs(InternalDistributedSystem internalDs) {
+  public void setInternalDs(InternalDistributedSystem internalDs) {
     this.internalDs = internalDs;
   }
 
-  public static final class PutReplyMessage extends ReplyMessage implements OldValueImporter {
+  public static class PutReplyMessage extends ReplyMessage implements OldValueImporter {
 
     static final byte FLAG_RESULT = 0x01;
     static final byte FLAG_HASVERSION = 0x02;

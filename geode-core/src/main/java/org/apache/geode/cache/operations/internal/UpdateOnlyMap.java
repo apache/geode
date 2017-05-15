@@ -130,7 +130,7 @@ public class UpdateOnlyMap implements Map, Serializable {
     return entrySet;
   }
 
-  private final class EntrySet extends AbstractSet {
+  private class EntrySet extends AbstractSet {
     public Iterator iterator() {
       return new EntryIterator();
     }
@@ -140,6 +140,7 @@ public class UpdateOnlyMap implements Map, Serializable {
       return m.size();
     }
   }
+
   private class EntryIterator implements Iterator {
     private Iterator mIterator = m.entrySet().iterator();
 
@@ -209,7 +210,7 @@ public class UpdateOnlyMap implements Map, Serializable {
     return values;
   }
 
-  private final class Values extends AbstractCollection {
+  private class Values extends AbstractCollection {
     @Override
     public Iterator iterator() {
       return new ValueIterator();

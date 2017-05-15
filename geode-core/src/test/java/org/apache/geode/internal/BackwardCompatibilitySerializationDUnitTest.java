@@ -236,7 +236,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     fromDataPre70Called = false;
   }
 
-  public static final class TestMessage implements DataSerializableFixedID {
+  public static class TestMessage implements DataSerializableFixedID {
     /** The versions in which this message was modified */
     private static final Version[] dsfidVersions = new Version[] {Version.GFE_66, Version.GFE_70};
 

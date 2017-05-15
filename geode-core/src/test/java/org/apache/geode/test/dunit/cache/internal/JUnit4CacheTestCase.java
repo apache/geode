@@ -585,7 +585,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * Used to generate a cache.xml. Basically just a {@code CacheCreation} with a few more methods
    * implemented.
    */
-  private static final class TestCacheCreation extends CacheCreation {
+  private static class TestCacheCreation extends CacheCreation {
     private boolean closed = false;
 
     @Override

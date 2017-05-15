@@ -34,7 +34,7 @@ import java.util.Properties;
  * @since GemFire 5.1
  */
 @SuppressWarnings({"deprecation", "unused"})
-public final class DiskWriteAttributesImpl implements DiskWriteAttributes {
+public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   private static final long serialVersionUID = -4269181954992768424L;
 
   /** Are writes synchronous? */

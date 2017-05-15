@@ -51,7 +51,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    *        (a copy is not made) so it should not be changed externally.
    * @param version the product version that serialized the object on given bytes
    */
-  public final void initialize(byte[] bytes, Version version) {
+  public void initialize(byte[] bytes, Version version) {
     this.bytes = bytes;
     this.nBytes = bytes.length;
     this.pos = 0;
@@ -62,11 +62,11 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final Version getVersion() {
+  public Version getVersion() {
     return this.version;
   }
 
-  private final int skipOver(long n) {
+  private int skipOver(long n) {
     final int capacity = (this.nBytes - this.pos);
     if (n <= capacity) {
       this.pos += (int) n;
@@ -81,7 +81,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final int read() throws IOException {
+  public int read() throws IOException {
     if (this.pos < this.nBytes) {
       return (this.bytes[this.pos++] & 0xff);
     } else {
@@ -93,7 +93,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final int read(byte[] b, int off, int len) {
+  public int read(byte[] b, int off, int len) {
     if (b == null) {
       throw new NullPointerException();
     } else if (off < 0 || len < 0 || b.length < (off + len)) {
@@ -117,7 +117,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final long skip(long n) {
+  public long skip(long n) {
     return skipOver(n);
   }
 
@@ -125,21 +125,21 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final int available() {
+  public int available() {
     return (this.nBytes - this.pos);
   }
 
   /**
    * Get the current position in the byte[].
    */
-  public final int position() {
+  public int position() {
     return this.pos;
   }
 
   /**
    * Set the current position in the byte[].
    */
-  public final void setPosition(int pos) {
+  public void setPosition(int pos) {
     this.pos = pos;
   }
 
@@ -147,7 +147,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final void readFully(byte[] b) throws IOException {
+  public void readFully(byte[] b) throws IOException {
     final int len = b.length;
     System.arraycopy(this.bytes, this.pos, b, 0, len);
     this.pos += len;
@@ -157,7 +157,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final void readFully(byte[] b, int off, int len) throws IOException {
+  public void readFully(byte[] b, int off, int len) throws IOException {
     if (len > 0) {
       if ((this.nBytes - this.pos) >= len) {
         System.arraycopy(this.bytes, this.pos, b, off, len);
@@ -174,7 +174,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final int skipBytes(int n) {
+  public int skipBytes(int n) {
     return skipOver(n);
   }
 
@@ -182,7 +182,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final boolean readBoolean() throws IOException {
+  public boolean readBoolean() throws IOException {
     if (this.pos < this.nBytes) {
       return (this.bytes[this.pos++] != 0);
     } else {
@@ -194,7 +194,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final byte readByte() throws IOException {
+  public byte readByte() throws IOException {
     if (this.pos < this.nBytes) {
       return this.bytes[this.pos++];
     } else {
@@ -206,7 +206,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final int readUnsignedByte() throws IOException {
+  public int readUnsignedByte() throws IOException {
     return read();
   }
 
@@ -214,7 +214,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final short readShort() throws IOException {
+  public short readShort() throws IOException {
     if ((this.pos + 1) < this.nBytes) {
       int result = (this.bytes[this.pos++] & 0xff);
       return (short) ((result << 8) | (this.bytes[this.pos++] & 0xff));
@@ -227,7 +227,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final int readUnsignedShort() throws IOException {
+  public int readUnsignedShort() throws IOException {
     if ((this.pos + 1) < this.nBytes) {
       int result = (this.bytes[this.pos++] & 0xff);
       return ((result << 8) | (this.bytes[this.pos++] & 0xff));
@@ -268,7 +268,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final long readLong() throws IOException {
+  public long readLong() throws IOException {
     if ((this.pos + 7) < this.nBytes) {
       long result = (this.bytes[this.pos++] & 0xff);
       result = (result << 8) | (this.bytes[this.pos++] & 0xff);
@@ -287,7 +287,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final float readFloat() throws IOException {
+  public float readFloat() throws IOException {
     return Float.intBitsToFloat(readInt());
   }
 
@@ -295,7 +295,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final double readDouble() throws IOException {
+  public double readDouble() throws IOException {
     return Double.longBitsToDouble(readLong());
   }
 
@@ -303,7 +303,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public final String readUTF() throws IOException {
+  public String readUTF() throws IOException {
     final int utfLen = readUnsignedShort();
 
     if ((this.pos + utfLen) <= this.nBytes) {

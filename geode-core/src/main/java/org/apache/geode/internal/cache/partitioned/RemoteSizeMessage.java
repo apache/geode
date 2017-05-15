@@ -45,7 +45,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 5.0
  */
-public final class RemoteSizeMessage extends RemoteOperationMessage {
+public class RemoteSizeMessage extends RemoteOperationMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** query type for Entries */
@@ -120,7 +120,7 @@ public final class RemoteSizeMessage extends RemoteOperationMessage {
    * of the initialization
    */
   @Override
-  protected final boolean failIfRegionMissing() {
+  protected boolean failIfRegionMissing() {
     return false;
   }
 
@@ -179,7 +179,7 @@ public final class RemoteSizeMessage extends RemoteOperationMessage {
     out.writeByte((byte) queryType);
   }
 
-  public static final class SizeReplyMessage extends ReplyMessage {
+  public static class SizeReplyMessage extends ReplyMessage {
     /** Propagated exception from remote node to operation initiator */
     private int size;
 

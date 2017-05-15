@@ -56,7 +56,7 @@ public class CacheObserverHolder {
   /**
    * Set the given observer to be notified of query events. Returns the current observer.
    */
-  public static final CacheObserver setInstance(CacheObserver observer) {
+  public static CacheObserver setInstance(CacheObserver observer) {
     if (observer == null)
       observer = NO_OBSERVER;
     CacheObserver oldObserver = _instance;
@@ -65,7 +65,7 @@ public class CacheObserverHolder {
   }
 
   /** Return the current QueryObserver instance */
-  public static final CacheObserver getInstance() {
+  public static CacheObserver getInstance() {
     return _instance;
   }
 }

@@ -27,7 +27,7 @@ import org.apache.geode.DataSerializer;
  * 
  * @since GemFire 6.0
  */
-public final class PRLoad implements DataSerializable {
+public class PRLoad implements DataSerializable {
 
   private static final long serialVersionUID = 778886995284953922L;
   private final float weight;

@@ -57,7 +57,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 5.0
  */
-public final class DestroyPartitionedRegionMessage extends PartitionMessage {
+public class DestroyPartitionedRegionMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private Object cbArg;

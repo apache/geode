@@ -30,7 +30,7 @@ import org.apache.geode.internal.util.StopWatch;
  * 
  * @since GemFire 8.2
  */
-public final class NonBlockingProcessStreamReader extends ProcessStreamReader {
+public class NonBlockingProcessStreamReader extends ProcessStreamReader {
   private static final Logger logger = LogService.getLogger();
 
   /**

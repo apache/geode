@@ -20,7 +20,7 @@ package org.apache.geode.internal.process;
  * 
  * @since GemFire 8.0
  */
-public final class UnableToControlProcessException extends Exception {
+public class UnableToControlProcessException extends Exception {
   private static final long serialVersionUID = 7579463534993125290L;
 
   /**

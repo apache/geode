@@ -74,7 +74,7 @@ public class SystemMemberCacheEventProcessor {
   }
 
 
-  public static final class SystemMemberCacheMessage extends HighPriorityDistributionMessage {
+  public static class SystemMemberCacheMessage extends HighPriorityDistributionMessage {
     protected String regionPath;
     protected Operation op;
 

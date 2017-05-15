@@ -40,7 +40,7 @@ public class PartitionedRegionObserverHolder {
   /**
    * Set the given observer to be notified of events. Returns the current observer.
    */
-  public static final PartitionedRegionObserver setInstance(PartitionedRegionObserver observer) {
+  public static PartitionedRegionObserver setInstance(PartitionedRegionObserver observer) {
     Support.assertArg(observer != null, "setInstance expects a non-null argument!");
     PartitionedRegionObserver oldObserver = _instance;
     _instance = observer;
@@ -48,7 +48,7 @@ public class PartitionedRegionObserverHolder {
   }
 
   /** Return the current ClientServerObserver instance */
-  public static final PartitionedRegionObserver getInstance() {
+  public static PartitionedRegionObserver getInstance() {
     return _instance;
   }
 

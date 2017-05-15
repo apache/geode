@@ -23,18 +23,18 @@ import javax.management.openmbean.SimpleType;
  * 
  * 
  */
-public final class EnumConverter<T extends Enum<T>> extends OpenTypeConverter {
+public class EnumConverter<T extends Enum<T>> extends OpenTypeConverter {
 
   EnumConverter(Class<T> enumClass) {
     super(enumClass, SimpleType.STRING, String.class);
     this.enumClass = enumClass;
   }
 
-  final Object toNonNullOpenValue(Object value) {
+  Object toNonNullOpenValue(Object value) {
     return ((Enum) value).name();
   }
 
-  public final Object fromNonNullOpenValue(Object value) throws InvalidObjectException {
+  public Object fromNonNullOpenValue(Object value) throws InvalidObjectException {
     try {
       return Enum.valueOf(enumClass, (String) value);
     } catch (Exception e) {

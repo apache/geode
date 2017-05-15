@@ -27,7 +27,7 @@ import org.apache.geode.internal.util.IOUtils;
  * 
  * @since GemFire 7.0
  */
-public final class ProcessUtils {
+public class ProcessUtils {
 
   private static InternalProcessUtils internal = initializeInternalProcessUtils();
 

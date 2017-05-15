@@ -218,7 +218,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * tables, that otherwise encounter collisions for hashCodes that do not differ in lower or upper
    * bits.
    */
-  public static final int keyHash(final Object o, final boolean compareValues) {
+  public static int keyHash(final Object o, final boolean compareValues) {
     int h = compareValues ? o.hashCode() : System.identityHashCode(o);
     // Spread bits to regularize both segment and index locations,
     // using variant of single-word Wang/Jenkins hash.
@@ -236,7 +236,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @param hash the hash code for the key
    * @return the segment
    */
-  final Segment<K, V> segmentFor(final int hash) {
+  Segment<K, V> segmentFor(final int hash) {
     if (this.segmentMask == 0) {
       return this.segments[0];
     }
@@ -305,7 +305,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * Segment.readValueUnderLock method is used as a backup in case a null (pre-initialized) value is
    * ever seen in an unsynchronized access method.
    */
-  static final class HashEntryImpl<K, V> implements HashEntry<K, V> {
+  static class HashEntryImpl<K, V> implements HashEntry<K, V> {
 
     protected final K key;
 
@@ -329,42 +329,42 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getKey()
      */
-    public final K getKey() {
+    public K getKey() {
       return this.key;
     }
 
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getMapValue()
      */
-    public final V getMapValue() {
+    public V getMapValue() {
       return this.value;
     }
 
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#setMapValue(Object)
      */
-    public final void setMapValue(V newValue) {
+    public void setMapValue(V newValue) {
       this.value = newValue;
     }
 
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getEntryHash()
      */
-    public final int getEntryHash() {
+    public int getEntryHash() {
       return this.hash;
     }
 
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getNextEntry()
      */
-    public final HashEntry<K, V> getNextEntry() {
+    public HashEntry<K, V> getNextEntry() {
       return this.next;
     }
 
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#setNextEntry
      */
-    public final void setNextEntry(final HashEntry<K, V> n) {
+    public void setNextEntry(final HashEntry<K, V> n) {
       this.next = n;
     }
 
@@ -504,7 +504,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * Sets table to new HashEntry array. Call only while holding lock or in constructor.
      */
-    final void setTable(final HashEntry<K, V>[] newTable) {
+    void setTable(final HashEntry<K, V>[] newTable) {
       this.threshold = (int) (newTable.length * this.loadFactor);
       this.table = newTable;
     }
@@ -512,7 +512,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * Returns properly casted first entry of bin for given hash.
      */
-    final HashEntry<K, V> getFirst(final int hash) {
+    HashEntry<K, V> getFirst(final int hash) {
       final HashEntry<K, V>[] tab = this.table;
       return tab[hash & (tab.length - 1)];
     }
@@ -522,7 +522,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * is possible only if a compiler happens to reorder a HashEntry initialization with its table
      * assignment, which is legal under memory model but is not known to ever occur.
      */
-    final V readValueUnderLock(final HashEntry<K, V> e) {
+    V readValueUnderLock(final HashEntry<K, V> e) {
       final ReentrantReadWriteLock.ReadLock readLock = super.readLock();
       readLock.lock();
       final V v = e.getMapValue();
@@ -553,7 +553,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     /* Specialized implementations of map methods */
 
-    final V get(final Object key, final int hash) {
+    V get(final Object key, final int hash) {
       if (this.count != 0) { // read-volatile
         // GemStone change to acquire the read lock on list updates
         final ReentrantReadWriteLock.ReadLock listLock = this.listUpdateLock.readLock();
@@ -582,7 +582,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       return null;
     }
 
-    final V getNoLock(final Object key, final int hash, final boolean lockListForRead) {
+    V getNoLock(final Object key, final int hash, final boolean lockListForRead) {
       if (this.count != 0) { // read-volatile
         // GemStone change to acquire the read lock on list updates
         ReentrantReadWriteLock.ReadLock listLock = null;
@@ -607,7 +607,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       return null;
     }
 
-    final boolean containsKey(final Object key, final int hash) {
+    boolean containsKey(final Object key, final int hash) {
       if (this.count != 0) { // read-volatile
         // GemStone change to acquire the read lock on list updates
         final ReentrantReadWriteLock.ReadLock listLock = this.listUpdateLock.readLock();
@@ -627,7 +627,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       return false;
     }
 
-    final boolean containsValue(final Object value) {
+    boolean containsValue(final Object value) {
       if (this.count != 0) { // read-volatile
         // GemStone change to acquire the read lock on list updates
         ReentrantReadWriteLock.ReadLock readLock = this.listUpdateLock.readLock();
@@ -662,7 +662,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       return false;
     }
 
-    final boolean replace(final K key, final int hash, final V oldValue, final V newValue) {
+    boolean replace(final K key, final int hash, final V oldValue, final V newValue) {
       final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
       writeLock.lock();
       try {
@@ -682,7 +682,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       }
     }
 
-    final V replace(final K key, final int hash, final V newValue) {
+    V replace(final K key, final int hash, final V newValue) {
       final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
       writeLock.lock();
       try {
@@ -702,7 +702,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       }
     }
 
-    final V put(final K key, final int hash, final V value, final boolean onlyIfAbsent) {
+    V put(final K key, final int hash, final V value, final boolean onlyIfAbsent) {
       final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
       writeLock.lock();
       try {
@@ -738,7 +738,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     // GemStone additions
 
-    final <C, P> V create(final K key, final int hash, final MapCallback<K, V, C, P> valueCreator,
+    <C, P> V create(final K key, final int hash, final MapCallback<K, V, C, P> valueCreator,
         final C context, final P createParams, final boolean lockForRead) {
       // TODO: This can be optimized by having a special lock implementation
       // that will allow upgrade from read to write lock atomically. This can
@@ -804,7 +804,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       }
     }
 
-    final V get(final Object key, final int hash, final MapCallback<K, V, ?, ?> readCallback) {
+    V get(final Object key, final int hash, final MapCallback<K, V, ?, ?> readCallback) {
       final ReentrantReadWriteLock.ReadLock readLock = super.readLock();
       readLock.lock();
       try {
@@ -831,7 +831,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     // End GemStone additions
 
-    final void rehash() {
+    void rehash() {
       final HashEntry<K, V>[] oldTable = this.table;
       final int oldCapacity = oldTable.length;
       if (oldCapacity >= MAXIMUM_CAPACITY) {
@@ -934,7 +934,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      */
     // GemStone change
     // added "condition" and "removeParams" parameters
-    final <C, P> V remove(final Object key, final int hash, final Object value,
+    <C, P> V remove(final Object key, final int hash, final Object value,
         final MapCallback<K, V, C, P> condition, final C context, final P removeParams) {
       // End GemStone change
       final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
@@ -1003,7 +1003,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * GemStone added the clearedEntries param and the result
      */
-    final ArrayList<HashEntry<?, ?>> clear(ArrayList<HashEntry<?, ?>> clearedEntries) {
+    ArrayList<HashEntry<?, ?>> clear(ArrayList<HashEntry<?, ?>> clearedEntries) {
       if (this.count != 0) {
         final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
         writeLock.lock();
@@ -1069,7 +1069,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * 
    * @since GemFire 7.0
    */
-  static final class IdentitySegment<K, V> extends Segment<K, V> implements Serializable {
+  static class IdentitySegment<K, V> extends Segment<K, V> implements Serializable {
 
     private static final long serialVersionUID = 3086228147110819882L;
 
@@ -1079,22 +1079,22 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
 
     @SuppressWarnings("unchecked")
-    static final <K, V> IdentitySegment<K, V>[] newArray(final int i) {
+    static <K, V> IdentitySegment<K, V>[] newArray(final int i) {
       return new IdentitySegment[i];
     }
 
     @Override
-    protected final boolean equalityKeyCompare(final Object key, final HashEntry<K, V> mapEntry) {
+    protected boolean equalityKeyCompare(final Object key, final HashEntry<K, V> mapEntry) {
       return key == mapEntry.getKey();
     }
 
     @Override
-    protected final boolean equalityCompare(final Object key, final Object mapKey) {
+    protected boolean equalityCompare(final Object key, final Object mapKey) {
       return key == mapKey;
     }
 
     @Override
-    protected final boolean equalityCompareWithNulls(final Object key, final Object mapKey) {
+    protected boolean equalityCompareWithNulls(final Object key, final Object mapKey) {
       return key == mapKey;
     }
   }
@@ -1212,16 +1212,16 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
   }
 
-  static final class DefaultHashEntryCreator<K, V> implements HashEntryCreator<K, V>, Serializable {
+  static class DefaultHashEntryCreator<K, V> implements HashEntryCreator<K, V>, Serializable {
 
     private static final long serialVersionUID = 3765680607280951726L;
 
-    public final HashEntry<K, V> newEntry(final K key, final int hash, final HashEntry<K, V> next,
+    public HashEntry<K, V> newEntry(final K key, final int hash, final HashEntry<K, V> next,
         final V value) {
       return new HashEntryImpl<K, V>(key, hash, next, value, null);
     }
 
-    public final int keyHashCode(final Object key, final boolean compareValues) {
+    public int keyHashCode(final Object key, final boolean compareValues) {
       return keyHash(key, compareValues);
     }
   }
@@ -1284,7 +1284,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @return <tt>true</tt> if this map contains no key-value mappings
    */
   @Override
-  public final boolean isEmpty() {
+  public boolean isEmpty() {
     final Segment<K, V>[] segments = this.segments;
     /*
      * We keep track of per-segment modCounts to avoid ABA problems in which an element in one
@@ -1323,7 +1323,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "UL_UNRELEASED_LOCK",
       justification = "The lock() calls are followed by unlock() calls without finally-block. Leaving this as is because it's lifted from JDK code and we want to minimize changes.")
-  public final int size() {
+  public int size() {
     final Segment<K, V>[] segments = this.segments;
     long sum = 0;
     long check = 0;
@@ -1382,7 +1382,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @throws NullPointerException if the specified key is null
    */
   @Override
-  public final V get(final Object key) {
+  public V get(final Object key) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     return segmentFor(hash).get(key, hash);
@@ -1397,7 +1397,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @throws NullPointerException if the specified key is null
    */
   @Override
-  public final boolean containsKey(final Object key) {
+  public boolean containsKey(final Object key) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     return segmentFor(hash).containsKey(key, hash);
@@ -1415,7 +1415,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "UL_UNRELEASED_LOCK",
       justification = "Leaving this as is because it's lifted from JDK code and we want to minimize changes.")
-  public final boolean containsValue(final Object value) {
+  public boolean containsValue(final Object value) {
     if (value == null) {
       throw new NullPointerException();
     }
@@ -1478,7 +1478,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *         as determined by the <tt>equals</tt> method; <tt>false</tt> otherwise
    * @throws NullPointerException if the specified value is null
    */
-  public final boolean contains(final Object value) {
+  public boolean contains(final Object value) {
     return containsValue(value);
   }
 
@@ -1497,7 +1497,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @throws NullPointerException if the specified key or value is null
    */
   @Override
-  public final V put(final K key, final V value) {
+  public V put(final K key, final V value) {
     if (value == null) {
       throw new NullPointerException();
     }
@@ -1513,7 +1513,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *         mapping for the key
    * @throws NullPointerException if the specified key or value is null
    */
-  public final V putIfAbsent(final K key, final V value) {
+  public V putIfAbsent(final K key, final V value) {
     if (value == null) {
       throw new NullPointerException();
     }
@@ -1536,7 +1536,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * 
    * @throws NullPointerException if the specified key is null
    */
-  public final boolean create(final K key, final V value) {
+  public boolean create(final K key, final V value) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     final Segment<K, V> seg = segmentFor(hash);
@@ -1643,8 +1643,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * 
    * @throws NullPointerException if the specified key or value is null
    */
-  public final <C, P> V create(final K key, final MapCallback<K, V, C, P> valueCreator,
-      final C context, final P createParams, final boolean lockForRead) {
+  public <C, P> V create(final K key, final MapCallback<K, V, C, P> valueCreator, final C context,
+      final P createParams, final boolean lockForRead) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     return segmentFor(hash).create(key, hash, valueCreator, context, createParams, lockForRead);
@@ -1665,7 +1665,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * 
    * @throws NullPointerException if the specified key is null
    */
-  public final V get(final Object key, final MapCallback<K, V, ?, ?> readCallback) {
+  public V get(final Object key, final MapCallback<K, V, ?, ?> readCallback) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     return segmentFor(hash).get(key, hash, readCallback);
@@ -1704,8 +1704,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @throws NullPointerException if the specified key or value is null, and this map does not
    *         permit null keys or values (optional)
    */
-  public final <C, P> V removeConditionally(final Object key,
-      final MapCallback<K, V, C, P> condition, final C context, final P removeParams) {
+  public <C, P> V removeConditionally(final Object key, final MapCallback<K, V, C, P> condition,
+      final C context, final P removeParams) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     return segmentFor(hash).remove(key, hash, NO_OBJECT_TOKEN, condition, context, removeParams);
@@ -1720,7 +1720,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @param m mappings to be stored in this map
    */
   @Override
-  public final void putAll(final Map<? extends K, ? extends V> m) {
+  public void putAll(final Map<? extends K, ? extends V> m) {
     for (final Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
       put(e.getKey(), e.getValue());
     }
@@ -1736,7 +1736,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @throws NullPointerException if the specified key is null
    */
   @Override
-  public final V remove(final Object key) {
+  public V remove(final Object key) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     return segmentFor(hash).remove(key, hash, NO_OBJECT_TOKEN, null, null, null);
@@ -1747,7 +1747,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * 
    * @throws NullPointerException if the specified key is null
    */
-  public final boolean remove(final Object key, final Object value) {
+  public boolean remove(final Object key, final Object value) {
     if (value == null) {
       return false;
     }
@@ -1761,7 +1761,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * 
    * @throws NullPointerException if any of the arguments are null
    */
-  public final boolean replace(final K key, final V oldValue, final V newValue) {
+  public boolean replace(final K key, final V oldValue, final V newValue) {
     if (oldValue == null || newValue == null) {
       throw new NullPointerException();
     }
@@ -1777,7 +1777,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *         mapping for the key
    * @throws NullPointerException if the specified key or value is null
    */
-  public final V replace(final K key, final V value) {
+  public V replace(final K key, final V value) {
     if (value == null) {
       throw new NullPointerException();
     }
@@ -1790,7 +1790,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * Removes all of the mappings from this map.
    */
   @Override
-  public final void clear() {
+  public void clear() {
     ArrayList<HashEntry<?, ?>> entries = null;
     try {
       for (int i = 0; i < this.segments.length; ++i) {
@@ -1848,7 +1848,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * modifications subsequent to construction.
    */
   @Override
-  public final Set<K> keySet() {
+  public Set<K> keySet() {
     final Set<K> ks = this.keySet;
     return (ks != null) ? ks : (this.keySet = new KeySet());
   }
@@ -1868,7 +1868,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * modifications subsequent to construction.
    */
   @Override
-  public final Collection<V> values() {
+  public Collection<V> values() {
     final Collection<V> vs = this.values;
     return (vs != null) ? vs : (this.values = new Values());
   }
@@ -1887,7 +1887,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * modifications subsequent to construction.
    */
   @Override
-  public final Set<Map.Entry<K, V>> entrySet() {
+  public Set<Map.Entry<K, V>> entrySet() {
     final Set<Map.Entry<K, V>> es = this.entrySet;
     return (es != null) ? es : (this.entrySet = new EntrySet(false));
   }
@@ -1911,7 +1911,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * This set provides entries that are reused during iteration so caller cannot store the returned
    * <code>Map.Entry</code> objects.
    */
-  public final Set<Map.Entry<K, V>> entrySetWithReusableEntries() {
+  public Set<Map.Entry<K, V>> entrySetWithReusableEntries() {
     final Set<Map.Entry<K, V>> es = this.reusableEntrySet;
     return (es != null) ? es : (this.reusableEntrySet = new EntrySet(true));
   }
@@ -1924,7 +1924,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @return an enumeration of the keys in this table
    * @see #keySet()
    */
-  public final Enumeration<K> keys() {
+  public Enumeration<K> keys() {
     return new KeyIterator();
   }
 
@@ -1934,7 +1934,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @return an enumeration of the values in this table
    * @see #values()
    */
-  public final Enumeration<V> elements() {
+  public Enumeration<V> elements() {
     return new ValueIterator();
   }
 
@@ -1965,11 +1965,11 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       advance();
     }
 
-    public final boolean hasMoreElements() {
+    public boolean hasMoreElements() {
       return hasNext();
     }
 
-    final void advance() {
+    void advance() {
       // GemStone changes BEGIN
       if (this.currentListIndex < this.currentList.size()) {
         this.nextEntry = this.currentList.get(this.currentListIndex++);
@@ -2031,7 +2031,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * 
      * Read lock on {@link #currentSegmentIndex}'s listUpdateLock should already be acquired.
      */
-    private final void copyEntriesToList() {
+    private void copyEntriesToList() {
       assert segments[currentSegmentIndex] != null : "unexpected null currentSegment";
       assert segments[currentSegmentIndex].listUpdateLock.getReadLockCount() > 0;
 
@@ -2042,11 +2042,11 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       }
     }
 
-    public final boolean hasNext() {
+    public boolean hasNext() {
       return this.nextEntry != null;
     }
 
-    final HashEntry<K, V> nextEntry() {
+    HashEntry<K, V> nextEntry() {
       if (this.nextEntry == null) {
         throw new NoSuchElementException();
       }
@@ -2055,7 +2055,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       return this.lastReturned;
     }
 
-    public final void remove() {
+    public void remove() {
       if (this.lastReturned == null) {
         throw new IllegalStateException();
       }
@@ -2064,7 +2064,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
   }
 
-  final class KeyIterator extends HashIterator implements Iterator<K>, Enumeration<K> {
+  class KeyIterator extends HashIterator implements Iterator<K>, Enumeration<K> {
 
     public K next() {
       return super.nextEntry().getKey();
@@ -2075,7 +2075,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
   }
 
-  final class ValueIterator extends HashIterator implements Iterator<V>, Enumeration<V> {
+  class ValueIterator extends HashIterator implements Iterator<V>, Enumeration<V> {
 
     public V next() {
       return super.nextEntry().getMapValue();
@@ -2126,7 +2126,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * 
      * @return the key corresponding to this entry
      */
-    public final K getKey() {
+    public K getKey() {
       return this.key;
     }
 
@@ -2135,7 +2135,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * 
      * @return the value corresponding to this entry
      */
-    public final V getValue() {
+    public V getValue() {
       return this.value;
     }
 
@@ -2223,7 +2223,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * Custom Entry class used by EntryIterator.next(), that relays setValue changes to the underlying
    * map.
    */
-  final class WriteThroughEntry extends SimpleReusableEntry {
+  class WriteThroughEntry extends SimpleReusableEntry {
 
     private static final long serialVersionUID = -6364816773849437756L;
 
@@ -2254,7 +2254,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
   }
 
-  final class EntryIterator extends HashIterator implements Iterator<Map.Entry<K, V>> {
+  class EntryIterator extends HashIterator implements Iterator<Map.Entry<K, V>> {
 
     // GemStone change
     // added possibility to reuse a single Map.Entry for entire iteration
@@ -2276,7 +2276,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     // End GemStone change
   }
 
-  final class KeySet extends AbstractSet<K> {
+  class KeySet extends AbstractSet<K> {
 
     @Override
     public Iterator<K> iterator() {
@@ -2304,7 +2304,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
   }
 
-  final class Values extends AbstractCollection<V> {
+  class Values extends AbstractCollection<V> {
 
     @Override
     public Iterator<V> iterator() {
@@ -2327,7 +2327,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
   }
 
-  final class EntrySet extends AbstractSet<Map.Entry<K, V>> {
+  class EntrySet extends AbstractSet<Map.Entry<K, V>> {
 
     // GemStone change
     // added possibility to reuse a single Map.Entry for entire iteration

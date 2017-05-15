@@ -46,7 +46,7 @@ import java.util.Set;
  * 
  * @since GemFire 4.1.1
  */
-public final class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
+public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
     implements MessageWithReply {
 
   private transient TXLockId txLockId;
@@ -144,7 +144,7 @@ public final class TXLockUpdateParticipantsMessage extends PooledDistributionMes
   /**
    * The simple reply message that the sender waits for
    */
-  public static final class TXLockUpdateParticipantsReplyMessage extends ReplyMessage {
+  public static class TXLockUpdateParticipantsReplyMessage extends ReplyMessage {
 
     @Override
     public int getDSFID() {

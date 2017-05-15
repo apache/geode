@@ -26,7 +26,7 @@ import org.apache.geode.internal.logging.LogService;
  * 
  * @since GemFire 8.0
  */
-final class ControlFileWatchdog implements Runnable {
+class ControlFileWatchdog implements Runnable {
   private static final Logger logger = LogService.getLogger();
 
   private static final long STOP_TIMEOUT_MILLIS = 60 * 1000;

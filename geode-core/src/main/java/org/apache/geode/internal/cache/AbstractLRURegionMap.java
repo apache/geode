@@ -390,7 +390,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    *
    * @return The total allowable size of this maps entries.
    */
-  protected final long getLimit() {
+  protected long getLimit() {
     if (_getOwner() instanceof BucketRegion) {
       BucketRegion bucketRegion = (BucketRegion) _getOwner();
       return bucketRegion.getLimit();
@@ -398,7 +398,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     return _getLruList().stats().getLimit();
   }
 
-  public final LRUStatistics getLRUStatistics() {
+  public LRUStatistics getLRUStatistics() {
     return _getLruList().stats();
   }
 
@@ -408,7 +408,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    * 
    * @return The current size of all the entries.
    */
-  protected final long getTotalEntrySize() {
+  protected long getTotalEntrySize() {
     if (_getOwnerObject() instanceof BucketRegion) {
       BucketRegion bucketRegion = (BucketRegion) _getOwner();
       return bucketRegion.getCounter();
@@ -417,7 +417,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public final void lruUpdateCallback() {
+  public void lruUpdateCallback() {
     final boolean isDebugEnabled_LRU = logger.isTraceEnabled(LogMarker.LRU);
 
     if (getCallbackDisabled()) {
@@ -638,7 +638,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    */
   // TODO this method acts as LRUupdateCallbacks
   // do we need to put it here are insert one level up
-  public final void updateStats() {
+  public void updateStats() {
     final int delta = getDelta();
     resetThreadLocals();
     if (logger.isTraceEnabled(LogMarker.LRU)) {
@@ -652,7 +652,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public final boolean disableLruUpdateCallback() {
+  public boolean disableLruUpdateCallback() {
     if (getCallbackDisabled()) {
       return false;
     } else {
@@ -662,29 +662,29 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public final void enableLruUpdateCallback() {
+  public void enableLruUpdateCallback() {
     setCallbackDisabled(false);
   }
 
   // TODO rebalancing these methods are new on the
   // rebalancing branch but never used???
-  public final void disableLruUpdateCallbackForInline() {
+  public void disableLruUpdateCallbackForInline() {
     setCallbackDisabled(true);
   }
 
-  public final void enableLruUpdateCallbackForInline() {
+  public void enableLruUpdateCallbackForInline() {
     setCallbackDisabled(false);
   }
 
   @Override
-  public final void resetThreadLocals() {
+  public void resetThreadLocals() {
     mustRemove.set(null);
     lruDelta.set(null);
     callbackDisabled.set(null);
   }
 
   @Override
-  public final Set<VersionSource> clear(RegionVersionVector rvv) {
+  public Set<VersionSource> clear(RegionVersionVector rvv) {
     _getLruList().clear(rvv);
     return super.clear(rvv);
   }
@@ -725,7 +725,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    * 
    */
   @Override
-  protected final void lruEntryCreate(RegionEntry re) {
+  protected void lruEntryCreate(RegionEntry re) {
     LRUEntry e = (LRUEntry) re;
     // Assert.assertFalse(e._getValue() instanceof DiskEntry.RecoveredEntry)
     if (logger.isTraceEnabled(LogMarker.LRU)) {
@@ -746,7 +746,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  protected final void lruEntryUpdate(RegionEntry re) {
+  protected void lruEntryUpdate(RegionEntry re) {
     final LRUEntry e = (LRUEntry) re;
     setDelta(e.updateEntrySize(_getCCHelper()));
     if (logger.isDebugEnabled()) {
@@ -788,7 +788,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  protected final void lruEntryDestroy(RegionEntry re) {
+  protected void lruEntryDestroy(RegionEntry re) {
     final LRUEntry e = (LRUEntry) re;
     if (logger.isTraceEnabled(LogMarker.LRU)) {
       logger.trace(LogMarker.LRU,
@@ -821,7 +821,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    * Called by DiskEntry.Helper.faultInValue
    */
   @Override
-  public final void lruEntryFaultIn(LRUEntry e) {
+  public void lruEntryFaultIn(LRUEntry e) {
     if (logger.isDebugEnabled()) {
       logger.debug("lruEntryFaultIn for key={} size={}", e.getKey(), e.getEntrySize());
     }
@@ -841,7 +841,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public final void decTxRefCount(RegionEntry re) {
+  public void decTxRefCount(RegionEntry re) {
     LocalRegion lr = null;
     if (_isOwnerALocalRegion()) {
       lr = _getOwner();
@@ -850,7 +850,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public final boolean lruLimitExceeded(DiskRegionView drv) {
+  public boolean lruLimitExceeded(DiskRegionView drv) {
     return _getCCHelper().lruLimitExceeded(_getLruList().stats(), drv);
   }
 
@@ -860,7 +860,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  final boolean confirmEvictionDestroy(RegionEntry re) {
+  boolean confirmEvictionDestroy(RegionEntry re) {
     // We assume here that a LRURegionMap contains LRUEntries
     LRUEntry lruRe = (LRUEntry) re;
     if (lruRe.isInUseByTransaction() || lruRe.isDestroyed()) {

@@ -37,7 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
  *
  * @since GemFire 3.0
  */
-public final class RuntimeDistributionConfigImpl extends DistributionConfigImpl {
+public class RuntimeDistributionConfigImpl extends DistributionConfigImpl {
 
   private static final long serialVersionUID = -805637520096606113L;
   transient private final InternalDistributedSystem ds;

@@ -34,8 +34,7 @@ import org.apache.geode.internal.logging.LogService;
  * some tests to flush the serial communication channels after no-ack tests.
  * 
  */
-public final class SerialAckedMessage extends SerialDistributionMessage
-    implements MessageWithReply {
+public class SerialAckedMessage extends SerialDistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   /** The is of the distribution manager that sent the message */

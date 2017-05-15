@@ -37,7 +37,7 @@ public class ByteBufferOutputStream extends OutputStream {
 
   /** write the low-order 8 bits of the given int */
   @Override
-  public final void write(int b) {
+  public void write(int b) {
     try {
       this.buffer.put((byte) (b & 0xff));
     } catch (BufferOverflowException e) {
@@ -62,7 +62,7 @@ public class ByteBufferOutputStream extends OutputStream {
 
   /** override OutputStream's write() */
   @Override
-  public final void write(byte[] source, int offset, int len) {
+  public void write(byte[] source, int offset, int len) {
     try {
       // System.out.println("writing len="+len + " cap=" + buffer.capacity() + "
       // pos="+buffer.position());
@@ -77,11 +77,11 @@ public class ByteBufferOutputStream extends OutputStream {
     }
   }
 
-  public final int size() {
+  public int size() {
     return buffer.position();
   }
 
-  public final void reset() {
+  public void reset() {
     buffer.clear();
   }
 
@@ -89,7 +89,7 @@ public class ByteBufferOutputStream extends OutputStream {
    * gets the content ByteBuffer, ready for reading. The stream should not be written to past this
    * point until it has been reset.
    */
-  public final ByteBuffer getContentBuffer() {
+  public ByteBuffer getContentBuffer() {
     buffer.flip();
     return buffer;
   }
@@ -97,7 +97,7 @@ public class ByteBufferOutputStream extends OutputStream {
   /**
    * Gets a duplicate of the current content buffer.
    */
-  public final ByteBuffer getDuplicateBuffer() {
+  public ByteBuffer getDuplicateBuffer() {
     return buffer.duplicate();
   }
 }

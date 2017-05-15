@@ -27,7 +27,7 @@ import java.io.*;
  * A message that is sent to a particular application to get its root region(s). All it really needs
  * to find out is if the app has created a cache.
  */
-public final class RootRegionRequest extends AdminRequest {
+public class RootRegionRequest extends AdminRequest {
   // instance variables
 
   /**

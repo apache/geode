@@ -65,7 +65,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
  *
  * @since GemFire 6.5
  */
-public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
+public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private PutAllEntryData[] putAllData;
@@ -261,7 +261,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
   }
 
   @Override
-  public final void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.eventId, out);
     DataSerializer.writeObject(this.callbackArg, out);
@@ -344,9 +344,8 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
    *        lastModified timestamp for last modification
    * @return If succeeds, return true, otherwise, throw exception
    */
-  public final boolean doLocalPutAll(final LocalRegion r,
-      final InternalDistributedMember eventSender, long lastModified)
-      throws EntryExistsException, RemoteOperationException {
+  public boolean doLocalPutAll(final LocalRegion r, final InternalDistributedMember eventSender,
+      long lastModified) throws EntryExistsException, RemoteOperationException {
     final DistributedRegion dr = (DistributedRegion) r;
 
     // create a base event and a DPAO for PutAllMessage distributed btw redundant buckets
@@ -427,7 +426,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
 
 
   @Override
-  protected final void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
     buff.append("; putAllDataCount=").append(putAllDataCount);
     if (this.bridgeContext != null) {
@@ -439,7 +438,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
     }
   }
 
-  public static final class PutAllReplyMessage extends ReplyMessage {
+  public static class PutAllReplyMessage extends ReplyMessage {
     /** Result of the PutAll operation */
     // private PutAllResponseData[] responseData;
     private VersionedObjectList versions;

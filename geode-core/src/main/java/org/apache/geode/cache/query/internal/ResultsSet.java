@@ -37,7 +37,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 4.0
  */
-public final class ResultsSet extends HashSet implements SelectResults, DataSerializableFixedID {
+public class ResultsSet extends HashSet implements SelectResults, DataSerializableFixedID {
   private static final long serialVersionUID = -5423281031630216824L;
   private ObjectType elementType;
 

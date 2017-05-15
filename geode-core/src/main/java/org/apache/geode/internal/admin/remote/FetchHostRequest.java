@@ -24,7 +24,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular distribution manager to get its current information
  */
-public final class FetchHostRequest extends AdminRequest {
+public class FetchHostRequest extends AdminRequest {
   /**
    * Returns a <code>FetchHostRequest</code> to be sent to the specified recipient.
    */

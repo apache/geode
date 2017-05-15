@@ -28,7 +28,7 @@ import java.io.*;
  * A message that is sent to a particular app vm to request all the subregions of a given parent
  * region.
  */
-public final class RegionSizeRequest extends RegionAdminRequest implements Cancellable {
+public class RegionSizeRequest extends RegionAdminRequest implements Cancellable {
   private transient boolean cancelled;
   private transient RegionSizeResponse resp;
 

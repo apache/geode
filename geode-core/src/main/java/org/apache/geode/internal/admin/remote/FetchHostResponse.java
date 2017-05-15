@@ -41,7 +41,7 @@ import java.net.UnknownHostException;
  * A message that is sent to a particular distribution manager to get its current
  * {@link org.apache.geode.internal.Config}
  */
-public final class FetchHostResponse extends AdminResponse {
+public class FetchHostResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();
 
   // instance variables

@@ -36,7 +36,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * @see Function#hasResult()
  * 
  */
-public final class NoResult implements ResultCollector, Serializable {
+public class NoResult implements ResultCollector, Serializable {
 
   private static final long serialVersionUID = -4901369422864228848L;
 

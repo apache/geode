@@ -143,7 +143,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
 
   /////////////// Inner message classes //////////////////
 
-  public static final class ElderInitMessage extends PooledDistributionMessage
+  public static class ElderInitMessage extends PooledDistributionMessage
       implements MessageWithReply {
     private int processorId;
 
@@ -222,7 +222,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
     }
   }
 
-  public static final class ElderInitReplyMessage extends ReplyMessage {
+  public static class ElderInitReplyMessage extends ReplyMessage {
     private ArrayList grantors; // svc names
     private ArrayList grantorVersions; // grantor version longs
     private ArrayList grantorSerialNumbers; // grantor dls serial number ints

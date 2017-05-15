@@ -2443,7 +2443,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * Used to return and report remote CacheServer port info.
    */
-  private static final class ServerPorts implements Serializable {
+  private static class ServerPorts implements Serializable {
     private final int port;
 
     ServerPorts(int port) {

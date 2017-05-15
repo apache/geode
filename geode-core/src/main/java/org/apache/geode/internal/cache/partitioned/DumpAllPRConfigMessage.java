@@ -32,7 +32,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @see org.apache.geode.internal.cache.PartitionedRegion#sendDumpAllPartitionedRegions()
  */
-public final class DumpAllPRConfigMessage extends PartitionMessage {
+public class DumpAllPRConfigMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   public DumpAllPRConfigMessage() {}

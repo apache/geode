@@ -30,7 +30,7 @@ import org.apache.geode.internal.logging.LogService;
  * 
  * @since GemFire 7.1
  */
-public final class MsgStreamerList implements BaseMsgStreamer {
+public class MsgStreamerList implements BaseMsgStreamer {
   private static final Logger logger = LogService.getLogger();
 
   /**

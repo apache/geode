@@ -61,7 +61,7 @@ public class EntriesSet extends AbstractSet {
     this.allowTombstones = allowTombstones;
   }
 
-  protected final void checkTX() {
+  protected void checkTX() {
     if (this.myTX != null) {
       if (!myTX.isInProgress()) {
         throw new IllegalStateException(

@@ -498,11 +498,11 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
       return desc;
     }
 
-    public final void close() {}
+    public void close() {}
   }
 
   private static class RemoteCacheListener extends RemoteCacheCallback implements CacheListener {

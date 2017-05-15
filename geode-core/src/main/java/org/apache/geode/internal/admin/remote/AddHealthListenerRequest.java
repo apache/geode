@@ -30,7 +30,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class AddHealthListenerRequest extends AdminRequest {
+public class AddHealthListenerRequest extends AdminRequest {
   // instance variables
   private GemFireHealthConfig cfg;
 

@@ -33,7 +33,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * Adapts multiple TXRegionLockRequests to one DLockBatch for DLock to use.
  *
  */
-public final class TXLockBatch implements DLockBatch, DataSerializableFixedID {
+public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
 
   /** Identifies the batch as a single entity */
   private TXLockIdImpl txLockId;

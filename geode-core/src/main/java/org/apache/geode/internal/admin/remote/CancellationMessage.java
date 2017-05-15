@@ -27,7 +27,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * A message that is sent to a particular distribution manager to cancel an admin request
  */
-public final class CancellationMessage extends PooledDistributionMessage {
+public class CancellationMessage extends PooledDistributionMessage {
   // instance variables
   private int msgToCancel;
 

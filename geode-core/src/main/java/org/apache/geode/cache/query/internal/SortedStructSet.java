@@ -32,7 +32,7 @@ import org.apache.geode.internal.Version;
  * 
  * @since GemFire 4.0
  */
-public final class SortedStructSet extends TreeSet
+public class SortedStructSet extends TreeSet
     implements SelectResults, DataSerializableFixedID, Ordered, StructFields {
   private static final long serialVersionUID = -1687142950781718159L;
 

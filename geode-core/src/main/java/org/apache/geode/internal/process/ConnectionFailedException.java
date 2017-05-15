@@ -19,7 +19,7 @@ package org.apache.geode.internal.process;
  * 
  * @since GemFire 7.0
  */
-public final class ConnectionFailedException extends Exception {
+public class ConnectionFailedException extends Exception {
   private static final long serialVersionUID = 5622636452836752700L;
 
   /**

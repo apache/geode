@@ -70,7 +70,7 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
    * 
    * @return The new instance.
    */
-  static final LogWriterAppender create(final AppenderContext[] contexts, final String name,
+  static LogWriterAppender create(final AppenderContext[] contexts, final String name,
       final PureLogWriter logWriter, final FileOutputStream fos) {
     LogWriterAppender appender = new LogWriterAppender(contexts, name, logWriter, fos);
     for (AppenderContext context : appender.appenderContexts) {

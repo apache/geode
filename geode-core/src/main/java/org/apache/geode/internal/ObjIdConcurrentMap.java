@@ -186,7 +186,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * Segment.readValueUnderLock method is used as a backup in case a null (pre-initialized) value is
    * ever seen in an unsynchronized access method.
    */
-  static final class HashEntry<V> {
+  static class HashEntry<V> {
     final int key;
     final int hash;
     volatile V value;
@@ -200,7 +200,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     }
 
     @SuppressWarnings("unchecked")
-    static final <V> HashEntry<V>[] newArray(int i) {
+    static <V> HashEntry<V>[] newArray(int i) {
       return new HashEntry[i];
     }
   }
@@ -209,7 +209,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * Segments are specialized versions of hash tables. This subclasses from ReentrantLock
    * opportunistically, just to simplify some locking and avoid separate construction.
    */
-  static final class Segment<V> extends ReentrantLock implements Serializable {
+  static class Segment<V> extends ReentrantLock implements Serializable {
     /*
      * Segments maintain a table of entry lists that are ALWAYS kept in a consistent state, so can
      * be read without locking. Next fields of nodes are immutable (final). All list additions are
@@ -279,7 +279,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     }
 
     @SuppressWarnings("unchecked")
-    static final <K, V> Segment<V>[] newArray(int i) {
+    static <K, V> Segment<V>[] newArray(int i) {
       return new Segment[i];
     }
 
@@ -1049,12 +1049,11 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   }
 
   /*
-   * final class KeyIterator extends HashIterator implements Iterator<K>, Enumeration<K> { public K
-   * next() { return super.nextEntry().key; } public K nextElement() { return super.nextEntry().key;
-   * } }
+   * class KeyIterator extends HashIterator implements Iterator<K>, Enumeration<K> { public K next()
+   * { return super.nextEntry().key; } public K nextElement() { return super.nextEntry().key; } }
    * 
-   * final class ValueIterator extends HashIterator implements Iterator<V>, Enumeration<V> { public
-   * V next() { return super.nextEntry().value; } public V nextElement() { return
+   * class ValueIterator extends HashIterator implements Iterator<V>, Enumeration<V> { public V
+   * next() { return super.nextEntry().value; } public V nextElement() { return
    * super.nextEntry().value; } }
    */
 
@@ -1122,7 +1121,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   // * Custom Entry class used by EntryIterator.next(), that relays
   // * setValue changes to the underlying map.
   // */
-  // final class WriteThroughEntry
+  // class WriteThroughEntry
   // extends SimpleEntry<V>
   // {
   // WriteThroughEntry(int k, V v) {
@@ -1148,25 +1147,25 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   // }
 
   /*
-   * final class EntryIterator extends HashIterator implements Iterator<Entry<V>> { public Entry<V>
-   * next() { HashEntry<V> e = super.nextEntry(); return new WriteThroughEntry(e.key, e.value); } }
+   * class EntryIterator extends HashIterator implements Iterator<Entry<V>> { public Entry<V> next()
+   * { HashEntry<V> e = super.nextEntry(); return new WriteThroughEntry(e.key, e.value); } }
    * 
-   * final class KeySet extends AbstractSet<K> { public Iterator<K> iterator() { return new
-   * KeyIterator(); } public int size() { return ObjIdConcurrentMap.this.size(); } public boolean
-   * isEmpty() { return ObjIdConcurrentMap.this.isEmpty(); } public boolean contains(Object o) {
-   * return ObjIdConcurrentMap.this.containsKey(o); } public boolean remove(Object o) { return
+   * class KeySet extends AbstractSet<K> { public Iterator<K> iterator() { return new KeyIterator();
+   * } public int size() { return ObjIdConcurrentMap.this.size(); } public boolean isEmpty() {
+   * return ObjIdConcurrentMap.this.isEmpty(); } public boolean contains(Object o) { return
+   * ObjIdConcurrentMap.this.containsKey(o); } public boolean remove(Object o) { return
    * ObjIdConcurrentMap.this.remove(o) != null; } public void clear() {
    * ObjIdConcurrentMap.this.clear(); } }
    * 
-   * final class Values extends AbstractCollection<V> { public Iterator<V> iterator() { return new
+   * class Values extends AbstractCollection<V> { public Iterator<V> iterator() { return new
    * ValueIterator(); } public int size() { return ObjIdConcurrentMap.this.size(); } public boolean
    * isEmpty() { return ObjIdConcurrentMap.this.isEmpty(); } public boolean contains(Object o) {
    * return ObjIdConcurrentMap.this.containsValue(o); } public void clear() {
    * ObjIdConcurrentMap.this.clear(); } }
    * 
-   * final class EntrySet extends AbstractSet<Map.Entry<K,V>> { public Iterator<Map.Entry<K,V>>
-   * iterator() { return new EntryIterator(); } public boolean contains(Object o) { if (!(o
-   * instanceof Map.Entry)) return false; Map.Entry<?,?> e = (Map.Entry<?,?>)o; V v =
+   * class EntrySet extends AbstractSet<Map.Entry<K,V>> { public Iterator<Map.Entry<K,V>> iterator()
+   * { return new EntryIterator(); } public boolean contains(Object o) { if (!(o instanceof
+   * Map.Entry)) return false; Map.Entry<?,?> e = (Map.Entry<?,?>)o; V v =
    * ObjIdConcurrentMap.this.get(e.getKey()); return v != null && v.equals(e.getValue()); } public
    * boolean remove(Object o) { if (!(o instanceof Map.Entry)) return false; Map.Entry<?,?> e =
    * (Map.Entry<?,?>)o; return ObjIdConcurrentMap.this.remove(e.getKey(), e.getValue()); } public

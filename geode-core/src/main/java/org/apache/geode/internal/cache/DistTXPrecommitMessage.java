@@ -56,7 +56,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  *
  */
-public final class DistTXPrecommitMessage extends TXMessage {
+public class DistTXPrecommitMessage extends TXMessage {
 
   private static final Logger logger = LogService.getLogger();
   ArrayList<DistTxEntryEvent> secondaryTransactionalOperations;
@@ -175,7 +175,7 @@ public final class DistTXPrecommitMessage extends TXMessage {
   /**
    * This is the reply to a {@link DistTXPrecommitMessage}.
    */
-  public static final class DistTXPrecommitReplyMessage extends ReplyMessage {
+  public static class DistTXPrecommitReplyMessage extends ReplyMessage {
     private transient DistTxPrecommitResponse commitResponse;
 
     /**
@@ -277,7 +277,7 @@ public final class DistTXPrecommitMessage extends TXMessage {
    *
    *      [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
-  public static final class DistTxPrecommitReplyProcessor extends ReplyProcessor21 {
+  public static class DistTxPrecommitReplyProcessor extends ReplyProcessor21 {
     private HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
     private Map<DistributedMember, DistTxPrecommitResponse> commitResponseMap;
     private transient TXId txIdent = null;
@@ -465,7 +465,7 @@ public final class DistTXPrecommitMessage extends TXMessage {
     }
   }
 
-  public static final class DistTxPrecommitResponse implements DataSerializableFixedID {
+  public static class DistTxPrecommitResponse implements DataSerializableFixedID {
     private transient Boolean commitState;
     private transient ArrayList<ArrayList<DistTxThinEntryState>> distTxEventList;
 

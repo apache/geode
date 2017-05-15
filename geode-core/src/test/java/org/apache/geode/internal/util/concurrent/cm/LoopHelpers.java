@@ -115,7 +115,7 @@ class LoopHelpers {
     return x;
   }
 
-  public static final class XorShift32Random {
+  public static class XorShift32Random {
     static final AtomicInteger seq = new AtomicInteger(8862213);
     int x = -1831433054;
 
@@ -137,7 +137,7 @@ class LoopHelpers {
 
 
   /** Multiplication-free RNG from Marsaglia "Xorshift RNGs" paper */
-  public static final class MarsagliaRandom {
+  public static class MarsagliaRandom {
     static final AtomicInteger seq = new AtomicInteger(3122688);
     int x;
     int y = 842502087;
@@ -164,7 +164,7 @@ class LoopHelpers {
   /**
    * Unsynchronized version of java.util.Random algorithm.
    */
-  public static final class SimpleRandom {
+  public static class SimpleRandom {
     private final static long multiplier = 0x5DEECE66DL;
     private final static long addend = 0xBL;
     private final static long mask = (1L << 48) - 1;

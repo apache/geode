@@ -103,7 +103,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
 
   /////////////// Inner message classes //////////////////
 
-  public static final class NonGrantorDestroyedMessage extends PooledDistributionMessage
+  public static class NonGrantorDestroyedMessage extends PooledDistributionMessage
       implements MessageWithReply {
 
     private int processorId;
@@ -218,7 +218,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
     }
   }
 
-  public static final class NonGrantorDestroyedReplyMessage extends ReplyMessage {
+  public static class NonGrantorDestroyedReplyMessage extends ReplyMessage {
 
     public static final byte OK = 0;
     public static final byte NOT_GRANTOR = 1;

@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 /**
  * Contains common data tranformation utility methods and transformers.
  */
-public final class TransformUtils {
+public class TransformUtils {
 
   /**
    * Transforms PersistentMemberIDs to a user friendly log entry.

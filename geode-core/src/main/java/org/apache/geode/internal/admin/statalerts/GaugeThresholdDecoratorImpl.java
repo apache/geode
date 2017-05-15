@@ -29,7 +29,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
  * Implementation of {@link StatAlertDefinition}, represents threshold as data range
  * 
  */
-public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
+public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
     implements DataSerializableFixedID {
 
   private static final long serialVersionUID = -8555077820685711783L;

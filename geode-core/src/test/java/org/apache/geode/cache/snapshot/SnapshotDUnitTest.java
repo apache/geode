@@ -385,7 +385,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static final class CountingAsyncEventListener implements AsyncEventListener {
+  private static class CountingAsyncEventListener implements AsyncEventListener {
 
     private final AtomicInteger events = new AtomicInteger();
 

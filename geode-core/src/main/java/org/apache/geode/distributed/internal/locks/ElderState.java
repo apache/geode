@@ -355,7 +355,7 @@ public class ElderState {
     }
   }
 
-  private final boolean isInitiatingTransfer(GrantorInfo gi) {
+  private boolean isInitiatingTransfer(GrantorInfo gi) {
     if (gi == null)
       return false;
     synchronized (this) {
@@ -363,20 +363,20 @@ public class ElderState {
     }
   }
 
-  private final void beginInitiatingTransfer(GrantorInfo gi) {
+  private void beginInitiatingTransfer(GrantorInfo gi) {
     synchronized (this) {
       gi.setInitiatingTransfer(true);
     }
   }
 
-  private final void finishInitiatingTransfer(GrantorInfo gi) {
+  private void finishInitiatingTransfer(GrantorInfo gi) {
     synchronized (this) {
       gi.setInitiatingTransfer(false);
       notifyAll();
     }
   }
 
-  private final void waitWhileInitiatingTransfer(GrantorInfo gi) {
+  private void waitWhileInitiatingTransfer(GrantorInfo gi) {
     synchronized (this) {
       boolean interrupted = false;
       try {

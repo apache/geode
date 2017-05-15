@@ -48,7 +48,7 @@ import java.io.IOException;
  * "compatible" with variable-length encoding.
  * </p>
  */
-public final class Varint {
+public class Varint {
 
   private Varint() {}
 

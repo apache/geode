@@ -59,7 +59,7 @@ import org.apache.geode.management.membership.MembershipListener;
  * 
  * @since GemFire 7.0
  */
-public final class SystemManagementService extends BaseManagementService {
+public class SystemManagementService extends BaseManagementService {
   private static final Logger logger = LogService.getLogger();
 
   /**

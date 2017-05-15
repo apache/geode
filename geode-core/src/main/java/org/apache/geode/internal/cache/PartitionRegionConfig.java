@@ -387,19 +387,19 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
     return ea;
   }
 
-  public final ExpirationAttributes getEntryIdleTimeout() {
+  public ExpirationAttributes getEntryIdleTimeout() {
     return entryIdleTimeout;
   }
 
-  public final ExpirationAttributes getEntryTimeToLive() {
+  public ExpirationAttributes getEntryTimeToLive() {
     return entryTimeToLive;
   }
 
-  public final ExpirationAttributes getRegionIdleTimeout() {
+  public ExpirationAttributes getRegionIdleTimeout() {
     return regionIdleTimeout;
   }
 
-  public final ExpirationAttributes getRegionTimeToLive() {
+  public ExpirationAttributes getRegionTimeToLive() {
     return regionTimeToLive;
   }
 

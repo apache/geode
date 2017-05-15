@@ -73,7 +73,7 @@ import joptsimple.OptionSet;
  *
  * @since GemFire 7.0
  */
-public final class Launcher {
+public class Launcher {
   private static final String EXECUTE_OPTION = "execute";
   private static final String HELP_OPTION = "help";
   private static final String HELP = CliStrings.HELP;

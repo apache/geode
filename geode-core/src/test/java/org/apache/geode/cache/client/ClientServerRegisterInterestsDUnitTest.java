@@ -249,7 +249,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
     }
   }
 
-  protected final class TestEntryCacheListener extends CacheListenerAdapter<String, String> {
+  protected class TestEntryCacheListener extends CacheListenerAdapter<String, String> {
 
     @Override
     public void afterCreate(final EntryEvent<String, String> event) {

@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * Identifies a group of transaction locks.
  *
  */
-public final class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
+public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
 
   private static final long serialVersionUID = 8579214625084490134L;
   /** DistributionManager id for this member */
@@ -50,11 +50,11 @@ public final class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
     }
   }
 
-  public final int getCount() {
+  public int getCount() {
     return this.id;
   }
 
-  public final InternalDistributedMember getMemberId() {
+  public InternalDistributedMember getMemberId() {
     return this.memberId;
   }
 

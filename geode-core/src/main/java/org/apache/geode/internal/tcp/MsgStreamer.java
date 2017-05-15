@@ -88,7 +88,7 @@ public class MsgStreamer extends OutputStream
   /**
    * Called to free up resources used by this streamer after the streamer has produced its message.
    */
-  protected final void release() {
+  protected void release() {
     MsgIdGenerator.release(this.msgId);
     this.buffer.clear();
     this.overflowBuf = null;
@@ -99,7 +99,7 @@ public class MsgStreamer extends OutputStream
    * Returns an exception the describes which cons the message was not sent to. Call this after
    * {@link #writeMessage}.
    */
-  public final ConnectExceptions getConnectExceptions() {
+  public ConnectExceptions getConnectExceptions() {
     return this.ce;
   }
 
@@ -107,7 +107,7 @@ public class MsgStreamer extends OutputStream
    * Returns a list of the Connections that the message was sent to. Call this after
    * {@link #writeMessage}.
    */
-  public final List<?> getSentConnections() {
+  public List<?> getSentConnections() {
     return this.cons;
   }
 
@@ -224,7 +224,7 @@ public class MsgStreamer extends OutputStream
   /**
    * @throws IOException if serialization failure
    */
-  public final int writeMessage() throws IOException {
+  public int writeMessage() throws IOException {
     // if (logger.isTraceEnabled()) logger.trace(this.msg);
 
     try {
@@ -244,7 +244,7 @@ public class MsgStreamer extends OutputStream
 
   /** write the low-order 8 bits of the given int */
   @Override
-  public final void write(int b) {
+  public void write(int b) {
     // if (logger.isTraceEnabled()) logger.trace(" byte={}", b);
 
     ensureCapacity(1);
@@ -255,7 +255,7 @@ public class MsgStreamer extends OutputStream
     this.buffer.put((byte) b);
   }
 
-  private final void ensureCapacity(int amount) {
+  private void ensureCapacity(int amount) {
     if (this.overflowBuf != null) {
       return;
     }
@@ -289,7 +289,7 @@ public class MsgStreamer extends OutputStream
     }
   }
 
-  public final void realFlush(boolean lastFlushForMessage) {
+  public void realFlush(boolean lastFlushForMessage) {
     if (isOverflowMode()) {
       if (this.overflowBuf == null) {
         this.overflowBuf = new HeapDataOutputStream(
@@ -335,7 +335,7 @@ public class MsgStreamer extends OutputStream
   }
 
   @Override
-  public final void close() throws IOException {
+  public void close() throws IOException {
     try {
       if (this.startedSerializingMsg && !this.doneWritingMsg) {
         // if we wrote any bytes on the cnxs then we need to close them
@@ -354,7 +354,7 @@ public class MsgStreamer extends OutputStream
 
   /** override OutputStream's write() */
   @Override
-  public final void write(byte[] source, int offset, int len) {
+  public void write(byte[] source, int offset, int len) {
     // if (logger.isTraceEnabled()) {
     // logger.trace(" bytes={} offset={} len={}", source, offset, len);
     // }
@@ -383,7 +383,7 @@ public class MsgStreamer extends OutputStream
   }
 
   @Override
-  public final void write(ByteBuffer bb) {
+  public void write(ByteBuffer bb) {
     // if (logger.isTraceEnabled()) {
     // logger.trace(" bytes={} offset={} len={}", source, offset, len);
     // }
@@ -417,7 +417,7 @@ public class MsgStreamer extends OutputStream
   /**
    * write the header after the message has been written to the stream
    */
-  private final void setMessageHeader() {
+  private void setMessageHeader() {
     Assert.assertTrue(this.overflowBuf == null);
     Assert.assertTrue(!isOverflowMode());
     // int processorType = this.msg.getProcessorType();
@@ -457,7 +457,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the boolean to be written.
    */
-  public final void writeBoolean(boolean v) {
+  public void writeBoolean(boolean v) {
     write(v ? 1 : 0);
   }
 
@@ -470,7 +470,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the byte value to be written.
    */
-  public final void writeByte(int v) {
+  public void writeByte(int v) {
     write(v);
   }
 
@@ -492,7 +492,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>short</code> value to be written.
    */
-  public final void writeShort(int v) {
+  public void writeShort(int v) {
     // if (logger.isTraceEnabled()) logger.trace(" short={}", v);
 
     ensureCapacity(2);
@@ -521,7 +521,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>char</code> value to be written.
    */
-  public final void writeChar(int v) {
+  public void writeChar(int v) {
     // if (logger.isTraceEnabled()) logger.trace(" char={}", v);
 
     ensureCapacity(2);
@@ -551,7 +551,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>int</code> value to be written.
    */
-  public final void writeInt(int v) {
+  public void writeInt(int v) {
     // if (logger.isTraceEnabled()) logger.trace(" int={}", v);
 
     ensureCapacity(4);
@@ -585,7 +585,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>long</code> value to be written.
    */
-  public final void writeLong(long v) {
+  public void writeLong(long v) {
     // if (logger.isTraceEnabled()) logger.trace(" long={}", v);
 
     ensureCapacity(8);
@@ -606,7 +606,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>float</code> value to be written.
    */
-  public final void writeFloat(float v) {
+  public void writeFloat(float v) {
     // if (logger.isTraceEnabled()) logger.trace(" float={}", v);
 
     ensureCapacity(4);
@@ -627,7 +627,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>double</code> value to be written.
    */
-  public final void writeDouble(double v) {
+  public void writeDouble(double v) {
     // if (logger.isTraceEnabled()) logger.trace(" double={}", v);
 
     ensureCapacity(8);
@@ -651,7 +651,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param str the string of bytes to be written.
    */
-  public final void writeBytes(String str) {
+  public void writeBytes(String str) {
     // if (logger.isTraceEnabled()) logger.trace(" bytes={}", str);
 
     if (this.overflowBuf != null) {
@@ -676,7 +676,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param s the string value to be written.
    */
-  public final void writeChars(String s) {
+  public void writeChars(String s) {
     // if (logger.isTraceEnabled()) logger.trace(" chars={}", s);
 
     if (this.overflowBuf != null) {
@@ -765,7 +765,7 @@ public class MsgStreamer extends OutputStream
    * @param str the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
-  public final void writeUTF(String str) throws IOException {
+  public void writeUTF(String str) throws IOException {
     // if (logger.isTraceEnabled()) logger.trace(" utf={}", str);
 
     if (this.overflowBuf != null) {
@@ -779,7 +779,7 @@ public class MsgStreamer extends OutputStream
     }
   }
 
-  private final void writeAsciiUTF(String str) throws IOException {
+  private void writeAsciiUTF(String str) throws IOException {
     int len = str.length();
     if (len > 65535) {
       throw new UTFDataFormatException();
@@ -808,7 +808,7 @@ public class MsgStreamer extends OutputStream
     }
   }
 
-  private final void writeFullUTF(String str) throws IOException {
+  private void writeFullUTF(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 65535) {
       throw new UTFDataFormatException();
@@ -854,7 +854,7 @@ public class MsgStreamer extends OutputStream
   /**
    * Used when we know the max size will fit in the current buffer.
    */
-  private final void writeQuickFullUTF(String str, int strlen) throws IOException {
+  private void writeQuickFullUTF(String str, int strlen) throws IOException {
     int utfSizeIdx = this.buffer.position();
     // skip bytes reserved for length
     this.buffer.position(utfSizeIdx + 2);
@@ -888,7 +888,7 @@ public class MsgStreamer extends OutputStream
    * the contents of the HeapDataOutputStream to this streamer. All of this is done to prevent an
    * extra copy when the serialized form will all fit into our current buffer.
    */
-  public final void writeAsSerializedByteArray(Object v) throws IOException {
+  public void writeAsSerializedByteArray(Object v) throws IOException {
     if (v instanceof HeapDataOutputStream) {
       HeapDataOutputStream other = (HeapDataOutputStream) v;
       InternalDataSerializer.writeArrayLength(other.size(), this);

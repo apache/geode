@@ -31,11 +31,11 @@ public abstract class ExternalizableDSFID implements DataSerializableFixedID, Ex
 
   public abstract void fromData(DataInput in) throws IOException, ClassNotFoundException;
 
-  public final void writeExternal(ObjectOutput out) throws IOException {
+  public void writeExternal(ObjectOutput out) throws IOException {
     toData(out);
   }
 
-  public final void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     fromData(in);
   }
 }

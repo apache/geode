@@ -1813,7 +1813,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    *
    * @see #createGemFireHealth
    */
-  public final GemFireHealth getGemFireHealth() {
+  public GemFireHealth getGemFireHealth() {
     synchronized (this) {
       if (this.health == null || this.health.isClosed()) {
         try {

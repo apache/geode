@@ -41,7 +41,7 @@ import java.util.Set;
  * 
  * @since GemFire 7.0
  */
-public final class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
+public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
     implements DataSerializableFixedID {
   /**
    * The id of the originating <code>GatewayReceiver</code> making the request

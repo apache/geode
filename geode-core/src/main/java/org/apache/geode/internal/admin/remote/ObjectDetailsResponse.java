@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.*;
 /**
  * Responds to {@link ObjectDetailsRequest}.
  */
-public final class ObjectDetailsResponse extends AdminResponse implements Cancellable {
+public class ObjectDetailsResponse extends AdminResponse implements Cancellable {
   // instance variables
   private Object objectValue;
   private Object userAttribute;

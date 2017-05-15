@@ -41,7 +41,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
  * 
  * @since GemFire 5.0
  */
-public final class DestroyRegionOnDataStoreMessage extends PartitionMessage {
+public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
 
   private Object callbackArg;
 
@@ -101,13 +101,13 @@ public final class DestroyRegionOnDataStoreMessage extends PartitionMessage {
   }
 
   @Override
-  public final void fromData(final DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     callbackArg = DataSerializer.readObject(in);
   }
 
   @Override
-  public final void toData(final DataOutput out) throws IOException {
+  public void toData(final DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(callbackArg, out);
   }

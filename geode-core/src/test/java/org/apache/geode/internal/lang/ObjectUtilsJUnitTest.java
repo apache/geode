@@ -162,7 +162,7 @@ public class ObjectUtilsJUnitTest {
         new Class[] {String.class}, " is the loneliest number!"));
   }
 
-  private static final class ValueHolder<T> {
+  private static class ValueHolder<T> {
 
     private final T value;
 

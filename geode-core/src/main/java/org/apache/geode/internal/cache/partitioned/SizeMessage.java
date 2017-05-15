@@ -50,7 +50,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 5.0
  */
-public final class SizeMessage extends PartitionMessage {
+public class SizeMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The list of buckets whose size is needed, if null, then all buckets */
@@ -206,7 +206,7 @@ public final class SizeMessage extends PartitionMessage {
     DataSerializer.writeArrayList(this.bucketIds, out);
   }
 
-  public static final class SizeReplyMessage extends ReplyMessage {
+  public static class SizeReplyMessage extends ReplyMessage {
     /** Propagated exception from remote node to operation initiator */
     private Map<Integer, SizeEntry> bucketSizes;
 

@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 
  * @since GemFire 7.0
  */
-public final class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply {
+public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private enum Operation {
@@ -135,7 +135,7 @@ public final class RemoteRegionOperation extends RemoteOperationMessageWithDirec
     out.writeByte(this.op.ordinal());
   }
 
-  public static final class RemoteRegionOperationReplyMessage extends ReplyMessage {
+  public static class RemoteRegionOperationReplyMessage extends ReplyMessage {
 
     /**
      * Empty constructor to conform to DataSerializable interface

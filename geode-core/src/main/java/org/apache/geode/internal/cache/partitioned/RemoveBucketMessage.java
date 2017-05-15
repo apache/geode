@@ -139,7 +139,7 @@ public class RemoveBucketMessage extends PartitionMessage {
     out.writeBoolean(this.forceRemovePrimary);
   }
 
-  public static final class RemoveBucketReplyMessage extends ReplyMessage {
+  public static class RemoveBucketReplyMessage extends ReplyMessage {
 
     private boolean removed;
 

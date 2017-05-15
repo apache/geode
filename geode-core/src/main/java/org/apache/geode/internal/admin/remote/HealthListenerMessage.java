@@ -31,8 +31,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class HealthListenerMessage extends PooledDistributionMessage
-    implements AdminMessageType {
+public class HealthListenerMessage extends PooledDistributionMessage implements AdminMessageType {
   // instance variables
   private int listenerId;
   private GemFireHealth.Health status;

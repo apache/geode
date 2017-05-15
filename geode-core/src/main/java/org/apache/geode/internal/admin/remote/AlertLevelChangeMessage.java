@@ -37,7 +37,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  *
  * @since GemFire 3.5
  */
-public final class AlertLevelChangeMessage extends SerialDistributionMessage {
+public class AlertLevelChangeMessage extends SerialDistributionMessage {
 
   private static final Logger logger = LogService.getLogger();
 

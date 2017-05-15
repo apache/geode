@@ -22,7 +22,7 @@ import java.util.Date;
  * Defines the common date format for GemFire and provides DateFormat instances.
  * 
  */
-public final class DateFormatter {
+public class DateFormatter {
 
   /**
    * The format string used to format the timestamp of GemFire log messages

@@ -58,7 +58,7 @@ import org.apache.geode.management.membership.ClientMembershipListener;
  *
  * @since GemFire 4.2.1
  */
-public final class InternalClientMembership {
+public class InternalClientMembership {
 
   private static final Logger logger = LogService.getLogger();
 

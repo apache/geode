@@ -340,7 +340,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
    * Returns the entry associated with the specified key in the IntHashMap. Returns null if the
    * IntHashMap contains no mapping for the key.
    */
-  final Entry getEntry(Object key) {
+  Entry getEntry(Object key) {
     int hash = (key == null) ? 0 : hash(hashingStrategy.hashCode(key));
     for (Entry e = table[indexFor(hash, table.length)]; e != null; e = e.next) {
       Object k;
@@ -530,7 +530,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
    * Removes and returns the entry associated with the specified key in the IntHashMap. Returns null
    * if the IntHashMap contains no mapping for this key.
    */
-  final Entry removeEntryForKey(Object key) {
+  Entry removeEntryForKey(Object key) {
     int hash = (key == null) ? 0 : hash(hashingStrategy.hashCode(key));
     int i = indexFor(hash, table.length);
     Entry prev = table[i];
@@ -560,7 +560,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   /**
    * Special version of remove for EntrySet.
    */
-  final Entry removeMapping(Object o) {
+  Entry removeMapping(Object o) {
     if (!(o instanceof Entry))
       return null;
 
@@ -850,11 +850,11 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       }
     }
 
-    public final boolean hasNext() {
+    public boolean hasNext() {
       return next != null;
     }
 
-    final Entry nextEntry() {
+    Entry nextEntry() {
       if (modCount != expectedModCount)
         throw new ConcurrentModificationException();
       Entry e = next;
@@ -882,13 +882,13 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
 
   }
 
-  private final class KeyIterator extends HashIterator<Object> {
+  private class KeyIterator extends HashIterator<Object> {
     public Object next() {
       return nextEntry().getKey();
     }
   }
 
-  private final class EntryIterator extends HashIterator<Entry> {
+  private class EntryIterator extends HashIterator<Entry> {
     public Entry next() {
       return nextEntry();
     }
@@ -923,7 +923,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
     return (ks != null ? ks : (keySet = new KeySet()));
   }
 
-  private final class KeySet extends AbstractSet<Object> {
+  private class KeySet extends AbstractSet<Object> {
     public Iterator<Object> iterator() {
       return newKeyIterator();
     }
@@ -966,7 +966,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
     return es != null ? es : (entrySet = new EntrySet());
   }
 
-  private final class EntrySet extends AbstractSet<Entry> {
+  private class EntrySet extends AbstractSet<Entry> {
     public Iterator<Entry> iterator() {
       return newEntryIterator();
     }
@@ -1055,7 +1055,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
     return loadFactor;
   }
 
-  private final class IntHashMapStrategy implements HashingStrategy {
+  private class IntHashMapStrategy implements HashingStrategy {
 
     @Override
     public int hashCode(Object o) {

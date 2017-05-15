@@ -26,7 +26,7 @@ import org.apache.geode.Statistics;
  * 
  * @since GemFire 7.0
  */
-public final class SimpleStatisticId implements StatisticId {
+public class SimpleStatisticId implements StatisticId {
 
   private final StatisticDescriptor descriptor;
   private final Statistics statistics;
@@ -50,7 +50,7 @@ public final class SimpleStatisticId implements StatisticId {
    * Object equality must be based on instance identity.
    */
   @Override
-  public final boolean equals(Object obj) {
+  public boolean equals(Object obj) {
     return super.equals(obj);
   }
 
@@ -58,7 +58,7 @@ public final class SimpleStatisticId implements StatisticId {
    * Object equality must be based on instance identity.
    */
   @Override
-  public final int hashCode() {
+  public int hashCode() {
     return super.hashCode();
   }
 }

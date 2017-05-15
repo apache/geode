@@ -41,7 +41,7 @@ public class MultipartFileResourceAdapter extends AbstractResource {
     this.file = file;
   }
 
-  protected final MultipartFile getMultipartFile() {
+  protected MultipartFile getMultipartFile() {
     return file;
   }
 

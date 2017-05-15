@@ -197,7 +197,7 @@ public class ZRangeByLexExecutor extends SortedSetExecutor {
 
   }
 
-  private final ByteBuf getCustomBulkStringArrayResponse(Collection<ByteArrayWrapper> items,
+  private ByteBuf getCustomBulkStringArrayResponse(Collection<ByteArrayWrapper> items,
       ExecutionHandlerContext context) {
     Iterator<ByteArrayWrapper> it = items.iterator();
     ByteBuf response = context.getByteBufAllocator().buffer();

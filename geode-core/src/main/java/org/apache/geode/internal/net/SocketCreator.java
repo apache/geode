@@ -607,7 +607,7 @@ public class SocketCreator {
     return extendedKeyManagers;
   }
 
-  private static final class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
+  private static class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
 
     private final X509ExtendedKeyManager delegate;
 

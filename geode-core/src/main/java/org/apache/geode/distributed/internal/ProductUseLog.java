@@ -38,7 +38,7 @@ import org.apache.geode.internal.logging.PureLogWriter;
  * 
  * @since GemFire 2013
  */
-public final class ProductUseLog implements MembershipListener {
+public class ProductUseLog implements MembershipListener {
   protected static long MAX_PRODUCT_USE_FILE_SIZE = Long.getLong("max_view_log_size", 5000000);
   private final int logLevel;
   private final File productUseLogFile;

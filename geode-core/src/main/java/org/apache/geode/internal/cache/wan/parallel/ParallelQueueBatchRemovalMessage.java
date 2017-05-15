@@ -154,7 +154,7 @@ public class ParallelQueueBatchRemovalMessage extends PartitionMessage {
     this.bucketToTailKey = (Map) DataSerializer.readObject(in);
   }
 
-  public static final class BatchRemovalReplyMessage extends ReplyMessage {
+  public static class BatchRemovalReplyMessage extends ReplyMessage {
     /**
      * Empty constructor to conform to DataSerializable interface
      */

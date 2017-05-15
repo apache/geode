@@ -205,7 +205,7 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   @Override
-  public final String getName() {
+  public String getName() {
     return this.name;
   }
 
@@ -239,11 +239,11 @@ public class DiskRegion extends AbstractDiskRegion {
    * method does any work is when backup is true and recovery data was discovered when this disk
    * region was created.
    */
-  final void initializeOwner(LocalRegion drs) {
+  void initializeOwner(LocalRegion drs) {
     getDiskStore().initializeOwner(drs);
   }
 
-  final void finishInitializeOwner(LocalRegion drs, GIIStatus giiStatus) {
+  void finishInitializeOwner(LocalRegion drs, GIIStatus giiStatus) {
     if (isReadyForRecovery()) {
       // this.scheduleCompaction();
       if (GIIStatus.didFullGII(giiStatus)) {
@@ -332,7 +332,7 @@ public class DiskRegion extends AbstractDiskRegion {
     });
   }
 
-  public final boolean isOverflowEnabled() {
+  public boolean isOverflowEnabled() {
     return this.overflowEnabled;
   }
 
@@ -345,7 +345,7 @@ public class DiskRegion extends AbstractDiskRegion {
    *         completed successfully, resulting in the put operation to abort.
    * @throws IllegalArgumentException If <code>id</code> is less than zero
    */
-  final void put(DiskEntry entry, LocalRegion region, ValueWrapper value, boolean async)
+  void put(DiskEntry entry, LocalRegion region, ValueWrapper value, boolean async)
       throws RegionClearedException {
     getDiskStore().put(region, entry, value, async);
   }
@@ -356,7 +356,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * 
    * @see #getBytesAndBitsWithoutLock(DiskId, boolean, boolean)
    */
-  final Object get(DiskId id) {
+  Object get(DiskId id) {
     return getDiskStore().get(this, id);
   }
 
@@ -368,25 +368,25 @@ public class DiskRegion extends AbstractDiskRegion {
    * @param id DiskId object for the entry
    * @return value of the entry
    */
-  final BytesAndBits getBytesAndBitsWithoutLock(DiskId id, boolean faultIn, boolean bitOnly) {
+  BytesAndBits getBytesAndBitsWithoutLock(DiskId id, boolean faultIn, boolean bitOnly) {
     return getDiskStore().getBytesAndBitsWithoutLock(this, id, faultIn, bitOnly);
   }
 
   /**
    * @since GemFire 3.2.1
    */
-  final BytesAndBits getBytesAndBits(DiskId id) {
+  BytesAndBits getBytesAndBits(DiskId id) {
     return getBytesAndBits(id, true);
   }
 
-  final BytesAndBits getBytesAndBits(DiskId id, boolean faultingIn) {
+  BytesAndBits getBytesAndBits(DiskId id, boolean faultingIn) {
     return getDiskStore().getBytesAndBits(this, id, faultingIn);
   }
 
   /**
    * @since GemFire 3.2.1
    */
-  final byte getBits(DiskId id) {
+  byte getBits(DiskId id) {
     return getDiskStore().getBits(this, id);
   }
 
@@ -401,7 +401,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * @return null if entry has nothing stored on disk (id == INVALID_ID)
    * @throws IllegalArgumentException If <code>id</code> is less than zero, no action is taken.
    */
-  public final Object getNoBuffer(DiskId id) {
+  public Object getNoBuffer(DiskId id) {
     return getDiskStore().getNoBuffer(this, id);
   }
 
@@ -413,11 +413,11 @@ public class DiskRegion extends AbstractDiskRegion {
    * @throws IllegalArgumentException If <code>id</code> is {@linkplain #INVALID_ID invalid}or is
    *         less than zero, no action is taken.
    */
-  final void remove(LocalRegion region, DiskEntry entry) throws RegionClearedException {
+  void remove(LocalRegion region, DiskEntry entry) throws RegionClearedException {
     getDiskStore().remove(region, entry, false, false);
   }
 
-  final void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
+  void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
       throws RegionClearedException {
     getDiskStore().remove(region, entry, async, isClear);
   }
@@ -539,7 +539,7 @@ public class DiskRegion extends AbstractDiskRegion {
   /**
    * returns the active child
    */
-  final Oplog testHook_getChild() {
+  Oplog testHook_getChild() {
     return getDiskStore().persistentOplogs.getChild();
   }
 
@@ -611,7 +611,7 @@ public class DiskRegion extends AbstractDiskRegion {
   /** ThreadLocal to be used for maintaining consistency during clear* */
   private final ThreadLocal<Integer> childReference = new ThreadLocal<Integer>();
 
-  final void incClearCount() {
+  void incClearCount() {
     this.clearCount.incrementAndGet();
   }
 
@@ -733,7 +733,7 @@ public class DiskRegion extends AbstractDiskRegion {
     return getOplogSet().getNextDir();
   }
 
-  final long newOplogEntryId() {
+  long newOplogEntryId() {
     return getOplogSet().newOplogEntryId();
   }
 

@@ -29,7 +29,7 @@ import java.io.PrintStream;
  * 
  * @since GemFire 5.5
  */
-public final class SecurityManagerLogWriter extends ManagerLogWriter {
+public class SecurityManagerLogWriter extends ManagerLogWriter {
 
   public SecurityManagerLogWriter(int level, PrintStream stream) {
 

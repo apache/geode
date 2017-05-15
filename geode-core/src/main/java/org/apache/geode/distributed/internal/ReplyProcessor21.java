@@ -512,7 +512,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * @throws InterruptedException thrown if the wait is interrupted
    * @see #canStopWaiting()
    */
-  public final void waitForReplies() throws InterruptedException, ReplyException {
+  public void waitForReplies() throws InterruptedException, ReplyException {
 
     boolean result = waitForReplies(0);
     Assert.assertTrue(result, "failed but no exception thrown");
@@ -587,7 +587,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
   // start waiting for replies without explicitly waiting for all of them using
   // waitForReplies* methods; useful for streaming of results in function execution
-  public final void startWait() {
+  public void startWait() {
     if (!this.waiting && stillWaiting()) {
       preWait();
     }
@@ -595,7 +595,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
   // end waiting for replies without explicitly invoking waitForReplies*
   // methods; useful for streaming of results in function execution
-  public final void endWait(boolean doCleanup) {
+  public void endWait(boolean doCleanup) {
     try {
       postWait();
     } finally {
@@ -618,11 +618,11 @@ public class ReplyProcessor21 implements MembershipListener {
    *
    * @return Whether or not we received all of the replies in the given amount of time.
    */
-  public final boolean waitForReplies(long msecs) throws InterruptedException, ReplyException {
+  public boolean waitForReplies(long msecs) throws InterruptedException, ReplyException {
     return waitForReplies(msecs, getLatch(), true);
   }
 
-  public final boolean waitForReplies(long msecs, StoppableCountDownLatch latch, boolean doCleanUp)
+  public boolean waitForReplies(long msecs, StoppableCountDownLatch latch, boolean doCleanUp)
       throws InterruptedException, ReplyException {
     if (this.keeperCleanedUp) {
       throw new IllegalStateException(
@@ -765,11 +765,11 @@ public class ReplyProcessor21 implements MembershipListener {
    *         "ack-threshold-exception" is set to true
    * @throws IllegalStateException if the processor is not registered to receive replies
    */
-  public final boolean waitForRepliesUninterruptibly(long p_msecs) throws ReplyException {
+  public boolean waitForRepliesUninterruptibly(long p_msecs) throws ReplyException {
     return waitForRepliesUninterruptibly(p_msecs, getLatch(), true);
   }
 
-  public final boolean waitForRepliesUninterruptibly(long p_msecs, StoppableCountDownLatch latch,
+  public boolean waitForRepliesUninterruptibly(long p_msecs, StoppableCountDownLatch latch,
       boolean doCleanUp) throws ReplyException {
     if (this.keeperCleanedUp) {
       throw new IllegalStateException(

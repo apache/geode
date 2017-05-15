@@ -90,7 +90,7 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
    * @throws InterruptedException
    * @throws ReliableReplyException when a member departs
    */
-  public final void waitForReliableDelivery()
+  public void waitForReliableDelivery()
       throws ReplyException, InterruptedException, ReliableReplyException {
     waitForReliableDelivery(0);
   }
@@ -102,7 +102,7 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
    * @throws InterruptedException
    * @throws ReliableReplyException
    */
-  public final void waitForReliableDelivery(long msecs)
+  public void waitForReliableDelivery(long msecs)
       throws ReplyException, InterruptedException, ReliableReplyException {
     super.waitForReplies(msecs);
     synchronized (this) {

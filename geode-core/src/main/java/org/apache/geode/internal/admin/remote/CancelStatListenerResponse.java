@@ -29,7 +29,7 @@ import org.apache.geode.internal.statistics.GemFireStatSampler;
  * A message that is sent to a particular distribution manager to get its current
  * <code>RemoteCancelStatListener</code>.
  */
-public final class CancelStatListenerResponse extends AdminResponse {
+public class CancelStatListenerResponse extends AdminResponse {
   // instance variables
 
   /**

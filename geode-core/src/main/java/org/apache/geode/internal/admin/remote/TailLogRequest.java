@@ -23,7 +23,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.io.*;
 // import java.util.*;
 
-public final class TailLogRequest extends AdminRequest {
+public class TailLogRequest extends AdminRequest {
   public static TailLogRequest create() {
     TailLogRequest m = new TailLogRequest();
     return m;

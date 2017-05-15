@@ -152,23 +152,23 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public final void setEntryFactory(RegionEntryFactory f) {
+  public void setEntryFactory(RegionEntryFactory f) {
     this.entryFactory = f;
   }
 
-  public final RegionEntryFactory getEntryFactory() {
+  public RegionEntryFactory getEntryFactory() {
     return this.entryFactory;
   }
 
-  protected final void _setAttributes(Attributes a) {
+  protected void _setAttributes(Attributes a) {
     this.attr = a;
   }
 
-  public final Attributes getAttributes() {
+  public Attributes getAttributes() {
     return this.attr;
   }
 
-  protected final LocalRegion _getOwner() {
+  protected LocalRegion _getOwner() {
     return (LocalRegion) this.owner;
   }
 
@@ -176,19 +176,19 @@ public abstract class AbstractRegionMap implements RegionMap {
     return this.owner instanceof LocalRegion;
   }
 
-  protected final Object _getOwnerObject() {
+  protected Object _getOwnerObject() {
     return this.owner;
   }
 
-  public final void setOwner(Object r) {
+  public void setOwner(Object r) {
     this.owner = r;
   }
 
-  protected final CustomEntryConcurrentHashMap<Object, Object> _getMap() {
+  protected CustomEntryConcurrentHashMap<Object, Object> _getMap() {
     return this.map;
   }
 
-  protected final void _setMap(CustomEntryConcurrentHashMap<Object, Object> m) {
+  protected void _setMap(CustomEntryConcurrentHashMap<Object, Object> m) {
     this.map = m;
   }
 
@@ -221,7 +221,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return (Collection) _getMap().values();
   }
 
-  public final boolean containsKey(Object key) {
+  public boolean containsKey(Object key) {
     RegionEntry re = getEntry(key);
     if (re == null) {
       return false;
@@ -243,12 +243,12 @@ public abstract class AbstractRegionMap implements RegionMap {
 
 
   @Override
-  public final RegionEntry getEntryInVM(Object key) {
+  public RegionEntry getEntryInVM(Object key) {
     return (RegionEntry) _getMap().get(key);
   }
 
 
-  public final RegionEntry putEntryIfAbsent(Object key, RegionEntry re) {
+  public RegionEntry putEntryIfAbsent(Object key, RegionEntry re) {
     RegionEntry oldRe = (RegionEntry) _getMap().putIfAbsent(key, re);
     if (oldRe == null && (re instanceof OffHeapRegionEntry) && _isOwnerALocalRegion()
         && _getOwner().isThisRegionBeingClosedOrDestroyed()) {
@@ -265,13 +265,13 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public final RegionEntry getOperationalEntryInVM(Object key) {
+  public RegionEntry getOperationalEntryInVM(Object key) {
     RegionEntry re = (RegionEntry) _getMap().get(key);
     return re;
   }
 
 
-  public final void removeEntry(Object key, RegionEntry re, boolean updateStat) {
+  public void removeEntry(Object key, RegionEntry re, boolean updateStat) {
     if (re.isTombstone() && _getMap().get(key) == re) {
       logger.fatal(
           LocalizedMessage.create(LocalizedStrings.AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE),
@@ -286,8 +286,8 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
-  public final void removeEntry(Object key, RegionEntry re, boolean updateStat,
-      EntryEventImpl event, final LocalRegion owner) {
+  public void removeEntry(Object key, RegionEntry re, boolean updateStat, EntryEventImpl event,
+      final LocalRegion owner) {
     boolean success = false;
     if (re.isTombstone() && _getMap().get(key) == re) {
       logger.fatal(
@@ -304,7 +304,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
-  protected final void incEntryCount(int delta) {
+  protected void incEntryCount(int delta) {
     LocalRegion lr = _getOwner();
     if (lr != null) {
       CachePerfStats stats = lr.getCachePerfStats();
@@ -314,7 +314,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
-  final void incClearCount(LocalRegion lr) {
+  void incClearCount(LocalRegion lr) {
     if (lr != null && !(lr instanceof HARegion)) {
       CachePerfStats stats = lr.getCachePerfStats();
       if (stats != null) {
@@ -640,7 +640,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Retained // Region entry may contain an off-heap value
-  public final RegionEntry initRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
+  public RegionEntry initRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     boolean needsCallback = false;
     @Retained
     RegionEntry newRe =
@@ -696,7 +696,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return newRe;
   }
 
-  public final RegionEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
+  public RegionEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     boolean needsCallback = false;
     RegionEntry re = getEntry(key);
     if (re == null) {
@@ -755,7 +755,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return re;
   }
 
-  public final boolean initialImagePut(final Object key, final long lastModified, Object newValue,
+  public boolean initialImagePut(final Object key, final long lastModified, Object newValue,
       final boolean wasRecovered, boolean deferLRUCallback, VersionTag entryVersion,
       InternalDistributedMember sender, boolean isSynchronizing) {
     boolean result = false;
@@ -1023,7 +1023,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return true;
   }
 
-  public final boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
+  public boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
       boolean cacheWrite, boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
@@ -1555,7 +1555,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return false;
   }
 
-  public final void txApplyDestroy(Object key, TransactionId txId, TXRmtEvent txEvent,
+  public void txApplyDestroy(Object key, TransactionId txId, TXRmtEvent txEvent,
       boolean inTokenMode, boolean inRI, Operation op, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, boolean isOriginRemote, TXEntryState txEntryState,
@@ -1858,8 +1858,8 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
-  public final boolean invalidate(EntryEventImpl event, boolean invokeCallbacks,
-      boolean forceNewEntry, boolean forceCallbacks) throws EntryNotFoundException {
+  public boolean invalidate(EntryEventImpl event, boolean invokeCallbacks, boolean forceNewEntry,
+      boolean forceCallbacks) throws EntryNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     final LocalRegion owner = _getOwner();
@@ -2344,11 +2344,11 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
-  public final void txApplyInvalidate(Object key, Object newValue, boolean didDestroy,
-      TransactionId txId, TXRmtEvent txEvent, boolean localOp, EventID eventId,
-      Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
-      FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
-      TXEntryState txEntryState, VersionTag versionTag, long tailKey) {
+  public void txApplyInvalidate(Object key, Object newValue, boolean didDestroy, TransactionId txId,
+      TXRmtEvent txEvent, boolean localOp, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
     // boolean didInvalidate = false;
     final LocalRegion owner = _getOwner();
 
@@ -3510,7 +3510,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   /** create a callback event for applying a transactional change to the local cache */
   @Retained
-  public static final EntryEventImpl createCBEvent(final LocalRegion re, Operation op, Object key,
+  public static EntryEventImpl createCBEvent(final LocalRegion re, Operation op, Object key,
       Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
       Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
@@ -3614,7 +3614,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
-  public final void writeSyncIfPresent(Object key, Runnable runner) {
+  public void writeSyncIfPresent(Object key, Runnable runner) {
     RegionEntry re = getEntry(key);
     if (re != null) {
       final boolean disabled = disableLruUpdateCallback();
@@ -3638,7 +3638,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
-  public final void removeIfDestroyed(Object key) {
+  public void removeIfDestroyed(Object key) {
     LocalRegion owner = _getOwner();
     // boolean makeTombstones = owner.concurrencyChecksEnabled;
     DiskRegion dr = owner.getDiskRegion();
@@ -3732,7 +3732,7 @@ public abstract class AbstractRegionMap implements RegionMap {
    * 
    * @param entry the entry to attempt to add to the system
    */
-  protected final RegionEntry putEntryIfAbsentForTest(RegionEntry entry) {
+  protected RegionEntry putEntryIfAbsentForTest(RegionEntry entry) {
     return (RegionEntry) putEntryIfAbsent(entry.getKey(), entry);
   }
 

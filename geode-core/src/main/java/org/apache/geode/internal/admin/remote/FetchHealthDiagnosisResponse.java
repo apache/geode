@@ -30,7 +30,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * 
  * @since GemFire 3.5
  */
-public final class FetchHealthDiagnosisResponse extends AdminResponse {
+public class FetchHealthDiagnosisResponse extends AdminResponse {
   // instance variables
   String[] diagnosis;
 

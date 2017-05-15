@@ -249,7 +249,7 @@ public class AbstractLauncherTest {
                 + TimeUnit.MINUTES.toMillis(30) + TimeUnit.SECONDS.toMillis(1)));
   }
 
-  private static final class FakeServiceLauncher extends AbstractLauncher<String> {
+  private static class FakeServiceLauncher extends AbstractLauncher<String> {
 
     private final String memberId;
     private final String memberName;

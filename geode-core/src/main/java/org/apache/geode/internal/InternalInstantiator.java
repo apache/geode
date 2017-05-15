@@ -955,7 +955,7 @@ public class InternalInstantiator {
    *
    * @since GemFire 5.0
    */
-  public static final class RegistrationContextMessage extends RegistrationMessage {
+  public static class RegistrationContextMessage extends RegistrationMessage {
 
     private transient ClientProxyMembershipID context;
 

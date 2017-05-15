@@ -842,7 +842,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @return the member who is primary for this bucket
    */
-  public final InternalDistributedMember getPrimary() {
+  public InternalDistributedMember getPrimary() {
     InternalDistributedMember primary = getExistingPrimary();
     if (primary == null) {
       primary = waitForNewPrimary();
@@ -857,7 +857,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @see #getPrimary()
    * @return the existing primary (if it is still in the view) otherwise null
    */
-  private final InternalDistributedMember getExistingPrimary() {
+  private InternalDistributedMember getExistingPrimary() {
     return basicGetPrimaryMember();
   }
 
@@ -865,7 +865,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * If the current member is primary for this bucket return true, otherwise, give some time for the
    * current member to become primary and then return whether it is a primary (true/false).
    */
-  public final boolean isPrimaryWithWait() {
+  public boolean isPrimaryWithWait() {
     if (this.isPrimary()) {
       return true;
     }
@@ -884,7 +884,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @see #getPrimary()
    * @return the new primary
    */
-  private final InternalDistributedMember waitForNewPrimary() {
+  private InternalDistributedMember waitForNewPrimary() {
     DM dm = this.regionAdvisor.getDistributionManager();
     DistributionConfig config = dm.getConfig();
     // failure detection period
@@ -2441,7 +2441,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Profile information for a remote bucket hosted by cache servers.
    */
-  public static final class ServerBucketProfile extends BucketProfile {
+  public static class ServerBucketProfile extends BucketProfile {
 
     public Set<BucketServerLocation66> bucketServerLocations;
 

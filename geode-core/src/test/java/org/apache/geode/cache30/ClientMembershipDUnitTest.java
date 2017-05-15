@@ -1568,7 +1568,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   // Simple DistributedMember implementation
-  static final class TestDistributedMember implements DistributedMember {
+  static class TestDistributedMember implements DistributedMember {
 
     private String host;
 

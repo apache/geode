@@ -57,7 +57,7 @@ import org.apache.geode.internal.util.BlobHelper;
  * 
  * @since GemFire 6.5
  */
-public final class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
+public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private Object key;
@@ -83,7 +83,7 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  final public int getProcessorType() {
+  public int getProcessorType() {
     return DistributionManager.SERIAL_EXECUTOR;
   }
 
@@ -94,8 +94,8 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  protected final boolean operateOnRegion(final DistributionManager dm, LocalRegion r,
-      long startTime) throws RemoteOperationException {
+  protected boolean operateOnRegion(final DistributionManager dm, LocalRegion r, long startTime)
+      throws RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "RemoteGetMessage operateOnRegion: {}", r.getFullPath());
     }
@@ -214,7 +214,7 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
    * 
    * @since GemFire 6.5
    */
-  public static final class GetReplyMessage extends ReplyMessage {
+  public static class GetReplyMessage extends ReplyMessage {
     /**
      * The raw value in the cache which may be serialized to the output stream, if it is NOT already
      * a byte array

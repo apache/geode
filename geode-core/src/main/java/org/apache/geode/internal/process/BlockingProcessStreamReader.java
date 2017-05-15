@@ -30,7 +30,7 @@ import org.apache.geode.internal.logging.LogService;
  * 
  * @since GemFire 8.2
  */
-public final class BlockingProcessStreamReader extends ProcessStreamReader {
+public class BlockingProcessStreamReader extends ProcessStreamReader {
   private static final Logger logger = LogService.getLogger();
 
   protected BlockingProcessStreamReader(final Builder builder) {

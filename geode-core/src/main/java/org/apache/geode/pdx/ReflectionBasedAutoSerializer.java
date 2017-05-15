@@ -247,7 +247,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param patterns the list of definitions to apply
    * @deprecated as of 6.6.2 use {@link #reconfigure(String...)} instead.
    */
-  public final void setSerializableClasses(List<String> patterns) {
+  public void setSerializableClasses(List<String> patterns) {
     reconfigure(listToArray(patterns));
   }
 
@@ -288,7 +288,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param patterns the definitions to apply
    * @since GemFire 6.6.2
    */
-  public final void reconfigure(String... patterns) {
+  public void reconfigure(String... patterns) {
     reconfigure(false, patterns);
   }
 
@@ -330,7 +330,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *        throw an exception if the object it not portable to non-java languages.
    * @since GemFire 6.6.2
    */
-  public final void reconfigure(boolean checkPortability, String... patterns) {
+  public void reconfigure(boolean checkPortability, String... patterns) {
     this.manager.reconfigure(checkPortability, patterns);
   }
 
@@ -570,7 +570,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * 
    * @since GemFire 6.6.2
    */
-  public final RegionService getRegionService() {
+  public RegionService getRegionService() {
     return this.manager.getRegionService();
   }
 
@@ -579,7 +579,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * 
    * @since GemFire 8.2
    */
-  public final Object getManager() {
+  public Object getManager() {
     // The result is not AutoSerializableManager because
     // that class is not part of our public APIs.
     return this.manager;

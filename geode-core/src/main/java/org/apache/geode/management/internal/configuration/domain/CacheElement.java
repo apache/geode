@@ -132,7 +132,7 @@ public class CacheElement {
    * @throws IOException if unable to open {@link InputSource}.
    * @since GemFire 8.1
    */
-  private static final InputSource resolveSchema(final Map<String, List<String>> schemaLocationMap,
+  private static InputSource resolveSchema(final Map<String, List<String>> schemaLocationMap,
       String namespaceUri) throws IOException {
     final EntityResolver2 entityResolver = new CacheXmlParser();
 
@@ -170,8 +170,8 @@ public class CacheElement {
    * @throws XPathExpressionException
    * @since GemFire 8.1
    */
-  private static final void buildElementMapCacheType(
-      final LinkedHashMap<String, CacheElement> elementMap, final InputSource inputSource)
+  private static void buildElementMapCacheType(final LinkedHashMap<String, CacheElement> elementMap,
+      final InputSource inputSource)
       throws SAXException, IOException, ParserConfigurationException, XPathExpressionException {
     final Document doc = XmlUtils.getDocumentBuilder().parse(inputSource);
 

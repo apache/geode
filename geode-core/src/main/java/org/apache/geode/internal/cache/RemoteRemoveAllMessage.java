@@ -65,7 +65,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
  *
  * @since GemFire 8.1
  */
-public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectReply {
+public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private RemoveAllEntryData[] removeAllData;
@@ -253,7 +253,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
   }
 
   @Override
-  public final void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.eventId, out);
     DataSerializer.writeObject(this.callbackArg, out);
@@ -333,8 +333,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
    * @param eventSender the endpoint server who received request from client
    * @return If succeeds, return true, otherwise, throw exception
    */
-  public final boolean doLocalRemoveAll(final LocalRegion r,
-      final InternalDistributedMember eventSender)
+  public boolean doLocalRemoveAll(final LocalRegion r, final InternalDistributedMember eventSender)
       throws EntryExistsException, RemoteOperationException {
     final DistributedRegion dr = (DistributedRegion) r;
 
@@ -417,7 +416,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
 
 
   @Override
-  protected final void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
     buff.append("; removeAllDataCount=").append(removeAllDataCount);
     if (this.bridgeContext != null) {
@@ -429,7 +428,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     }
   }
 
-  public static final class RemoveAllReplyMessage extends ReplyMessage {
+  public static class RemoveAllReplyMessage extends ReplyMessage {
     /** Result of the RemoveAll operation */
     private VersionedObjectList versions;
 

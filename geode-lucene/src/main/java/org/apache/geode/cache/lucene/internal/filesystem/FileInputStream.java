@@ -22,7 +22,7 @@ import java.io.IOException;
  * An input stream that reads chunks from a File saved in the region. This input stream will keep
  * going back to the region to look for chunks until nothing is found.
  */
-final class FileInputStream extends SeekableInputStream {
+class FileInputStream extends SeekableInputStream {
 
   private final File file;
   private byte[] chunk = null;

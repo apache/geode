@@ -76,7 +76,7 @@ public enum OSType {
   /**
    * Indicates a Microsoft Windows family OS.
    */
-  public final boolean isWindows() {
+  public boolean isWindows() {
     return this == WIN;
   }
 

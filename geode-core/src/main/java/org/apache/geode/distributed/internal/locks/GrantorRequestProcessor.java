@@ -114,7 +114,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
   }
 
-  private final static boolean basicStartElderCall(InternalDistributedSystem sys, ElderState es,
+  private static boolean basicStartElderCall(InternalDistributedSystem sys, ElderState es,
       InternalDistributedMember elder, DLockService dls) {
     GrantorRequestContext grc = sys.getGrantorRequestContext();
     grc.elderLock.lock();
@@ -217,7 +217,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * Sets currentElder to the memberId of the current elder if elder is remote; null if elder is in
    * our vm. TODO: collaboration lock was removed
    */
-  private final static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls,
+  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls,
       boolean usesElderCollaborationLock) {
     InternalDistributedMember elder;
     ElderState es = null;
@@ -248,7 +248,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     return es;
   }
 
-  private final static void finishElderCall(GrantorRequestContext grc, ElderState es) {
+  private static void finishElderCall(GrantorRequestContext grc, ElderState es) {
     if (es == null) {
       grc.elderLock.lock();
       try {
@@ -458,7 +458,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /////////////// Inner message classes //////////////////
 
-  public static final class GrantorRequestMessage extends PooledDistributionMessage
+  public static class GrantorRequestMessage extends PooledDistributionMessage
       implements MessageWithReply {
     private long grantorVersion;
     private int dlsSerialNumber;
@@ -637,7 +637,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
   }
 
-  public static final class GrantorInfoReplyMessage extends ReplyMessage {
+  public static class GrantorInfoReplyMessage extends ReplyMessage {
     private InternalDistributedMember grantor;
     private long elderVersionId;
     private int grantorSerialNumber;

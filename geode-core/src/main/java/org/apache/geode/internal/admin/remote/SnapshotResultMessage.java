@@ -24,8 +24,7 @@ import org.apache.geode.cache.*;
 import java.io.*;
 // import java.util.*;
 
-public final class SnapshotResultMessage extends PooledDistributionMessage
-    implements AdminMessageType {
+public class SnapshotResultMessage extends PooledDistributionMessage implements AdminMessageType {
   private CacheSnapshot results;
   private int snapshotId;
 

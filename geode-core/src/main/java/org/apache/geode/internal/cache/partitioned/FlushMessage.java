@@ -48,7 +48,7 @@ import org.apache.geode.internal.logging.LogService;
  * 
  * @since GemFire 5.1
  */
-public final class FlushMessage extends SerialDistributionMessage implements MessageWithReply {
+public class FlushMessage extends SerialDistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;

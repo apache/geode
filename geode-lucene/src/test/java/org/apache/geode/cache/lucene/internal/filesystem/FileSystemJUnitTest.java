@@ -554,7 +554,7 @@ public class FileSystemJUnitTest {
    * 
    * To use, do this Mockito.mock(Interface, new SpyWrapper(Answer, o)
    */
-  private static final class SpyWrapper implements Answer<Object> {
+  private static class SpyWrapper implements Answer<Object> {
     private final CountOperations countOperations;
     private Object region;
 
@@ -571,7 +571,7 @@ public class FileSystemJUnitTest {
     }
   }
 
-  private static final class CountOperations implements Answer {
+  private static class CountOperations implements Answer {
     public int count;
     private int limit = Integer.MAX_VALUE;
     private Runnable limitAction;

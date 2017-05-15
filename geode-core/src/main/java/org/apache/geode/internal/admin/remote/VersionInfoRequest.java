@@ -28,7 +28,7 @@ import java.io.*;
  * 
  * @since GemFire 3.5
  */
-public final class VersionInfoRequest extends AdminRequest {
+public class VersionInfoRequest extends AdminRequest {
   /**
    * Returns a <code>VersionInfoRequest</code>.
    */

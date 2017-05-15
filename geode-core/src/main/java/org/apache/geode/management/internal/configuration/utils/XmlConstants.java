@@ -21,7 +21,7 @@ import javax.xml.XMLConstants;
  *
  * @since GemFire 8.1
  */
-public final class XmlConstants {
+public class XmlConstants {
 
   /**
    * Standard prefix for {@link XMLConstants#W3C_XML_SCHEMA_INSTANCE_NS_URI}

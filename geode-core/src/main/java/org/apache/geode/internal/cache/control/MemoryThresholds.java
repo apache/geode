@@ -168,7 +168,7 @@ public class MemoryThresholds {
         - (0.01 * THRESHOLD_THICKNESS_EVICT * this.maxMemoryBytes));
   }
 
-  public static final boolean isLowMemoryExceptionDisabled() {
+  public static boolean isLowMemoryExceptionDisabled() {
     return DISABLE_LOW_MEM_EXCEPTION;
   }
 

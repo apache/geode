@@ -81,7 +81,7 @@ public abstract class NativeCalls {
   }
 
   @SuppressWarnings("unchecked")
-  protected static final Map<String, String> getModifiableJavaEnv() {
+  protected static Map<String, String> getModifiableJavaEnv() {
     final Map<String, String> env = System.getenv();
     try {
       final Field m = env.getClass().getDeclaredField("m");
@@ -93,7 +93,7 @@ public abstract class NativeCalls {
   }
 
   @SuppressWarnings("unchecked")
-  protected static final Map<String, String> getModifiableJavaEnvWIN() {
+  protected static Map<String, String> getModifiableJavaEnvWIN() {
     try {
       final Field envField = Class.forName("java.lang.ProcessEnvironment")
           .getDeclaredField("theCaseInsensitiveEnvironment");
@@ -355,7 +355,7 @@ public abstract class NativeCalls {
    * A generic implementation of {@link #setSocketOptions} for POSIX like systems that requires the
    * child classes to implement a few platform specific methods.
    */
-  protected final Map<TCPSocketOptions, Throwable> setGenericSocketOptions(Socket sock,
+  protected Map<TCPSocketOptions, Throwable> setGenericSocketOptions(Socket sock,
       InputStream sockStream, Map<TCPSocketOptions, Object> optValueMap)
       throws UnsupportedOperationException {
     final Set<Map.Entry<TCPSocketOptions, Object>> optValueEntries = optValueMap.entrySet();

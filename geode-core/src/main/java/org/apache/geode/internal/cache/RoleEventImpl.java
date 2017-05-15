@@ -31,7 +31,7 @@ import org.apache.geode.distributed.internal.membership.InternalRole;
  *
  * @since GemFire 5.0
  */
-public final class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSerializable {
+public class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSerializable {
 
   private static final long serialVersionUID = 1306615015229258945L;
 

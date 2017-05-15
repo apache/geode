@@ -15,33 +15,45 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+
+
 import java.util.UUID;
+
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
 import org.apache.geode.cache.EntryEvent;
+
 import org.apache.geode.internal.cache.lru.EnableLRU;
+
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
+
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: DISK
-// lru: LRU
+// disk: 1
+// lru: 1
 // stats: STATS
-// versioned: VERSIONED
+// versioned: 1
 // offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
 // key long: KEY_LONG
-// key uuid: KEY_UUID
+// key uuid: 1
 // key string1: KEY_STRING1
 // key string2: KEY_STRING2
+
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
@@ -49,15 +61,34 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 public class VersionedThinDiskLRURegionEntryHeapUUIDKey
     extends VersionedThinDiskLRURegionEntryHeap {
   public VersionedThinDiskLRURegionEntryHeapUUIDKey(RegionEntryContext context, UUID key,
-      Object value) {
-    super(context, (value instanceof RecoveredEntry ? null : value));
+
+
+
+      Object value
+
+
+
+  ) {
+    super(context,
+
+        (value instanceof RecoveredEntry ? null : value)
+
+
+
+    );
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
     initialize(context, value);
+
+
+
     this.keyMostSigBits = key.getMostSignificantBits();
     this.keyLeastSigBits = key.getLeastSignificantBits();
+
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -66,10 +97,11 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   private static final AtomicLongFieldUpdater<VersionedThinDiskLRURegionEntryHeapUUIDKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VersionedThinDiskLRURegionEntryHeapUUIDKey.class,
           "lastModified");
+
   private volatile Object value;
 
   @Override
-  protected final Object getValueField() {
+  protected Object getValueField() {
     return this.value;
   }
 
@@ -89,7 +121,7 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   /**
    * @see HashEntry#getEntryHash()
    */
-  public final int getEntryHash() {
+  public int getEntryHash() {
     return this.hash;
   }
 
@@ -100,19 +132,22 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   /**
    * @see HashEntry#getNextEntry()
    */
-  public final HashEntry<Object, Object> getNextEntry() {
+  public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
   /**
    * @see HashEntry#setNextEntry
    */
-  public final void setNextEntry(final HashEntry<Object, Object> n) {
+  public void setNextEntry(final HashEntry<Object, Object> n) {
     this.next = n;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // disk code
+
   protected void initialize(RegionEntryContext drs, Object value) {
     boolean isBackup;
     if (drs instanceof LocalRegion) {
@@ -129,7 +164,7 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   }
 
   @Override
-  public final synchronized int updateAsyncEntrySize(EnableLRU capacityController) {
+  public synchronized int updateAsyncEntrySize(EnableLRU capacityController) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize(getKeyForSizing(), null);
     setEntrySize(newSize);
@@ -137,7 +172,9 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
     return delta;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -162,7 +199,6 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   void setDiskId(RegionEntry old) {
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
-
   // // inlining DiskId
   // // always have these fields
   // /**
@@ -202,105 +238,110 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   // // persistent
   // /** unique entry identifier * */
   // private long keyId;
+
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // lru code
   @Override
   public void setDelayedDiskId(LocalRegion r) {
+
     DiskStoreImpl ds = r.getDiskStore();
     long maxOplogSize = ds.getMaxOplogSize();
     this.id = DiskId.createDiskId(maxOplogSize, false /* over flow only */, ds.needsLinkedList());
+
+
+
   }
 
-  public final synchronized int updateEntrySize(EnableLRU capacityController) {
+  public synchronized int updateEntrySize(EnableLRU capacityController) {
     return updateEntrySize(capacityController, _getValue()); // OFHEAP: _getValue ok w/o incing
                                                              // refcount because we are synced and
                                                              // only getting the size
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-  public final synchronized int updateEntrySize(EnableLRU capacityController, Object value) {
+
+  public synchronized int updateEntrySize(EnableLRU capacityController, Object value) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize(getKeyForSizing(), value);
     setEntrySize(newSize);
     int delta = newSize - oldSize;
-    // if ( debug ) log( "updateEntrySize key=" + getKey()
-    // + (_getValue() == Token.INVALID ? " invalid" :
-    // (_getValue() == Token.LOCAL_INVALID ? "local_invalid" :
-    // (_getValue()==null ? " evicted" : " valid")))
-    // + " oldSize=" + oldSize
-    // + " newSize=" + this.size );
     return delta;
   }
 
-  public final boolean testRecentlyUsed() {
+  public boolean testRecentlyUsed() {
     return areAnyBitsSet(RECENTLY_USED);
   }
 
   @Override
-  public final void setRecentlyUsed() {
+  public void setRecentlyUsed() {
     setBits(RECENTLY_USED);
   }
 
-  public final void unsetRecentlyUsed() {
+  public void unsetRecentlyUsed() {
     clearBits(~RECENTLY_USED);
   }
 
-  public final boolean testEvicted() {
+  public boolean testEvicted() {
     return areAnyBitsSet(EVICTED);
   }
 
-  public final void setEvicted() {
+  public void setEvicted() {
     setBits(EVICTED);
   }
 
-  public final void unsetEvicted() {
+  public void unsetEvicted() {
     clearBits(~EVICTED);
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   private LRUClockNode nextLRU;
   private LRUClockNode prevLRU;
   private int size;
 
-  public final void setNextLRUNode(LRUClockNode next) {
+  public void setNextLRUNode(LRUClockNode next) {
     this.nextLRU = next;
   }
 
-  public final LRUClockNode nextLRUNode() {
+  public LRUClockNode nextLRUNode() {
     return this.nextLRU;
   }
 
-  public final void setPrevLRUNode(LRUClockNode prev) {
+  public void setPrevLRUNode(LRUClockNode prev) {
     this.prevLRU = prev;
   }
 
-  public final LRUClockNode prevLRUNode() {
+  public LRUClockNode prevLRUNode() {
     return this.prevLRU;
   }
 
-  public final int getEntrySize() {
+  public int getEntrySize() {
     return this.size;
   }
 
-  protected final void setEntrySize(int size) {
+  protected void setEntrySize(int size) {
     this.size = size;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-  // @Override
-  // public StringBuilder appendFieldsToString(final StringBuilder sb) {
-  // StringBuilder result = super.appendFieldsToString(sb);
-  // result.append("; prev=").append(this.prevLRU==null?"null":"not null");
-  // result.append("; next=").append(this.nextLRU==null?"null":"not null");
-  // return result;
-  // }
+
   @Override
   public Object getKeyForSizing() {
+
+
+
     // inline keys always report null for sizing since the size comes from the entry size
     return null;
+
   }
 
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // versioned code
   private VersionSource memberID;
   private short entryVersionLowBytes;
@@ -316,6 +357,7 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
+
 
   public long getVersionTimeStamp() {
     return getLastModified();
@@ -334,6 +376,7 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   public void setVersions(VersionTag tag) {
     this.memberID = tag.getMemberID();
     int eVersion = tag.getEntryVersion();
@@ -363,6 +406,7 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberID);
     tag.setEntryVersion(getEntryVersion());
@@ -395,13 +439,16 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
     return this.regionVersionLowBytes;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // key code
+
   private final long keyMostSigBits;
   private final long keyLeastSigBits;
 
   @Override
-  public final Object getKey() {
+  public Object getKey() {
     return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
   }
 
@@ -414,5 +461,8 @@ public class VersionedThinDiskLRURegionEntryHeapUUIDKey
     }
     return false;
   }
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
+

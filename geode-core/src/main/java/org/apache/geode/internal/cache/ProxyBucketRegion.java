@@ -57,7 +57,7 @@ import org.apache.geode.internal.logging.LogService;
  * 
  * @since GemFire 5.1
  */
-public final class ProxyBucketRegion implements Bucket {
+public class ProxyBucketRegion implements Bucket {
   private static final Logger logger = LogService.getLogger();
 
   private final int serialNumber;
@@ -356,11 +356,11 @@ public final class ProxyBucketRegion implements Bucket {
     return this.advisor.getBucketRedundancy() + 1;
   }
 
-  public final int getBucketId() {
+  public int getBucketId() {
     return this.bid;
   }
 
-  public final int getId() {
+  public int getId() {
     return getBucketId();
   }
 

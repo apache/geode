@@ -541,7 +541,7 @@ public class LocatorLoadSnapshot {
     }
   }
 
-  private final class LoadEstimateTask implements Runnable {
+  private class LoadEstimateTask implements Runnable {
     private final EstimateMapKey key;
 
     private final LoadHolder lh;
@@ -578,7 +578,7 @@ public class LocatorLoadSnapshot {
     }
   }
 
-  private static final class LoadHolder {
+  private static class LoadHolder {
     private float load;
 
     private float loadPerConnection;

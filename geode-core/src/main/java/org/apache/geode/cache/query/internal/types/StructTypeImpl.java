@@ -32,7 +32,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 
  * @since GemFire 4.0
  */
-public final class StructTypeImpl extends ObjectTypeImpl implements StructType {
+public class StructTypeImpl extends ObjectTypeImpl implements StructType {
   private static final long serialVersionUID = -6368710865627039204L;
   private String[] fieldNames;
   private ObjectType[] fieldTypes;

@@ -496,13 +496,13 @@ public class UpdateOperation extends AbstractUpdateOperation {
     }
   }
 
-  public static final class UpdateWithContextMessage extends UpdateMessage {
+  public static class UpdateWithContextMessage extends UpdateMessage {
 
     protected transient ClientProxyMembershipID clientID;
 
     @Override
     @Retained
-    final public EntryEventImpl createEntryEvent(DistributedRegion rgn) {
+    public EntryEventImpl createEntryEvent(DistributedRegion rgn) {
       // Object oldValue = null;
       final Object argNewValue = null;
       // boolean localLoad = false, netLoad = false, netSearch = false,
