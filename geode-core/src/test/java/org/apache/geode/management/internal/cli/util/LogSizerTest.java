@@ -32,15 +32,12 @@ import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.text.ParseException;
 
 @Category(UnitTest.class)
 public class LogSizerTest {
   private LogFilter logFilter;
   private SizeExportLogsFunction.Args nonFilteringArgs;
-
-  private File dir;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -50,9 +47,7 @@ public class LogSizerTest {
   @Before
   public void setUp() throws Exception {
     logFilter = mock(LogFilter.class);
-    dir = temporaryFolder.getRoot();
     nonFilteringArgs = new ExportLogsFunction.Args(null, null, null, false, false, false);
-
   }
 
   @After
@@ -62,8 +57,8 @@ public class LogSizerTest {
 
   @Test
   public void nullFileArgs_returnsZeroSize() throws ParseException, IOException {
-    LogSizer sizer = new LogSizer(logFilter, null, null);
-    assertThat(sizer.getFilteredSize()).isEqualTo(0L);
+    LogExporter sizer = new LogExporter(logFilter, null, null);
+    assertThat(sizer.estimateFilteredSize()).isEqualTo(0L);
   }
 
   @Test
@@ -75,8 +70,8 @@ public class LogSizerTest {
         new File("root" + separator + "parent" + separator + testName + ".log").toPath());
     when(mockStatFile.toPath()).thenReturn(
         new File("root" + separator + "parent" + separator + testName + ".gfs").toPath());
-    LogSizer sizer = new LogSizer(logFilter, mockLogFile, mockStatFile);
-    assertThat(sizer.getFilteredSize()).isEqualTo(0L);
+    LogExporter sizer = new LogExporter(logFilter, mockLogFile, mockStatFile);
+    assertThat(sizer.estimateFilteredSize()).isEqualTo(0L);
   }
 
   @Test
@@ -92,8 +87,8 @@ public class LogSizerTest {
         new LogFilter(nonFilteringArgs.getLogLevel(), nonFilteringArgs.isThisLogLevelOnly(),
             nonFilteringArgs.getStartTime(), nonFilteringArgs.getEndTime());
 
-    LogSizer sizer = new LogSizer(logFilter, mockLogFile, mockStatFile);
-    assertThat(sizer.getFilteredSize()).isEqualTo(0L);
+    LogExporter sizer = new LogExporter(logFilter, mockLogFile, mockStatFile);
+    assertThat(sizer.estimateFilteredSize()).isEqualTo(0L);
   }
 
 }

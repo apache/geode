@@ -125,8 +125,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
 
     Region exportLogsRegion = cache.getRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
-      AttributesFactory<String, Configuration> regionAttrsFactory =
-          new AttributesFactory<String, Configuration>();
+      AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
       regionAttrsFactory.setDataPolicy(DataPolicy.EMPTY);
       regionAttrsFactory.setScope(Scope.DISTRIBUTED_ACK);
 

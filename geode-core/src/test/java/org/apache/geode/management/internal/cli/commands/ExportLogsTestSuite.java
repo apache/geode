@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunctionCacheTest;
+import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunctionTest;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunctionFileTest;
+import org.apache.geode.management.internal.cli.util.LogExporterIntegrationTest;
+import org.apache.geode.management.internal.cli.util.LogExporterTest;
 import org.apache.geode.management.internal.cli.util.LogSizerTest;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
@@ -27,9 +29,9 @@ import org.junit.runners.Suite;
 
 @Ignore
 @Suite.SuiteClasses({ExportLogsCommandTest.class, ExportLogsFileSizeLimitTest.class,
-    ExportLogsIntegrationTest.class, ExportLogsDUnitTest.class,
-    SizeExportLogsFunctionCacheTest.class, SizeExportLogsFunctionFileTest.class,
-    LogSizerTest.class})
+    ExportLogsIntegrationTest.class, ExportLogsDUnitTest.class, SizeExportLogsFunctionTest.class,
+    SizeExportLogsFunctionFileTest.class, LogSizerTest.class, LogExporterTest.class,
+    LogExporterIntegrationTest.class})
 @RunWith(Suite.class)
 public class ExportLogsTestSuite {
 }

@@ -16,13 +16,15 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
@@ -31,6 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
+import org.mockito.Matchers;
 
 import java.io.File;
 import java.util.Collections;
@@ -39,18 +42,14 @@ import java.util.List;
 import java.util.Properties;
 
 @Category(IntegrationTest.class)
-public class SizeExportLogsFunctionCacheTest {
+public class SizeExportLogsFunctionTest {
 
-  private Cache cache;
 
   private SizeExportLogsFunction.Args nonFilteringArgs;
-  private TestResultSender resultSender;
-  private FunctionContext functionContext;
-  private File dir;
-  private DistributedMember member;
   private File logFile;
   private File statFile;
-  private String name;
+  private Properties config;
+  private TestResultSender resultSender;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -63,50 +62,69 @@ public class SizeExportLogsFunctionCacheTest {
 
   @Before
   public void before() throws Throwable {
-    name = testName.getMethodName();
+    String name = testName.getMethodName();
+    config = new Properties();
+    config.setProperty(NAME, name);
 
-    this.dir = this.temporaryFolder.getRoot();
+    File dir = this.temporaryFolder.getRoot();
     logFile = new File(dir, name + ".log");
     statFile = new File(dir, name + ".gfs");
 
-    this.nonFilteringArgs = new ExportLogsFunction.Args(null, null, null, false, false, false);
-    functionContext = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
+    resultSender = new TestResultSender();
+    this.nonFilteringArgs = new SizeExportLogsFunction.Args(null, null, null, false, false, false);
 
   }
 
   @Test
   public void withFiles_returnsCombinedSizeResult() throws Throwable {
-    Properties config = new Properties();
-    config.setProperty(NAME, name);
     config.setProperty(LOG_FILE, logFile.getAbsolutePath());
     config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
 
     server.withProperties(config).startServer();
-    TestResultSender resultSender = new TestResultSender();
     FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
 
     // log and stat files sizes are not constant with a real cache running, so check for the sizer
     // estimate within a range
-    long initalFileSizes = FileUtils.sizeOf(logFile) + FileUtils.sizeOf(statFile);
+    long initialFileSizes = FileUtils.sizeOf(logFile) + FileUtils.sizeOf(statFile);
     new SizeExportLogsFunction().execute(context);
     long finalFileSizes = FileUtils.sizeOf(logFile) + FileUtils.sizeOf(statFile);
-    getAndVerifySizeEstimate(resultSender, initalFileSizes, finalFileSizes);
+    getAndVerifySizeEstimate(resultSender, initialFileSizes, finalFileSizes);
   }
 
   @Test
   public void noFiles_returnsZeroResult() throws Throwable {
-    Properties config = new Properties();
-    config.setProperty(NAME, name);
     config.setProperty(LOG_FILE, "");
     config.setProperty(STATISTIC_ARCHIVE_FILE, "");
 
     server.withProperties(config).startServer();
 
-    TestResultSender resultSender = new TestResultSender();
     FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
-
     new SizeExportLogsFunction().execute(context);
     getAndVerifySizeEstimate(resultSender, 0L);
+  }
+
+  @Test
+  public void withFunctionError_shouldThrow() throws Throwable {
+    server.withProperties(config).startServer();
+
+    FunctionContext context = new FunctionContextImpl("functionId", null, resultSender);
+    new SizeExportLogsFunction().execute(context);
+    assertThatThrownBy(resultSender::getResults).isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void sizeGreaterThanDiskAvailable_sendsErrorResult() throws Throwable {
+    server.withProperties(config).startServer();
+
+    FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
+    SizeExportLogsFunction testFunction = new SizeExportLogsFunction();
+    SizeExportLogsFunction spyFunction = spy(testFunction);
+    long fakeDiskAvailable = 1024;
+    doReturn(fakeDiskAvailable).when(spyFunction)
+        .getDiskAvailable(Matchers.any(DistributionConfig.class));
+
+    spyFunction.execute(context);
+    assertThatThrownBy(resultSender::getResults).isInstanceOf(ManagementException.class);
   }
 
   private void getAndVerifySizeEstimate(TestResultSender resultSender, long expectedSize)
@@ -123,24 +141,10 @@ public class SizeExportLogsFunctionCacheTest {
     List<?> result = (List<?>) results.get(0);
     assertThat(result).isNotNull();
     if (minExpected == maxExpected) {
-      assertThat(((ExportedLogsSizeInfo) result.get(0)).getLogsSize()).isEqualTo(minExpected);
+      assertThat(((Long) result.get(0))).isEqualTo(minExpected);
     }
-    assertThat(((ExportedLogsSizeInfo) result.get(0)).getLogsSize())
-        .isGreaterThanOrEqualTo(minExpected).isLessThanOrEqualTo(maxExpected);
-  }
-
-  @Test
-  public void withFunctionError_shouldThrow() throws Throwable {
-    Properties config = new Properties();
-    config.setProperty(NAME, name);
-
-    server.withProperties(config).startServer();
-
-    TestResultSender resultSender = new TestResultSender();
-    FunctionContext context = new FunctionContextImpl("functionId", null, resultSender);
-
-    new SizeExportLogsFunction().execute(context);
-    assertThatThrownBy(resultSender::getResults).isInstanceOf(NullPointerException.class);
+    assertThat(((Long) result.get(0))).isGreaterThanOrEqualTo(minExpected)
+        .isLessThanOrEqualTo(maxExpected);
   }
 
   private static class TestResultSender implements ResultSender {
@@ -149,7 +153,7 @@ public class SizeExportLogsFunctionCacheTest {
 
     private Throwable t;
 
-    protected List<Object> getResults() throws Throwable {
+    List<Object> getResults() throws Throwable {
       if (t != null) {
         throw t;
       }

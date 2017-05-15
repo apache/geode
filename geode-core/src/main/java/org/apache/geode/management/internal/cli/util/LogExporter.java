@@ -31,7 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.ParseException;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -51,10 +51,8 @@ public class LogExporter {
    * @param logFilter the filter that's used to check if we need to accept the file or the logLine
    * @param baseLogFile if not null, we will export the logs in that directory
    * @param baseStatsFile if not null, we will export stats in that directory
-   * @throws ParseException
    */
-  public LogExporter(LogFilter logFilter, File baseLogFile, File baseStatsFile)
-      throws ParseException {
+  public LogExporter(LogFilter logFilter, File baseLogFile, File baseStatsFile) {
     assert logFilter != null;
     this.logFilter = logFilter;
     this.baseLogFile = baseLogFile;
@@ -65,7 +63,6 @@ public class LogExporter {
    *
    * @return Path to the zip file that has all the filtered files, null if no files are selected to
    *         export.
-   * @throws IOException
    */
   public Path export() throws IOException {
     Path tempDirectory = Files.createTempDirectory("exportLogs");
@@ -127,24 +124,68 @@ public class LogExporter {
     }
   }
 
-  protected List<Path> findLogFiles(Path workingDir) throws IOException {
+  /**
+   * @return combined size of stat archives and filtered log files in bytes
+   */
+  public long estimateFilteredSize() throws IOException {
+    long filteredSize = 0;
+    if (baseLogFile != null) {
+      for (Path logFile : findLogFiles(baseLogFile.toPath().getParent())) {
+        filteredSize += filterAndSize(logFile);
+      }
+    }
+
+    if (baseStatsFile != null) {
+      for (Path statFile : findStatFiles(baseStatsFile.toPath().getParent())) {
+        filteredSize += statFile.toFile().length();
+      }
+    }
+
+    return filteredSize;
+  }
+
+  /**
+   * @return size of file in bytes
+   */
+  private long filterAndSize(Path originalLogFile) throws IOException {
+    long size = 0;
+    this.logFilter.startNewFile();
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(originalLogFile.toFile()))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        LogFilter.LineFilterResult result = this.logFilter.acceptsLine(line);
+
+        if (result == LogFilter.LineFilterResult.REMAINDER_OF_FILE_REJECTED) {
+          break;
+        }
+        if (result == LogFilter.LineFilterResult.LINE_ACCEPTED) {
+          size += line.length() + File.separator.length();
+        }
+      }
+    }
+    return size;
+  }
+
+  List<Path> findLogFiles(Path workingDir) throws IOException {
     Predicate<Path> logFileSelector = (Path file) -> file.toString().toLowerCase().endsWith(".log");
     return findFiles(workingDir, logFileSelector);
   }
 
 
-  protected List<Path> findStatFiles(Path workingDir) throws IOException {
+  List<Path> findStatFiles(Path workingDir) throws IOException {
     Predicate<Path> statFileSelector =
         (Path file) -> file.toString().toLowerCase().endsWith(".gfs");
     return findFiles(workingDir, statFileSelector);
   }
 
   private List<Path> findFiles(Path workingDir, Predicate<Path> fileSelector) throws IOException {
-    Stream<Path> selectedFiles =
-        Files.list(workingDir).filter(fileSelector).filter(this.logFilter::acceptsFile);
+    Stream<Path> selectedFiles/* = null */;
+    if (!workingDir.toFile().isDirectory()) {
+      return Collections.emptyList();
+    }
+    selectedFiles = Files.list(workingDir).filter(fileSelector).filter(this.logFilter::acceptsFile);
 
     return selectedFiles.collect(toList());
   }
-
-
 }

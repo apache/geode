@@ -39,7 +39,6 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.Member;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
@@ -157,8 +156,7 @@ public class ExportLogsDUnitTest {
   @Test
   public void testExportWithThresholdLogLevelFilter() throws Exception {
 
-    CommandResult result = gfshConnector
-        .executeAndVerifyCommand("export logs --log-level=info --only-log-level=false");
+    gfshConnector.executeAndVerifyCommand("export logs --log-level=info --only-log-level=false");
 
     Set<String> acceptedLogLevels = Stream.of("info", "error").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
@@ -167,8 +165,7 @@ public class ExportLogsDUnitTest {
 
   @Test
   public void testExportWithExactLogLevelFilter() throws Exception {
-    CommandResult result =
-        gfshConnector.executeAndVerifyCommand("export logs --log-level=info --only-log-level=true");
+    gfshConnector.executeAndVerifyCommand("export logs --log-level=info --only-log-level=true");
 
 
     Set<String> acceptedLogLevels = Stream.of("info").collect(toSet());
@@ -177,7 +174,7 @@ public class ExportLogsDUnitTest {
 
   @Test
   public void testExportWithNoOptionsGiven() throws Exception {
-    CommandResult result = gfshConnector.executeAndVerifyCommand("export logs");
+    gfshConnector.executeAndVerifyCommand("export logs");
     Set<String> acceptedLogLevels = Stream.of("info", "error", "debug").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
   }
@@ -229,7 +226,7 @@ public class ExportLogsDUnitTest {
   }
 
 
-  public void verifyZipFileContents(Set<String> acceptedLogLevels) throws IOException {
+  private void verifyZipFileContents(Set<String> acceptedLogLevels) throws IOException {
     File unzippedLogFileDir = unzipExportedLogs();
 
     Set<File> dirsFromZipFile =
@@ -247,7 +244,7 @@ public class ExportLogsDUnitTest {
     }
   }
 
-  public void verifyLogFileContents(Set<String> acceptedLogLevels, File dirForMember)
+  private void verifyLogFileContents(Set<String> acceptedLogLevels, File dirForMember)
       throws IOException {
 
     String memberName = dirForMember.getName();
@@ -312,13 +309,13 @@ public class ExportLogsDUnitTest {
     String message;
     boolean shouldBeIgnoredDueToTimestamp;
 
-    public LogLine(String message, String level, boolean shouldBeIgnoredDueToTimestamp) {
+    LogLine(String message, String level, boolean shouldBeIgnoredDueToTimestamp) {
       this.message = message;
       this.level = level;
       this.shouldBeIgnoredDueToTimestamp = shouldBeIgnoredDueToTimestamp;
     }
 
-    public LogLine(Member member, String level) {
+    LogLine(Member member, String level) {
       this.level = level;
       this.message = buildMessage(member.getName());
     }
@@ -332,13 +329,13 @@ public class ExportLogsDUnitTest {
       if (Objects.equals(level, "error")) {
         stringBuilder.append(ERROR_LOG_PREFIX + "-");
       }
-      stringBuilder.append(level + "-");
+      stringBuilder.append(level).append("-");
 
       return stringBuilder.append(memberName).toString();
     }
 
 
-    public void writeLog(Logger logger) {
+    void writeLog(Logger logger) {
       switch (this.level) {
         case "info":
           logger.info(getMessage());

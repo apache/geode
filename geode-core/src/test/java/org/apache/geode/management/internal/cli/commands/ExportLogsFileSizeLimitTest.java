@@ -64,7 +64,7 @@ public class ExportLogsFileSizeLimitTest {
 
     ExportLogsCommand exportLogsCommand = new ExportLogsCommand();
 
-    assertThat(exportLogsCommand.isFileSizeCheckEnabledAndWithinLimit(MEGABYTE, file)).isTrue();
+    exportLogsCommand.isFileSizeCheckEnabledAndWithinLimit(MEGABYTE, file);
   }
 
   @Test
@@ -74,7 +74,7 @@ public class ExportLogsFileSizeLimitTest {
 
     ExportLogsCommand exportLogsCommand = new ExportLogsCommand();
 
-    assertThat(exportLogsCommand.isFileSizeCheckEnabledAndWithinLimit(0, file)).isFalse();
+    exportLogsCommand.isFileSizeCheckEnabledAndWithinLimit(0, file);
   }
 
   private void fillUpFile(File file, long sizeInBytes) throws IOException {
