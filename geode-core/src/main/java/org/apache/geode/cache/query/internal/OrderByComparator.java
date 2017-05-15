@@ -71,6 +71,61 @@ public class OrderByComparator implements Comparator {
     return array;
   }
 
+  protected int evaluateSortCriteria(Object value1, Object value2) {
+    int result = -1;
+    CompiledSortCriterion csc;
+    if (orderByAttrs != null) {
+      Iterator orderiter = orderByAttrs.iterator();
+      while (orderiter.hasNext()) {
+        csc = (CompiledSortCriterion) orderiter.next();
+        Object sortCriteriaForValue1 = csc.evaluate(value1, context);
+        Object sortCriteriaForValue2 = csc.evaluate(value2, context);
+
+        if (sortCriteriaForValue1 == null || sortCriteriaForValue2 == null) {
+          if (sortCriteriaForValue1 == null) {
+            result = (sortCriteriaForValue2 == null ? 0 : -1);
+          } else {
+            result = 1;
+          }
+        } else if (sortCriteriaForValue1 == QueryService.UNDEFINED
+            || sortCriteriaForValue2 == QueryService.UNDEFINED) {
+          if (sortCriteriaForValue1 == QueryService.UNDEFINED) {
+            result = (sortCriteriaForValue2 == QueryService.UNDEFINED ? 0 : -1);
+          } else {
+            result = 1;
+          }
+        } else {
+          if (sortCriteriaForValue1 instanceof Number && sortCriteriaForValue2 instanceof Number) {
+            double diff = ((Number) sortCriteriaForValue1).doubleValue()
+                - ((Number) sortCriteriaForValue2).doubleValue();
+            result = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+          } else {
+            if (sortCriteriaForValue1 instanceof PdxString
+                && sortCriteriaForValue2 instanceof String) {
+              sortCriteriaForValue2 = new PdxString((String) sortCriteriaForValue2);
+            } else if (sortCriteriaForValue2 instanceof PdxString
+                && sortCriteriaForValue1 instanceof String) {
+              sortCriteriaForValue1 = new PdxString((String) sortCriteriaForValue1);
+            }
+            result = ((Comparable) sortCriteriaForValue1).compareTo(sortCriteriaForValue2);
+          }
+
+        }
+
+        if (result == 0) {
+          continue;
+        } else {
+          if (Boolean.valueOf(csc.getCriterion())) {
+            result = (result * (-1));
+          }
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
+
   /**
    * Compares its two arguments for order. Returns a negative integer, zero, or a positive integer
    * as the first argument is less than, equal to, or greater than the second.
@@ -92,122 +147,76 @@ public class OrderByComparator implements Comparator {
     if ((this.objType.isStructType() && obj1 instanceof Object[] && obj2 instanceof Object[])
         || !this.objType.isStructType()) { // obj1 instanceof Object && obj2
                                            // instanceof Object){
-      Object[] list1 = this.evaluateSortCriteria(obj1);
-      Object[] list2 = this.evaluateSortCriteria(obj2);
+      if ((result = evaluateSortCriteria(obj1, obj2)) != 0) {
+        return result;
+      }
 
-      if (list1.length != list2.length) {
-        Support.assertionFailed("Error Occurred due to improper sort criteria evaluation ");
-      } else {
-        for (int i = 0; i < list1.length; i++) {
-          Object arr1[] = (Object[]) list1[i];
-          Object arr2[] = (Object[]) list2[i];
-          // check for null.
-          if (arr1[0] == null || arr2[0] == null) {
-            if (arr1[0] == null) {
-              result = (arr2[0] == null ? 0 : -1);
-            } else {
-              result = 1;
-            }
-          } else if (arr1[0] == QueryService.UNDEFINED || arr2[0] == QueryService.UNDEFINED) {
-            if (arr1[0] == QueryService.UNDEFINED) {
-              result = (arr2[0] == QueryService.UNDEFINED ? 0 : -1);
-            } else {
-              result = 1;
-            }
-          } else {
-            if (arr1[0] instanceof Number && arr2[0] instanceof Number) {
-              double diff = ((Number) arr1[0]).doubleValue() - ((Number) arr2[0]).doubleValue();
-              result = diff > 0 ? 1 : diff < 0 ? -1 : 0;
-            } else {
-              if (arr1[0] instanceof PdxString && arr2[0] instanceof String) {
-                arr2[0] = new PdxString((String) arr2[0]);
-              } else if (arr2[0] instanceof PdxString && arr1[0] instanceof String) {
-                arr1[0] = new PdxString((String) arr1[0]);
-              }
-              result = ((Comparable) arr1[0]).compareTo(arr2[0]);
-            }
+      QueryObserver observer = QueryObserverHolder.getInstance();
+      if (observer != null) {
+        observer.orderByColumnsEqual();
+      }
+      // The comparable fields are equal, so we check if the overall keys are
+      // equal or not
+      if (this.objType.isStructType()) {
+        int i = 0;
+        for (Object o1 : (Object[]) obj1) {
+          Object o2 = ((Object[]) obj2)[i++];
 
-          }
-
-          // equals.
-          if (result == 0) {
-            continue;
-          } else {
-            // not equal, change the sign based on the order by type (asc,
-            // desc).
-            if (((Boolean) arr1[1]).booleanValue()) {
-              result = (result * -1);
-            }
-            return result;
-          }
-        }
-        QueryObserver observer = QueryObserverHolder.getInstance();
-        if (observer != null) {
-          observer.orderByColumnsEqual();
-        }
-        // The comparable fields are equal, so we check if the overall keys are
-        // equal or not
-        if (this.objType.isStructType()) {
-          int i = 0;
-          for (Object o1 : (Object[]) obj1) {
-            Object o2 = ((Object[]) obj2)[i++];
-
-            // Check for null value.
-            if (o1 == null || o2 == null) {
-              if (o1 == null) {
-                if (o2 == null) {
-                  continue;
-                }
-                return -1;
-              } else {
-                return 1;
-              }
-            } else if (o1 == QueryService.UNDEFINED || o2 == QueryService.UNDEFINED) {
-              if (o1 == QueryService.UNDEFINED) {
-                if (o2 == QueryService.UNDEFINED) {
-                  continue;
-                }
-                return -1;
-              } else {
-                return 1;
-              }
-            }
-
-            if (o1 instanceof Comparable) {
-              final int rslt;
-              if (o1 instanceof Number && o2 instanceof Number) {
-                double diff = ((Number) o1).doubleValue() - ((Number) o2).doubleValue();
-                rslt = diff > 0 ? 1 : diff < 0 ? -1 : 0;
-              } else {
-                if (o1 instanceof PdxString && o2 instanceof String) {
-                  o2 = new PdxString((String) o2);
-                } else if (o2 instanceof PdxString && o1 instanceof String) {
-                  o1 = new PdxString((String) o1);
-                }
-                rslt = ((Comparable) o1).compareTo(o2);
-              }
-              if (rslt == 0) {
+          // Check for null value.
+          if (o1 == null || o2 == null) {
+            if (o1 == null) {
+              if (o2 == null) {
                 continue;
-              } else {
-                return rslt;
               }
-            } else if (!o1.equals(o2)) {
               return -1;
+            } else {
+              return 1;
+            }
+          } else if (o1 == QueryService.UNDEFINED || o2 == QueryService.UNDEFINED) {
+            if (o1 == QueryService.UNDEFINED) {
+              if (o2 == QueryService.UNDEFINED) {
+                continue;
+              }
+              return -1;
+            } else {
+              return 1;
             }
           }
-          return 0;
-        } else {
-          if (obj1 instanceof PdxString && obj2 instanceof String) {
-            obj2 = new PdxString((String) obj2);
-          } else if (obj2 instanceof PdxString && obj1 instanceof String) {
-            obj1 = new PdxString((String) obj1);
-          }
 
-          if (obj1 instanceof Comparable) {
-            return ((Comparable) obj1).compareTo(obj2);
-          } else {
-            return obj1.equals(obj2) ? 0 : -1;
+          if (o1 instanceof Comparable) {
+            final int rslt;
+            if (o1 instanceof Number && o2 instanceof Number) {
+              double diff = ((Number) o1).doubleValue() - ((Number) o2).doubleValue();
+              rslt = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+            } else {
+              if (o1 instanceof PdxString && o2 instanceof String) {
+                o2 = new PdxString((String) o2);
+              } else if (o2 instanceof PdxString && o1 instanceof String) {
+                o1 = new PdxString((String) o1);
+              }
+              rslt = ((Comparable) o1).compareTo(o2);
+            }
+            if (rslt == 0) {
+              continue;
+            } else {
+              return rslt;
+            }
+          } else if (!o1.equals(o2)) {
+            return -1;
           }
+        }
+        return 0;
+      } else {
+        if (obj1 instanceof PdxString && obj2 instanceof String) {
+          obj2 = new PdxString((String) obj2);
+        } else if (obj2 instanceof PdxString && obj1 instanceof String) {
+          obj1 = new PdxString((String) obj1);
+        }
+
+        if (obj1 instanceof Comparable) {
+          return ((Comparable) obj1).compareTo(obj2);
+        } else {
+          return obj1.equals(obj2) ? 0 : -1;
         }
       }
     }

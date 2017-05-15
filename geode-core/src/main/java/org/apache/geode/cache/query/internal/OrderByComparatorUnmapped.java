@@ -24,8 +24,10 @@ import java.util.Map;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.pdx.internal.PdxString;
 
 @Deprecated
 public class OrderByComparatorUnmapped extends OrderByComparator {
@@ -51,6 +53,64 @@ public class OrderByComparatorUnmapped extends OrderByComparator {
 
     this.orderByMap.put(row, this.calculateSortCriteria(context, row));
   }
+
+  @Override
+  public int evaluateSortCriteria(Object obj1, Object obj2) {
+    int result = -1;
+    Object[] list1 = this.evaluateSortCriteria(obj1);
+    Object[] list2 = this.evaluateSortCriteria(obj2);
+
+    if (list1.length != list2.length) {
+      Support.assertionFailed("Error Occurred due to improper sort criteria evaluation ");
+    } else {
+      for (int i = 0; i < list1.length; i++) {
+        Object arr1[] = (Object[]) list1[i];
+        Object arr2[] = (Object[]) list2[i];
+        // check for null.
+        if (arr1[0] == null || arr2[0] == null) {
+          if (arr1[0] == null) {
+            result = (arr2[0] == null ? 0 : -1);
+          } else {
+            result = 1;
+          }
+        } else if (arr1[0] == QueryService.UNDEFINED || arr2[0] == QueryService.UNDEFINED) {
+          if (arr1[0] == QueryService.UNDEFINED) {
+            result = (arr2[0] == QueryService.UNDEFINED ? 0 : -1);
+          } else {
+            result = 1;
+          }
+        } else {
+          if (arr1[0] instanceof Number && arr2[0] instanceof Number) {
+            double diff = ((Number) arr1[0]).doubleValue() - ((Number) arr2[0]).doubleValue();
+            result = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+          } else {
+            if (arr1[0] instanceof PdxString && arr2[0] instanceof String) {
+              arr2[0] = new PdxString((String) arr2[0]);
+            } else if (arr2[0] instanceof PdxString && arr1[0] instanceof String) {
+              arr1[0] = new PdxString((String) arr1[0]);
+            }
+            result = ((Comparable) arr1[0]).compareTo(arr2[0]);
+          }
+
+        }
+
+        // equals.
+        if (result == 0) {
+          continue;
+        } else {
+          // not equal, change the sign based on the order by type (asc,
+          // desc).
+          if (((Boolean) arr1[1]).booleanValue()) {
+            result = (result * -1);
+          }
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
+
 
   @Override
   protected Object[] evaluateSortCriteria(Object row) {
