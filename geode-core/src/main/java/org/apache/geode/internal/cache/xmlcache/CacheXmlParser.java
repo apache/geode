@@ -69,7 +69,6 @@ import org.apache.geode.cache.GatewayException;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
@@ -1068,18 +1067,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       throw new InternalGemFireException(
           LocalizedStrings.CacheXmlParser_UNKNOWN_SCOPE_0.toLocalizedString(scope));
-    }
-    String mirror = atts.getValue(MIRROR_TYPE);
-    if (mirror == null) {
-    } else if (mirror.equals(NONE)) {
-      attrs.setMirrorType(MirrorType.NONE);
-    } else if (mirror.equals(KEYS)) {
-      attrs.setMirrorType(MirrorType.KEYS);
-    } else if (mirror.equals(KEYS_VALUES)) {
-      attrs.setMirrorType(MirrorType.KEYS_VALUES);
-    } else {
-      throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlParser_UNKNOWN_MIRROR_TYPE_0.toLocalizedString(mirror));
     }
     {
       String dp = atts.getValue(DATA_POLICY);

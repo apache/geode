@@ -443,8 +443,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String NAME = "name";
   /** The name of the <code>scope</code> attribute */
   protected static final String SCOPE = "scope";
-  /** The name of the <code>mirror-type</code> attribute */
-  protected static final String MIRROR_TYPE = "mirror-type";
   /** The name of the <code>eviction-policy</code> attribute */
   protected static final String CLIENT_SUBSCRIPTION_EVICTION_POLICY = "eviction-policy";
   /** The name of the <code>capacity</code> attribute */

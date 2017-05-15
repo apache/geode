@@ -163,14 +163,6 @@ public interface SystemMemberRegion {
   public String getCustomEntryIdleTimeout();
 
   /**
-   * Returns the MirrorType in this region's attributes.
-   * 
-   * @deprecated as of 5.0, you should use getDataPolicy instead
-   */
-  @Deprecated
-  public MirrorType getMirrorType();
-
-  /**
    * Returns the DataPolicy in this region's attributes.
    */
   public DataPolicy getDataPolicy();

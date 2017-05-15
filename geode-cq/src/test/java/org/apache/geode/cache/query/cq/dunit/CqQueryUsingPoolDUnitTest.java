@@ -35,7 +35,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -190,19 +190,18 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   public void createServer(VM server, final int thePort, final boolean eviction) {
-    MirrorType mirrorType = MirrorType.KEYS_VALUES;
-    createServer(server, thePort, eviction, mirrorType);
+    createServer(server, thePort, eviction, DataPolicy.REPLICATE);
   }
 
   public void createServer(VM server, final int thePort, final boolean eviction,
-      final MirrorType mirrorType) {
+      final DataPolicy dataPolicy) {
     SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
       @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setMirrorType(mirrorType);
+        factory.setDataPolicy(dataPolicy);
 
         // setting the eviction attributes.
         if (eviction) {
@@ -2596,7 +2595,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setMirrorType(MirrorType.KEYS_VALUES);
+        factory.setDataPolicy(DataPolicy.REPLICATE);
 
         for (int i = 0; i < regions.length; i++) {
           createRegion(regions[i], factory.createRegionAttributes());
@@ -2875,13 +2874,13 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         // Create region with Global scope
         AttributesFactory factory1 = new AttributesFactory();
         factory1.setScope(Scope.GLOBAL);
-        factory1.setMirrorType(MirrorType.KEYS_VALUES);
+        factory1.setDataPolicy(DataPolicy.REPLICATE);
         createRegion(regions[0], factory1.createRegionAttributes());
 
         // Create region with non Global, distributed_ack scope
         AttributesFactory factory2 = new AttributesFactory();
         factory2.setScope(Scope.DISTRIBUTED_NO_ACK);
-        factory2.setMirrorType(MirrorType.KEYS_VALUES);
+        factory2.setDataPolicy(DataPolicy.REPLICATE);
         createRegion(regions[1], factory2.createRegionAttributes());
 
         Wait.pause(2000);

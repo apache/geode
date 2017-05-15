@@ -30,7 +30,6 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
@@ -171,7 +170,7 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
     new EventIDVerificationDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.NONE);
+    factory.setDataPolicy(DataPolicy.NORMAL);
 
     ClientServerTestCase.configureConnectionPool(factory, host, new int[] {PORT1, PORT2}, true, -1,
         2, null, -1, -1, false, -2);

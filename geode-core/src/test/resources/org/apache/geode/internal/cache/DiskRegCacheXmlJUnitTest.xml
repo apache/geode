@@ -122,7 +122,7 @@
   <vm-root-region name="root2">
     <region-attributes/>  
     <region name="PersistSynchFixedOplog2">
-      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds2" disk-synchronous="true">
+      <region-attributes data-policy="replicate" persist-backup="true" disk-store-name="ds2" disk-synchronous="true">
       </region-attributes>
     </region>
   </vm-root-region>
@@ -130,7 +130,7 @@
   <vm-root-region name="root3">
     <region-attributes/> 
     <region name="PersistASynchBufferRollingOplog3">
-      <region-attributes  mirror-type="keys-values" persist-backup="true" disk-store-name="ds3" disk-synchronous="false">
+      <region-attributes  data-policy="replicate" persist-backup="true" disk-store-name="ds3" disk-synchronous="false">
       </region-attributes>
     </region>
   </vm-root-region>
@@ -138,7 +138,7 @@
   <vm-root-region name="root4">
     <region-attributes/>
   <region name="PersistASynchNoBufferFixedOplog4">
-      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds4" disk-synchronous="false">
+      <region-attributes data-policy="replicate" persist-backup="true" disk-store-name="ds4" disk-synchronous="false">
       </region-attributes>
     </region>
   </vm-root-region>
@@ -190,7 +190,7 @@
 <vm-root-region name="root9">
     <region-attributes/> 
     <region name="PersistOverflowSynchRollingOplog9">
-      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds9" disk-synchronous="true">    
+      <region-attributes data-policy="replicate" persist-backup="true" disk-store-name="ds9" disk-synchronous="true">
          <eviction-attributes>
 	          <lru-memory-size maximum="1" action="overflow-to-disk"/>
 	        </eviction-attributes>
@@ -201,7 +201,7 @@
     <vm-root-region name="root10">
     <region-attributes/>  
     <region name="PersistOverflowSynchFixedOplog10">
-      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds10" disk-synchronous="true">
+      <region-attributes data-policy="replicate" persist-backup="true" disk-store-name="ds10" disk-synchronous="true">
                  <eviction-attributes>
 		          <lru-memory-size maximum="1" action="overflow-to-disk"/>
 		        </eviction-attributes>
@@ -212,7 +212,7 @@
   <vm-root-region name="root11">
     <region-attributes/> 
     <region name="PersistOverflowASynchBufferRollingOplog11">
-      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds11" disk-synchronous="false">
+      <region-attributes data-policy="replicate" persist-backup="true" disk-store-name="ds11" disk-synchronous="false">
           <eviction-attributes>
 	           <lru-memory-size maximum="1" action="overflow-to-disk"/>
 	         </eviction-attributes>
@@ -223,7 +223,7 @@
   <vm-root-region name="root12">
     <region-attributes/> 
   <region name="PersistOverflowASynchNoBufferFixedOplog12">
-      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds12" disk-synchronous="false">
+      <region-attributes data-policy="replicate" persist-backup="true" disk-store-name="ds12" disk-synchronous="false">
          <eviction-attributes>
 	          <lru-memory-size maximum="1" action="overflow-to-disk"/>
 	        </eviction-attributes>

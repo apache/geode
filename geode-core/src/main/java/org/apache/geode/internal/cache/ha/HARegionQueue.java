@@ -341,7 +341,7 @@ public class HARegionQueue implements RegionQueue {
   private void createHARegion(String processedRegionName, GemFireCacheImpl cache)
       throws IOException, ClassNotFoundException {
     AttributesFactory af = new AttributesFactory();
-    af.setMirrorType(MirrorType.KEYS_VALUES);
+    af.setDataPolicy(DataPolicy.REPLICATE);
     af.addCacheListener(createCacheListenerForHARegion());
     af.setStatisticsEnabled(true);
     RegionAttributes ra = af.create();

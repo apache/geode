@@ -32,7 +32,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -136,7 +136,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
     new DataSerializerPropogationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -820,7 +820,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
     new DataSerializerPropogationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
 
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
@@ -844,7 +844,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
     new DataSerializerPropogationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);

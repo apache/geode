@@ -36,7 +36,7 @@ import java.util.List;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -836,7 +836,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends PartitionedRegionDUn
    */
   public static RegionAttributes createRegionAttrsForPR(int red, int localMaxMem) {
     AttributesFactory attr = new AttributesFactory();
-    attr.setMirrorType(MirrorType.NONE);
+    attr.setDataPolicy(DataPolicy.PARTITION);
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     PartitionAttributes prAttr =
         paf.setRedundantCopies(red).setLocalMaxMemory(localMaxMem).create();

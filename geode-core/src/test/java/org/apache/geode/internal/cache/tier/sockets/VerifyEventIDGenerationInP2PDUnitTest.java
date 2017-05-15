@@ -27,7 +27,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -103,7 +103,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
     new VerifyEventIDGenerationInP2PDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.NONE);
+    factory.setDataPolicy(DataPolicy.NORMAL);
     factory.setCacheListener(new CacheListenerAdapter() {
 
       public void afterCreate(EntryEvent event) {

@@ -33,7 +33,6 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolFactory;
@@ -572,7 +571,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory factory = new AttributesFactory();
-        factory.setMirrorType(MirrorType.KEYS_VALUES);
+        factory.setDataPolicy(DataPolicy.REPLICATE);
 
         // setting the eviction attributes.
         if (partitioned) {

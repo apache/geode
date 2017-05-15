@@ -116,7 +116,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
 
   }
 
-  public static void createMirroredRegion() {
+  public static void createReplicateRegion() {
     try {
       AttributesFactory factory1 = new AttributesFactory();
       factory1.setScope(Scope.DISTRIBUTED_ACK);
@@ -312,8 +312,8 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     }
     // in the above scenarion we can test this for mirrorred region scenarion as well
     temp = 0;
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
-    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
+    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createReplicateRegion());
+    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createReplicateRegion());
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
     temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.keySetMethod());
     if (temp == 0) {
@@ -347,8 +347,8 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     }
     // in the above scenarion we can test this for mirrorred region scenarion as well
     temp = 0;
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
-    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
+    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createReplicateRegion());
+    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createReplicateRegion());
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putOnMirroredRegion", objArr);
     temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.entrySetMethod());
     if (temp == 0) {

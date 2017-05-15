@@ -2588,7 +2588,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     }
     ret.setScope(Scope.DISTRIBUTED_ACK);
     ret.setConcurrencyChecksEnabled(false);
-    ret.setMirrorType(MirrorType.KEYS_VALUES);
+    ret.setDataPolicy(DataPolicy.REPLICATE);
 
     return ret;
   }

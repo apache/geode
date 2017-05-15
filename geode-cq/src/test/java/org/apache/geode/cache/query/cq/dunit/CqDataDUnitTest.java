@@ -31,7 +31,6 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.CqQuery;
@@ -393,8 +392,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     VM client = host.getVM(2);
 
-    cqDUnitTest.createServer(server1, 0, false, MirrorType.KEYS_VALUES);
-    cqDUnitTest.createServer(server2, 0, false, MirrorType.KEYS);
+    cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
+    cqDUnitTest.createServer(server2, 0, false, DataPolicy.REPLICATE);
 
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
@@ -517,7 +516,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     VM server1 = host.getVM(0);
     VM client = host.getVM(1);
 
-    cqDUnitTest.createServer(server1, 0, false, MirrorType.KEYS_VALUES);
+    cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
@@ -579,7 +578,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     VM server1 = host.getVM(0);
     VM client = host.getVM(1);
 
-    cqDUnitTest.createServer(server1, 0, false, MirrorType.KEYS_VALUES);
+    cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
@@ -638,7 +637,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     VM server1 = host.getVM(0);
     VM client = host.getVM(1);
 
-    cqDUnitTest.createServer(server1, 0, false, MirrorType.KEYS_VALUES);
+    cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
@@ -696,7 +695,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     VM server1 = host.getVM(0);
     VM client = host.getVM(1);
 
-    cqDUnitTest.createServer(server1, 0, false, MirrorType.KEYS_VALUES);
+    cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());

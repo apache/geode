@@ -3811,10 +3811,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void testEntryTtlLocalDestroy() throws Exception {
     assumeTrue(getRegionAttributes().getPartitionAttributes() == null);
 
-    final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();
+    final boolean withReplication = getRegionAttributes().getDataPolicy().withReplication();
     final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null
         || getRegionAttributes().getDataPolicy().withPartitioning();
-    if (!mirrored) {
+    if (!withReplication) {
       // This test fails intermittently because the DSClock we inherit from the existing
       // distributed system is stuck in the "stopped" state.
       // The DSClock is going away when java groups is merged and at that
@@ -3853,7 +3853,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         ExpirationAttributes expire =
             new ExpirationAttributes(timeout, ExpirationAction.LOCAL_DESTROY);
         factory.setEntryTimeToLive(expire);
-        if (!mirrored) {
+        if (!withReplication) {
           // make it cached all events so that remote creates will also
           // be created here
           if (!partitioned) {
@@ -3869,17 +3869,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
         try {
           createRegion(name, factory.create());
-          if (mirrored)
+          if (withReplication)
             fail("Should have thrown an IllegalStateException");
         } catch (IllegalStateException e) {
-          if (!mirrored)
+          if (!withReplication)
             throw e;
         } finally {
           System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
         }
       }
     });
-    if (mirrored)
+    if (withReplication)
       return;
 
     vm1.invoke(new SerializableCallable() {
