@@ -15,15 +15,29 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
+import java.util.Map;
 
-import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * Implements the HLEN command to return the count of fields in the hash stored with a given key.
+ * 
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "Hello"
+ * (integer) 1
+ * redis> HSET myhash field2 "World"
+ * (integer) 1
+ * redis> HLEN myhash
+ * </pre>
+ *
+ */
 public class HLenExecutor extends HashExecutor {
 
   private final int NOT_EXISTS = 0;
@@ -38,18 +52,20 @@ public class HLenExecutor extends HashExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
+    final int size;
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-    if (keyRegion == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
+      if (map == null) {
+        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+        return;
+      }
+
+      size = map.size();
     }
 
-    final int regionSize = keyRegion.size();
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), regionSize));
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
   }
 
 }

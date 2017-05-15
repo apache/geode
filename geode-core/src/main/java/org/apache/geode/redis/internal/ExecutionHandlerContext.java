@@ -57,7 +57,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
   private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
                                                                                           // seconds
-                                                                                          // total
+  private RedisLockService hashLockService;
+  private RedisLockService setLockService;
 
   private final Cache cache;
   private final GeodeRedisServer server;
@@ -115,6 +116,17 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.regionProvider = regionProvider;
     this.authPwd = pwd;
     this.isAuthenticated = pwd != null ? false : true;
+
+    this.setLockService = new RedisLockService();
+    this.hashLockService = new RedisLockService();
+  }
+
+  public RedisLockService getHashLockService() {
+    return this.hashLockService;
+  }
+
+  public RedisLockService getSetLockService() {
+    return this.setLockService;
   }
 
   private void flushChannel() {
@@ -135,8 +147,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    Command command = (Command) msg;
-    executeCommand(ctx, command);
+    try {
+      Command command = (Command) msg;
+      executeCommand(ctx, command);
+    } catch (Exception e) {
+      logger.error(e);
+      throw e;
+    }
+
   }
 
   /**
@@ -198,6 +216,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       else
         executeWithoutTransaction(exec, command);
 
+
       if (hasTransaction() && command.getCommandType() != RedisCommandType.MULTI) {
         writeToChannel(
             Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
@@ -235,6 +254,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         exec.executeCommand(command, this);
         return;
       } catch (Exception e) {
+        logger.error(e);
+
         cause = e;
         if (e instanceof RegionDestroyedException || e instanceof RegionNotFoundException
             || e.getCause() instanceof QueryInvocationTargetException)

@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -22,6 +23,7 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Coder;
 
 public class SIsMemberExecutor extends SetExecutor {
@@ -40,23 +42,35 @@ public class SIsMemberExecutor extends SetExecutor {
       return;
     }
 
+    RegionProvider regionProvider = context.getRegionProvider();
+
+    // check by meta data key
+    // SISMEMBER companies ea64fe8c-e0a0-4439-a05d-d0738dd5ef80
     ByteArrayWrapper key = command.getKey();
-    ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
-
-    checkDataType(key, RedisDataType.REDIS_SET, context);
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
-
-    if (keyRegion == null) {
+    if (!regionProvider.existsKey(key)) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;
     }
 
-    if (keyRegion.containsKey(member))
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    else
+    ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
+
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = this.getRegion(context);
+
+    Set<ByteArrayWrapper> set = region.get(key);
+
+    if (set == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+      return;
+    }
+
+    if (set.contains(member)) {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
+      // save key for next quick lookup
+      regionProvider.metaPut(command.getKey(), RedisDataType.REDIS_SET);
+    } else
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+
+
   }
 
 }

@@ -183,8 +183,10 @@ public class ListsJUnitTest {
 
     jedis.del(key);
 
-    assertTrue(jedis.lpushx(key, randString()) == 0);
-    assertTrue(jedis.rpushx(key, randString()) == 0);
+    long response = jedis.lpushx(key, randString());
+    assertTrue("response:" + response, response == 0);
+    response = jedis.lpushx(key, randString());
+    assertTrue("response:" + response, jedis.rpushx(key, randString()) == 0);
   }
 
   @Test

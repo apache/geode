@@ -49,12 +49,12 @@ public class RedisServerTest {
   }
 
   @Test
-  public void initializeRedisCreatesThreeRegions() {
+  public void initializeRedisCreatesFourRegions() {
     createCache();
     assert (cache.rootRegions().size() == 0);
     redisServer = new GeodeRedisServer(0);
     redisServer.start();
-    assert cache.rootRegions().size() == 2 : cache.rootRegions().size();
+    assert cache.rootRegions().size() == 4 : cache.rootRegions().size();
     assert cache.getRegion(GeodeRedisServer.REDIS_META_DATA_REGION) != null;
   }
 

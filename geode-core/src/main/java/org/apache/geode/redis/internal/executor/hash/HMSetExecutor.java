@@ -14,11 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -26,6 +24,28 @@ import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * 
+ * Implements the HMSet command.
+ * 
+ * This command will set the specified fields to their given values in the hash stored at key. 
+ * This command overwrites any specified fields already in the hash. 
+ * A new key holding a hash is created, if the key does not exist.
+ * 
+ * Examples:
+ * 
+ * redis> HMSET myhash field1 "Hello" field2 "World"
+ * "OK"
+ * redis> HGET myhash field1
+ * "Hello"
+ * redis> HGET myhash field2
+ * "World"
+ * 
+ * </pre>
+ * 
+ *
+ */
 public class HMSetExecutor extends HashExecutor {
 
   private final String SUCCESS = "OK";
@@ -41,10 +61,8 @@ public class HMSetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
-        getOrCreateRegion(context, key, RedisDataType.REDIS_HASH);
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = new HashMap<ByteArrayWrapper, ByteArrayWrapper>();
     for (int i = 2; i < commandElems.size(); i += 2) {
       byte[] fieldArray = commandElems.get(i);
       ByteArrayWrapper field = new ByteArrayWrapper(fieldArray);
@@ -52,8 +70,9 @@ public class HMSetExecutor extends HashExecutor {
       map.put(field, new ByteArrayWrapper(value));
     }
 
-    keyRegion.putAll(map);
+    saveMap(map, context, key);
 
+    context.getRegionProvider().metaPut(command.getKey(), RedisDataType.REDIS_HASH);
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
 
   }

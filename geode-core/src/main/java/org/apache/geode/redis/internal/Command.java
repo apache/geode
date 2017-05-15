@@ -47,10 +47,10 @@ public class Command {
     this.response = null;
 
     RedisCommandType type;
-
+    String commandName = null;
     try {
       byte[] charCommand = commandElems.get(0);
-      String commandName = Coder.bytesToString(charCommand).toUpperCase();
+      commandName = Coder.bytesToString(charCommand).toUpperCase();
       type = RedisCommandType.valueOf(commandName);
     } catch (Exception e) {
       type = RedisCommandType.UNKNOWN;

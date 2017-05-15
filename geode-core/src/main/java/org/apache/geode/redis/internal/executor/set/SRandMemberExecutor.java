@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.Coder;
@@ -42,60 +43,63 @@ public class SRandMemberExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
 
-    int count = 1;
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
 
-    if (commandElems.size() > 2) {
-      try {
-        count = Coder.bytesToInt(commandElems.get(2));
-      } catch (NumberFormatException e) {
-        command
-            .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
+      int count = 1;
+
+      if (commandElems.size() > 2) {
+        try {
+          count = Coder.bytesToInt(commandElems.get(2));
+        } catch (NumberFormatException e) {
+          command.setResponse(
+              Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
+          return;
+        }
+      }
+
+      Set<ByteArrayWrapper> set = region.get(key);
+
+      if (set == null || count == 0) {
+        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
         return;
       }
-    }
 
-    if (keyRegion == null || count == 0) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
-    }
+      int members = set.size();
 
-    int members = keyRegion.size();
-
-    if (members <= count && count != 1) {
-      command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(),
-          new HashSet<ByteArrayWrapper>(keyRegion.keySet())));
-      return;
-    }
-
-    Random rand = new Random();
-
-    ByteArrayWrapper[] entries = keyRegion.keySet().toArray(new ByteArrayWrapper[members]);
-
-    if (count == 1) {
-      ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];
-      command.setResponse(
-          Coder.getBulkStringResponse(context.getByteBufAllocator(), randEntry.toBytes()));
-    } else if (count > 0) {
-      Set<ByteArrayWrapper> randEntries = new HashSet<ByteArrayWrapper>();
-      do {
-        ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
-        randEntries.add(s);
-      } while (randEntries.size() < count);
-      command.setResponse(
-          Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), randEntries));
-    } else {
-      count = -count;
-      List<ByteArrayWrapper> randEntries = new ArrayList<ByteArrayWrapper>();
-      for (int i = 0; i < count; i++) {
-        ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
-        randEntries.add(s);
+      if (members <= count && count != 1) {
+        command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(),
+            new HashSet<ByteArrayWrapper>(set)));
+        return;
       }
-      command.setResponse(
-          Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), randEntries));
+
+      Random rand = new Random();
+
+      ByteArrayWrapper[] entries = set.toArray(new ByteArrayWrapper[members]);
+
+      if (count == 1) {
+        ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];
+        command.setResponse(
+            Coder.getBulkStringResponse(context.getByteBufAllocator(), randEntry.toBytes()));
+      } else if (count > 0) {
+        Set<ByteArrayWrapper> randEntries = new HashSet<ByteArrayWrapper>();
+        do {
+          ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
+          randEntries.add(s);
+        } while (randEntries.size() < count);
+        command.setResponse(
+            Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), randEntries));
+      } else {
+        count = -count;
+        List<ByteArrayWrapper> randEntries = new ArrayList<ByteArrayWrapper>();
+        for (int i = 0; i < count; i++) {
+          ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
+          randEntries.add(s);
+        }
+        command.setResponse(
+            Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), randEntries));
+      }
     }
   }
 }

@@ -116,9 +116,12 @@ public class SetsJUnitTest {
 
     long i = 1;
     for (String entry : strings) {
-      assertTrue(jedis.smove(source, dest, entry) == 1);
+      long results = jedis.smove(source, dest, entry);
+      assertTrue("results:" + results + " == 1", results == 1);
       assertTrue(jedis.sismember(dest, entry));
-      assertTrue(jedis.scard(source) == strings.size() - i);
+
+      results = jedis.scard(source);
+      assertTrue(results + " == " + (strings.size() - i), results == strings.size() - i);
       assertTrue(jedis.scard(dest) == i);
       i++;
     }

@@ -94,8 +94,7 @@ public abstract class AbstractExecutor implements Executor {
 
   protected boolean removeEntry(ByteArrayWrapper key, RedisDataType type,
       ExecutionHandlerContext context) {
-    if (type == null || type == RedisDataType.REDIS_PROTECTED)
-      return false;
+
     RegionProvider rC = context.getRegionProvider();
     return rC.removeKey(key, type);
   }

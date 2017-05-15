@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -26,6 +25,25 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * Implementation of the HMGET command.
+ * Returns values associated with the specified fields in the hash stored for a given key.
+
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "Hello"
+ * (integer) 1
+ * redis> HSET myhash field2 "World"
+ * (integer) 1
+ * redis> HMGET myhash field1 field2 nofield
+ * 1) "Hello"
+ * 2) "World"
+ * 3) (nil)
+ * 
+ * </pre>
+ *
+ */
 public class HMGetExecutor extends HashExecutor {
 
   @Override
@@ -39,10 +57,12 @@ public class HMGetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+
     checkDataType(key, RedisDataType.REDIS_HASH, context);
 
-    if (keyRegion == null) {
+    if (map == null) {
       command.setResponse(
           Coder.getArrayOfNils(context.getByteBufAllocator(), commandElems.size() - 2));
       return;
@@ -55,7 +75,6 @@ public class HMGetExecutor extends HashExecutor {
       fields.add(field);
     }
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> results = keyRegion.getAll(fields);
 
     ArrayList<ByteArrayWrapper> values = new ArrayList<ByteArrayWrapper>();
 
@@ -63,7 +82,7 @@ public class HMGetExecutor extends HashExecutor {
      * This is done to preserve order in the output
      */
     for (ByteArrayWrapper field : fields)
-      values.add(results.get(field));
+      values.add(map.get(field));
 
     command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), values));
 

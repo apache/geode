@@ -14,11 +14,12 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -38,21 +39,30 @@ public class SAddExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion = (Region<ByteArrayWrapper, Boolean>) context
-        .getRegionProvider().getOrCreateRegion(key, RedisDataType.REDIS_SET, context);
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
 
-    if (commandElems.size() >= 4) {
-      Map<ByteArrayWrapper, Boolean> entries = new HashMap<ByteArrayWrapper, Boolean>();
-      for (int i = 2; i < commandElems.size(); i++)
-        entries.put(new ByteArrayWrapper(commandElems.get(i)), true);
+      Set<ByteArrayWrapper> entries = region.get(key);
+      if (entries == null)
+        entries = new HashSet<ByteArrayWrapper>();
 
-      keyRegion.putAll(entries);
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entries.size()));
-    } else {
-      Object v = keyRegion.put(new ByteArrayWrapper(commandElems.get(2)), true);
-      command
-          .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), v == null ? 1 : 0));
+      if (commandElems.size() >= 4) {
+        for (int i = 2; i < commandElems.size(); i++)
+          entries.add(new ByteArrayWrapper(commandElems.get(i)));
+
+        region.put(key, entries);
+        command
+            .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entries.size()));
+      } else {
+        Object v = entries.add(new ByteArrayWrapper(commandElems.get(2)));
+        region.put(key, entries);
+
+        command.setResponse(
+            Coder.getIntegerResponse(context.getByteBufAllocator(), v == null ? 1 : 0));
+      }
+
+      // Save key
+      context.getRegionProvider().metaPut(command.getKey(), RedisDataType.REDIS_SET);
     }
 
   }

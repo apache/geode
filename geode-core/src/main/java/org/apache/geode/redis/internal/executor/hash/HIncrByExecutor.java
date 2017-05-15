@@ -15,15 +15,34 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-
-import org.apache.geode.cache.Region;
+import java.util.Map;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * 
+ * Implementation of the HINCRBY command to increment the number stored at field 
+ * in the hash stored at key by increment value.
+ * 
+ * Examples:
+ * 
+ * redis> HSET myhash field 5
+ * (integer) 1
+ * redis> HINCRBY myhash field 1
+ * (integer) 6
+ * redis> HINCRBY myhash field -1
+ * (integer) 5
+ * redis> HINCRBY myhash field -10
+ * (integer) -5
+ * 
+ * 
+ * </pre>
+ *
+ */
 public class HIncrByExecutor extends HashExecutor {
 
   private final String ERROR_FIELD_NOT_USABLE = "The value at this field is not an integer";
@@ -58,21 +77,25 @@ public class HIncrByExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
-        getOrCreateRegion(context, key, RedisDataType.REDIS_HASH);
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
     /*
-     * Put incrememnt as value if field doesn't exist
+     * Put increment as value if field doesn't exist
      */
 
-    ByteArrayWrapper oldValue = keyRegion.get(field);
+    ByteArrayWrapper oldValue = map.get(field);
 
     if (oldValue == null) {
-      keyRegion.put(field, new ByteArrayWrapper(incrArray));
+      map.put(field, new ByteArrayWrapper(incrArray));
+
+      saveMap(map, context, key);
+
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), increment));
+
       return;
     }
 
@@ -100,9 +123,10 @@ public class HIncrByExecutor extends HashExecutor {
     }
 
     value += increment;
-    // String newValue = String.valueOf(value);
 
-    keyRegion.put(field, new ByteArrayWrapper(Coder.longToBytes(value)));
+    map.put(field, new ByteArrayWrapper(Coder.longToBytes(value)));
+
+    saveMap(map, context, key);
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
 
