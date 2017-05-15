@@ -310,7 +310,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
       }
     };
 
-    region.getAttributesMutator().setCacheListener(listener);
+    region.getAttributesMutator().addCacheListener(listener);
 
     region.put(key, newValue);
     Wait.pause(500);

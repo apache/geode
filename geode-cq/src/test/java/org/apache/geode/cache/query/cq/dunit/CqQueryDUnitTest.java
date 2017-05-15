@@ -973,7 +973,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
         try {
           region = getRootRegion().getSubregion(regionName);
           region.getAttributesMutator()
-              .setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+              .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);

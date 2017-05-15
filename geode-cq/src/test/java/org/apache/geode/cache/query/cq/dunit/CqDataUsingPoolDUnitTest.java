@@ -475,7 +475,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
           Region region = createRegion(cqDUnitTest.regions[i], factory.createRegionAttributes());
           // Set CacheListener.
           region.getAttributesMutator()
-              .setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+              .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
         }
         Wait.pause(2000);
 

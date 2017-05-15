@@ -110,7 +110,7 @@ public class MapInterface2JUnitTest {
   public void testBasicMapAfterClearCalback() {
     Region rgn = CacheUtils.getRegion("Portfolios");
     AttributesMutator atm = rgn.getAttributesMutator();
-    atm.setCacheListener(new CacheListenerAdapter() {
+    atm.addCacheListener(new CacheListenerAdapter() {
 
       public void afterRegionClear(RegionEvent event) {
         synchronized (MapInterface2JUnitTest.this) {

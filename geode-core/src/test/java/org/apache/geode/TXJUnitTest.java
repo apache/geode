@@ -1060,7 +1060,7 @@ public class TXJUnitTest {
         return fetchLocal ? this.aLocalDestroyCalls : this.aDestroyCalls;
       }
     };
-    mutator.setCacheListener(cntListener);
+    mutator.addCacheListener(cntListener);
     CountingCacheWriter cntWriter = new CountingCacheWriter() {
       int bCreateCalls, bUpdateCalls, bDestroyCalls, bLocalDestroyCalls;
 
@@ -2927,7 +2927,7 @@ public class TXJUnitTest {
   public void testNoCallbacksOnRollback() throws CacheException {
     // install listeners
     AttributesMutator<String, String> mutator = this.region.getAttributesMutator();
-    mutator.setCacheListener(new CacheListenerAdapter<String, String>() {
+    mutator.addCacheListener(new CacheListenerAdapter<String, String>() {
       @Override
       public void close() {
         cbCount++;
@@ -3395,7 +3395,7 @@ public class TXJUnitTest {
     };
 
     vCl.setValidator(cbv);
-    mutator.setCacheListener(vCl);
+    mutator.addCacheListener(vCl);
 
     // CacheWriter
     ValidatableCacheWriter vCw = new ValidatableCacheWriter() {

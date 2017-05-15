@@ -848,53 +848,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
     return this;
   }
 
-  // /**
-  // * A CacheListener implementation that delegates to an array of listeners.
-  // */
-  // public static class ArrayCacheListener implements CacheListener {
-  // private final CacheListener [] listeners;
-  // /**
-  // * Creates a cache listener given the list of listeners it will delegate to.
-  // */
-  // public ArrayCacheListener(CacheListener[] listeners) {
-  // this.listeners = listeners;
-  // }
-  // }
-  public CacheListener setCacheListener(CacheListener aListener) {
-    checkReadiness();
-    CacheListener result = null;
-    CacheListener[] oldListeners = null;
-    synchronized (this.clSync) {
-      oldListeners = this.cacheListeners;
-      if (oldListeners != null && oldListeners.length > 1) {
-        throw new IllegalStateException(
-            LocalizedStrings.AbstractRegion_MORE_THAN_ONE_CACHE_LISTENER_EXISTS
-                .toLocalizedString());
-      }
-      this.cacheListeners = new CacheListener[] {aListener};
-    }
-    // moved the following out of the sync for bug 34512
-    if (oldListeners != null && oldListeners.length > 0) {
-      if (oldListeners.length == 1) {
-        result = oldListeners[0];
-      }
-      for (int i = 0; i < oldListeners.length; i++) {
-        if (aListener != oldListeners[i]) {
-          closeCacheCallback(oldListeners[i]);
-        }
-      }
-      if (aListener == null) {
-        cacheListenersChanged(false);
-      }
-    } else { // we have no old listeners
-      if (aListener != null) {
-        // we have added a new listener
-        cacheListenersChanged(true);
-      }
-    }
-    return result;
-  }
-
   public void addGatewaySenderId(String gatewaySenderId) {
     getGatewaySenderIds().add(gatewaySenderId);
     setAllGatewaySenderIds();
