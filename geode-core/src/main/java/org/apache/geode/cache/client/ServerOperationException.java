@@ -70,9 +70,9 @@ public class ServerOperationException extends ServerConnectivityException {
     InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
     if (ids != null) {
       if (msg != null) {
-        return "remote server on " + ids.getMemberId() + ": " + msg;
+        return "remote server on " + ids.getDistributedMember().toString() + ": " + msg;
       } else {
-        return "remote server on " + ids.getMemberId();
+        return "remote server on " + ids.getDistributedMember().toString();
       }
     } else {
       if (msg != null) {

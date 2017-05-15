@@ -15,48 +15,11 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.geode.cache.CacheXmlException;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.CancelException;
-import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.LogWriter;
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
-import org.apache.geode.SystemConnectException;
-import org.apache.geode.SystemFailure;
+import org.apache.geode.*;
 import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
@@ -70,11 +33,7 @@ import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.*;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -96,17 +55,28 @@ import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
-import org.apache.geode.internal.statistics.DummyStatisticsImpl;
-import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.LocalStatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.statistics.*;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Array;
+import java.net.InetAddress;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -1586,10 +1556,6 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the string value of the distribution manager's id.
    */
-  @Override
-  public String getMemberId() {
-    return String.valueOf(this.dm.getId());
-  }
 
   @Override
   public InternalDistributedMember getDistributedMember() {

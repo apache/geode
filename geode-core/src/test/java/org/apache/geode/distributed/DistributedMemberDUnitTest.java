@@ -360,7 +360,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       DM dm = system.getDistributionManager();
       DistributedMember member = dm.getDistributionManagerId();
 
-      assertEquals(member.getId(), system.getMemberId());
+      assertEquals(member.getId(), system.getDistributedMember().toString());
       assertTrue(member.getId().contains("foobar"));
     } finally {
       system.disconnect();

@@ -14,33 +14,19 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.cache.DirectoryHolder;
-import org.apache.geode.internal.cache.DiskRegionStats;
-import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.*;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.management.EvictionAttributesData;
-import org.apache.geode.management.FixedPartitionAttributesData;
-import org.apache.geode.management.MembershipAttributesData;
-import org.apache.geode.management.PartitionAttributesData;
-import org.apache.geode.management.RegionAttributesData;
+import org.apache.geode.management.*;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.ManagementStrings;
-import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
-import org.apache.geode.management.internal.beans.stats.StatType;
-import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
-import org.apache.geode.management.internal.beans.stats.StatsKey;
-import org.apache.geode.management.internal.beans.stats.StatsRate;
+import org.apache.geode.management.internal.beans.stats.*;
+
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * This class acts as a bridge between a Region and RegionMBean This also listens for statistics
@@ -191,7 +177,8 @@ public class RegionMBeanBridge<K, V> {
       this.isGatewayEnabled = true;
     }
 
-    this.member = GemFireCacheImpl.getInstance().getDistributedSystem().getMemberId();
+    this.member =
+        GemFireCacheImpl.getInstance().getDistributedSystem().getDistributedMember().toString();
   }
 
 

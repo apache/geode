@@ -14,18 +14,12 @@
  */
 package org.apache.geode.internal.admin;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
-import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -36,6 +30,11 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.management.internal.cli.CliUtil;
+
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * This class publishes the client statistics using the admin region.
@@ -87,7 +86,8 @@ public class ClientStatsManager {
       EntryEventImpl event = new EntryEventImpl((Object) null);
       try {
         event.setEventId(eventId);
-        regionProxy.putForMetaRegion(ds.getMemberId(), stats, null, event, null, true);
+        regionProxy.putForMetaRegion(ds.getDistributedMember().toString(), stats, null, event, null,
+            true);
       } finally {
         event.release();
       }
@@ -242,8 +242,8 @@ public class ClientStatsManager {
         if (clientHealthMonitoringRegion != null) {
           InternalDistributedSystem ds =
               (InternalDistributedSystem) currentCache.getDistributedSystem();
-          ClientHealthStats oldStats =
-              (ClientHealthStats) clientHealthMonitoringRegion.get(ds.getMemberId());
+          ClientHealthStats oldStats = (ClientHealthStats) clientHealthMonitoringRegion
+              .get(ds.getDistributedMember().toString());
           logger.info(LocalizedStrings.DEBUG, "getClientHealthStats got oldStats  " + oldStats);
           if (oldStats != null) {
             Map<String, String> oldPoolStats = oldStats.getPoolStats();

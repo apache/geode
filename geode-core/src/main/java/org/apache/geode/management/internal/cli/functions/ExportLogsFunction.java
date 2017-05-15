@@ -68,7 +68,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
-      String memberId = cache.getDistributedSystem().getMemberId();
+      String memberId = cache.getDistributedSystem().getDistributedMember().toString();
       LOGGER.info("ExportLogsFunction started for member {}", memberId);
 
       Region exportLogsRegion = createOrGetExistingExportLogsRegion(false, cache);

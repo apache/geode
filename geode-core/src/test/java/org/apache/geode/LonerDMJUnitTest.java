@@ -169,15 +169,15 @@ public class LonerDMJUnitTest {
     cfg.setProperty(NAME, name);
     cfg.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     DistributedSystem ds = DistributedSystem.connect(cfg);
-    System.out.println("MemberId = " + ds.getMemberId());
+    System.out.println("MemberId = " + ds.getDistributedMember().toString());
     assertEquals(host.toString(), ds.getDistributedMember().getHost());
     assertEquals(OSProcess.getId(), ds.getDistributedMember().getProcessId());
     if (!PureJavaMode.isPure()) {
       String pid = String.valueOf(OSProcess.getId());
-      assertTrue(ds.getMemberId().indexOf(pid) > -1);
+      assertTrue(ds.getDistributedMember().toString().indexOf(pid) > -1);
     }
-    assertTrue(ds.getMemberId().indexOf(name) > -1);
-    String memberid = ds.getMemberId();
+    assertTrue(ds.getDistributedMember().toString().indexOf(name) > -1);
+    String memberid = ds.getDistributedMember().toString();
     String shortname = shortName(host);
     assertTrue("'" + memberid + "' does not contain '" + shortname + "'",
         memberid.indexOf(shortname) > -1);

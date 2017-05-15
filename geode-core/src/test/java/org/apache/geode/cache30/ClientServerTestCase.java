@@ -14,19 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Declarable;
-import org.apache.geode.cache.LoaderHelper;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
@@ -40,6 +28,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Properties;
+
+import static org.apache.geode.test.dunit.Assert.*;
 
 /**
  * Provides helper methods for testing clients and servers. This test case was created by
@@ -279,7 +273,8 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
     WaitCriterion w = new WaitCriterion() {
 
       public String description() {
-        return "client never finished connecting: " + getSystemStatic().getMemberId();
+        return "client never finished connecting: "
+            + getSystemStatic().getDistributedMember().toString();
       }
 
       public boolean done() {
