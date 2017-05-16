@@ -56,45 +56,6 @@ public interface TransactionEvent {
   public TransactionId getTransactionId();
 
   /**
-   * Gets all "create" EntryEvents for this transaction; <code>Region.create</code> and/or
-   * <code>Region.put</code>
-   *
-   * @return <code>List</code> of <code>EntryEvents</code> or <code>Collections.EMPTY_LIST</code>
-   * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
-   */
-  @Deprecated
-  public List<EntryEvent<?, ?>> getCreateEvents();
-
-  /**
-   * Gets all "destroy" EntryEvents for this transaction; <code>Region.destroy</code> and
-   * <code>Region.localDestroy</code>.
-   * 
-   * @return <code>List</code> of <code>EntryEvents</code> or <code>Collections.EMPTY_LIST</code>
-   * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
-   */
-  @Deprecated
-  public List<EntryEvent<?, ?>> getDestroyEvents();
-
-  /**
-   * Gets all <code>Region.put</code> EntryEvents for this transaction.
-   *
-   * @return <code>List</code> of <code>EntryEvents</code> or <code>Collections.EMPTY_LIST</code>
-   * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
-   */
-  @Deprecated
-  public List<EntryEvent<?, ?>> getPutEvents();
-
-  /**
-   * Gets all "invalidate" EntryEvents for this transaction; <code>Region.invalidate</code> and
-   * <code>Region.localInvalidate</code>.
-   *
-   * @return <code>List</code> of <code>EntryEvents</code> or <code>Collections.EMPTY_LIST</code>
-   * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
-   */
-  @Deprecated
-  public List<EntryEvent<?, ?>> getInvalidateEvents();
-
-  /**
    * Returns an ordered list of every {@link CacheEvent} for this transaction. The event order is
    * consistent with the order in which the operations were performed during the transaction.
    * 
