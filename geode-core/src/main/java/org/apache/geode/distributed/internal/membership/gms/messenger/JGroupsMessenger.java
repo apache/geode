@@ -990,6 +990,9 @@ public class JGroupsMessenger implements Messenger {
 
       short ordinal = Version.readOrdinal(dis);
 
+      // logger.info("JGroupsMessenger read ordinal {} version is {}. My version is {}",
+      // ordinal, Version.fromOrdinalOrCurrent(ordinal), Version.CURRENT);
+
       if (ordinal < Version.CURRENT_ORDINAL) {
         dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(ordinal, true));
       }

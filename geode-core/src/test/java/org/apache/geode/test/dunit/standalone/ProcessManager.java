@@ -76,7 +76,7 @@ public class ProcessManager {
       workingDir.mkdirs();
     } else if (!bouncedVM || DUnitLauncher.MAKE_NEW_WORKING_DIRS) {
       try {
-        Files.delete(workingDir.toPath());
+        FileUtils.deleteDirectory(workingDir);
       } catch (IOException e) {
         // This delete is occasionally failing on some platforms, maybe due to a lingering
         // process. Allow the process to be launched anyway.

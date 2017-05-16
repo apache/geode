@@ -4222,7 +4222,7 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_UNEXPECTED_PROBLEM_GETTING_INETADDRESS_0 =
       new StringId(3548, "Unexpected problem getting inetAddress: {0}");
   public static final StringId DistributionManager_UNKNOWN_MEMBER_TYPE_0 =
-      new StringId(3549, "Unknown  member type:  {0}");
+      new StringId(3549, "Unknown member type:  {0}");
   public static final StringId DistributionManager_UNKNOWN_PROCESSOR_TYPE =
       new StringId(3550, "unknown processor type {0}");
   public static final StringId DLockRequestProcessor_UNKNOWN_RESPONSE_CODE_0 =

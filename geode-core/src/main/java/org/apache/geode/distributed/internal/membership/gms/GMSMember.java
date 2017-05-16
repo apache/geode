@@ -20,6 +20,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.jgroups.util.UUID;
@@ -460,7 +461,9 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     out.writeInt(vmViewId);
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
-
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_120) >= 0) {
+      out.writeByte(vmKind);
+    }
   }
 
   @Override
@@ -487,6 +490,9 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.vmViewId = in.readInt();
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_120) >= 0) {
+      this.vmKind = in.readByte();
+    }
   }
 
   @Override

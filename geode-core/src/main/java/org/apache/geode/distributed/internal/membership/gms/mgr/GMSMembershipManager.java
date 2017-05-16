@@ -472,17 +472,21 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         InternalDistributedMember m = newView.getMembers().get(i);
 
         // Once a member has been seen via a view, remove them from the
-        // newborn set
-        boolean wasSurprise = surpriseMembers.remove(m) != null;
-
-        // bug #45155 - membership view processing was slow, causing a member to connect as
-        // "surprise"
-        // and the surprise timeout removed the member and shunned it, keeping it from being
-        // recognized as a valid member when it was finally seen in a view
-        // if (isShunned(m)) {
-        // warnShuns.add(m);
-        // continue;
-        // }
+        // newborn set. Replace the netmember of the surpriseMember ID
+        // in case it was a partial ID and is being retained by DistributionManager
+        // or some other object
+        boolean wasSurprise = surpriseMembers.containsKey(m);
+        if (wasSurprise) {
+          for (Iterator<Map.Entry<InternalDistributedMember, Long>> iterator =
+              surpriseMembers.entrySet().iterator(); iterator.hasNext();) {
+            Entry<InternalDistributedMember, Long> entry = iterator.next();
+            if (entry.getKey().equals(m)) {
+              entry.getKey().setNetMember(m.getNetMember());
+              iterator.remove();
+              break;
+            }
+          }
+        }
 
         // if it's in a view, it's no longer suspect
         suspectedMembers.remove(m);
@@ -491,7 +495,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
           continue; // already seen
         }
 
-        // ARB: unblock any waiters for this particular member.
+        // unblock any waiters for this particular member.
         // i.e. signal any waiting threads in tcpconduit.
         String authInit =
             this.services.getConfig().getDistributionConfig().getSecurityPeerAuthInit();

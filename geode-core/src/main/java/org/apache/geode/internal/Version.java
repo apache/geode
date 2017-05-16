@@ -59,7 +59,7 @@ public class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 55;
+  public static final int HIGHEST_VERSION = 60;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
 
@@ -183,18 +183,23 @@ public class Version implements Comparable<Version> {
   private static final byte GEODE_110_ORDINAL = 50;
 
   public static final Version GEODE_110 =
-      new Version("GEODE", "1.1.0", (byte) 9, (byte) 0, (byte) 1, (byte) 0, GEODE_110_ORDINAL);
+      new Version("GEODE", "1.1.0", (byte) 1, (byte) 1, (byte) 0, (byte) 0, GEODE_110_ORDINAL);
 
-  private static final byte GFE_91_ORDINAL = 55;
+  private static final byte GEODE_111_ORDINAL = 55;
 
-  public static final Version GFE_91 =
-      new Version("GFE", "9.1", (byte) 9, (byte) 1, (byte) 0, (byte) 0, GFE_91_ORDINAL);
+  public static final Version GEODE_111 =
+      new Version("GEODE", "1.1.1", (byte) 1, (byte) 1, (byte) 1, (byte) 0, GEODE_111_ORDINAL);
+
+  private static final byte GEODE_120_ORDINAL = 60;
+
+  public static final Version GEODE_120 =
+      new Version("GEODE", "1.2.0", (byte) 1, (byte) 2, (byte) 0, (byte) 0, GEODE_120_ORDINAL);
 
   /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
    * HIGHEST_VERSION when changing CURRENT !!!
    */
-  public static final Version CURRENT = GFE_91;
+  public static final Version CURRENT = GEODE_120;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
@@ -504,34 +509,10 @@ public class Version implements Comparable<Version> {
   @Override
   public int compareTo(Version other) {
     if (other != null) {
-      // [bruce] old implementation used ordinals for comparison, but this requires
-      // ordinals to be in increasing order, which may not always be possible
-      // // byte min/max can't overflow int, so use (a-b)
-      // final int thisOrdinal = this.ordinal;
-      // final int otherOrdinal = o.ordinal;
-      // return (thisOrdinal - otherOrdinal);
-      // [bruce] new implementation uses major/minor/patch/build
-      if (this.majorVersion > other.majorVersion) {
-        return 1;
-      } else if (other.majorVersion > this.majorVersion) {
-        return -1;
-      }
-      if (this.minorVersion > other.minorVersion) {
-        return 1;
-      } else if (other.minorVersion > this.minorVersion) {
-        return -1;
-      }
-      if (this.release > other.release) {
-        return 1;
-      } else if (other.release > this.release) {
-        return -1;
-      }
-      if (this.patch > other.patch) {
-        return 1;
-      } else if (other.patch > this.patch) {
-        return -1;
-      }
-      return 0;
+      // byte min/max can't overflow int, so use (a-b)
+      final int thisOrdinal = this.ordinal;
+      final int otherOrdinal = other.ordinal;
+      return (thisOrdinal - otherOrdinal);
     } else {
       return 1;
     }

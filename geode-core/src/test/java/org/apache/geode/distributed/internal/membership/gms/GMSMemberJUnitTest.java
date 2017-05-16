@@ -17,8 +17,17 @@ package org.apache.geode.distributed.internal.membership.gms;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.net.InetAddress;
 
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
 import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -177,4 +186,42 @@ public class GMSMemberJUnitTest {
     member.setUUID(uuid);
     assertNotNull(member.getUUID());
   }
+
+  /**
+   * <p>
+   * GEODE-2875 - adds vmKind to on-wire form of GMSMember.writeEssentialData
+   * </p>
+   * <p>
+   * This must be backward-compatible with Geode 1.0 (Version.GFE_90)
+   * </p>
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testGMSMemberBackwardCompatibility() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    MemberAttributes attributes = new MemberAttributes(10, 20, 1, 2, "member", null, null);
+    GMSMember member = new GMSMember();
+    member.setAttributes(attributes);
+    DataOutput dataOutput = new DataOutputStream(baos);
+    member.writeEssentialData(dataOutput);
+
+    // vmKind should be transmitted to a member with the current version
+    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    DataInput dataInput = new DataInputStream(bais);
+    GMSMember newMember = new GMSMember();
+    newMember.readEssentialData(dataInput);
+    assertEquals(1, newMember.getVmKind());
+
+    // vmKind should not be transmitted to a member with version GFE_90 or earlier
+    dataOutput = new HeapDataOutputStream(Version.GFE_90);
+    member.writeEssentialData(dataOutput);
+    bais = new ByteArrayInputStream(baos.toByteArray());
+    dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90);
+    newMember = new GMSMember();
+    newMember.readEssentialData(dataInput);
+    assertEquals(0, newMember.getVmKind());
+  }
+
+
 }

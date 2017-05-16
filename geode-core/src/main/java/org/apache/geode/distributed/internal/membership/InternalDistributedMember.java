@@ -165,6 +165,17 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     cachedToString = null;
   }
 
+  /**
+   * Replace the current NetMember with the given member. This can be used to fill out an
+   * InternalDistributedMember that was created from a partial NetMember created by
+   * readEssentialData.
+   * 
+   * @param m the replacement NetMember
+   */
+  public void setNetMember(NetMember m) {
+    this.netMbr = m;
+  }
+
   // private void checkHostName() {
   // // bug #44858: debug method to find who is putting a host name instead of addr into an ID
   // if (!SocketCreator.resolve_dns

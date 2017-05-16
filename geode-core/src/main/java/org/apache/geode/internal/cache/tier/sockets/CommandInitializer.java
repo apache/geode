@@ -336,9 +336,14 @@ public class CommandInitializer {
       ALL_COMMANDS.put(Version.GEODE_110, geode110Commands);
     }
     {
-      Map<Integer, Command> gfe91Commands = new HashMap<Integer, Command>();
-      gfe91Commands.putAll(ALL_COMMANDS.get(Version.GEODE_110));
-      ALL_COMMANDS.put(Version.GFE_91, gfe91Commands);
+      Map<Integer, Command> geode111Commands = new HashMap<Integer, Command>();
+      geode111Commands.putAll(ALL_COMMANDS.get(Version.GEODE_110));
+      ALL_COMMANDS.put(Version.GEODE_111, geode111Commands);
+    }
+    {
+      Map<Integer, Command> commands = new HashMap<Integer, Command>();
+      commands.putAll(ALL_COMMANDS.get(Version.GEODE_111));
+      ALL_COMMANDS.put(Version.GEODE_120, commands);
     }
 
   }
