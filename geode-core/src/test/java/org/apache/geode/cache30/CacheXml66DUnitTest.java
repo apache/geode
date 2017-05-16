@@ -4171,7 +4171,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    * Tests parsing an XML file that specifies a cache listener that is not {@link Declarable}.
    */
   @Test
-  public void testCallbackNotExplicitlyDeclarableIsStillOK() {
+  public void testCallbackNotExplicitlyDeclarableIsStillOK() throws Exception {
     setXmlFile(findFile("callbackNotDeclarable.xml"));
 
     getCache();
