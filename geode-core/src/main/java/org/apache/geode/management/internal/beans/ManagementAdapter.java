@@ -14,26 +14,7 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
-
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.cache.CacheService;
-import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
@@ -42,11 +23,13 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -75,6 +58,21 @@ import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.logging.log4j.Logger;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
 
 /**
  * Acts as an intermediate between MBean layer and Federation Layer. Handles all Call backs from
@@ -111,9 +109,9 @@ public class ManagementAdapter {
 
   private MBeanAggregator aggregator;
 
-  public static final List<Class> refreshOnInit = new ArrayList<Class>();
+  public static final List<Class> refreshOnInit = new ArrayList<>();
 
-  public static final List<String> internalLocks = new ArrayList<String>();
+  public static final List<String> internalLocks = new ArrayList<>();
 
   static {
     refreshOnInit.add(RegionMXBean.class);
@@ -219,9 +217,7 @@ public class ManagementAdapter {
 
     service.afterCreateProxy(memberObjectName, MemberMXBean.class, localMember, addedComp);
 
-    Iterator<ObjectName> it = registeredMBeans.keySet().iterator();
-    while (it.hasNext()) {
-      ObjectName objectName = it.next();
+    for (ObjectName objectName : registeredMBeans.keySet()) {
       if (objectName.equals(memberObjectName)) {
         continue;
       }
@@ -235,8 +231,8 @@ public class ManagementAdapter {
 
         FederationComponent newObj = service.getLocalManager().getFedComponents().get(objectName);
 
-        for (int i = 0; i < intfTyps.length; i++) {
-          Class intfTyp = (Class) intfTyps[i];
+        for (Type intfTyp1 : intfTyps) {
+          Class intfTyp = (Class) intfTyp1;
           service.afterCreateProxy(objectName, intfTyp, object, newObj);
 
         }
@@ -265,12 +261,10 @@ public class ManagementAdapter {
     MBeanJMXAdapter jmxAdapter = service.getJMXAdapter();
     Map<ObjectName, Object> registeredMBeans = jmxAdapter.getLocalGemFireMBean();
 
-    ObjectName aggregatemMBeanPattern = null;
+    ObjectName aggregatemMBeanPattern;
     try {
       aggregatemMBeanPattern = new ObjectName(ManagementConstants.AGGREGATE_MBEAN_PATTERN);
-    } catch (MalformedObjectNameException e1) {
-      throw new ManagementException(e1);
-    } catch (NullPointerException e1) {
+    } catch (MalformedObjectNameException | NullPointerException e1) {
       throw new ManagementException(e1);
     }
 
@@ -284,10 +278,7 @@ public class ManagementAdapter {
 
     service.afterRemoveProxy(memberObjectName, MemberMXBean.class, localMember, removedComp);
 
-    Iterator<ObjectName> it = registeredMBeans.keySet().iterator();
-
-    while (it.hasNext()) {
-      ObjectName objectName = it.next();
+    for (ObjectName objectName : registeredMBeans.keySet()) {
       if (objectName.equals(memberObjectName)) {
         continue;
       }
@@ -304,14 +295,11 @@ public class ManagementAdapter {
 
         FederationComponent oldObj = service.getLocalManager().getFedComponents().get(objectName);
 
-        for (int i = 0; i < intfTyps.length; i++) {
-          Class intfTyp = (Class) intfTyps[i];
+        for (Type intfTyp1 : intfTyps) {
+          Class intfTyp = (Class) intfTyp1;
           service.afterRemoveProxy(objectName, intfTyp, object, oldObj);
         }
-      } catch (InstanceNotFoundException e) {
-        logger.warn("Failed to invoke aggregator for {} with exception {}", objectName,
-            e.getMessage(), e);
-      } catch (ClassNotFoundException e) {
+      } catch (InstanceNotFoundException | ClassNotFoundException e) {
         logger.warn("Failed to invoke aggregator for {} with exception {}", objectName,
             e.getMessage(), e);
       }
@@ -359,7 +347,7 @@ public class ManagementAdapter {
       // Bridge is responsible for extracting data from GemFire Layer
       RegionMBeanBridge<K, V> bridge = RegionMBeanBridge.getInstance(region);
 
-      RegionMXBean regionMBean = new RegionMBean<K, V>(bridge);
+      RegionMXBean regionMBean = new RegionMBean<>(bridge);
       ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(
           internalCache.getDistributedSystem().getDistributedMember(), region.getFullPath());
       ObjectName changedMBeanName = service.registerInternalMBean(regionMBean, regionMBeanName);
@@ -567,7 +555,7 @@ public class ManagementAdapter {
 
     ObjectName asycnEventQueueMBeanName = MBeanJMXAdapter.getAsycnEventQueueMBeanName(
         internalCache.getDistributedSystem().getDistributedMember(), queue.getId());
-    AsyncEventQueueMBean bean = null;
+    AsyncEventQueueMBean bean;
     try {
       bean = (AsyncEventQueueMBean) service.getLocalAsyncEventQueueMXBean(queue.getId());
       if (bean == null) {
@@ -616,7 +604,7 @@ public class ManagementAdapter {
   }
 
   private Map<String, String> prepareUserData(AlertDetails details) {
-    Map<String, String> userData = new HashMap<String, String>();
+    Map<String, String> userData = new HashMap<>();
     userData.put(JMXNotificationUserData.ALERT_LEVEL,
         AlertDetails.getAlertLevelAsString(details.getAlertLevel()));
 
@@ -627,7 +615,7 @@ public class ManagementAdapter {
     String nameOrId = memberSource; // TODO: what if sender is null?
     if (sender != null) {
       nameOrId = sender.getName();
-      nameOrId = nameOrId != null && !nameOrId.trim().isEmpty() ? nameOrId : sender.getId();
+      nameOrId = StringUtils.isNotBlank(nameOrId) ? nameOrId : sender.getId();
     }
 
     userData.put(JMXNotificationUserData.MEMBER, nameOrId);
@@ -799,7 +787,7 @@ public class ManagementAdapter {
     synchronized (regionOpLock) {
       ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(
           internalCache.getDistributedSystem().getDistributedMember(), region.getFullPath());
-      RegionMBean bean = null;
+      RegionMBean bean;
       try {
         bean = (RegionMBean) service.getLocalRegionMBean(region.getFullPath());
       } catch (ManagementException e) {
@@ -838,7 +826,7 @@ public class ManagementAdapter {
     ObjectName diskStoreMBeanName = MBeanJMXAdapter.getDiskStoreMBeanName(
         internalCache.getDistributedSystem().getDistributedMember(), disk.getName());
 
-    DiskStoreMBean bean = null;
+    DiskStoreMBean bean;
     try {
       bean = (DiskStoreMBean) service.getLocalDiskStoreMBean(disk.getName());
       if (bean == null) {

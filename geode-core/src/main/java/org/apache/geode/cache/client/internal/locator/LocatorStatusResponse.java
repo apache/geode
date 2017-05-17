@@ -15,6 +15,13 @@
 
 package org.apache.geode.cache.client.internal.locator;
 
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessUtils;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -23,13 +30,6 @@ import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.process.PidUnavailableException;
-import org.apache.geode.internal.process.ProcessUtils;
 
 /**
  * The LocatorStatusResponse class...
@@ -101,7 +101,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   @SuppressWarnings("unchecked")
   public List<String> getJvmArgs() {
     return Collections
-        .unmodifiableList(ObjectUtils.defaultIfNull(jvmArgs, Collections.<String>emptyList()));
+        .unmodifiableList(ObjectUtils.defaultIfNull(jvmArgs, Collections.emptyList()));
   }
 
   public Integer getPid() {
@@ -162,12 +162,12 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void readWorkingDirectory(final DataInput in) throws IOException {
-    this.workingDirectory = StringUtils.defaultIfBlank(in.readUTF());
+    this.workingDirectory = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readJvmArguments(final DataInput in) throws IOException {
     final int length = in.readInt();
-    final List<String> jvmArgs = new ArrayList<String>(length);
+    final List<String> jvmArgs = new ArrayList<>(length);
     for (int index = 0; index < length; index++) {
       jvmArgs.add(in.readUTF());
     }
@@ -175,23 +175,23 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void readClasspath(final DataInput in) throws IOException {
-    this.classpath = StringUtils.defaultIfBlank(in.readUTF());
+    this.classpath = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readGemFireVersion(final DataInput in) throws IOException {
-    this.gemfireVersion = StringUtils.defaultIfBlank(in.readUTF());
+    this.gemfireVersion = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readJavaVersion(final DataInput in) throws IOException {
-    this.javaVersion = StringUtils.defaultIfBlank(in.readUTF());
+    this.javaVersion = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readLogFile(final DataInput in) throws IOException {
-    this.logFile = StringUtils.defaultIfBlank(in.readUTF());
+    this.logFile = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readHost(final DataInput in) throws IOException {
-    this.host = StringUtils.defaultIfBlank(in.readUTF());
+    this.host = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readPort(final DataInput in) throws IOException {
@@ -200,7 +200,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void readName(final DataInput in) throws IOException {
-    this.name = StringUtils.defaultIfBlank(in.readUTF());
+    this.name = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   @Override

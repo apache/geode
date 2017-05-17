@@ -15,6 +15,19 @@
 
 package org.apache.geode.cache.query.internal;
 
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.query.NameNotFoundException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -27,19 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.apache.geode.cache.EntryDestroyedException;
-import org.apache.geode.cache.query.NameNotFoundException;
-import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
-import org.apache.geode.pdx.JSONFormatter;
 
 /**
  * Utility for managing an attribute
@@ -137,25 +137,6 @@ public class AttributeDescriptor {
   }
 
 
-  /* this method is not yet used. Here to support Update statements */
-  // returns either null or UNDEFINED
-  /*
-   * public Object write(Object target, Object newValue) throws PathEvaluationException { if (target
-   * == null) return QueryService.UNDEFINED;
-   * 
-   * 
-   * Class targetType = target.getClass(); Class argType = newValue == null ? null :
-   * newValue.getClass(); Member m = getWriteMember(targetType, argType); if (m == null) throw new
-   * PathEvaluationException(LocalizedStrings.AttributeDescriptor_NO_UPDATE_PATH_MAPPING_FOUND_FOR_0
-   * .toLocalizedString(_name)); try { if (m instanceof Method) { try { ((Method)m).invoke(target,
-   * new Object[] { newValue }); return null; } catch (InvocationTargetException e) { throw new
-   * PathEvaluationException(e.getTargetException()); } } else { ((Field)m).set(target, newValue);
-   * return null; } } catch (IllegalAccessException e) { throw new PathEvaluationException(e)); }
-   * 
-   * }
-   */
-
-
   Member getReadMember(ObjectType targetType) throws NameNotFoundException {
     return getReadMember(targetType.resolveClass());
   }
@@ -186,14 +167,6 @@ public class AttributeDescriptor {
   }
 
 
-  /*
-   * Not yet used, Here to support Update statements private Member getWriteMember(Class targetType,
-   * Class argType) { // mapping: public field (same name), method (setAttribute(val)), // method
-   * attribute(val) Member m; m = getWriteField(targetType, argType); if (m != null) return m;
-   * return getWriteMethod(targetType, argType); }
-   */
-
-
 
   private Field getReadField(Class targetType) {
     try {
@@ -202,11 +175,6 @@ public class AttributeDescriptor {
       return null;
     }
   }
-
-  /*
-   * not yet used private Field getWriteField(Class targetType, Class argType) { try { return
-   * targetType.getField(_name); } catch (NoSuchFieldException e) { return null; } }
-   */
 
 
 
@@ -219,12 +187,6 @@ public class AttributeDescriptor {
     return getReadMethod(targetType, _name);
   }
 
-  /*
-   * not yet used private Method getWriteMethod(Class targetType, Class argType) { Method m; String
-   * beanMethod = "set" + _name.substring(0,1).toUpperCase() + _name.substring(1); m =
-   * getWriteMethod(targetType, argType, beanMethod); if (m != null) return m; return
-   * getWriteMethod(targetType, argType, _name); }
-   */
 
 
   private Method getReadMethod(Class targetType, String methodName) {
@@ -236,12 +198,6 @@ public class AttributeDescriptor {
     }
   }
 
-  /*
-   * not yet used private Method getWriteMethod(Class targetType, Class argType, String methodName)
-   * { try { // @todo look up maximally specific method based on argType return
-   * targetType.getMethod(methodName, new Class[] { argType }); } catch (NoSuchMethodException e) {
-   * return null; } }
-   */
   /**
    * reads field value from a PdxInstance
    * 

@@ -21,14 +21,13 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -41,7 +40,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -93,7 +91,7 @@ public class ClusterConfig implements Serializable {
     Set<String> expectedGroupConfigs =
         this.getGroups().stream().map(ConfigGroup::getName).collect(toSet());
 
-    // verify info exists in memeory
+    // verify info exists in memory
     locatorVM.invoke(() -> {
       InternalLocator internalLocator = LocatorServerStartupRule.locatorStarter.getLocator();
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
@@ -107,8 +105,8 @@ public class ClusterConfig implements Serializable {
         Configuration config = sc.getConfiguration(configGroup.name);
         assertThat(config.getJarNames()).isEqualTo(configGroup.getJars());
 
-        // verify proeprty is as expected
-        if (!StringUtils.isBlank(configGroup.getMaxLogFileSize())) {
+        // verify property is as expected
+        if (StringUtils.isNotBlank(configGroup.getMaxLogFileSize())) {
           Properties props = config.getGemfireProperties();
           assertThat(props.getProperty(LOG_FILE_SIZE_LIMIT))
               .isEqualTo(configGroup.getMaxLogFileSize());
@@ -135,7 +133,7 @@ public class ClusterConfig implements Serializable {
     }
   }
 
-  public void verifyServer(MemberVM<Server> serverVM) throws ClassNotFoundException {
+  public void verifyServer(MemberVM<Server> serverVM) {
     // verify files exist in filesystem
     Set<String> expectedJarNames = this.getJarNames().stream().collect(toSet());
 
@@ -156,7 +154,7 @@ public class ClusterConfig implements Serializable {
         assertThat(cache.getRegion(region)).isNotNull();
       }
 
-      if (!StringUtils.isBlank(this.getMaxLogFileSize())) {
+      if (StringUtils.isNotBlank(this.getMaxLogFileSize())) {
         Properties props = cache.getDistributedSystem().getProperties();
         assertThat(props.getProperty(LOG_FILE_SIZE_LIMIT)).isEqualTo(this.getMaxLogFileSize());
       }

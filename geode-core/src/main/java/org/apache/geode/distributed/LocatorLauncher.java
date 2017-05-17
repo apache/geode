@@ -15,32 +15,42 @@
 
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 
-import org.apache.geode.cache.client.internal.locator.*;
+import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
+import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.*;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.process.*;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.process.ConnectionFailedException;
+import org.apache.geode.internal.process.ControlNotificationHandler;
+import org.apache.geode.internal.process.ControllableProcess;
+import org.apache.geode.internal.process.FileAlreadyExistsException;
+import org.apache.geode.internal.process.MBeanInvocationFailedException;
+import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessController;
+import org.apache.geode.internal.process.ProcessControllerFactory;
+import org.apache.geode.internal.process.ProcessControllerParameters;
+import org.apache.geode.internal.process.ProcessLauncherContext;
+import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.process.StartupStatusListener;
+import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -48,12 +58,23 @@ import java.lang.management.ManagementFactory;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
@@ -1563,7 +1584,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #getHostnameForClients()
      */
     public Builder setHostnameForClients(final String hostnameForClients) {
-      if (StringUtils.isEmpty(StringUtils.trim(hostnameForClients))) {
+      if (StringUtils.isBlank(hostnameForClients)) {
         throw new IllegalArgumentException(
             LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
                 .toLocalizedString());
@@ -1591,7 +1612,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #getMemberName()
      */
     public Builder setMemberName(final String memberName) {
-      if (StringUtils.isEmpty(StringUtils.trim(memberName))) {
+      if (StringUtils.isBlank(memberName)) {
         throw new IllegalArgumentException(
             LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE
                 .toLocalizedString("Locator"));
@@ -1707,7 +1728,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     boolean isWorkingDirectorySpecified() {
-      return !StringUtils.isBlank(this.workingDirectory);
+      return StringUtils.isNotBlank(this.workingDirectory);
     }
 
     /**
@@ -1931,7 +1952,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      *         option.
      */
     public boolean hasOption(final String option) {
-      return getOptions().contains(StringUtils.toLowerCase(option));
+      return getOptions().contains(StringUtils.lowerCase(option));
     }
 
     /**
@@ -2043,8 +2064,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         if (logFile != null && logFile.isFile()) {
           final String logFileCanonicalPath =
               IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
-          if (!StringUtils.isBlank(logFileCanonicalPath)) { // this is probably not need but a safe
-                                                            // check none-the-less.
+          if (StringUtils.isNotBlank(logFileCanonicalPath)) { // this is probably not need but a
+                                                              // safe
+            // check none-the-less.
             return logFileCanonicalPath;
           }
         }
@@ -2056,7 +2078,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       if (InternalLocator.hasLocator()) {
         final InternalLocator locator = InternalLocator.getLocator();
         final String portAsString = String.valueOf(locator.getPort());
-        if (!StringUtils.isBlank(portAsString)) {
+        if (StringUtils.isNotBlank(portAsString)) {
           return portAsString;
         }
       }

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.web.http;
 
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * The HttpHeader enum is an enumeration of all HTTP request/response header names.
@@ -78,7 +78,7 @@ public enum HttpHeader {
   private final String name;
 
   HttpHeader(final String name) {
-    assert !StringUtils.isBlank(name) : "The name of the HTTP request header must be specified!";
+    assert StringUtils.isNotBlank(name) : "The name of the HTTP request header must be specified!";
     this.name = name;
   }
 

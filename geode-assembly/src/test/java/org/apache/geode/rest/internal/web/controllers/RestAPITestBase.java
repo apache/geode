@@ -14,18 +14,28 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.fail;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.management.internal.AgentUtil;
+import org.apache.geode.rest.internal.web.RestFunctionTemplate;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -37,20 +47,14 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.AgentUtil;
-import org.apache.geode.rest.internal.web.RestFunctionTemplate;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 @Category(DistributedTest.class)
 class RestAPITestBase extends JUnit4DistributedTestCase {
@@ -168,7 +172,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     HttpPost post = new HttpPost(restString);
     post.addHeader("Content-Type", "application/json");
     post.addHeader("Accept", "application/json");
-    if (jsonBody != null && !StringUtils.isEmpty(jsonBody)) {
+    if (StringUtils.isNotEmpty(jsonBody)) {
       StringEntity jsonStringEntity = new StringEntity(jsonBody, ContentType.DEFAULT_TEXT);
       post.setEntity(jsonStringEntity);
     }

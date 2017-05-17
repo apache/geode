@@ -14,11 +14,6 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import java.util.Map;
-
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
-
 import org.apache.geode.management.DiskBackupStatus;
 import org.apache.geode.management.DiskMetrics;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -27,6 +22,10 @@ import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.NetworkMetrics;
 import org.apache.geode.management.OSMetrics;
 import org.apache.geode.management.PersistentMemberDetails;
+
+import java.util.Map;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
 
 /**
  * Distributed System MBean
@@ -103,7 +102,7 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
 
   @Override
   public String[] listGatewaySenders() {
-    return bridge.listGatwaySenders();
+    return bridge.listGatewaySenders();
   }
 
   @Override

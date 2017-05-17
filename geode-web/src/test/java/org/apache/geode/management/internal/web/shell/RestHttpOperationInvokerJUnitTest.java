@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.web.AbstractWebTestCase;
 import org.apache.geode.management.internal.web.domain.Link;
@@ -112,7 +112,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
   private CommandRequest createCommandRequest(final String command,
       final Map<String, String> options) {
-    return new TestCommandRequest(command, options, Collections.<String, String>emptyMap(), null);
+    return new TestCommandRequest(command, options, Collections.emptyMap(), null);
   }
 
   private CommandRequest createCommandRequest(final String command,
@@ -122,8 +122,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
   private CommandRequest createCommandRequest(final String command,
       final Map<String, String> options, final byte[][] fileData) {
-    return new TestCommandRequest(command, options, Collections.<String, String>emptyMap(),
-        fileData);
+    return new TestCommandRequest(command, options, Collections.emptyMap(), fileData);
   }
 
   private CommandRequest createCommandRequest(final String command,
@@ -145,12 +144,12 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
   @Test
   public void testCreateHttpRequest() {
-    final Map<String, String> commandOptions = new HashMap<String, String>();
+    final Map<String, String> commandOptions = new HashMap<>();
 
     commandOptions.put("author", "Adams");
     commandOptions.put("blankOption", "  ");
     commandOptions.put("category", "sci-fi");
-    commandOptions.put("emptyOption", StringUtils.EMPTY_STRING);
+    commandOptions.put("emptyOption", StringUtils.EMPTY);
     commandOptions.put("isbn", "0-123456789");
     commandOptions.put("nullOption", null);
     commandOptions.put("title", "Hitch Hiker's Guide to the Galaxy");
@@ -182,12 +181,12 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
   @Test
   public void testCreateHttpRequestWithEnvironmentVariables() {
-    final Map<String, String> commandOptions = new HashMap<String, String>(2);
+    final Map<String, String> commandOptions = new HashMap<>(2);
 
     commandOptions.put("name", "ElLibreDeCongress");
     commandOptions.put("isbn", "${ISBN}");
 
-    final Map<String, String> environment = new HashMap<String, String>(2);
+    final Map<String, String> environment = new HashMap<>(2);
 
     environment.put("ISBN", "0-987654321");
     environment.put("VAR", "test");
@@ -209,7 +208,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
   }
 
   @Test
-  public void testCreatHttpRequestWithFileData() {
+  public void testCreateHttpRequestWithFileData() {
     final Map<String, String> commandOptions = Collections.singletonMap("isbn", "0-123456789");
 
     final byte[][] fileData = {"/path/to/book/content.txt".getBytes(),
@@ -238,7 +237,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
   @Test
   public void testFindAndResolveLink() throws Exception {
-    final Map<String, String> commandOptions = new HashMap<String, String>();
+    final Map<String, String> commandOptions = new HashMap<>();
 
     commandOptions.put("name", "BarnesN'Noble");
 
@@ -253,7 +252,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     assertNotNull(link);
     assertEquals("http://host.domain.com/service/v1/libraries/{name}", toString(link.getHref()));
 
-    commandOptions.put("author", "J.K.Rowlings");
+    commandOptions.put("author", "J.K.Rowling");
 
     link = getOperationInvoker().findLink(createCommandRequest("list-books", commandOptions));
 
@@ -323,8 +322,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
       }
     };
 
-    final Object actualResult = operationInvoker.processCommand(
-        createCommandRequest("list-libraries", Collections.<String, String>emptyMap()));
+    final Object actualResult = operationInvoker
+        .processCommand(createCommandRequest("list-libraries", Collections.emptyMap()));
 
     assertEquals(expectedResult, actualResult);
   }
@@ -353,8 +352,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
       protected void printWarning(final String message, final Object... args) {}
     };
 
-    final Object actualResult = operationInvoker.processCommand(
-        createCommandRequest("get resource", Collections.<String, String>emptyMap()));
+    final Object actualResult = operationInvoker
+        .processCommand(createCommandRequest("get resource", Collections.emptyMap()));
 
     assertEquals(expectedResult, actualResult);
   }
@@ -391,8 +390,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
             + "Please try reconnecting or see the GemFire Manager's log file for further details.",
         operationInvoker.getBaseUrl(), "test");
 
-    final Object actualResult = operationInvoker.processCommand(
-        createCommandRequest("list-libraries", Collections.<String, String>emptyMap()));
+    final Object actualResult = operationInvoker
+        .processCommand(createCommandRequest("list-libraries", Collections.emptyMap()));
 
     assertFalse(operationInvoker.isConnected());
     assertEquals(expectedResult, actualResult);
@@ -413,8 +412,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     };
 
     try {
-      operationInvoker.processCommand(
-          createCommandRequest("get resource", Collections.<String, String>emptyMap()));
+      operationInvoker.processCommand(createCommandRequest("get resource", Collections.emptyMap()));
     } catch (RestApiCallForCommandNotFoundException e) {
       assertEquals("No REST API call for command (get resource) was found!", e.getMessage());
       throw e;
@@ -425,7 +423,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
   public void testProcessCommandWhenNotConnected() {
     try {
       getOperationInvoker()
-          .processCommand(createCommandRequest("get-book", Collections.<String, String>emptyMap()));
+          .processCommand(createCommandRequest("get-book", Collections.emptyMap()));
     } catch (IllegalStateException e) {
       assertEquals(
           "Gfsh must be connected to the GemFire Manager in order to process commands remotely!",
@@ -436,7 +434,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
   private static class TestCommandRequest extends CommandRequest {
 
-    private final Map<String, String> commandParameters = new TreeMap<String, String>();
+    private final Map<String, String> commandParameters = new TreeMap<>();
 
     private final String command;
 

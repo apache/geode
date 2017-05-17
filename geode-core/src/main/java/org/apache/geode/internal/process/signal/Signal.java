@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.process.signal;
 
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Signals defined in the enumerated type were based on Open BSD and the IBM JVM...
@@ -78,7 +78,7 @@ public enum Signal {
   private final String name;
 
   Signal(final int number, final String name, final SignalType type, final String description) {
-    assertValidArgument(!StringUtils.isBlank(name), "The name of the signal must be specified!");
+    assertValidArgument(StringUtils.isNotBlank(name), "The name of the signal must be specified!");
     this.number = number;
     this.name = name;
     this.type = type;

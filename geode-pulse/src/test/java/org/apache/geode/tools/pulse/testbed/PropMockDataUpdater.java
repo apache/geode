@@ -34,7 +34,6 @@ import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +56,7 @@ public class PropMockDataUpdater implements IClusterUpdater {
 
   private Cluster cluster = null;
   private TestBed testbed;
-  private final String testbedFile = System.getProperty("pulse.propMockDataUpdaterFile");;
+  private final String testbedFile = System.getProperty("pulse.propMockDataUpdaterFile");
 
   private final ObjectMapper mapper = new ObjectMapper();
 
@@ -65,14 +64,12 @@ public class PropMockDataUpdater implements IClusterUpdater {
     this.cluster = cluster;
     try {
       loadPropertiesFile();
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void loadPropertiesFile() throws FileNotFoundException, IOException {
+  private void loadPropertiesFile() throws IOException {
     this.testbed = new TestBed(testbedFile, true);
   }
 
@@ -161,8 +158,8 @@ public class PropMockDataUpdater implements IClusterUpdater {
       }
 
       for (Entry<String, Member> memberSet : membersHMap.entrySet()) {
-        HashMap<String, Cluster.Region> memberRegions = new HashMap<String, Cluster.Region>();
-        HashMap<String, Cluster.Client> memberClientsHM = new HashMap<String, Cluster.Client>();
+        HashMap<String, Cluster.Region> memberRegions = new HashMap<>();
+        HashMap<String, Cluster.Client> memberClientsHM = new HashMap<>();
 
         Random randomGenerator = new Random();
 
@@ -277,10 +274,6 @@ public class PropMockDataUpdater implements IClusterUpdater {
       memberRegion.setWanEnabled(false);
     }
     memberRegion.setWanEnabled(true);
-    /*
-     * memberRegion.setSystemRegionEntryCount(Long.valueOf(String.valueOf(Math
-     * .abs(randomGenerator.nextInt(100)))));
-     */
     memberRegion.getMemberName().add(memName);
     memberRegion.setMemberCount(memberCount);
     return memberRegion;
@@ -369,7 +362,7 @@ public class PropMockDataUpdater implements IClusterUpdater {
     if (memberArrList != null) {
       memberArrList.add(m);
     } else {
-      ArrayList<Cluster.Member> memberList = new ArrayList<Cluster.Member>();
+      ArrayList<Cluster.Member> memberList = new ArrayList<>();
       memberList.add(m);
       physicalToMember.put(m.getHost(), memberList);
     }

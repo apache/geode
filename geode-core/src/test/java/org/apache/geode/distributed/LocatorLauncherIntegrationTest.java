@@ -14,6 +14,12 @@
  */
 package org.apache.geode.distributed;
 
+import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
+import static com.googlecode.catchexception.apis.BDDCatchException.when;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.assertj.core.api.BDDAssertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.then;
+
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -32,12 +38,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
-
-import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
-import static com.googlecode.catchexception.apis.BDDCatchException.when;
-import static org.assertj.core.api.BDDAssertions.assertThat;
-import static org.assertj.core.api.BDDAssertions.then;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Integration tests for LocatorLauncher. These tests require file system I/O.
@@ -110,7 +110,7 @@ public class LocatorLauncherIntegrationTest {
         gemfireProperties);
 
     // when: starting with null MemberName
-    LocatorLauncher launcher = new Builder().setCommand(Command.START).setMemberName(null).build();
+    LocatorLauncher launcher = new Builder().setCommand(Command.START).build();
 
     // then: name in gemfire.properties file should be used for MemberName
     assertThat(launcher).isNotNull();

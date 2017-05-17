@@ -14,10 +14,20 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 
-import org.apache.geode.cache.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
@@ -25,16 +35,26 @@ import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  *
@@ -198,8 +218,8 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, locators);
-    if (useGroupsProperty) {
-      props.setProperty(GROUPS, StringUtils.concat(groups, ","));
+    if (useGroupsProperty && groups != null) {
+      props.setProperty(GROUPS, StringUtils.join(groups, ","));
     }
     DistributedSystem ds = getSystem(props);
     Cache cache = CacheFactory.create(ds);

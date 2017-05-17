@@ -14,17 +14,24 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.support.DistributedSystemAdapter;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
-import edu.umd.cs.mtc.MultithreadedTestCase;
-import edu.umd.cs.mtc.TestFramework;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -42,9 +49,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.Assert.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import edu.umd.cs.mtc.MultithreadedTestCase;
+import edu.umd.cs.mtc.TestFramework;
 
 /**
  * The ServerLauncherTest class is a test suite of unit tests testing the contract, functionality
@@ -77,6 +83,7 @@ public class ServerLauncherTest {
         setThreadingPolicy(new Synchroniser());
       }
     };
+    DistributedSystem.removeSystem(InternalDistributedSystem.getConnectedInstance());
   }
 
   @After
@@ -162,8 +169,6 @@ public class ServerLauncherTest {
     assertNull(builder.getMemberName());
     assertSame(builder, builder.setMemberName("serverOne"));
     assertEquals("serverOne", builder.getMemberName());
-    assertSame(builder, builder.setMemberName(null));
-    assertNull(builder.getMemberName());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -182,6 +187,18 @@ public class ServerLauncherTest {
   public void testSetMemberNameToEmptyString() {
     try {
       new Builder().setMemberName("");
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Server"),
+          expected.getMessage());
+      throw expected;
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetMemberNameToNullString() {
+    try {
+      new Builder().setMemberName(null);
     } catch (IllegalArgumentException expected) {
       assertEquals(
           LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Server"),
@@ -277,8 +294,6 @@ public class ServerLauncherTest {
     assertNull(builder.getHostNameForClients());
     assertSame(builder, builder.setHostNameForClients("Pegasus"));
     assertEquals("Pegasus", builder.getHostNameForClients());
-    assertSame(builder, builder.setHostNameForClients(null));
-    assertNull(builder.getHostNameForClients());
   }
 
   @Test
@@ -498,8 +513,8 @@ public class ServerLauncherTest {
 
   @Test
   public void testBuildWithMemberNameSetInApiPropertiesOnStart() {
-    ServerLauncher launcher = new Builder().setCommand(ServerLauncher.Command.START)
-        .setMemberName(null).set(NAME, "serverABC").build();
+    ServerLauncher launcher =
+        new Builder().setCommand(ServerLauncher.Command.START).set(NAME, "serverABC").build();
 
     assertNotNull(launcher);
     assertEquals(ServerLauncher.Command.START, launcher.getCommand());
@@ -511,8 +526,7 @@ public class ServerLauncherTest {
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "serverXYZ");
 
-    ServerLauncher launcher =
-        new Builder().setCommand(ServerLauncher.Command.START).setMemberName(null).build();
+    ServerLauncher launcher = new Builder().setCommand(ServerLauncher.Command.START).build();
 
     assertNotNull(launcher);
     assertEquals(ServerLauncher.Command.START, launcher.getCommand());

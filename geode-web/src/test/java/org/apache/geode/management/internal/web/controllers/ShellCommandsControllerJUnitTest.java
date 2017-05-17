@@ -14,17 +14,18 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.servlet.http.HttpServletRequest;
-
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.util.UriUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,12 +38,14 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
-import org.apache.geode.management.internal.web.domain.Link;
-import org.apache.geode.management.internal.web.domain.LinkIndex;
-import org.apache.geode.management.internal.web.util.UriUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * The ShellCommandsControllerJUnitTest class is a test suite of test cases testing the contract and
@@ -123,8 +126,7 @@ public class ShellCommandsControllerJUnitTest {
               String[] requestParameters = requestMappingAnnotation.params();
 
               if (requestParameters.length > 0) {
-                webServiceEndpoint += "?".concat(
-                    org.apache.geode.internal.lang.StringUtils.concat(requestParameters, "&amp;"));
+                webServiceEndpoint += "?".concat(StringUtils.join(requestParameters, "&amp;"));
               }
 
               controllerWebServiceEndpoints.add(webServiceEndpoint);

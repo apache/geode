@@ -53,11 +53,11 @@ package org.apache.geode.management.internal.cli.result;
  * 
  * @since GemFire 7.0
  */
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.management.internal.cli.GfshParser;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class TableBuilder {
 
@@ -66,7 +66,7 @@ public class TableBuilder {
   }
 
   public static class Table {
-    private final List<RowGroup> rowGroups = new ArrayList<RowGroup>();
+    private final List<RowGroup> rowGroups = new ArrayList<>();
     private String columnSeparator = "   ";
     private boolean isTabularResult = false;
 
@@ -138,7 +138,7 @@ public class TableBuilder {
     }
 
     public String buildTable() {
-      StringBuffer stringBuffer = new StringBuffer();
+      StringBuilder stringBuffer = new StringBuilder();
       for (RowGroup rowGroup : this.rowGroups) {
         stringBuffer.append(rowGroup.buildRowGroup(isTabularResult));
       }
@@ -147,7 +147,7 @@ public class TableBuilder {
     }
 
     public List<String> buildTableList() {
-      List<String> list = new ArrayList<String>();
+      List<String> list = new ArrayList<>();
       for (RowGroup rowGroup : this.rowGroups) {
         list.add(rowGroup.buildRowGroup(isTabularResult));
       }
@@ -169,7 +169,7 @@ public class TableBuilder {
    */
   public static class RowGroup {
     private final Table table;
-    private final List<Row> rows = new ArrayList<Row>();
+    private final List<Row> rows = new ArrayList<>();
     private int[] colSizes;
 
     private String columnSeparator;
@@ -202,11 +202,11 @@ public class TableBuilder {
     public String buildRowGroup(boolean isTabularResult) {
       this.colSizes = computeColSizes(isTabularResult);
 
-      StringBuffer stringBuffer = new StringBuffer();
+      StringBuilder stringBuffer = new StringBuilder();
       for (Row row : rows) {
         String builtRow = row.buildRow(isTabularResult);
         stringBuffer.append(builtRow);
-        if (!builtRow.trim().isEmpty() || row.isBlank) {
+        if (StringUtils.isNotBlank(builtRow) || row.isBlank) {
           stringBuffer.append(GfshParser.LINE_SEPARATOR);
         }
       }
@@ -275,7 +275,7 @@ public class TableBuilder {
   public static class Row {
     private final RowGroup rowGroup;
     private final Character rowSeparator;
-    private final List<Column> columns = new ArrayList<Column>();
+    private final List<Column> columns = new ArrayList<>();
     boolean isBlank;
     private boolean isTablewideSeparator;
 
@@ -335,7 +335,7 @@ public class TableBuilder {
     }
 
     private String buildRow(boolean isTabularResult) {
-      StringBuffer stringBuffer = new StringBuffer();
+      StringBuilder stringBuffer = new StringBuilder();
       if (this.rowSeparator != null) {
         if (isTablewideSeparator) {
           int maxColLength = this.rowGroup.getTable().getMaxLength();
@@ -383,8 +383,8 @@ public class TableBuilder {
   }
 
   private static enum Align {
-    LEFT, RIGHT, CENTER;
-  };
+    LEFT, RIGHT, CENTER
+  }
 
   private static class Column {
 
@@ -411,7 +411,7 @@ public class TableBuilder {
       // This can happen because colSizes are re-computed
       // to fit the screen width
       if (this.stringValue.length() > colWidth) {
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
         int endIndex = colWidth - 2;
         if (endIndex < 0)
           return "";
@@ -422,7 +422,7 @@ public class TableBuilder {
       if (trimIt)
         numSpaces = 0;
 
-      StringBuffer stringBuffer = new StringBuffer();
+      StringBuilder stringBuffer = new StringBuilder();
 
       switch (align) {
         case LEFT:

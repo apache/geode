@@ -14,19 +14,18 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import java.io.IOException;
-
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.web.util.ConvertUtils;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * The DeployCommandsController class implements the GemFire Management REST API web service
@@ -55,7 +54,7 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.LIST_DEPLOYED__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -75,7 +74,7 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.DEPLOY__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(jarFileName)) {
@@ -101,12 +100,12 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.UNDEPLOY__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(jarFileNames)) {
       command.addOption(CliStrings.UNDEPLOY__JAR,
-          StringUtils.concat(jarFileNames, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(jarFileNames, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

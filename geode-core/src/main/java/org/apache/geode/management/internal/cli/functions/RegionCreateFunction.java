@@ -14,12 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Set;
-
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
@@ -38,6 +33,7 @@ import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.compression.Compressor;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -48,6 +44,9 @@ import org.apache.geode.management.internal.cli.exceptions.CreateSubregionExcept
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Set;
 
 /**
  *

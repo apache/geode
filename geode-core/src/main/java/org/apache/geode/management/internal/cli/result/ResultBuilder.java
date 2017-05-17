@@ -14,14 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 
@@ -170,7 +168,7 @@ public class ResultBuilder {
   }
 
   public static <T extends CliJsonSerializable> ObjectResultData<T> createObjectResultData() {
-    return new ObjectResultData<T>();
+    return new ObjectResultData<>();
   }
 
   // public static CatalogedResultData createCatalogedResultData() {
@@ -228,13 +226,13 @@ public class ResultBuilder {
    *         Bad Response.
    */
   public static Result fromJson(String json) {
-    Result result = null;
+    Result result;
     try {
       GfJsonObject jsonObject = new GfJsonObject(json);
       String contentType = jsonObject.getString("contentType");
       GfJsonObject data = jsonObject.getJSONObject("data");
 
-      AbstractResultData resultData = null;
+      AbstractResultData resultData;
       if (ResultData.TYPE_TABULAR.equals(contentType)) {
         resultData = new TabularResultData(data);
       } /*
@@ -247,7 +245,7 @@ public class ResultBuilder {
       } else if (ResultData.TYPE_COMPOSITE.equals(contentType)) {
         resultData = new CompositeResultData(data);
       } else if (ResultData.TYPE_OBJECT.equals(contentType)) {
-        resultData = new ObjectResultData<CliJsonSerializable>(data);
+        resultData = new ObjectResultData<>(data);
       } else {
         ErrorResultData errorResultData = new ErrorResultData();
         errorResultData.addLine("Can not detect result type, unknown response format: " + json);
@@ -284,7 +282,7 @@ public class ResultBuilder {
    * @return Read only ResultData of the same type
    */
   static ResultData getReadOnlyResultData(ResultData resultData) {
-    ResultData wrapperResultData = null;
+    ResultData wrapperResultData;
     String contentType = resultData.getType();
     if (ResultData.TYPE_TABULAR.equals(contentType)) {
       wrapperResultData = new TabularResultData(resultData.getGfJsonObject()) {

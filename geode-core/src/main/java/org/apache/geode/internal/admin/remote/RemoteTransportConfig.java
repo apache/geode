@@ -14,7 +14,21 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.admin.TransportConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,13 +37,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.admin.TransportConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * Tranport config for RemoteGfManagerAgent.
@@ -99,7 +106,7 @@ public class RemoteTransportConfig implements TransportConfig {
       StringTokenizer stringTokenizer = new StringTokenizer(initialHosts, ",");
       while (stringTokenizer.hasMoreTokens()) {
         String locator = stringTokenizer.nextToken();
-        if (!StringUtils.isEmpty(locator)) {
+        if (StringUtils.isNotEmpty(locator)) {
           locators.add(new DistributionLocatorId(locator));
         }
       }

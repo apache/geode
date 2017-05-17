@@ -80,8 +80,8 @@ public class SystemUtils {
       actualVersionDigits = StringUtils.getDigitsOnly(System.getProperty("java.version"));
     }
 
-    String expectedVersionDigits = StringUtils.padEnding(StringUtils.getDigitsOnly(expectedVersion),
-        '0', actualVersionDigits.length());
+    String expectedVersionDigits = StringUtils.rightPad(StringUtils.getDigitsOnly(expectedVersion),
+        actualVersionDigits.length(), '0');
 
     try {
       return Long.parseLong(actualVersionDigits) >= Long.parseLong(expectedVersionDigits);

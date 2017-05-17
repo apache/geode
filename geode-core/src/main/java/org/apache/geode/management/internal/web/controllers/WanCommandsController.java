@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.web.controllers;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,12 +53,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.LIST_GATEWAY__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.LIST_GATEWAY__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -90,7 +89,7 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(manualStart)) {
@@ -100,7 +99,7 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(members)) {
       command.addOption(CliStrings.CREATE_GATEWAYRECEIVER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(startPort)) {
@@ -127,7 +126,7 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(gatewayTransportFilters)) {
       command.addOption(CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER,
-          StringUtils.concat(gatewayTransportFilters, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(gatewayTransportFilters, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -182,12 +181,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CREATE_GATEWAYSENDER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.CREATE_GATEWAYSENDER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(parallel)) {
@@ -257,12 +256,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(gatewayEventFilters)) {
       command.addOption(CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER,
-          StringUtils.concat(gatewayEventFilters, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(gatewayEventFilters, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(gatewayTransportFilters)) {
       command.addOption(CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
-          StringUtils.concat(gatewayTransportFilters, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(gatewayTransportFilters, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -281,12 +280,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CREATE_GATEWAYSENDER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.CREATE_GATEWAYSENDER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
     return processCommand(command.toString());
   }
@@ -318,12 +317,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.PAUSE_GATEWAYSENDER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.PAUSE_GATEWAYSENDER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -344,12 +343,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.RESUME_GATEWAYSENDER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.RESUME_GATEWAYSENDER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -367,12 +366,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.START_GATEWAYRECEIVER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.START_GATEWAYRECEIVER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -393,12 +392,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.START_GATEWAYSENDER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.START_GATEWAYSENDER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -415,12 +414,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.STATUS_GATEWAYRECEIVER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -439,12 +438,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.STATUS_GATEWAYSENDER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.STATUS_GATEWAYSENDER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -461,12 +460,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.STOP_GATEWAYRECEIVER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -485,12 +484,12 @@ public class WanCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.STOP_GATEWAYSENDER__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.STOP_GATEWAYSENDER__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 
@@ -59,7 +59,7 @@ public class CommandStringBuilder {
   }
 
   public CommandStringBuilder addOptionWithValueCheck(String option, String value) {
-    if (!StringUtils.isBlank(value)) {
+    if (StringUtils.isNotBlank(value)) {
       return addOption(option, value);
     }
     return this;

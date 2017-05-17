@@ -15,8 +15,8 @@
 
 package org.apache.geode.management.internal;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +53,7 @@ public class AgentUtil {
    */
   public String findWarLocation(String warFilePrefix) {
     String geodeHome = getGeodeHome();
-    if (!StringUtils.isBlank(geodeHome)) {
+    if (StringUtils.isNotBlank(geodeHome)) {
       String[] possibleFiles =
           {geodeHome + "/tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
               geodeHome + "/tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
@@ -91,7 +91,7 @@ public class AgentUtil {
   }
 
   public boolean isWebApplicationAvailable(final String warFileLocation) {
-    return !StringUtils.isBlank(warFileLocation);
+    return StringUtils.isNotBlank(warFileLocation);
   }
 
   public boolean isWebApplicationAvailable(final String... warFileLocations) {
@@ -124,6 +124,6 @@ public class AgentUtil {
 
   public boolean isGemfireHomeDefined() {
     String gemfireHome = getGeodeHome();
-    return !StringUtils.isBlank(gemfireHome);
+    return StringUtils.isNotBlank(gemfireHome);
   }
 }

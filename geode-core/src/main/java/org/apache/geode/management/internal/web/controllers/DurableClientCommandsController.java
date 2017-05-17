@@ -19,7 +19,11 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * The DurableClientCommandsController class implements GemFire Management REST API web service
@@ -59,7 +63,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.LIST_DURABLE_CQS__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -109,7 +113,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -134,7 +138,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -161,7 +165,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CLOSE_DURABLE_CQS__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

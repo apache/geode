@@ -14,7 +14,19 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,18 +38,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
-
-import org.apache.geode.internal.lang.Filter;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import java.util.Vector;
 
 /**
  * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and
@@ -105,7 +110,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testCreateMultipleProperties() {
-    Map<String, String> map = new HashMap<String, String>(3);
+    Map<String, String> map = new HashMap<>(3);
 
     map.put("one", "A");
     map.put("two", "B");
@@ -141,7 +146,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testEmptyListWithEmptyList() {
-    final List<Object> expectedList = new ArrayList<Object>(0);
+    final List<Object> expectedList = new ArrayList<>(0);
 
     assertNotNull(expectedList);
     assertTrue(expectedList.isEmpty());
@@ -174,7 +179,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testEmptySetWithEmptySet() {
-    final Set<Object> expectedSet = new HashSet<Object>(0);
+    final Set<Object> expectedSet = new HashSet<>(0);
 
     assertNotNull(expectedSet);
     assertTrue(expectedSet.isEmpty());
@@ -187,7 +192,7 @@ public class CollectionUtilsJUnitTest {
   @Test
   public void testEmptySetWithSet() {
     final Set<String> expectedSet =
-        new HashSet<String>(Arrays.asList("aardvark", "baboon", "cat", "dog", "ferret"));
+        new HashSet<>(Arrays.asList("aardvark", "baboon", "cat", "dog", "ferret"));
 
     assertNotNull(expectedSet);
     assertFalse(expectedSet.isEmpty());
@@ -201,12 +206,8 @@ public class CollectionUtilsJUnitTest {
   public void testFindAll() {
     final List<Integer> numbers = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 9);
 
-    final List<Integer> matches = CollectionUtils.findAll(numbers, new Filter<Integer>() {
-      // accept all even numbers
-      public boolean accept(final Integer number) {
-        return (number % 2 == 0);
-      }
-    });
+    // accept all even numbers
+    final List<Integer> matches = CollectionUtils.findAll(numbers, number -> (number % 2 == 0));
 
     assertNotNull(matches);
     assertFalse(matches.isEmpty());
@@ -217,12 +218,8 @@ public class CollectionUtilsJUnitTest {
   public void testFindAllWhenMultipleElementsMatch() {
     final List<Integer> numbers = Arrays.asList(0, 1, 2, 1, 4, 1, 6, 1, 7, 1, 9);
 
-    final List<Integer> matches = CollectionUtils.findAll(numbers, new Filter<Integer>() {
-      // accept 1
-      public boolean accept(final Integer number) {
-        return (number == 1);
-      }
-    });
+    // accept 1
+    final List<Integer> matches = CollectionUtils.findAll(numbers, number -> (number == 1));
 
     assertNotNull(matches);
     assertEquals(5, matches.size());
@@ -233,12 +230,8 @@ public class CollectionUtilsJUnitTest {
   public void testFindAllWhenNoElementsMatch() {
     final List<Integer> numbers = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
 
-    final List<Integer> matches = CollectionUtils.findAll(numbers, new Filter<Integer>() {
-      // accept negative numbers
-      public boolean accept(final Integer number) {
-        return (number < 0);
-      }
-    });
+    // accept negative numbers
+    final List<Integer> matches = CollectionUtils.findAll(numbers, number -> (number < 0));
 
     assertNotNull(matches);
     assertTrue(matches.isEmpty());
@@ -248,12 +241,8 @@ public class CollectionUtilsJUnitTest {
   public void testFindBy() {
     final List<Integer> numbers = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 9);
 
-    final Integer match = CollectionUtils.findBy(numbers, new Filter<Integer>() {
-      // accept 2
-      public boolean accept(final Integer number) {
-        return (number == 2);
-      }
-    });
+    // accept 2
+    final Integer match = CollectionUtils.findBy(numbers, number -> (number == 2));
 
     assertNotNull(match);
     assertEquals(2, match.intValue());
@@ -263,12 +252,8 @@ public class CollectionUtilsJUnitTest {
   public void testFindByWhenMultipleElementsMatch() {
     final List<Integer> numbers = Arrays.asList(0, 1, 2, 1, 4, 1, 6, 1, 7, 1, 9);
 
-    final Integer match = CollectionUtils.findBy(numbers, new Filter<Integer>() {
-      // accept 1
-      public boolean accept(final Integer number) {
-        return (number == 1);
-      }
-    });
+    // accept 1
+    final Integer match = CollectionUtils.findBy(numbers, number -> (number == 1));
 
     assertNotNull(match);
     assertEquals(1, match.intValue());
@@ -278,19 +263,15 @@ public class CollectionUtilsJUnitTest {
   public void testFindByWhenNoElementsMatch() {
     final List<Integer> numbers = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 9);
 
-    final Integer match = CollectionUtils.findBy(numbers, new Filter<Integer>() {
-      // accept 10
-      public boolean accept(final Integer number) {
-        return (number == 10);
-      }
-    });
+    // accept 10
+    final Integer match = CollectionUtils.findBy(numbers, number -> (number == 10));
 
     assertNull(match);
   }
 
   @Test
   public void testRemoveKeys() {
-    final Map<Object, String> expectedMap = new HashMap<Object, String>(6);
+    final Map<Object, String> expectedMap = new HashMap<>(6);
 
     expectedMap.put("key1", "value");
     expectedMap.put("key2", "null");
@@ -303,12 +284,7 @@ public class CollectionUtilsJUnitTest {
     assertEquals(6, expectedMap.size());
 
     final Map<Object, String> actualMap =
-        CollectionUtils.removeKeys(expectedMap, new Filter<Map.Entry<Object, String>>() {
-          @Override
-          public boolean accept(final Map.Entry<Object, String> entry) {
-            return !StringUtils.isBlank(entry.getValue());
-          }
-        });
+        CollectionUtils.removeKeys(expectedMap, entry -> StringUtils.isNotBlank(entry.getValue()));
 
     assertSame(expectedMap, actualMap);
     assertFalse(actualMap.isEmpty());
@@ -318,7 +294,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testRemoveKeysWithNullValues() {
-    final Map<Object, Object> expectedMap = new HashMap<Object, Object>(3);
+    final Map<Object, Object> expectedMap = new HashMap<>(3);
 
     expectedMap.put("one", "test");
     expectedMap.put("two", null);
@@ -350,7 +326,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testRemoveKeysWithNullValuesFromMapWithNoNullValues() {
-    final Map<String, Object> map = new HashMap<String, Object>(5);
+    final Map<String, Object> map = new HashMap<>(5);
 
     map.put("one", "test");
     map.put("null", "null");
@@ -430,7 +406,7 @@ public class CollectionUtilsJUnitTest {
     list.add("one");
     list.add("two");
 
-    boolean modified = CollectionUtils.addAll(list, (Enumeration<String>) null);
+    boolean modified = CollectionUtils.addAll(list, null);
 
     assertTrue(!modified);
     assertEquals(2, list.size());

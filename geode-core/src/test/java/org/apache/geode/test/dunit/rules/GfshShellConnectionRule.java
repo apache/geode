@@ -17,7 +17,7 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;

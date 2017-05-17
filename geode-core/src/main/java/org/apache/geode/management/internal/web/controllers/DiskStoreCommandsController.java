@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import java.util.concurrent.Callable;
-
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -26,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.concurrent.Callable;
 
 /**
  * The DiskStoreCommandsController class implements GemFire Management REST API web service
@@ -80,7 +80,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.COMPACT_DISK_STORE__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return getProcessCommandCallable(command.toString());
@@ -115,8 +115,10 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
 
     command.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStoreNameId);
-    command.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
-        StringUtils.concat(directoryAndSizes, StringUtils.COMMA_DELIMITER));
+    if (hasValue(directoryAndSizes)) {
+      command.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
+          StringUtils.join(directoryAndSizes, StringUtils.COMMA_DELIMITER));
+    }
     command.addOption(CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION,
         String.valueOf(Boolean.TRUE.equals(allowForceCompaction)));
     command.addOption(CliStrings.CREATE_DISK_STORE__AUTO_COMPACT,
@@ -135,7 +137,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CREATE_DISK_STORE__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -163,7 +165,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.DESTROY_DISK_STORE__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

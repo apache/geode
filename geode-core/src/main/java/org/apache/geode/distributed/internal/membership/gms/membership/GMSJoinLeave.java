@@ -14,33 +14,20 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.distributed.internal.membership.gms.ServiceConfig.*;
-import static org.apache.geode.internal.DataSerializableFixedID.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
+import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
+import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
+import static org.apache.geode.internal.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
+import static org.apache.geode.internal.DataSerializableFixedID.JOIN_REQUEST;
+import static org.apache.geode.internal.DataSerializableFixedID.JOIN_RESPONSE;
+import static org.apache.geode.internal.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static org.apache.geode.internal.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
+import static org.apache.geode.internal.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
+import static org.apache.geode.internal.DataSerializableFixedID.VIEW_ACK_MESSAGE;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
@@ -72,6 +59,28 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the distributed system. It
@@ -1627,8 +1636,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     this.services = s;
 
     DistributionConfig dc = services.getConfig().getDistributionConfig();
-    if (dc.getMcastPort() != 0 && dc.getLocators().trim().isEmpty()
-        && dc.getStartLocator().trim().isEmpty()) {
+    if (dc.getMcastPort() != 0 && StringUtils.isBlank(dc.getLocators())
+        && StringUtils.isBlank(dc.getStartLocator())) {
       throw new GemFireConfigException("Multicast cannot be configured for a non-distributed cache."
           + "  Please configure the locator services for this cache using " + LOCATORS + " or "
           + START_LOCATOR + ".");

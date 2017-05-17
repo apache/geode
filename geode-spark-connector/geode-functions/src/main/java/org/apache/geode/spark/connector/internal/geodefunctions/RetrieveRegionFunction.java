@@ -16,25 +16,24 @@
  */
 package org.apache.geode.spark.connector.internal.geodefunctions;
 
-import java.util.Iterator;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
-import org.apache.geode.internal.cache.*;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.execute.InternalResultSender;
 import org.apache.geode.internal.cache.partitioned.PREntriesIterator;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Iterator;
 
 /**
  * GemFire function that is used by `SparkContext.geodeRegion(regionPath, whereClause)`
@@ -85,10 +84,11 @@ public class RetrieveRegionFunction implements Function {
     InternalRegionFunctionContext irfc = (InternalRegionFunctionContext) context;
     LocalRegion localRegion = (LocalRegion) irfc.getDataSet();
     boolean partitioned = localRegion.getDataPolicy().withPartitioning();
-    if (where.trim().isEmpty())
+    if (StringUtils.isBlank(where)) {
       retrieveFullRegion(irfc, partitioned, taskDesc);
-    else
+    } else {
       retrieveRegionWithWhereClause(irfc, localRegion, partitioned, where, taskDesc);
+    }
   }
 
   /** ------------------------------------------ */

@@ -14,12 +14,24 @@
  */
 package org.apache.geode.management.internal.configuration.utils;
 
-import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
-import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_PREFIX;
 import static javax.xml.XMLConstants.NULL_NS_URI;
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
+import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
+import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_PREFIX;
 
-import java.io.File;
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.management.internal.configuration.domain.CacheElement;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -33,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,20 +60,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.configuration.domain.CacheElement;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class XmlUtils {
 

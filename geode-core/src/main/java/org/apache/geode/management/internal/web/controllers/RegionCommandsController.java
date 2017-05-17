@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.web.controllers;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -116,7 +115,7 @@ public class RegionCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.ALTER_REGION__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     addCommandOption(request, command, CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
@@ -243,7 +242,7 @@ public class RegionCommandsController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CREATE_REGION__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     command.addOption(CliStrings.CREATE_REGION__SKIPIFEXISTS,
@@ -323,7 +322,7 @@ public class RegionCommandsController extends AbstractCommandsController {
 
     if (hasValue(cacheListeners)) {
       command.addOption(CliStrings.CREATE_REGION__CACHELISTENER,
-          StringUtils.concat(cacheListeners, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(cacheListeners, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(cacheLoader)) {
@@ -336,12 +335,12 @@ public class RegionCommandsController extends AbstractCommandsController {
 
     if (hasValue(asyncEventQueueIds)) {
       command.addOption(CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
-          StringUtils.concat(asyncEventQueueIds, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(asyncEventQueueIds, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(gatewaySenderIds)) {
       command.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID,
-          StringUtils.concat(gatewaySenderIds, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(gatewaySenderIds, StringUtils.COMMA_DELIMITER));
     }
 
     if (Boolean.TRUE.equals(enableConcurrencyChecks)) {

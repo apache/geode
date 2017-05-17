@@ -15,15 +15,12 @@
 
 package org.apache.geode.internal.util;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.internal.offheap.annotations.Unretained;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.RandomAccess;
-
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  *
@@ -82,7 +79,7 @@ public abstract class ArrayUtils {
 
     if (array != null) {
       for (final Object element : array) {
-        buffer.append(count++ > 0 ? ", " : StringUtils.EMPTY_STRING).append(element);
+        buffer.append(count++ > 0 ? ", " : StringUtils.EMPTY).append(element);
       }
     }
 

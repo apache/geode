@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.execCLISteps;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
@@ -101,10 +102,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     } catch (NotAuthorizedException e) {
       result = ResultBuilder
           .createGemFireUnAuthorizedErrorResult("Unauthorized. Reason: " + e.getMessage());
-    } catch (JMXInvocationException e) {
-      Gfsh.getCurrentInstance().logWarning(e.getMessage(), e);
-    } catch (IllegalStateException e) {
-      // Shouldn't occur - we are always using GfsParseResult
+    } catch (JMXInvocationException | IllegalStateException e) {
       Gfsh.getCurrentInstance().logWarning(e.getMessage(), e);
     } catch (CommandProcessingException e) {
       Gfsh.getCurrentInstance().logWarning(e.getMessage(), null);
@@ -204,11 +202,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       try {
         interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
             .newInstance();
-      } catch (InstantiationException e) {
-        shell.logWarning("Configuration error", e);
-      } catch (IllegalAccessException e) {
-        shell.logWarning("Configuration error", e);
-      } catch (ClassNotFoundException e) {
+      } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
         shell.logWarning("Configuration error", e);
       }
       if (interceptor != null) {
@@ -247,7 +241,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
               + "Please check manager logs for error.");
     }
 
-    // the response could be a string which is a json respresentation of the CommandResult object
+    // the response could be a string which is a json representation of the CommandResult object
     // it can also be a Path to a temp file downloaded from the rest http request
     if (response instanceof String) {
       CommandResponse commandResponse =
@@ -259,7 +253,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       }
 
       String debugInfo = commandResponse.getDebugInfo();
-      if (debugInfo != null && !debugInfo.trim().isEmpty()) {
+      if (StringUtils.isNotBlank(debugInfo)) {
         // TODO - Abhishek When debug is ON, log response in gfsh logs
         // TODO - Abhishek handle \n better. Is it coming from GemFire formatter
         debugInfo = debugInfo.replaceAll("\n\n\n", "\n");

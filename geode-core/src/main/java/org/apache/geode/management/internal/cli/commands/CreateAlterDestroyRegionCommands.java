@@ -14,28 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -52,7 +31,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -83,14 +61,33 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 /**
  * @since GemFire 7.0
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
-  public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS =
-      new TreeSet<RegionShortcut>();
+  public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS = new TreeSet<>();
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
@@ -117,17 +114,13 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createRegion(
       @CliOption(key = CliStrings.CREATE_REGION__REGION, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__REGION__HELP) String regionPath,
-      @CliOption(key = CliStrings.CREATE_REGION__REGIONSHORTCUT, mandatory = false,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+      @CliOption(key = CliStrings.CREATE_REGION__REGIONSHORTCUT,
           help = CliStrings.CREATE_REGION__REGIONSHORTCUT__HELP) RegionShortcut regionShortcut,
       @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
           optionContext = ConverterHint.REGION_PATH,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String useAttributesFrom,
       @CliOption(key = CliStrings.CREATE_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
@@ -145,44 +138,32 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) String cacheWriter,
       @CliOption(key = CliStrings.CREATE_REGION__COLOCATEDWITH,
           optionContext = ConverterHint.REGION_PATH,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP) String prColocatedWith,
       @CliOption(key = CliStrings.CREATE_REGION__COMPRESSOR,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__COMPRESSOR__HELP) String compressor,
       @CliOption(key = CliStrings.CREATE_REGION__CONCURRENCYLEVEL,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__CONCURRENCYLEVEL__HELP) Integer concurrencyLevel,
       @CliOption(key = CliStrings.CREATE_REGION__DISKSTORE,
           help = CliStrings.CREATE_REGION__DISKSTORE__HELP) String diskStore,
       @CliOption(key = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION__HELP) Boolean enableAsyncConflation,
       @CliOption(key = CliStrings.CREATE_REGION__CLONINGENABLED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__CLONINGENABLED__HELP) Boolean cloningEnabled,
       @CliOption(key = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP) Boolean concurrencyChecksEnabled,
       @CliOption(key = CliStrings.CREATE_REGION__MULTICASTENABLED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__MULTICASTENABLED__HELP) Boolean mcastEnabled,
       @CliOption(key = CliStrings.CREATE_REGION__STATISTICSENABLED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__STATISTICSENABLED__HELP) Boolean statisticsEnabled,
       @CliOption(key = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION__HELP) Boolean enableSubscriptionConflation,
       @CliOption(key = CliStrings.CREATE_REGION__DISKSYNCHRONOUS,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) String entryExpirationIdleTimeAction,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
@@ -191,45 +172,34 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
           help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP) String keyConstraint,
       @CliOption(key = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP) Integer prLocalMaxMemory,
-      @CliOption(key = CliStrings.CREATE_REGION__OFF_HEAP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = "true",
+      @CliOption(key = CliStrings.CREATE_REGION__OFF_HEAP, specifiedDefaultValue = "true",
           help = CliStrings.CREATE_REGION__OFF_HEAP__HELP) Boolean offHeap,
       @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) String regionExpirationIdleTimeAction,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
       @CliOption(key = CliStrings.CREATE_REGION__RECOVERYDELAY,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__RECOVERYDELAY__HELP) Long prRecoveryDelay,
       @CliOption(key = CliStrings.CREATE_REGION__REDUNDANTCOPIES,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__REDUNDANTCOPIES__HELP) Integer prRedundantCopies,
       @CliOption(key = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY__HELP) Long prStartupRecoveryDelay,
       @CliOption(key = CliStrings.CREATE_REGION__TOTALMAXMEMORY,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__TOTALMAXMEMORY__HELP) Long prTotalMaxMemory,
       @CliOption(key = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP) Integer prTotalNumBuckets,
       @CliOption(key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
           help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
-    Result result = null;
+    Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     try {
@@ -271,7 +241,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             regionExpirationTTLAction);
       }
 
-      RegionFunctionArgs regionFunctionArgs = null;
+      RegionFunctionArgs regionFunctionArgs;
       if (useAttributesFrom != null) {
         if (!regionExists(cache, useAttributesFrom)) {
           throw new IllegalArgumentException(CliStrings.format(
@@ -330,7 +300,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
       validateRegionFunctionArgs(cache, regionFunctionArgs);
 
-      Set<DistributedMember> membersToCreateRegionOn = null;
+      Set<DistributedMember> membersToCreateRegionOn;
       if (groups != null && groups.length != 0) {
         membersToCreateRegionOn = CliUtil.getDistributedMembersByGroup(cache, groups);
         // have only normal members from the group
@@ -370,10 +340,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       result = ResultBuilder.buildResult(tabularResultData);
       verifyDistributedRegionMbean(cache, regionPath);
 
-    } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance().info(e.getMessage());
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (IllegalStateException e) {
+    } catch (IllegalArgumentException | IllegalStateException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (RuntimeException e) {
@@ -406,8 +373,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         } else {
           Thread.sleep(2);
         }
-      } catch (Exception ex) {
-        continue;
+      } catch (Exception ignored) {
       }
     }
     return false;
@@ -417,64 +383,47 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   public Result alterRegion(
       @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
       @CliOption(key = CliStrings.ALTER_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+          specifiedDefaultValue = "-1",
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "INVALIDATE",
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) String entryExpirationIdleTimeAction,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+          specifiedDefaultValue = "-1",
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "INVALIDATE",
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+          specifiedDefaultValue = "-1",
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "INVALIDATE",
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) String regionExpirationIdleTimeAction,
-      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL, specifiedDefaultValue = "-1",
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "INVALIDATE",
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+      @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) String[] cacheListeners,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = "null",
+      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "null",
           help = CliStrings.ALTER_REGION__CACHELOADER__HELP) String cacheLoader,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = "null",
+      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "null",
           help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) String cacheWriter,
-      @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+      @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
-      @CliOption(key = CliStrings.ALTER_REGION__GATEWAYSENDERID,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+      @CliOption(key = CliStrings.ALTER_REGION__GATEWAYSENDERID, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__GATEWAYSENDERID__HELP) String[] gatewaySenderIds,
-      @CliOption(key = CliStrings.ALTER_REGION__CLONINGENABLED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = "false",
+      @CliOption(key = CliStrings.ALTER_REGION__CLONINGENABLED, specifiedDefaultValue = "false",
           help = CliStrings.ALTER_REGION__CLONINGENABLED__HELP) Boolean cloningEnabled,
-      @CliOption(key = CliStrings.ALTER_REGION__EVICTIONMAX,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "0",
+      @CliOption(key = CliStrings.ALTER_REGION__EVICTIONMAX, specifiedDefaultValue = "0",
           help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP) Integer evictionMax) {
-    Result result = null;
+    Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     this.securityService.authorizeRegionManage(regionPath);
@@ -535,10 +484,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             regionExpirationTTLAction);
       }
 
-      cacheLoader = convertDefaultValue(cacheLoader, StringUtils.EMPTY_STRING);
-      cacheWriter = convertDefaultValue(cacheWriter, StringUtils.EMPTY_STRING);
+      cacheLoader = convertDefaultValue(cacheLoader, StringUtils.EMPTY);
+      cacheWriter = convertDefaultValue(cacheWriter, StringUtils.EMPTY);
 
-      RegionFunctionArgs regionFunctionArgs = null;
+      RegionFunctionArgs regionFunctionArgs;
       regionFunctionArgs = new RegionFunctionArgs(regionPath, null, null, false, null, null, null,
           entryIdle, entryTTL, regionIdle, regionTTL, null, null, null, null, cacheListeners,
           cacheLoader, cacheWriter, asyncEventQueueIds, gatewaySenderIds, null, cloningEnabled,
@@ -599,10 +548,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         }
       }
       result = ResultBuilder.buildResult(tabularResultData);
-    } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance().info(e.getMessage());
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (IllegalStateException e) {
+    } catch (IllegalArgumentException | IllegalStateException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (RuntimeException e) {
@@ -624,8 +570,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       DistributedSystemMXBean dsMBean = managementService.getDistributedSystemMXBean();
 
       String[] allRegionPaths = dsMBean.listAllRegionPaths();
-      for (int i = 0; i < allRegionPaths.length; i++) {
-        if (allRegionPaths[i].equals(regionPath)) {
+      for (String allRegionPath : allRegionPaths) {
+        if (allRegionPath.equals(regionPath)) {
           regionFound = true;
           break;
         }
@@ -635,7 +581,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   }
 
   private void validateRegionPathAndParent(InternalCache cache, String regionPath) {
-    if (regionPath == null || "".equals(regionPath)) {
+    if (StringUtils.isEmpty(regionPath)) {
       throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
     }
     // If a region path indicates a sub-region, check whether the parent region exists
@@ -652,13 +598,13 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   private void validateGroups(InternalCache cache, String[] groups) {
     if (groups != null && groups.length != 0) {
-      Set<String> existingGroups = new HashSet<String>();
+      Set<String> existingGroups = new HashSet<>();
       Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
       for (DistributedMember distributedMember : members) {
         List<String> memberGroups = distributedMember.getGroups();
         existingGroups.addAll(memberGroups);
       }
-      List<String> groupsList = new ArrayList<String>(Arrays.asList(groups));
+      List<String> groupsList = new ArrayList<>(Arrays.asList(groups));
       groupsList.removeAll(existingGroups);
 
       if (!groupsList.isEmpty()) {
@@ -800,8 +746,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         throw new IllegalArgumentException(
             CliStrings.CREATE_REGION__MSG__NO_GATEWAYSENDERS_IN_THE_SYSTEM);
       } else {
-        List<String> gatewaySendersList = new ArrayList<String>(Arrays.asList(gatewaySenders));
-        gatewaySenderIds = new HashSet<String>(gatewaySenderIds);
+        List<String> gatewaySendersList = new ArrayList<>(Arrays.asList(gatewaySenders));
+        gatewaySenderIds = new HashSet<>(gatewaySenderIds);
         gatewaySenderIds.removeAll(gatewaySendersList);
         if (!gatewaySenderIds.isEmpty()) {
           throw new IllegalArgumentException(CliStrings.format(
@@ -874,14 +820,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       String compressorClassName = regionFunctionArgs.getCompressor();
       Object compressor = null;
       try {
-        Class<?> compressorClass =
-            (Class<?>) ClassPathLoader.getLatest().forName(compressorClassName);
+        Class<?> compressorClass = ClassPathLoader.getLatest().forName(compressorClassName);
         compressor = compressorClass.newInstance();
-      } catch (InstantiationException e) {
-        compressorFailure = true;
-      } catch (IllegalAccessException e) {
-        compressorFailure = true;
-      } catch (ClassNotFoundException e) {
+      } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
         compressorFailure = true;
       }
 
@@ -954,8 +895,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         List<?> resultsList = (List<?>) resultCollector.getResult();
 
         if (resultsList != null && !resultsList.isEmpty()) {
-          for (int i = 0; i < resultsList.size(); i++) {
-            Object object = resultsList.get(i);
+          for (Object object : resultsList) {
             if (object instanceof IllegalArgumentException) {
               throw (IllegalArgumentException) object;
             } else if (object instanceof Throwable) {
@@ -1024,7 +964,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = {CliStrings.DESTROY_REGION}, help = CliStrings.DESTROY_REGION__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result destroyRegion(
       @CliOption(key = CliStrings.DESTROY_REGION__REGION, optionContext = ConverterHint.REGION_PATH,
@@ -1035,15 +975,14 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           .createInfoResult(CliStrings.DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY);
     }
 
-    if (regionPath.trim().isEmpty() || regionPath.equals(Region.SEPARATOR)) {
+    if (StringUtils.isBlank(regionPath) || regionPath.equals(Region.SEPARATOR)) {
       return ResultBuilder.createInfoResult(CliStrings.format(
           CliStrings.DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID, new Object[] {regionPath}));
     }
 
-    Result result = null;
+    Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
-      String message = "";
       InternalCache cache = getCache();
       ManagementService managementService = ManagementService.getExistingManagementService(cache);
       String regionPathToUse = regionPath;
@@ -1061,18 +1000,18 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                 new Object[] {regionPath, "jmx-manager-update-rate milliseconds"}));
       }
 
-      CliFunctionResult destroyRegionResult = null;
+      CliFunctionResult destroyRegionResult;
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
       List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
-      message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED,
+      String message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED,
           new Object[] {regionPath, ""});
 
       // Only if there is an error is this set to false
       boolean isRegionDestroyed = true;
-      for (int i = 0; i < resultsList.size(); i++) {
-        destroyRegionResult = resultsList.get(i);
+      for (CliFunctionResult aResultsList : resultsList) {
+        destroyRegionResult = aResultsList;
         if (destroyRegionResult.isSuccessful()) {
           xmlEntity.set(destroyRegionResult.getXmlEntity());
         } else if (destroyRegionResult.getThrowable() != null) {
@@ -1175,7 +1114,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   private Set<DistributedMember> getMembersByIds(InternalCache cache, Set<String> memberIds) {
     Set<DistributedMember> foundMembers = Collections.emptySet();
     if (memberIds != null && !memberIds.isEmpty()) {
-      foundMembers = new HashSet<DistributedMember>();
+      foundMembers = new HashSet<>();
       Set<DistributedMember> allNormalMembers = CliUtil.getAllNormalMembers(cache);
 
       for (String memberId : memberIds) {

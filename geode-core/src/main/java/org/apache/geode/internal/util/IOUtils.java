@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -186,7 +186,7 @@ public abstract class IOUtils {
   public static String getFilename(final String pathname) {
     String filename = pathname;
 
-    if (!StringUtils.isBlank(filename)) {
+    if (StringUtils.isNotBlank(filename)) {
       final int index = filename.lastIndexOf(File.separator);
       filename = (index == -1 ? filename : filename.substring(index + 1));
     }
@@ -205,7 +205,7 @@ public abstract class IOUtils {
    * @see java.io.File#exists()
    */
   public static boolean isExistingPathname(final String pathname) {
-    return (!StringUtils.isBlank(pathname) && new File(pathname).exists());
+    return (StringUtils.isNotBlank(pathname) && new File(pathname).exists());
   }
 
   /**

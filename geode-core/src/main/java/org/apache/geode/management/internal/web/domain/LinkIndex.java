@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.web.domain;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,8 +27,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * The LinkIndex class is abstraction for modeling an index of Links.
@@ -127,7 +127,7 @@ public class LinkIndex implements Iterable<Link> {
     int count = 0;
 
     for (final Link link : this) {
-      buffer.append(count++ > 0 ? ", " : StringUtils.EMPTY_STRING).append(link);
+      buffer.append(count++ > 0 ? ", " : StringUtils.EMPTY).append(link);
     }
 
     buffer.append("]");

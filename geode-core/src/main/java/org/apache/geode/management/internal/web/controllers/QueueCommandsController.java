@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.web.controllers;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -88,12 +87,12 @@ public class QueueCommandsController extends AbstractCommandsController {
 
     if (hasValue(listenerParametersValues)) {
       command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE,
-          StringUtils.concat(listenerParametersValues, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(listenerParametersValues, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL,
@@ -138,7 +137,7 @@ public class QueueCommandsController extends AbstractCommandsController {
 
     if (hasValue(gatewayEventFilters)) {
       command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER,
-          StringUtils.concat(gatewayEventFilters, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(gatewayEventFilters, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(gatewaySubstitutionFilter)) {

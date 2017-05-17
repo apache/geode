@@ -20,11 +20,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.lang.Initializer;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.PasswordUtil;
@@ -181,7 +181,7 @@ public class ShellCommands implements CommandMarker {
 
       if (locatorResponseException != null) {
         String locatorResponseExceptionMessage = locatorResponseException.getMessage();
-        locatorResponseExceptionMessage = (!StringUtils.isBlank(locatorResponseExceptionMessage)
+        locatorResponseExceptionMessage = (StringUtils.isNotBlank(locatorResponseExceptionMessage)
             ? locatorResponseExceptionMessage : locatorResponseException.toString());
         exceptionMessage = "Exception caused JMX Manager startup to fail because: '"
             .concat(locatorResponseExceptionMessage).concat("'");
@@ -560,7 +560,7 @@ public class ShellCommands implements CommandMarker {
     try {
 
       KeyManagerFactory keyManagerFactory = null;
-      if (!StringUtils.isBlank(keystoreToUse)) {
+      if (StringUtils.isNotBlank(keystoreToUse)) {
         KeyStore clientKeys = KeyStore.getInstance("JKS");
         keyStoreStream = new FileInputStream(keystoreToUse);
         clientKeys.load(keyStoreStream, keystorePasswordToUse.toCharArray());
@@ -572,7 +572,7 @@ public class ShellCommands implements CommandMarker {
 
       // load server public key
       TrustManagerFactory trustManagerFactory = null;
-      if (!StringUtils.isBlank(truststoreToUse)) {
+      if (StringUtils.isNotBlank(truststoreToUse)) {
         KeyStore serverPub = KeyStore.getInstance("JKS");
         trustStoreStream = new FileInputStream(truststoreToUse);
         serverPub.load(trustStoreStream, truststorePasswordToUse.toCharArray());
@@ -622,7 +622,7 @@ public class ShellCommands implements CommandMarker {
       URL gfSecurityPropertiesUrl = null;
 
       // Case 1: User has specified gfSecurity properties file
-      if (!StringUtils.isBlank(gfSecurityPropertiesPathToUse)) {
+      if (StringUtils.isNotBlank(gfSecurityPropertiesPathToUse)) {
         // User specified gfSecurity properties doesn't exist
         if (!IOUtils.isExistingPathname(gfSecurityPropertiesPathToUse)) {
           gfshInstance

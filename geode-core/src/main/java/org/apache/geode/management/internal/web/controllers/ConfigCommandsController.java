@@ -14,9 +14,6 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import java.io.IOException;
-import java.util.concurrent.Callable;
-
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -29,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.concurrent.Callable;
 
 /**
  * The ConfigCommandsController class implements GemFire Management REST API web service endpoints
@@ -184,12 +184,12 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.EXPORT_CONFIG__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
       command.addOption(CliStrings.EXPORT_CONFIG__MEMBER,
-          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(directory)) {

@@ -19,8 +19,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
-import org.apache.geode.internal.lang.StringUtils;
-
 /**
  * The UriUtils is a utility class for processing URIs and URLs.
  * <p/>
@@ -32,7 +30,7 @@ import org.apache.geode.internal.lang.StringUtils;
 @SuppressWarnings("unused")
 public abstract class UriUtils {
 
-  public static final String DEFAULT_ENCODING = StringUtils.UTF_8;
+  public static final String DEFAULT_ENCODING = "UTF-8";
 
   /**
    * Decodes the encoded String value using the default encoding, UTF-8. It is assumed the String

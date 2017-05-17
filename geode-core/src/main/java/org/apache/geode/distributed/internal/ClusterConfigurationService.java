@@ -14,7 +14,48 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.LeaseExpiredException;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.configuration.functions.UploadJarFunction;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,50 +78,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import org.apache.geode.CancelException;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.LeaseExpiredException;
-import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
-import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.configuration.functions.UploadJarFunction;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
-import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 public class ClusterConfigurationService {

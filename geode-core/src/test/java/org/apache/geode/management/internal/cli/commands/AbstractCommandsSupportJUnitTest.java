@@ -14,21 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.junit.Assert.*;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Set;
-
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -41,6 +32,19 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * The AbstractCommandsSupportJUnitTest class is a test suite of test cases testing the contract and
@@ -140,9 +144,9 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test
   public void testConvertDefaultValue() {
-    assertNull(AbstractCommandsSupport.convertDefaultValue(null, StringUtils.EMPTY_STRING));
-    assertEquals(StringUtils.EMPTY_STRING,
-        AbstractCommandsSupport.convertDefaultValue(StringUtils.EMPTY_STRING, "test"));
+    assertNull(AbstractCommandsSupport.convertDefaultValue(null, StringUtils.EMPTY));
+    assertEquals(StringUtils.EMPTY,
+        AbstractCommandsSupport.convertDefaultValue(StringUtils.EMPTY, "test"));
     assertEquals(StringUtils.SPACE,
         AbstractCommandsSupport.convertDefaultValue(StringUtils.SPACE, "testing"));
     assertEquals("tested", AbstractCommandsSupport
