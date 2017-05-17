@@ -103,7 +103,7 @@ public interface LuceneService {
   public String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
 
   /**
-   * Get a factory for creating a lucene index on this member.
+   * Get a factory for creating a Lucene index on this member.
    */
   public LuceneIndexFactory createIndexFactory();
 
@@ -151,7 +151,7 @@ public interface LuceneService {
   public Cache getCache();
 
 
-  /*
+  /**
    * Wait until the current entries in cache are indexed.
    *
    * Lucene indexes are maintained asynchronously. This means that updates to the region will not be
