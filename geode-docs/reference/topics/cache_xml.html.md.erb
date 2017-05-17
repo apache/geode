@@ -2685,6 +2685,7 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](#region-attribute
 
 See [&lt;region-attributes&gt;](#region-attributes) for a complete listing of region attributes.
 
+
 ## <a id="index" class="no-quick-link"></a>&lt;index&gt;
 
 Describes an index to be created on a region. The index node, if any, should all come immediately after the "region-attributes" node. The "name" attribute is a required field which identifies the name of the index. See [Working with Indexes](../../developing/query_index/query_index.html) for more information on indexes.
@@ -2727,6 +2728,68 @@ Describes an index to be created on a region. The index node, if any, should all
  ...
 </region>
 ```
+
+<!-- start of Lucene index description -->
+## <a id="luceneindex" class="no-quick-link"></a>&lt;lucene:index&gt;
+
+Describes a Lucene index to be created on a region. The `lucene` namespace
+and the scoping operator (`:`) must be specified, as the Geode `cache`
+namespace also defines an `index` element (for OQL indexes).
+
+**API:** `org.apache.geode.cache.lucene` package
+
+| Attribute   | Description                                                                                                                                                                                                                                                                           | Default |
+|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| name        | Required. Name of the Lucene index.   |         |
+
+**Example:**
+
+``` pre
+<cache
+    xmlns="http://geode.apache.org/schema/cache"
+    xmlns:lucene="http://geode.apache.org/schema/lucene"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache
+        http://geode.apache.org/schema/cache/cache-1.0.xsd
+        http://geode.apache.org/schema/lucene
+        http://geode.apache.org/schema/lucene/lucene-1.0.xsd"
+    version="1.0">
+
+    <region name="regionA" refid="PARTITION">
+        <lucene:index name="myIndex">
+            <lucene:field name="x" />
+            <lucene:field name="y" />
+        </lucene:index>
+    </region>
+</cache>
+```
+<!-- end of Lucene index description -->
+
+<!-- start of Lucene field description -->
+## <a id="lucenefield" class="no-quick-link"></a>&lt;lucene:field&gt;
+
+Describes a field to be included in a Lucene index. Including the
+`lucene` namespace and the scoping operator (`:`) clarifies,
+but is not required.
+
+**API:** `org.apache.geode.cache.lucene` package
+
+| Attribute   | Description                                                                                                                                                                                                                                                                           | Default |
+|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| name        | Required. A string that defines the name of the field. If a single field is defined by the value `"__REGION_VALUE_FIELD"`, then the entire value is used as a single field.   |         |
+| analyzer    | A string that provides the path to the analyzer to use for this field. A value of `"null"` uses the default analyzer.  | `"null"` |
+
+**Example:**
+
+``` pre
+<region name="dataregion" refid="PARTITION_REDUNDANT">
+   <lucene:index name="full_value_index">
+     <lucene:field name="__REGION_VALUE_FIELD"/>
+   </lucene:index>
+</region>
+```
+
+<!-- end of Lucene field description -->
 
 ## <a id="entry" class="no-quick-link"></a>&lt;entry&gt;
 

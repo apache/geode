@@ -117,18 +117,21 @@ This table classifies the permissions assigned for `gfsh` operations.
 | create gateway-receiver                | DATA:MANAGE                      |
 | create gateway-sender                  | DATA:MANAGE                      |
 | create index                           | DATA:MANAGE:RegionName           |
+| create lucene index                    | DATA:MANAGE:RegionName           |
 | create region                          | DATA:MANAGE                      |
 | define index                           | DATA:MANAGE:RegionName           |
 | deploy                                 | DATA:MANAGE, DATA:WRITE, CLUSTER:MANAGE, and CLUSTER:WRITE |
 | describe client                        | CLUSTER:READ                     |
 | describe config                        | CLUSTER:READ                     |
 | describe disk-store                    | CLUSTER:READ                     |
+| describe lucene index                  | CLUSTER:READ                     |
 | describe member                        | CLUSTER:READ                     |
 | describe offline-disk-store            | CLUSTER:READ                     |
 | describe region                        | CLUSTER:READ                     |
 | destroy disk-store                     | DATA:MANAGE                      |
 | destroy function                       | DATA:MANAGE                      |
 | destroy index                          | DATA:MANAGE or DATA:MANAGE:RegionName |
+| destroy lucene index                   | DATA:MANAGE:RegionName           |
 | destroy region                         | DATA:MANAGE                      |
 | disconnect                             | DATA:MANAGE                      |
 | echo                                   | DATA:MANAGE                      |
@@ -152,6 +155,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | list functions                         | CLUSTER:READ                     |
 | list gateways                          | CLUSTER:READ                     |
 | list indexes                           | CLUSTER:READ                     |
+| list lucene indexes                    | CLUSTER:READ                     |
 | list members                           | CLUSTER:READ                     |
 | list regions                           | DATA:READ                        |
 | load-balance gateway-sender            | DATA:MANAGE                      |
@@ -165,6 +169,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | remove                                 | DATA:WRITE:RegionName or DATA:WRITE:RegionName:Key |
 | resume gateway-sender                  | DATA:MANAGE                      |
 | revoke mising-disk-store               | DATA:MANAGE                      |
+| search lucene                          | DATA:WRITE                       |
 | show dead-locks                        | CLUSTER:READ                     |
 | show log                               | CLUSTER:READ                     |
 | show metrics                           | CLUSTER:READ                     |

@@ -683,7 +683,7 @@ create lucene index --name=value --region=value --field=value(,value)* [--analyz
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
 | <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the index to create.                                               |         |
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
-| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field of the region values that are referenced by the index.               |         |
+| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field of the region values that are referenced by the index. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`.     |         |
 | <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer to extract terms from text                                  |         |
 | <span class="keyword parmname">\\-\\-group</span>      | The index will be created on all the members in the specified member groups.                     |         |
 
