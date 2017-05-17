@@ -301,4 +301,11 @@ public class SystemUtils {
   public static String getLineSeparator() {
     return LINE_SEPARATOR;
   }
+
+  /**
+   * Returns the value of {@code System.getProperty("java.version")}.
+   */
+  public static String getJavaVersion() {
+    return System.getProperty("java.version");
+  }
 }

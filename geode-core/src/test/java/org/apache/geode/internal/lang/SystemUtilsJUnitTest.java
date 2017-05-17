@@ -137,4 +137,8 @@ public class SystemUtilsJUnitTest {
     assertThat(getBootClassPath()).isEqualTo(value);
   }
 
+  @Test
+  public void getJavaVersionShouldReturnJavaVersionValue() {
+    assertThat(getJavaVersion()).isEqualTo(System.getProperty("java.version"));
+  }
 }
