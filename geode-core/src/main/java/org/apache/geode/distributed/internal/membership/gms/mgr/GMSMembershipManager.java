@@ -37,6 +37,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.geode.distributed.internal.ShutdownMessage;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -1866,7 +1867,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       useMcast = (msg.getMulticast() || allDestinations);
     }
 
-    boolean sendViaMessenger = isForceUDPCommunications() || msg.sendViaUDP();
+    boolean sendViaMessenger = isForceUDPCommunications() || (msg instanceof ShutdownMessage);
 
     if (useMcast || tcpDisabled || sendViaMessenger) {
       checkAddressesForUUIDs(destinations);
