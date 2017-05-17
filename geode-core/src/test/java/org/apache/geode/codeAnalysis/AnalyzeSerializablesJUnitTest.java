@@ -114,7 +114,7 @@ public class AnalyzeSerializablesJUnitTest {
         diffSortedClassesAndMethods(this.expectedDataSerializables, actualDataSerializables);
     if (diff.length() > 0) {
       System.out.println(
-          "++++++++++++++++++++++++++++++testDataSerializables found discrepencies++++++++++++++++++++++++++++++++++++");
+          "++++++++++++++++++++++++++++++testDataSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
       fail(
           diff + "\n\nIf the class is not persisted or sent over the wire add it to the excludedClasses.txt file in the "
@@ -134,7 +134,7 @@ public class AnalyzeSerializablesJUnitTest {
     String diff = diffSortedClassesAndVariables(this.expectedSerializables, actualSerializables);
     if (diff.length() > 0) {
       System.out.println(
-          "++++++++++++++++++++++++++++++testSerializables found discrepencies++++++++++++++++++++++++++++++++++++");
+          "++++++++++++++++++++++++++++++testSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
       fail(
           diff + "\n\nIf the class is not persisted or sent over the wire add it to the excludedClasses.txt file in the "
