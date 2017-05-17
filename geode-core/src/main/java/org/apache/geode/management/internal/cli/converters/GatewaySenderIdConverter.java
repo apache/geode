@@ -14,19 +14,18 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.MethodTarget;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
 
 /**
  * 
@@ -64,7 +63,7 @@ public class GatewaySenderIdConverter implements Converter<String> {
     Gfsh gfsh = Gfsh.getCurrentInstance();
     if (gfsh != null && gfsh.isConnectedAndReady()) {
       final String[] gatewaySenderIdArray = (String[]) gfsh.getOperationInvoker().invoke(
-          ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "listGatwaySenders",
+          ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "listGatewaySenders",
           new Object[0], new String[0]);
       if (gatewaySenderIdArray != null && gatewaySenderIdArray.length != 0) {
         gatewaySenderIds = new TreeSet<String>(Arrays.asList(gatewaySenderIdArray));

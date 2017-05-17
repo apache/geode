@@ -14,13 +14,7 @@
  */
 package org.apache.geode.management.internal;
 
-import java.net.UnknownHostException;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -29,12 +23,17 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+
+import java.net.UnknownHostException;
 
 /**
  * Agent implementation that controls the HTTP server end points used for REST clients to connect
@@ -156,15 +155,15 @@ public class RestAgent {
 
   public static String getBindAddressForHttpService(DistributionConfig config) {
     String bindAddress = config.getHttpServiceBindAddress();
-    if (!StringUtils.isBlank(bindAddress))
+    if (StringUtils.isNotBlank(bindAddress))
       return bindAddress;
 
     bindAddress = config.getServerBindAddress();
-    if (!StringUtils.isBlank(bindAddress))
+    if (StringUtils.isNotBlank(bindAddress))
       return bindAddress;
 
     bindAddress = config.getBindAddress();
-    if (!StringUtils.isBlank(bindAddress))
+    if (StringUtils.isNotBlank(bindAddress))
       return bindAddress;
 
     try {

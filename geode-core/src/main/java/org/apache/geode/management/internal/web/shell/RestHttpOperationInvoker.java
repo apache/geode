@@ -15,9 +15,9 @@
 
 package org.apache.geode.management.internal.web.shell;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.internal.lang.Filter;
 import org.apache.geode.internal.lang.Initable;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.CommandRequest;
@@ -447,7 +447,7 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
 
     @Override
     public boolean accept(final Map.Entry<String, String> entry) {
-      return !StringUtils.isBlank(entry.getValue());
+      return StringUtils.isNotBlank(entry.getValue());
     }
   }
 

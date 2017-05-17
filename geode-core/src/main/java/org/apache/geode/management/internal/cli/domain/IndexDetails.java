@@ -15,13 +15,13 @@
 
 package org.apache.geode.management.internal.cli.domain;
 
-import java.io.Serializable;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
+
+import java.io.Serializable;
 
 /**
  * The IndexDetails class encapsulates information for an Index on a Region in the GemFire Cache.
@@ -91,11 +91,11 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   }
 
   public IndexDetails(final String memberId, final String regionPath, final String indexName) {
-    assertValidArgument(!StringUtils.isBlank(memberId),
+    assertValidArgument(StringUtils.isNotBlank(memberId),
         "The member having a region with an index must be specified!");
-    assertValidArgument(!StringUtils.isBlank(regionPath),
+    assertValidArgument(StringUtils.isNotBlank(regionPath),
         "The region in member (%1$s) with an index must be specified!", memberId);
-    assertValidArgument(!StringUtils.isBlank(indexName),
+    assertValidArgument(StringUtils.isNotBlank(indexName),
         "The name of the index on region (%1$s) of member (%2$s) must be specified!", regionPath,
         memberId);
     this.memberId = memberId;
@@ -307,7 +307,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     }
 
     IndexType(final String description) {
-      assertValidArgument(!StringUtils.isBlank(description),
+      assertValidArgument(StringUtils.isNotBlank(description),
           "The description for the IndexType must be specified!");
       this.description = description;
     }

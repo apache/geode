@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
@@ -21,7 +22,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 
 public class FetchSharedConfigurationStatusFunction extends FunctionAdapter

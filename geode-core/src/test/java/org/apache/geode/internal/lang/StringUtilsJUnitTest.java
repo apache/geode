@@ -14,19 +14,20 @@
  */
 package org.apache.geode.internal.lang;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * The StringUtilsJUnitTest is a test suite containing test cases for testing the contract and
@@ -42,55 +43,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class StringUtilsJUnitTest {
 
-  @Test
-  public void testConcat() {
-    assertEquals("", StringUtils.concat((Object[]) null));
-    assertEquals("", StringUtils.concat(""));
-    assertEquals(" ", StringUtils.concat(" "));
-    assertEquals("   ", StringUtils.concat("   "));
-    assertEquals("123", StringUtils.concat("123"));
-    assertEquals("1 2 3", StringUtils.concat("1 2 3"));
-    assertEquals(" 1 2 3 ", StringUtils.concat(" 1 2 3 "));
-    assertEquals("trueC13.14159test", StringUtils.concat(true, 'C', 1, 3.14159f, "test"));
-    assertEquals("test testing tested", StringUtils.concat("test", " testing", " tested"));
-  }
 
-  @Test
-  public void testConcatWithDelimiter() {
-    assertEquals("", StringUtils.concat(null, null));
-    assertEquals("", StringUtils.concat(null, " "));
-    assertEquals("", StringUtils.concat(new Object[] {""}, " "));
-    assertEquals(" ", StringUtils.concat(new Object[] {" "}, " "));
-    assertEquals("     ", StringUtils.concat(new Object[] {" ", " ", " "}, " "));
-    assertEquals(" | | ", StringUtils.concat(new Object[] {" ", " ", " "}, "|"));
-    assertEquals("abc", StringUtils.concat(new Object[] {"a", "b", "c"}, null));
-    assertEquals("abc", StringUtils.concat(new Object[] {"a", "b", "c"}, ""));
-    assertEquals("a b c", StringUtils.concat(new Object[] {"a", "b", "c"}, " "));
-    assertEquals("a   b   c", StringUtils.concat(new Object[] {"a", "b", "c"}, "   "));
-    assertEquals("a_b_c", StringUtils.concat(new Object[] {"a", "b", "c"}, "_"));
-    assertEquals("a|b|c", StringUtils.concat(new Object[] {"a", "b", "c"}, "|"));
-    assertEquals("a>b>c", StringUtils.concat(new Object[] {"a", "b", "c"}, ">"));
-    assertEquals("a&b&c", StringUtils.concat(new Object[] {"a", "b", "c"}, "&"));
-    assertEquals("*", StringUtils.concat(new Object[] {"*"}, "*"));
-    assertEquals("***", StringUtils.concat(new Object[] {"*", "*"}, "*"));
-    assertEquals("*-*", StringUtils.concat(new Object[] {"*", "*"}, "-"));
-  }
-
-  @Test
-  public void testDefaultIfBlank() {
-    assertNull(StringUtils.defaultIfBlank((String[]) null));
-    assertNull(null, StringUtils.defaultIfBlank(null, ""));
-    assertNull(null, StringUtils.defaultIfBlank(null, "", " "));
-    assertNull(null, StringUtils.defaultIfBlank(null, "", " ", "\0"));
-    assertEquals("test", StringUtils.defaultIfBlank("test", null, "", " "));
-    assertEquals("test", StringUtils.defaultIfBlank(null, "", " ", "test"));
-    assertEquals("test", StringUtils.defaultIfBlank(null, "", "test", " ", null));
-    assertEquals("_", StringUtils.defaultIfBlank("_", null, "", " "));
-    assertEquals("empty", StringUtils.defaultIfBlank(null, "", "empty", " "));
-    assertEquals("blank", StringUtils.defaultIfBlank(null, "", " ", "blank"));
-    assertEquals("null", StringUtils.defaultIfBlank("null", null, "", " "));
-    assertEquals("null", StringUtils.defaultIfBlank("null", "empty", "blank"));
-  }
 
   @Test
   public void testGetDigitsOnly() {
@@ -107,186 +60,7 @@ public class StringUtilsJUnitTest {
     assertEquals("123456789", StringUtils.getDigitsOnly("123,456.789"));
   }
 
-  @Test
-  public void testGetLettersOnly() {
-    assertEquals("", StringUtils.getLettersOnly(null));
-    assertEquals("", StringUtils.getLettersOnly(""));
-    assertEquals("", StringUtils.getLettersOnly(" "));
-    assertEquals("", StringUtils.getLettersOnly("123"));
-    assertEquals("", StringUtils.getLettersOnly("123@$$!"));
-    assertEquals("", StringUtils.getLettersOnly("!@$$%#*?"));
-    assertEquals("", StringUtils.getLettersOnly("10101"));
-    assertEquals("lll", StringUtils.getLettersOnly("l0l0l"));
-    assertEquals("", StringUtils.getLettersOnly("007"));
-    assertEquals("OO", StringUtils.getLettersOnly("OO7"));
-    assertEquals("OOSeven", StringUtils.getLettersOnly("OOSeven"));
-  }
 
-  @Test
-  public void testGetSpaces() {
-    assertEquals("", StringUtils.getSpaces(0));
-    assertEquals(" ", StringUtils.getSpaces(1));
-    assertEquals("  ", StringUtils.getSpaces(2));
-    assertEquals("   ", StringUtils.getSpaces(3));
-    assertEquals("    ", StringUtils.getSpaces(4));
-    assertEquals("     ", StringUtils.getSpaces(5));
-    assertEquals("      ", StringUtils.getSpaces(6));
-    assertEquals("       ", StringUtils.getSpaces(7));
-    assertEquals("        ", StringUtils.getSpaces(8));
-    assertEquals("         ", StringUtils.getSpaces(9));
-    assertEquals("          ", StringUtils.getSpaces(10));
-    assertEquals("           ", StringUtils.getSpaces(11));
-    assertEquals("            ", StringUtils.getSpaces(12));
-    assertEquals("             ", StringUtils.getSpaces(13));
-    assertEquals("              ", StringUtils.getSpaces(14));
-    assertEquals("               ", StringUtils.getSpaces(15));
-    assertEquals("                ", StringUtils.getSpaces(16));
-    assertEquals("                 ", StringUtils.getSpaces(17));
-    assertEquals("                  ", StringUtils.getSpaces(18));
-    assertEquals("                   ", StringUtils.getSpaces(19));
-    assertEquals("                    ", StringUtils.getSpaces(20));
-    assertEquals("                     ", StringUtils.getSpaces(21));
-  }
-
-  @Test
-  public void testIsBlank() {
-    assertTrue(StringUtils.isBlank(null));
-    assertTrue(StringUtils.isBlank(""));
-    assertTrue(StringUtils.isBlank("\0"));
-    assertTrue(StringUtils.isBlank(" "));
-    assertTrue(StringUtils.isBlank("   "));
-  }
-
-  @Test
-  public void testIsNotBlank() {
-    assertFalse(StringUtils.isBlank("test"));
-    assertFalse(StringUtils.isBlank("null"));
-    assertFalse(StringUtils.isBlank("empty"));
-    assertFalse(StringUtils.isBlank("_"));
-    assertFalse(StringUtils.isBlank("____"));
-  }
-
-  @Test
-  public void testIsEmpty() {
-    assertTrue(StringUtils.isEmpty(""));
-  }
-
-  @Test
-  public void testIsNotEmpty() {
-    assertFalse(StringUtils.isEmpty("test"));
-    assertFalse(StringUtils.isEmpty("null"));
-    assertFalse(StringUtils.isEmpty("empty"));
-    assertFalse(StringUtils.isEmpty(null));
-    assertFalse(StringUtils.isEmpty(" "));
-    assertFalse(StringUtils.isEmpty("   "));
-    assertFalse(StringUtils.isEmpty("_"));
-    assertFalse(StringUtils.isEmpty("___"));
-  }
-
-  @Test
-  public void testPadEnding() {
-    assertEquals("", StringUtils.padEnding("", 'X', 0));
-    assertEquals(" ", StringUtils.padEnding(" ", 'X', 0));
-    assertEquals(" ", StringUtils.padEnding(" ", 'X', 1));
-    assertEquals("   ", StringUtils.padEnding("   ", 'X', 0));
-    assertEquals("   ", StringUtils.padEnding("   ", 'X', 3));
-    assertEquals("X", StringUtils.padEnding("", 'X', 1));
-    assertEquals(" X", StringUtils.padEnding(" ", 'X', 2));
-    assertEquals("  XX", StringUtils.padEnding("  ", 'X', 4));
-    assertEquals("test", StringUtils.padEnding("test", 'X', 0));
-    assertEquals("test", StringUtils.padEnding("test", 'X', 4));
-    assertEquals("testX", StringUtils.padEnding("test", 'X', 5));
-    assertEquals("testXXX", StringUtils.padEnding("test", 'X', 7));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testPadEndingWithNull() {
-    try {
-      StringUtils.padEnding(null, 'X', 10);
-    } catch (NullPointerException expected) {
-      assertEquals("The String value to pad cannot be null!", expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
-  public void testToLowerCase() {
-    assertNull(StringUtils.toLowerCase(null));
-    assertEquals("null", StringUtils.toLowerCase("null"));
-    assertEquals("null", StringUtils.toLowerCase("NULL"));
-    assertEquals("", StringUtils.toLowerCase(""));
-    assertEquals(" ", StringUtils.toLowerCase(" "));
-    assertEquals("test", StringUtils.toLowerCase("TEST"));
-    assertEquals("1", StringUtils.toLowerCase("1"));
-    assertEquals("!", StringUtils.toLowerCase("!"));
-    assertEquals("$00", StringUtils.toLowerCase("$00"));
-    assertEquals("jon doe", StringUtils.toLowerCase("Jon Doe"));
-  }
-
-  @Test
-  public void testToUpperCase() {
-    assertNull(StringUtils.toUpperCase(null));
-    assertEquals("NULL", StringUtils.toUpperCase("NULL"));
-    assertEquals("NULL", StringUtils.toUpperCase("null"));
-    assertEquals("", StringUtils.toUpperCase(""));
-    assertEquals(" ", StringUtils.toUpperCase(" "));
-    assertEquals("TEST", StringUtils.toUpperCase("test"));
-    assertEquals("2", StringUtils.toUpperCase("2"));
-    assertEquals("!", StringUtils.toUpperCase("!"));
-    assertEquals("$00", StringUtils.toUpperCase("$00"));
-    assertEquals("JON DOE", StringUtils.toUpperCase("Jon Doe"));
-  }
-
-  @Test
-  public void testTrim() {
-    assertNull(StringUtils.trim(null));
-    assertEquals("", StringUtils.trim(""));
-    assertEquals("", StringUtils.trim(" "));
-    assertEquals("", StringUtils.trim("   "));
-    assertEquals("null", StringUtils.trim("null"));
-    assertEquals("test", StringUtils.trim(" test"));
-    assertEquals("test", StringUtils.trim("test "));
-    assertEquals("test", StringUtils.trim(" test   "));
-    assertEquals("a b  c   d", StringUtils.trim("  a b  c   d "));
-  }
-
-  @Test
-  public void testTruncate() {
-    assertEquals("", StringUtils.truncate("", 0));
-    assertEquals("", StringUtils.truncate("", 1));
-    assertEquals(" ", StringUtils.truncate(" ", 1));
-    assertEquals(" ", StringUtils.truncate(" ", 5));
-    assertEquals(" ", StringUtils.truncate("   ", 1));
-    assertEquals("XX", StringUtils.truncate("XXX", 2));
-    assertEquals("XX", StringUtils.truncate("XX", 4));
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testTruncateWithNegativeLength() {
-    try {
-      StringUtils.truncate("XX", -1);
-    } catch (IllegalArgumentException expected) {
-      assertEquals("Length must be greater than equal to 0!", expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
-  public void testValueOf() {
-    assertEquals("null", StringUtils.valueOf(null));
-    assertEquals("null", StringUtils.valueOf(null, (String[]) null));
-    assertEquals("null", StringUtils.valueOf(null, new String[] {}));
-    assertEquals("test", StringUtils.valueOf(null, "test"));
-    assertEquals("nil", StringUtils.valueOf(null, "nil", "test"));
-    assertEquals("test", StringUtils.valueOf("test", (String[]) null));
-    assertEquals("null", StringUtils.valueOf("null", "test"));
-    assertEquals("nil", StringUtils.valueOf("nil", "mock", "test"));
-    assertEquals("", StringUtils.valueOf("", "test", "mock", "null"));
-    assertEquals(" ", StringUtils.valueOf(" ", "test", "mock", "nil"));
-    assertEquals("true", StringUtils.valueOf(true, "test", "nil", null));
-    assertEquals("1", StringUtils.valueOf(1, "one"));
-    assertEquals(String.valueOf(Math.PI), StringUtils.valueOf(Math.PI, "314159"));
-  }
 
   @Test
   public void testWrap() {

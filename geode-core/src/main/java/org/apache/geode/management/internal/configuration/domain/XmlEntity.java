@@ -14,6 +14,25 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataSerializable;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -24,31 +43,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.xpath.XPathExpressionException;
-
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataSerializable;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
 
 /****
  * Domain class for defining a GemFire entity in XML.
@@ -156,13 +154,13 @@ public class XmlEntity implements VersionedDataSerializable {
     StringBuffer sb = new StringBuffer();
     sb.append("//").append(this.prefix).append(':').append(this.parentType);
 
-    if (!StringUtils.isBlank(parentKey) && !StringUtils.isBlank(parentValue)) {
+    if (StringUtils.isNotBlank(parentKey) && StringUtils.isNotBlank(parentValue)) {
       sb.append("[@").append(parentKey).append("='").append(parentValue).append("']");
     }
 
     sb.append("/").append(childPrefix).append(':').append(this.type);
 
-    if (!StringUtils.isBlank(childKey) && !StringUtils.isBlank(childValue)) {
+    if (StringUtils.isNotBlank(childKey) && StringUtils.isNotBlank(childValue)) {
       sb.append("[@").append(childKey).append("='").append(childValue).append("']");
     }
     this.searchString = sb.toString();
@@ -175,9 +173,9 @@ public class XmlEntity implements VersionedDataSerializable {
    * @since GemFire 8.1
    */
   private void init() {
-    Assert.assertTrue(!StringUtils.isBlank(type));
-    Assert.assertTrue(!StringUtils.isBlank(prefix));
-    Assert.assertTrue(!StringUtils.isBlank(namespace));
+    Assert.assertTrue(StringUtils.isNotBlank(type));
+    Assert.assertTrue(StringUtils.isNotBlank(prefix));
+    Assert.assertTrue(StringUtils.isNotBlank(namespace));
     Assert.assertTrue(attributes != null);
 
     if (null == xmlDefinition) {

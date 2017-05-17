@@ -14,15 +14,17 @@
  */
 package org.apache.geode.internal.lang;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Calendar;
-import java.util.Date;
-
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and
@@ -61,8 +63,7 @@ public class ClassUtilsJUnitTest {
   @Test(expected = IllegalArgumentException.class)
   public void testForNameWithEmptyClassName() {
     try {
-      ClassUtils.forName(StringUtils.EMPTY_STRING,
-          new IllegalArgumentException("Empty Class Name!"));
+      ClassUtils.forName(StringUtils.EMPTY, new IllegalArgumentException("Empty Class Name!"));
     } catch (IllegalArgumentException expected) {
       assertEquals("Empty Class Name!", expected.getMessage());
       throw expected;

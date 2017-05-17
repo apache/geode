@@ -14,56 +14,7 @@
  */
 package org.apache.geode.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.UTFDataFormatException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.CancelException;
 import org.apache.geode.CanonicalInstantiator;
 import org.apache.geode.DataSerializable;
@@ -115,6 +66,55 @@ import org.apache.geode.pdx.internal.PdxReaderImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.NotSerializableException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.UTFDataFormatException;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Contains static methods for data serializing instances of internal GemFire classes. It also
@@ -879,8 +879,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       // send it to cache servers if it is a client
       sendRegistrationMessageToServers(s);
     }
-    // send it to all cache clients irelevent of distribute
-    // bridge servers send it all the clients irelevent of
+    // send it to all cache clients irrelevant of distribute
+    // bridge servers send it all the clients irrelevant of
     // originator VM
     sendRegistrationMessageToClients(s);
 
@@ -918,7 +918,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   private static void register(String className, boolean distribute,
       SerializerAttributesHolder holder) {
-    if (className == null || className.trim().isEmpty()) {
+    if (StringUtils.isBlank(className)) {
       throw new IllegalArgumentException("Class name cannot be null or empty.");
     }
 
@@ -1062,9 +1062,9 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     if (o instanceof DataSerializer) {
       DataSerializer s = (DataSerializer) o;
       Class[] classes = s.getSupportedClasses();
-      for (int i = 0; i < classes.length; i++) {
-        classesToSerializers.remove(classes[i].getName(), s);
-        supportedClassesToHolders.remove(classes[i].getName());
+      for (Class aClass : classes) {
+        classesToSerializers.remove(aClass.getName(), s);
+        supportedClassesToHolders.remove(aClass.getName());
       }
       dsClassesToHolders.remove(s.getClass().getName());
       idsToHolders.remove(idx);
@@ -1185,7 +1185,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       SerializerAttributesHolder holder = entry.getValue();
       try {
         Class cl = getCachedClass(name);
-        DataSerializer ds = null;
+        DataSerializer ds;
         if (holder.getEventId() != null) {
           ds = register(cl, false, holder.getEventId(), holder.getProxyId());
         } else {
@@ -1404,13 +1404,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
     try {
       invokeToData(o, out);
-    } catch (IOException io) {
+    } catch (IOException | CancelException | ToDataException | GemFireRethrowable io) {
       // Note: this is not a user code toData but one from our
       // internal code since only GemFire product code implements DSFID
-      throw io;
-    } catch (CancelException | ToDataException | GemFireRethrowable ex) {
+
       // Serializing a PDX can result in a cache closed exception. Just rethrow
-      throw ex;
+
+      throw io;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
@@ -1726,7 +1726,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     final int size = readArrayLength(in);
     if (size >= 0) {
       for (int index = 0; index < size; ++index) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = DataSerializer.readObject(in);
         c.add(element);
       }
 
@@ -2582,7 +2582,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
   }
 
-  public static int readDSFIDHeader(final DataInput in) throws IOException, ClassNotFoundException {
+  public static int readDSFIDHeader(final DataInput in) throws IOException {
     checkIn(in);
     byte header = in.readByte();
     if (header == DS_FIXED_ID_BYTE) {
@@ -2666,11 +2666,11 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       throws IOException, ClassNotFoundException {
     boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
     if (!wouldReadSerialized) {
-      return DataSerializer.<T>readObject(in);
+      return DataSerializer.readObject(in);
     } else {
       PdxInstanceImpl.setPdxReadSerialized(false);
       try {
-        return DataSerializer.<T>readObject(in);
+        return DataSerializer.readObject(in);
       } finally {
         PdxInstanceImpl.setPdxReadSerialized(true);
       }
@@ -2878,7 +2878,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   private static Object readUserDataSerializable(final DataInput in, int classId)
-      throws IOException, ClassNotFoundException {
+      throws IOException {
     Instantiator instantiator = InternalInstantiator.getInstantiator(classId);
     if (instantiator == null) {
       logger.error(LogMarker.SERIALIZER,
@@ -3698,7 +3698,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         synchronized (cacheAccessLock) {
           Class<?> cachedClass = getExistingCachedClass(className);
           if (cachedClass == null) {
-            classCache.put(className, new WeakReference<Class<?>>(result));
+            classCache.put(className, new WeakReference<>(result));
           } else {
             result = cachedClass;
           }

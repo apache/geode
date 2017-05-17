@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.management.cli.ConverterHint;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;

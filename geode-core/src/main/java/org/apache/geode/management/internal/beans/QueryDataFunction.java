@@ -14,21 +14,7 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -64,6 +50,19 @@ import org.apache.geode.management.internal.cli.commands.DataCommands;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.json.TypedJson;
+import org.apache.logging.log4j.Logger;
+
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This function is executed on one or multiple members based on the member input to
@@ -128,7 +127,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
       final boolean showMember, final String regionName, final int limit,
       final int queryResultSetLimit, final int queryCollectionsDepth) throws Exception {
     InternalCache cache = getCache();
-    Function loclQueryFunc = new LocalQueryFunction("LocalQueryFunction", regionName, showMember)
+    Function localQueryFunc = new LocalQueryFunction("LocalQueryFunction", regionName, showMember)
         .setOptimizeForWrite(true);
     queryString = applyLimitClause(queryString, limit, queryResultSetLimit);
 
@@ -154,7 +153,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
         results = query.execute();
 
       } else {
-        ResultCollector rcollector = null;
+        ResultCollector rcollector;
 
         PartitionedRegion parRegion =
             PartitionedRegionHelper.getPartitionedRegion(regionName, cache);
@@ -169,13 +168,11 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
             }
             LocalDataSet lds = new LocalDataSet(parRegion, localPrimaryBucketSet);
             DefaultQuery query = (DefaultQuery) cache.getQueryService().newQuery(queryString);
-            SelectResults selectResults =
-                (SelectResults) lds.executeQuery(query, null, localPrimaryBucketSet);
-            results = selectResults;
+            results = (SelectResults) lds.executeQuery(query, null, localPrimaryBucketSet);
           }
         } else {
           rcollector = FunctionService.onRegion(cache.getRegion(regionName))
-              .setArguments(queryString).execute(loclQueryFunc);
+              .setArguments(queryString).execute(localQueryFunc);
           results = rcollector.getResult();
         }
       }
@@ -183,8 +180,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
       if (results != null && results instanceof SelectResults) {
 
         SelectResults selectResults = (SelectResults) results;
-        for (Iterator iter = selectResults.iterator(); iter.hasNext();) {
-          Object object = iter.next();
+        for (Object object : selectResults) {
           result.add(RESULT_KEY, object);
           noDataFound = false;
         }
@@ -203,7 +199,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
 
       if (noDataFound) {
         return new QueryDataFunctionResult(QUERY_EXEC_SUCCESS,
-            BeanUtilFuncs.compress(new JsonisedErroMessage(NO_DATA_FOUND).toString()));
+            BeanUtilFuncs.compress(new JsonisedErrorMessage(NO_DATA_FOUND).toString()));
       }
       return new QueryDataFunctionResult(QUERY_EXEC_SUCCESS,
           BeanUtilFuncs.compress(result.toString()));
@@ -272,7 +268,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
             // member.
             // Note , if no member is selected this is the code path executed. A
             // random associated member is chosen.
-            List<String> decompressedList = new ArrayList<String>();
+            List<String> decompressedList = new ArrayList<>();
             decompressedList.add(BeanUtilFuncs.decompress(result.compressedBytes));
             return wrapResult(decompressedList.toString());
           }
@@ -290,10 +286,10 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
         }
 
         Iterator<QueryDataFunctionResult> it = list.iterator();
-        List<String> decompressedList = new ArrayList<String>();
+        List<String> decompressedList = new ArrayList<>();
 
         while (it.hasNext()) {
-          String decompressedStr = null;
+          String decompressedStr;
           decompressedStr = BeanUtilFuncs.decompress(it.next().compressedBytes);
           decompressedList.add(decompressedStr);
         }
@@ -308,12 +304,6 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
     } catch (FunctionException fe) {
       throw new Exception(
           ManagementStrings.QUERY__MSG__QUERY_EXEC.toLocalizedString(fe.getMessage()));
-    } catch (IOException e) {
-      throw new Exception(
-          ManagementStrings.QUERY__MSG__QUERY_EXEC.toLocalizedString(e.getMessage()));
-    } catch (Exception e) {
-      throw new Exception(
-          ManagementStrings.QUERY__MSG__QUERY_EXEC.toLocalizedString(e.getMessage()));
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -339,20 +329,20 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
       throws Exception {
 
     if (query == null || query.isEmpty()) {
-      return new JsonisedErroMessage(ManagementStrings.QUERY__MSG__QUERY_EMPTY.toLocalizedString())
+      return new JsonisedErrorMessage(ManagementStrings.QUERY__MSG__QUERY_EMPTY.toLocalizedString())
           .toString();
     }
 
     Set<DistributedMember> inputMembers = null;
-    if (members != null && !members.trim().isEmpty()) {
-      inputMembers = new HashSet<DistributedMember>();
+    if (StringUtils.isNotBlank(members)) {
+      inputMembers = new HashSet<>();
       StringTokenizer st = new StringTokenizer(members, ",");
       while (st.hasMoreTokens()) {
         String member = st.nextToken();
         DistributedMember distributedMember = BeanUtilFuncs.getDistributedMemberByNameOrId(member);
         inputMembers.add(distributedMember);
         if (distributedMember == null) {
-          return new JsonisedErroMessage(
+          return new JsonisedErrorMessage(
               ManagementStrings.QUERY__MSG__INVALID_MEMBER.toLocalizedString(member)).toString();
         }
       }
@@ -370,7 +360,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
         for (String regionPath : regionsInQuery) {
           DistributedRegionMXBean regionMBean = service.getDistributedRegionMXBean(regionPath);
           if (regionMBean == null) {
-            return new JsonisedErroMessage(
+            return new JsonisedErrorMessage(
                 ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND.toLocalizedString(regionPath))
                     .toString();
           } else {
@@ -379,7 +369,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
 
             if (inputMembers != null && inputMembers.size() > 0) {
               if (!associatedMembers.containsAll(inputMembers)) {
-                return new JsonisedErroMessage(
+                return new JsonisedErrorMessage(
                     ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND_ON_MEMBERS
                         .toLocalizedString(regionPath)).toString();
               }
@@ -387,7 +377,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
           }
         }
       } else {
-        return new JsonisedErroMessage(ManagementStrings.QUERY__MSG__INVALID_QUERY
+        return new JsonisedErrorMessage(ManagementStrings.QUERY__MSG__INVALID_QUERY
             .toLocalizedString("Region mentioned in query probably missing /")).toString();
       }
 
@@ -398,7 +388,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
 
           if (regionMBean.getRegionType().equals(DataPolicy.PARTITION.toString())
               || regionMBean.getRegionType().equals(DataPolicy.PERSISTENT_PARTITION.toString())) {
-            return new JsonisedErroMessage(
+            return new JsonisedErrorMessage(
                 ManagementStrings.QUERY__MSG__JOIN_OP_EX.toLocalizedString()).toString();
           }
         }
@@ -422,8 +412,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
           functionArgs[LIMIT] = limit;
           functionArgs[QUERY_RESULTSET_LIMIT] = queryResultSetLimit;
           functionArgs[QUERY_COLLECTIONS_DEPTH] = queryCollectionsDepth;
-          Object result = callFunction(functionArgs, inputMembers, zipResult);
-          return result;
+          return callFunction(functionArgs, inputMembers, zipResult);
         } else { // Query on any random member
           functionArgs[DISPLAY_MEMBERWISE] = false;
           functionArgs[QUERY] = query;
@@ -431,17 +420,16 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
           functionArgs[LIMIT] = limit;
           functionArgs[QUERY_RESULTSET_LIMIT] = queryResultSetLimit;
           functionArgs[QUERY_COLLECTIONS_DEPTH] = queryCollectionsDepth;
-          Object result = callFunction(functionArgs, associatedMembers, zipResult);
-          return result;
+          return callFunction(functionArgs, associatedMembers, zipResult);
         }
 
       } else {
-        return new JsonisedErroMessage(ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND
+        return new JsonisedErrorMessage(ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND
             .toLocalizedString(regionsInQuery.toString())).toString();
       }
 
     } catch (QueryInvalidException qe) {
-      return new JsonisedErroMessage(
+      return new JsonisedErrorMessage(
           ManagementStrings.QUERY__MSG__INVALID_QUERY.toLocalizedString(qe.getMessage()))
               .toString();
     }
@@ -451,13 +439,13 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
     return (InternalCache) CacheFactory.getAnyInstance();
   }
 
-  private static class JsonisedErroMessage {
+  private static class JsonisedErrorMessage {
 
     private static String message = "message";
 
     private GfJsonObject gFJsonObject = new GfJsonObject();
 
-    public JsonisedErroMessage(final String errorMessage) throws Exception {
+    public JsonisedErrorMessage(final String errorMessage) throws Exception {
       try {
         gFJsonObject.put(message, errorMessage);
       } catch (GfJsonException e) {
@@ -483,10 +471,10 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
   private static Set<String> compileQuery(final InternalCache cache, final String query)
       throws QueryInvalidException {
     QCompiler compiler = new QCompiler();
-    Set<String> regionsInQuery = null;
+    Set<String> regionsInQuery;
     try {
       CompiledValue compiledQuery = compiler.compileQuery(query);
-      Set<String> regions = new HashSet<String>();
+      Set<String> regions = new HashSet<>();
       compiledQuery.getRegionsInQuery(regions, null);
       regionsInQuery = Collections.unmodifiableSet(regions);
       return regionsInQuery;

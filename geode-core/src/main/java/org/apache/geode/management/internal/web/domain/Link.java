@@ -14,15 +14,15 @@
  */
 package org.apache.geode.management.internal.web.domain;
 
-import java.io.Serializable;
-import java.net.URI;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
-
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.apache.geode.management.internal.web.util.UriUtils;
+
+import java.io.Serializable;
+import java.net.URI;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * The Link class models hypermedia controls/link relations.
@@ -97,7 +97,7 @@ public class Link implements Comparable<Link>, Serializable {
   }
 
   public final void setRelation(final String relation) {
-    assert !StringUtils.isBlank(relation) : "The Link relation (rel) must be specified!";
+    assert StringUtils.isNotBlank(relation) : "The Link relation (rel) must be specified!";
     this.relation = relation;
   }
 

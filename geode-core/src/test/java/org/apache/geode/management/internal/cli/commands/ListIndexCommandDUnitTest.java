@@ -14,14 +14,27 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertSame;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.lang.MutableIdentifiable;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -34,14 +47,16 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the
@@ -57,7 +72,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
   private static final int DEFAULT_REGION_INITIAL_CAPACITY = 10000;
 
-  private final AtomicLong idGenerator = new AtomicLong(0l);
+  private final AtomicLong idGenerator = new AtomicLong(0L);
 
   @Override
   public final void postSetUpCliCommandTestBase() throws Exception {
@@ -186,7 +201,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
         final Random random = new Random(System.currentTimeMillis());
         int count = 0;
 
-        final List<Proxy> proxies = new ArrayList<Proxy>();
+        final List<Proxy> proxies = new ArrayList<>();
 
         Consumer consumer;
         Proxy proxy;
@@ -232,7 +247,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
         final Random random = new Random(System.currentTimeMillis());
         int count = 0;
 
-        final List<Proxy> proxies = new ArrayList<Proxy>();
+        final List<Proxy> proxies = new ArrayList<>();
 
         Producer producer;
         Proxy proxy;
@@ -322,7 +337,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
     private final Properties distributedSystemProperties;
 
-    private final Set<RegionDefinition> regions = new HashSet<RegionDefinition>();
+    private final Set<RegionDefinition> regions = new HashSet<>();
 
     private final VM vm;
 
@@ -471,14 +486,14 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     private final Class<?> keyConstraint;
     private final Class<?> valueConstraint;
 
-    private final Set<Index> indexes = new HashSet<Index>();
+    private final Set<Index> indexes = new HashSet<>();
 
     private final String regionName;
 
     @SuppressWarnings("unchecked")
     protected RegionDefinition(final String regionName, final Class<?> keyConstraint,
         final Class<?> valueConstraint) {
-      assert !StringUtils.isBlank(regionName) : "The name of the Region must be specified!";
+      assert StringUtils.isNotBlank(regionName) : "The name of the Region must be specified!";
       this.regionName = regionName;
       this.keyConstraint = ObjectUtils.defaultIfNull(keyConstraint, Object.class);
       this.valueConstraint = ObjectUtils.defaultIfNull(valueConstraint, Object.class);

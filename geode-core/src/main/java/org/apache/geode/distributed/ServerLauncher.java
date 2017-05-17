@@ -15,33 +15,9 @@
 
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
@@ -86,6 +62,30 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying
@@ -366,7 +366,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     final StringBuilder buffer = new StringBuilder(ServerState.getServerBindAddressAsString(this));
     final String serverPort = ServerState.getServerPortAsString(this);
 
-    if (!StringUtils.isBlank(serverPort)) {
+    if (StringUtils.isNotBlank(serverPort)) {
       buffer.append("[").append(serverPort).append("]");
     }
 
@@ -590,7 +590,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *         configuration meta-data.
    */
   public boolean isSpringXmlLocationSpecified() {
-    return !StringUtils.isBlank(this.springXmlLocation);
+    return StringUtils.isNotBlank(this.springXmlLocation);
   }
 
   /**
@@ -1956,7 +1956,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #getMemberName()
      */
     public Builder setMemberName(final String memberName) {
-      if (StringUtils.isEmpty(StringUtils.trim(memberName))) {
+      if (StringUtils.isBlank(memberName)) {
         throw new IllegalArgumentException(
             LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE
                 .toLocalizedString("Server"));
@@ -2496,7 +2496,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private final String name;
 
     Command(final String name, final String... options) {
-      assert !StringUtils.isBlank(name) : "The name of the command must be specified!";
+      assert StringUtils.isNotBlank(name) : "The name of the command must be specified!";
       this.name = name;
       this.options = (options != null ? Collections.unmodifiableList(Arrays.asList(options))
           : Collections.<String>emptyList());
@@ -2572,7 +2572,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *         option.
      */
     public boolean hasOption(final String option) {
-      return getOptions().contains(StringUtils.toLowerCase(option));
+      return getOptions().contains(StringUtils.lowerCase(option));
     }
 
     /**
@@ -2678,7 +2678,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         if (logFile != null && logFile.isFile()) {
           final String logFileCanonicalPath =
               IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
-          if (!StringUtils.isBlank(logFileCanonicalPath)) {
+          if (StringUtils.isNotBlank(logFileCanonicalPath)) {
             return logFileCanonicalPath;
           }
         }
@@ -2696,7 +2696,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         if (csList != null && !csList.isEmpty()) {
           final CacheServer cs = csList.get(0);
           final String serverBindAddressAsString = cs.getBindAddress();
-          if (!StringUtils.isBlank(serverBindAddressAsString)) {
+          if (StringUtils.isNotBlank(serverBindAddressAsString)) {
             return serverBindAddressAsString;
           }
         }
@@ -2714,13 +2714,13 @@ public class ServerLauncher extends AbstractLauncher<String> {
         if (csList != null && !csList.isEmpty()) {
           final CacheServer cs = csList.get(0);
           final String portAsString = String.valueOf(cs.getPort());
-          if (!StringUtils.isBlank(portAsString)) {
+          if (StringUtils.isNotBlank(portAsString)) {
             return portAsString;
           }
         }
       }
 
-      return (launcher.isDisableDefaultServer() ? StringUtils.EMPTY_STRING
+      return (launcher.isDisableDefaultServer() ? StringUtils.EMPTY
           : launcher.getServerPortAsString());
     }
 

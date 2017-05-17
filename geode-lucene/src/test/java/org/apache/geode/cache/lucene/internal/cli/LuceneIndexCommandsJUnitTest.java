@@ -14,32 +14,18 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import static org.junit.Assert.*;
+import static junit.framework.TestCase.assertSame;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -60,6 +46,25 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * The LuceneIndexCommandsJUnitTest class is a test suite of test cases testing the contract and
@@ -409,7 +414,7 @@ public class LuceneIndexCommandsJUnitTest {
 
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-    String expectedStatus = null;
+    String expectedStatus;
     if (expectedToSucceed) {
       expectedStatus = CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
@@ -446,7 +451,7 @@ public class LuceneIndexCommandsJUnitTest {
 
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-    String expectedStatus = null;
+    String expectedStatus;
     if (expectedToSucceed) {
       expectedStatus = CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
@@ -478,7 +483,7 @@ public class LuceneIndexCommandsJUnitTest {
 
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-    String expectedStatus = null;
+    String expectedStatus;
     if (expectedToSucceed) {
       expectedStatus = CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
@@ -515,7 +520,7 @@ public class LuceneIndexCommandsJUnitTest {
 
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-    String expectedStatus = null;
+    String expectedStatus;
     if (expectedToSucceed) {
       expectedStatus = CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
@@ -564,8 +569,8 @@ public class LuceneIndexCommandsJUnitTest {
     }
     // Verify each status
     List<String> status = data.retrieveAllValues("Status");
-    for (int i = 0; i < status.size(); i++) {
-      assertEquals(expectedStatus, status.get(i));
+    for (String statu : status) {
+      assertEquals(expectedStatus, statu);
     }
   }
 

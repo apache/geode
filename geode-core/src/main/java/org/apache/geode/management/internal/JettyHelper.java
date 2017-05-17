@@ -14,9 +14,10 @@
  */
 package org.apache.geode.management.internal;
 
-import java.io.File;
-import java.util.concurrent.CountDownLatch;
-
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -30,10 +31,8 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
+import java.io.File;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @since GemFire 8.1
@@ -70,13 +69,13 @@ public class JettyHelper {
     if (sslConfig.isEnabled()) {
       SslContextFactory sslContextFactory = new SslContextFactory();
 
-      if (!StringUtils.isBlank(sslConfig.getAlias())) {
+      if (StringUtils.isNotBlank(sslConfig.getAlias())) {
         sslContextFactory.setCertAlias(sslConfig.getAlias());
       }
 
       sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
 
-      if (!StringUtils.isBlank(sslConfig.getCiphers())
+      if (StringUtils.isNotBlank(sslConfig.getCiphers())
           && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {
         // If use has mentioned "any" let the SSL layer decide on the ciphers
         sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
@@ -97,19 +96,19 @@ public class JettyHelper {
 
       sslContextFactory.setKeyStorePath(sslConfig.getKeystore());
 
-      if (!StringUtils.isBlank(sslConfig.getKeystoreType())) {
+      if (StringUtils.isNotBlank(sslConfig.getKeystoreType())) {
         sslContextFactory.setKeyStoreType(sslConfig.getKeystoreType());
       }
 
-      if (!StringUtils.isBlank(sslConfig.getKeystorePassword())) {
+      if (StringUtils.isNotBlank(sslConfig.getKeystorePassword())) {
         sslContextFactory.setKeyStorePassword(sslConfig.getKeystorePassword());
       }
 
-      if (!StringUtils.isBlank(sslConfig.getTruststore())) {
+      if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
         sslContextFactory.setTrustStorePath(sslConfig.getTruststore());
       }
 
-      if (!StringUtils.isBlank(sslConfig.getTruststorePassword())) {
+      if (StringUtils.isNotBlank(sslConfig.getTruststorePassword())) {
         sslContextFactory.setTrustStorePassword(sslConfig.getTruststorePassword());
       }
 
@@ -131,7 +130,7 @@ public class JettyHelper {
 
     jettyServer.setConnectors(new Connector[] {connector});
 
-    if (!StringUtils.isBlank(bindAddress)) {
+    if (StringUtils.isNotBlank(bindAddress)) {
       connector.setHost(bindAddress);
     }
 

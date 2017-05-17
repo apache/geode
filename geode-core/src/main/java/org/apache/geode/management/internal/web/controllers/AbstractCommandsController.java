@@ -15,36 +15,6 @@
 
 package org.apache.geode.management.internal.web.controllers;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
-import javax.management.JMX;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
@@ -64,6 +34,34 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import javax.management.JMX;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common
@@ -251,7 +249,7 @@ public abstract class AbstractCommandsController {
    * @see java.lang.String
    */
   protected static boolean hasValue(final String value) {
-    return !StringUtils.isBlank(value);
+    return StringUtils.isNotBlank(value);
   }
 
   /**
@@ -530,7 +528,7 @@ public abstract class AbstractCommandsController {
 
     if (hasValue(optionValue)) {
       final String optionValueString = (optionValue instanceof String[]
-          ? StringUtils.concat((String[]) optionValue, StringUtils.COMMA_DELIMITER)
+          ? StringUtils.join((String[]) optionValue, StringUtils.COMMA_DELIMITER)
           : String.valueOf(optionValue));
       command.addOption(optionName, optionValueString);
     } else if (request != null && request.getParameterMap().containsKey(optionName)) {

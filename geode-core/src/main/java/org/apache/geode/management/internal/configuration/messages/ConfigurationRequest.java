@@ -14,17 +14,15 @@
  */
 package org.apache.geode.management.internal.configuration.messages;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.lang.StringUtils;
 
 /***
  * Request sent by a member to the locator requesting the shared configuration
@@ -50,7 +48,7 @@ public class ConfigurationRequest implements DataSerializableFixedID {
   }
 
   public void addGroups(String group) {
-    if (!StringUtils.isBlank(group))
+    if (StringUtils.isNotBlank(group))
       this.groups.add(group);
   }
 

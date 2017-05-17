@@ -14,6 +14,15 @@
  */
 package org.apache.geode.management.internal.configuration.messages;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.xml.sax.SAXException;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -22,20 +31,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-
-import org.xml.sax.SAXException;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 /***
  * Response containing the configuration requested by the {@link ConfigurationRequest}
@@ -127,7 +125,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
           try {
             String cacheXmlContent = config.getCacheXmlContent();
-            if (!StringUtils.isBlank(cacheXmlContent)) {
+            if (StringUtils.isNotBlank(cacheXmlContent)) {
               sb.append("\n" + XmlUtils.prettyXml(cacheXmlContent));
             }
           } catch (IOException | TransformerFactoryConfigurationError | TransformerException

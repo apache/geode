@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.process;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -101,8 +102,7 @@ public class FileProcessController implements ProcessController {
         LocalizedStrings.Launcher_ATTACH_API_NOT_FOUND_ERROR_MESSAGE.toLocalizedString());
   }
 
-  private void stop(final File workingDir, final String stopRequestFileName)
-      throws UnableToControlProcessException, IOException {
+  private void stop(final File workingDir, final String stopRequestFileName) throws IOException {
     final File stopRequestFile = new File(workingDir, stopRequestFileName);
     if (!stopRequestFile.exists()) {
       stopRequestFile.createNewFile();
@@ -110,11 +110,10 @@ public class FileProcessController implements ProcessController {
   }
 
   private String status(final File workingDir, final String statusRequestFileName,
-      final String statusFileName)
-      throws UnableToControlProcessException, IOException, InterruptedException, TimeoutException {
+      final String statusFileName) throws IOException, InterruptedException, TimeoutException {
     // monitor for statusFile
     final File statusFile = new File(workingDir, statusFileName);
-    final AtomicReference<String> statusRef = new AtomicReference<String>();
+    final AtomicReference<String> statusRef = new AtomicReference<>();
 
     final ControlRequestHandler statusHandler = new ControlRequestHandler() {
       @Override
@@ -162,7 +161,7 @@ public class FileProcessController implements ProcessController {
     }
 
     final String lines = statusRef.get();
-    if (null == lines || lines.trim().isEmpty()) {
+    if (StringUtils.isBlank(lines)) {
       throw new IllegalStateException("Failed to read status file");
     }
     return lines;

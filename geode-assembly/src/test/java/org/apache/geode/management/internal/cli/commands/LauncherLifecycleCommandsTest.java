@@ -14,8 +14,34 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.DistributionLocator;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,23 +50,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
-
-import org.apache.geode.distributed.LocatorLauncher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.GemFireException;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DistributionLocator;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The LauncherLifecycleCommandsTest class is a test suite of test cases testing the contract and
@@ -77,7 +86,7 @@ public class LauncherLifecycleCommandsTest {
 
     assertTrue(commandLine.isEmpty());
 
-    getLauncherLifecycleCommands().addGemFirePropertyFile(commandLine, StringUtils.EMPTY_STRING);
+    getLauncherLifecycleCommands().addGemFirePropertyFile(commandLine, StringUtils.EMPTY);
 
     assertTrue(commandLine.isEmpty());
 
@@ -106,7 +115,7 @@ public class LauncherLifecycleCommandsTest {
 
     gemfireProperties.setProperty(LOCATORS, "localhost[11235]");
     gemfireProperties.setProperty(LOG_LEVEL, "config");
-    gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY_STRING);
+    gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY);
     gemfireProperties.setProperty(MCAST_PORT, "0");
     gemfireProperties.setProperty(NAME, "machine");
 
@@ -144,7 +153,7 @@ public class LauncherLifecycleCommandsTest {
 
     gemfireProperties.setProperty(LOCATORS, "localhost[11235]");
     gemfireProperties.setProperty(LOG_LEVEL, "config");
-    gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY_STRING);
+    gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY);
     gemfireProperties.setProperty(MCAST_PORT, "0");
     gemfireProperties.setProperty(NAME, "machine");
 
@@ -182,7 +191,7 @@ public class LauncherLifecycleCommandsTest {
 
     assertTrue(commandLine.isEmpty());
 
-    getLauncherLifecycleCommands().addInitialHeap(commandLine, StringUtils.EMPTY_STRING);
+    getLauncherLifecycleCommands().addInitialHeap(commandLine, StringUtils.EMPTY);
 
     assertTrue(commandLine.isEmpty());
 
@@ -255,7 +264,7 @@ public class LauncherLifecycleCommandsTest {
 
     assertTrue(commandLine.isEmpty());
 
-    getLauncherLifecycleCommands().addMaxHeap(commandLine, StringUtils.EMPTY_STRING);
+    getLauncherLifecycleCommands().addMaxHeap(commandLine, StringUtils.EMPTY);
 
     assertTrue(commandLine.isEmpty());
 
@@ -621,11 +630,11 @@ public class LauncherLifecycleCommandsTest {
   }
 
   private String toClasspath(final String... jarFilePathnames) {
-    String classpath = StringUtils.EMPTY_STRING;
+    String classpath = StringUtils.EMPTY;
 
     if (jarFilePathnames != null) {
       for (final String jarFilePathname : jarFilePathnames) {
-        classpath += (classpath.isEmpty() ? StringUtils.EMPTY_STRING : File.pathSeparator);
+        classpath += (classpath.isEmpty() ? StringUtils.EMPTY : File.pathSeparator);
         classpath += jarFilePathname;
       }
     }
@@ -637,7 +646,7 @@ public class LauncherLifecycleCommandsTest {
     String path = "";
 
     for (Object pathElement : pathElements) {
-      path += (path.isEmpty() ? StringUtils.EMPTY_STRING : File.pathSeparator);
+      path += (path.isEmpty() ? StringUtils.EMPTY : File.pathSeparator);
       path += pathElement;
     }
 

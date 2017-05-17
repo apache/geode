@@ -23,6 +23,7 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -42,7 +43,6 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -56,8 +56,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -76,7 +74,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
       new AlterRuntimeConfigFunction();
 
   @CliCommand(value = {CliStrings.DESCRIBE_CONFIG}, help = CliStrings.DESCRIBE_CONFIG__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeConfig(@CliOption(key = CliStrings.DESCRIBE_CONFIG__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -131,10 +129,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
             SectionResultData cacheServerSection = crd.addSection();
             cacheServerSection.setHeader("Cache-server attributes");
 
-            Iterator<Map<String, String>> iters = cacheServerAttributesList.iterator();
-
-            while (iters.hasNext()) {
-              Map<String, String> cacheServerAttributes = iters.next();
+            for (Map<String, String> cacheServerAttributes : cacheServerAttributesList) {
               addSubSection(cacheServerSection, cacheServerAttributes, "");
             }
           }
@@ -164,7 +159,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
       SectionResultData section = crd.addSection();
       section.setHeader(headerText);
       section.addSeparator('.');
-      Set<String> attributes = new TreeSet<String>(attrMap.keySet());
+      Set<String> attributes = new TreeSet<>(attrMap.keySet());
 
       for (String attribute : attributes) {
         String attributeValue = attrMap.get(attribute);
@@ -177,7 +172,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
       String headerText) {
     if (!attrMap.isEmpty()) {
       SectionResultData subSection = section.addSection();
-      Set<String> attributes = new TreeSet<String>(attrMap.keySet());
+      Set<String> attributes = new TreeSet<>(attrMap.keySet());
       subSection.setHeader(headerText);
 
       for (String attribute : attributes) {
@@ -262,16 +257,12 @@ public class ConfigCommands extends AbstractCommandsSupport {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String group,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT__HELP) Integer archiveDiskSpaceLimit,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT__HELP) Integer archiveFileSizeLimit,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT__HELP) Integer logDiskSpaceLimit,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT__HELP) Integer logFileSizeLimit,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL},
           optionContext = ConverterHint.LOG_LEVEL,
@@ -279,31 +270,24 @@ public class ConfigCommands extends AbstractCommandsSupport {
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE},
           help = CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE__HELP) String statisticArchiveFile,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE__HELP) Integer statisticSampleRate,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED__HELP) Boolean statisticSamplingEnabled,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "false",
           help = CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ__HELP) Boolean setCopyOnRead,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE__HELP) Integer lockLease,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT__HELP) Integer lockTimeout,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL__HELP) Integer messageSyncInterval,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT__HELP) Integer searchTimeout) {
 
-    Map<String, String> runTimeDistributionConfigAttributes = new HashMap<String, String>();
-    Map<String, String> rumTimeCacheAttributes = new HashMap<String, String>();
-    Set<DistributedMember> targetMembers = new HashSet<DistributedMember>();
+    Map<String, String> runTimeDistributionConfigAttributes = new HashMap<>();
+    Map<String, String> rumTimeCacheAttributes = new HashMap<>();
+    Set<DistributedMember> targetMembers;
 
     try {
 
@@ -381,7 +365,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
       }
 
       if (!runTimeDistributionConfigAttributes.isEmpty() || !rumTimeCacheAttributes.isEmpty()) {
-        Map<String, String> allRunTimeAttributes = new HashMap<String, String>();
+        Map<String, String> allRunTimeAttributes = new HashMap<>();
         allRunTimeAttributes.putAll(runTimeDistributionConfigAttributes);
         allRunTimeAttributes.putAll(rumTimeCacheAttributes);
 
@@ -390,8 +374,8 @@ public class ConfigCommands extends AbstractCommandsSupport {
         List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
         CompositeResultData crd = ResultBuilder.createCompositeResultData();
         TabularResultData tabularData = crd.addSection().addTable();
-        Set<String> successfulMembers = new TreeSet<String>();
-        Set<String> errorMessages = new TreeSet<String>();
+        Set<String> successfulMembers = new TreeSet<>();
+        Set<String> errorMessages = new TreeSet<>();
 
 
         for (CliFunctionResult result : results) {
@@ -459,7 +443,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
       Map<String, String> arguments = parseResult.getParamValueStrings();
       // validate log level
       String logLevel = arguments.get("log-level");
-      if (!StringUtils.isBlank(logLevel) && (LogLevel.getLevel(logLevel) == null)) {
+      if (StringUtils.isNotBlank(logLevel) && (LogLevel.getLevel(logLevel) == null)) {
         return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
       }
 

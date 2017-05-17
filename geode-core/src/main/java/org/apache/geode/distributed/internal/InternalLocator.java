@@ -14,26 +14,11 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -69,7 +54,6 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.internal.JmxManagerLocator;
@@ -81,6 +65,22 @@ import org.apache.geode.management.internal.configuration.handlers.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -675,7 +675,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         // this.logger.config("ensuring that this locator is in the locators list");
         boolean setLocatorsProp = false;
         String locatorsProp = this.config.getLocators();
-        if (locatorsProp != null && !locatorsProp.trim().isEmpty()) {
+        if (StringUtils.isNotBlank(locatorsProp)) {
           if (!locatorsProp.contains(thisLocator)) {
             locatorsProp = locatorsProp + ',' + thisLocator;
             setLocatorsProp = true;
@@ -756,7 +756,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    *
    * @since GemFire 5.7
    */
-  void endStartLocator(InternalDistributedSystem distributedSystem) throws UnknownHostException {
+  void endStartLocator(InternalDistributedSystem distributedSystem) {
     this.env = null;
     if (distributedSystem == null) {
       distributedSystem = InternalDistributedSystem.getConnectedInstance();
@@ -1262,7 +1262,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     public Object processRequest(Object request) throws IOException {
       long giveup = 0;
       while (giveup == 0 || System.currentTimeMillis() < giveup) {
-        TcpHandler handler = null;
+        TcpHandler handler;
         if (request instanceof PeerLocatorRequest) {
           handler = this.handlerMapping.get(PeerLocatorRequest.class);
         } else {

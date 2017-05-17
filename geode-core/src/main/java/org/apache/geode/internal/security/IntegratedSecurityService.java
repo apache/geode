@@ -293,7 +293,7 @@ public class IntegratedSecurityService implements SecurityService {
     String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     String peerAuthenticatorConfig = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
 
-    if (!StringUtils.isBlank(shiroConfig)) {
+    if (StringUtils.isNotBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
 
       // we will need to make sure that shiro uses a case sensitive permission resolver
@@ -311,20 +311,20 @@ public class IntegratedSecurityService implements SecurityService {
       isPeerAuthenticator = false;
     }
     // only set up shiro realm if user has implemented SecurityManager
-    else if (!StringUtils.isBlank(securityManagerConfig)) {
+    else if (StringUtils.isNotBlank(securityManagerConfig)) {
       SecurityManager securityManager = SecurityService
           .getObjectOfTypeFromClassName(securityManagerConfig, SecurityManager.class);
       securityManager.init(securityProps);
       this.setSecurityManager(securityManager);
     } else {
       isIntegratedSecurity = null;
-      isClientAuthenticator = !StringUtils.isBlank(clientAuthenticatorConfig);
-      isPeerAuthenticator = !StringUtils.isBlank(peerAuthenticatorConfig);
+      isClientAuthenticator = StringUtils.isNotBlank(clientAuthenticatorConfig);
+      isPeerAuthenticator = StringUtils.isNotBlank(peerAuthenticatorConfig);
     }
 
     // this initializes the post processor
     String customPostProcessor = securityProps.getProperty(SECURITY_POST_PROCESSOR);
-    if (!StringUtils.isBlank(customPostProcessor)) {
+    if (StringUtils.isNotBlank(customPostProcessor)) {
       postProcessor =
           SecurityService.getObjectOfTypeFromClassName(customPostProcessor, PostProcessor.class);
       postProcessor.init(securityProps);

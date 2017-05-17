@@ -14,10 +14,14 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -108,11 +112,11 @@ public class AbstractLauncherTest {
     assertNotNull(distributedSystemProperties);
     assertFalse(distributedSystemProperties.containsKey(NAME));
 
-    launcher = createAbstractLauncher(StringUtils.EMPTY_STRING, "333");
+    launcher = createAbstractLauncher(StringUtils.EMPTY, "333");
 
     assertNotNull(launcher);
     assertEquals("333", launcher.getMemberId());
-    assertEquals(StringUtils.EMPTY_STRING, launcher.getMemberName());
+    assertEquals(StringUtils.EMPTY, launcher.getMemberName());
 
     distributedSystemProperties = launcher.getDistributedSystemProperties();
 
@@ -166,11 +170,11 @@ public class AbstractLauncherTest {
     assertNull(launcher.getMemberName());
     assertEquals("123", launcher.getMember());
 
-    launcher = createAbstractLauncher(StringUtils.EMPTY_STRING, "123");
+    launcher = createAbstractLauncher(StringUtils.EMPTY, "123");
 
     assertNotNull(launcher);
     assertEquals("123", launcher.getMemberId());
-    assertEquals(StringUtils.EMPTY_STRING, launcher.getMemberName());
+    assertEquals(StringUtils.EMPTY, launcher.getMemberName());
     assertEquals("123", launcher.getMember());
 
     launcher = createAbstractLauncher(" ", "123");
@@ -180,10 +184,10 @@ public class AbstractLauncherTest {
     assertEquals(" ", launcher.getMemberName());
     assertEquals("123", launcher.getMember());
 
-    launcher = createAbstractLauncher(null, StringUtils.EMPTY_STRING);
+    launcher = createAbstractLauncher(null, StringUtils.EMPTY);
 
     assertNotNull(launcher);
-    assertEquals(StringUtils.EMPTY_STRING, launcher.getMemberId());
+    assertEquals(StringUtils.EMPTY, launcher.getMemberId());
     assertNull(launcher.getMemberName());
     assertNull(launcher.getMember());
 

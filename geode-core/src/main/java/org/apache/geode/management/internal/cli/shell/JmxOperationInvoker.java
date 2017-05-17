@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.cli.shell;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PREFIX;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -192,7 +192,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     URL gfSecurityPropertiesUrl = null;
 
     // Case 1: User has specified gfSecurity properties file
-    if (!StringUtils.isBlank(gfSecurityPropertiesPathToUse)) {
+    if (StringUtils.isNotBlank(gfSecurityPropertiesPathToUse)) {
       // User specified gfSecurity properties doesn't exist
       if (!IOUtils.isExistingPathname(gfSecurityPropertiesPathToUse)) {
         gfshInstance

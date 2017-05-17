@@ -14,19 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
@@ -39,6 +26,19 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
 import org.apache.geode.internal.Version;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * The n - way merge results returns a sorted results on the cumulative sorted results for
@@ -210,11 +210,6 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
     }
 
-    /*
-     * @Override public boolean isEmpty() { boolean isEmpty = true; for (SelectResults<E> result :
-     * this.sortedResults) { isEmpty = result.isEmpty(); if (!isEmpty) { break; } } return isEmpty;
-     * }
-     */
 
     @Override
     public Iterator<E> iterator() {

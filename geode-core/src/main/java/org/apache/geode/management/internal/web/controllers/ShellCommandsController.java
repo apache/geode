@@ -14,14 +14,15 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import java.io.IOException;
-import java.util.Set;
-
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.domain.QueryParameterSource;
+import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,15 +33,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.web.domain.Link;
-import org.apache.geode.management.internal.web.domain.LinkIndex;
-import org.apache.geode.management.internal.web.domain.QueryParameterSource;
-import org.apache.geode.management.internal.web.http.HttpMethod;
+import java.io.IOException;
+import java.util.Set;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
@@ -97,7 +95,7 @@ public class ShellCommandsController extends AbstractCommandsController {
       @RequestParam("operationName") final String operationName,
       @RequestParam(value = "signature", required = false) String[] signature,
       @RequestParam(value = "parameters", required = false) Object[] parameters) {
-    signature = (signature != null ? signature : StringUtils.EMPTY_STRING_ARRAY);
+    signature = (signature != null ? signature : ArrayUtils.EMPTY_STRING_ARRAY);
     parameters = (parameters != null ? parameters : ObjectUtils.EMPTY_OBJECT_ARRAY);
 
     try {

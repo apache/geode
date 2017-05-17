@@ -64,7 +64,7 @@ public class ExportLogController extends AbstractCommandsController {
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.EXPORT_LOGS__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(memberNameId)) {

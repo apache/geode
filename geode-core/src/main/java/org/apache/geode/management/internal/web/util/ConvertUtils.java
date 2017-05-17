@@ -14,18 +14,17 @@
  */
 package org.apache.geode.management.internal.web.util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.web.io.MultipartFileResourceAdapter;
-
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The ConvertUtils class is a support class for performing conversions used by the GemFire web

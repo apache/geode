@@ -14,14 +14,13 @@
  */
 package org.apache.geode.management.internal;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import javax.net.ssl.SSLContext;
-
-import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * 

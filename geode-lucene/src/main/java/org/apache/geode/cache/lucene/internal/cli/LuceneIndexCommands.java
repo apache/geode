@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
@@ -28,7 +29,6 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFun
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -82,11 +82,10 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX,
       help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listIndex(@CliOption(key = LuceneCliStrings.LUCENE_LIST_INDEX__STATS,
-      mandatory = false, specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = LuceneCliStrings.LUCENE_LIST_INDEX__STATS__HELP) final boolean stats) {
 
     try {
@@ -120,7 +119,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
     List<LuceneIndexDetails> sortedResults =
         results.stream().flatMap(set -> set.stream()).sorted().collect(Collectors.toList());
-    LinkedHashSet<LuceneIndexDetails> uniqResults = new LinkedHashSet<LuceneIndexDetails>();
+    LinkedHashSet<LuceneIndexDetails> uniqResults = new LinkedHashSet<>();
     uniqResults.addAll(sortedResults);
     sortedResults.clear();
     sortedResults.addAll(uniqResults);
@@ -137,10 +136,9 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         indexData.accumulate("Server Name", indexDetails.getServerName());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
-        indexData.accumulate("Status",
-            indexDetails.getInitialized() == true ? "Initialized" : "Defined");
+        indexData.accumulate("Status", indexDetails.getInitialized() ? "Initialized" : "Defined");
 
-        if (stats == true) {
+        if (stats) {
           if (!indexDetails.getInitialized()) {
             indexData.accumulate("Query Executions", "NA");
             indexData.accumulate("Updates", "NA");
@@ -164,8 +162,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = LuceneCliStrings.LUCENE_CREATE_INDEX,
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
   public Result createIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__NAME__HELP) final String indexName,
@@ -177,11 +174,10 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, mandatory = true,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD_HELP) final String[] fields,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, mandatory = false,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers) {
 
-    Result result = null;
+    Result result;
     XmlEntity xmlEntity = null;
 
     this.securityService.authorizeRegionManage(regionPath);
@@ -222,8 +218,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = LuceneCliStrings.LUCENE_DESCRIBE_INDEX,
       help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeIndex(
       @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
@@ -262,8 +257,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = LuceneCliStrings.LUCENE_SEARCH_INDEX,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.WRITE)
   public Result searchIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
@@ -278,15 +272,14 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, mandatory = true,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP) final String defaultField,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT, mandatory = false,
-          unspecifiedDefaultValue = "-1",
+      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT, unspecifiedDefaultValue = "-1",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT__HELP) final int limit,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE, mandatory = false,
+      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE,
           unspecifiedDefaultValue = "-1",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP) int pageSize,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY, mandatory = false,
+      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
           unspecifiedDefaultValue = "false",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly) {
     try {
@@ -315,11 +308,9 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = LuceneCliStrings.LUCENE_DESTROY_INDEX,
       help = LuceneCliStrings.LUCENE_DESTROY_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  public Result destroyIndex(
-      @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = false,
-          help = LuceneCliStrings.LUCENE_DESTROY_INDEX__NAME__HELP) final String indexName,
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  public Result destroyIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME,
+      help = LuceneCliStrings.LUCENE_DESTROY_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
@@ -329,7 +320,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__REGION_CANNOT_BE_EMPTY));
     }
 
-    if (StringUtils.isEmpty(indexName)) {
+    if (indexName != null && StringUtils.isEmpty(indexName)) {
       return ResultBuilder.createInfoResult(
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
     }

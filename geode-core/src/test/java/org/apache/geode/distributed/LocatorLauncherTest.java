@@ -14,13 +14,22 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
-import joptsimple.OptionException;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -29,9 +38,8 @@ import org.junit.rules.TestName;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import joptsimple.OptionException;
 
-import static org.junit.Assert.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The LocatorLauncherTest class is a test suite of test cases for testing the contract and
@@ -52,6 +60,11 @@ public class LocatorLauncherTest {
 
   @Rule
   public final TestName testName = new TestName();
+
+  @Before
+  public void setup() {
+    DistributedSystem.removeSystem(InternalDistributedSystem.getConnectedInstance());
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testBuilderParseArgumentsWithNonNumericPort() {
@@ -154,8 +167,6 @@ public class LocatorLauncherTest {
     assertNull(builder.getHostnameForClients());
     assertSame(builder, builder.setHostnameForClients("Pegasus"));
     assertEquals("Pegasus", builder.getHostnameForClients());
-    assertSame(builder, builder.setHostnameForClients(null));
-    assertNull(builder.getHostnameForClients());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -184,6 +195,19 @@ public class LocatorLauncherTest {
     }
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetHostnameForClientsWithNullString() {
+    try {
+      new Builder().setHostnameForClients(null);
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
+              .toLocalizedString(),
+          expected.getMessage());
+      throw expected;
+    }
+  }
+
   @Test
   public void testSetAndGetMemberName() {
     Builder builder = new Builder();
@@ -191,8 +215,6 @@ public class LocatorLauncherTest {
     assertNull(builder.getMemberName());
     assertSame(builder, builder.setMemberName("locatorOne"));
     assertEquals("locatorOne", builder.getMemberName());
-    assertSame(builder, builder.setMemberName(null));
-    assertNull(builder.getMemberName());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -211,6 +233,18 @@ public class LocatorLauncherTest {
   public void testSetMemberNameWithEmptyString() {
     try {
       new Builder().setMemberName("");
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Locator"),
+          expected.getMessage());
+      throw expected;
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetMemberNameWithNullString() {
+    try {
+      new Builder().setMemberName(null);
     } catch (IllegalArgumentException expected) {
       assertEquals(
           LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Locator"),
@@ -299,7 +333,7 @@ public class LocatorLauncherTest {
         .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
         .build();
 
-    assertNotNull(launcher);
+    assertThat(launcher).isNotNull();
     assertEquals(builder.getCommand(), launcher.getCommand());
     assertTrue(launcher.isDebugging());
     assertEquals(builder.getHostnameForClients(), launcher.getHostnameForClients());
@@ -312,10 +346,10 @@ public class LocatorLauncherTest {
 
   @Test
   public void testBuildWithMemberNameSetInApiPropertiesOnStart() {
-    LocatorLauncher launcher = new Builder().setCommand(LocatorLauncher.Command.START)
-        .setMemberName(null).set(NAME, "locatorABC").build();
+    LocatorLauncher launcher =
+        new Builder().setCommand(LocatorLauncher.Command.START).set(NAME, "locatorABC").build();
 
-    assertNotNull(launcher);
+    assertThat(launcher).isNotNull();
     assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
     assertNull(launcher.getMemberName());
     assertEquals("locatorABC", launcher.getProperties().getProperty(NAME));
@@ -325,10 +359,9 @@ public class LocatorLauncherTest {
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "locatorXYZ");
 
-    LocatorLauncher launcher =
-        new Builder().setCommand(LocatorLauncher.Command.START).setMemberName(null).build();
+    LocatorLauncher launcher = new Builder().setCommand(LocatorLauncher.Command.START).build();
 
-    assertNotNull(launcher);
+    assertThat(launcher).isNotNull();
     assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
     assertNull(launcher.getMemberName());
   }

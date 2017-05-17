@@ -145,11 +145,12 @@ public class IndexCommands extends AbstractCommandsSupport {
       final TabularResultData indexData = ResultBuilder.createTabularResultData();
 
       for (final IndexDetails indexDetails : indexDetailsList) {
-        indexData.accumulate("Member Name", StringUtils.valueOf(indexDetails.getMemberName(), ""));
+        indexData.accumulate("Member Name",
+            StringUtils.defaultString(indexDetails.getMemberName()));
         indexData.accumulate("Member ID", indexDetails.getMemberId());
         indexData.accumulate("Region Path", indexDetails.getRegionPath());
         indexData.accumulate("Name", indexDetails.getIndexName());
-        indexData.accumulate("Type", StringUtils.valueOf(indexDetails.getIndexType(), ""));
+        indexData.accumulate("Type", StringUtils.defaultString(indexDetails.getIndexType()));
         indexData.accumulate("Indexed Expression", indexDetails.getIndexedExpression());
         indexData.accumulate("From Clause", indexDetails.getFromClause());
 
@@ -355,7 +356,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
     // If a regionName is specified, then authorize data manage on the regionName, otherwise, it
     // requires data manage permission on all regions
-    if (!StringUtils.isBlank(regionPath)) {
+    if (StringUtils.isNotBlank(regionPath)) {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
       this.securityService.authorizeRegionManage(regionName);
     } else {
@@ -405,15 +406,15 @@ public class IndexCommands extends AbstractCommandsSupport {
     if (!successfulMembers.isEmpty()) {
       InfoResultData infoResult = ResultBuilder.createInfoResultData();
 
-      if (!StringUtils.isBlank(indexName)) {
-        if (!StringUtils.isBlank(regionPath)) {
+      if (StringUtils.isNotBlank(indexName)) {
+        if (StringUtils.isNotBlank(regionPath)) {
           infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__SUCCESS__MSG,
               indexName, regionPath));
         } else {
           infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__SUCCESS__MSG, indexName));
         }
       } else {
-        if (!StringUtils.isBlank(regionPath)) {
+        if (StringUtils.isNotBlank(regionPath)) {
           infoResult.addLine(CliStrings
               .format(CliStrings.DESTROY_INDEX__ON__REGION__ONLY__SUCCESS__MSG, regionPath));
         } else {
@@ -431,7 +432,7 @@ public class IndexCommands extends AbstractCommandsSupport {
     } else {
 
       ErrorResultData erd = ResultBuilder.createErrorResultData();
-      if (!StringUtils.isBlank(indexName)) {
+      if (StringUtils.isNotBlank(indexName)) {
         erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__FAILURE__MSG, indexName));
       } else {
         erd.addLine("Indexes could not be destroyed for following reasons");
@@ -668,27 +669,27 @@ public class IndexCommands extends AbstractCommandsSupport {
 
     public String getNumberOfKeys() {
       return (getIndexStatisticsDetails() != null
-          ? StringUtils.valueOf(getIndexStatisticsDetails().getNumberOfKeys(), "") : "");
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfKeys()) : "");
     }
 
     public String getNumberOfUpdates() {
       return (getIndexStatisticsDetails() != null
-          ? StringUtils.valueOf(getIndexStatisticsDetails().getNumberOfUpdates(), "") : "");
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfUpdates()) : "");
     }
 
     public String getNumberOfValues() {
       return (getIndexStatisticsDetails() != null
-          ? StringUtils.valueOf(getIndexStatisticsDetails().getNumberOfValues(), "") : "");
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfValues()) : "");
     }
 
     public String getTotalUpdateTime() {
       return (getIndexStatisticsDetails() != null
-          ? StringUtils.valueOf(getIndexStatisticsDetails().getTotalUpdateTime(), "") : "");
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUpdateTime()) : "");
     }
 
     public String getTotalUses() {
       return (getIndexStatisticsDetails() != null
-          ? StringUtils.valueOf(getIndexStatisticsDetails().getTotalUses(), "") : "");
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUses()) : "");
     }
   }
 

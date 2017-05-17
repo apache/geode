@@ -17,6 +17,26 @@ package org.apache.geode.internal.cache;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.logging.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,27 +51,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.UnmodifiableException;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 
 public class ClusterConfigurationLoader {
 
@@ -121,7 +120,7 @@ public class ClusterConfigurationLoader {
         requestedConfiguration.get(ClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterConfiguration != null) {
       String cacheXmlContent = clusterConfiguration.getCacheXmlContent();
-      if (!StringUtils.isBlank(cacheXmlContent)) {
+      if (StringUtils.isNotBlank(cacheXmlContent)) {
         cacheXmlContentList.add(cacheXmlContent);
       }
     }
@@ -131,7 +130,7 @@ public class ClusterConfigurationLoader {
       Configuration groupConfiguration = requestedConfiguration.get(group);
       if (groupConfiguration != null) {
         String cacheXmlContent = groupConfiguration.getCacheXmlContent();
-        if (!StringUtils.isBlank(cacheXmlContent)) {
+        if (StringUtils.isNotBlank(cacheXmlContent)) {
           cacheXmlContentList.add(cacheXmlContent);
         }
       }
@@ -230,7 +229,7 @@ public class ClusterConfigurationLoader {
       String ipaddress = dlId.getBindAddress();
       InetAddress locatorInetAddress = null;
 
-      if (!StringUtils.isBlank(ipaddress)) {
+      if (StringUtils.isNotBlank(ipaddress)) {
         locatorInetAddress = InetAddress.getByName(ipaddress);
       } else {
         locatorInetAddress = dlId.getHost();
@@ -265,7 +264,7 @@ public class ClusterConfigurationLoader {
   private static List<String> getGroups(DistributionConfig config) {
     String groupString = config.getGroups();
     List<String> groups = new ArrayList<String>();
-    if (!StringUtils.isBlank(groupString)) {
+    if (StringUtils.isNotBlank(groupString)) {
       groups.addAll((Arrays.asList(groupString.split(","))));
     }
     return groups;

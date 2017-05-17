@@ -37,14 +37,11 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -144,7 +141,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see java.util.Properties
    */
   protected static boolean isSet(final Properties properties, final String propertyName) {
-    return !StringUtils.isBlank(properties.getProperty(propertyName));
+    return StringUtils.isNotBlank(properties.getProperty(propertyName));
   }
 
   /**
@@ -243,7 +240,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       distributedSystemProperties.putAll(defaults);
     }
 
-    if (!StringUtils.isBlank(getMemberName())) {
+    if (StringUtils.isNotBlank(getMemberName())) {
       distributedSystemProperties.setProperty(NAME, getMemberName());
     }
 
@@ -291,7 +288,13 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see #getMemberId()
    */
   public String getMember() {
-    return StringUtils.defaultIfBlank(getMemberName(), getMemberId());
+    if (StringUtils.isNotBlank(getMemberName())) {
+      return getMemberName();
+    }
+    if (StringUtils.isNotBlank(getMemberId())) {
+      return getMemberId();
+    }
+    return null;
   }
 
   /**
@@ -501,7 +504,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     // TODO refactor the logic in this method into a DateTimeFormatUtils class
     protected static String toDaysHoursMinutesSeconds(final Long milliseconds) {
-      final StringBuilder buffer = new StringBuilder(StringUtils.EMPTY_STRING);
+      final StringBuilder buffer = new StringBuilder();
 
       if (milliseconds != null) {
         long millisecondsRemaining = milliseconds;
@@ -569,7 +572,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return a String value containing the JSON representation of this state object.
      */
     public String toJson() {
-      final Map<String, Object> map = new HashMap<String, Object>();
+      final Map<String, Object> map = new HashMap<>();
       map.put(JSON_CLASSPATH, getClasspath());
       map.put(JSON_GEMFIREVERSION, getGemFireVersion());
       map.put(JSON_HOST, getHost());
@@ -778,12 +781,12 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     // the value of a Number as a String, or "" if null
     protected String toString(final Number value) {
-      return StringUtils.valueOf(value, "");
+      return StringUtils.defaultString(value);
     }
 
     // a String concatenation of all values separated by " "
     protected String toString(final Object... values) {
-      return StringUtils.concat(values, " ");
+      return values == null ? "" : StringUtils.join(values, " ");
     }
 
     // the value of the String, or "" if value is null
@@ -805,8 +808,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     private final String description;
 
     Status(final String description) {
-      assert !StringUtils.isBlank(description) : "The Status description must be specified!";
-      this.description = StringUtils.toLowerCase(description);
+      assert StringUtils.isNotBlank(description) : "The Status description must be specified!";
+      this.description = StringUtils.lowerCase(description);
     }
 
     /**

@@ -231,7 +231,7 @@ public class Helper {
     }
 
     // Now comes the turn to display synopsis if any
-    if (!StringUtils.isBlank(cliCommand.help())) {
+    if (StringUtils.isNotBlank(cliCommand.help())) {
       HelpBlock synopsis = new HelpBlock(SYNOPSIS_NAME);
       synopsis.addChild(new HelpBlock(cliCommand.help()));
       root.addChild(synopsis);
@@ -259,7 +259,7 @@ public class Helper {
   HelpBlock getOptionDetail(CliOption cliOption) {
     HelpBlock optionNode = new HelpBlock(getPrimaryKey(cliOption));
     String help = cliOption.help();
-    optionNode.addChild(new HelpBlock((!StringUtils.isBlank(help) ? help : "")));
+    optionNode.addChild(new HelpBlock((StringUtils.isNotBlank(help) ? help : "")));
     if (getSynonyms(cliOption).size() > 0) {
       StringBuilder builder = new StringBuilder();
       for (String string : getSynonyms(cliOption)) {

@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.web.controllers;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -72,12 +71,12 @@ public class PdxCommandsController extends AbstractCommandsController {
 
     if (hasValue(autoSerializerClasses)) {
       command.addOption(CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
-          StringUtils.concat(autoSerializerClasses, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(autoSerializerClasses, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(portableAutoSerializerClasses)) {
       command.addOption(CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
-          StringUtils.concat(portableAutoSerializerClasses, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(portableAutoSerializerClasses, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -97,7 +96,7 @@ public class PdxCommandsController extends AbstractCommandsController {
 
     if (hasValue(diskDirs)) {
       command.addOption(CliStrings.PDX_DISKDIR,
-          StringUtils.concat(diskDirs, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(diskDirs, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -118,7 +117,7 @@ public class PdxCommandsController extends AbstractCommandsController {
 
     if (hasValue(diskDirs)) {
       command.addOption(CliStrings.PDX_DISKDIR,
-          StringUtils.concat(diskDirs, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(diskDirs, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

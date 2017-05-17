@@ -215,12 +215,12 @@ public class DataCommandsController extends AbstractCommandsController {
 
     if (hasValue(includedRegions)) {
       command.addOption(CliStrings.REBALANCE__INCLUDEREGION,
-          StringUtils.concat(includedRegions, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(includedRegions, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(excludedRegions)) {
       command.addOption(CliStrings.REBALANCE__EXCLUDEREGION,
-          StringUtils.concat(excludedRegions, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(excludedRegions, StringUtils.COMMA_DELIMITER));
     }
 
     command.addOption(CliStrings.REBALANCE__SIMULATE, String.valueOf(simulate));

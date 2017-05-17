@@ -85,7 +85,7 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
 
     if (hasValue(groups)) {
       command.addOption(CliStrings.GC__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -175,7 +175,7 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
 
     if (hasValue(categories)) {
       command.addOption(CliStrings.SHOW_METRICS__CATEGORY,
-          StringUtils.concat(categories, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(categories, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
