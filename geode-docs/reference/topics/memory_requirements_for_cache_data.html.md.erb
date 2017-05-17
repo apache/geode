@@ -175,6 +175,8 @@ For indexes used in querying, the overhead varies greatly depending on the type 
 
 -   If the index has a single value per region entry for the indexed expression, the index introduces at most 243 bytes per region entry. An example of this type of index is: `fromClause="/portfolios",               indexedExpression="id"`. The maximum of 243 bytes per region entry is reached if each entry has a unique value for the indexed expression. The overhead is reduced if the entries do not have unique index values.
 -   If each region entry has more than one value for the indexed expression, but no two region entries have the same value for it, then the index introduces at most 236 C + 75 bytes per region entry, where C is the average number of values per region entry for the expression.
+-   Lucene indexes add approximately 737 bytes per entry.
+The other index overhead estimates listed here also apply to Lucene indexes.
 
 ## <a id="topic_i1m_stz_j4" class="no-quick-link"></a>Estimating Management and Monitoring Overhead
 
