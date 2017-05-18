@@ -16,12 +16,14 @@ package org.apache.geode.internal.io;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.io.File;
 import java.util.regex.Pattern;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -34,6 +36,9 @@ public class MainWithChildrenRollingFileHandlerIntegrationTest {
 
   @Rule
   public TestName testName = new TestName();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void before() throws Exception {
@@ -91,6 +96,12 @@ public class MainWithChildrenRollingFileHandlerIntegrationTest {
 
     assertThatThrownBy(() -> this.handler.getFilePattern(this.name))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void calcNextChildId_noExtensionInFilename_doesNotThrow() {
+    File file = new File(temporaryFolder.getRoot(), "fileWithoutExtension");
+    assertThat(handler.calcNextChildId(file, 0)).isEqualTo(1);
   }
 
 }

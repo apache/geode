@@ -79,7 +79,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
         .forEach(MemberVM::stopMemberAndCleanupVMIfNecessary);
   }
 
-  public MemberVM startLocatorVM(int index) throws Exception {
+  public MemberVM<Locator> startLocatorVM(int index) throws Exception {
     return startLocatorVM(index, new Properties());
   }
 

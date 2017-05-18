@@ -43,9 +43,12 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
     String baseName;
     if (endIdx1 != -1) {
       baseName = file.getName().substring(0, endIdx1);
-    } else {
+    } else if (endIdx2 != -1) {
       baseName = file.getName().substring(0, endIdx2);
+    } else {
+      baseName = file.getName();
     }
+
     File[] children = findChildren(dir, CHILD_ID_PATTERN);
 
     /* Search child logs */
