@@ -140,7 +140,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   }
 
   @Override
-  public boolean dispatchBatch(List events, boolean isRetry) {
+  public boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry) {
     GatewaySenderStats statistics = this.sender.getStatistics();
     boolean success = false;
     try {
@@ -212,7 +212,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       this.connectionLifeCycleLock.readLock().lock();
       try {
         if (connection != null) {
-          sp.dispatchBatch_NewWAN(connection, events, currentBatchId, isRetry);
+          sp.dispatchBatch_NewWAN(connection, events, currentBatchId,
+              sender.isRemoveFromQueueOnException(), isRetry);
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "{} : Dispatched batch (id={}) of {} events, queue size: {} on connection {}",
@@ -621,8 +622,32 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               // log batch exceptions and remove all the events if remove from
               // exception is true
               // do not remove if it is false
-              logBatchExceptions(ack.getBatchException());
-              processor.handleSuccessBatchAck(batchId);
+              if (sender.isRemoveFromQueueOnException()) {
+                // log the batchExceptions
+                logBatchExceptions(ack.getBatchException());
+                processor.handleSuccessBatchAck(batchId);
+              } else {
+                // we assume that batch exception will not occur for PDX related
+                // events
+                List<GatewaySenderEventImpl> pdxEvents =
+                    processor.getBatchIdToPDXEventsMap().get(ack.getBatchException().getBatchId());
+                if (pdxEvents != null) {
+                  for (GatewaySenderEventImpl senderEvent : pdxEvents) {
+                    senderEvent.isAcked = true;
+                  }
+                }
+                // log the batchExceptions
+                logBatchExceptions(ack.getBatchException());
+                // remove the events that have been processed.
+                BatchException70 be = ack.getBatchException();
+                List<BatchException70> exceptions = be.getExceptions();
+
+                for (int i = 0; i < exceptions.get(0).getIndex(); i++) {
+                  processor.eventQueueRemove(1);
+                }
+                // reset the sender
+                processor.handleException();
+              }
 
             } // unsuccessful batch
             else { // The batch was successful.
