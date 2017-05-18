@@ -250,10 +250,20 @@ public class GfshParserAutoCompletionTest {
   }
 
   @Test
-  public void testCompletHelp() throws Exception {
-    buffer = "create region --name=test --type LO";
-    cursor = parser.completeSuperAdvanced(buffer, candidates);
-    System.out.println("");
+  public void testCompletWithRegionTypeWithNoSpace() throws Exception {
+    buffer = "create region --name=test --type=REPLICATE";
+    cursor = parser.completeAdvanced(buffer, candidates);
+    assertThat(candidates.size()).isEqualTo(5);
+    assertThat(getCompleted(buffer, cursor, candidates.get(0))).isEqualTo(buffer + "_HEAP_LRU");
+  }
+
+  @Test
+  public void testCompletWithRegionTypeWithSpace() throws Exception {
+    buffer = "create region --name=test --type=REPLICATE ";
+    cursor = parser.completeAdvanced(buffer, candidates);
+    assertThat(candidates.size()).isEqualTo(37);
+    assertThat(getCompleted(buffer, cursor, candidates.get(0)))
+        .isEqualTo(buffer + "--async-event-queue-id");
   }
 
   @Test

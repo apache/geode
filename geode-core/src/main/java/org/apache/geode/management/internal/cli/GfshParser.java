@@ -237,17 +237,9 @@ public class GfshParser extends SimpleParser {
     // initially assume we are trying to complete the last token
     List<Completion> potentials = getCandidates(buffer);
 
-    if (potentials.size() > 0) {
-      if (lastTokenIsOption) {
-        candidateBeginAt = buffer.length() - lastToken.length();
-      } else {
-        // need to return the index before the "=" sign, since later on we are going to add the
-        // "=" sign to the completion candidates
-        candidateBeginAt = buffer.length() - lastToken.length() - 1;
-      }
-    }
-    // if the last token is already complete, add either space or " --" and try again
-    else {
+    // if the last token is already complete (or user deliberately ends with a space denoting the
+    // last token is complete, then add either space or " --" and try again
+    if (potentials.size() == 0 || userInput.endsWith(" ")) {
       candidateBeginAt = buffer.length();
       // last token is an option
       if (lastTokenIsOption) {
@@ -259,6 +251,14 @@ public class GfshParser extends SimpleParser {
       else {
         potentials = getCandidates(buffer + " --");
         lastTokenIsOption = true;
+      }
+    } else {
+      if (lastTokenIsOption) {
+        candidateBeginAt = buffer.length() - lastToken.length();
+      } else {
+        // need to return the index before the "=" sign, since later on we are going to add the
+        // "=" sign to the completion candidates
+        candidateBeginAt = buffer.length() - lastToken.length() - 1;
       }
     }
 

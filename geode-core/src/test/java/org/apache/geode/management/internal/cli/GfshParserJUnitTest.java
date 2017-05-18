@@ -61,6 +61,17 @@ public class GfshParserJUnitTest {
   }
 
   @Test
+  public void testSplitUserInputWithMixedQuotes() {
+    input = "command option='test1 \"test \" test1'";
+    tokens = GfshParser.splitUserInput(input);
+    assertThat(tokens.size()).isEqualTo(3);
+    assertThat(tokens.get(0)).isEqualTo("command");
+    assertThat(tokens.get(1)).isEqualTo("option");
+    assertThat(tokens.get(2)).isEqualTo("'test1 \"test \" test1'");
+  }
+
+
+  @Test
   public void testSplitUserInputWithJ() {
     input =
         "start server --name=server1  --J=\"-Dgemfire.start-dev-rest-api=true\" --J='-Dgemfire.http-service-port=8080' --J='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000'";
