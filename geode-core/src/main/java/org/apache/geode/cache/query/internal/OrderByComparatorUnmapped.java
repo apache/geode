@@ -29,7 +29,6 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.pdx.internal.PdxString;
 
-@Deprecated
 public class OrderByComparatorUnmapped extends OrderByComparator {
 
   private final Map<Object, Object[]> orderByMap;
