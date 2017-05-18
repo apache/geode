@@ -36,33 +36,34 @@ public class GetPDXIdForEnum extends BaseCommand {
   private GetPDXIdForEnum() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received get pdx id for enum request ({} parts) from {}",
-          servConn.getName(), msg.getNumberOfParts(), servConn.getSocketString());
+          serverConnection.getName(), clientMessage.getNumberOfParts(),
+          serverConnection.getSocketString());
     }
 
-    EnumInfo enumInfo = (EnumInfo) msg.getPart(0).getObject();
+    EnumInfo enumInfo = (EnumInfo) clientMessage.getPart(0).getObject();
 
     int enumId;
     try {
-      InternalCache cache = servConn.getCache();
+      InternalCache cache = serverConnection.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
       enumId = registry.defineEnum(enumInfo);
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    Message responseMsg = servConn.getResponseMessage();
+    Message responseMsg = serverConnection.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setNumberOfParts(1);
-    responseMsg.setTransactionId(msg.getTransactionId());
+    responseMsg.setTransactionId(clientMessage.getTransactionId());
     responseMsg.addIntPart(enumId);
-    responseMsg.send(servConn);
-    servConn.setAsTrue(RESPONDED);
+    responseMsg.send(serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
   }
 }

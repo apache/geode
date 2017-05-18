@@ -39,35 +39,38 @@ public class Ping extends BaseCommand {
   private Ping() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("{}: rcv tx: {} from {} rcvTime: {}", servConn.getName(), msg.getTransactionId(),
-          servConn.getSocketString(), (DistributionStats.getStatTime() - start));
+      logger.debug("{}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
+          clientMessage.getTransactionId(), serverConnection.getSocketString(),
+          (DistributionStats.getStatTime() - start));
     }
     ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
     if (chm != null)
-      chm.receivedPing(servConn.getProxyID());
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
+      chm.receivedPing(serverConnection.getProxyID());
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
 
-    writeReply(msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeReply(clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
     if (isDebugEnabled) {
-      logger.debug("{}: Sent ping reply to {}", servConn.getName(), servConn.getSocketString());
+      logger.debug("{}: Sent ping reply to {}", serverConnection.getName(),
+          serverConnection.getSocketString());
     }
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection servConn) throws IOException {
-    Message replyMsg = servConn.getReplyMessage();
-    servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
+  protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
+    Message replyMsg = serverConnection.getReplyMessage();
+    serverConnection.getCache().getCancelCriterion().checkCancelInProgress(null);
     replyMsg.setMessageType(MessageType.REPLY);
     replyMsg.setNumberOfParts(1);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(OK_BYTES);
-    replyMsg.send(servConn);
+    replyMsg.addBytesPart(okBytes());
+    replyMsg.send(serverConnection);
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl tx: {}", servConn.getName(), origMsg.getTransactionId());
+      logger.trace("{}: rpl tx: {}", serverConnection.getName(), origMsg.getTransactionId());
     }
   }
 }

@@ -62,7 +62,7 @@ public class Put70 extends Put65 {
     }
     replyMsg.setNumberOfParts(parts);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(OK_BYTES);
+    replyMsg.addBytesPart(okBytes());
     replyMsg.addIntPart(flags);
     if (sendOldValue) {
       replyMsg.addObjPart(oldValue);
@@ -114,7 +114,7 @@ public class Put70 extends Put65 {
     replyMsg.send(servConn);
     pr.getPrStats().incPRMetaDataSentCount();
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADAT tx: {} parts={}", servConn.getName(),
+      logger.trace("{}: rpl with REFRESH_METADATA tx: {} parts={}", servConn.getName(),
           origMsg.getTransactionId(), replyMsg.getNumberOfParts());
     }
   }

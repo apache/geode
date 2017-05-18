@@ -183,7 +183,6 @@ import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage.DestroyResponse;
-import org.apache.geode.internal.cache.partitioned.DestroyRegionOnDataStoreMessage;
 import org.apache.geode.internal.cache.partitioned.DumpAllPRConfigMessage;
 import org.apache.geode.internal.cache.partitioned.DumpB2NRegion;
 import org.apache.geode.internal.cache.partitioned.DumpB2NRegion.DumpB2NResponse;
@@ -4479,7 +4478,7 @@ public class PartitionedRegion extends LocalRegion
             values.addObjectPart(key, ge.value, ge.isObject, ge.versionTag);
           }
 
-          if (values.size() == BaseCommand.maximumChunkSize) {
+          if (values.size() == BaseCommand.MAXIMUM_CHUNK_SIZE) {
             BaseCommand.sendNewRegisterInterestResponseChunk(this, "keyList", values, false,
                 servConn);
             values.clear();

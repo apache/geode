@@ -50,22 +50,22 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
 
   @SuppressWarnings("unchecked")
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     String regionFullPath = null;
-    regionFullPath = msg.getPart(0).getString();
+    regionFullPath = clientMessage.getPart(0).getString();
     String errMessage = "";
     if (regionFullPath == null) {
       logger.warn(LocalizedMessage
           .create(LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL));
       errMessage = LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL
           .toLocalizedString();
-      writeErrorResponse(msg, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
-          errMessage.toString(), servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
+          errMessage.toString(), serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    Region region = servConn.getCache().getRegion(regionFullPath);
+    Region region = serverConnection.getCache().getRegion(regionFullPath);
     if (region == null) {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND_FOR_SPECIFIED_REGION_PATH,
@@ -73,15 +73,15 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
       errMessage =
           LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND.toLocalizedString()
               + regionFullPath;
-      writeErrorResponse(msg, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
-          errMessage.toString(), servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
+          errMessage.toString(), serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     try {
-      Message responseMsg = servConn.getResponseMessage();
-      responseMsg.setTransactionId(msg.getTransactionId());
+      Message responseMsg = serverConnection.getResponseMessage();
+      responseMsg.setTransactionId(clientMessage.getTransactionId());
       responseMsg.setMessageType(MessageType.RESPONSE_CLIENT_PARTITION_ATTRIBUTES);
 
       if (!(region instanceof PartitionedRegion)) {
@@ -138,11 +138,11 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
         }
       }
       responseMsg.send();
-      msg.clearParts();
+      clientMessage.clearParts();
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
+      writeException(clientMessage, e, false, serverConnection);
     } finally {
-      servConn.setAsTrue(Command.RESPONDED);
+      serverConnection.setAsTrue(Command.RESPONDED);
     }
 
   }

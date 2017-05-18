@@ -37,22 +37,25 @@ public class RegisterDataSerializers extends BaseCommand {
 
   private RegisterDataSerializers() {}
 
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received register dataserializer request ({} parts) from {}",
-          servConn.getName(), msg.getNumberOfParts(), servConn.getSocketString());
+          serverConnection.getName(), clientMessage.getNumberOfParts(),
+          serverConnection.getSocketString());
     }
-    int noOfParts = msg.getNumberOfParts();
+    int noOfParts = clientMessage.getNumberOfParts();
 
     // 2 parts per instantiator and one eventId part
     int noOfDataSerializers = (noOfParts - 1) / 2;
 
     // retrieve eventID from the last Part
-    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(msg.getPart(noOfParts - 1).getSerializedForm());
+    ByteBuffer eventIdPartsBuffer =
+        ByteBuffer.wrap(clientMessage.getPart(noOfParts - 1).getSerializedForm());
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
     long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+    EventID eventId =
+        new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
 
     byte[][] serializedDataSerializers = new byte[noOfDataSerializers * 2][];
     boolean caughtCNFE = false;
@@ -60,12 +63,12 @@ public class RegisterDataSerializers extends BaseCommand {
     try {
       for (int i = 0; i < noOfParts - 1; i = i + 2) {
 
-        Part dataSerializerClassNamePart = msg.getPart(i);
+        Part dataSerializerClassNamePart = clientMessage.getPart(i);
         serializedDataSerializers[i] = dataSerializerClassNamePart.getSerializedForm();
         String dataSerializerClassName =
             (String) CacheServerHelper.deserialize(serializedDataSerializers[i]);
 
-        Part idPart = msg.getPart(i + 1);
+        Part idPart = clientMessage.getPart(i + 1);
         serializedDataSerializers[i + 1] = idPart.getSerializedForm();
         int id = idPart.getInt();
 
@@ -73,7 +76,7 @@ public class RegisterDataSerializers extends BaseCommand {
         try {
           dataSerializerClass = InternalDataSerializer.getCachedClass(dataSerializerClassName);
           InternalDataSerializer.register(dataSerializerClass, true, eventId,
-              servConn.getProxyID());
+              serverConnection.getProxyID());
         } catch (ClassNotFoundException e) {
           // If a ClassNotFoundException is caught, store it, but continue
           // processing other instantiators
@@ -82,26 +85,27 @@ public class RegisterDataSerializers extends BaseCommand {
         }
       }
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     }
 
     // If a ClassNotFoundException was caught while processing the
     // instantiators, send it back to the client. Note: This only sends
     // the last CNFE.
     if (caughtCNFE) {
-      writeException(msg, cnfe, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, cnfe, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     }
 
     // Send reply to client if necessary. If an exception occurs in the above
     // code, then the reply has already been sent.
-    if (!servConn.getTransientFlag(RESPONDED)) {
-      writeReply(msg, servConn);
+    if (!serverConnection.getTransientFlag(RESPONDED)) {
+      writeReply(clientMessage, serverConnection);
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Registered dataserializer for MembershipId = {}", servConn.getMembershipID());
+      logger.debug("Registered dataserializer for MembershipId = {}",
+          serverConnection.getMembershipID());
     }
   }
 }

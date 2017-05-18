@@ -228,7 +228,7 @@ public abstract class AbstractOp implements Op {
   protected abstract Object processResponse(Message msg) throws Exception;
 
   /**
-   * Return true of <code>msgType</code> indicates the operation had an error on the server.
+   * Return true of <code>messageType</code> indicates the operation had an error on the server.
    */
   protected abstract boolean isErrorResponse(int msgType);
 

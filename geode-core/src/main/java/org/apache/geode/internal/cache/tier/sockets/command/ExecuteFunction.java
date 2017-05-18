@@ -64,21 +64,22 @@ public class ExecuteFunction extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(Message clientMessage, ServerConnection servConn, long start)
+      throws IOException {
     Object function = null;
     Object args = null;
     MemberMappedArgument memberMappedArg = null;
     byte hasResult = 0;
     try {
-      hasResult = msg.getPart(0).getSerializedForm()[0];
+      hasResult = clientMessage.getPart(0).getSerializedForm()[0];
       if (hasResult == 1) {
         servConn.setAsTrue(REQUIRES_RESPONSE);
         servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
       }
-      function = msg.getPart(1).getStringOrObject();
-      args = msg.getPart(2).getObject();
+      function = clientMessage.getPart(1).getStringOrObject();
+      args = clientMessage.getPart(2).getObject();
 
-      Part part = msg.getPart(3);
+      Part part = clientMessage.getPart(3);
       if (part != null) {
         memberMappedArg = (MemberMappedArgument) part.getObject();
       }
@@ -87,7 +88,7 @@ public class ExecuteFunction extends BaseCommand {
           LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
           function), exception);
       if (hasResult == 1) {
-        writeChunkedException(msg, exception, false, servConn);
+        writeChunkedException(clientMessage, exception, servConn);
         servConn.setAsTrue(RESPONDED);
         return;
       }
@@ -97,7 +98,7 @@ public class ExecuteFunction extends BaseCommand {
           LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
               .toLocalizedString();
       logger.warn("{}: {}", servConn.getName(), message);
-      sendError(hasResult, msg, message, servConn);
+      sendError(hasResult, clientMessage, message, servConn);
       return;
     }
 
@@ -110,7 +111,7 @@ public class ExecuteFunction extends BaseCommand {
           final String message = LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
               .toLocalizedString(function);
           logger.warn("{}: {}", servConn.getName(), message);
-          sendError(hasResult, msg, message, servConn);
+          sendError(hasResult, clientMessage, message, servConn);
           return;
         }
       } else {
@@ -129,7 +130,7 @@ public class ExecuteFunction extends BaseCommand {
             args, functionObject.optimizeForWrite());
       }
       ChunkedMessage m = servConn.getFunctionResponseMessage();
-      m.setTransactionId(msg.getTransactionId());
+      m.setTransactionId(clientMessage.getTransactionId());
       ResultSender resultSender = new ServerToClientFunctionResultSender(m,
           MessageType.EXECUTE_FUNCTION_RESULT, servConn, functionObject, executeContext);
 
@@ -182,7 +183,7 @@ public class ExecuteFunction extends BaseCommand {
           function), ioException);
       String message =
           LocalizedStrings.ExecuteFunction_SERVER_COULD_NOT_SEND_THE_REPLY.toLocalizedString();
-      sendException(hasResult, msg, message, servConn, ioException);
+      sendException(hasResult, clientMessage, message, servConn, ioException);
     } catch (InternalFunctionInvocationTargetException internalfunctionException) {
       // Fix for #44709: User should not be aware of
       // InternalFunctionInvocationTargetException. No instance of
@@ -200,20 +201,20 @@ public class ExecuteFunction extends BaseCommand {
             new Object[] {function}), internalfunctionException);
       }
       final String message = internalfunctionException.getMessage();
-      sendException(hasResult, msg, message, servConn, internalfunctionException);
+      sendException(hasResult, clientMessage, message, servConn, internalfunctionException);
     } catch (Exception e) {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
           function), e);
       final String message = e.getMessage();
-      sendException(hasResult, msg, message, servConn, e);
+      sendException(hasResult, clientMessage, message, servConn, e);
     }
   }
 
   private void sendException(byte hasResult, Message msg, String message, ServerConnection servConn,
       Throwable e) throws IOException {
     if (hasResult == 1) {
-      writeFunctionResponseException(msg, MessageType.EXCEPTION, message, servConn, e);
+      writeFunctionResponseException(msg, MessageType.EXCEPTION, servConn, e);
       servConn.setAsTrue(RESPONDED);
     }
   }

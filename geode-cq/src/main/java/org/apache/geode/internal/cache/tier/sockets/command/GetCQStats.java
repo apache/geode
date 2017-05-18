@@ -36,32 +36,34 @@ public class GetCQStats extends BaseCQCommand {
   private GetCQStats() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
 
-    CacheServerStats stats = servConn.getCacheServerStats();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("{}: Received close all client CQs request from {}", servConn.getName(),
-          servConn.getSocketString());
+      logger.debug("{}: Received close all client CQs request from {}", serverConnection.getName(),
+          serverConnection.getSocketString());
     }
 
     // Retrieve the data from the message parts
-    String cqName = msg.getPart(0).getString();
+    String cqName = clientMessage.getPart(0).getString();
 
     if (isDebugEnabled) {
-      logger.debug("{}: Received close CQ request from {} cqName: {}", servConn.getName(),
-          servConn.getSocketString(), cqName);
+      logger.debug("{}: Received close CQ request from {} cqName: {}", serverConnection.getName(),
+          serverConnection.getSocketString(), cqName);
     }
 
     // Process the query request
     if (cqName == null) {
       String err = "The cqName for the cq stats request is null";
-      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg.getTransactionId(), null, servConn);
+      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(), null,
+          serverConnection);
       return;
     }
 
@@ -74,13 +76,14 @@ public class GetCQStats extends BaseCQCommand {
       cqService.start();
     } catch (Exception e) {
       String err = "Exception while Getting the CQ Statistics. ";
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, msg.getTransactionId(), e, servConn);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, clientMessage.getTransactionId(), e,
+          serverConnection);
       return;
     }
     // Send OK to client
-    sendCqResponse(MessageType.REPLY, "cq stats sent successfully.", msg.getTransactionId(), null,
-        servConn);
-    servConn.setAsTrue(RESPONDED);
+    sendCqResponse(MessageType.REPLY, "cq stats sent successfully.",
+        clientMessage.getTransactionId(), null, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
 
     {
       long oldStart = start;

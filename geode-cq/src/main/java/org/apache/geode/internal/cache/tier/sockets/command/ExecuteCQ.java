@@ -52,28 +52,28 @@ public class ExecuteCQ extends BaseCQCommand {
   private ExecuteCQ() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, InterruptedException {
-    AcceptorImpl acceptor = servConn.getAcceptor();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    ClientProxyMembershipID id = servConn.getProxyID();
-    CacheServerStats stats = servConn.getCacheServerStats();
+    AcceptorImpl acceptor = serverConnection.getAcceptor();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    ClientProxyMembershipID id = serverConnection.getProxyID();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
     // Retrieve the data from the message parts
-    String cqName = msg.getPart(0).getString();
-    String cqQueryString = msg.getPart(1).getString();
-    int cqState = msg.getPart(2).getInt();
+    String cqName = clientMessage.getPart(0).getString();
+    String cqQueryString = clientMessage.getPart(1).getString();
+    int cqState = clientMessage.getPart(2).getInt();
 
-    Part isDurablePart = msg.getPart(3);
+    Part isDurablePart = clientMessage.getPart(3);
     byte[] isDurableByte = isDurablePart.getSerializedForm();
     boolean isDurable = (isDurableByte == null || isDurableByte[0] == 0) ? false : true;
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received {} request from {} CqName: {} queryString: {}", servConn.getName(),
-          MessageType.getString(msg.getMessageType()), servConn.getSocketString(), cqName,
-          cqQueryString);
+      logger.debug("{}: Received {} request from {} CqName: {} queryString: {}",
+          serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
+          serverConnection.getSocketString(), cqName, cqQueryString);
     }
 
     DefaultQueryService qService = null;
@@ -87,7 +87,7 @@ public class ExecuteCQ extends BaseCQCommand {
       qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();
 
       // Authorization check
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         query = qService.newQuery(cqQueryString);
         cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
@@ -108,10 +108,11 @@ public class ExecuteCQ extends BaseCQCommand {
       cqQuery = cqServiceForExec.executeCq(cqName, cqQueryString, cqState, id,
           acceptor.getCacheClientNotifier(), isDurable, false, 0, null);
     } catch (CqException cqe) {
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(), cqe, servConn);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
+          serverConnection);
       return;
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
+      writeChunkedException(clientMessage, e, serverConnection);
       return;
     }
 
@@ -119,7 +120,7 @@ public class ExecuteCQ extends BaseCQCommand {
     boolean sendResults = false;
     boolean successQuery = false;
 
-    if (msg.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE) {
+    if (clientMessage.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE) {
       sendResults = true;
     }
 
@@ -130,8 +131,8 @@ public class ExecuteCQ extends BaseCQCommand {
         cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
       }
       ((DefaultQuery) query).setIsCqQuery(true);
-      successQuery = processQuery(msg, query, cqQueryString, cqRegionNames, start, cqQuery,
-          executeCQContext, servConn, sendResults);
+      successQuery = processQuery(clientMessage, query, cqQueryString, cqRegionNames, start,
+          cqQuery, executeCQContext, serverConnection, sendResults);
 
       // Update the CQ statistics.
       cqQuery.getVsdStats().setCqInitialResultsTime((DistributionStats.getStatTime()) - oldstart);
@@ -153,12 +154,12 @@ public class ExecuteCQ extends BaseCQCommand {
       // Send OK to client
       sendCqResponse(MessageType.REPLY,
           LocalizedStrings.ExecuteCQ_CQ_CREATED_SUCCESSFULLY.toLocalizedString(),
-          msg.getTransactionId(), null, servConn);
+          clientMessage.getTransactionId(), null, serverConnection);
 
       long start2 = DistributionStats.getStatTime();
       stats.incProcessCreateCqTime(start2 - oldstart);
     }
-    servConn.setAsTrue(RESPONDED);
+    serverConnection.setAsTrue(RESPONDED);
   }
 
 }

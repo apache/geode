@@ -27,21 +27,19 @@ import org.apache.geode.internal.cache.InternalCache;
 public class CachedRegionHelper {
 
   private final InternalCache cache;
-  private volatile boolean shutdown = false;
-  // private Map regions;
-  private volatile int slowEmulationSleep = 0;
 
-  public CachedRegionHelper(InternalCache c) {
-    this.cache = c;
-    // this.regions = new WeakHashMap();
+  private volatile boolean shutdown = false;
+
+  public CachedRegionHelper(InternalCache cache) {
+    this.cache = cache;
   }
 
   public void checkCancelInProgress(Throwable e) throws CancelException {
-    cache.getCancelCriterion().checkCancelInProgress(e);
+    this.cache.getCancelCriterion().checkCancelInProgress(e);
   }
 
   public Region getRegion(String name) {
-    return cache.getRegion(name);
+    return this.cache.getRegion(name);
   }
 
   public InternalCache getCache() {
@@ -53,12 +51,14 @@ public class CachedRegionHelper {
   }
 
   public boolean isShutdown() {
-    return shutdown || cache.getCancelCriterion().isCancelInProgress();
+    return this.shutdown || this.cache.getCancelCriterion().isCancelInProgress();
   }
 
+  /**
+   * CachedRegionHelper#close() does nothing
+   */
   public void close() {
     // cache = null;
-    // regions = null;
   }
 
   /**

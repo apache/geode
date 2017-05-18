@@ -38,7 +38,7 @@ public class GetAllForRI extends GetAll651 {
 
   @Override
   protected ObjectPartList651 getObjectPartsList(boolean includeKeys) {
-    return new SerializedObjectPartList(maximumChunkSize, includeKeys);
+    return new SerializedObjectPartList(MAXIMUM_CHUNK_SIZE, includeKeys);
   }
 
 

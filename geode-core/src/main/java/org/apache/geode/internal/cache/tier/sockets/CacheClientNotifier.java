@@ -245,7 +245,7 @@ public class CacheClientNotifier {
   public void registerClient(Socket socket, boolean isPrimary, long acceptorId,
       boolean notifyBySubscription) throws IOException {
     // Since no remote ports were specified in the message, wait for them.
-    long startTime = this._statistics.startTime();
+    long startTime = this.statistics.startTime();
     DataInputStream dis = new DataInputStream(socket.getInputStream());
     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
@@ -402,7 +402,7 @@ public class CacheClientNotifier {
       return;
     }
 
-    this._statistics.endClientRegistration(startTime);
+    this.statistics.endClientRegistration(startTime);
   }
 
   /**
@@ -481,7 +481,7 @@ public class CacheClientNotifier {
                     "CacheClientNotifier: A proxy exists for durable client with id {}. This proxy will be reinitialized: {}",
                     proxyId.getDurableId(), l_proxy);
               }
-              this._statistics.incDurableReconnectionCount();
+              this.statistics.incDurableReconnectionCount();
               l_proxy.getProxyID().updateDurableTimeout(proxyId.getDurableTimeout());
               l_proxy.reinitialize(socket, proxyId, this.getCache(), isPrimary, clientConflation,
                   clientVersion);
@@ -796,7 +796,7 @@ public class CacheClientNotifier {
       return;
     }
 
-    long startTime = this._statistics.startTime();
+    long startTime = this.statistics.startTime();
 
     ClientUpdateMessageImpl clientMessage;
     if (cmsg == null) {
@@ -893,7 +893,7 @@ public class CacheClientNotifier {
 
     singletonRouteClientMessage(conflatable, filterClients);
 
-    this._statistics.endEvent(startTime);
+    this.statistics.endEvent(startTime);
 
     // Cleanup destroyed events in CQ result cache.
     // While maintaining the CQ results key caching. the destroy event
@@ -1491,7 +1491,7 @@ public class CacheClientNotifier {
       this.clientPingTask.cancel();
 
       // Close the statistics
-      this._statistics.close();
+      this.statistics.close();
 
       this.socketCloser.close();
     }
@@ -1836,7 +1836,7 @@ public class CacheClientNotifier {
    * @return the statistics for the notifier
    */
   public CacheClientNotifierStats getStats() {
-    return this._statistics;
+    return this.statistics;
   }
 
   /**
@@ -1911,7 +1911,7 @@ public class CacheClientNotifier {
     } else {
       factory = this.getCache().getDistributedSystem();
     }
-    this._statistics = new CacheClientNotifierStats(factory);
+    this.statistics = new CacheClientNotifierStats(factory);
 
     try {
       this.logFrequency = Long.valueOf(System.getProperty(MAX_QUEUE_LOG_FREQUENCY));
@@ -1932,88 +1932,6 @@ public class CacheClientNotifier {
     scheduleClientPingTask();
   }
 
-  /**
-   * this message is used to send interest registration to another server. Since interest
-   * registration performs a state-flush operation this message must not transmitted on an ordered
-   * socket
-   */
-  public static class ServerInterestRegistrationMessage extends HighPriorityDistributionMessage
-      implements MessageWithReply {
-    ClientProxyMembershipID clientId;
-    ClientInterestMessageImpl clientMessage;
-    int processorId;
-
-    ServerInterestRegistrationMessage(ClientProxyMembershipID clientID,
-        ClientInterestMessageImpl msg) {
-      this.clientId = clientID;
-      this.clientMessage = msg;
-    }
-
-    public ServerInterestRegistrationMessage() {}
-
-    static void sendInterestChange(DM dm, ClientProxyMembershipID clientID,
-        ClientInterestMessageImpl msg) {
-      ServerInterestRegistrationMessage smsg = new ServerInterestRegistrationMessage(clientID, msg);
-      Set recipients = dm.getOtherDistributionManagerIds();
-      smsg.setRecipients(recipients);
-      ReplyProcessor21 rp = new ReplyProcessor21(dm, recipients);
-      smsg.processorId = rp.getProcessorId();
-      dm.putOutgoing(smsg);
-      try {
-        rp.waitForReplies();
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-      }
-    }
-
-    @Override
-    protected void process(DistributionManager dm) {
-      // Get the proxy for the proxy id
-      try {
-        CacheClientNotifier ccn = CacheClientNotifier.getInstance();
-        if (ccn != null) {
-          CacheClientProxy proxy = ccn.getClientProxy(clientId);
-          // If this VM contains a proxy for the requested proxy id, forward the
-          // message on to the proxy for processing
-          if (proxy != null) {
-            proxy.processInterestMessage(this.clientMessage);
-          }
-        }
-      } finally {
-        ReplyMessage reply = new ReplyMessage();
-        reply.setProcessorId(this.processorId);
-        reply.setRecipient(getSender());
-        try {
-          dm.putOutgoing(reply);
-        } catch (CancelException e) {
-          // can't send a reply, so ignore the exception
-        }
-      }
-    }
-
-    public int getDSFID() {
-      return SERVER_INTEREST_REGISTRATION_MESSAGE;
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
-      out.writeInt(this.processorId);
-      InternalDataSerializer.invokeToData(this.clientId, out);
-      InternalDataSerializer.invokeToData(this.clientMessage, out);
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
-      this.processorId = in.readInt();
-      this.clientId = new ClientProxyMembershipID();
-      InternalDataSerializer.invokeFromData(this.clientId, in);
-      this.clientMessage = new ClientInterestMessageImpl();
-      InternalDataSerializer.invokeFromData(this.clientMessage, in);
-    }
-  }
-
   protected void deliverInterestChange(ClientProxyMembershipID proxyID,
       ClientInterestMessageImpl message) {
     DM dm = ((InternalDistributedSystem) this.getCache().getDistributedSystem())
@@ -2032,11 +1950,11 @@ public class CacheClientNotifier {
   public void addCompiledQuery(DefaultQuery query) {
     if (this.compiledQueries.putIfAbsent(query.getQueryString(), query) == null) {
       // Added successfully.
-      this._statistics.incCompiledQueryCount(1);
+      this.statistics.incCompiledQueryCount(1);
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Added compiled query into ccn.compliedQueries list. Query: {}. Total compiled queries: {}",
-            query.getQueryString(), this._statistics.getCompiledQueryCount());
+            query.getQueryString(), this.statistics.getCompiledQueryCount());
       }
       // Start the clearIdleCompiledQueries thread.
       startCompiledQueryCleanupThread();
@@ -2049,12 +1967,12 @@ public class CacheClientNotifier {
 
   private void clearCompiledQueries() {
     if (this.compiledQueries.size() > 0) {
-      this._statistics.incCompiledQueryCount(-(this.compiledQueries.size()));
+      this.statistics.incCompiledQueryCount(-(this.compiledQueries.size()));
       this.compiledQueries.clear();
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Removed all compiled queries from ccn.compliedQueries list. Total compiled queries: {}",
-            this._statistics.getCompiledQueryCount());
+            this.statistics.getCompiledQueryCount());
       }
     }
   }
@@ -2082,11 +2000,11 @@ public class CacheClientNotifier {
           } else {
             if (compiledQueries.remove(e.getKey()) != null) {
               // If successfully removed decrement the counter.
-              _statistics.incCompiledQueryCount(-1);
+              statistics.incCompiledQueryCount(-1);
               if (isDebugEnabled) {
                 logger.debug("Removed compiled query from ccn.compliedQueries list. Query: "
                     + q.getQueryString() + ". Total compiled queries are : "
-                    + _statistics.getCompiledQueryCount());
+                    + statistics.getCompiledQueryCount());
               }
             }
           }
@@ -2224,7 +2142,7 @@ public class CacheClientNotifier {
   /**
    * The statistics for this notifier
    */
-  protected final CacheClientNotifierStats _statistics;
+  protected final CacheClientNotifierStats statistics;
 
   /**
    * The <code>InterestRegistrationListener</code> instances registered in this VM. This is used

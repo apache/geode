@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
@@ -47,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  * and serialize it out to the wire.
  *
  * <PRE>
- * msgType       - int   - 4 bytes type of message, types enumerated below
+ * messageType       - int   - 4 bytes type of message, types enumerated below
  *
  * msgLength     - int - 4 bytes   total length of variable length payload
  *
@@ -55,10 +54,10 @@ import java.util.concurrent.TimeUnit;
  *                     contained in the payload. Message can
  *                       be a multi-part message
  *
- * transId       - int - 4 bytes  filled in by the requestor, copied back into
+ * transId       - int - 4 bytes  filled in by the requester, copied back into
  *                    the response
  *
- * flags         - byte- 1 byte   filled in by the requestor
+ * flags         - byte- 1 byte   filled in by the requester
  * len1
  * part1
  * .
@@ -76,18 +75,17 @@ import java.util.concurrent.TimeUnit;
  *
  * See also <a href="package-summary.html#messages">package description</a>.
  *
- * @see org.apache.geode.internal.cache.tier.MessageType
- *
+ * @see MessageType
  */
 public class Message {
 
-  public static final int DEFAULT_MAX_MESSAGE_SIZE = 1073741824;
-  /**
-   * maximum size of an outgoing message. See GEODE-478
-   */
-  public static int MAX_MESSAGE_SIZE =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "client.max-message-size",
-          DEFAULT_MAX_MESSAGE_SIZE).intValue();
+  // Tentative workaround to avoid OOM stated in #46754.
+  public static final ThreadLocal<Integer> MESSAGE_TYPE = new ThreadLocal<>();
+
+  public static final String MAX_MESSAGE_SIZE_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "client.max-message-size";
+
+  static final int DEFAULT_MAX_MESSAGE_SIZE = 1073741824;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -97,83 +95,89 @@ public class Message {
 
   private static final ThreadLocal<ByteBuffer> tlCommBuffer = new ThreadLocal<>();
 
-  private static final byte[] TRUE;
-  private static final byte[] FALSE;
+  // These two statics are fields shoved into the flags byte for transmission.
+  // The MESSAGE_IS_RETRY bit is stripped out during deserialization but the other
+  // is left in place
+  private static final byte MESSAGE_HAS_SECURE_PART = (byte) 0x02;
+  private static final byte MESSAGE_IS_RETRY = (byte) 0x04;
 
-  static {
-    try {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(10, null);
+  private static final byte MESSAGE_IS_RETRY_MASK = (byte) 0xFB;
+
+  private static final int DEFAULT_CHUNK_SIZE = 1024;
+
+  private static final byte[] TRUE = defineTrue();
+  private static final byte[] FALSE = defineFalse();
+
+  private static byte[] defineTrue() {
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(10, null)) {
       BlobHelper.serializeTo(Boolean.TRUE, hdos);
-      TRUE = hdos.toByteArray();
-    } catch (Exception e) {
-      throw new IllegalStateException(e);
-    }
-
-    try {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(10, null);
-      BlobHelper.serializeTo(Boolean.FALSE, hdos);
-      FALSE = hdos.toByteArray();
-    } catch (Exception e) {
+      return hdos.toByteArray();
+    } catch (IOException e) {
       throw new IllegalStateException(e);
     }
   }
 
-  protected int msgType;
-  protected int payloadLength = 0;
-  protected int numberOfParts = 0;
+  private static byte[] defineFalse() {
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(10, null)) {
+      BlobHelper.serializeTo(Boolean.FALSE, hdos);
+      return hdos.toByteArray();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * maximum size of an outgoing message. See GEODE-478
+   */
+  private final int maxMessageSize;
+
+  protected int messageType;
+  private int payloadLength = 0;
+  int numberOfParts = 0;
   protected int transactionId = TXManagerImpl.NOTX;
-  protected int currentPart = 0;
-  protected Part[] partsList = null;
-  protected ByteBuffer cachedCommBuffer;
+  int currentPart = 0;
+  private Part[] partsList = null;
+  private ByteBuffer cachedCommBuffer;
   protected Socket socket = null;
-  protected SocketChannel sockCh = null;
-  protected OutputStream os = null;
-  protected InputStream is = null;
-  protected boolean messageModified = true;
+  private SocketChannel socketChannel = null;
+  private OutputStream outputStream = null;
+  protected InputStream inputStream = null;
+  private boolean messageModified = true;
+
   /** is this message a retry of a previously sent message? */
-  protected boolean isRetry;
+  private boolean isRetry;
+
   private byte flags = 0x00;
-  protected MessageStats msgStats = null;
-  protected ServerConnection sc = null;
+  MessageStats messageStats = null;
+  protected ServerConnection serverConnection = null;
   private int maxIncomingMessageLength = -1;
   private Semaphore dataLimiter = null;
-  // private int MAX_MSGS = -1;
-  private Semaphore msgLimiter = null;
-  private boolean hdrRead = false;
-  private int chunkSize = 1024;// Default Chunk Size.
+  private Semaphore messageLimiter = null;
+  private boolean readHeader = false;
+  private int chunkSize = DEFAULT_CHUNK_SIZE;
 
-  protected Part securePart = null;
+  Part securePart = null;
   private boolean isMetaRegion = false;
 
-
-  // These two statics are fields shoved into the flags byte for transmission.
-  // The MESSAGE_IS_RETRY bit is stripped out during deserialization but the other
-  // is left in place
-  public static final byte MESSAGE_HAS_SECURE_PART = (byte) 0x02;
-  public static final byte MESSAGE_IS_RETRY = (byte) 0x04;
-
-  public static final byte MESSAGE_IS_RETRY_MASK = (byte) 0xFB;
-
-  // Tentative workaround to avoid OOM stated in #46754.
-  public static final ThreadLocal<Integer> messageType = new ThreadLocal<Integer>();
-
-  Version version;
+  private Version version;
 
   /**
    * Creates a new message with the given number of parts
    */
   public Message(int numberOfParts, Version destVersion) {
+    this.maxMessageSize = Integer.getInteger(MAX_MESSAGE_SIZE_PROPERTY, DEFAULT_MAX_MESSAGE_SIZE);
     this.version = destVersion;
     Assert.assertTrue(destVersion != null, "Attempt to create an unversioned message");
-    partsList = new Part[numberOfParts];
+    this.partsList = new Part[numberOfParts];
     this.numberOfParts = numberOfParts;
-    for (int i = 0; i < partsList.length; i++) {
-      partsList[i] = new Part();
+    int partsListLength = this.partsList.length;
+    for (int i = 0; i < partsListLength; i++) {
+      this.partsList[i] = new Part();
     }
   }
 
   public boolean isSecureMode() {
-    return securePart != null;
+    return this.securePart != null;
   }
 
   public byte[] getSecureBytes() throws IOException, ClassNotFoundException {
@@ -186,7 +190,7 @@ public class Message {
       throw new IllegalArgumentException(
           LocalizedStrings.Message_INVALID_MESSAGETYPE.toLocalizedString());
     }
-    this.msgType = msgType;
+    this.messageType = msgType;
   }
 
   public void setVersion(Version clientVersion) {
@@ -194,17 +198,15 @@ public class Message {
   }
 
   public void setMessageHasSecurePartFlag() {
-    this.flags = (byte) (this.flags | MESSAGE_HAS_SECURE_PART);
+    this.flags |= MESSAGE_HAS_SECURE_PART;
   }
 
   public void clearMessageHasSecurePartFlag() {
-    this.flags = (byte) (this.flags & MESSAGE_HAS_SECURE_PART);
+    this.flags &= MESSAGE_HAS_SECURE_PART;
   }
 
   /**
    * Sets and builds the {@link Part}s that are sent in the payload of the Message
-   * 
-   * @param numberOfParts
    */
   public void setNumberOfParts(int numberOfParts) {
     // hitesh: need to add security header here from server
@@ -227,9 +229,7 @@ public class Message {
   }
 
   /**
-   * For boundary testing we may need to inject mock parts
-   * 
-   * @param parts
+   * For boundary testing we may need to inject mock parts. For testing only.
    */
   void setParts(Part[] parts) {
     this.partsList = parts;
@@ -260,7 +260,7 @@ public class Message {
   /**
    * When building a Message this will return the number of the next Part to be added to the message
    */
-  public int getNextPartNumber() {
+  int getNextPartNumber() {
     return this.currentPart;
   }
 
@@ -268,33 +268,36 @@ public class Message {
     addStringPart(str, false);
   }
 
-  private static final Map<String, byte[]> CACHED_STRINGS = new ConcurrentHashMap<String, byte[]>();
+  private static final Map<String, byte[]> CACHED_STRINGS = new ConcurrentHashMap<>();
 
   public void addStringPart(String str, boolean enableCaching) {
     if (str == null) {
-      addRawPart((byte[]) null, false);
-    } else {
-      Part part = partsList[this.currentPart];
-      if (enableCaching) {
-        byte[] bytes = CACHED_STRINGS.get(str);
-        if (bytes == null) {
-          HeapDataOutputStream hdos = new HeapDataOutputStream(str);
+      addRawPart(null, false);
+      return;
+    }
+
+    Part part = this.partsList[this.currentPart];
+    if (enableCaching) {
+      byte[] bytes = CACHED_STRINGS.get(str);
+      if (bytes == null) {
+        try (HeapDataOutputStream hdos = new HeapDataOutputStream(str)) {
           bytes = hdos.toByteArray();
           CACHED_STRINGS.put(str, bytes);
         }
-        part.setPartState(bytes, false);
-      } else {
-        HeapDataOutputStream hdos = new HeapDataOutputStream(str);
-        this.messageModified = true;
-        part.setPartState(hdos, false);
       }
-      this.currentPart++;
+      part.setPartState(bytes, false);
+
+    } else {
+      // do NOT close the HeapDataOutputStream
+      this.messageModified = true;
+      part.setPartState(new HeapDataOutputStream(str), false);
     }
+    this.currentPart++;
   }
 
   /*
-   * Adds a new part to this message that contains a <code>byte</code> array (as opposed to a
-   * serialized object).
+   * Adds a new part to this message that contains a {@code byte} array (as opposed to a serialized
+   * object).
    *
    * @see #addPart(byte[], boolean)
    */
@@ -310,13 +313,6 @@ public class Message {
       // This could be cleaned up but it would require C client code to change.
       serializeAndAddPart(o, false);
     }
-  }
-
-  public void addDeltaPart(HeapDataOutputStream hdos) {
-    this.messageModified = true;
-    Part part = partsList[this.currentPart];
-    part.setPartState(hdos, false);
-    this.currentPart++;
   }
 
   public void addObjPart(Object o) {
@@ -345,6 +341,9 @@ public class Message {
     }
   }
 
+  /**
+   * Object o is always null
+   */
   public void addPartInAnyForm(@Unretained Object o, boolean isObject) {
     if (o == null) {
       addRawPart((byte[]) o, false);
@@ -353,7 +352,7 @@ public class Message {
     } else if (o instanceof StoredObject) {
       // It is possible it is an off-heap StoredObject that contains a simple non-object byte[].
       this.messageModified = true;
-      Part part = partsList[this.currentPart];
+      Part part = this.partsList[this.currentPart];
       part.setPartState((StoredObject) o, isObject);
       this.currentPart++;
     } else {
@@ -362,59 +361,58 @@ public class Message {
   }
 
   private void serializeAndAddPartNoCopying(Object o) {
-    HeapDataOutputStream hdos;
-    Version v = version;
-    if (version.equals(Version.CURRENT)) {
+    Version v = this.version;
+    if (this.version.equals(Version.CURRENT)) {
       v = null;
     }
-    // create the HDOS with a flag telling it that it can keep any byte[] or ByteBuffers/ByteSources
-    // passed to it.
-    hdos = new HeapDataOutputStream(chunkSize, v, true);
+
+    // Create the HDOS with a flag telling it that it can keep any byte[] or ByteBuffers/ByteSources
+    // passed to it. Do NOT close the HeapDataOutputStream!
+    HeapDataOutputStream hdos = new HeapDataOutputStream(this.chunkSize, v, true);
     try {
       BlobHelper.serializeTo(o, hdos);
     } catch (IOException ex) {
       throw new SerializationException("failed serializing object", ex);
     }
     this.messageModified = true;
-    Part part = partsList[this.currentPart];
+    Part part = this.partsList[this.currentPart];
     part.setPartState(hdos, true);
     this.currentPart++;
-
   }
 
   private void serializeAndAddPart(Object o, boolean zipValues) {
     if (zipValues) {
       throw new UnsupportedOperationException("zipValues no longer supported");
-
-    } else {
-      HeapDataOutputStream hdos;
-      Version v = version;
-      if (version.equals(Version.CURRENT)) {
-        v = null;
-      }
-      hdos = new HeapDataOutputStream(chunkSize, v);
-      try {
-        BlobHelper.serializeTo(o, hdos);
-      } catch (IOException ex) {
-        throw new SerializationException("failed serializing object", ex);
-      }
-      this.messageModified = true;
-      Part part = partsList[this.currentPart];
-      part.setPartState(hdos, true);
-      this.currentPart++;
     }
+
+    Version v = this.version;
+    if (this.version.equals(Version.CURRENT)) {
+      v = null;
+    }
+
+    // do NOT close the HeapDataOutputStream
+    HeapDataOutputStream hdos = new HeapDataOutputStream(this.chunkSize, v);
+    try {
+      BlobHelper.serializeTo(o, hdos);
+    } catch (IOException ex) {
+      throw new SerializationException("failed serializing object", ex);
+    }
+    this.messageModified = true;
+    Part part = this.partsList[this.currentPart];
+    part.setPartState(hdos, true);
+    this.currentPart++;
   }
 
   public void addIntPart(int v) {
     this.messageModified = true;
-    Part part = partsList[this.currentPart];
+    Part part = this.partsList[this.currentPart];
     part.setInt(v);
     this.currentPart++;
   }
 
   public void addLongPart(long v) {
     this.messageModified = true;
-    Part part = partsList[this.currentPart];
+    Part part = this.partsList[this.currentPart];
     part.setLong(v);
     this.currentPart++;
   }
@@ -424,13 +422,13 @@ public class Message {
    */
   public void addRawPart(byte[] newPart, boolean isObject) {
     this.messageModified = true;
-    Part part = partsList[this.currentPart];
+    Part part = this.partsList[this.currentPart];
     part.setPartState(newPart, isObject);
     this.currentPart++;
   }
 
   public int getMessageType() {
-    return this.msgType;
+    return this.messageType;
   }
 
   public int getPayloadLength() {
@@ -451,7 +449,7 @@ public class Message {
 
   public Part getPart(int index) {
     if (index < this.numberOfParts) {
-      Part p = partsList[index];
+      Part p = this.partsList[index];
       if (this.version != null) {
         p.setVersion(this.version);
       }
@@ -480,9 +478,9 @@ public class Message {
     if (len != 0) {
       this.payloadLength = 0;
     }
-    if (this.hdrRead) {
-      if (this.msgStats != null) {
-        this.msgStats.decMessagesBeingReceived(len);
+    if (this.readHeader) {
+      if (this.messageStats != null) {
+        this.messageStats.decMessagesBeingReceived(len);
       }
     }
     ByteBuffer buffer = getCommBuffer();
@@ -495,20 +493,19 @@ public class Message {
       this.dataLimiter = null;
       this.maxIncomingMessageLength = 0;
     }
-    if (this.hdrRead) {
-      if (this.msgLimiter != null) {
-        this.msgLimiter.release(1);
-        this.msgLimiter = null;
+    if (this.readHeader) {
+      if (this.messageLimiter != null) {
+        this.messageLimiter.release(1);
+        this.messageLimiter = null;
       }
-      this.hdrRead = false;
+      this.readHeader = false;
     }
     this.flags = 0;
   }
 
   protected void packHeaderInfoForSending(int msgLen, boolean isSecurityHeader) {
-    // hitesh: setting second bit of flags byte for client
-    // this is not require but this makes all changes easily at client side right now
-    // just see this bit and process security header
+    // setting second bit of flags byte for client this is not require but this makes all changes
+    // easily at client side right now just see this bit and process security header
     byte flagsByte = this.flags;
     if (isSecurityHeader) {
       flagsByte |= MESSAGE_HAS_SECURE_PART;
@@ -516,14 +513,14 @@ public class Message {
     if (this.isRetry) {
       flagsByte |= MESSAGE_IS_RETRY;
     }
-    getCommBuffer().putInt(this.msgType).putInt(msgLen).putInt(this.numberOfParts)
+    getCommBuffer().putInt(this.messageType).putInt(msgLen).putInt(this.numberOfParts)
         .putInt(this.transactionId).put(flagsByte);
   }
 
   protected Part getSecurityPart() {
-    if (this.sc != null) {
+    if (this.serverConnection != null) {
       // look types right put get etc
-      return this.sc.updateAndGetSecurityPart();
+      return this.serverConnection.updateAndGetSecurityPart();
     }
     return null;
   }
@@ -537,7 +534,7 @@ public class Message {
     this.isMetaRegion = isMetaRegion;
   }
 
-  public boolean getAndResetIsMetaRegion() {
+  boolean getAndResetIsMetaRegion() {
     boolean isMetaRegion = this.isMetaRegion;
     this.isMetaRegion = false;
     return isMetaRegion;
@@ -546,21 +543,20 @@ public class Message {
   /**
    * Sends this message out on its socket.
    */
-  protected void sendBytes(boolean clearMessage) throws IOException {
-    if (this.sc != null) {
+  void sendBytes(boolean clearMessage) throws IOException {
+    if (this.serverConnection != null) {
       // Keep track of the fact that we are making progress.
-      this.sc.updateProcessingMessage();
+      this.serverConnection.updateProcessingMessage();
     }
     if (this.socket == null) {
       throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
     }
     try {
-      final ByteBuffer cb = getCommBuffer();
-      if (cb == null) {
+      final ByteBuffer commBuffer = getCommBuffer();
+      if (commBuffer == null) {
         throw new IOException("No buffer");
       }
-      int msgLen = 0;
-      synchronized (cb) {
+      synchronized (commBuffer) {
         long totalPartLen = 0;
         long headerLen = 0;
         int partsToTransmit = this.numberOfParts;
@@ -581,50 +577,50 @@ public class Message {
           partsToTransmit++;
         }
 
-        if ((headerLen + totalPartLen) > Integer.MAX_VALUE) {
+        if (headerLen + totalPartLen > Integer.MAX_VALUE) {
           throw new MessageTooLargeException(
               "Message size (" + (headerLen + totalPartLen) + ") exceeds maximum integer value");
         }
 
-        msgLen = (int) (headerLen + totalPartLen);
+        int msgLen = (int) (headerLen + totalPartLen);
 
-        if (msgLen > MAX_MESSAGE_SIZE) {
+        if (msgLen > this.maxMessageSize) {
           throw new MessageTooLargeException("Message size (" + msgLen
-              + ") exceeds gemfire.client.max-message-size setting (" + MAX_MESSAGE_SIZE + ")");
+              + ") exceeds gemfire.client.max-message-size setting (" + this.maxMessageSize + ")");
         }
 
-        cb.clear();
-        packHeaderInfoForSending(msgLen, (securityPart != null));
+        commBuffer.clear();
+        packHeaderInfoForSending(msgLen, securityPart != null);
         for (int i = 0; i < partsToTransmit; i++) {
-          Part part = (i == this.numberOfParts) ? securityPart : partsList[i];
+          Part part = i == this.numberOfParts ? securityPart : this.partsList[i];
 
-          if (cb.remaining() < PART_HEADER_SIZE) {
+          if (commBuffer.remaining() < PART_HEADER_SIZE) {
             flushBuffer();
           }
 
           int partLen = part.getLength();
-          cb.putInt(partLen);
-          cb.put(part.getTypeCode());
-          if (partLen <= cb.remaining()) {
-            part.writeTo(cb);
+          commBuffer.putInt(partLen);
+          commBuffer.put(part.getTypeCode());
+          if (partLen <= commBuffer.remaining()) {
+            part.writeTo(commBuffer);
           } else {
             flushBuffer();
-            if (this.sockCh != null) {
-              part.writeTo(this.sockCh, cb);
+            if (this.socketChannel != null) {
+              part.writeTo(this.socketChannel, commBuffer);
             } else {
-              part.writeTo(this.os, cb);
+              part.writeTo(this.outputStream, commBuffer);
             }
-            if (this.msgStats != null) {
-              this.msgStats.incSentBytes(partLen);
+            if (this.messageStats != null) {
+              this.messageStats.incSentBytes(partLen);
             }
           }
         }
-        if (cb.position() != 0) {
+        if (commBuffer.position() != 0) {
           flushBuffer();
         }
         this.messageModified = false;
-        if (this.sockCh == null) {
-          this.os.flush();
+        if (this.socketChannel == null) {
+          this.outputStream.flush();
         }
       }
     } finally {
@@ -634,69 +630,67 @@ public class Message {
     }
   }
 
-  protected void flushBuffer() throws IOException {
+  void flushBuffer() throws IOException {
     final ByteBuffer cb = getCommBuffer();
-    if (this.sockCh != null) {
+    if (this.socketChannel != null) {
       cb.flip();
       do {
-        this.sockCh.write(cb);
+        this.socketChannel.write(cb);
       } while (cb.remaining() > 0);
     } else {
-      this.os.write(cb.array(), 0, cb.position());
+      this.outputStream.write(cb.array(), 0, cb.position());
     }
-    if (this.msgStats != null) {
-      this.msgStats.incSentBytes(cb.position());
+    if (this.messageStats != null) {
+      this.messageStats.incSentBytes(cb.position());
     }
     cb.clear();
   }
 
   private void read() throws IOException {
     clearParts();
-    // TODO:Hitesh ??? for server changes make sure sc is not null as this class also used by client
-    // :(
+    // TODO: for server changes make sure sc is not null as this class also used by client
     readHeaderAndPayload();
   }
 
   /**
    * Read the actual bytes of the header off the socket
    */
-  protected void fetchHeader() throws IOException {
+  void fetchHeader() throws IOException {
     final ByteBuffer cb = getCommBuffer();
     cb.clear();
-    // msgType is invalidated here and can be used as an indicator
-    // of problems reading the message
-    this.msgType = MessageType.INVALID;
 
-    int hdr = 0;
+    // messageType is invalidated here and can be used as an indicator
+    // of problems reading the message
+    this.messageType = MessageType.INVALID;
 
     final int headerLength = getHeaderLength();
-    if (this.sockCh != null) {
+    if (this.socketChannel != null) {
       cb.limit(headerLength);
       do {
-        int bytesRead = this.sockCh.read(cb);
-        // System.out.println("DEBUG: fetchHeader read " + bytesRead + " bytes commBuffer=" + cb);
+        int bytesRead = this.socketChannel.read(cb);
         if (bytesRead == -1) {
           throw new EOFException(
               LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
                   .toLocalizedString());
         }
-        if (this.msgStats != null) {
-          this.msgStats.incReceivedBytes(bytesRead);
+        if (this.messageStats != null) {
+          this.messageStats.incReceivedBytes(bytesRead);
         }
       } while (cb.remaining() > 0);
       cb.flip();
+
     } else {
+      int hdr = 0;
       do {
-        int bytesRead = -1;
-        bytesRead = this.is.read(cb.array(), hdr, headerLength - hdr);
+        int bytesRead = this.inputStream.read(cb.array(), hdr, headerLength - hdr);
         if (bytesRead == -1) {
           throw new EOFException(
               LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
                   .toLocalizedString());
         }
         hdr += bytesRead;
-        if (this.msgStats != null) {
-          this.msgStats.incReceivedBytes(bytesRead);
+        if (this.messageStats != null) {
+          this.messageStats.incReceivedBytes(bytesRead);
         }
       } while (hdr < headerLength);
 
@@ -717,34 +711,36 @@ public class Message {
 
     if (!MessageType.validate(type)) {
       throw new IOException(LocalizedStrings.Message_INVALID_MESSAGE_TYPE_0_WHILE_READING_HEADER
-          .toLocalizedString(Integer.valueOf(type)));
+          .toLocalizedString(type));
     }
+
     int timeToWait = 0;
-    if (this.sc != null) {
+    if (this.serverConnection != null) {
       // Keep track of the fact that a message is being processed.
-      this.sc.setProcessingMessage();
-      timeToWait = sc.getClientReadTimeout();
+      this.serverConnection.setProcessingMessage();
+      timeToWait = this.serverConnection.getClientReadTimeout();
     }
-    this.hdrRead = true;
-    if (this.msgLimiter != null) {
+    this.readHeader = true;
+
+    if (this.messageLimiter != null) {
       for (;;) {
-        this.sc.getCachedRegionHelper().checkCancelInProgress(null);
+        this.serverConnection.getCachedRegionHelper().checkCancelInProgress(null);
         boolean interrupted = Thread.interrupted();
         try {
           if (timeToWait == 0) {
-            this.msgLimiter.acquire(1);
+            this.messageLimiter.acquire(1);
           } else {
-            if (!this.msgLimiter.tryAcquire(1, timeToWait, TimeUnit.MILLISECONDS)) {
-              if (this.msgStats != null && this.msgStats instanceof CacheServerStats) {
-                ((CacheServerStats) this.msgStats).incConnectionsTimedOut();
+            if (!this.messageLimiter.tryAcquire(1, timeToWait, TimeUnit.MILLISECONDS)) {
+              if (this.messageStats instanceof CacheServerStats) {
+                ((CacheServerStats) this.messageStats).incConnectionsTimedOut();
               }
               throw new IOException(
                   LocalizedStrings.Message_OPERATION_TIMED_OUT_ON_SERVER_WAITING_ON_CONCURRENT_MESSAGE_LIMITER_AFTER_WAITING_0_MILLISECONDS
-                      .toLocalizedString(Integer.valueOf(timeToWait)));
+                      .toLocalizedString(timeToWait));
             }
           }
           break;
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
           interrupted = true;
         } finally {
           if (interrupted) {
@@ -753,16 +749,17 @@ public class Message {
         }
       } // for
     }
+
     if (len > 0) {
       if (this.maxIncomingMessageLength > 0 && len > this.maxIncomingMessageLength) {
         throw new IOException(LocalizedStrings.Message_MESSAGE_SIZE_0_EXCEEDED_MAX_LIMIT_OF_1
-            .toLocalizedString(new Object[] {Integer.valueOf(len),
-                Integer.valueOf(this.maxIncomingMessageLength)}));
+            .toLocalizedString(new Object[] {len, this.maxIncomingMessageLength}));
       }
+
       if (this.dataLimiter != null) {
         for (;;) {
-          if (sc != null) {
-            this.sc.getCachedRegionHelper().checkCancelInProgress(null);
+          if (this.serverConnection != null) {
+            this.serverConnection.getCachedRegionHelper().checkCancelInProgress(null);
           }
           boolean interrupted = Thread.interrupted();
           try {
@@ -770,21 +767,21 @@ public class Message {
               this.dataLimiter.acquire(len);
             } else {
               int newTimeToWait = timeToWait;
-              if (this.msgLimiter != null) {
+              if (this.messageLimiter != null) {
                 // may have waited for msg limit so recalc time to wait
-                newTimeToWait -= (int) sc.getCurrentMessageProcessingTime();
+                newTimeToWait -= (int) this.serverConnection.getCurrentMessageProcessingTime();
               }
               if (newTimeToWait <= 0
-                  || !this.msgLimiter.tryAcquire(1, newTimeToWait, TimeUnit.MILLISECONDS)) {
+                  || !this.messageLimiter.tryAcquire(1, newTimeToWait, TimeUnit.MILLISECONDS)) {
                 throw new IOException(
                     LocalizedStrings.Message_OPERATION_TIMED_OUT_ON_SERVER_WAITING_ON_CONCURRENT_DATA_LIMITER_AFTER_WAITING_0_MILLISECONDS
                         .toLocalizedString(timeToWait));
               }
             }
-            this.payloadLength = len; // makes sure payloadLength gets set now so we will release
-                                      // the semaphore
+            // makes sure payloadLength gets set now so we will release the semaphore
+            this.payloadLength = len;
             break; // success
-          } catch (InterruptedException e) {
+          } catch (InterruptedException ignore) {
             interrupted = true;
           } finally {
             if (interrupted) {
@@ -794,15 +791,15 @@ public class Message {
         }
       }
     }
-    if (this.msgStats != null) {
-      this.msgStats.incMessagesBeingReceived(len);
+    if (this.messageStats != null) {
+      this.messageStats.incMessagesBeingReceived(len);
       this.payloadLength = len; // makes sure payloadLength gets set now so we will dec on clear
     }
 
     this.isRetry = (bits & MESSAGE_IS_RETRY) != 0;
-    bits = (byte) (bits & MESSAGE_IS_RETRY_MASK);
+    bits &= MESSAGE_IS_RETRY_MASK;
     this.flags = bits;
-    this.msgType = type;
+    this.messageType = type;
 
     readPayloadFields(numParts, len);
 
@@ -813,32 +810,38 @@ public class Message {
     // this.numberOfParts = numParts; Already set in setPayloadFields via setNumberOfParts
     this.transactionId = txid;
     this.flags = bits;
-    if (this.sc != null) {
+    if (this.serverConnection != null) {
       // Keep track of the fact that a message is being processed.
-      this.sc.updateProcessingMessage();
+      this.serverConnection.updateProcessingMessage();
     }
   }
 
-  protected void readPayloadFields(final int numParts, final int len) throws IOException {
+  /**
+   * TODO: refactor overly long method readPayloadFields
+   */
+  void readPayloadFields(final int numParts, final int len) throws IOException {
     if (len > 0 && numParts <= 0 || len <= 0 && numParts > 0) {
       throw new IOException(
           LocalizedStrings.Message_PART_LENGTH_0_AND_NUMBER_OF_PARTS_1_INCONSISTENT
-              .toLocalizedString(new Object[] {Integer.valueOf(len), Integer.valueOf(numParts)}));
+              .toLocalizedString(new Object[] {len, numParts}));
     }
 
-    Integer msgType = messageType.get();
+    Integer msgType = MESSAGE_TYPE.get();
     if (msgType != null && msgType == MessageType.PING) {
-      messageType.set(null); // set it to null right away.
-      int pingParts = 10; // Some number which will not throw OOM but still be acceptable for a ping
-                          // operation.
+      // set it to null right away.
+      MESSAGE_TYPE.set(null);
+      // Some number which will not throw OOM but still be acceptable for a ping operation.
+      int pingParts = 10;
       if (numParts > pingParts) {
         throw new IOException("Part length ( " + numParts + " ) is  inconsistent for "
             + MessageType.getString(msgType) + " operation.");
       }
     }
+
     setNumberOfParts(numParts);
-    if (numParts <= 0)
+    if (numParts <= 0) {
       return;
+    }
 
     if (len < 0) {
       logger.info(LocalizedMessage.create(LocalizedStrings.Message_RPL_NEG_LEN__0, len));
@@ -849,12 +852,11 @@ public class Message {
     cb.clear();
     cb.flip();
 
-    int readSecurePart = 0;
-    readSecurePart = checkAndSetSecurityPart();
+    int readSecurePart = checkAndSetSecurityPart();
 
     int bytesRemaining = len;
-    for (int i = 0; ((i < numParts + readSecurePart)
-        || ((readSecurePart == 1) && (cb.remaining() > 0))); i++) {
+    for (int i = 0; i < numParts + readSecurePart
+        || readSecurePart == 1 && cb.remaining() > 0; i++) {
       int bytesReadThisTime = readPartChunk(bytesRemaining);
       bytesRemaining -= bytesReadThisTime;
 
@@ -869,6 +871,7 @@ public class Message {
       int partLen = cb.getInt();
       byte partType = cb.get();
       byte[] partBytes = null;
+
       if (partLen > 0) {
         partBytes = new byte[partLen];
         int alreadyReadBytes = cb.remaining();
@@ -878,26 +881,27 @@ public class Message {
           }
           cb.get(partBytes, 0, alreadyReadBytes);
         }
+
         // now we need to read partLen - alreadyReadBytes off the wire
         int off = alreadyReadBytes;
         int remaining = partLen - off;
         while (remaining > 0) {
-          if (this.sockCh != null) {
+          if (this.socketChannel != null) {
             int bytesThisTime = remaining;
             cb.clear();
             if (bytesThisTime > cb.capacity()) {
               bytesThisTime = cb.capacity();
             }
             cb.limit(bytesThisTime);
-            int res = this.sockCh.read(cb);
+            int res = this.socketChannel.read(cb);
             if (res != -1) {
               cb.flip();
               bytesRemaining -= res;
               remaining -= res;
               cb.get(partBytes, off, res);
               off += res;
-              if (this.msgStats != null) {
-                this.msgStats.incReceivedBytes(res);
+              if (this.messageStats != null) {
+                this.messageStats.incReceivedBytes(res);
               }
             } else {
               throw new EOFException(
@@ -905,14 +909,13 @@ public class Message {
                       .toLocalizedString());
             }
           } else {
-            int res = 0;
-            res = this.is.read(partBytes, off, remaining);
+            int res = this.inputStream.read(partBytes, off, remaining);
             if (res != -1) {
               bytesRemaining -= res;
               remaining -= res;
               off += res;
-              if (this.msgStats != null) {
-                this.msgStats.incReceivedBytes(res);
+              if (this.messageStats != null) {
+                this.messageStats.incReceivedBytes(res);
               }
             } else {
               throw new EOFException(
@@ -941,35 +944,38 @@ public class Message {
    * @return the number of bytes read into commBuffer
    */
   private int readPartChunk(int bytesRemaining) throws IOException {
-    final ByteBuffer cb = getCommBuffer();
-    if (cb.remaining() >= PART_HEADER_SIZE) {
+    final ByteBuffer commBuffer = getCommBuffer();
+    if (commBuffer.remaining() >= PART_HEADER_SIZE) {
       // we already have the next part header in commBuffer so just return
       return 0;
     }
-    if (cb.position() != 0) {
-      cb.compact();
+
+    if (commBuffer.position() != 0) {
+      commBuffer.compact();
     } else {
-      cb.position(cb.limit());
-      cb.limit(cb.capacity());
+      commBuffer.position(commBuffer.limit());
+      commBuffer.limit(commBuffer.capacity());
+    }
+
+    if (this.serverConnection != null) {
+      // Keep track of the fact that we are making progress
+      this.serverConnection.updateProcessingMessage();
     }
     int bytesRead = 0;
-    if (this.sc != null) {
-      // Keep track of the fact that we are making progress
-      this.sc.updateProcessingMessage();
-    }
-    if (this.sockCh != null) {
-      int remaining = cb.remaining();
+
+    if (this.socketChannel != null) {
+      int remaining = commBuffer.remaining();
       if (remaining > bytesRemaining) {
         remaining = bytesRemaining;
-        cb.limit(cb.position() + bytesRemaining);
+        commBuffer.limit(commBuffer.position() + bytesRemaining);
       }
       while (remaining > 0) {
-        int res = this.sockCh.read(cb);
+        int res = this.socketChannel.read(commBuffer);
         if (res != -1) {
           remaining -= res;
           bytesRead += res;
-          if (this.msgStats != null) {
-            this.msgStats.incReceivedBytes(res);
+          if (this.messageStats != null) {
+            this.messageStats.incReceivedBytes(res);
           }
         } else {
           throw new EOFException(
@@ -979,21 +985,20 @@ public class Message {
       }
 
     } else {
-      int bufSpace = cb.capacity() - cb.position();
-      int bytesToRead = bufSpace;
+      int bytesToRead = commBuffer.capacity() - commBuffer.position();
       if (bytesRemaining < bytesToRead) {
         bytesToRead = bytesRemaining;
       }
-      int pos = cb.position();
+      int pos = commBuffer.position();
+
       while (bytesToRead > 0) {
-        int res = 0;
-        res = this.is.read(cb.array(), pos, bytesToRead);
+        int res = this.inputStream.read(commBuffer.array(), pos, bytesToRead);
         if (res != -1) {
           bytesToRead -= res;
           pos += res;
           bytesRead += res;
-          if (this.msgStats != null) {
-            this.msgStats.incReceivedBytes(res);
+          if (this.messageStats != null) {
+            this.messageStats.incReceivedBytes(res);
           }
         } else {
           throw new EOFException(
@@ -1001,9 +1006,10 @@ public class Message {
                   .toLocalizedString());
         }
       }
-      cb.position(pos);
+
+      commBuffer.position(pos);
     }
-    cb.flip();
+    commBuffer.flip();
     return bytesRead;
   }
 
@@ -1011,40 +1017,39 @@ public class Message {
    * Gets rid of all the parts that have been added to this message.
    */
   public void clearParts() {
-    for (int i = 0; i < partsList.length; i++) {
-      partsList[i].clear();
+    for (Part part : this.partsList) {
+      part.clear();
     }
     this.currentPart = 0;
   }
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb.append("type=").append(MessageType.getString(msgType));
-    sb.append("; payloadLength=").append(payloadLength);
-    sb.append("; numberOfParts=").append(numberOfParts);
-    sb.append("; transactionId=").append(transactionId);
-    sb.append("; currentPart=").append(currentPart);
-    sb.append("; messageModified=").append(messageModified);
-    sb.append("; flags=").append(Integer.toHexString(flags));
-    for (int i = 0; i < numberOfParts; i++) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("type=").append(MessageType.getString(this.messageType));
+    sb.append("; payloadLength=").append(this.payloadLength);
+    sb.append("; numberOfParts=").append(this.numberOfParts);
+    sb.append("; transactionId=").append(this.transactionId);
+    sb.append("; currentPart=").append(this.currentPart);
+    sb.append("; messageModified=").append(this.messageModified);
+    sb.append("; flags=").append(Integer.toHexString(this.flags));
+    for (int i = 0; i < this.numberOfParts; i++) {
       sb.append("; part[").append(i).append("]={");
-      sb.append(this.partsList[i].toString());
+      sb.append(this.partsList[i]);
       sb.append("}");
     }
     return sb.toString();
   }
 
-
-  public void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats)
+  void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats)
       throws IOException {
-    this.sc = sc;
+    this.serverConnection = sc;
     setComms(socket, bb, msgStats);
   }
 
-  public void setComms(Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
-    this.sockCh = socket.getChannel();
-    if (this.sockCh == null) {
+  void setComms(Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
+    this.socketChannel = socket.getChannel();
+    if (this.socketChannel == null) {
       setComms(socket, socket.getInputStream(), socket.getOutputStream(), bb, msgStats);
     } else {
       setComms(socket, null, null, bb, msgStats);
@@ -1052,14 +1057,14 @@ public class Message {
   }
 
   public void setComms(Socket socket, InputStream is, OutputStream os, ByteBuffer bb,
-      MessageStats msgStats) throws IOException {
+      MessageStats msgStats) {
     Assert.assertTrue(socket != null);
     this.socket = socket;
-    this.sockCh = socket.getChannel();
-    this.is = is;
-    this.os = os;
+    this.socketChannel = socket.getChannel();
+    this.inputStream = is;
+    this.outputStream = os;
     this.cachedCommBuffer = bb;
-    this.msgStats = msgStats;
+    this.messageStats = msgStats;
   }
 
   /**
@@ -1069,11 +1074,11 @@ public class Message {
    */
   public void unsetComms() {
     this.socket = null;
-    this.sockCh = null;
-    this.is = null;
-    this.os = null;
+    this.socketChannel = null;
+    this.inputStream = null;
+    this.outputStream = null;
     this.cachedCommBuffer = null;
-    this.msgStats = null;
+    this.messageStats = null;
   }
 
   /**
@@ -1084,7 +1089,7 @@ public class Message {
   }
 
   public void send(ServerConnection servConn) throws IOException {
-    if (this.sc != servConn)
+    if (this.serverConnection != servConn)
       throw new IllegalStateException("this.sc was not correctly set");
     send(true);
   }
@@ -1097,7 +1102,7 @@ public class Message {
   }
 
   /**
-   * Populates the stats of this <code>Message</code> with information received via its socket
+   * Populates the stats of this {@code Message} with information received via its socket
    */
   public void recv() throws IOException {
     if (this.socket != null) {
@@ -1111,10 +1116,10 @@ public class Message {
 
   public void recv(ServerConnection sc, int maxMessageLength, Semaphore dataLimiter,
       Semaphore msgLimiter) throws IOException {
-    this.sc = sc;
+    this.serverConnection = sc;
     this.maxIncomingMessageLength = maxMessageLength;
     this.dataLimiter = dataLimiter;
-    this.msgLimiter = msgLimiter;
+    this.messageLimiter = msgLimiter;
     recv();
   }
 

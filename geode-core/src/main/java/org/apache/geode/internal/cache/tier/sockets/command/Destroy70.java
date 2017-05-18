@@ -67,7 +67,7 @@ public class Destroy70 extends Destroy65 {
     pr.getPrStats().incPRMetaDataSentCount();
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADAT tx: {}", servConn.getName(),
+      logger.trace("{}: rpl with REFRESH_METADATA tx: {}", servConn.getName(),
           origMsg.getTransactionId());
     }
   }
@@ -104,7 +104,7 @@ public class Destroy70 extends Destroy65 {
       // logger.fine("response has no version tag");
       // }
     }
-    replyMsg.addBytesPart(OK_BYTES); // make old single-hop code happy by puting byte[]{0} here
+    replyMsg.addBytesPart(okBytes()); // make old single-hop code happy by puting byte[]{0} here
     replyMsg.addIntPart(entryNotFound ? 1 : 0);
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {

@@ -55,88 +55,88 @@ public class RegisterInterestList66 extends BaseCommand {
   RegisterInterestList66() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, InterruptedException {
     Part regionNamePart = null, keyPart = null;// numberOfKeysPart = null;
     String regionName = null;
     Object key = null;
     InterestResultPolicy policy;
     List keys = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     int numberOfKeys = 0, partNumber = 0;
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
-    ChunkedMessage chunkedResponseMsg = servConn.getRegisterInterestResponseMessage();
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    ChunkedMessage chunkedResponseMsg = serverConnection.getRegisterInterestResponseMessage();
 
     // bserverStats.incLong(readDestroyRequestTimeId,
     // DistributionStats.getStatTime() - start);
     // bserverStats.incInt(destroyRequestsId, 1);
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
-    regionNamePart = msg.getPart(0);
+    regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getString();
 
     // Retrieve the InterestResultPolicy
     try {
-      policy = (InterestResultPolicy) msg.getPart(1).getObject();
+      policy = (InterestResultPolicy) clientMessage.getPart(1).getObject();
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
     boolean isDurable = false;
     try {
-      Part durablePart = msg.getPart(2);
+      Part durablePart = clientMessage.getPart(2);
       byte[] durablePartBytes = (byte[]) durablePart.getObject();
       isDurable = durablePartBytes[0] == 0x01;
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
     // region data policy
     byte[] regionDataPolicyPartBytes;
     boolean serializeValues = false;
     try {
-      Part regionDataPolicyPart = msg.getPart(msg.getNumberOfParts() - 1);
+      Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
       regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
-      if (servConn.getClientVersion().compareTo(Version.GFE_80) >= 0) {
+      if (serverConnection.getClientVersion().compareTo(Version.GFE_80) >= 0) {
         // The second byte here is serializeValues
         serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
       }
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     partNumber = 3;
-    Part list = msg.getPart(partNumber);
+    Part list = clientMessage.getPart(partNumber);
     try {
       keys = (List) list.getObject();
       numberOfKeys = keys.size();
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     boolean sendUpdatesAsInvalidates = false;
     try {
-      Part notifyPart = msg.getPart(partNumber + 1);
+      Part notifyPart = clientMessage.getPart(partNumber + 1);
       byte[] notifyPartBytes = (byte[]) notifyPart.getObject();
       sendUpdatesAsInvalidates = notifyPartBytes[0] == 0x01;
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Received register interest 66 request ({} bytes) from {} for the following {} keys in region {}: {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), numberOfKeys,
-          regionName, keys);
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), numberOfKeys, regionName, keys);
     }
 
     /*
@@ -165,24 +165,25 @@ public class RegisterInterestList66 extends BaseCommand {
             LocalizedStrings.RegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_REGISTER_INTEREST_REQUEST_IS_NULL;
       }
       String s = errMessage.toLocalizedString();
-      logger.warn("{}: {}", servConn.getName(), s);
-      writeChunkedErrorResponse(msg, MessageType.REGISTER_INTEREST_DATA_ERROR, s, servConn);
-      servConn.setAsTrue(RESPONDED);
+      logger.warn("{}: {}", serverConnection.getName(), s);
+      writeChunkedErrorResponse(clientMessage, MessageType.REGISTER_INTEREST_DATA_ERROR, s,
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     }
 
     // key not null
-    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.RegisterInterestList_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_LIST_REQUEST,
-          new Object[] {servConn.getName(), regionName}));
+          new Object[] {serverConnection.getName(), regionName}));
       // writeChunkedErrorResponse(msg,
       // MessageType.REGISTER_INTEREST_DATA_ERROR, message);
       // responded = true;
     } // else { // region not null
     try {
       this.securityService.authorizeRegionRead(regionName);
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           RegisterInterestOperationContext registerContext =
@@ -191,15 +192,15 @@ public class RegisterInterestList66 extends BaseCommand {
         }
       }
       // Register interest
-      servConn.getAcceptor().getCacheClientNotifier().registerClientInterest(regionName, keys,
-          servConn.getProxyID(), isDurable, sendUpdatesAsInvalidates, true,
+      serverConnection.getAcceptor().getCacheClientNotifier().registerClientInterest(regionName,
+          keys, serverConnection.getProxyID(), isDurable, sendUpdatesAsInvalidates, true,
           regionDataPolicyPartBytes[0], true);
     } catch (Exception ex) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, ex);
+      checkForInterrupt(serverConnection, ex);
       // Otherwise, write an exception message and continue
-      writeChunkedException(msg, ex, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, ex, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -208,37 +209,37 @@ public class RegisterInterestList66 extends BaseCommand {
     // DistributionStats.getStatTime() - start);
     // start = DistributionStats.getStatTime();
 
-    boolean isPrimary = servConn.getAcceptor().getCacheClientNotifier()
-        .getClientProxy(servConn.getProxyID()).isPrimary();
+    boolean isPrimary = serverConnection.getAcceptor().getCacheClientNotifier()
+        .getClientProxy(serverConnection.getProxyID()).isPrimary();
     if (!isPrimary) {
       chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_SECONDARY);
-      chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+      chunkedResponseMsg.setTransactionId(clientMessage.getTransactionId());
       chunkedResponseMsg.sendHeader();
       chunkedResponseMsg.setLastChunk(true);
       if (logger.isDebugEnabled()) {
         logger.debug(
             "{}: Sending register interest response chunk from secondary for region: {} for key: {} chunk=<{}>",
-            servConn.getName(), regionName, key, chunkedResponseMsg);
+            serverConnection.getName(), regionName, key, chunkedResponseMsg);
       }
-      chunkedResponseMsg.sendChunk(servConn);
+      chunkedResponseMsg.sendChunk(serverConnection);
     } else { // isPrimary
       // Send header which describes how many chunks will follow
       chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_PRIMARY);
-      chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+      chunkedResponseMsg.setTransactionId(clientMessage.getTransactionId());
       chunkedResponseMsg.sendHeader();
 
       // Send chunk response
       try {
         fillAndSendRegisterInterestResponseChunks(region, keys, InterestType.KEY, serializeValues,
-            policy, servConn);
-        servConn.setAsTrue(RESPONDED);
+            policy, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
       } catch (Exception e) {
         // If an interrupted exception is thrown , rethrow it
-        checkForInterrupt(servConn, e);
+        checkForInterrupt(serverConnection, e);
 
         // otherwise send the exception back to client
-        writeChunkedException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeChunkedException(clientMessage, e, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
 
@@ -248,7 +249,7 @@ public class RegisterInterestList66 extends BaseCommand {
         // region " + regionName + " key " + key);
         logger.debug(
             "{}: Sent register interest response for the following {} keys in region {}: {}",
-            servConn.getName(), numberOfKeys, regionName, keys);
+            serverConnection.getName(), numberOfKeys, regionName, keys);
       }
       // bserverStats.incLong(writeDestroyResponseTimeId,
       // DistributionStats.getStatTime() - start);

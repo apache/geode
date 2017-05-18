@@ -44,19 +44,20 @@ public class GetDurableCQs extends BaseCQCommand {
   private GetDurableCQs() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, InterruptedException {
-    AcceptorImpl acceptor = servConn.getAcceptor();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    ClientProxyMembershipID id = servConn.getProxyID();
-    CacheServerStats stats = servConn.getCacheServerStats();
+    AcceptorImpl acceptor = serverConnection.getAcceptor();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    ClientProxyMembershipID id = serverConnection.getProxyID();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received {} request from {}", servConn.getName(),
-          MessageType.getString(msg.getMessageType()), servConn.getSocketString());
+      logger.debug("{}: Received {} request from {}", serverConnection.getName(),
+          MessageType.getString(clientMessage.getMessageType()),
+          serverConnection.getSocketString());
     }
 
     DefaultQueryService qService = null;
@@ -68,7 +69,7 @@ public class GetDurableCQs extends BaseCQCommand {
       this.securityService.authorizeClusterRead();
 
       // Authorization check
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         authzRequest.getDurableCQsAuthorize();
       }
@@ -76,34 +77,35 @@ public class GetDurableCQs extends BaseCQCommand {
       cqServiceForExec = qService.getCqService();
       List<String> durableCqs = cqServiceForExec.getAllDurableClientCqs(id);
 
-      ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
+      ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();
       chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
-      chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+      chunkedResponseMsg.setTransactionId(clientMessage.getTransactionId());
       chunkedResponseMsg.sendHeader();
 
-      List durableCqList = new ArrayList(maximumChunkSize);
+      List durableCqList = new ArrayList(MAXIMUM_CHUNK_SIZE);
       final boolean isTraceEnabled = logger.isTraceEnabled();
       for (Iterator it = durableCqs.iterator(); it.hasNext();) {
         Object durableCqName = it.next();
         durableCqList.add(durableCqName);
         if (isTraceEnabled) {
-          logger.trace("{}: getDurableCqsResponse <{}>; list size was {}", servConn.getName(),
-              durableCqName, durableCqList.size());
+          logger.trace("{}: getDurableCqsResponse <{}>; list size was {}",
+              serverConnection.getName(), durableCqName, durableCqList.size());
         }
-        if (durableCqList.size() == maximumChunkSize) {
+        if (durableCqList.size() == MAXIMUM_CHUNK_SIZE) {
           // Send the chunk and clear the list
-          sendDurableCqsResponseChunk(durableCqList, false, servConn);
+          sendDurableCqsResponseChunk(durableCqList, false, serverConnection);
           durableCqList.clear();
         }
       }
       // Send the last chunk even if the list is of zero size.
-      sendDurableCqsResponseChunk(durableCqList, true, servConn);
+      sendDurableCqsResponseChunk(durableCqList, true, serverConnection);
 
     } catch (CqException cqe) {
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(), cqe, servConn);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
+          serverConnection);
       return;
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
+      writeChunkedException(clientMessage, e, serverConnection);
       return;
     }
   }
@@ -114,7 +116,7 @@ public class GetDurableCQs extends BaseCQCommand {
 
     chunkedResponseMsg.setNumberOfParts(1);
     chunkedResponseMsg.setLastChunk(lastChunk);
-    chunkedResponseMsg.addObjPart(list, zipValues);
+    chunkedResponseMsg.addObjPart(list, false);
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Sending {} durableCQs response chunk{}", servConn.getName(),

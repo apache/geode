@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_SIZE_PROPERTY;
 import static org.apache.geode.test.dunit.Assert.*;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -31,14 +33,18 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
  */
 @Category(DistributedTest.class)
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
+
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
@@ -582,13 +588,14 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   @Test
   public void testParallelGatewaySenderMessageTooLargeException() {
+    vm4.invoke(() -> System.setProperty(MAX_MESSAGE_SIZE_PROPERTY, String.valueOf(1024 * 1024)));
+
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
     // Create and start sender with reduced maximum message size and 1 dispatcher thread
     String regionName = getTestMethodName() + "_PR";
-    vm4.invoke(() -> setMaximumMessageSize(1024 * 1024));
     vm4.invoke(() -> createCache(lnPort));
     vm4.invoke(() -> setNumDispatcherThreadsForTheRun(1));
     vm4.invoke(() -> createSender("ln", 2, true, 100, 100, false, false, null, false));
@@ -615,12 +622,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     });
     ignoredMTLE.remove();
     ignoredGIOE.remove();
-  }
-
-  private void setMaximumMessageSize(int maximumMessageSizeBytes) {
-    Message.MAX_MESSAGE_SIZE = maximumMessageSizeBytes;
-    LogWriterUtils.getLogWriter().info("Set gemfire.client.max-message-size: "
-        + System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "client.max-message-size"));
   }
 
   private void createSendersReceiversAndPartitionedRegion(Integer lnPort, Integer nyPort,

@@ -193,11 +193,11 @@ public abstract class BaseCommandQuery extends BaseCommand {
           }
         }
 
-        int numberOfChunks = (int) Math.ceil(selectResults.size() * 1.0 / maximumChunkSize);
+        int numberOfChunks = (int) Math.ceil(selectResults.size() * 1.0 / MAXIMUM_CHUNK_SIZE);
 
         if (logger.isTraceEnabled()) {
           logger.trace("{}: Query results size: {}: Entries in chunk: {}: Number of chunks: {}",
-              servConn.getName(), selectResults.size(), maximumChunkSize, numberOfChunks);
+              servConn.getName(), selectResults.size(), MAXIMUM_CHUNK_SIZE, numberOfChunks);
         }
 
         long oldStart = start;
@@ -262,7 +262,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       QueryInvalidException qie =
           new QueryInvalidException(LocalizedStrings.BaseCommand_0_QUERYSTRING_IS_1
               .toLocalizedString(new Object[] {e.getLocalizedMessage(), queryString}));
-      writeQueryResponseException(msg, qie, false, servConn);
+      writeQueryResponseException(msg, qie, servConn);
       return false;
     } catch (DistributedSystemDisconnectedException se) {
       if (msg != null && logger.isDebugEnabled()) {
@@ -282,7 +282,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       if ((defaultQuery).isCanceled()) {
         e = new QueryException(defaultQuery.getQueryCanceledException().getMessage(), e.getCause());
       }
-      writeQueryResponseException(msg, e, false, servConn);
+      writeQueryResponseException(msg, e, servConn);
       return false;
     } finally {
       // Since the query object is being shared in case of bind queries,
@@ -375,8 +375,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Creating chunk: {}", servConn.getName(), j);
       }
-      Object[] results = new Object[maximumChunkSize];
-      for (int i = 0; i < maximumChunkSize; i++) {
+      Object[] results = new Object[MAXIMUM_CHUNK_SIZE];
+      for (int i = 0; i < MAXIMUM_CHUNK_SIZE; i++) {
         if ((resultIndex) == selectResults.size()) {
           incompleteArray = true;
           break;
@@ -427,9 +427,9 @@ public abstract class BaseCommandQuery extends BaseCommand {
       if (incompleteArray) {
         Object[] newResults;
         if (cqQuery != null) {
-          newResults = new Object[cqResultIndex % maximumChunkSize];
+          newResults = new Object[cqResultIndex % MAXIMUM_CHUNK_SIZE];
         } else {
-          newResults = new Object[resultIndex % maximumChunkSize];
+          newResults = new Object[resultIndex % MAXIMUM_CHUNK_SIZE];
         }
         for (int i = 0; i < newResults.length; i++) {
           newResults[i] = results[i];
@@ -463,8 +463,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Creating chunk: {}", servConn.getName(), j);
       }
-      ObjectPartList serializedObjs = new ObjectPartList(maximumChunkSize, false);
-      for (int i = 0; i < maximumChunkSize; i++) {
+      ObjectPartList serializedObjs = new ObjectPartList(MAXIMUM_CHUNK_SIZE, false);
+      for (int i = 0; i < MAXIMUM_CHUNK_SIZE; i++) {
         if ((resultIndex) == objs.size()) {
           break;
         }

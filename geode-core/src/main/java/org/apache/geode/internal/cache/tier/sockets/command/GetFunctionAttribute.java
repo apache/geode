@@ -34,15 +34,16 @@ public class GetFunctionAttribute extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    String functionId = msg.getPart(0).getString();
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    String functionId = clientMessage.getPart(0).getString();
     if (functionId == null) {
       String message =
           LocalizedStrings.GetFunctionAttribute_THE_INPUT_0_FOR_GET_FUNCTION_ATTRIBUTE_REQUEST_IS_NULL
               .toLocalizedString("functionId");
-      logger.warn("{}: {}", servConn.getName(), message);
-      sendError(msg, message, servConn);
+      logger.warn("{}: {}", serverConnection.getName(), message);
+      sendError(clientMessage, message, serverConnection);
       return;
     }
 
@@ -52,8 +53,8 @@ public class GetFunctionAttribute extends BaseCommand {
       message =
           LocalizedStrings.GetFunctionAttribute_THE_FUNCTION_IS_NOT_REGISTERED_FOR_FUNCTION_ID_0
               .toLocalizedString(functionId);
-      logger.warn("{}: {}", servConn.getName(), message);
-      sendError(msg, message, servConn);
+      logger.warn("{}: {}", serverConnection.getName(), message);
+      sendError(clientMessage, message, serverConnection);
       return;
     }
 
@@ -61,7 +62,7 @@ public class GetFunctionAttribute extends BaseCommand {
     functionAttributes[0] = (byte) (function.hasResult() ? 1 : 0);
     functionAttributes[1] = (byte) (function.isHA() ? 1 : 0);
     functionAttributes[2] = (byte) (function.optimizeForWrite() ? 1 : 0);
-    writeResponseWithFunctionAttribute(functionAttributes, msg, servConn);
+    writeResponseWithFunctionAttribute(functionAttributes, clientMessage, serverConnection);
   }
 
   private void sendError(Message msg, String message, ServerConnection servConn)

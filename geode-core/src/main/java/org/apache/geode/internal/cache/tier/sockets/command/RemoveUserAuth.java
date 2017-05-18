@@ -33,9 +33,9 @@ public class RemoveUserAuth extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
-    boolean isSecureMode = msg.isSecureMode();
+    boolean isSecureMode = clientMessage.isSecureMode();
 
     if (!isSecureMode) {
       // need to throw exception
@@ -43,29 +43,29 @@ public class RemoveUserAuth extends BaseCommand {
     }
 
     try {
-      servConn.setAsTrue(REQUIRES_RESPONSE);
-      Part keepalivePart = msg.getPart(0);
+      serverConnection.setAsTrue(REQUIRES_RESPONSE);
+      Part keepalivePart = clientMessage.getPart(0);
       byte[] keepaliveByte = keepalivePart.getSerializedForm();
       boolean keepalive = (keepaliveByte == null || keepaliveByte[0] == 0) ? false : true;
-      servConn.getSecurityLogWriter().fine("remove user auth keep alive " + keepalive);
-      servConn.removeUserAuth(msg, keepalive);
-      writeReply(msg, servConn);
+      serverConnection.getSecurityLogWriter().fine("remove user auth keep alive " + keepalive);
+      serverConnection.removeUserAuth(clientMessage, keepalive);
+      writeReply(clientMessage, serverConnection);
     } catch (GemFireSecurityException gfse) {
-      if (servConn.getSecurityLogWriter().warningEnabled()) {
-        servConn.getSecurityLogWriter().warning(LocalizedStrings.ONE_ARG,
-            servConn.getName() + ": Security exception: " + gfse.getMessage());
+      if (serverConnection.getSecurityLogWriter().warningEnabled()) {
+        serverConnection.getSecurityLogWriter().warning(LocalizedStrings.ONE_ARG,
+            serverConnection.getName() + ": Security exception: " + gfse.getMessage());
       }
-      writeException(msg, gfse, false, servConn);
+      writeException(clientMessage, gfse, false, serverConnection);
     } catch (Exception ex) {
       // TODO Auto-generated catch block
-      if (servConn.getLogWriter().warningEnabled()) {
-        servConn.getLogWriter().warning(
+      if (serverConnection.getLogWriter().warningEnabled()) {
+        serverConnection.getLogWriter().warning(
             LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
-            new Object[] {servConn.getProxyID(), ""}, ex);
+            new Object[] {serverConnection.getProxyID(), ""}, ex);
       }
-      writeException(msg, ex, false, servConn);
+      writeException(clientMessage, ex, false, serverConnection);
     } finally {
-      servConn.setAsTrue(RESPONDED);
+      serverConnection.setAsTrue(RESPONDED);
     }
   }
 

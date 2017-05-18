@@ -36,39 +36,42 @@ public class MonitorCQ extends BaseCQCommand {
   private MonitorCQ() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
-    int op = msg.getPart(0).getInt();
+    int op = clientMessage.getPart(0).getInt();
 
     if (op < 1) {
       // This should have been taken care at the client - remove?
       String err = LocalizedStrings.MonitorCQ__0_THE_MONITORCQ_OPERATION_IS_INVALID
-          .toLocalizedString(servConn.getName());
-      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg.getTransactionId(), null, servConn);
+          .toLocalizedString(serverConnection.getName());
+      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(), null,
+          serverConnection);
       return;
     }
 
     String regionName = null;
-    if (msg.getNumberOfParts() == 2) {
+    if (clientMessage.getNumberOfParts() == 2) {
       // This will be enable/disable on region.
-      regionName = msg.getPart(1).getString();
+      regionName = clientMessage.getPart(1).getString();
       if (regionName == null) {
         // This should have been taken care at the client - remove?
         String err =
             LocalizedStrings.MonitorCQ__0_A_NULL_REGION_NAME_WAS_PASSED_FOR_MONITORCQ_OPERATION
-                .toLocalizedString(servConn.getName());
-        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg.getTransactionId(), null,
-            servConn);
+                .toLocalizedString(serverConnection.getName());
+        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(),
+            null, serverConnection);
         return;
       }
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received MonitorCq request from {} op: {}{}", servConn.getName(),
-          servConn.getSocketString(), op, (regionName != null) ? " RegionName: " + regionName : "");
+      logger.debug("{}: Received MonitorCq request from {} op: {}{}", serverConnection.getName(),
+          serverConnection.getSocketString(), op,
+          (regionName != null) ? " RegionName: " + regionName : "");
     }
 
     this.securityService.authorizeClusterRead();
@@ -85,12 +88,14 @@ public class MonitorCQ extends BaseCQCommand {
       throw new CqException(
           LocalizedStrings.CqService_INVALID_CQ_MONITOR_REQUEST_RECEIVED.toLocalizedString());
     } catch (CqException cqe) {
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(), cqe, servConn);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
+          serverConnection);
       return;
     } catch (Exception e) {
       String err = LocalizedStrings.MonitorCQ_EXCEPTION_WHILE_HANDLING_THE_MONITOR_REQUEST_OP_IS_0
           .toLocalizedString(Integer.valueOf(op));
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, msg.getTransactionId(), e, servConn);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, clientMessage.getTransactionId(), e,
+          serverConnection);
       return;
     }
   }

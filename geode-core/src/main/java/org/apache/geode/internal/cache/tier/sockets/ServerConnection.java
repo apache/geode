@@ -723,12 +723,10 @@ public class ServerConnection implements Runnable {
     ThreadState threadState = null;
     try {
       if (msg != null) {
-        // this.logger.fine("donormalMsg() msgType " + msg.getMessageType());
-        // Since this thread is not interrupted when the cache server is
-        // shutdown,
-        // test again after a message has been read. This is a bit of a hack. I
-        // think this thread should be interrupted, but currently AcceptorImpl
-        // doesn't keep track of the threads that it launches.
+        // Since this thread is not interrupted when the cache server is shutdown, test again after
+        // a message has been read. This is a bit of a hack. I think this thread should be
+        // interrupted, but currently AcceptorImpl doesn't keep track of the threads that it
+        // launches.
         if (!this.processMessages || (crHelper.isShutdown())) {
           if (logger.isDebugEnabled()) {
             logger.debug("{} ignoring message of type {} from client {} due to shutdown.",
@@ -1078,8 +1076,6 @@ public class ServerConnection implements Runnable {
    */
   public Part updateAndGetSecurityPart() {
     // need to take care all message types here
-    // this.logger.fine("getSecurityPart() msgType = "
-    // + this.requestMsg.msgType);
     if (AcceptorImpl.isAuthenticationRequired()
         && this.handshake.getVersion().compareTo(Version.GFE_65) >= 0
         && (this.communicationMode != Acceptor.GATEWAY_TO_GATEWAY)
@@ -1090,40 +1086,40 @@ public class ServerConnection implements Runnable {
       if (AcceptorImpl.isAuthenticationRequired() && logger.isDebugEnabled()) {
         logger.debug(
             "ServerConnection.updateAndGetSecurityPart() not adding security part for msg type {}",
-            MessageType.getString(this.requestMsg.msgType));
+            MessageType.getString(this.requestMsg.messageType));
       }
     }
     return null;
   }
 
   private boolean isInternalMessage() {
-    return (this.requestMsg.msgType == MessageType.CLIENT_READY
-        || this.requestMsg.msgType == MessageType.CLOSE_CONNECTION
-        || this.requestMsg.msgType == MessageType.GETCQSTATS_MSG_TYPE
-        || this.requestMsg.msgType == MessageType.GET_CLIENT_PARTITION_ATTRIBUTES
-        || this.requestMsg.msgType == MessageType.GET_CLIENT_PR_METADATA
-        || this.requestMsg.msgType == MessageType.INVALID
-        || this.requestMsg.msgType == MessageType.MAKE_PRIMARY
-        || this.requestMsg.msgType == MessageType.MONITORCQ_MSG_TYPE
-        || this.requestMsg.msgType == MessageType.PERIODIC_ACK
-        || this.requestMsg.msgType == MessageType.PING
-        || this.requestMsg.msgType == MessageType.REGISTER_DATASERIALIZERS
-        || this.requestMsg.msgType == MessageType.REGISTER_INSTANTIATORS
-        || this.requestMsg.msgType == MessageType.REQUEST_EVENT_VALUE
-        || this.requestMsg.msgType == MessageType.ADD_PDX_TYPE
-        || this.requestMsg.msgType == MessageType.GET_PDX_ID_FOR_TYPE
-        || this.requestMsg.msgType == MessageType.GET_PDX_TYPE_BY_ID
-        || this.requestMsg.msgType == MessageType.SIZE
-        || this.requestMsg.msgType == MessageType.TX_FAILOVER
-        || this.requestMsg.msgType == MessageType.TX_SYNCHRONIZATION
-        || this.requestMsg.msgType == MessageType.GET_FUNCTION_ATTRIBUTES
-        || this.requestMsg.msgType == MessageType.ADD_PDX_ENUM
-        || this.requestMsg.msgType == MessageType.GET_PDX_ID_FOR_ENUM
-        || this.requestMsg.msgType == MessageType.GET_PDX_ENUM_BY_ID
-        || this.requestMsg.msgType == MessageType.GET_PDX_TYPES
-        || this.requestMsg.msgType == MessageType.GET_PDX_ENUMS
-        || this.requestMsg.msgType == MessageType.COMMIT
-        || this.requestMsg.msgType == MessageType.ROLLBACK);
+    return (this.requestMsg.messageType == MessageType.CLIENT_READY
+        || this.requestMsg.messageType == MessageType.CLOSE_CONNECTION
+        || this.requestMsg.messageType == MessageType.GETCQSTATS_MSG_TYPE
+        || this.requestMsg.messageType == MessageType.GET_CLIENT_PARTITION_ATTRIBUTES
+        || this.requestMsg.messageType == MessageType.GET_CLIENT_PR_METADATA
+        || this.requestMsg.messageType == MessageType.INVALID
+        || this.requestMsg.messageType == MessageType.MAKE_PRIMARY
+        || this.requestMsg.messageType == MessageType.MONITORCQ_MSG_TYPE
+        || this.requestMsg.messageType == MessageType.PERIODIC_ACK
+        || this.requestMsg.messageType == MessageType.PING
+        || this.requestMsg.messageType == MessageType.REGISTER_DATASERIALIZERS
+        || this.requestMsg.messageType == MessageType.REGISTER_INSTANTIATORS
+        || this.requestMsg.messageType == MessageType.REQUEST_EVENT_VALUE
+        || this.requestMsg.messageType == MessageType.ADD_PDX_TYPE
+        || this.requestMsg.messageType == MessageType.GET_PDX_ID_FOR_TYPE
+        || this.requestMsg.messageType == MessageType.GET_PDX_TYPE_BY_ID
+        || this.requestMsg.messageType == MessageType.SIZE
+        || this.requestMsg.messageType == MessageType.TX_FAILOVER
+        || this.requestMsg.messageType == MessageType.TX_SYNCHRONIZATION
+        || this.requestMsg.messageType == MessageType.GET_FUNCTION_ATTRIBUTES
+        || this.requestMsg.messageType == MessageType.ADD_PDX_ENUM
+        || this.requestMsg.messageType == MessageType.GET_PDX_ID_FOR_ENUM
+        || this.requestMsg.messageType == MessageType.GET_PDX_ENUM_BY_ID
+        || this.requestMsg.messageType == MessageType.GET_PDX_TYPES
+        || this.requestMsg.messageType == MessageType.GET_PDX_ENUMS
+        || this.requestMsg.messageType == MessageType.COMMIT
+        || this.requestMsg.messageType == MessageType.ROLLBACK);
   }
 
   public void run() {

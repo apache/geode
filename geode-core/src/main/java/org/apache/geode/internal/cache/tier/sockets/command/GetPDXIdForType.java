@@ -36,34 +36,35 @@ public class GetPDXIdForType extends BaseCommand {
   private GetPDXIdForType() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received get pdx id for type request ({} parts) from {}",
-          servConn.getName(), msg.getNumberOfParts(), servConn.getSocketString());
+          serverConnection.getName(), clientMessage.getNumberOfParts(),
+          serverConnection.getSocketString());
     }
-    int noOfParts = msg.getNumberOfParts();
+    int noOfParts = clientMessage.getNumberOfParts();
 
-    PdxType type = (PdxType) msg.getPart(0).getObject();
+    PdxType type = (PdxType) clientMessage.getPart(0).getObject();
 
     int pdxId;
     try {
-      InternalCache cache = servConn.getCache();
+      InternalCache cache = serverConnection.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
       pdxId = registry.defineType(type);
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    Message responseMsg = servConn.getResponseMessage();
+    Message responseMsg = serverConnection.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setNumberOfParts(1);
-    responseMsg.setTransactionId(msg.getTransactionId());
+    responseMsg.setTransactionId(clientMessage.getTransactionId());
     responseMsg.addIntPart(pdxId);
-    responseMsg.send(servConn);
-    servConn.setAsTrue(RESPONDED);
+    responseMsg.send(serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
   }
 }

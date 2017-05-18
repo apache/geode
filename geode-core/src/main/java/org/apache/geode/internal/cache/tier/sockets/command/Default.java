@@ -37,14 +37,17 @@ public class Default extends BaseCommand {
   private Default() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
     // requiresResponse = true; NOT NEEDED... ALWAYS SEND ERROR RESPONSE
 
     logger.fatal(
         LocalizedMessage.create(LocalizedStrings.Default_0_UNKNOWN_MESSAGE_TYPE_1_WITH_TX_2_FROM_3,
-            new Object[] {servConn.getName(), MessageType.getString(msg.getMessageType()),
-                Integer.valueOf(msg.getTransactionId()), servConn.getSocketString()}));
-    writeErrorResponse(msg, MessageType.UNKNOWN_MESSAGE_TYPE_ERROR, servConn);
+            new Object[] {serverConnection.getName(),
+                MessageType.getString(clientMessage.getMessageType()),
+                Integer.valueOf(clientMessage.getTransactionId()),
+                serverConnection.getSocketString()}));
+    writeErrorResponse(clientMessage, MessageType.UNKNOWN_MESSAGE_TYPE_ERROR, serverConnection);
     // responded = true; NOT NEEDED... ALWAYS SEND ERROR RESPONSE
   }
 

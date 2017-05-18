@@ -50,12 +50,13 @@ public class CommitCommand extends BaseCommand {
   private CommitCommand() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    TXManagerImpl txMgr = (TXManagerImpl) servConn.getCache().getCacheTransactionManager();
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    TXManagerImpl txMgr = (TXManagerImpl) serverConnection.getCache().getCacheTransactionManager();
     InternalDistributedMember client =
-        (InternalDistributedMember) servConn.getProxyID().getDistributedMember();
-    int uniqId = msg.getTransactionId();
+        (InternalDistributedMember) serverConnection.getProxyID().getDistributedMember();
+    int uniqId = clientMessage.getTransactionId();
     TXId txId = new TXId(client, uniqId);
     TXCommitMessage commitMsg = null;
     if (txMgr.isHostedTxRecentlyCompleted(txId)) {
@@ -64,11 +65,11 @@ public class CommitCommand extends BaseCommand {
         logger.debug("TX: returning a recently committed txMessage for tx: {}", txId);
       }
       if (!txMgr.isExceptionToken(commitMsg)) {
-        writeCommitResponse(commitMsg, msg, servConn);
+        writeCommitResponse(commitMsg, clientMessage, serverConnection);
         commitMsg.setClientVersion(null); // fixes bug 46529
-        servConn.setAsTrue(RESPONDED);
+        serverConnection.setAsTrue(RESPONDED);
       } else {
-        sendException(msg, servConn, txMgr.getExceptionForToken(commitMsg, txId));
+        sendException(clientMessage, serverConnection, txMgr.getExceptionForToken(commitMsg, txId));
       }
       txMgr.removeHostedTXState(txId);
       return;
@@ -87,10 +88,10 @@ public class CommitCommand extends BaseCommand {
       txMgr.commit();
 
       commitMsg = txProxy.getCommitMessage();
-      writeCommitResponse(commitMsg, msg, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeCommitResponse(commitMsg, clientMessage, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     } catch (Exception e) {
-      sendException(msg, servConn, e);
+      sendException(clientMessage, serverConnection, e);
     } finally {
       if (txId != null) {
         txMgr.removeHostedTXState(txId);
@@ -115,7 +116,7 @@ public class CommitCommand extends BaseCommand {
     if (response != null) {
       response.setClientVersion(servConn.getClientVersion());
     }
-    responseMsg.addObjPart(response, zipValues);
+    responseMsg.addObjPart(response, false);
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     if (logger.isDebugEnabled()) {
       logger.debug("TX: sending a nonNull response for transaction: {}",

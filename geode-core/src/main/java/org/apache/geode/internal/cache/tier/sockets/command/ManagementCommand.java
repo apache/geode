@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 public class ManagementCommand extends BaseCommand {
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     // TODO Auto-generated method stub
   }

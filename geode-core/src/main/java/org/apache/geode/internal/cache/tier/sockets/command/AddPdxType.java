@@ -39,33 +39,34 @@ public class AddPdxType extends BaseCommand {
   private AddPdxType() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received get pdx id for type request ({} parts) from {}",
-          servConn.getName(), msg.getNumberOfParts(), servConn.getSocketString());
+          serverConnection.getName(), clientMessage.getNumberOfParts(),
+          serverConnection.getSocketString());
     }
-    int noOfParts = msg.getNumberOfParts();
+    int noOfParts = clientMessage.getNumberOfParts();
 
-    PdxType type = (PdxType) msg.getPart(0).getObject();
-    int typeId = msg.getPart(1).getInt();
+    PdxType type = (PdxType) clientMessage.getPart(0).getObject();
+    int typeId = clientMessage.getPart(1).getInt();
 
     // The native client needs this line
     // because it doesn't set the type id on the
     // client side.
     type.setTypeId(typeId);
     try {
-      InternalCache cache = servConn.getCache();
+      InternalCache cache = serverConnection.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
       registry.addRemoteType(typeId, type);
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    writeReply(msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeReply(clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
   }
 }
