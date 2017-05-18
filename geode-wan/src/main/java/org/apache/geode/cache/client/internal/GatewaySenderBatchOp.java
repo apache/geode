@@ -48,18 +48,22 @@ public class GatewaySenderBatchOp {
    * @param pool the pool to use to communicate with the server.
    * @param events list of gateway events
    * @param batchId the ID of this batch
+   * @param removeFromQueueOnException true if the events should be processed even after some
+   *        exception
    */
   public static void executeOn(Connection con, ExecutablePool pool, List events, int batchId,
-      boolean isRetry) {
+      boolean removeFromQueueOnException, boolean isRetry) {
     AbstractOp op = null;
     // System.out.println("Version: "+con.getWanSiteVersion());
     // Is this check even needed anymore? It looks like we just create the same exact op impl with
     // the same parameters...
     if (Version.GFE_651.compareTo(con.getWanSiteVersion()) >= 0) {
-      op = new GatewaySenderGFEBatchOpImpl(events, batchId, con.getDistributedSystemId(), isRetry);
+      op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
+          con.getDistributedSystemId(), isRetry);
     } else {
       // Default should create a batch of server version (ACCEPTOR.VERSION)
-      op = new GatewaySenderGFEBatchOpImpl(events, batchId, con.getDistributedSystemId(), isRetry);
+      op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
+          con.getDistributedSystemId(), isRetry);
     }
     pool.executeOn(con, op, true/* timeoutFatal */);
   }
@@ -79,9 +83,9 @@ public class GatewaySenderBatchOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public GatewaySenderGFEBatchOpImpl(List events, int batchId, int dsId, boolean isRetry) {
+    public GatewaySenderGFEBatchOpImpl(List events, int batchId, boolean removeFromQueueOnException,
+        int dsId, boolean isRetry) {
       super(MessageType.GATEWAY_RECEIVER_COMMAND, calcPartCount(events));
-      boolean removeFromQueueOnException = true;
       if (isRetry) {
         getMessage().setIsRetry();
       }
@@ -258,7 +262,7 @@ public class GatewaySenderBatchOp {
               List<BatchException70> l = (List<BatchException70>) part0.getObject();
 
               if (logger.isDebugEnabled()) {
-                logger.info(
+                logger.debug(
                     "We got an exception from the GatewayReceiver. MessageType : {} obj :{}",
                     msg.getMessageType(), obj);
               }

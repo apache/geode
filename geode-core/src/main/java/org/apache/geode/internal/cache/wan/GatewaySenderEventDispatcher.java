@@ -22,7 +22,7 @@ import java.util.List;
  */
 public interface GatewaySenderEventDispatcher {
 
-  public boolean dispatchBatch(List events, boolean isRetry);
+  public boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry);
 
   public boolean isRemoteDispatcher();
 

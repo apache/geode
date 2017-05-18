@@ -606,7 +606,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
                 conflatedEventsToBeDispatched);
           }
 
-          boolean success = this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched, false);
+          boolean success = this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched,
+              sender.isRemoveFromQueueOnException(), false);
           if (success) {
             if (isDebugEnabled) {
               logger.debug(
@@ -650,7 +651,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
             } else {
               handleUnSuccessfulBatchDispatch(events);
               if (!resetLastPeekedEvents) {
-                while (!this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched, true)) {
+                while (!this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched,
+                    sender.isRemoveFromQueueOnException(), true)) {
                   if (isDebugEnabled) {
                     logger.debug(
                         "During normal processing, unsuccessfully dispatched {} events (batch #{})",
