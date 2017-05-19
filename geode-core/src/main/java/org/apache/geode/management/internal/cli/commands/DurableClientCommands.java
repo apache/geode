@@ -14,13 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -43,10 +36,15 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * The DurableClientCommands class encapsulates all GemFire shell (Gfsh) commands related to durable
@@ -415,16 +413,6 @@ public class DurableClientCommands implements GfshCommand {
         }
       }
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_DURABLE_CQS, CliStrings.CLOSE_DURABLE_CLIENTS,
-      CliStrings.CLOSE_DURABLE_CQS, CliStrings.COUNT_DURABLE_CQ_EVENTS})
-  public boolean durableCommandsAvailable() {
-    boolean isAvailable = true;
-    if (CliUtil.isGfshVM()) {
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 }
 

@@ -19,7 +19,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceFactory;
@@ -56,7 +55,6 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -1100,7 +1098,7 @@ public class DataCommands implements GfshCommand {
   }
 
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  @MultiStepCommand
+  @MultiStepCommand(shellOnlyStep = {"ALL"})
   @CliCommand(value = {CliStrings.QUERY}, help = CliStrings.QUERY__HELP)
   public Object query(
       @CliOption(key = CliStrings.QUERY__QUERY, help = CliStrings.QUERY__QUERY__HELP,
@@ -1110,10 +1108,6 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.QUERY__INTERACTIVE, help = CliStrings.QUERY__INTERACTIVE__HELP,
           unspecifiedDefaultValue = "true") final boolean interactive) {
 
-    if (!CliUtil.isGfshVM() && stepName.equals(CliStrings.QUERY__STEPNAME__DEFAULTVALUE)) {
-      return ResultBuilder.createInfoResult(CliStrings.QUERY__MSG__NOT_SUPPORTED_ON_MEMBERS);
-    }
-
     Object[] arguments = new Object[] {query, stepName, interactive};
     CLIStep exec = new SelectExecStep(arguments);
     CLIStep display = new DataCommandFunction.SelectDisplayStep(arguments);
@@ -1121,17 +1115,6 @@ public class DataCommands implements GfshCommand {
     CLIStep quit = new DataCommandFunction.SelectQuitStep(arguments);
     CLIStep[] steps = {exec, display, move, quit};
     return CLIMultiStepHelper.chooseStep(steps, stepName);
-  }
-
-  @CliAvailabilityIndicator({CliStrings.REBALANCE, CliStrings.GET, CliStrings.PUT,
-      CliStrings.REMOVE, CliStrings.LOCATE_ENTRY, CliStrings.QUERY, CliStrings.IMPORT_DATA,
-      CliStrings.EXPORT_DATA})
-  public boolean dataCommandsAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 
   private static class MemberPRInfo {

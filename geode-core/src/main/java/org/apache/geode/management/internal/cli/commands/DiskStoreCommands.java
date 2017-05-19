@@ -1458,18 +1458,4 @@ public class DiskStoreCommands implements GfshCommand {
     erd.addLine(message);
     return ResultBuilder.buildResult(erd);
   }
-
-  @CliAvailabilityIndicator({CliStrings.BACKUP_DISK_STORE, CliStrings.COMPACT_DISK_STORE,
-      CliStrings.DESCRIBE_DISK_STORE, CliStrings.LIST_DISK_STORE,
-      CliStrings.REVOKE_MISSING_DISK_STORE, CliStrings.SHOW_MISSING_DISK_STORE,
-      CliStrings.CREATE_DISK_STORE, CliStrings.DESTROY_DISK_STORE})
-  public boolean diskStoreCommandsAvailable() {
-    // these disk store commands are always available in GemFire
-    return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
-  }
-
-  @CliAvailabilityIndicator({CliStrings.DESCRIBE_OFFLINE_DISK_STORE})
-  public boolean offlineDiskStoreCommandsAvailable() {
-    return true;
-  }
 }

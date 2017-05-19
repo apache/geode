@@ -489,14 +489,4 @@ public class RegionCommands implements GfshCommand {
       }
     }
   }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_REGION, CliStrings.DESCRIBE_REGION})
-  public boolean isRegionCommandAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected //TODO : make this better
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
-  }
-
 }

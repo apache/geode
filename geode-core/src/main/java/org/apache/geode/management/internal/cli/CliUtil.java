@@ -73,16 +73,7 @@ import java.util.zip.Inflater;
  * @since GemFire 7.0
  */
 public class CliUtil {
-
-  public static final String GFSHVM_IDENTIFIER = "gfsh";
-
-  public static boolean isGfshVM = Boolean.getBoolean(GFSHVM_IDENTIFIER);
-
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
-
-  public static boolean isGfshVM() {
-    return isGfshVM;
-  }
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
     String jarProductName = null;

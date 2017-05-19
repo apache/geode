@@ -40,7 +40,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -273,15 +272,6 @@ public class DeployCommands implements GfshCommand {
       return ResultBuilder.createGemFireErrorResult("Exception while attempting to list deployed: "
           + th.getClass().getName() + ": " + th.getMessage());
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.DEPLOY, CliStrings.UNDEPLOY, CliStrings.LIST_DEPLOYED})
-  public boolean isConnected() {
-    if (!CliUtil.isGfshVM()) {
-      return true;
-    }
-
-    return getGfsh() != null && getGfsh().isConnectedAndReady();
   }
 
   /**

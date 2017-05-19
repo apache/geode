@@ -32,7 +32,6 @@ import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -152,14 +151,6 @@ public class PDXCommands implements GfshCommand {
     return result;
   }
 
-  @CliAvailabilityIndicator({CliStrings.CONFIGURE_PDX})
-  public boolean isRegionCommandAvailable() {
-    if (!CliUtil.isGfshVM()) {
-      return true;
-    }
-    return (getGfsh() != null && getGfsh().isConnectedAndReady());
-  }
-
   @CliCommand(value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
@@ -207,10 +198,5 @@ public class PDXCommands implements GfshCommand {
           CliStrings.format(CliStrings.PDX_RENAME__ERROR, e.getMessage()));
     }
 
-  }
-
-  @CliAvailabilityIndicator({CliStrings.PDX_RENAME})
-  public boolean pdxRenameCommandsAvailable() {
-    return true;
   }
 }

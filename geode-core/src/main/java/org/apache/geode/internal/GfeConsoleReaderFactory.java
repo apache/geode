@@ -15,11 +15,11 @@
 
 package org.apache.geode.internal;
 
-import java.io.Console;
-
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.GfshConsoleReader;
+
+import java.io.Console;
 
 /**
  * Factory for Console Reader Utility.
@@ -39,13 +39,12 @@ public class GfeConsoleReaderFactory {
   public static GfeConsoleReader createConsoleReader() {
     GfeConsoleReader consoleReader = null;
 
-    if (CliUtil.isGfshVM()) {
+    if (Gfsh.getCurrentInstance() != null) {
       LogWrapper.getInstance().info("GfeConsoleReaderFactory.createConsoleReader(): isGfshVM");
       consoleReader = new GfshConsoleReader();
       LogWrapper.getInstance().info("GfeConsoleReaderFactory.createConsoleReader(): consoleReader: "
           + consoleReader + "=" + consoleReader.isSupported());
-    }
-    if (consoleReader == null) {
+    } else {
       consoleReader = new GfeConsoleReader();
     }
     return consoleReader;

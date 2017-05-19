@@ -1938,17 +1938,6 @@ public class MiscellaneousCommands implements GfshCommand {
     }
   }
 
-  @CliAvailabilityIndicator({CliStrings.SHUTDOWN, CliStrings.GC, CliStrings.SHOW_DEADLOCK,
-      CliStrings.SHOW_METRICS, CliStrings.SHOW_LOG, CliStrings.EXPORT_STACKTRACE,
-      CliStrings.NETSTAT, CliStrings.EXPORT_LOGS, CliStrings.CHANGE_LOGLEVEL})
-  public boolean shutdownCommandAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
-  }
-
   private Set<String> getSetDifference(Set<String> set1, Set<String> set2) {
     Set<String> setDifference = new HashSet<String>();
     for (String element : set1) {

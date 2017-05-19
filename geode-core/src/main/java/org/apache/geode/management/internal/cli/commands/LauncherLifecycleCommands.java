@@ -90,7 +90,6 @@ import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -1376,14 +1375,6 @@ public class LauncherLifecycleCommands implements GfshCommand {
     resourceFile.deleteOnExit();
 
     return resourceFile;
-  }
-
-  @CliAvailabilityIndicator({CliStrings.START_LOCATOR, CliStrings.STOP_LOCATOR,
-      CliStrings.STATUS_LOCATOR, CliStrings.START_SERVER, CliStrings.STOP_SERVER,
-      CliStrings.STATUS_SERVER, CliStrings.START_MANAGER, CliStrings.START_PULSE,
-      CliStrings.START_VSD, CliStrings.START_DATABROWSER})
-  public boolean launcherCommandsAvailable() {
-    return true;
   }
 
   protected static class LauncherSignalListener implements SignalListener {

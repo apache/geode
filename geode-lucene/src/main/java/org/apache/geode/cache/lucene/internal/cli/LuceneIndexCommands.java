@@ -580,6 +580,14 @@ public class LuceneIndexCommands implements GfshCommand {
       LuceneCliStrings.LUCENE_CREATE_INDEX, LuceneCliStrings.LUCENE_DESCRIBE_INDEX,
       LuceneCliStrings.LUCENE_LIST_INDEX, LuceneCliStrings.LUCENE_DESTROY_INDEX})
   public boolean indexCommandsAvailable() {
-    return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+
+    // command should always be available on the server
+    if (gfsh == null) {
+      return true;
+    }
+
+    // if in gfshVM, only when gfsh is connected and ready
+    return gfsh.isConnectedAndReady();
   }
 }

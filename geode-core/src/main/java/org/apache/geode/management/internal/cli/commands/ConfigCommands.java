@@ -437,16 +437,6 @@ public class ConfigCommands implements GfshCommand {
     }
   }
 
-  @CliAvailabilityIndicator({CliStrings.DESCRIBE_CONFIG, CliStrings.EXPORT_CONFIG,
-      CliStrings.ALTER_RUNTIME_CONFIG})
-  public boolean configCommandsAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
-  }
-
   /**
    * Interceptor used by gfsh to intercept execution of export config command at "shell".
    */

@@ -584,14 +584,4 @@ public class FunctionCommands implements GfshCommand {
           "Exception while attempting to list functions: " + th.getMessage());
     }
   }
-
-  @CliAvailabilityIndicator({CliStrings.EXECUTE_FUNCTION, CliStrings.DESTROY_FUNCTION,
-      CliStrings.LIST_FUNCTION})
-  public boolean functionCommandsAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
-  }
 }

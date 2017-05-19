@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -255,15 +254,5 @@ public class QueueCommands implements GfshCommand {
           CliStrings.format(CliStrings.LIST_ASYNC_EVENT_QUEUES__ERROR_WHILE_LISTING_REASON_0,
               new Object[] {th.getMessage()}));
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.CREATE_ASYNC_EVENT_QUEUE,
-      CliStrings.LIST_ASYNC_EVENT_QUEUES})
-  public boolean queueCommandsAvailable() {
-    boolean isAvailable = true;
-    if (CliUtil.isGfshVM()) {
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 }

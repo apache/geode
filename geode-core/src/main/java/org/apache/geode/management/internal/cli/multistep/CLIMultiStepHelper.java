@@ -17,11 +17,9 @@ package org.apache.geode.management.internal.cli.multistep;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
@@ -56,7 +54,8 @@ public class CLIMultiStepHelper {
   public static final String STEP_ARGS = "stepArgs";
   public static final int DEFAULT_PAGE_SIZE = 20;
 
-  public static Result execCLISteps(LogWrapper logWrapper, Gfsh shell, ParseResult parseResult) {
+  public static Result execCLISteps(MultiStepCommand msc, LogWrapper logWrapper, Gfsh shell,
+      ParseResult parseResult) {
     CLIStep[] steps = (CLIStep[]) ReflectionUtils.invokeMethod(parseResult.getMethod(),
         parseResult.getInstance(), parseResult.getArguments());
     if (steps != null) {
@@ -117,7 +116,7 @@ public class CLIMultiStepHelper {
             CommandRequest commandRequest = new CommandRequest(gfshParseResult, shell.getEnv());
             commandRequest
                 .setCustomInput(changeStepName(gfshParseResult.getUserInput(), nextStep.getName()));
-            commandRequest.getCustomParameters().put(CliStrings.QUERY__STEPNAME,
+            commandRequest.getCustomParameters().put(MultiStepCommand.STEP_PARAMETER_NAME,
                 nextStep.getName());
 
             String json = (String) shell.getOperationInvoker().processCommand(commandRequest);
@@ -127,11 +126,6 @@ public class CLIMultiStepHelper {
             throw new IllegalArgumentException("Command Configuration/Definition error.");
           }
         } else {
-          try {
-            throw new Exception();
-          } catch (Exception ex) {
-            ex.printStackTrace();
-          }
           throw new IllegalStateException(
               "Can't execute a remote command without connection. Use 'connect' first to connect.");
         }
@@ -208,7 +202,7 @@ public class CLIMultiStepHelper {
 
   public static GfJsonObject getStepArgs() {
     Map<String, String> args = null;
-    if (CliUtil.isGfshVM) {
+    if (Gfsh.getCurrentInstance() != null) {
       args = Gfsh.getCurrentInstance().getEnv();
     } else {
       args = CommandExecutionContext.getShellEnv();
@@ -225,13 +219,6 @@ public class CLIMultiStepHelper {
       throw new RuntimeException("Error converting arguments section into json object");
     }
     return object;
-  }
-
-  public static Result createSimpleStepResult(String nextStep) {
-    CompositeResultData result = ResultBuilder.createCompositeResultData();
-    SectionResultData section = result.addSection(STEP_SECTION);
-    section.addData(NEXT_STEP_NAME, nextStep);
-    return ResultBuilder.buildResult(result);
   }
 
   public static Object chooseStep(CLIStep[] steps, String stepName) {

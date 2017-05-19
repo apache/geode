@@ -43,7 +43,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -83,14 +82,6 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =
       new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
-
-  @Override
-  public final void postSetUp() throws Exception {
-    // This test does not require an actual Gfsh connection to work, however when run as part of a
-    // suite, prior tests
-    // may mess up the environment causing this test to fail. Setting this prevents false failures.
-    CliUtil.isGfshVM = false;
-  }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {

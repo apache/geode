@@ -1122,14 +1122,4 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     }
     return foundMembers;
   }
-
-  @CliAvailabilityIndicator({CliStrings.ALTER_REGION, CliStrings.CREATE_REGION,
-      CliStrings.DESTROY_REGION})
-  public boolean isRegionCommandAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected //TODO: make this better
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
-  }
 }

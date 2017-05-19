@@ -47,7 +47,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -634,13 +633,6 @@ public class IndexCommands implements GfshCommand {
     final InfoResultData infoResult = ResultBuilder.createInfoResultData();
     infoResult.addLine(CliStrings.CLEAR_DEFINED_INDEX__SUCCESS__MSG);
     return ResultBuilder.buildResult(infoResult);
-  }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_INDEX, CliStrings.CREATE_INDEX,
-      CliStrings.DESTROY_INDEX, CliStrings.CREATE_DEFINED_INDEXES, CliStrings.CLEAR_DEFINED_INDEXES,
-      CliStrings.DEFINE_INDEX})
-  public boolean indexCommandsAvailable() {
-    return !CliUtil.isGfshVM() || getGfsh() != null && getGfsh().isConnectedAndReady();
   }
 
   protected static class IndexStatisticsDetailsAdapter {

@@ -26,12 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.Host;
@@ -121,7 +119,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     preTearDownCliCommandTestBase();
-    CliUtil.isGfshVM = false;
     destroyDefaultSetup();
   }
 
@@ -300,7 +297,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    */
   private HeadlessGfsh createShell() {
     try {
-      Gfsh.SUPPORT_MUTLIPLESHELL = true;
       String shellId = getClass().getSimpleName() + "_" + getName();
       HeadlessGfsh shell = new HeadlessGfsh(shellId, 30, this.gfshDir);
       // Added to avoid trimming of the columns

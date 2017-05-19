@@ -131,7 +131,6 @@ public class Gfsh extends JLineShell {
   private static final String DEFAULT_SECONDARY_PROMPT = ">";
   private static final int DEFAULT_HEIGHT = 100;
   private static final Object INSTANCE_LOCK = new Object();
-  public static boolean SUPPORT_MUTLIPLESHELL = false;
 
   // private static final String ANIMATION_SLOT = "A"; //see 46072
   protected static PrintStream gfshout = System.out;
@@ -231,8 +230,7 @@ public class Gfsh extends JLineShell {
     try {
       ClassUtils.forName("sun.misc.Signal", new SunAPINotFoundException(
           "WARNING!!! Not running a Sun JVM.  Could not find the sun.misc.Signal class; Signal handling disabled."));
-      signalHandler = (CliUtil.isGfshVM() ? new GfshSignalHandler()
-          : new AbstractSignalNotificationHandler() {});
+      signalHandler = new GfshSignalHandler();
     } catch (SunAPINotFoundException e) {
       signalHandler = new AbstractSignalNotificationHandler() {};
       this.gfshFileLogger.warning(e.getMessage());
@@ -347,11 +345,7 @@ public class Gfsh extends JLineShell {
   }
 
   public static Gfsh getCurrentInstance() {
-    if (!SUPPORT_MUTLIPLESHELL) {
-      return instance;
-    } else {
-      return gfshThreadLocal.get();
-    }
+    return instance;
   }
 
   private static String extractKey(String input) {
@@ -517,6 +511,7 @@ public class Gfsh extends JLineShell {
     if (operationInvoker != null && operationInvoker.isConnected()) {
       operationInvoker.stop();
     }
+    instance = null;
   }
 
   public void waitForComplete() throws InterruptedException {
