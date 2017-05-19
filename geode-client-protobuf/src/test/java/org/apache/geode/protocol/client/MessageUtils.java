@@ -85,16 +85,18 @@ public class MessageUtils {
   public static ClientProtocol.Message makeGetMessageFor(String region, String key) {
     Random random = new Random();
     ClientProtocol.MessageHeader.Builder messageHeader =
-      ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt());
+        ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt());
 
     BasicTypes.Key.Builder keyBuilder =
-      BasicTypes.Key.newBuilder().setKey(ByteString.copyFromUtf8(key));
+        BasicTypes.Key.newBuilder().setKey(ByteString.copyFromUtf8(key));
 
-    RegionAPI.GetRequest.Builder getRequest = RegionAPI.GetRequest.newBuilder().setRegionName(region).setKey(keyBuilder);
-    ClientProtocol.Request.Builder request = ClientProtocol.Request.newBuilder().setGetRequest(getRequest);
+    RegionAPI.GetRequest.Builder getRequest =
+        RegionAPI.GetRequest.newBuilder().setRegionName(region).setKey(keyBuilder);
+    ClientProtocol.Request.Builder request =
+        ClientProtocol.Request.newBuilder().setGetRequest(getRequest);
 
     return ClientProtocol.Message.newBuilder().setMessageHeader(messageHeader).setRequest(request)
-      .build();
+        .build();
   }
 
   private static byte[] createByteArrayOfSize(int msgSize) {
