@@ -101,7 +101,7 @@ public class LogServiceJUnitTest {
   }
 
   @SuppressWarnings("unused")
-  private static final Object[] getToLevelParameters() {
+  private static Object[] getToLevelParameters() {
     return $(new Object[] {0, Level.OFF}, new Object[] {100, Level.FATAL},
         new Object[] {200, Level.ERROR}, new Object[] {300, Level.WARN},
         new Object[] {400, Level.INFO}, new Object[] {500, Level.DEBUG},

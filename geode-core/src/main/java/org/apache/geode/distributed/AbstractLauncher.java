@@ -200,7 +200,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @param debug a boolean used to enable or disable debug mode.
    * @see #isDebugging()
    */
-  public final void setDebug(final boolean debug) {
+  public void setDebug(final boolean debug) {
     this.debug = debug;
   }
 

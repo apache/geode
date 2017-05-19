@@ -328,7 +328,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return a reference to the Cache created by the GemFire Server start operation.
    * @see org.apache.geode.cache.Cache
    */
-  final Cache getCache() {
+  Cache getCache() {
     if (this.cache != null) {
       boolean isReconnecting = this.cache.isReconnecting();
       if (isReconnecting) {
@@ -348,7 +348,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return a CacheConfig object with additional GemFire Cache configuration meta-data used on
    *         startup to configure the Cache.
    */
-  public final CacheConfig getCacheConfig() {
+  public CacheConfig getCacheConfig() {
     final CacheConfig copy = new CacheConfig();
     copy.setDeclarativeConfig(this.cacheConfig);
     return copy;
@@ -362,7 +362,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see #getServerBindAddressAsString()
    * @see #getServerPortAsString()
    */
-  public final String getId() {
+  public String getId() {
     final StringBuilder buffer = new StringBuilder(ServerState.getServerBindAddressAsString(this));
     final String serverPort = ServerState.getServerPortAsString(this);
 
@@ -899,7 +899,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *         determined by the running flag and a connection to the distributed system (GemFire
    *         cluster).
    */
-  final boolean isWaiting(final Cache cache) {
+  boolean isWaiting(final Cache cache) {
     // return (isRunning() && !getCache().isClosed());
     return (isRunning() && (cache.getDistributedSystem().isConnected() || cache.isReconnecting()));
   }
@@ -952,7 +952,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @param cache the Cache to which the server will be added.
    * @throws IOException if the Cache server fails to start due to IO error.
    */
-  final void startCacheServer(final Cache cache) throws IOException {
+  void startCacheServer(final Cache cache) throws IOException {
     if (isDefaultServerEnabled(cache)) {
       final String serverBindAddress =
           (getServerBindAddress() == null ? null : getServerBindAddress().getHostAddress());
@@ -1894,7 +1894,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * 
      * @return a boolean indicating if help was enabled.
      */
-    protected final boolean isHelping() {
+    protected boolean isHelping() {
       return Boolean.TRUE.equals(getHelp());
     }
 

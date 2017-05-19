@@ -142,9 +142,6 @@ public abstract class Instantiator {
   /** The originator of this <code>Instantiator</code> */
   private ClientProxyMembershipID context;
 
-
-  /////////////////////// Static Methods ///////////////////////
-
   /**
    * Registers a <code>DataSerializable</code> class with the data serialization framework. This
    * method is usually invoked from the static initializer of a class that implements
@@ -182,8 +179,6 @@ public abstract class Instantiator {
     InternalInstantiator.register(instantiator, distribute);
   }
 
-  //////////////////////// Constructors ////////////////////////
-
   /**
    * Creates a new <code>Instantiator</code> that instantiates a given class.
    *
@@ -217,8 +212,6 @@ public abstract class Instantiator {
     this.id = classId;
   }
 
-  ////////////////////// Instance Methods //////////////////////
-
   /**
    * Creates a new "empty" instance of a <Code>DataSerializable</code> class whose state will be
    * filled in by invoking its {@link DataSerializable#fromData fromData} method.
@@ -231,21 +224,21 @@ public abstract class Instantiator {
    * Returns the <code>DataSerializable</code> class that is instantiated by this
    * <code>Instantiator</code>.
    */
-  public final Class<? extends DataSerializable> getInstantiatedClass() {
+  public Class<? extends DataSerializable> getInstantiatedClass() {
     return this.clazz;
   }
 
   /**
    * Returns the unique <code>id</code> of this <code>Instantiator</code>.
    */
-  public final int getId() {
+  public int getId() {
     return this.id;
   }
 
   /**
    * sets the unique <code>eventId</code> of this <code>Instantiator</code>. For internal use only.
    */
-  public final void setEventId(Object/* EventID */ eventId) {
+  public void setEventId(Object/* EventID */ eventId) {
     this.eventId = (EventID) eventId;
   }
 
@@ -253,23 +246,22 @@ public abstract class Instantiator {
    * Returns the unique <code>eventId</code> of this <code>Instantiator</code>. For internal use
    * only.
    */
-  public final Object/* EventID */ getEventId() {
+  public Object/* EventID */ getEventId() {
     return this.eventId;
   }
 
   /**
    * sets the context of this <code>Instantiator</code>. For internal use only.
    */
-  public final void setContext(Object/* ClientProxyMembershipID */ context) {
+  public void setContext(Object/* ClientProxyMembershipID */ context) {
     this.context = (ClientProxyMembershipID) context;
   }
 
   /**
    * Returns the context of this <code>Instantiator</code>. For internal use only.
    */
-  public final Object/* ClientProxyMembershipID */ getContext() {
+  public Object/* ClientProxyMembershipID */ getContext() {
     return this.context;
   }
-
 
 }

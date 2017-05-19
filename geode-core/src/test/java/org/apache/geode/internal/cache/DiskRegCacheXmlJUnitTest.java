@@ -240,7 +240,7 @@ public class DiskRegCacheXmlJUnitTest {
   }
 
   /** Close the cache */
-  private synchronized final void closeCache() {
+  private synchronized void closeCache() {
     if (cache != null) {
       try {
         if (!cache.isClosed()) {

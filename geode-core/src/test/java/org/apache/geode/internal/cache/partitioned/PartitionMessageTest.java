@@ -14,18 +14,17 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.internal.stubbing.answers.CallsRealMethods;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -34,7 +33,12 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.internal.stubbing.answers.CallsRealMethods;
 
+import java.io.IOException;
 
 @Category(UnitTest.class)
 public class PartitionMessageTest {
@@ -64,6 +68,17 @@ public class PartitionMessageTest {
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
 
     doAnswer(new CallsRealMethods()).when(msg).process(dm);
+  }
+
+  @Test
+  public void shouldBeMockable() throws Exception {
+    PartitionMessage mockPartitionMessage = mock(PartitionMessage.class);
+    InternalDistributedMember mockInternalDistributedMember = mock(InternalDistributedMember.class);
+
+    when(mockPartitionMessage.getMemberToMasqueradeAs()).thenReturn(mockInternalDistributedMember);
+
+    assertThat(mockPartitionMessage.getMemberToMasqueradeAs())
+        .isSameAs(mockInternalDistributedMember);
   }
 
   @Test

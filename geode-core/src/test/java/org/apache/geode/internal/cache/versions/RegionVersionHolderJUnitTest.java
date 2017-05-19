@@ -49,7 +49,7 @@ public class RegionVersionHolderJUnitTest {
     RegionVersionHolder.BIT_SET_WIDTH = originalBitSetWidth;
   }
 
-  protected final InternalDistributedMember member() {
+  protected InternalDistributedMember member() {
     return member;
   }
 

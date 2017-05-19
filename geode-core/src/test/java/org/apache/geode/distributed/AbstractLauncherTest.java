@@ -20,6 +20,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -47,6 +50,13 @@ public class AbstractLauncherTest {
   private AbstractLauncher<?> createAbstractLauncher(final String memberName,
       final String memberId) {
     return new FakeServiceLauncher(memberName, memberId);
+  }
+
+  @Test
+  public void shouldBeMockable() throws Exception {
+    AbstractLauncher mockAbstractLauncher = mock(AbstractLauncher.class);
+    mockAbstractLauncher.setDebug(true);
+    verify(mockAbstractLauncher, times(1)).setDebug(true);
   }
 
   @Test

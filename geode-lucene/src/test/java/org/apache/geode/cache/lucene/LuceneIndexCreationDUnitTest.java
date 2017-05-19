@@ -41,13 +41,13 @@ import static org.junit.Assert.*;
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
-  private final Object[] parametersForMultipleIndexCreates() {
+  private Object[] parametersForMultipleIndexCreates() {
     Integer[] numIndexes = {1, 2, 10};
     RegionTestableType[] regionTestTypes = getListOfRegionTestTypes();
     return parameterCombiner(numIndexes, regionTestTypes);
   }
 
-  protected final Object[] parametersForIndexAndRegions() {
+  protected Object[] parametersForIndexAndRegions() {
     Object[] indexCreations = new Object[] {getFieldsIndexWithOneField(),
         getFieldsIndexWithTwoFields(), get2FieldsIndexes(), getAnalyzersIndexWithOneField(),
         getAnalyzersIndexWithTwoFields(), getAnalyzersIndexWithNullField1()};
@@ -282,9 +282,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> verifyIndexList(0));
   }
 
-
-
-  protected final Object[] getXmlAndExceptionMessages() {
+  protected Object[] getXmlAndExceptionMessages() {
     return $(
         new Object[] {"verifyDifferentFieldsFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
         new Object[] {"verifyDifferentFieldAnalyzerSizesFails1",

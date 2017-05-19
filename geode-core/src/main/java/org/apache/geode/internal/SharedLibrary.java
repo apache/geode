@@ -222,7 +222,7 @@ public class SharedLibrary {
    * @return returns a boolean indicating if the 64bit native library was loaded.
    * @since GemFire 5.1
    */
-  public final static boolean getIs64Bit() {
+  public static boolean getIs64Bit() {
     return PureJavaMode.is64Bit();
   }
 

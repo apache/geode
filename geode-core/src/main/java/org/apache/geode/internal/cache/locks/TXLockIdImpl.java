@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.locks;
 
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -25,11 +24,11 @@ import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * Identifies a group of transaction locks.
- *
  */
 public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
 
   private static final long serialVersionUID = 8579214625084490134L;
+
   /** DistributionManager id for this member */
   private InternalDistributedMember memberId;
 
@@ -122,7 +121,7 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
     out.writeInt(this.id);
   }
 
-  public static final TXLockIdImpl createFromData(DataInput in)
+  public static TXLockIdImpl createFromData(DataInput in)
       throws IOException, ClassNotFoundException {
     TXLockIdImpl result = new TXLockIdImpl();
     result.fromData(in);
@@ -131,7 +130,6 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
 
   @Override
   public Version[] getSerializationVersions() {
-    // TODO Auto-generated method stub
     return null;
   }
 }

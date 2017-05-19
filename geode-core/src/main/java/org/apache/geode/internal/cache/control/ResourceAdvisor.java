@@ -436,7 +436,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
     });
   }
 
-  public final boolean isHeapCritical(final InternalDistributedMember member) {
+  public boolean isHeapCritical(final InternalDistributedMember member) {
     ResourceManagerProfile rmp = (ResourceManagerProfile) getProfile(member);
     return rmp != null ? rmp.getHeapState().isCritical() : false;
   }

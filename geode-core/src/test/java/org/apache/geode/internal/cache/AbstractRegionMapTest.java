@@ -14,19 +14,44 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class AbstractRegionMapTest {
+
+  @Test
+  public void shouldBeMockable() throws Exception {
+    AbstractRegionMap mockAbstractRegionMap = mock(AbstractRegionMap.class);
+    RegionEntry mockRegionEntry = mock(RegionEntry.class);
+    VersionHolder mockVersionHolder = mock(VersionHolder.class);
+
+    when(mockAbstractRegionMap.removeTombstone(eq(mockRegionEntry), eq(mockVersionHolder),
+        anyBoolean(), anyBoolean())).thenReturn(true);
+
+    assertThat(
+        mockAbstractRegionMap.removeTombstone(mockRegionEntry, mockVersionHolder, true, true))
+            .isTrue();
+  }
 
   @Test
   public void invalidateOfNonExistentRegionThrowsEntryNotFound() {

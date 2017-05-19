@@ -55,7 +55,7 @@ public final class EvictionAction extends EnumSyntax {
   private static final String[] stringTable = {"none", "local-destroy", "overflow-to-disk",};
 
   @Override
-  final protected String[] getStringTable() {
+  protected String[] getStringTable() {
     return stringTable;
   }
 
@@ -64,19 +64,19 @@ public final class EvictionAction extends EnumSyntax {
       {NONE, LOCAL_DESTROY, OVERFLOW_TO_DISK};
 
   @Override
-  final protected EnumSyntax[] getEnumValueTable() {
+  protected EnumSyntax[] getEnumValueTable() {
     return enumValueTable;
   }
 
-  public final boolean isLocalDestroy() {
+  public boolean isLocalDestroy() {
     return this == LOCAL_DESTROY;
   }
 
-  public final boolean isOverflowToDisk() {
+  public boolean isOverflowToDisk() {
     return this == OVERFLOW_TO_DISK;
   }
 
-  public final boolean isNone() {
+  public boolean isNone() {
     return this == NONE;
   }
 

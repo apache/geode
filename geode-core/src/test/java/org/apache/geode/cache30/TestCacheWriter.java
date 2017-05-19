@@ -29,7 +29,7 @@ import org.apache.geode.cache.*;
 public abstract class TestCacheWriter extends TestCacheCallback implements CacheWriter {
 
 
-  public final void beforeUpdate(EntryEvent event) throws CacheWriterException {
+  public void beforeUpdate(EntryEvent event) throws CacheWriterException {
 
     this.invoked = true;
     beforeUpdate2(event);
@@ -41,13 +41,13 @@ public abstract class TestCacheWriter extends TestCacheCallback implements Cache
     throw new UnsupportedOperationException(s);
   }
 
-  public final void beforeUpdate2(EntryEvent event, Object arg) throws CacheWriterException {
+  public void beforeUpdate2(EntryEvent event, Object arg) throws CacheWriterException {
 
     String s = "Shouldn't be invoked";
     throw new UnsupportedOperationException(s);
   }
 
-  public final void beforeCreate(EntryEvent event) throws CacheWriterException {
+  public void beforeCreate(EntryEvent event) throws CacheWriterException {
 
     this.invoked = true;
     beforeCreate2(event);
@@ -62,13 +62,13 @@ public abstract class TestCacheWriter extends TestCacheCallback implements Cache
   /**
    * Causes code that uses the old API to not compile
    */
-  public final void beforeCreate2(EntryEvent event, Object arg) throws CacheWriterException {
+  public void beforeCreate2(EntryEvent event, Object arg) throws CacheWriterException {
 
     String s = "Shouldn't be invoked";
     throw new UnsupportedOperationException(s);
   }
 
-  public final void beforeDestroy(EntryEvent event) throws CacheWriterException {
+  public void beforeDestroy(EntryEvent event) throws CacheWriterException {
 
     this.invoked = true;
     beforeDestroy2(event);
@@ -80,13 +80,13 @@ public abstract class TestCacheWriter extends TestCacheCallback implements Cache
     throw new UnsupportedOperationException(s);
   }
 
-  public final void beforeDestroy2(EntryEvent event, Object arg) throws CacheWriterException {
+  public void beforeDestroy2(EntryEvent event, Object arg) throws CacheWriterException {
 
     String s = "Shouldn't be invoked";
     throw new UnsupportedOperationException(s);
   }
 
-  public final void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
+  public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
 
     // check argument to see if this is during tearDown
     if ("teardown".equals(event.getCallbackArgument()))
@@ -102,14 +102,13 @@ public abstract class TestCacheWriter extends TestCacheCallback implements Cache
     throw new UnsupportedOperationException(s);
   }
 
-  public final void beforeRegionDestroy2(RegionEvent event, Object arg)
-      throws CacheWriterException {
+  public void beforeRegionDestroy2(RegionEvent event, Object arg) throws CacheWriterException {
 
     String s = "Shouldn't be invoked";
     throw new UnsupportedOperationException(s);
   }
 
-  public final void beforeRegionClear(RegionEvent event) throws CacheWriterException {
+  public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
     String s = "Unexpected callback invocation";
     throw new UnsupportedOperationException(s);
   }

@@ -50,7 +50,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     assertEquals(profile.getFieldAnalyzers(), copy.getFieldAnalyzers());
   }
 
-  private final Object[] getSerializationProfiles() {
+  private Object[] getSerializationProfiles() {
     return $(new Object[] {getOneFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoAnalyzersLuceneIndexCreationProfile()},
@@ -64,7 +64,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     assertEquals(expectedResult, otherProfile.checkCompatibility("/" + REGION_NAME, myProfile));
   }
 
-  private final Object[] getCheckCompatibilityProfiles() {
+  private Object[] getCheckCompatibilityProfiles() {
     return $(
         new Object[] {getOneFieldLuceneIndexCreationProfile(),
             getTwoFieldLuceneIndexCreationProfile(), CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},

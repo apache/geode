@@ -19,8 +19,6 @@ import java.io.IOException;
 /**
  * Indicates that an <code>IOException</code> during a disk region operation.
  *
- *
- *
  * @since GemFire 3.2
  */
 public class DiskAccessException extends CacheRuntimeException {
@@ -114,7 +112,7 @@ public class DiskAccessException extends CacheRuntimeException {
   /**
    * Returns true if this exception originated from a remote node.
    */
-  public final boolean isRemote() {
+  public boolean isRemote() {
     return this.isRemote;
   }
 

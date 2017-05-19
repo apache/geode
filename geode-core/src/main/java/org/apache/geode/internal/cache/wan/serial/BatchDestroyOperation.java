@@ -126,13 +126,6 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
             }
           }
         }
-        // Non-optimized way
-        // for (Long k : (Set<Long>)rgn.keys()) {
-        // if (k > this.tailKey) {
-        // continue;
-        // }
-        // rgn.localDestroy(k, RegionQueue.WAN_QUEUE_TOKEN);
-        // }
         this.appliedOperation = true;
       } catch (CacheWriterException e) {
         throw new Error(
@@ -147,8 +140,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
 
     @Override
     @Retained
-    protected final InternalCacheEvent createEvent(DistributedRegion rgn)
-        throws EntryNotFoundException {
+    protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {

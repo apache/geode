@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.partitioned;
 
 import java.io.DataInput;
@@ -85,7 +84,6 @@ public class FetchEntryMessage extends PartitionMessage {
    * @param recipient the member that the getEntry message is sent to
    * @param r the PartitionedRegion for which getEntry was performed upon
    * @param key the object to which the value should be feteched
-   * @param access
    * @return the processor used to fetch the returned value associated with the key
    * @throws ForceReattemptException if the peer is no longer available
    */
@@ -109,11 +107,6 @@ public class FetchEntryMessage extends PartitionMessage {
     fromData(in);
   }
 
-  // final public int getProcessorType()
-  // {
-  // return DistributionManager.PARTITIONED_REGION_EXECUTOR;
-  // }
-
   @Override
   public boolean isSevereAlertCompatible() {
     // allow forced-disconnect processing for all cache op messages
@@ -121,7 +114,7 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
       long startTime) throws ForceReattemptException {
     // FetchEntryMessage is used in refreshing client caches during interest list recovery,
     // so don't be too verbose or hydra tasks may time out
@@ -209,7 +202,7 @@ public class FetchEntryMessage extends PartitionMessage {
     return s;
   }
 
-  public final void setKey(Object key) {
+  public void setKey(Object key) {
     this.key = key;
   }
 
@@ -322,9 +315,7 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   /**
-   * A processor to capture the value returned by
-   * {@link org.apache.geode.internal.cache.partitioned.FetchEntryMessage.FetchEntryReplyMessage}
-   * 
+   * A processor to capture the value returned by {@link FetchEntryMessage.FetchEntryReplyMessage}
    */
   public static class FetchEntryResponse extends PartitionResponse {
     private volatile EntrySnapshot returnValue;
@@ -356,13 +347,10 @@ public class FetchEntryMessage extends PartitionMessage {
 
     /**
      * @return Object associated with the key that was sent in the get message
-     * @throws EntryNotFoundException
      * @throws ForceReattemptException if the peer is no longer available
-     * @throws EntryNotFoundException
      */
     public EntrySnapshot waitForResponse() throws EntryNotFoundException, ForceReattemptException {
       try {
-        // waitForRepliesUninterruptibly();
         waitForCacheException();
       } catch (ForceReattemptException e) {
         e.checkKey(key);

@@ -98,8 +98,8 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm,
-      PartitionedRegion region, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
+      long startTime) throws ForceReattemptException {
 
     BucketAdvisor bucketAdvisor = region.getRegionAdvisor().getBucketAdvisor(this.bucketId);
 

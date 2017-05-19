@@ -35,7 +35,7 @@ public abstract class DUnitEnv {
 
   public static DUnitEnv instance = null;
 
-  public static final DUnitEnv get() {
+  public static DUnitEnv get() {
     if (instance == null) {
       try {
         // for tests that are still being migrated to the open-source

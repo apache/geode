@@ -155,7 +155,7 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
     }
   }
 
-  private final void setUpDeltas() {
+  private void setUpDeltas() {
     for (int i = 0; i < 8; i++) {
       deltas[i] = new DeltaTestImpl(0, "0", new Double(0), new byte[0], new TestObject1("0", 0));
     }

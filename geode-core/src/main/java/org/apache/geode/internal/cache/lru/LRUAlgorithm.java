@@ -16,13 +16,16 @@ package org.apache.geode.internal.cache.lru;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Properties;
 
 /**
  * Eviction controllers that extend this class evict the least recently used (LRU) entry in the
@@ -67,8 +70,6 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
    */
   public static final String EVICTION_ACTION = "eviction-action";
 
-  //////////////////////// Instance Fields ///////////////////////
-
   /** What to do upon eviction */
   protected EvictionAction evictionAction;
 
@@ -79,7 +80,6 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
   private transient EnableLRU helper;
 
   protected BucketRegion bucketRegion;
-  ///////////////////////// Constructors /////////////////////////
 
   /**
    * Creates a new <code>LRUAlgorithm</code> with the given {@linkplain EvictionAction eviction
@@ -90,8 +90,6 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
     setEvictionAction(evictionAction);
     this.helper = createLRUHelper();
   }
-
-  /////////////////////// Instance Methods ///////////////////////
 
   /**
    * Used to hook up a bucketRegion late during disk recover.
@@ -131,7 +129,7 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
    * For internal use only. Returns a helper object used internally by the GemFire cache
    * implementation.
    */
-  public final EnableLRU getLRUHelper() {
+  public EnableLRU getLRUHelper() {
     synchronized (this) {
       // Synchronize with readObject/writeObject to avoid race
       // conditions with copy sharing. See bug 31047.
@@ -153,24 +151,6 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
       this.helper = createLRUHelper();
     }
   }
-
-  // public void writeExternal(ObjectOutput out)
-  // throws IOException {
-  // out.writeObject(this.evictionAction);
-  // }
-
-  // public void readExternal(ObjectInput in)
-  // throws IOException, ClassNotFoundException {
-  // String evictionAction = (String) in.readObject();
-  // this.setEvictionAction(evictionAction);
-  // }
-
-  // protected Object readResolve() throws ObjectStreamException {
-  // if (this.helper == null) {
-  // this.helper = createLRUHelper();
-  // }
-  // return this;
-  // }
 
   /**
    * Creates a new <code>LRUHelper</code> tailed for this LRU algorithm implementation.
@@ -241,11 +221,7 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   * 
+  /**
    * Note that we just need to make sure that equal objects return equal hashcodes; nothing really
    * elaborate is done here.
    */
@@ -261,8 +237,6 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
    */
   @Override
   public abstract String toString();
-
-  ////////////////////// Inner Classes //////////////////////
 
   /**
    * A partial implementation of the <code>EnableLRU</code> interface that contains code common to

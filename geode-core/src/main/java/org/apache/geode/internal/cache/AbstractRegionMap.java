@@ -3768,7 +3768,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   /** removes a tombstone that has expired locally */
-  public final boolean removeTombstone(RegionEntry re, VersionHolder version, boolean isEviction,
+  public boolean removeTombstone(RegionEntry re, VersionHolder version, boolean isEviction,
       boolean isScheduledTombstone) {
     boolean result = false;
     int destroyedVersion = version.getEntryVersion();

@@ -117,7 +117,7 @@ public class ClientHttpRequest implements HttpRequest {
    * @return the Link encapsulating the URI and method for the client's HTTP request.
    * @see org.apache.geode.management.internal.web.domain.Link
    */
-  public final Link getLink() {
+  public Link getLink() {
     return link;
   }
 

@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.util.UUID;
 
 public abstract class VMThinDiskRegionEntryHeap extends VMThinDiskRegionEntry {
+
   public VMThinDiskRegionEntryHeap(RegionEntryContext context, Object value) {
     super(context, value);
   }
@@ -29,7 +30,7 @@ public abstract class VMThinDiskRegionEntryHeap extends VMThinDiskRegionEntry {
   }
 
   private static class VMThinDiskRegionEntryHeapFactory implements RegionEntryFactory {
-    public final RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
+    public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
         if (keyClass == Integer.class) {
@@ -54,7 +55,7 @@ public abstract class VMThinDiskRegionEntryHeap extends VMThinDiskRegionEntry {
       return new VMThinDiskRegionEntryHeapObjectKey(context, key, value);
     }
 
-    public final Class getEntryClass() {
+    public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMThinDiskRegionEntryHeapObjectKey.class;

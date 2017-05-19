@@ -56,8 +56,6 @@ import org.apache.geode.internal.util.Breadcrumbs;
  * sequentialness/thread requirements of a message, extend DistributionMessage and implement
  * getExecutor().
  * </P>
- *
- *
  */
 public abstract class DistributionMessage implements DataSerializableFixedID, Cloneable {
 
@@ -135,7 +133,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Get the next bit mask position while checking that the value should not exceed given maximum
    * value.
    */
-  protected static final int getNextBitMask(int mask, final int maxValue) {
+  protected static int getNextBitMask(int mask, final int maxValue) {
     mask <<= 1;
     if (mask > maxValue) {
       Assert.fail("exhausted bit flags with all available bits: 0x" + Integer.toHexString(mask)
@@ -158,7 +156,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     this.doDecMessagesBeingReceived = v;
   }
 
-  public final void setReplySender(ReplySender acker) {
+  public void setReplySender(ReplySender acker) {
     this.acker = acker;
   }
 

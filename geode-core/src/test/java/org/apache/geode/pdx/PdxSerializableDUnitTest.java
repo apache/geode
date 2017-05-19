@@ -433,7 +433,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
    * add a listener and writer that will throw an exception when invoked if events are for internal
    * regions
    */
-  public final void addPoisonedTransactionListeners() {
+  public void addPoisonedTransactionListeners() {
     MyTestTransactionListener listener = new MyTestTransactionListener();
     getCache().getCacheTransactionManager().addListener(listener);
     getCache().getCacheTransactionManager().setWriter(listener);

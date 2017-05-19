@@ -904,28 +904,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * TODO: Optimization needed. We are creating 1 array list for each peek!!
-   *
-   * @return BucketRegionQueue
-   */
-  private final BucketRegionQueue getRandomBucketRegionQueue() {
-    PartitionedRegion prQ = getRandomShadowPR();
-    if (prQ != null) {
-      final PartitionedRegionDataStore ds = prQ.getDataStore();
-      final List<Integer> buckets = new ArrayList<Integer>(ds.getAllLocalPrimaryBucketIds());
-      if (buckets.isEmpty())
-        return null;
-      final int index = new Random().nextInt(buckets.size());
-      final int brqId = buckets.get(index);
-      final BucketRegionQueue brq = (BucketRegionQueue) ds.getLocalBucketById(brqId);
-      if (brq.isReadyForPeek()) {
-        return brq;
-      }
-    }
-    return null;
-  }
-
   protected boolean areLocalBucketQueueRegionsPresent() {
     boolean bucketsAvailable = false;
     for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {

@@ -21,10 +21,9 @@ import javax.management.openmbean.OpenType;
 /**
  * Converter for classes where the open data is identical to the original data. This is true for any
  * of the SimpleType types, and for an any-dimension array of those
- * 
- *
  */
 public class IdentityConverter extends OpenTypeConverter {
+
   IdentityConverter(Type targetType, OpenType openType, Class openClass) {
     super(targetType, openType, openClass);
   }
@@ -33,7 +32,7 @@ public class IdentityConverter extends OpenTypeConverter {
     return true;
   }
 
-  final Object toNonNullOpenValue(Object value) {
+  Object toNonNullOpenValue(Object value) {
     return value;
   }
 

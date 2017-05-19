@@ -15,12 +15,18 @@
 package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
@@ -29,6 +35,7 @@ import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.support.DistributedSystemAdapter;
+import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -90,6 +97,29 @@ public class ServerLauncherTest {
   public void tearDown() {
     mockContext.assertIsSatisfied();
     mockContext = null;
+  }
+
+  @Test
+  public void shouldBeMockable() throws Exception {
+    ServerLauncher mockServerLauncher = mock(ServerLauncher.class);
+    Cache mockCache = mock(Cache.class);
+    CacheConfig mockCacheConfig = mock(CacheConfig.class);
+
+    when(mockServerLauncher.getCache()).thenReturn(mockCache);
+    when(mockServerLauncher.getCacheConfig()).thenReturn(mockCacheConfig);
+    when(mockServerLauncher.getId()).thenReturn("ID");
+    when(mockServerLauncher.isWaiting(eq(mockCache))).thenReturn(true);
+    when(mockServerLauncher.isHelping()).thenReturn(true);
+
+    mockServerLauncher.startCacheServer(mockCache);
+
+    verify(mockServerLauncher, times(1)).startCacheServer(mockCache);
+
+    assertThat(mockServerLauncher.getCache()).isSameAs(mockCache);
+    assertThat(mockServerLauncher.getCacheConfig()).isSameAs(mockCacheConfig);
+    assertThat(mockServerLauncher.getId()).isSameAs("ID");
+    assertThat(mockServerLauncher.isWaiting(mockCache)).isTrue();
+    assertThat(mockServerLauncher.isHelping()).isTrue();
   }
 
   @Test

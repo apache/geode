@@ -12,14 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheEvent;
@@ -36,10 +33,9 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
  * Handles distribution messaging for destroying an entry in a region.
- * 
- * 
  */
 public class DestroyOperation extends DistributedCacheOperation {
+
   /** Creates a new instance of DestroyOperation */
   public DestroyOperation(EntryEventImpl event) {
     super(event);
@@ -116,8 +112,7 @@ public class DestroyOperation extends DistributedCacheOperation {
 
     @Override
     @Retained
-    protected final InternalCacheEvent createEvent(DistributedRegion rgn)
-        throws EntryNotFoundException {
+    protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {

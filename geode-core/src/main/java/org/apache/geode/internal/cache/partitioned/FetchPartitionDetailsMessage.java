@@ -99,8 +99,8 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm,
-      PartitionedRegion region, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
+      long startTime) throws ForceReattemptException {
 
     PartitionMemberInfoImpl details = (PartitionMemberInfoImpl) region.getRedundancyProvider()
         .buildPartitionMemberDetails(this.internal, this.loadProbe);

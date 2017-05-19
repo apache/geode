@@ -750,7 +750,7 @@ public abstract class DistributedCacheOperation {
     // nothing to do here - see UpdateMessage
   }
 
-  protected final void waitForAckIfNeeded(CacheOperationMessage msg,
+  protected void waitForAckIfNeeded(CacheOperationMessage msg,
       Map<InternalDistributedMember, PersistentMemberID> persistentIds) {
     if (this.processor == null) {
       return;
@@ -1068,7 +1068,7 @@ public abstract class DistributedCacheOperation {
     }
 
     @Override
-    protected final void process(final DistributionManager dm) {
+    protected void process(final DistributionManager dm) {
       Throwable thr = null;
       boolean sendReply = true;
 
@@ -1481,7 +1481,7 @@ public abstract class DistributedCacheOperation {
       }
     }
 
-    public final boolean supportsDirectAck() {
+    public boolean supportsDirectAck() {
       return this.directAck;
     }
 
@@ -1518,7 +1518,7 @@ public abstract class DistributedCacheOperation {
       this.hasOldValue = true;
     }
 
-    protected final boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
+    protected boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
       try {
         LocalRegion lr = getLocalRegionForProcessing(dm);

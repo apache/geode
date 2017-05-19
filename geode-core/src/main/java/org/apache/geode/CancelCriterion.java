@@ -58,7 +58,7 @@ public abstract class CancelCriterion {
    * 
    * @return failure string if system failure has occurred
    */
-  protected final String checkFailure() {
+  protected String checkFailure() {
     Throwable tilt = SystemFailure.getFailure();
     if (tilt != null) {
       // Allocate no objects here!
@@ -74,7 +74,7 @@ public abstract class CancelCriterion {
    * @param e an underlying exception or null if there is no exception that triggered this check
    * @see #cancelInProgress()
    */
-  public final void checkCancelInProgress(Throwable e) {
+  public void checkCancelInProgress(Throwable e) {
     SystemFailure.checkFailure();
     String reason = cancelInProgress();
     if (reason == null) {

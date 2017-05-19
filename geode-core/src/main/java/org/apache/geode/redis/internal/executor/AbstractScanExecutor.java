@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
-
 public abstract class AbstractScanExecutor extends AbstractExecutor {
 
   protected final String ERROR_CURSOR = "Invalid cursor";
@@ -39,9 +38,10 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
    * @param pattern A glob pattern.
    * @return A regex pattern to recognize the given glob pattern.
    */
-  protected final Pattern convertGlobToRegex(String pattern) {
-    if (pattern == null)
+  protected Pattern convertGlobToRegex(String pattern) {
+    if (pattern == null) {
       return null;
+    }
     return GlobPattern.compile(pattern);
   }
 }

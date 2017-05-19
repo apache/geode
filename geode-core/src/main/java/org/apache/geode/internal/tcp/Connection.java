@@ -14,52 +14,82 @@
  */
 package org.apache.geode.internal.tcp;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.ConflationKey;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.net.*;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.MsgReader.Header;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SocketChannel;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
 /**
- * <p>
  * Connection is a socket holder that sends and receives serialized message objects. A Connection
  * may be closed to preserve system resources and will automatically be reopened when it's needed.
- * </p>
- * 
+ *
  * @since GemFire 2.0
- * 
  */
-
 public class Connection implements Runnable {
   private static final Logger logger = LogService.getLogger();
 
@@ -153,6 +183,7 @@ public class Connection implements Runnable {
    */
   private static final boolean DOMINO_THREAD_OWNED_SOCKETS =
       Boolean.getBoolean("p2p.ENABLE_DOMINO_THREAD_OWNED_SOCKETS");
+
   private final static ThreadLocal isDominoThread = new ThreadLocal();
 
   // return true if this thread is a reader thread
@@ -214,22 +245,13 @@ public class Connection implements Runnable {
     }
   };
 
-  // /**
-  // * name of sender thread thread. Useful in finding out why a reader
-  // * thread was created. Add sending of the name in handshakes and
-  // * add it to the name of the reader thread (the code is there but commented out)
-  // */
-  // private String senderName = null;
-
-  // If we are a sender then we want to know if the receiver on the
-  // other end is willing to have its messages queued. The following
-  // four "async" inst vars come from his handshake response.
   /**
    * How long to wait if receiver will not accept a message before we go into queue mode.
    * 
    * @since GemFire 4.2.2
    */
   private int asyncDistributionTimeout = 0;
+
   /**
    * How long to wait, with the receiver not accepting any messages, before kicking the receiver out
    * of the distributed system. Ignored if asyncDistributionTimeout is zero.
@@ -237,6 +259,7 @@ public class Connection implements Runnable {
    * @since GemFire 4.2.2
    */
   private int asyncQueueTimeout = 0;
+
   /**
    * How much queued data we can have, with the receiver not accepting any messages, before kicking
    * the receiver out of the distributed system. Ignored if asyncDistributionTimeout is zero.
@@ -245,6 +268,7 @@ public class Connection implements Runnable {
    * @since GemFire 4.2.2
    */
   private long asyncMaxQueueSize = 0;
+
   /**
    * True if an async queue is already being filled.
    */
@@ -255,9 +279,6 @@ public class Connection implements Runnable {
    * for an entry is the map will always be "equal" they will not always be "==".
    */
   private final Map conflatedKeys = new HashMap();
-
-  // private final Queue outgoingQueue = new LinkedBlockingQueue();
-
 
   // NOTE: LinkedBlockingQueue has a bug in which removes from the queue
   // cause future offer to increase the size without adding anything to the queue.
@@ -298,13 +319,6 @@ public class Connection implements Runnable {
   /** message reader thread */
   private volatile Thread readerThread;
 
-  // /**
-  // * When a thread owns the outLock and is writing to the socket, it must
-  // * be placed in this variable so that it can be interrupted should the
-  // * socket need to be closed.
-  // */
-  // private volatile Thread writerThread;
-
   /** whether the reader thread is, or should be, running */
   volatile boolean stopped = true;
 
@@ -330,9 +344,6 @@ public class Connection implements Runnable {
    */
   private SystemTimer.SystemTimerTask ackTimeoutTask;
 
-  // State for ackTimeoutTask: transmissionStartTime, ackWaitTimeout, ackSATimeout,
-  // ackConnectionGroup, ackThreadName
-
   /**
    * millisecond clock at the time message transmission started, if doing forced-disconnect
    * processing
@@ -353,7 +364,6 @@ public class Connection implements Runnable {
 
   /** name of thread that we're currently performing an operation in (may be null) */
   String ackThreadName;
-
 
   /** the buffer used for NIO message receipt */
   ByteBuffer nioInputBuffer;
@@ -514,7 +524,6 @@ public class Connection implements Runnable {
       }
     }
     c.waitForHandshake();
-    // sendHandshakeReplyOK();
     c.finishedConnecting = true;
     return c;
   }
@@ -540,8 +549,6 @@ public class Connection implements Runnable {
     try {
       socket.setTcpNoDelay(true);
       socket.setKeepAlive(true);
-      // socket.setSoLinger(true, (Integer.valueOf(System.getProperty("p2p.lingerTime",
-      // "5000"))).intValue());
       setSendBufferSize(socket, SMALL_BUFFER_SIZE);
       setReceiveBufferSize(socket);
     } catch (SocketException e) {
@@ -922,17 +929,6 @@ public class Connection implements Runnable {
     os.writeLong(this.uniqueId);
     Version.CURRENT.writeOrdinal(os, true);
     os.writeInt(dominoCount.get() + 1);
-    // this writes the sending member + thread name that is stored in senderName
-    // on the receiver to show the cause of reader thread creation
-    // if (dominoCount.get() > 0) {
-    // os.writeUTF(Thread.currentThread().getName());
-    // } else {
-    // String name = owner.getDM().getConfig().getName();
-    // if (name == null) {
-    // name = "pid="+OSProcess.getId();
-    // }
-    // os.writeUTF("["+name+"] "+Thread.currentThread().getName());
-    // }
     os.flush();
 
     byte[] msg = baos.toByteArray();
@@ -1268,8 +1264,6 @@ public class Connection implements Runnable {
       this.socket = channel.socket();
     } else {
       if (TCPConduit.useSSL) {
-        // socket = javax.net.ssl.SSLSocketFactory.getDefault()
-        // .createSocket(remoteAddr.getInetAddress(), remoteAddr.getPort());
         int socketBufferSize =
             sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
         this.socket = owner.getConduit().getSocketCreator().connectForServer(
@@ -3283,7 +3277,7 @@ public class Connection implements Runnable {
    * @param forceAsync true if we need to force a blocking async write.
    * @throws ConnectionException if the conduit has stopped
    */
-  protected final void nioWriteFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
+  protected void nioWriteFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
       DistributionMessage msg) throws IOException, ConnectionException {
     final DMStats stats = this.owner.getConduit().stats;
     if (!this.sharedResource) {
@@ -3356,7 +3350,6 @@ public class Connection implements Runnable {
   protected static final byte STATE_RECEIVED_ACK = 4;
   /** the connection is in use and is reading a message */
   protected static final byte STATE_READING = 5;
-
   /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
   /** set to true if we exceeded the ack-wait-threshold waiting for a response */
@@ -3377,7 +3370,6 @@ public class Connection implements Runnable {
     synchronized (this.stateLock) {
       this.connectionState = STATE_READING_ACK;
     }
-
 
     boolean origSocketInUse = this.socketInUse;
     this.socketInUse = true;
@@ -3473,7 +3465,6 @@ public class Connection implements Runnable {
       this.connectionState = STATE_RECEIVED_ACK;
     }
   }
-
 
   /**
    * processes the current NIO buffer. If there are complete messages in the buffer, they are
@@ -3916,14 +3907,10 @@ public class Connection implements Runnable {
   }
 
   private void setThreadName(int dominoNumber) {
-    Thread.currentThread().setName(
-        // (!this.sharedResource && this.senderName != null? ("<"+this.senderName+"> ->
-        // ") : "") +
-        // "[" + name + "] "+
-        "P2P message reader for " + this.remoteAddr + " " + (this.sharedResource ? "" : "un")
-            + "shared" + " " + (this.preserveOrder ? "" : "un") + "ordered" + " uid="
-            + this.uniqueId + (dominoNumber > 0 ? (" dom #" + dominoNumber) : "") + " port="
-            + this.socket.getPort());
+    Thread.currentThread().setName("P2P message reader for " + this.remoteAddr + " "
+        + (this.sharedResource ? "" : "un") + "shared" + " " + (this.preserveOrder ? "" : "un")
+        + "ordered" + " uid=" + this.uniqueId + (dominoNumber > 0 ? (" dom #" + dominoNumber) : "")
+        + " port=" + this.socket.getPort());
   }
 
   private void compactOrResizeBuffer(int messageLength) {

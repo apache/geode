@@ -45,14 +45,12 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * Usage: RemoveBucketResponse response = RemoveBucketMessage.send( InternalDistributedMember,
  * PartitionedRegion, int bucketId); if (response != null && response.waitForResponse()) { // bucket
  * was removed }
- * 
  */
 public class RemoveBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   private int bucketId;
   private boolean forceRemovePrimary;
-
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
@@ -103,8 +101,8 @@ public class RemoveBucketMessage extends PartitionMessage {
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm,
-      PartitionedRegion region, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
+      long startTime) throws ForceReattemptException {
 
     PartitionedRegionDataStore dataStore = region.getDataStore();
     boolean removed = dataStore.removeBucket(this.bucketId, this.forceRemovePrimary);

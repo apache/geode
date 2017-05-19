@@ -32,7 +32,6 @@ import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DynamicRegionAttributes;
@@ -995,7 +994,7 @@ public abstract class DynamicRegionFactory {
 
     // while internal, its contents should be communicated with bridge clients
     @Override
-    final public boolean shouldNotifyBridgeClients() {
+    public boolean shouldNotifyBridgeClients() {
       return getCache().getCacheServers().size() > 0;
     }
 

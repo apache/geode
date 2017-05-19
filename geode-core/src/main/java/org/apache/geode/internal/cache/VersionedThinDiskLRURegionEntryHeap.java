@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.util.UUID;
 
 public abstract class VersionedThinDiskLRURegionEntryHeap extends VersionedThinDiskLRURegionEntry {
+
   public VersionedThinDiskLRURegionEntryHeap(RegionEntryContext context, Object value) {
     super(context, value);
   }
@@ -29,7 +30,7 @@ public abstract class VersionedThinDiskLRURegionEntryHeap extends VersionedThinD
   }
 
   private static class VersionedThinDiskLRURegionEntryHeapFactory implements RegionEntryFactory {
-    public final RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
+    public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
         if (keyClass == Integer.class) {
@@ -56,7 +57,7 @@ public abstract class VersionedThinDiskLRURegionEntryHeap extends VersionedThinD
       return new VersionedThinDiskLRURegionEntryHeapObjectKey(context, key, value);
     }
 
-    public final Class getEntryClass() {
+    public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VersionedThinDiskLRURegionEntryHeapObjectKey.class;

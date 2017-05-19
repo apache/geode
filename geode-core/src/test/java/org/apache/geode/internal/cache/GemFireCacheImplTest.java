@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -22,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,6 +38,17 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GemFireCacheImplTest {
+
+  @Test
+  public void shouldBeMockable() throws Exception {
+    GemFireCacheImpl mockGemFireCacheImpl = mock(GemFireCacheImpl.class);
+    InternalResourceManager mockInternalResourceManager = mock(InternalResourceManager.class);
+
+    when(mockGemFireCacheImpl.getInternalResourceManager()).thenReturn(mockInternalResourceManager);
+
+    assertThat(mockGemFireCacheImpl.getInternalResourceManager())
+        .isSameAs(mockInternalResourceManager);
+  }
 
   @Test
   public void checkPurgeCCPTimer() {

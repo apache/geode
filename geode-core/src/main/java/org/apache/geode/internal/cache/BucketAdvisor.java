@@ -71,7 +71,6 @@ import org.apache.geode.internal.util.StopWatch;
  * Specialized {@link CacheDistributionAdvisor} for {@link BucketRegion BucketRegions}. The
  * <code>BucketAdvisor</code> is owned by a {@link ProxyBucketRegion} and may outlive a
  * <code>BucketRegion</code>.
- * 
  */
 @SuppressWarnings("synthetic-access")
 public class BucketAdvisor extends CacheDistributionAdvisor {
@@ -1211,7 +1210,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * 
    * @return the member or null if no primary exists
    */
-  public final InternalDistributedMember basicGetPrimaryMember() {
+  public InternalDistributedMember basicGetPrimaryMember() {
     return (InternalDistributedMember) this.primaryMember.get();
   }
 
@@ -1882,7 +1881,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * 
    * @return current number of hosts of this bucket ; -1 if there are no hosts
    */
-  public final int getBucketRedundancy() {
+  public int getBucketRedundancy() {
     return redundancy;
   }
 

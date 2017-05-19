@@ -122,7 +122,7 @@ public class DistributedTestUtils {
     }
   }
 
-  public final static Properties getAllDistributedSystemProperties(final Properties properties) {
+  public static Properties getAllDistributedSystemProperties(final Properties properties) {
     Properties dsProperties = DUnitEnv.get().getDistributedSystemProperties();
 
     // our tests do not expect auto-reconnect to be on by default

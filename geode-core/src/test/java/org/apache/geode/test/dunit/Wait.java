@@ -135,7 +135,7 @@ public class Wait {
    * 
    * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
-  public static final void pause(final int milliseconds) {
+  public static void pause(final int milliseconds) {
     if (milliseconds >= 1000 || logger.isDebugEnabled()) { // check for debug but log at info
       logger.info("Pausing for {} ms...", milliseconds);
     }
@@ -211,7 +211,7 @@ public class Wait {
    * @return the last time stamp observed
    * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
-  public static final long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource) {
+  public static long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource) {
     return waitForExpiryClockToChange(cacheTimeMillisSource,
         cacheTimeMillisSource.cacheTimeMillis());
   }
@@ -224,7 +224,7 @@ public class Wait {
    * @return the last time stamp observed
    * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
-  public static final long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource,
+  public static long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource,
       final long baseTime) {
     long nowTime;
     do {

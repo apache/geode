@@ -42,8 +42,6 @@ import org.apache.geode.pdx.PdxInstance;
  * 
  * Although it has limited functionality,still a simple use of add() method should suffice for most
  * of the simple JSON use cases.
- * 
- * 
  */
 public class TypedJson {
 
@@ -137,7 +135,6 @@ public class TypedJson {
 
           }
         }
-
       }
     }
   }
@@ -150,9 +147,7 @@ public class TypedJson {
     }
   }
 
-
   /**
-   * 
    * User can build on this object by adding Objects against a key.
    * 
    * TypedJson result = new TypedJson(); result.add(KEY,object); If users add more objects against
@@ -218,7 +213,6 @@ public class TypedJson {
           commanate = false;
           addComma = true;
         }
-
       }
 
       writer.write('}');
@@ -312,7 +306,7 @@ public class TypedJson {
     return false;
   }
 
-  final void writeVal(Writer w, Object value) throws IOException {
+  void writeVal(Writer w, Object value) throws IOException {
     w.write('{');
     addVal(w, value);
     w.write('}');
@@ -325,7 +319,6 @@ public class TypedJson {
     if (shouldVisitChildren(object)) {
       visitChildrens(w, object, true);
     }
-
   }
 
   void writeKeyValue(Writer w, Object key, Object value, Class type) throws IOException {
@@ -379,7 +372,6 @@ public class TypedJson {
   }
 
   void writeArray(Writer w, Object object) throws IOException {
-
     if (commanate) {
       w.write(",");
     }
@@ -419,7 +411,6 @@ public class TypedJson {
     for (int i = 0; i < length && elements < queryCollectionsDepth; i += 1) {
       Object item = Array.get(object, i);
       items.add(item);
-
     }
     return items;
   }
@@ -463,7 +454,6 @@ public class TypedJson {
       endType(w, rootClazz);
     } catch (IOException e) {
     }
-
   }
 
   void startKey(Writer writer, String key) throws IOException {
@@ -478,7 +468,6 @@ public class TypedJson {
     if (key != null) {
       writer.write('}');
     }
-
   }
 
   List<Object> visitSpecialObjects(Writer w, Object object, boolean write) throws IOException {
@@ -563,8 +552,6 @@ public class TypedJson {
         } else {
           elements.add(fieldValue);
         }
-
-
       }
       if (write)
         w.write('}');
@@ -593,7 +580,6 @@ public class TypedJson {
       return elements;
     }
 
-
     if (object instanceof Region.Entry) {
       Region.Entry entry = (Region.Entry) object;
       Object key = entry.getKey();
@@ -608,10 +594,8 @@ public class TypedJson {
         elements.add(value);
       }
 
-
       return elements;
     }
-
 
     return elements;
   }
@@ -627,7 +611,6 @@ public class TypedJson {
   /**
    * Handle some special GemFire classes. We don't want to expose some of the internal classes.
    * Hence corresponding interface or external classes should be shown.
-   * 
    */
   String internalToExternal(Class clazz, Object value) {
     if (value != null && value instanceof Region.Entry) {

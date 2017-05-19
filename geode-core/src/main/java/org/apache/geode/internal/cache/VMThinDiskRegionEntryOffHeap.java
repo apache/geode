@@ -18,6 +18,7 @@ import java.util.UUID;
 
 public abstract class VMThinDiskRegionEntryOffHeap extends VMThinDiskRegionEntry
     implements OffHeapRegionEntry {
+
   public VMThinDiskRegionEntryOffHeap(RegionEntryContext context, Object value) {
     super(context, value);
   }
@@ -30,7 +31,7 @@ public abstract class VMThinDiskRegionEntryOffHeap extends VMThinDiskRegionEntry
   }
 
   private static class VMThinDiskRegionEntryOffHeapFactory implements RegionEntryFactory {
-    public final RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
+    public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
         if (keyClass == Integer.class) {
@@ -55,7 +56,7 @@ public abstract class VMThinDiskRegionEntryOffHeap extends VMThinDiskRegionEntry
       return new VMThinDiskRegionEntryOffHeapObjectKey(context, key, value);
     }
 
-    public final Class getEntryClass() {
+    public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMThinDiskRegionEntryOffHeapObjectKey.class;

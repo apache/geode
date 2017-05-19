@@ -32,7 +32,7 @@ import java.util.zip.ZipInputStream;
  */
 public class UnzipUtil {
 
-  public static final void unzip(InputStream input, String targetDir) throws IOException {
+  public static void unzip(InputStream input, String targetDir) throws IOException {
 
     File dir = new File(targetDir);
     if (!dir.exists() && !dir.mkdir()) {
@@ -62,7 +62,7 @@ public class UnzipUtil {
     zipInput.close();
   }
 
-  public static final void copyInputStream(InputStream in, OutputStream out) throws IOException {
+  public static void copyInputStream(InputStream in, OutputStream out) throws IOException {
     byte[] buffer = new byte[1024];
     int len;
 

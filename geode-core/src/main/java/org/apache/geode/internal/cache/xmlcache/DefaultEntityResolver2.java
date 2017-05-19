@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
@@ -26,12 +25,12 @@ import org.apache.geode.internal.ClassPathLoader;
 
 /**
  * Default behavior for EntityResolver2 implementations.
- * 
+ * <p>
+ * UnitTest PivotalEntityResolverJUnitTest and DefaultEntityResolver2Test
  *
  * @since GemFire 8.1
  */
-// UnitTest PivotalEntityResolverJUnitTest
-abstract public class DefaultEntityResolver2 implements EntityResolver2 {
+public abstract class DefaultEntityResolver2 implements EntityResolver2 {
 
   @Override
   public InputSource resolveEntity(final String publicId, final String systemId)
@@ -58,7 +57,7 @@ abstract public class DefaultEntityResolver2 implements EntityResolver2 {
    * @return InputSource if resource found, otherwise null.
    * @since GemFire 8.1
    */
-  protected final InputSource getClassPathInputSource(final String publicId, final String systemId,
+  protected InputSource getClassPathInputSource(final String publicId, final String systemId,
       final String path) {
     final InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), path);
     if (null == stream) {

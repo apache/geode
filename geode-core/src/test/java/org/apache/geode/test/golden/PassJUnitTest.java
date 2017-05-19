@@ -68,7 +68,7 @@ public class PassJUnitTest extends GoldenTestCase implements ExecutableProcess {
   }
 
   @Override
-  public final void executeInProcess() throws IOException {
+  public void executeInProcess() throws IOException {
     outputLine("Begin " + name() + ".main");
     outputLine("Press Enter to continue.");
     new BufferedReader(new InputStreamReader(System.in)).readLine();

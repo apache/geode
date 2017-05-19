@@ -35,7 +35,7 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   abstract void setDiskId(RegionEntry oldRe);
 
   @Override
-  public final void removePhase1(LocalRegion r, boolean isClear) throws RegionClearedException {
+  public void removePhase1(LocalRegion r, boolean isClear) throws RegionClearedException {
     synchronized (this) {
       Helper.removeFromDisk(this, r, isClear);
       _removePhase1();

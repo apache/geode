@@ -44,7 +44,7 @@ public class OverridingGetPropertiesDisconnectsAllDUnitTest extends JUnit4Distri
   }
 
   @Override
-  public final Properties getDistributedSystemProperties() {
+  public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     return props;

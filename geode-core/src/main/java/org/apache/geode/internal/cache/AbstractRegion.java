@@ -1529,7 +1529,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
    *
    * @since GemFire 5.0
    */
-  final boolean isAllEvents() {
+  boolean isAllEvents() {
     return getDataPolicy().withReplication()
         || getSubscriptionAttributes().getInterestPolicy().isAll();
   }
@@ -1787,7 +1787,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
     return this.cache;
   }
 
-  public final long cacheTimeMillis() {
+  public long cacheTimeMillis() {
     return this.cache.getInternalDistributedSystem().getClock().cacheTimeMillis();
   }
 

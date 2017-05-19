@@ -77,7 +77,7 @@ public abstract class TestCacheCallback implements CacheCallback {
     return this.isClosed;
   }
 
-  public final void close() {
+  public void close() {
     this.isClosed = true;
     close2();
   }

@@ -16,12 +16,20 @@ package org.apache.geode.cache;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.InternalRole;
 import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.membership.InternalRole;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Configuration attributes for defining reliability requirements and behavior for a
@@ -142,7 +150,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     return this.resumptionAction;
   }
 
-  private final Set<Role> toRoleSet(String[] roleNames) {
+  private Set<Role> toRoleSet(String[] roleNames) {
     if (roleNames == null || roleNames.length == 0) {
       return Collections.emptySet();
     }

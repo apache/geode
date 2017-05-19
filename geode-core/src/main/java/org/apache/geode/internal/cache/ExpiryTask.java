@@ -307,7 +307,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * whenever we try to schedule more expiration tasks.
    */
   @Override
-  public final void run2() {
+  public void run2() {
     try {
       if (executor != null) {
         executor.execute(new Runnable() {

@@ -224,8 +224,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     LuceneTestUtilities.verifyInternalRegions(luceneService, cache, verify);
   }
 
-
-  private static final Object[] getRegionShortcuts() {
+  private static Object[] getRegionShortcuts() {
     return $(new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
         new Object[] {PARTITION_PERSISTENT}, new Object[] {PARTITION_REDUNDANT_PERSISTENT},
         new Object[] {PARTITION_OVERFLOW}, new Object[] {PARTITION_REDUNDANT_OVERFLOW},

@@ -113,7 +113,6 @@ import java.util.TreeMap;
  * @since 1.2
  * @since GemFire 7.1
  */
-
 public class ObjectIntHashMap implements Cloneable, Serializable {
 
   private static final long serialVersionUID = 7718697444988416372L;
@@ -761,21 +760,21 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       hash = h;
     }
 
-    public final Object getKey() {
+    public Object getKey() {
       return key;
     }
 
-    public final int getValue() {
+    public int getValue() {
       return value;
     }
 
-    public final int setValue(int newValue) {
+    public int setValue(int newValue) {
       int oldValue = value;
       value = newValue;
       return oldValue;
     }
 
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
       if (!(o instanceof Entry))
         return false;
       Entry e = (Entry) o;
@@ -790,11 +789,11 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       return false;
     }
 
-    public final int hashCode() {
+    public int hashCode() {
       return this.hash ^ value;
     }
 
-    public final String toString() {
+    public String toString() {
       return getKey() + "=" + getValue();
     }
 

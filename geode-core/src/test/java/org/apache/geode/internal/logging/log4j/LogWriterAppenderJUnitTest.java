@@ -65,7 +65,7 @@ public class LogWriterAppenderJUnitTest {
    * when the configuration is changed the appender is still there.
    */
   @Test
-  public final void testAppenderToConfigHandling() throws IOException {
+  public void testAppenderToConfigHandling() throws IOException {
     LogService.setBaseLogLevel(Level.TRACE);
 
     final AppenderContext rootContext = LogService.getAppenderContext();
@@ -110,7 +110,7 @@ public class LogWriterAppenderJUnitTest {
    * Verifies that writing to a Log4j logger will end up in the LogWriter's output.
    */
   @Test
-  public final void testLogOutput() throws IOException {
+  public void testLogOutput() throws IOException {
     // Create the appender
     final StringWriter stringWriter = new StringWriter();
     final PureLogWriter logWriter =
@@ -178,7 +178,7 @@ public class LogWriterAppenderJUnitTest {
    * Verifies that logging occurs at the levels set in the LogWriter
    */
   @Test
-  public final void testLogWriterLevels() throws IOException {
+  public void testLogWriterLevels() throws IOException {
     final String loggerName = LogService.MAIN_LOGGER_NAME; // this.getClass().getName();
     LogService.getLogger(); // Force logging to be initialized
 

@@ -102,7 +102,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     postSetUpClientAuthorizationTestBase();
   }
 
-  private final void setUpClientAuthorizationTestBase() throws Exception {
+  private void setUpClientAuthorizationTestBase() throws Exception {
     server1 = getHost(0).getVM(0);
     server2 = getHost(0).getVM(1);
     client1 = getHost(0).getVM(2);
@@ -110,7 +110,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     setUpIgnoredExceptions();
   }
 
-  private final void setUpIgnoredExceptions() {
+  private void setUpIgnoredExceptions() {
     Set<String> serverExceptions = new HashSet<>();
     serverExceptions.addAll(Arrays.asList(serverIgnoredExceptions()));
     if (serverExceptions.isEmpty()) {

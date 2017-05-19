@@ -15,45 +15,31 @@
 
 package org.apache.geode.rest.internal.web.controllers.support;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.JsonWriter;
-
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 /**
  * The RegionData class is a container for data fetched from a GemFire Cache Region.
- * <p/>
- * 
+ *
  * @see com.fasterxml.jackson.databind.JsonSerializable
  * @see java.lang.Iterable
  * @since GemFire 8.0
  */
-
 @SuppressWarnings("unused")
 @XmlRootElement(name = "region")
 @XmlType(name = "org.gopivotal.app.web.controllers.support.RegionData")
@@ -75,18 +61,13 @@ public class RegionData<T> implements Iterable<T>, JsonSerializable {
     return regionNamePath;
   }
 
-  public final void setRegionNamePath(final String regionNamePath) {
+  public void setRegionNamePath(final String regionNamePath) {
     Assert.hasText(regionNamePath, "The name or path of the Region must be specified!");
     this.regionNamePath = regionNamePath;
   }
 
   public RegionData<T> add(final T data) {
-    // We are adding null data into the response
-    // Assert.notNull(data, String.format("The data to add to Region (%1$s) cannot be null!",
-    // getRegionNamePath()));
-    // if(data != null) {
     this.data.add(data);
-    // }
     return this;
   }
 
@@ -102,10 +83,6 @@ public class RegionData<T> implements Iterable<T>, JsonSerializable {
 
   public RegionData<T> add(final Iterable<T> data) {
     for (final T element : data) {
-      // Adding null data into the response
-      /*
-       * if (element != null) { add(element); }
-       */
       add(element);
     }
 
@@ -139,19 +116,15 @@ public class RegionData<T> implements Iterable<T>, JsonSerializable {
   public void serialize(final JsonGenerator jsonGenerator,
       final SerializerProvider serializerProvider) throws IOException {
 
-    // if(this!=null && this.size() > 1) {
     jsonGenerator.writeStartObject();
     jsonGenerator.writeArrayFieldStart(getRegionNamePath());
-    // }
 
     for (T element : this) {
       JsonWriter.writeValueAsJson(jsonGenerator, element, null);
     }
 
-    // if(this!=null && this.size() > 1) {
     jsonGenerator.writeEndArray();
     jsonGenerator.writeEndObject();
-    // }
   }
 
   public void serializeWithType(final JsonGenerator jsonGenerator,

@@ -83,56 +83,56 @@ public class RegionSubRegionSnapshot implements DataSerializable {
   /**
    * @return get entry count of region
    */
-  public final int getEntryCount() {
+  public int getEntryCount() {
     return entryCount;
   }
 
   /**
    * @param entryCount entry count of region
    */
-  public final void setEntryCount(int entryCount) {
+  public void setEntryCount(int entryCount) {
     this.entryCount = entryCount;
   }
 
   /**
    * @return name of region
    */
-  public final String getName() {
+  public String getName() {
     return name;
   }
 
   /**
    * @param name name of region
    */
-  public final void setName(String name) {
+  public void setName(String name) {
     this.name = name;
   }
 
   /**
    * @return subRegionSnapshots of all the sub regions
    */
-  public final Set getSubRegionSnapshots() {
+  public Set getSubRegionSnapshots() {
     return subRegionSnapshots;
   }
 
   /**
    * @param subRegionSnapshots subRegionSnapshots of all the sub regions
    */
-  public final void setSubRegionSnapshots(Set subRegionSnapshots) {
+  public void setSubRegionSnapshots(Set subRegionSnapshots) {
     this.subRegionSnapshots = subRegionSnapshots;
   }
 
   /**
    * @return snapshot of parent region
    */
-  public final RegionSubRegionSnapshot getParent() {
+  public RegionSubRegionSnapshot getParent() {
     return parent;
   }
 
   /**
    * @param parent snapshot of parent region
    */
-  public final void setParent(RegionSubRegionSnapshot parent) {
+  public void setParent(RegionSubRegionSnapshot parent) {
     this.parent = parent;
   }
 

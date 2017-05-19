@@ -28,10 +28,10 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * thrown away and a real DiskRegion instance will replace it. This class needs to keep track of any
  * information that can be recovered from the DiskInitFile.
  *
- *
  * @since GemFire prPersistSprint2
  */
 public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRecoveryStore {
+
   private final String name;
 
   /**
@@ -59,7 +59,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
   }
 
   @Override
-  public final String getName() {
+  public String getName() {
     return this.name;
   }
 

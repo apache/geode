@@ -36,10 +36,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 1. It forwards TX operations to primary or a selected replica (in case of RR) for each op </br>
  * 2.It also records those transactional operations in order to send those to
  * secondaries/replicas(in one batch) at commit time.
- * 
- *
  */
 public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordinatorInterface {
+
   private ArrayList<DistTxEntryEvent> primaryTransactionalOperations = null;
   private ArrayList<DistTxEntryEvent> secondaryTransactionalOperations = null;
   private DistTXPrecommitMessage precommitDistTxMsg = null;
@@ -108,7 +107,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   }
 
   @Override
-  public final ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
+  public ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
       throws UnsupportedOperationInTransactionException {
     return primaryTransactionalOperations;
   }

@@ -18,6 +18,7 @@ import java.util.UUID;
 
 public abstract class VMStatsLRURegionEntryOffHeap extends VMStatsLRURegionEntry
     implements OffHeapRegionEntry {
+
   public VMStatsLRURegionEntryOffHeap(RegionEntryContext context, Object value) {
     super(context, value);
   }
@@ -30,7 +31,7 @@ public abstract class VMStatsLRURegionEntryOffHeap extends VMStatsLRURegionEntry
   }
 
   private static class VMStatsLRURegionEntryOffHeapFactory implements RegionEntryFactory {
-    public final RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
+    public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
         if (keyClass == Integer.class) {
@@ -55,7 +56,7 @@ public abstract class VMStatsLRURegionEntryOffHeap extends VMStatsLRURegionEntry
       return new VMStatsLRURegionEntryOffHeapObjectKey(context, key, value);
     }
 
-    public final Class getEntryClass() {
+    public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMStatsLRURegionEntryOffHeapObjectKey.class;

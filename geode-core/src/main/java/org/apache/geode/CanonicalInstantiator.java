@@ -14,7 +14,8 @@
  */
 package org.apache.geode;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.IOException;
 
 /**
  * <code>CanonicalInstantiator</code> is much like its parent <code>Instantiator</code> except that
@@ -31,6 +32,7 @@ import java.io.*;
  * @since GemFire 5.1
  */
 public abstract class CanonicalInstantiator extends Instantiator {
+
   /**
    * Creates a new <code>CanonicalInstantiator</code> that instantiates a given class.
    *
@@ -54,7 +56,7 @@ public abstract class CanonicalInstantiator extends Instantiator {
    * @throws UnsupportedOperationException in all cases
    */
   @Override
-  public final DataSerializable newInstance() {
+  public DataSerializable newInstance() {
     throw new UnsupportedOperationException();
   }
 

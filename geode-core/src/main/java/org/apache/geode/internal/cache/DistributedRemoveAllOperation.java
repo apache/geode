@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -41,7 +39,6 @@ import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
-import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
@@ -59,13 +56,12 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  * Handles distribution of a Region.removeAll operation.
+ *
+ * TODO: extend DistributedCacheOperation instead of AbstractUpdateOperation
  * 
  * @since GemFire 8.1
  */
-public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TODO extend
-                                                                           // DistributedCacheOperation
-                                                                           // instead
-{
+public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -247,7 +243,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
   }
 
-  public final EntryEventImpl getBaseEvent() {
+  public EntryEventImpl getBaseEvent() {
     return getEvent();
   }
 

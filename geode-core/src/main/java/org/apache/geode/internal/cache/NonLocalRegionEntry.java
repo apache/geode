@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -40,6 +37,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
+
   private long lastModified;
   private boolean isRemoved;
   private Object key;
@@ -291,7 +289,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
             .toLocalizedString());
   }
 
-  public final Object getValueInVM(RegionEntryContext context) {
+  public Object getValueInVM(RegionEntryContext context) {
     return this.value;
   }
 
@@ -360,7 +358,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
     return false;
   }
 
-  public final Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
+  public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
     return this.value;
   }
 

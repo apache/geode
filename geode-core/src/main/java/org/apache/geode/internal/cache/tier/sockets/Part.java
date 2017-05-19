@@ -34,14 +34,15 @@ import org.apache.geode.internal.offheap.StoredObject;
  * to edge requests
  *
  * @see Message
- *
  * @since GemFire 2.0.2
  */
 public class Part {
+
   private static final byte BYTE_CODE = 0;
   private static final byte OBJECT_CODE = 1;
 
   private Version version;
+
   /**
    * Used to represent and empty byte array for bug 36279
    * 
@@ -67,7 +68,6 @@ public class Part {
     }
     this.typeCode = tc;
   }
-
 
   public void clear() {
     if (this.part != null) {
@@ -249,7 +249,6 @@ public class Part {
         | ((((long) bytes[6]) << 8) & 0x000000000000FF00l) | (bytes[7] & 0x00000000000000FFl);
   }
 
-
   public byte[] getSerializedForm() {
     if (this.part == null) {
       return null;
@@ -291,7 +290,7 @@ public class Part {
    * 
    * @param buf the buffer to use if any data needs to be copied to one
    */
-  public final void writeTo(OutputStream out, ByteBuffer buf) throws IOException {
+  public void writeTo(OutputStream out, ByteBuffer buf) throws IOException {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         byte[] bytes = (byte[]) this.part;
@@ -436,19 +435,6 @@ public class Part {
     sb.append("partCode=");
     sb.append(typeCodeToString(this.typeCode));
     sb.append(" partLength=" + getLength());
-    // sb.append(" partBytes=");
-    // byte[] b = getSerializedForm();
-    // if (b == null) {
-    // sb.append("null");
-    // }
-    // else {
-    // sb.append("(");
-    // for (int i = 0; i < b.length; i ++) {
-    // sb.append(Integer.toString(b[i]));
-    // sb.append(" ");
-    // }
-    // sb.append(")");
-    // }
     return sb.toString();
   }
 

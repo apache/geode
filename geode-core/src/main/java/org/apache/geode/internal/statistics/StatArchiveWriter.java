@@ -140,7 +140,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
    * 
    * @throws GemFireIOException if the archive file could not be closed.
    */
-  public final void close() {
+  public void close() {
     try {
       this.dataOut.flush();
       if (this.trace) {
@@ -176,7 +176,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
    * Returns the number of bytes written so far to this archive. This does not take compression into
    * account.
    */
-  public final long bytesWritten() {
+  public long bytesWritten() {
     return this.dataOut.getBytesWritten();
   }
 

@@ -49,7 +49,7 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable
    * Invokes the {@link #run2} method and will wrap any {@link CacheException} thrown by
    * <code>run2</code> in a {@link CacheSerializableRunnableException}.
    */
-  public final void run() {
+  public void run() {
     try {
       if (args == null) {
         run2();
@@ -68,7 +68,7 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable
    * repeat the {@link #run} method until it either succeeds or repeatTimeoutMs milliseconds have
    * passed. The AssertionError is only thrown to the caller if the last run still throws it.
    */
-  public final void runRepeatingIfNecessary(long repeatTimeoutMs) {
+  public void runRepeatingIfNecessary(long repeatTimeoutMs) {
     long start = System.currentTimeMillis();
     AssertionError lastErr = null;
     do {

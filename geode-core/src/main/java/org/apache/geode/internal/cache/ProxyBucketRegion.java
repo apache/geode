@@ -218,7 +218,7 @@ public class ProxyBucketRegion implements Bucket {
     return this.partitionedRegion.getAttributes();
   }
 
-  public final BucketAdvisor getBucketAdvisor() {
+  public BucketAdvisor getBucketAdvisor() {
     return this.advisor;
   }
 

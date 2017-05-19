@@ -888,7 +888,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   }
 
   @Override
-  public final Object validatedDestroy(Object key, EntryEventImpl event)
+  public Object validatedDestroy(Object key, EntryEventImpl event)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     Lock dlock = this.getDistributedLockIfGlobal(key);
     try {

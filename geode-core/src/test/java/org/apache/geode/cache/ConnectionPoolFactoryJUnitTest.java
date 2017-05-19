@@ -106,7 +106,7 @@ public class ConnectionPoolFactoryJUnitTest {
   }
 
   @Test
-  public final void testCreateDefaultAndInvalidAndLegitAttributes() {
+  public void testCreateDefaultAndInvalidAndLegitAttributes() {
     PoolFactory cpf = PoolManager.createFactory();
     ((PoolFactoryImpl) cpf).setStartDisabled(true);
 

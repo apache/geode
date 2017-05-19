@@ -435,7 +435,7 @@ public abstract class EvictionAttributes implements DataSerializable {
   public abstract EvictionAction getAction();
 
   @Override
-  public final boolean equals(final Object obj) {
+  public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
     }
@@ -455,7 +455,7 @@ public abstract class EvictionAttributes implements DataSerializable {
   }
 
   @Override
-  public final int hashCode() {
+  public int hashCode() {
     if (getAlgorithm().isLRUHeap()) {
       return getAlgorithm().hashCode();
     } else {

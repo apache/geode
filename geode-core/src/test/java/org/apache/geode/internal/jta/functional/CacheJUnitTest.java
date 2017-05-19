@@ -1170,7 +1170,7 @@ public class CacheJUnitTest {
       this.tableName = str;
     }
 
-    public final Object load(LoaderHelper helper) throws CacheLoaderException {
+    public Object load(LoaderHelper helper) throws CacheLoaderException {
       System.out.println("In Loader.load for" + helper.getKey());
       return loadFromDatabase(helper.getKey());
     }

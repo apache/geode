@@ -25,6 +25,7 @@ import javax.print.attribute.EnumSyntax;
  */
 public final class EvictionAlgorithm extends EnumSyntax {
   private static final long serialVersionUID = 5778669432033106789L;
+
   /**
    * The canonical EvictionAction that represents no eviction action
    */
@@ -71,16 +72,15 @@ public final class EvictionAlgorithm extends EnumSyntax {
       "lru-memory-size", "lifo-entry-count", "lifo-memory-size"};
 
   @Override
-  final protected String[] getStringTable() {
+  protected String[] getStringTable() {
     return stringTable;
   }
 
-  // TODO post Java 1.8.0u45 uncomment final flag, see JDK-8076152
-  private static /* final */ EvictionAlgorithm[] enumValueTable =
+  private static final EvictionAlgorithm[] enumValueTable =
       {NONE, LRU_ENTRY, LRU_HEAP, LRU_MEMORY, LIFO_ENTRY, LIFO_MEMORY,};
 
   @Override
-  final protected EnumSyntax[] getEnumValueTable() {
+  protected EnumSyntax[] getEnumValueTable() {
     return enumValueTable;
   }
 
@@ -111,15 +111,15 @@ public final class EvictionAlgorithm extends EnumSyntax {
     return null;
   }
 
-  public final boolean isLRUEntry() {
+  public boolean isLRUEntry() {
     return this == LRU_ENTRY;
   }
 
-  public final boolean isLRUMemory() {
+  public boolean isLRUMemory() {
     return this == LRU_MEMORY;
   }
 
-  public final boolean isLRUHeap() {
+  public boolean isLRUHeap() {
     return this == LRU_HEAP;
   }
 
@@ -128,7 +128,7 @@ public final class EvictionAlgorithm extends EnumSyntax {
     return this.isLRUEntry() || this.isLRUMemory() || this.isLRUHeap();
   }
 
-  public final boolean isNone() {
+  public boolean isNone() {
     return this == NONE;
   }
 

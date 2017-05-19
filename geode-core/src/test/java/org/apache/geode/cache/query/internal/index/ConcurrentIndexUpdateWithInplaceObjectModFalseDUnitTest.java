@@ -95,7 +95,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     }
   }
 
-  private final void getAvailableCacheElseCreateCache() {
+  private void getAvailableCacheElseCreateCache() {
     synchronized (ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest.class) {
       try {
         Cache newCache = GemFireCacheImpl.getInstance();

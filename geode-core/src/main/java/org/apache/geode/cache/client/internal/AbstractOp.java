@@ -274,7 +274,7 @@ public abstract class AbstractOp implements Op {
    * @throws Exception if response could not be processed or we received a response with a server
    *         exception.
    */
-  protected final Object processObjResponse(Message msg, String opName) throws Exception {
+  protected Object processObjResponse(Message msg, String opName) throws Exception {
     Part part = msg.getPart(0);
     final int msgType = msg.getMessageType();
     if (msgType == MessageType.RESPONSE) {

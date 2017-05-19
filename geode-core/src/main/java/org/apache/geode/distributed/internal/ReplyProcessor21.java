@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal;
 
 import org.apache.geode.CancelCriterion;
@@ -34,7 +33,12 @@ import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class processes responses to {@link DistributionMessage}s. It handles a the generic case of
@@ -69,8 +73,6 @@ import java.util.*;
  * <p>
  *
  * @see MessageWithReply
- *
- *
  * @since GemFire 2.1
  */
 public class ReplyProcessor21 implements MembershipListener {
@@ -852,7 +854,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * @throws InternalGemFireException if ack-threshold was exceeded and system property
    *         "ack-threshold-exception" is set to true
    */
-  public final void waitForRepliesUninterruptibly() throws ReplyException {
+  public void waitForRepliesUninterruptibly() throws ReplyException {
     waitForRepliesUninterruptibly(0);
   }
 
@@ -929,7 +931,7 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   /** do processing required when finished */
-  protected final void finished() {
+  protected void finished() {
     boolean isDone = false;
     synchronized (this) {
       if (!this.done) { // make sure only called once

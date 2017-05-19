@@ -403,7 +403,7 @@ public class RestInterfaceJUnitTest {
       this.lastName = lastName;
     }
 
-    protected final String format(final Date dateTime) {
+    protected String format(final Date dateTime) {
       return format(dateTime, DEFAULT_BIRTH_DATE_FORMAT_PATTERN);
     }
 

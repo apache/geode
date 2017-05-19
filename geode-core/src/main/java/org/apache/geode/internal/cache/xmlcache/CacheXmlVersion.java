@@ -19,12 +19,13 @@ import java.util.HashMap;
 /**
  * {@link Enum} for Cache XML versions. Resolves issues with old String based comparisons. Under the
  * old String comparison version "8.1" was older than "8_0" and "10.0" was older than "9.0".
- *
+ * <p>
+ * TODO future - replace constants in CacheXml with this Enum completely
  *
  * @since GemFire 8.1
  */
-// TODO future - replace constants in CacheXml with this Enum completely
 public enum CacheXmlVersion {
+
   GEMFIRE_3_0(CacheXml.VERSION_3_0, CacheXml.PUBLIC_ID_3_0, CacheXml.SYSTEM_ID_3_0, null, null),
   GEMFIRE_4_0(CacheXml.VERSION_4_0, CacheXml.PUBLIC_ID_4_0, CacheXml.SYSTEM_ID_4_0, null, null),
   GEMFIRE_4_1(CacheXml.VERSION_4_1, CacheXml.PUBLIC_ID_4_1, CacheXml.SYSTEM_ID_4_1, null, null),
@@ -132,7 +133,7 @@ public enum CacheXmlVersion {
    * @throws IllegalArgumentException if version does not exist.
    * @since GemFire 8.1
    */
-  public static final CacheXmlVersion valueForVersion(final String version) {
+  public static CacheXmlVersion valueForVersion(final String version) {
     final CacheXmlVersion cacheXmlVersion = valuesForVersion.get(version);
     if (null == cacheXmlVersion) {
       throw new IllegalArgumentException("No enum constant "

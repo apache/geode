@@ -288,7 +288,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * 
    * @return a reference to the Locator.
    */
-  final InternalLocator getLocator() {
+  InternalLocator getLocator() {
     return this.locator;
   }
 
@@ -300,7 +300,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #getBindAddressAsString()
    * @see #getPortAsString()
    */
-  public final String getId() {
+  public String getId() {
     return LocatorState.getBindAddressAsString(this).concat("[")
         .concat(LocatorState.getPortAsString(this)).concat("]");
   }
@@ -1510,7 +1510,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return this;
     }
 
-    final boolean isBindAddressSpecified() {
+    boolean isBindAddressSpecified() {
       return (getBindAddress() != null);
 
     }

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.internal.ExternalizableDSFID;
@@ -25,16 +24,15 @@ import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * The implementation of the {@link TransactionId} interface stored in the transaction state and
- * used, amoung other things, to uniquely identify a transaction in a confederation of transaction
+ * used, among other things, to uniquely identify a transaction in a confederation of transaction
  * participants (currently VM in a Distributed System).
  *
- * 
  * @since GemFire 4.0
- * 
  * @see TXManagerImpl#begin
  * @see org.apache.geode.cache.CacheTransactionManager#getTransactionId
  */
 public class TXId extends ExternalizableDSFID implements TransactionId {
+
   /** The domain of a transaction, currently the VM's unique identifier */
   private InternalDistributedMember memberId;
   /** Per unique identifier within the transactions memberId */
@@ -104,7 +102,7 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
     this.memberId = DSFIDFactory.readInternalDistributedMember(in);
   }
 
-  public static final TXId createFromData(DataInput in) throws IOException, ClassNotFoundException {
+  public static TXId createFromData(DataInput in) throws IOException, ClassNotFoundException {
     TXId result = new TXId();
     InternalDataSerializer.invokeFromData(result, in);
     return result;

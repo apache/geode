@@ -193,10 +193,6 @@ public abstract class DataSerializer {
   protected static final ThreadLocal<Boolean> DISALLOW_JAVA_SERIALIZATION =
       new ThreadLocal<Boolean>();
 
-  ////////////////////// Instance Fields /////////////////////
-
-  ////////////////////// Static Methods //////////////////////
-
   /**
    * Writes an instance of <code>Class</code> to a <code>DataOutput</code>. This method will handle
    * a <code>null</code> value and not throw a <code>NullPointerException</code>.
@@ -321,7 +317,6 @@ public abstract class DataSerializer {
     }
     return rgn;
   }
-
 
   /**
    * Writes an instance of <code>Date</code> to a <code>DataOutput</code>. Note that even though
@@ -509,7 +504,7 @@ public abstract class DataSerializer {
       out.writeByte(DSCODE.NULL_STRING);
 
     } else {
-      // [bruce] writeUTF is expensive - it creates a char[] to fetch
+      // writeUTF is expensive - it creates a char[] to fetch
       // the string's contents, iterates over the array to compute the
       // encoded length, creates a byte[] to hold the encoded bytes,
       // iterates over the char[] again to create the encode bytes,
@@ -2903,7 +2898,7 @@ public abstract class DataSerializer {
    * @see Instantiator
    * @see ObjectOutputStream#writeObject
    */
-  public static final void writeObject(Object o, DataOutput out, boolean allowJavaSerialization)
+  public static void writeObject(Object o, DataOutput out, boolean allowJavaSerialization)
       throws IOException {
 
     if (allowJavaSerialization) {
@@ -2937,7 +2932,7 @@ public abstract class DataSerializer {
    * @see DataSerializer
    * @see ObjectOutputStream#writeObject
    */
-  public static final void writeObject(Object o, DataOutput out) throws IOException {
+  public static void writeObject(Object o, DataOutput out) throws IOException {
     InternalDataSerializer.basicWriteObject(o, out, false);
   }
 
@@ -2962,8 +2957,7 @@ public abstract class DataSerializer {
    * @see ObjectInputStream#readObject
    */
   @SuppressWarnings("unchecked")
-  public static final <T> T readObject(final DataInput in)
-      throws IOException, ClassNotFoundException {
+  public static <T> T readObject(final DataInput in) throws IOException, ClassNotFoundException {
     return (T) InternalDataSerializer.basicReadObject(in);
   }
 
@@ -2997,11 +2991,9 @@ public abstract class DataSerializer {
    *         the classes reserved by DataSerializer (see {@link #getSupportedClasses} for a list).
    * @see #getSupportedClasses
    */
-  public static final DataSerializer register(Class<?> c) {
+  public static DataSerializer register(Class<?> c) {
     return InternalDataSerializer.register(c, true);
   }
-
-  /////////////////////// Constructors ///////////////////////
 
   /**
    * Creates a new <code>DataSerializer</code>. All class that implement <code>DataSerializer</code>
@@ -3010,10 +3002,8 @@ public abstract class DataSerializer {
    * @see #register(Class)
    */
   public DataSerializer() {
-
+    // nothing
   }
-
-  ///////////////////// Instance Methods /////////////////////
 
   /**
    * Returns the <code>Class</code>es whose instances are data serialized by this
@@ -3111,7 +3101,7 @@ public abstract class DataSerializer {
    * 
    * @since GemFire 6.5
    */
-  public final void setEventId(Object/* EventID */ eventId) {
+  public void setEventId(Object/* EventID */ eventId) {
     this.eventId = (EventID) eventId;
   }
 
@@ -3121,7 +3111,7 @@ public abstract class DataSerializer {
    * 
    * @since GemFire 6.5
    */
-  public final Object/* EventID */ getEventId() {
+  public Object/* EventID */ getEventId() {
     return this.eventId;
   }
 
@@ -3130,7 +3120,7 @@ public abstract class DataSerializer {
    * 
    * @since GemFire 6.5
    */
-  public final void setContext(Object/* ClientProxyMembershipID */ context) {
+  public void setContext(Object/* ClientProxyMembershipID */ context) {
     this.context = (ClientProxyMembershipID) context;
   }
 
@@ -3139,7 +3129,7 @@ public abstract class DataSerializer {
    * 
    * @since GemFire 6.5
    */
-  public final Object/* ClientProxyMembershipID */ getContext() {
+  public Object/* ClientProxyMembershipID */ getContext() {
     return this.context;
   }
 

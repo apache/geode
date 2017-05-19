@@ -14,16 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.PrintStream;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.compression.Compressor;
@@ -42,18 +32,24 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
+import org.apache.logging.log4j.Logger;
+
+import java.io.PrintStream;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import joptsimple.internal.Strings;
 
 /**
  * Code shared by both DiskRegion and RecoveredDiskRegion.
  *
- *
  * @since GemFire prPersistSprint2
  */
 public abstract class AbstractDiskRegion implements DiskRegionView {
   private static final Logger logger = LogService.getLogger();
-
-  ////////////////////// Instance Fields ///////////////////////
 
   private final DiskStoreImpl ds;
   private final long id;
@@ -235,11 +231,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     this.offHeap = drv.getOffHeap();
   }
 
-  ////////////////////// Instance Methods //////////////////////
-
   public abstract String getName();
 
-  public final DiskStoreImpl getDiskStore() {
+  public DiskStoreImpl getDiskStore() {
     return this.ds;
   }
 
@@ -380,14 +374,11 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     return PartitionedRegionHelper.getPRPath(bn);
   }
 
-
-
   private PersistentMemberID myInitializingId = null;
   private PersistentMemberID myInitializedId = null;
   private final CopyOnWriteHashSet<PersistentMemberID> onlineMembers;
   private final CopyOnWriteHashSet<PersistentMemberID> offlineMembers;
   private final CopyOnWriteHashSet<PersistentMemberID> equalMembers;
-
 
   public PersistentMemberID addMyInitializingPMID(PersistentMemberID pmid) {
     PersistentMemberID result = this.myInitializingId;
@@ -905,7 +896,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   public void dumpMetadata() {
     String name = getName();
-    // TODO - DAN - make this a flag
+    // TODO: make this a flag
     // if (isBucket() && !DiskStoreImpl.TRACE_RECOVERY) {
     // name = getPrName();
     // }
@@ -976,7 +967,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
    * 
    * @return an instance of BytesAndBits or Token.REMOVED_PHASE1
    */
-  public final Object getRaw(DiskId id) {
+  public Object getRaw(DiskId id) {
     this.acquireReadLock();
     try {
       return getDiskStore().getRaw(this, id);
@@ -1047,7 +1038,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   @Override
   public void oplogRecovered(long oplogId) {
-    // do nothing. Overriden in ExportDiskRegion
+    // do nothing. Overridden in ExportDiskRegion
   }
 
   @Override

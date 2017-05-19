@@ -554,7 +554,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  private final void deleteTestFiles() throws IOException {
+  private void deleteTestFiles() throws IOException {
     this.managerConfigFile.delete();
     this.managerPropsFile.delete();
     this.vm1ConfigFile.delete();

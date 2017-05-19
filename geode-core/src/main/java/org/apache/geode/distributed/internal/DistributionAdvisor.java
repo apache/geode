@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal;
 
 import org.apache.geode.CancelException;
@@ -37,7 +36,14 @@ import org.apache.logging.log4j.Logger;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,7 +62,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * A primary design goal of this class is scalability: the footprint must be kept to a minimum as
  * the number of instances grows across a growing number of members in the distributed system.
- *
  *
  * @since GemFire 3.0
  */
@@ -242,7 +247,7 @@ public class DistributionAdvisor {
     return advisor;
   }
 
-  protected final void initialize() {
+  protected void initialize() {
     subInit();
     getDistributionManager().addMembershipListener(this.ml);
   }
@@ -1581,7 +1586,7 @@ public class DistributionAdvisor {
      * 
      * @since GemFire 5.0
      */
-    public final InternalDistributedMember getDistributedMember() {
+    public InternalDistributedMember getDistributedMember() {
       return this.peerMemberId;
     }
 

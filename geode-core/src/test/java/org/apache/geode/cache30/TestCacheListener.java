@@ -86,7 +86,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     }
   }
 
-  public final void afterCreate(EntryEvent event) {
+  public void afterCreate(EntryEvent event) {
     addEvent(event);
     try {
       afterCreate2(event);
@@ -103,7 +103,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     throw new UnsupportedOperationException(s);
   }
 
-  public final void afterUpdate(EntryEvent event) {
+  public void afterUpdate(EntryEvent event) {
     addEvent(event);
     try {
       afterUpdate2(event);
@@ -120,7 +120,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     throw new UnsupportedOperationException(s);
   }
 
-  public final void afterInvalidate(EntryEvent event) {
+  public void afterInvalidate(EntryEvent event) {
     addEvent(event);
     try {
       afterInvalidate2(event);
@@ -137,7 +137,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     throw new UnsupportedOperationException(s);
   }
 
-  public final void afterDestroy(EntryEvent event) {
+  public void afterDestroy(EntryEvent event) {
     afterDestroyBeforeAddEvent(event);
     addEvent(event);
     try {
@@ -159,7 +159,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     throw new UnsupportedOperationException(s);
   }
 
-  public final void afterRegionInvalidate(RegionEvent event) {
+  public void afterRegionInvalidate(RegionEvent event) {
     addEvent(event);
     try {
       afterRegionInvalidate2(event);
@@ -176,7 +176,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     throw new UnsupportedOperationException(s);
   }
 
-  public final void afterRegionDestroy(RegionEvent event) {
+  public void afterRegionDestroy(RegionEvent event) {
     // check argument to see if this is during tearDown
     if ("teardown".equals(event.getCallbackArgument()))
       return;

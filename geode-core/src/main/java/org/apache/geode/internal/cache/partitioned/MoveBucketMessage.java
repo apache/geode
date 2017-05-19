@@ -47,7 +47,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * Usage: MoveBucketResponse response = MoveBucketMessage.send( InternalDistributedMember,
  * PartitionedRegion, int bucketId); if (response != null && response.waitForResponse()) { // bucket
  * was moved }
- * 
  */
 public class MoveBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -106,8 +105,8 @@ public class MoveBucketMessage extends PartitionMessage {
   }
 
   @Override
-  protected final boolean operateOnPartitionedRegion(DistributionManager dm,
-      PartitionedRegion region, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
+      long startTime) throws ForceReattemptException {
 
     PartitionedRegionDataStore dataStore = region.getDataStore();
     boolean moved = dataStore.moveBucket(this.bucketId, this.source, true);

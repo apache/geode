@@ -21,15 +21,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -39,7 +40,6 @@ import org.junit.rules.TestName;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import joptsimple.OptionException;
-
 
 /**
  * The LocatorLauncherTest class is a test suite of test cases for testing the contract and
@@ -61,9 +61,16 @@ public class LocatorLauncherTest {
   @Rule
   public final TestName testName = new TestName();
 
-  @Before
-  public void setup() {
-    DistributedSystem.removeSystem(InternalDistributedSystem.getConnectedInstance());
+  @Test
+  public void shouldBeMockable() throws Exception {
+    LocatorLauncher mockLocatorLauncher = mock(LocatorLauncher.class);
+    InternalLocator mockInternalLocator = mock(InternalLocator.class);
+
+    when(mockLocatorLauncher.getLocator()).thenReturn(mockInternalLocator);
+    when(mockLocatorLauncher.getId()).thenReturn("ID");
+
+    assertThat(mockLocatorLauncher.getLocator()).isSameAs(mockInternalLocator);
+    assertThat(mockLocatorLauncher.getId()).isEqualTo("ID");
   }
 
   @Test(expected = IllegalArgumentException.class)

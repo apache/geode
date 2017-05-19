@@ -84,7 +84,7 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private final void createRegion(String regionName, boolean persistent) {
+  private void createRegion(String regionName, boolean persistent) {
     if (persistent) {
       getCache().createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT).create(regionName);
     } else {

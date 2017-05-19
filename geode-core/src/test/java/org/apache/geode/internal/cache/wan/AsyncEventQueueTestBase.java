@@ -1580,7 +1580,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   }
 
   @Override
-  public final Properties getDistributedSystemProperties() {
+  public Properties getDistributedSystemProperties() {
     // For now all WANTestBase tests allocate off-heap memory even though
     // many of them never use it.
     // The problem is that WANTestBase has static methods that create instances

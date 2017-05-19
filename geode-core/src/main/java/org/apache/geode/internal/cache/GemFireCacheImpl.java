@@ -4317,7 +4317,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public final InternalResourceManager getInternalResourceManager() {
+  public InternalResourceManager getInternalResourceManager() {
     return getInternalResourceManager(true);
   }
 

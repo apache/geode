@@ -44,7 +44,7 @@ public class BucketBackupMessage extends PartitionMessage {
   private int bucketId;
 
   /**
-   * Empty contstructor provided for {@link org.apache.geode.DataSerializer}
+   * Empty constructor provided for {@link org.apache.geode.DataSerializer}
    */
   public BucketBackupMessage() {
     super();
@@ -73,7 +73,7 @@ public class BucketBackupMessage extends PartitionMessage {
    * of the initialization
    */
   @Override
-  protected final boolean failIfRegionMissing() {
+  protected boolean failIfRegionMissing() {
     return false;
   }
 

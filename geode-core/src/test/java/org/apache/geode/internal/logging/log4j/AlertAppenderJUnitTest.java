@@ -70,7 +70,7 @@ public class AlertAppenderJUnitTest {
    * Verify that adding/removing/replacing listeners works correctly.
    */
   @Test
-  public final void testListenerHandling() throws Exception {
+  public void testListenerHandling() throws Exception {
     DistributedMember member1 = createTestDistributedMember("Member1");
     DistributedMember member2 = createTestDistributedMember("Member2");
     DistributedMember member3 = createTestDistributedMember("Member3");
@@ -146,7 +146,7 @@ public class AlertAppenderJUnitTest {
    * when the configuration is changed the appender is still there.
    */
   @Test
-  public final void testAppenderToConfigHandling() throws Exception {
+  public void testAppenderToConfigHandling() throws Exception {
     LogService.setBaseLogLevel(Level.WARN);
 
     final String appenderName = AlertAppender.getInstance().getName();

@@ -18,6 +18,7 @@ import java.util.UUID;
 
 public abstract class VersionedThinLRURegionEntryOffHeap extends VersionedThinLRURegionEntry
     implements OffHeapRegionEntry {
+
   public VersionedThinLRURegionEntryOffHeap(RegionEntryContext context, Object value) {
     super(context, value);
   }
@@ -30,7 +31,7 @@ public abstract class VersionedThinLRURegionEntryOffHeap extends VersionedThinLR
   }
 
   private static class VersionedThinLRURegionEntryOffHeapFactory implements RegionEntryFactory {
-    public final RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
+    public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
         if (keyClass == Integer.class) {
@@ -57,7 +58,7 @@ public abstract class VersionedThinLRURegionEntryOffHeap extends VersionedThinLR
       return new VersionedThinLRURegionEntryOffHeapObjectKey(context, key, value);
     }
 
-    public final Class getEntryClass() {
+    public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VersionedThinLRURegionEntryOffHeapObjectKey.class;

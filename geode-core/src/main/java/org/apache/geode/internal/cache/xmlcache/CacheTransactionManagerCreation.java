@@ -28,24 +28,20 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * Represents a {@link CacheTransactionManager} that is created declaratively.
  *
- *
  * @since GemFire 4.0
  */
 public class CacheTransactionManagerCreation implements CacheTransactionManager {
 
-  /////////////////////// Instance Fields ///////////////////////
-
   /** The TransactionListener instance set using the cache's CacheTransactionManager */
   private final ArrayList txListeners = new ArrayList();
+
   private TransactionWriter writer = null;
 
-  /////////////////////// Constructors ///////////////////////
   /**
    * Creates a new <code>CacheTransactionManagerCreation</code>
    */
   public CacheTransactionManagerCreation() {}
 
-  ////////////////////// Instance Methods //////////////////////
   public TransactionListener setListener(TransactionListener newListener) {
     TransactionListener result = getListener();
     this.txListeners.clear();
@@ -78,7 +74,7 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
     return result;
   }
 
-  public final TransactionListener getListener() {
+  public TransactionListener getListener() {
     if (this.txListeners.isEmpty()) {
       return null;
     } else if (this.txListeners.size() == 1) {
@@ -120,7 +116,7 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
             .toLocalizedString());
   }
 
-  public final void setWriter(TransactionWriter writer) {
+  public void setWriter(TransactionWriter writer) {
     this.writer = writer;
   }
 

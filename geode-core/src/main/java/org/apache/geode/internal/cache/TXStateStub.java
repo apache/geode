@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * File comment
- */
 package org.apache.geode.internal.cache;
 
 import java.util.Collection;
@@ -46,10 +43,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * TXStateStub lives on the accessor node when we are remoting a transaction. It is a stub for
  * {@link TXState}.
- * 
- *
  */
 public abstract class TXStateStub implements TXStateInterface {
+
   protected final DistributedMember target;
   protected final TXStateProxy proxy;
   protected Runnable internalAfterSendRollback;
@@ -57,11 +53,6 @@ public abstract class TXStateStub implements TXStateInterface {
 
   Map<Region<?, ?>, TXRegionStub> regionStubs = new HashMap<Region<?, ?>, TXRegionStub>();
 
-
-  /**
-   * @param stateProxy
-   * @param target
-   */
   protected TXStateStub(TXStateProxy stateProxy, DistributedMember target) {
     this.target = target;
     this.proxy = stateProxy;
@@ -113,8 +104,6 @@ public abstract class TXStateStub implements TXStateInterface {
     }
   }
 
-
-
   /**
    * Get or create a TXRegionStub for the given region. For regions that are new to the tx, we
    * validate their eligibility.
@@ -122,7 +111,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * @param region The region to involve in the tx.
    * @return existing or new stub for region
    */
-  protected final TXRegionStub getTXRegionStub(LocalRegion region) {
+  protected TXRegionStub getTXRegionStub(LocalRegion region) {
     TXRegionStub stub = regionStubs.get(region);
     if (stub == null) {
       /*
@@ -138,7 +127,6 @@ public abstract class TXStateStub implements TXStateInterface {
   public Map<Region<?, ?>, TXRegionStub> getRegionStubs() {
     return this.regionStubs;
   }
-
 
   @Override
   public String toString() {

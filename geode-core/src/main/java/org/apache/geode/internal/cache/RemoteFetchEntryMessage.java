@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -94,11 +93,6 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     return p;
   }
 
-  // final public int getProcessorType()
-  // {
-  // return DistributionManager.PARTITIONED_REGION_EXECUTOR;
-  // }
-
   @Override
   public boolean isSevereAlertCompatible() {
     // allow forced-disconnect processing for all cache op messages
@@ -106,7 +100,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   }
 
   @Override
-  protected final boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
     // RemoteFetchEntryMessage is used in refreshing client caches during interest list recovery,
     // so don't be too verbose or hydra tasks may time out

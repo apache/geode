@@ -195,7 +195,7 @@ public class PdxOrderByJUnitTest {
 
   }
 
-  final public Region createRegion(String name, String rootName, RegionAttributes attrs)
+  public Region createRegion(String name, String rootName, RegionAttributes attrs)
       throws CacheException {
     Region root = getRootRegion(rootName);
     if (root == null) {
@@ -220,11 +220,11 @@ public class PdxOrderByJUnitTest {
     return root.createSubregion(name, attrs);
   }
 
-  public final Region getRootRegion(String rootName) {
+  public Region getRootRegion(String rootName) {
     return CacheUtils.getRegion(rootName);
   }
 
-  public final Region createRootRegion(String rootName, RegionAttributes attrs)
+  public Region createRootRegion(String rootName, RegionAttributes attrs)
       throws RegionExistsException, TimeoutException {
     return ((GemFireCacheImpl) CacheUtils.getCache()).createRegion(rootName, attrs);
   }

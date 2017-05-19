@@ -20,7 +20,6 @@ import java.io.InputStreamReader;
 
 /**
  * Abstract test case for tests verifying that unexpected test output will cause expected failures.
- * 
  */
 public abstract class FailOutputTestCase extends GoldenTestCase implements ExecutableProcess {
 
@@ -38,7 +37,7 @@ public abstract class FailOutputTestCase extends GoldenTestCase implements Execu
   abstract void outputProblemInProcess(String message);
 
   @Override
-  public final void executeInProcess() throws IOException {
+  public void executeInProcess() throws IOException {
     outputLine("Begin " + name() + ".main");
     outputLine("Press Enter to continue.");
     new BufferedReader(new InputStreamReader(System.in)).readLine();

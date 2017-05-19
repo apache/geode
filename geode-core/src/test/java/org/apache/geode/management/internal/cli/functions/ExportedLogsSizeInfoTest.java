@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.assertj.core.api.Assertions.*;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,18 +28,9 @@ import java.io.DataOutputStream;
 
 @Category(UnitTest.class)
 public class ExportedLogsSizeInfoTest {
-  @Before
-  public void setUp() throws Exception {
-
-  }
-
-  @After
-  public void tearDown() throws Exception {
-
-  }
 
   @Test
-  public final void testExportedLogsSizeInfoConstructor() {
+  public void testExportedLogsSizeInfoConstructor() {
     ExportedLogsSizeInfo sizeDetail = new ExportedLogsSizeInfo(1L, 11L, 111L);
     assertThat(sizeDetail).isNotNull();
     assertThat(sizeDetail.getLogsSize()).isEqualTo(1L);
@@ -50,7 +39,7 @@ public class ExportedLogsSizeInfoTest {
   }
 
   @Test
-  public final void testExportedLogsSizeInfoZeroArgConstructor() {
+  public void testExportedLogsSizeInfoZeroArgConstructor() {
     ExportedLogsSizeInfo sizeDetail = new ExportedLogsSizeInfo();
     assertThat(sizeDetail).isNotNull();
     assertThat(sizeDetail.getLogsSize()).isEqualTo(0L);
@@ -99,7 +88,7 @@ public class ExportedLogsSizeInfoTest {
   }
 
   @Test
-  public final void testClassInequality() {
+  public void testClassInequality() {
     ExportedLogsSizeInfo sizeDeatai1 = new ExportedLogsSizeInfo(7L, 77L, 777L);
     String sizeDetail2 = sizeDeatai1.toString();
     assertThat(sizeDeatai1.equals(sizeDetail2)).isFalse();
@@ -119,7 +108,6 @@ public class ExportedLogsSizeInfoTest {
     assertThat(sizeDetail1.hashCode()).isEqualTo(29791);
     assertThat(sizeDetail2.hashCode()).isEqualTo(41095);
     assertThat(sizeDetail3.hashCode()).isEqualTo(115495);
-
   }
 
   @Test

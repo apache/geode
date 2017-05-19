@@ -252,16 +252,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     return numPrimaries.get();
   }
 
-
-  /**
-   * Indicates if this data store is managing buckets
-   * 
-   * @return true if it is managing buckets
-   */
-  final boolean isManagingAnyBucket() {
-    return !this.localBucket2RegionMap.isEmpty();
-  }
-
   /**
    * Try to grab buckets for all the colocated regions /* In case we can't grab buckets there is no
    * going back
@@ -872,54 +862,19 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             event.getRegion().getFullPath(), event.getKey(), event.getDistributedMember());
       }
 
-      public final void afterRegionInvalidate(RegionEvent event) {}
+      public void afterRegionInvalidate(RegionEvent event) {}
 
-      public final void afterRegionDestroy(RegionEvent event) {}
+      public void afterRegionDestroy(RegionEvent event) {}
 
-      public final void afterRegionClear(RegionEvent event) {}
+      public void afterRegionClear(RegionEvent event) {}
 
-      public final void afterRegionCreate(RegionEvent event) {}
+      public void afterRegionCreate(RegionEvent event) {}
 
-      public final void afterRegionLive(RegionEvent event) {}
+      public void afterRegionLive(RegionEvent event) {}
 
-      public final void close() {}
+      public void close() {}
     };
   }
-
-  // private void addBucketMapping(Integer bucketId, Node theNode)
-  // {
-  // VersionedArrayList list = (VersionedArrayList)this.partitionedRegion
-  // .getBucket2Node().get(bucketId);
-  // // Create a new list to avoid concurrent modification exceptions when
-  // // the array list is serialized e.g. GII
-  // if (list == null) {
-  // list = new VersionedArrayList(
-  // this.partitionedRegion.getRedundantCopies() + 1);
-  // list.add(theNode);
-  //
-  // }
-  // else {
-  // for(Iterator itr =list.iterator(); itr.hasNext();) {
-  // Node nd = (Node)itr.next();
-  // if( !PartitionedRegionHelper.isMemberAlive(nd.getMemberId(),
-  // this.partitionedRegion.cache)
-  // && !this.partitionedRegion.isPresentInPRConfig(nd)) {
-  // list.remove(nd);
-  // if(list.size() ==0 ) {
-  // PartitionedRegionHelper.logForDataLoss(this.partitionedRegion,
-  // bucketId.intValue(), "addBucketMapping");
-  // }
-  // }
-  //
-  // }
-  // if (!list.contains(theNode)) {
-  // list.add(theNode);
-  // }
-  // }
-  // this.partitionedRegion.checkClosed();
-  // this.partitionedRegion.checkReadiness();
-  // this.partitionedRegion.getBucket2Node().put(bucketId, list);
-  // }
 
   public CacheLoader getCacheLoader() {
     return this.loader;

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.junit.Assert.*;
@@ -63,6 +62,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ShowMissingDiskStoresFunctionJUnitTest {
+
   private GemFireCacheImpl cache;
   private GemFireCacheImpl oldCacheInstance;
   private InternalDistributedSystem system;
@@ -81,9 +81,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  /**
-   * @throws java.lang.Exception
-   */
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
@@ -100,9 +97,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     memberManager = mock(PersistentMemberManager.class);
   }
 
-  /**
-   * @throws java.lang.Exception
-   */
   @After
   public void tearDown() throws Exception {
     GemFireCacheImpl.setInstanceForTests(oldCacheInstance);
@@ -122,21 +116,14 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     }
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#getCache()}.
-   */
   @Test
-  public final void testGetCache() {
+  public void testGetCache() {
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     assertTrue(smdsFunc.getCache() instanceof Cache);
   }
 
-  /**
-   * Test method for {@link ShowMissingDiskStoresFunction#execute(FunctionContext)}.
-   */
   @Test
-  public final void testExecute() {
+  public void testExecute() {
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
@@ -152,12 +139,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     assertNotNull(results);
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   */
   @Test
-  public final void testExecuteWithNullContextThrowsRuntimeException() {
+  public void testExecuteWithNullContextThrowsRuntimeException() {
     expectedException.expect(RuntimeException.class);
 
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
@@ -170,7 +153,7 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
-  public final void testExecuteWithNullCacheInstanceHasEmptyResults() throws Throwable {
+  public void testExecuteWithNullCacheInstanceHasEmptyResults() throws Throwable {
     TestSMDSFFunc1 testSMDSFunc = new TestSMDSFFunc1();
     List<?> results = null;
 
@@ -181,12 +164,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     assertNull(results.get(0));
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   */
   @Test
-  public final void testExecuteWithNullGFCIResultValueIsNull() throws Throwable {
+  public void testExecuteWithNullGFCIResultValueIsNull() throws Throwable {
     TestSMDSFFunc2 testSMDSFunc = new TestSMDSFFunc2();
     List<?> results = null;
 
@@ -200,12 +179,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     assertNull(results.get(0));
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   */
   @Test
-  public final void testExecuteWhenGFCIClosedResultValueIsNull() throws Throwable {
+  public void testExecuteWhenGFCIClosedResultValueIsNull() throws Throwable {
     TestSMDSFFunc2 testSMDSFunc = new TestSMDSFFunc2();
     List<?> results = null;
 
@@ -216,14 +191,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     assertNotNull(results);
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   * 
-   * @throws UnknownHostException
-   */
   @Test
-  public final void testExecuteReturnsMissingDiskStores() throws Throwable {
+  public void testExecuteReturnsMissingDiskStores() throws Throwable {
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
@@ -261,12 +230,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     }
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   */
   @Test
-  public final void testExecuteReturnsMissingColocatedRegions() throws Throwable {
+  public void testExecuteReturnsMissingColocatedRegions() throws Throwable {
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
@@ -300,14 +265,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     }
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   * 
-   * @throws UnknownHostException
-   */
   @Test
-  public final void testExecuteReturnsMissingStoresAndRegions() throws Throwable {
+  public void testExecuteReturnsMissingStoresAndRegions() throws Throwable {
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
@@ -372,14 +331,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     }
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   * 
-   * @throws Throwable
-   */
   @Test
-  public final void testExecuteCatchesExceptions() throws Throwable {
+  public void testExecuteCatchesExceptions() throws Exception {
     expectedException.expect(RuntimeException.class);
 
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
@@ -391,13 +344,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     fail("Failed to catch expected RuntimeException");
   }
 
-
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#getId()}.
-   */
   @Test
-  public final void testGetId() {
+  public void testGetId() {
     ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     assertEquals(ShowMissingDiskStoresFunction.class.getName(), smdsFunc.getId());
   }
@@ -406,9 +354,9 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
 
     private final List<Object> results = new LinkedList<Object>();
 
-    private Throwable t;
+    private Exception t;
 
-    protected List<Object> getResults() throws Throwable {
+    protected List<Object> getResults() throws Exception {
       if (t != null) {
         throw t;
       }
@@ -427,7 +375,7 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
 
     @Override
     public void sendException(final Throwable t) {
-      this.t = t;
+      this.t = (Exception) t;
     }
   }
 }

@@ -303,7 +303,7 @@ public class StateFlushOperation {
     }
 
     @Override
-    final public int getProcessorType() {
+    public int getProcessorType() {
       return processorType;
     }
 

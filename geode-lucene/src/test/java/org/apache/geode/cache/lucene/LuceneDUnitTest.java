@@ -66,7 +66,7 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
         RegionTestableType.PARTITION_PERSISTENT, RegionTestableType.FIXED_PARTITION};
   }
 
-  protected final Object[] parameterCombiner(Object[] aValues, Object[] bValues) {
+  protected Object[] parameterCombiner(Object[] aValues, Object[] bValues) {
     Object[] parameters = new Object[aValues.length * bValues.length];
     for (int i = 0; i < aValues.length; i++) {
       for (int j = 0; j < bValues.length; j++) {

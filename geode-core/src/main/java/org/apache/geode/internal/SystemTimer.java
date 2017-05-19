@@ -435,7 +435,7 @@ public class SystemTimer {
      * Does debug logging, catches critical errors, then delegates to {@link #run2()}
      */
     @Override
-    final public void run() {
+    public void run() {
       final boolean isDebugEnabled = logger.isTraceEnabled();
       if (isDebugEnabled) {
         logger.trace("SystemTimer.MyTask: starting {}", this);

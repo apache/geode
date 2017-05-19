@@ -185,7 +185,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     this.txMemberId = DataSerializer.readObject(in);
   }
 
-  public final InternalDistributedMember getMemberToMasqueradeAs() {
+  public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
     }

@@ -130,7 +130,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
   }
 
   @Override
-  protected final void executeOpBlock(final List<OperationWithAction> opBlock, final int port1,
+  protected void executeOpBlock(final List<OperationWithAction> opBlock, final int port1,
       final int port2, final String authInit, final Properties extraAuthProps,
       final Properties extraAuthzProps, final TestCredentialGenerator credentialGenerator,
       final Random random) throws InterruptedException {

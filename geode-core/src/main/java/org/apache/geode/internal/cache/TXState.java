@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import javax.transaction.Status;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
@@ -68,9 +66,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
  * TXState is the entity that tracks the transaction state on a per thread basis, noting changes to
  * Region entries on a per operation basis. It lives on the node where transaction data exists.
  *
- * 
  * @since GemFire 4.0
- * 
  * @see TXManagerImpl
  */
 public class TXState implements TXStateInterface {
@@ -1202,16 +1198,6 @@ public class TXState implements TXStateInterface {
 
   public TXRegionState txReadRegion(LocalRegion localRegion) {
     return readRegion(localRegion);
-  }
-
-
-  final TXEntryState txWriteEntry(LocalRegion region, EntryEventImpl event, boolean ifNew,
-      boolean requireOldValue) {
-    try {
-      return txWriteEntry(region, event, ifNew, requireOldValue, null);
-    } catch (EntryNotFoundException e) {
-      throw new InternalGemFireException("caught unexpected exception", e);
-    }
   }
 
   /**

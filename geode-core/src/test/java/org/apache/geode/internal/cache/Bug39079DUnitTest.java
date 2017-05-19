@@ -305,12 +305,12 @@ public class Bug39079DUnitTest extends JUnit4CacheTestCase {
     private static RegionEntryFactory factory = new RegionEntryFactory() {
 
       @Override
-      public final RegionEntry createEntry(RegionEntryContext r, Object key, Object value) {
+      public RegionEntry createEntry(RegionEntryContext r, Object key, Object value) {
         throw new DiskAccessException(new IOException("Test Exception"));
       }
 
       @Override
-      public final Class getEntryClass() {
+      public Class getEntryClass() {
         return getClass();
       }
 

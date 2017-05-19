@@ -225,7 +225,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.eventId = (EventID) DataSerializer.readObject(in);
     this.callbackArg = DataSerializer.readObject(in);

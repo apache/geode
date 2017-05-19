@@ -77,7 +77,7 @@ public class Link implements Comparable<Link>, Serializable {
     return href;
   }
 
-  public final void setHref(final URI href) {
+  public void setHref(final URI href) {
     assert href != null : "The Link href URI cannot be null!";
     this.href = href;
   }
@@ -87,7 +87,7 @@ public class Link implements Comparable<Link>, Serializable {
     return method;
   }
 
-  public final void setMethod(final HttpMethod method) {
+  public void setMethod(final HttpMethod method) {
     this.method = ObjectUtils.defaultIfNull(method, DEFAULT_HTTP_METHOD);
   }
 
@@ -96,7 +96,7 @@ public class Link implements Comparable<Link>, Serializable {
     return relation;
   }
 
-  public final void setRelation(final String relation) {
+  public void setRelation(final String relation) {
     assert StringUtils.isNotBlank(relation) : "The Link relation (rel) must be specified!";
     this.relation = relation;
   }

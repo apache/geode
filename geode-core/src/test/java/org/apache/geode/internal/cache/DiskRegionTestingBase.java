@@ -175,7 +175,7 @@ public abstract class DiskRegionTestingBase {
   }
 
   /** Close the cache */
-  private static synchronized final void closeCache() {
+  private static synchronized void closeCache() {
     if (cache != null) {
       try {
         if (!cache.isClosed()) {

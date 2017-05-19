@@ -12,22 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal;
 
-/*
- * Written by Doug Lea with assistance from members of JCP JSR-166 Expert Group and released to the
- * public domain, as explained at http://creativecommons.org/licenses/publicdomain
- */
-
-import java.util.concurrent.locks.*;
-import java.util.*;
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * Written by Doug Lea with assistance from members of JCP JSR-166 Expert Group and released to the
+ * public domain, as explained at http://creativecommons.org/licenses/publicdomain
+ *
+ * <p>
  * A hash table supporting full concurrency of retrievals and adjustable expected concurrency for
  * updates. This class obeys the same functional specification as {@link java.util.Hashtable}, and
  * includes versions of methods corresponding to each method of <tt>Hashtable</tt>. However, even
@@ -171,7 +172,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * @param hash the hash code for the key
    * @return the segment
    */
-  final Segment<V> segmentFor(int hash) {
+  Segment<V> segmentFor(int hash) {
     return segments[(hash >>> segmentShift) & segmentMask];
   }
 
@@ -1005,7 +1006,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       return hasNext();
     }
 
-    final void advance() {
+    void advance() {
       if (nextEntry != null && (nextEntry = nextEntry.next) != null)
         return;
 

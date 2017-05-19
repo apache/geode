@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.execute;
 
 import java.util.ArrayList;
@@ -37,8 +36,7 @@ import org.apache.geode.internal.Assert;
  * <p>
  * The exception string provides details on the cause of failure.
  * </p>
- * 
- * 
+ *
  * @since GemFire 6.0
  * @see FunctionService
  */
@@ -92,7 +90,7 @@ public class FunctionException extends GemFireException {
    * @param cause
    * @since GemFire 6.5
    */
-  public final void addException(Throwable cause) {
+  public void addException(Throwable cause) {
     Assert.assertTrue(cause != null, "unexpected null exception to add to FunctionException");
     getExceptions().add(cause);
   }
@@ -102,7 +100,7 @@ public class FunctionException extends GemFireException {
    * 
    * @since GemFire 6.5
    */
-  public final List<Throwable> getExceptions() {
+  public List<Throwable> getExceptions() {
     if (this.exceptions == null) {
       this.exceptions = new ArrayList<Throwable>();
     }
@@ -114,7 +112,7 @@ public class FunctionException extends GemFireException {
    * 
    * @since GemFire 6.5
    */
-  public final void addExceptions(Collection<? extends Throwable> ex) {
+  public void addExceptions(Collection<? extends Throwable> ex) {
     getExceptions().addAll(ex);
   }
 }

@@ -399,7 +399,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     rgn2.destroyRegion();
   }
 
-  static final void setInternalCallbacks(TXStateInterface txp, final byte[] cbSensors) {
+  static void setInternalCallbacks(TXStateInterface txp, final byte[] cbSensors) {
     ((TXStateProxyImpl) txp).forceLocalBootstrap();
     TXState tx = (TXState) ((TXStateProxyImpl) txp).getRealDeal(null, null);
     assertEquals(9, cbSensors.length);

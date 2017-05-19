@@ -283,7 +283,7 @@ public abstract class CredentialGenerator {
      * @return the name of this operation.
      */
     @Override
-    public final String toString() {
+    public String toString() {
       return this.name;
     }
 
@@ -293,7 +293,7 @@ public abstract class CredentialGenerator {
      * @return true if other object is same as this one.
      */
     @Override
-    public final boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
       if (obj == this) {
         return true;
       }
@@ -309,7 +309,7 @@ public abstract class CredentialGenerator {
      *
      * @return true if other {@code ClassCode} is same as this one.
      */
-    public final boolean equals(final ClassCode opCode) {
+    public boolean equals(final ClassCode opCode) {
       return opCode != null && opCode.ordinal == this.ordinal;
     }
 
@@ -319,7 +319,7 @@ public abstract class CredentialGenerator {
      * @return the ordinal of this operation.
      */
     @Override
-    public final int hashCode() {
+    public int hashCode() {
       return this.ordinal;
     }
   }

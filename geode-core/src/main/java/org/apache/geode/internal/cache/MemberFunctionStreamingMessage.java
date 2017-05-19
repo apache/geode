@@ -375,7 +375,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     return this.txUniqId;
   }
 
-  public final InternalDistributedMember getMemberToMasqueradeAs() {
+  public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
     } else {

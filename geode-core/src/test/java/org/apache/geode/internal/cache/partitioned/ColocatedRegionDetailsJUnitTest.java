@@ -15,43 +15,26 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
-import java.io.IOException;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ColocatedRegionDetailsJUnitTest {
 
-  /**
-   * @throws java.lang.Exception
-   */
-  @Before
-  public void setUp() throws Exception {}
-
-  /**
-   * @throws java.lang.Exception
-   */
-  @After
-  public void tearDown() throws Exception {}
-
-  /**
-   * Test method for
-   * {@link org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails#ColocatedRegionDetails(java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
-   */
   @Test
-  public final void testColocatedRegionDetailsConstructor() {
+  public void testColocatedRegionDetailsConstructor() {
     ColocatedRegionDetails crd =
         new ColocatedRegionDetails("host", "member name", "parent region", "child region");
     assertNotNull(crd);
@@ -61,12 +44,8 @@ public class ColocatedRegionDetailsJUnitTest {
     assertEquals("child region", crd.getChild());
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails#ColocatedRegionDetails()}.
-   */
   @Test
-  public final void testColocatedRegion0ArgConstructor() {
+  public void testColocatedRegion0ArgConstructor() {
     ColocatedRegionDetails crd = new ColocatedRegionDetails();
     assertNotNull(crd);
     assertNull(crd.getHost());
@@ -77,7 +56,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testContructingWithNulls() {
+  public void testConstructingWithNulls() {
     ColocatedRegionDetails crd1 =
         new ColocatedRegionDetails(null, "member name", "parent region", "child region");
     ColocatedRegionDetails crd2 =
@@ -93,15 +72,8 @@ public class ColocatedRegionDetailsJUnitTest {
     assertNotNull(crd4);
   }
 
-  /**
-   * Test method for
-   * {@link org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails#toData(java.io.DataOutput)}.
-   * 
-   * @throws IOException
-   * @throws ClassNotFoundException
-   */
   @Test
-  public final void testSerialization() throws IOException, ClassNotFoundException {
+  public void testSerialization() throws Exception {
     ColocatedRegionDetails crd =
         new ColocatedRegionDetails("host", "member name", "parent region", "child region");
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -114,8 +86,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testSerializationOfEmptyColocatedRegionDetails()
-      throws IOException, ClassNotFoundException {
+  public void testSerializationOfEmptyColocatedRegionDetails() throws Exception {
     ColocatedRegionDetails crd = new ColocatedRegionDetails();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutput out = new DataOutputStream(baos);
@@ -127,7 +98,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testHostNotEquals() {
+  public void testHostNotEquals() {
     ColocatedRegionDetails crd1 = new ColocatedRegionDetails();
     ColocatedRegionDetails crd2 =
         new ColocatedRegionDetails("host1", "member name", "parent region", "child region");
@@ -139,7 +110,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testMemberNotEquals() {
+  public void testMemberNotEquals() {
     ColocatedRegionDetails crd1 =
         new ColocatedRegionDetails("host", null, "parent region", "child region");
     ColocatedRegionDetails crd2 =
@@ -152,7 +123,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testParentNotEquals() {
+  public void testParentNotEquals() {
     ColocatedRegionDetails crd1 =
         new ColocatedRegionDetails("host", "member1", null, "child region");
     ColocatedRegionDetails crd2 =
@@ -165,7 +136,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testChildNotEquals() {
+  public void testChildNotEquals() {
     ColocatedRegionDetails crd1 =
         new ColocatedRegionDetails("host", "member1", "parent region", null);
     ColocatedRegionDetails crd2 =
@@ -178,7 +149,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testClassInequality() {
+  public void testClassInequality() {
     ColocatedRegionDetails crd1 =
         new ColocatedRegionDetails("host", "member1", "parent region", null);
     String crd2 = crd1.toString();
@@ -187,7 +158,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void nullColocatedRegionDetailsEqualsTests() {
+  public void nullColocatedRegionDetailsEqualsTests() {
     ColocatedRegionDetails crd1 = null;
     ColocatedRegionDetails crd2 =
         new ColocatedRegionDetails("host", "member1", "parent region", "child1");
@@ -198,7 +169,7 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testToString() {
+  public void testToString() {
     ColocatedRegionDetails crd =
         new ColocatedRegionDetails("host1", "member name", "parent region", "child region");
     assertEquals("[host:host1, member:member name, parent:parent region, child:child region]",
@@ -206,13 +177,13 @@ public class ColocatedRegionDetailsJUnitTest {
   }
 
   @Test
-  public final void testToStringOfEmptyColocatedRegionDetails() {
+  public void testToStringOfEmptyColocatedRegionDetails() {
     ColocatedRegionDetails crd = new ColocatedRegionDetails();
     assertEquals("[,,,]", crd.toString());
   }
 
   @Test
-  public final void testHashCode() {
+  public void testHashCode() {
     ColocatedRegionDetails crd1 = new ColocatedRegionDetails();
     ColocatedRegionDetails crd2 =
         new ColocatedRegionDetails("host1", "member name", "parent region", "child region");

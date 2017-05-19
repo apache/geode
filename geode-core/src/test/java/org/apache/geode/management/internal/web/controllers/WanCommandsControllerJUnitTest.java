@@ -117,7 +117,7 @@ public class WanCommandsControllerJUnitTest {
         .contains("--" + START_GATEWAYSENDER__ID + "=" + "");
   }
 
-  private static final Object[] getParametersWithGroupsAndMembers() {
+  private static Object[] getParametersWithGroupsAndMembers() {
     return $(new Object[] {"sender1", new String[] {}, new String[] {}, false, false},
         new Object[] {"sender2", new String[] {"group1"}, new String[] {}, true, false},
         new Object[] {"sender3", new String[] {"group1", "group2"}, new String[] {}, true, false},

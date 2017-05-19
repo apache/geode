@@ -110,7 +110,7 @@ public class SizeMessage extends PartitionMessage {
    * of the initialization
    */
   @Override
-  protected final boolean failIfRegionMissing() {
+  protected boolean failIfRegionMissing() {
     return false;
   }
 
@@ -154,10 +154,6 @@ public class SizeMessage extends PartitionMessage {
             sizes = ds.getSizeForLocalBuckets();
           }
         }
-        // if (logger.isTraceEnabled(LogMarker.DM)) {
-        // l.fine(getClass().getName() + " send sizes back using processorId: "
-        // + getProcessorId());
-        // }
         r.getPrStats().endPartitionMessagesProcessing(startTime);
         SizeReplyMessage.send(getSender(), getProcessorId(), dm, sizes);
       } // datastore exists
@@ -270,7 +266,7 @@ public class SizeMessage extends PartitionMessage {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.bucketSizes = (Map<Integer, SizeEntry>) DataSerializer.readObject(in);
+      this.bucketSizes = DataSerializer.readObject(in);
     }
 
     @Override

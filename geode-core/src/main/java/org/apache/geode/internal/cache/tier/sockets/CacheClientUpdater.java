@@ -1872,11 +1872,11 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       this.stats.close();
     }
 
-    public final void incReceivedBytes(long v) {
+    public void incReceivedBytes(long v) {
       this.stats.incLong(receivedBytesId, v);
     }
 
-    public final void incSentBytes(long v) {
+    public void incSentBytes(long v) {
       // noop since we never send messages
     }
 

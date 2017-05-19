@@ -342,7 +342,6 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
   @Override
   protected Object clone() throws CloneNotSupportedException {
-    // TODO Auto-generated method stub
     return super.clone();
   }
 
@@ -629,9 +628,8 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     RemoveAllReplyMessage.send(member, procId, getReplySender(dm), this.result, this.versions, ex);
   }
 
-
   @Override
-  protected final void appendFields(StringBuilder buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; removeAllPRDataSize=").append(removeAllPRDataSize).append("; bucketId=")
         .append(bucketId);

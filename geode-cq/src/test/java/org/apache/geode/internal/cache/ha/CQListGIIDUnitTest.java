@@ -225,7 +225,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     return Integer.valueOf(server1.getPort());
   }
 
-  public static final Region createRegion(String name, String rootName, RegionAttributes attrs)
+  public static Region createRegion(String name, String rootName, RegionAttributes attrs)
       throws CacheException {
     Region root = cache.getRegion(rootName);
     if (root == null) {

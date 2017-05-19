@@ -271,24 +271,24 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       finishInit();
     }
 
-    public final void setHost(String host) {
+    public void setHost(String host) {
       this.host = host;
     }
 
-    public final void setPort(int port) {
+    public void setPort(int port) {
       this.port = port;
     }
 
-    public final String getHost() {
+    public String getHost() {
       return this.host;
     }
 
-    public final int getPort() {
+    public int getPort() {
       return this.port;
     }
 
     @Override
-    public final ProfileId getId() {
+    public ProfileId getId() {
       if (this.id == null)
         throw new IllegalStateException("profile id not yet initialized");
       return this.id;
@@ -300,7 +300,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
      * 
      * @since GemFire 5.7
      */
-    protected final void tellLocalControllers(boolean removeProfile, boolean exchangeProfiles,
+    protected void tellLocalControllers(boolean removeProfile, boolean exchangeProfiles,
         final List<Profile> replyProfiles) {
       final List<Locator> locators = Locator.getLocators();
       for (int i = 0; i < locators.size(); i++) {
@@ -325,7 +325,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
      * 
      * @since GemFire 5.7
      */
-    protected final void tellLocalBridgeServers(boolean removeProfile, boolean exchangeProfiles,
+    protected void tellLocalBridgeServers(boolean removeProfile, boolean exchangeProfiles,
         final List<Profile> replyProfiles) {
       final InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null && !cache.isClosed()) {

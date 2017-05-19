@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.util.Iterator;
@@ -50,8 +49,6 @@ import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
  * Abstract implementation of {@link RegionMap} that adds LRU behaviour.
  *
  * @since GemFire 3.5.1
- *
- *
  */
 public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   private static final Logger logger = LogService.getLogger();
@@ -263,7 +260,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   /** unsafe audit code. */
-  public final void audit() {
+  public void audit() {
     if (logger.isTraceEnabled(LogMarker.LRU)) {
       logger.trace(LogMarker.LRU, "Size of LRUMap = {}", sizeInVM());
     }
@@ -353,7 +350,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    *
    * @param delta Description of the Parameter
    */
-  protected final void changeTotalEntrySize(int delta) {
+  protected void changeTotalEntrySize(int delta) {
     if (_isOwnerALocalRegion()) {
       if (_getOwner() instanceof BucketRegion) {
         BucketRegion bucketRegion = (BucketRegion) _getOwner();
@@ -577,7 +574,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     return resourceManager.getMemoryMonitor(offheap).getState().isEviction() && this.sizeInVM() > 0;
   }
 
-  public final int centralizedLruUpdateCallback() {
+  public int centralizedLruUpdateCallback() {
     final boolean isDebugEnabled_LRU = logger.isTraceEnabled(LogMarker.LRU);
 
     int evictedBytes = 0;

@@ -124,12 +124,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    *
    * @see #getRegionAttributes
    */
-  protected final Region createRegion(String name) throws CacheException {
+  protected Region createRegion(String name) throws CacheException {
 
     return createRegion(name, getRegionAttributes());
   }
 
-  protected final Region createRootRegion() throws CacheException {
+  protected Region createRootRegion() throws CacheException {
     return createRootRegion(getRegionAttributes());
   }
 

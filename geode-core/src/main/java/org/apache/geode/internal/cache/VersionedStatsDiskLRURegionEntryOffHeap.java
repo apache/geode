@@ -18,6 +18,7 @@ import java.util.UUID;
 
 public abstract class VersionedStatsDiskLRURegionEntryOffHeap
     extends VersionedStatsDiskLRURegionEntry implements OffHeapRegionEntry {
+
   public VersionedStatsDiskLRURegionEntryOffHeap(RegionEntryContext context, Object value) {
     super(context, value);
   }
@@ -31,7 +32,7 @@ public abstract class VersionedStatsDiskLRURegionEntryOffHeap
 
   private static class VersionedStatsDiskLRURegionEntryOffHeapFactory
       implements RegionEntryFactory {
-    public final RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
+    public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
         if (keyClass == Integer.class) {
@@ -58,7 +59,7 @@ public abstract class VersionedStatsDiskLRURegionEntryOffHeap
       return new VersionedStatsDiskLRURegionEntryOffHeapObjectKey(context, key, value);
     }
 
-    public final Class getEntryClass() {
+    public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VersionedStatsDiskLRURegionEntryOffHeapObjectKey.class;

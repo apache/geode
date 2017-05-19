@@ -487,7 +487,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
    * <p>
    * Added specifically to test scenario of defect #47181.
    */
-  private final Cache createLonerCacheWithEnforceUniqueHost() {
+  private Cache createLonerCacheWithEnforceUniqueHost() {
     Cache myCache = null;
     try {
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE",
@@ -519,7 +519,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
    * <p>
    * Added specifically to test scenario of defect #47181.
    */
-  private final InternalDistributedSystem getLonerSystemWithEnforceUniqueHost() {
+  private InternalDistributedSystem getLonerSystemWithEnforceUniqueHost() {
     Properties props = getDistributedSystemProperties();
     props.put(MCAST_PORT, "0");
     props.put(LOCATORS, "");

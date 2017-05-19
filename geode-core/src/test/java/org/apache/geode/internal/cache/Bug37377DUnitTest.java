@@ -267,11 +267,11 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
 
     private static RegionEntryFactory factory = new RegionEntryFactory() {
 
-      public final RegionEntry createEntry(RegionEntryContext r, Object key, Object value) {
+      public RegionEntry createEntry(RegionEntryContext r, Object key, Object value) {
         return new TestAbstractDiskRegionEntry(r, key, value);
       }
 
-      public final Class getEntryClass() {
+      public Class getEntryClass() {
         return TestAbstractDiskRegionEntry.class;
       }
 

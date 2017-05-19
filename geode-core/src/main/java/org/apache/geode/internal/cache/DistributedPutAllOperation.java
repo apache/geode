@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -261,7 +260,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     }
   }
 
-  public final EntryEventImpl getBaseEvent() {
+  public EntryEventImpl getBaseEvent() {
     return getEvent();
   }
 

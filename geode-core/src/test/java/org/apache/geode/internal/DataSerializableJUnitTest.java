@@ -3283,7 +3283,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public final void newDataSerializer(DataSerializer ds) {
+    public void newDataSerializer(DataSerializer ds) {
       this.invoked = true;
       try {
         newDataSerializer2(ds);
@@ -3302,7 +3302,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public final void newInstantiator(Instantiator instantiator) {
+    public void newInstantiator(Instantiator instantiator) {
       this.invoked = true;
       try {
         newInstantiator2(instantiator);

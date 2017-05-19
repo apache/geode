@@ -27,7 +27,7 @@ import org.apache.geode.cache.*;
  */
 public abstract class TestCacheLoader extends TestCacheCallback implements CacheLoader {
 
-  public final Object load(LoaderHelper helper) throws CacheLoaderException {
+  public Object load(LoaderHelper helper) throws CacheLoaderException {
 
     this.invoked = true;
     return load2(helper);

@@ -55,7 +55,6 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -232,7 +231,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.eventId = (EventID) DataSerializer.readObject(in);
     this.callbackArg = DataSerializer.readObject(in);

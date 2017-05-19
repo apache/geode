@@ -73,7 +73,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor = Host.getHost(0).getVM(3);
   }
 
-  private final Object[] parametersForIndexDestroys() {
+  private Object[] parametersForIndexDestroys() {
     String[] destroyDataRegionParameters = {"true", "false"};
     RegionTestableType[] regionTestTypes = getListOfRegionTestTypes();
     return parameterCombiner(destroyDataRegionParameters, regionTestTypes);

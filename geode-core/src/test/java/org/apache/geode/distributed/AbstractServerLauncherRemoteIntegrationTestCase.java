@@ -62,7 +62,7 @@ public abstract class AbstractServerLauncherRemoteIntegrationTestCase
   /**
    * Remove final if a test needs to override.
    */
-  protected final AbstractLauncher.Status getExpectedStopStatusForNotRunning() {
+  protected AbstractLauncher.Status getExpectedStopStatusForNotRunning() {
     return AbstractLauncher.Status.NOT_RESPONDING;
   }
 

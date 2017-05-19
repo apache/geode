@@ -184,23 +184,16 @@ public abstract class PartitionMessage extends DistributionMessage
     this.isTransactionDistributed = other.isTransactionDistributed;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.internal.cache.TransactionMessage#getTXOriginatorClient()
-   */
   public InternalDistributedMember getTXOriginatorClient() {
     return txMemberId;
   }
 
-  public final InternalDistributedMember getMemberToMasqueradeAs() {
+  public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
     }
     return txMemberId;
   }
-
-
 
   /**
    * Severe alert processing enables suspect processing at the ack-wait-threshold and issuing of a
@@ -669,11 +662,6 @@ public abstract class PartitionMessage extends DistributionMessage
     // subclasses that support routing to clients should reimplement this method
   }
 
-  /*
-   * public void appendOldValueToMessage(EntryEventImpl event) {
-   * 
-   * }
-   */
   /**
    * @return the txUniqId
    */

@@ -224,8 +224,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
   }
 
-  protected final boolean operateOnDistributedRegion(final DistributionManager dm,
-      DistributedRegion r) throws ForceReattemptException {
+  protected boolean operateOnDistributedRegion(final DistributionManager dm, DistributedRegion r)
+      throws ForceReattemptException {
     if (this.functionObject == null) {
       ReplyMessage.send(getSender(), this.processorId,
           new ReplyException(new FunctionException(

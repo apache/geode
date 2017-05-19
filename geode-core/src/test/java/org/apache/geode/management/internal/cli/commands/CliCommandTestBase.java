@@ -197,7 +197,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   /**
    * Destroy all of the components created for the default setup.
    */
-  protected final void destroyDefaultSetup() {
+  protected void destroyDefaultSetup() {
     if (this.shell != null) {
       executeCommand(shell, "exit");
       this.shell.terminate();
@@ -276,7 +276,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    *
    * @return The default shell
    */
-  protected synchronized final HeadlessGfsh getDefaultShell() {
+  protected synchronized HeadlessGfsh getDefaultShell() {
     if (this.shell == null) {
       this.shell = createShell();
     }

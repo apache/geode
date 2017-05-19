@@ -118,7 +118,7 @@ public class AsyncEventQueueValidationsJUnitTest {
         .until(() -> filter.getAfterAcknowledgementInvocations() == numPuts);
   }
 
-  private final Object[] getCacheXmlFileBaseNames() {
+  private Object[] getCacheXmlFileBaseNames() {
     return $(new Object[] {"testSerialAsyncEventQueueConfiguredFromXmlUsesFilter"},
         new Object[] {"testParallelAsyncEventQueueConfiguredFromXmlUsesFilter"});
   }

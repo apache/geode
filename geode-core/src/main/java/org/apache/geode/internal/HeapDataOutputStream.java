@@ -22,7 +22,11 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -35,21 +39,21 @@ import java.util.LinkedList;
  * ByteArrayOutputStream.
  * <p>
  * This class is not thread safe
+ * <p>
+ * Added boolean flag that when turned on will throw an exception instead of allocating a new
+ * buffer. The exception is a BufferOverflowException thrown from expand, and will restore the
+ * position to the point at which the flag was set with the disallowExpansion method.
+ *
+ * Usage Model: boolean succeeded = true; stream.disallowExpansion(); try {
+ * DataSerializer.writeObject(obj, stream); } catch (BufferOverflowException e) { succeeded = false;
+ * }
  *
  * @since GemFire 5.0.2
- * 
- *
- *
- *        Added boolean flag that when turned on will throw an exception instead of allocating a new
- *        buffer. The exception is a BufferOverflowException thrown from expand, and will restore
- *        the position to the point at which the flag was set with the disallowExpansion method.
- *        Usage Model: boolean succeeded = true; stream.disallowExpansion(); try {
- *        DataSerializer.writeObject(obj, stream); } catch (BufferOverflowException e) { succeeded =
- *        false; }
  */
 public class HeapDataOutputStream extends OutputStream
     implements ObjToByteArraySerializer, VersionedDataStream, ByteBufferWriter {
   private static final Logger logger = LogService.getLogger();
+
   ByteBuffer buffer;
   protected LinkedList<ByteBuffer> chunks = null;
   protected int size = 0;
@@ -163,7 +167,7 @@ public class HeapDataOutputStream extends OutputStream
    * {@inheritDoc}
    */
   @Override
-  public final Version getVersion() {
+  public Version getVersion() {
     return this.version;
   }
 

@@ -28,7 +28,7 @@ import org.apache.geode.cache.*;
 public abstract class TestTransactionListener extends TestCacheCallback
     implements TransactionListener {
 
-  public final void afterCommit(TransactionEvent event) {
+  public void afterCommit(TransactionEvent event) {
     this.invoked = true;
     try {
       afterCommit2(event);
@@ -45,7 +45,7 @@ public abstract class TestTransactionListener extends TestCacheCallback
     throw new UnsupportedOperationException(s);
   }
 
-  public final void afterFailedCommit(TransactionEvent event) {
+  public void afterFailedCommit(TransactionEvent event) {
     this.invoked = true;
     try {
       afterFailedCommit2(event);
@@ -63,7 +63,7 @@ public abstract class TestTransactionListener extends TestCacheCallback
   }
 
 
-  public final void afterRollback(TransactionEvent event) {
+  public void afterRollback(TransactionEvent event) {
     this.invoked = true;
     try {
       afterRollback2(event);

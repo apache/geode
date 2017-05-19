@@ -76,13 +76,12 @@ import org.apache.geode.management.ManagementException;
  * 
  * Apart from simple types, arrays, and collections, Java types are converted through introspection
  * into CompositeType
- * 
- * 
  */
 public abstract class OpenTypeConverter {
 
   private final Type targetType;
-  /*
+
+  /**
    * The Java class corresponding to getOpenType(). This is the class named by
    * getOpenType().getClassName(), except that it may be a primitive type or an array of primitive
    * type.
@@ -113,9 +112,7 @@ public abstract class OpenTypeConverter {
   /**
    * Convert an instance of openClass into an instance of targetType.
    * 
-   * @param value
    * @return the java type object
-   * @throws InvalidObjectException
    */
   public Object fromOpenValue(Object value) throws InvalidObjectException {
     if (value == null)
@@ -129,8 +126,6 @@ public abstract class OpenTypeConverter {
   /**
    * Throw an appropriate InvalidObjectException if we will not be able to convert back from the
    * open data to the original Java object.
-   * 
-   * @throws InvalidObjectException
    */
   void checkReconstructible() throws InvalidObjectException {
     // subclasses can override
@@ -139,9 +134,7 @@ public abstract class OpenTypeConverter {
   /**
    * Convert an instance of targetType into an instance of openClass.
    * 
-   * @param value
    * @return open class object
-   * @throws OpenDataException
    */
   Object toOpenValue(Object value) throws OpenDataException {
     if (value == null)
@@ -153,7 +146,6 @@ public abstract class OpenTypeConverter {
   abstract Object toNonNullOpenValue(Object value) throws OpenDataException;
 
   /**
-   * 
    * @return True if and only if this OpenTypeConverter's toOpenValue and fromOpenValue methods are
    *         the identity function.
    */
@@ -174,8 +166,6 @@ public abstract class OpenTypeConverter {
   }
 
   /**
-   * 
-   * @param type
    * @return a converter corresponding to a type
    */
   private static synchronized OpenTypeConverter getConverter(Type type) {
@@ -192,9 +182,6 @@ public abstract class OpenTypeConverter {
 
   /**
    * Put the converter in the map to avoid future creation
-   * 
-   * @param type
-   * @param conv
    */
   private static synchronized void putConverter(Type type, OpenTypeConverter conv) {
     WeakReference<OpenTypeConverter> wr = new WeakReference<OpenTypeConverter>(conv);
@@ -206,7 +193,7 @@ public abstract class OpenTypeConverter {
     preDefinedConverters.add(conv);
   }
 
-  /**
+  /*
    * Static block to initialize pre defined convertor
    */
   static {
@@ -250,10 +237,7 @@ public abstract class OpenTypeConverter {
   }
 
   /**
-   * 
-   * @param objType
    * @return the converter for the given Java type, creating it if necessary
-   * @throws OpenDataException
    */
   public static synchronized OpenTypeConverter toConverter(Type objType) throws OpenDataException {
 
@@ -281,10 +265,7 @@ public abstract class OpenTypeConverter {
   }
 
   /**
-   * 
-   * @param objType
-   * @return the open type converrter for a given type
-   * @throws OpenDataException
+   * @return the open type converter for a given type
    */
   private static OpenTypeConverter makeConverter(Type objType) throws OpenDataException {
 
@@ -346,6 +327,7 @@ public abstract class OpenTypeConverter {
   }
 
   protected static final String[] keyArray = {"key"};
+
   protected static final String[] keyValueArray = {"key", "value"};
 
   private static OpenTypeConverter makeTabularConverter(Type objType, boolean sortedMap,
@@ -363,16 +345,14 @@ public abstract class OpenTypeConverter {
   }
 
   /**
-   * Supprted types are List<E>, Set<E>, SortedSet<E>, Map<K,V>, SortedMap<K,V>.
+   * Supported types are List<E>, Set<E>, SortedSet<E>, Map<K,V>, SortedMap<K,V>.
    * 
    * Subclasses of the above types wont be supported as deserialize info wont be there.
    * 
    * Queue<E> won't be supported as Queue is more of a functional data structure rather than a data
    * holder
    * 
-   * @param objType
-   * @return the open type converrter for a given type
-   * @throws OpenDataException
+   * @return the open type converter for a given type
    */
   private static OpenTypeConverter makeParameterizedConverter(ParameterizedType objType)
       throws OpenDataException {
@@ -402,10 +382,7 @@ public abstract class OpenTypeConverter {
   }
 
   /**
-   * 
-   * @param c
    * @return the open type converrter for a given type
-   * @throws OpenDataException
    */
   private static OpenTypeConverter makeCompositeConverter(Class c) throws OpenDataException {
 
@@ -456,8 +433,6 @@ public abstract class OpenTypeConverter {
   /**
    * Converts from a CompositeData to an instance of the targetClass Various subclasses override its
    * functionality.
-   * 
-   * 
    */
   protected static abstract class CompositeBuilder {
     CompositeBuilder(Class targetClass, String[] itemNames) {
@@ -477,10 +452,8 @@ public abstract class OpenTypeConverter {
      * If the subclass should be appropriate but there is a problem, then the method throws
      * InvalidObjectException.
      * 
-     * @param getters
      * @return If the subclass is appropriate for targetClass, then the method returns null. If the
      *         subclass is not appropriate, then the method returns an explanation of why not.
-     * @throws InvalidObjectException
      */
     abstract String applicable(Method[] getters) throws InvalidObjectException;
 
@@ -493,12 +466,7 @@ public abstract class OpenTypeConverter {
     }
 
     /**
-     * 
-     * @param cd
-     * @param itemNames
-     * @param converters
      * @return Actual java types from the composite type
-     * @throws InvalidObjectException
      */
     abstract Object fromCompositeData(CompositeData cd, String[] itemNames,
         OpenTypeConverter[] converters) throws InvalidObjectException;
@@ -509,8 +477,6 @@ public abstract class OpenTypeConverter {
 
   /**
    * Builder if the target class has a method "public static from(CompositeData)"
-   * 
-   * 
    */
   protected static class CompositeBuilderViaFrom extends CompositeBuilder {
 
@@ -545,8 +511,8 @@ public abstract class OpenTypeConverter {
       }
     }
 
-    final Object fromCompositeData(CompositeData cd, String[] itemNames,
-        OpenTypeConverter[] converters) throws InvalidObjectException {
+    Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters)
+        throws InvalidObjectException {
       try {
         return fromMethod.invoke(null, cd);
       } catch (Exception e) {
@@ -566,8 +532,6 @@ public abstract class OpenTypeConverter {
    * are candidate builders. Instead, the "applicable" method will return an explanatory string, and
    * the other builders will be skipped. If all the getters are OK, then the "applicable" method
    * will return an empty string and the other builders will be tried.
-   * 
-   * 
    */
   protected static class CompositeBuilderCheckGetters extends CompositeBuilder {
     CompositeBuilderCheckGetters(Class targetClass, String[] itemNames,
@@ -604,8 +568,6 @@ public abstract class OpenTypeConverter {
 
   /**
    * Builder if the target class has a setter for every getter
-   * 
-   * 
    */
   protected static class CompositeBuilderViaSetters extends CompositeBuilder {
 
@@ -664,8 +626,6 @@ public abstract class OpenTypeConverter {
   /**
    * Builder if the target class has a constructor that is annotated with @ConstructorProperties so
    * we can derive the corresponding getters.
-   * 
-   * 
    */
   protected static class CompositeBuilderViaConstructor extends CompositeBuilder {
 
@@ -848,8 +808,6 @@ public abstract class OpenTypeConverter {
    * Builder if the target class is an interface and contains no methods other than getters. Then we
    * can make an instance using a dynamic proxy that forwards the getters to the source
    * CompositeData
-   * 
-   * 
    */
   protected static class CompositeBuilderViaProxy extends CompositeBuilder {
 
@@ -882,8 +840,7 @@ public abstract class OpenTypeConverter {
       return null;
     }
 
-    final Object fromCompositeData(CompositeData cd, String[] itemNames,
-        OpenTypeConverter[] converters) {
+    Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters) {
       final Class targetClass = getTargetClass();
       return Proxy.newProxyInstance(targetClass.getClassLoader(), new Class[] {targetClass},
           new CompositeDataInvocationHandler(cd));

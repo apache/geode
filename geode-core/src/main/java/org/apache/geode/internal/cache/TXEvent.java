@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.*;
@@ -20,14 +19,12 @@ import java.util.*;
 import org.apache.geode.internal.offheap.Releasable;
 
 /**
- * <p>
  * The internal implementation of the {@link TransactionEvent} interface
- * 
  *
  * @since GemFire 4.0
- * 
  */
 public class TXEvent implements TransactionEvent, Releasable {
+
   private final TXStateInterface localTxState;
   private List events;
   private List createEvents = null;
@@ -147,7 +144,7 @@ public class TXEvent implements TransactionEvent, Releasable {
     return true;
   }
 
-  public final Cache getCache() {
+  public Cache getCache() {
     return this.cache;
   }
 

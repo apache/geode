@@ -74,7 +74,7 @@ public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase
   }
 
   @Override
-  public final void executeInProcess() throws IOException {
+  public void executeInProcess() throws IOException {
     outputLine("Begin " + name() + ".main");
     outputLine("Press Enter to continue.");
     new BufferedReader(new InputStreamReader(System.in)).readLine();

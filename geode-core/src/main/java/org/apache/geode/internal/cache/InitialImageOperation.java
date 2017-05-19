@@ -1515,7 +1515,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    final public int getProcessorType() {
+    public int getProcessorType() {
       return this.targetReinitialized ? DistributionManager.WAITING_POOL_EXECUTOR
           : DistributionManager.HIGH_PRIORITY_EXECUTOR;
     }
@@ -2160,7 +2160,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    final public int getProcessorType() {
+    public int getProcessorType() {
       return DistributionManager.HIGH_PRIORITY_EXECUTOR;
     }
 
@@ -2431,7 +2431,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    final public int getProcessorType() {
+    public int getProcessorType() {
       return this.targetReinitialized ? DistributionManager.WAITING_POOL_EXECUTOR
           : DistributionManager.HIGH_PRIORITY_EXECUTOR;
     }
