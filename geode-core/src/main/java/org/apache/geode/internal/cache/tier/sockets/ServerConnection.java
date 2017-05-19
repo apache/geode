@@ -958,7 +958,7 @@ public class ServerConnection implements Runnable {
         // TODO serialization types?
         newClientProtocol.receiveMessage(inputStream, outputStream,
             SerializationType.STRING.deserializer, SerializationType.STRING.serializer,
-          this.getCache());
+            this.getCache());
       } catch (IOException e) {
         // TODO?
       }

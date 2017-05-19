@@ -49,7 +49,7 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
 
   @Override
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
-                             Deserializer deserializer, Serializer serializer, Cache cache) throws IOException {
+      Deserializer deserializer, Serializer serializer, Cache cache) throws IOException {
     final Message message = Message.parseDelimitedFrom(inputStream);
     // can be null at EOF, see Parser.parseDelimitedFrom(java.io.InputStream)
     if (message == null) {
@@ -73,7 +73,7 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
       // TODO
     }
     if (responseMessage != null) {
-    responseMessage.writeDelimitedTo(outputStream);
+      responseMessage.writeDelimitedTo(outputStream);
     }
   }
 
@@ -100,7 +100,8 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
         .build();
   }
 
-  private Message doGetRequest(GetRequest request, Deserializer deserializer, Serializer serializer, Cache cache) {
+  private Message doGetRequest(GetRequest request, Deserializer deserializer, Serializer serializer,
+      Cache cache) {
     String regionName = request.getRegionName();
     BasicTypes.Key key = request.getKey();
     byte[] keyBytes = key.getKey().toByteArray();
@@ -118,9 +119,10 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
 
   private Message getResponseWithValue(byte[] value) {
     return Message.newBuilder()
-      .setResponse(Response.newBuilder().setGetResponse(RegionAPI.GetResponse.newBuilder()
-        .setResult(BasicTypes.Value.newBuilder().setValue(ByteString.copyFrom(value)))))
-      .build();
+        .setResponse(Response.newBuilder()
+            .setGetResponse(RegionAPI.GetResponse.newBuilder()
+                .setResult(BasicTypes.Value.newBuilder().setValue(ByteString.copyFrom(value)))))
+        .build();
   }
 
   public ProtobufProtocolMessageHandler() {}

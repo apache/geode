@@ -52,8 +52,7 @@ public class ProtobufProtocolIntegrationTest {
       client.printResponse(response);
 
       assertEquals(RESPONSE, response.getMessageTypeCase());
-      assertEquals(PUTRESPONSE,
-      response.getResponse().getResponseAPICase());
+      assertEquals(PUTRESPONSE, response.getResponse().getResponseAPICase());
       assertTrue(response.getResponse().getPutResponse().getSuccess());
 
       assertEquals(1, region.size());
@@ -65,7 +64,7 @@ public class ProtobufProtocolIntegrationTest {
   @Test
   public void testRoundTripEmptyGetRequest() throws IOException {
     try (Cache cache = createCacheOnPort(40404);
-         NewClientProtocolTestClient client = new NewClientProtocolTestClient("localhost", 40404)) {
+        NewClientProtocolTestClient client = new NewClientProtocolTestClient("localhost", 40404)) {
       final String testRegion = "testRegion";
       final String testKey = "testKey";
       Region<Object, Object> region = cache.createRegionFactory().create("testRegion");
@@ -74,8 +73,7 @@ public class ProtobufProtocolIntegrationTest {
       ClientProtocol.Message response = client.blockingSendMessage(message);
 
       assertEquals(RESPONSE, response.getMessageTypeCase());
-      assertEquals(GETRESPONSE,
-        response.getResponse().getResponseAPICase());
+      assertEquals(GETRESPONSE, response.getResponse().getResponseAPICase());
       BasicTypes.Value value = response.getResponse().getGetResponse().getResult();
 
       assertTrue(value.getValue().isEmpty());
@@ -85,7 +83,7 @@ public class ProtobufProtocolIntegrationTest {
   @Test
   public void testRoundTripNonEmptyGetRequest() throws IOException {
     try (Cache cache = createCacheOnPort(40404);
-         NewClientProtocolTestClient client = new NewClientProtocolTestClient("localhost", 40404)) {
+        NewClientProtocolTestClient client = new NewClientProtocolTestClient("localhost", 40404)) {
       final String testRegion = "testRegion";
       final String testKey = "testKey";
       final String testValue = "testValue";
@@ -93,7 +91,7 @@ public class ProtobufProtocolIntegrationTest {
 
 
       ClientProtocol.Message putMessage =
-        MessageUtils.makePutMessageFor(testRegion, testKey, testValue);
+          MessageUtils.makePutMessageFor(testRegion, testKey, testValue);
       ClientProtocol.Message putResponse = client.blockingSendMessage(putMessage);
       client.printResponse(putResponse);
 
@@ -101,8 +99,7 @@ public class ProtobufProtocolIntegrationTest {
       ClientProtocol.Message getResponse = client.blockingSendMessage(getMessage);
 
       assertEquals(RESPONSE, getResponse.getMessageTypeCase());
-      assertEquals(GETRESPONSE,
-        getResponse.getResponse().getResponseAPICase());
+      assertEquals(GETRESPONSE, getResponse.getResponse().getResponseAPICase());
       BasicTypes.Value value = getResponse.getResponse().getGetResponse().getResult();
 
       assertEquals(value.getValue().toStringUtf8(), testValue);
