@@ -55,7 +55,7 @@ Replicated region types are *not* supported.
 There is no way to create a Lucene index on a client.
 - Only top level fields of objects stored in the region can be indexed.
 - A single index supports a single region. Indexes do not support multiple regions.
-- Heterogeneous objects in single region are supported.
+- Heterogeneous objects in a single region are supported.
 
 ## <a id="lucene-index-create" class="no-quick-link"></a>Creating an Index
 
@@ -177,7 +177,7 @@ Error occurred while destroying region "orders".
 ## <a id="lucene-index-change" class="no-quick-link"></a>Changing an Index
 
 Changing an index requires rebuilding it.
-Implement these steps in `gfsh` to change an index.
+Implement these steps in `gfsh` to change an index:
 
 1. Export all region data
 2. Destroy the Lucene index
@@ -219,7 +219,7 @@ at TestClient.main(TestClient.java:59)
 ```
 - If the Lucene index is not created prior to creating the region,
 an exception will be thrown while attempting to create the region,
-issuing an error message simlar to:
+issuing an error message similar to:
 
 ``` pre
 [error 2017/05/02 15:19:26.018 PDT <main> tid=0x1] java.lang.IllegalStateException:
@@ -229,9 +229,9 @@ Exception in thread "main" java.lang.IllegalStateException:
 at org.apache.geode.internal.cache.CreateRegionProcessor$CreateRegionMessage.handleCacheDistributionAdvisee(CreateRegionProcessor.java:478)
 at org.apache.geode.internal.cache.CreateRegionProcessor$CreateRegionMessage.process(CreateRegionProcessor.java:379)
 ```
-- An invalidate of a region entry does not invalidate a corresponding
+- An invalidate operation on a region entry does not invalidate a corresponding
 Lucene index entry.
-A query on a Lucene index that contains values which
+A query on a Lucene index that contains values that
 have been invalidated can return results that no longer exist.
 Therefore, do not combine entry invalidation with queries on Lucene indexes.
 - Lucene indexes are not supported for regions that have eviction configured
@@ -242,7 +242,7 @@ not the Lucene index.
 On an attempt to create a region with eviction configured to do local destroy
 (with a Lucene index),
 an `UnsupportedOperationException` will be thrown,
-issuing an error message simlar to:
+issuing an error message similar to:
 
 ``` pre
 [error 2017/05/02 16:12:32.461 PDT <main> tid=0x1] java.lang.UnsupportedOperationException:
@@ -254,8 +254,8 @@ at org.apache.geode.internal.cache.GemFireCacheImpl.invokeRegionBefore(GemFireCa
 at org.apache.geode.internal.cache.GemFireCacheImpl.createVMRegion(GemFireCacheImpl.java:3013)
 at org.apache.geode.internal.cache.GemFireCacheImpl.basicCreateRegion(GemFireCacheImpl.java:2991)
 ```
-- Be aware that the same field name used in different objects
-where the field has a different data type 
+- Be aware that using the same field name in different objects
+where the field has different data types 
 may have unexpected consequences.
 For example, if an index on the field SSN has the following entries
     - `Object_1 object_1` has String SSN = "1111"
@@ -272,7 +272,7 @@ will return `object_2`.
     And, a `FloatRangeQuery` with `upper limit : 1111.5` and `lower limit : 1111.0`
 will return `object_3`.
 - Backups should only be made for regions with Lucene indexes
-when there are no puts, updates, or deletes are in progress.
+when there are no puts, updates, or deletes in progress.
 Incremental backups will not be consistent for the region and
 its index upon restart if these operations were in progress,
 due to the delayed processing associated with the asynchronous event queue.
