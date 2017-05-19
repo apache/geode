@@ -17,12 +17,13 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.serialization.Deserializer;
+import org.apache.geode.serialization.Serializer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface ClientProtocolMessageHandler {
-  void receiveMessage(InputStream inputStream, OutputStream outputStream, Deserializer serializer,
-      Cache cache) throws IOException;
+  void receiveMessage(InputStream inputStream, OutputStream outputStream, Deserializer deserializer,
+                      Serializer serializer, Cache cache) throws IOException;
 }
