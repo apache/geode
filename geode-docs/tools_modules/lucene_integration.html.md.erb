@@ -166,7 +166,7 @@ For details, see the [gfsh destroy lucene index](gfsh/command-pages/destroy.html
 
 The error message that results from an attempt to destroy a region
 prior to destroying its associated Lucene index
-issues an error message similar to:
+will be similar to:
 
 ``` pre
 Error occurred while destroying region "orders".
@@ -218,7 +218,7 @@ at TestClient.executeQuerySingleMethod(TestClient.java:196)
 at TestClient.main(TestClient.java:59)
 ```
 - If the Lucene index is not created prior to creating the region,
-an exception will be thrown while attempting to create the region,
+an exception will be thrown while attempting to create the Lucene index,
 issuing an error message similar to:
 
 ``` pre
