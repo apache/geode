@@ -16,7 +16,6 @@
 package org.apache.geode.protocol.client;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Parser;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Region;
@@ -24,10 +23,11 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.RegionAPI.GetRequest;
-import org.apache.geode.protocol.protobuf.RegionAPI.GetResponse;
 import org.apache.geode.protocol.protobuf.RegionAPI.PutResponse;
 import org.apache.geode.serialization.Deserializer;
+import org.apache.geode.serialization.Serializer;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
 
   @Override
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      Deserializer deserializer, Cache cache) throws IOException {
+                             Deserializer deserializer, Serializer serializer, Cache cache) throws IOException {
     final Message message = Message.parseDelimitedFrom(inputStream);
     // can be null at EOF, see Parser.parseDelimitedFrom(java.io.InputStream)
     if (message == null) {
@@ -61,14 +61,23 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
       logger.error(() -> "Got message of type response: " + ErrorMessageFromMessage(message));
     }
 
-    Request request = message.getRequest();
-    Message putResponseMessage = doPutRequest(request.getPutRequest(), deserializer, cache);
+    Message responseMessage = null;
 
-    putResponseMessage.writeDelimitedTo(outputStream);
+    Request request = message.getRequest();
+    Request.RequestAPICase requestAPICase = request.getRequestAPICase();
+    if (requestAPICase == Request.RequestAPICase.GETREQUEST) {
+      responseMessage = doGetRequest(request.getGetRequest(), deserializer, serializer, cache);
+    } else if (requestAPICase == Request.RequestAPICase.PUTREQUEST) {
+      responseMessage = doPutRequest(request.getPutRequest(), deserializer, cache);
+    } else {
+      // TODO
+    }
+    if (responseMessage != null) {
+    responseMessage.writeDelimitedTo(outputStream);
+    }
   }
 
   private Message doPutRequest(PutRequest request, Deserializer dataDeserializer, Cache cache) {
-    logger.error("Doing put request.");
     final String regionName = request.getRegionName();
     final BasicTypes.Entry entry = request.getEntry();
     final ByteString key = entry.getKey().getKey();
@@ -80,7 +89,7 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
           dataDeserializer.deserialize(value.toByteArray()));
       return putResponseWithStatus(true);
     } catch (TimeoutException | CacheWriterException ex) {
-      logger.error("Caught normal-ish exception doing region put", ex);
+      logger.warn("Caught normal-ish exception doing region put", ex);
       return putResponseWithStatus(false);
     }
   }
@@ -91,9 +100,27 @@ public class ProtobufProtocolMessageHandler implements ClientProtocolMessageHand
         .build();
   }
 
-  private GetResponse doGetRequest(GetRequest request, Deserializer deserializer, Cache cache) {
-    // TODO
-    return null;
+  private Message doGetRequest(GetRequest request, Deserializer deserializer, Serializer serializer, Cache cache) {
+    String regionName = request.getRegionName();
+    BasicTypes.Key key = request.getKey();
+    byte[] keyBytes = key.getKey().toByteArray();
+    Region<Object, Object> region = cache.getRegion(regionName);
+
+    Object returnValue = region.get(deserializer.deserialize(keyBytes));
+
+    if (returnValue == null) {
+      return getResponseWithValue(new byte[0]);
+    } else {
+      // TODO types in the region?
+      return getResponseWithValue(serializer.serialize(returnValue));
+    }
+  }
+
+  private Message getResponseWithValue(byte[] value) {
+    return Message.newBuilder()
+      .setResponse(Response.newBuilder().setGetResponse(RegionAPI.GetResponse.newBuilder()
+        .setResult(BasicTypes.Value.newBuilder().setValue(ByteString.copyFrom(value)))))
+      .build();
   }
 
   public ProtobufProtocolMessageHandler() {}

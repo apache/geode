@@ -15,11 +15,13 @@
 
 package org.apache.geode.protocol.client;
 
+import com.google.protobuf.ByteString;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Test;
@@ -28,12 +30,15 @@ import org.junit.experimental.categories.Category;
 import java.io.IOException;
 import java.util.Properties;
 
+import static org.apache.geode.protocol.protobuf.ClientProtocol.Message.MessageTypeCase.RESPONSE;
+import static org.apache.geode.protocol.protobuf.ClientProtocol.Response.ResponseAPICase.GETRESPONSE;
+import static org.apache.geode.protocol.protobuf.ClientProtocol.Response.ResponseAPICase.PUTRESPONSE;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class ProtobufProtocolIntegrationTest {
   @Test
-  public void testRoundTripClientCommunicationWorks() throws IOException {
+  public void testRoundTripPutRequest() throws IOException {
     try (Cache cache = createCacheOnPort(40404);
         NewClientProtocolTestClient client = new NewClientProtocolTestClient("localhost", 40404)) {
       final String testRegion = "testRegion";
@@ -44,16 +49,63 @@ public class ProtobufProtocolIntegrationTest {
       ClientProtocol.Message message =
           MessageUtils.makePutMessageFor(testRegion, testKey, testValue);
       ClientProtocol.Message response = client.blockingSendMessage(message);
-      client.parseResponse(response);
+      client.printResponse(response);
 
-      assertEquals(response.getMessageTypeCase(), ClientProtocol.Message.MessageTypeCase.RESPONSE);
-      assertEquals(response.getResponse().getResponseAPICase(),
-          ClientProtocol.Response.ResponseAPICase.PUTRESPONSE);
+      assertEquals(RESPONSE, response.getMessageTypeCase());
+      assertEquals(PUTRESPONSE,
+      response.getResponse().getResponseAPICase());
       assertTrue(response.getResponse().getPutResponse().getSuccess());
 
       assertEquals(1, region.size());
       assertTrue(region.containsKey(testKey));
       assertEquals(testValue, region.get(testKey));
+    }
+  }
+
+  @Test
+  public void testRoundTripEmptyGetRequest() throws IOException {
+    try (Cache cache = createCacheOnPort(40404);
+         NewClientProtocolTestClient client = new NewClientProtocolTestClient("localhost", 40404)) {
+      final String testRegion = "testRegion";
+      final String testKey = "testKey";
+      Region<Object, Object> region = cache.createRegionFactory().create("testRegion");
+
+      ClientProtocol.Message message = MessageUtils.makeGetMessageFor(testRegion, testKey);
+      ClientProtocol.Message response = client.blockingSendMessage(message);
+
+      assertEquals(RESPONSE, response.getMessageTypeCase());
+      assertEquals(GETRESPONSE,
+        response.getResponse().getResponseAPICase());
+      BasicTypes.Value value = response.getResponse().getGetResponse().getResult();
+
+      assertTrue(value.getValue().isEmpty());
+    }
+  }
+
+  @Test
+  public void testRoundTripNonEmptyGetRequest() throws IOException {
+    try (Cache cache = createCacheOnPort(40404);
+         NewClientProtocolTestClient client = new NewClientProtocolTestClient("localhost", 40404)) {
+      final String testRegion = "testRegion";
+      final String testKey = "testKey";
+      final String testValue = "testValue";
+      Region<Object, Object> region = cache.createRegionFactory().create("testRegion");
+
+
+      ClientProtocol.Message putMessage =
+        MessageUtils.makePutMessageFor(testRegion, testKey, testValue);
+      ClientProtocol.Message putResponse = client.blockingSendMessage(putMessage);
+      client.printResponse(putResponse);
+
+      ClientProtocol.Message getMessage = MessageUtils.makeGetMessageFor(testRegion, testKey);
+      ClientProtocol.Message getResponse = client.blockingSendMessage(getMessage);
+
+      assertEquals(RESPONSE, getResponse.getMessageTypeCase());
+      assertEquals(GETRESPONSE,
+        getResponse.getResponse().getResponseAPICase());
+      BasicTypes.Value value = getResponse.getResponse().getGetResponse().getResult();
+
+      assertEquals(value.getValue().toStringUtf8(), testValue);
     }
   }
 

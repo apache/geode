@@ -43,6 +43,8 @@ public class NewClientProtocolTestClient implements AutoCloseable {
     socketChannel = SocketChannel.open(new InetSocketAddress(hostname, port));
     inputStream = socketChannel.socket().getInputStream();
     outputStream = socketChannel.socket().getOutputStream();
+
+    sendHeader(outputStream);
   }
 
   @Override
@@ -55,15 +57,13 @@ public class NewClientProtocolTestClient implements AutoCloseable {
   }
 
   public Message blockingSendMessage(Message message) throws IOException {
-    sendHeader(outputStream);
-
     message.writeDelimitedTo(outputStream);
     outputStream.flush();
 
     return ClientProtocol.Message.parseDelimitedFrom(inputStream);
   }
 
-  void parseResponse(Message response) {
+  void printResponse(Message response) {
     System.out.println("response = " + response.toString());
   }
 

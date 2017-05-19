@@ -66,7 +66,7 @@ public class ProtobufSerializationDeserializationTest {
 
     ProtobufProtocolMessageHandler newClientProtocol = new ProtobufProtocolMessageHandler();
     newClientProtocol.receiveMessage(MessageUtils.loadMessageIntoInputStream(message),
-        mockOutputStream, deserializer, mockCache);
+        mockOutputStream, deserializer, SerializationType.STRING.serializer, mockCache);
 
     verify(mockRegion).put(testKey.getBytes(), testValue.getBytes());
   }
@@ -86,7 +86,7 @@ public class ProtobufSerializationDeserializationTest {
 
     ProtobufProtocolMessageHandler newClientProtocol = new ProtobufProtocolMessageHandler();
     newClientProtocol.receiveMessage(MessageUtils.loadMessageIntoInputStream(message), outputStream,
-        deserializer, mockCache);
+        deserializer, SerializationType.STRING.serializer, mockCache);
 
     ClientProtocol.Message responseMessage = ClientProtocol.Message
         .parseDelimitedFrom(new ByteArrayInputStream(outputStream.toByteArray()));
