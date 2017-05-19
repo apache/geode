@@ -60,6 +60,8 @@ Performance statistics are collected for each Java application or cache server t
 
 -   **[Locator (LocatorStatistics)](#section_C48B654F973E4B44AD825D459C23A6CD)**
 
+-   **[Lucene Indexes (LuceneIndexStats)](#LuceneStats)**
+
 -   **[Off-Heap (OffHeapMemoryStats)](#topic_ohc_tjk_w5)**
 
 -   **[Operating System Statistics - Linux](#section_923B28F01BC3416786D3AFBD87F22A5E)**
@@ -1005,6 +1007,28 @@ These statistics are on the Geode locator. The primary statistics are:
 | `RESPONSE_TIME`          | Time, measured in nanoseconds, spent sending location responses to clients.   |
 | `RESPONSES_FROM_LOCATOR` | Number of responses this locator has sent to clients.                         |
 | `SERVER_LOAD_UPDATES`    | Total number of times a server load update has been received.                 |
+
+## <a id="LuceneStats" class="no-quick-link"></a>Lucene Indexes (LuceneIndexStats)
+
+These statistics quantify the use of Lucene indexes. The primary statistics are:
+
+| Statistic             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `queryExecutions`         | The number of Lucene queries executed on this member.    |
+| `queryExecutionTime`         | The amount of time in nanoseconds spent executing Lucene queries.    |
+| `queryExecutionsInProgress`  | The number of query executions currently in progress.    |
+| `queryExecutionTotalHits`  | The total number of documents returned by query executions.    |
+| `repositoryQueryExecutions`  | The number of Lucene repository queries executed on this member.    |
+| `repositoryQueryExecutionTime`  | The amount of time in nanoseconds spent executing Lucene repository queries.    |
+| `repositoryQueryExecutionsInProgress`  | The number of repository query executions currently in progress.    |
+| `repositoryQueryExecutionTotalHits`  | The total number of documents returned by repository query executions.    |
+| `updates`  | The number of Lucene index documents added or removed on this member.    |
+| `updateTime`  | The amount of time in nanoseconds spent adding or removing documents from the index.    |
+| `updatesInProgress`  | The number of index updates in progress.    |
+| `commits`  | The number of Lucene index commits on this member.    |
+| `commitTime`  | The amount of time in nanoseconds spent in Lucene index commits.    |
+| `commitsInProgress`  | The number of Lucene index commits in progress.    |
+| `documents`  | The number of documents in the index.    |
 
 ## <a id="topic_ohc_tjk_w5" class="no-quick-link"></a>Off-Heap (OffHeapMemoryStats)
 
