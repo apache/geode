@@ -27,10 +27,12 @@ import static org.mockito.Mockito.when;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -60,6 +62,11 @@ public class LocatorLauncherTest {
 
   @Rule
   public final TestName testName = new TestName();
+
+  @Before
+  public void setUp() throws Exception {
+    assertThat(InternalDistributedSystem.getConnectedInstance()).isNull();
+  }
 
   @Test
   public void shouldBeMockable() throws Exception {
