@@ -433,31 +433,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void searchWithInvalidQueryStringShouldReturnError() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
-    Map<String, TestObject> entries = new HashMap<>();
-    entries.put("A", new TestObject("value1 ", "value2", "value3"));
-    entries.put("B", new TestObject("ABC", "EFG", "HIJ"));;
-    putEntries(vm1, entries, 2);
-
-    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "WF~*");
-    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
-
-    String commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("Result String :\n ", resultAsString);
-    assertEquals(Status.ERROR, commandResult.getStatus());
-    assertTrue(resultAsString.contains("Leading wildcard is not allowed: field2:*"));
-  }
-
-  @Test
   public void searchOnIndexWithoutRegionShouldReturnError() throws Exception {
 
     final VM vm1 = Host.getHost(0).getVM(1);

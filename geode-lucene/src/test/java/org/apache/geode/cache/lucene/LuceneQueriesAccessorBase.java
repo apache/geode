@@ -22,6 +22,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -103,6 +104,24 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
       Collection<?> results = query.findKeys();
 
       assertEquals(expectedResultsSize, results.size());
+    });
+  }
+
+  protected void executeTextSearchWithExpectedException(VM vm, String queryString,
+      String defaultField, Class expctedExceptionClass) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+
+      LuceneService service = LuceneServiceProvider.get(cache);
+      LuceneQuery<Integer, TestObject> query;
+      query = service.createLuceneQueryFactory().setLimit(1000).setPageSize(1000).create(INDEX_NAME,
+          REGION_NAME, queryString, defaultField);
+      try {
+        Collection<?> results = query.findKeys();
+        fail("Query " + defaultField + ":" + queryString + " should not have succeeded");
+      } catch (Exception e) {
+        assertEquals(expctedExceptionClass, e.getClass());
+      }
     });
   }
 

@@ -169,6 +169,43 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
     executeTextSearch(accessor, "world", "noEntriesMapped", 0);
   }
 
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void verifyWildcardQueriesSucceed(RegionTestableType regionTestType) {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+    putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
+    executeTextSearch(accessor, "*", "*", 3);
+    executeTextSearch(accessor, "*:*", "text", 3);
+    executeTextSearch(accessor, "*:*", "XXX", 3);
+    executeTextSearch(accessor, "*", "text", 3);
+  }
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void verifySpaceQueriesFail(RegionTestableType regionTestType) {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+    putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
+    executeTextSearchWithExpectedException(accessor, " ", "*", LuceneQueryException.class);
+    executeTextSearchWithExpectedException(accessor, " ", "text", LuceneQueryException.class);
+    executeTextSearchWithExpectedException(accessor, " ", "XXX", LuceneQueryException.class);
+  }
+
   protected void putDataInRegion(VM vm) {
     vm.invoke(() -> {
       final Cache cache = getCache();

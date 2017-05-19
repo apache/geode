@@ -7692,6 +7692,8 @@ public class LocalizedStrings {
       new StringId(6657, "Lucene index {0} on region {1} already exists.");
   public static final StringId LuceneIndexCreation_IGNORING_DUPLICATE_INDEX_CREATION_0_ON_REGION_1 =
       new StringId(6658, "Ignoring duplicate index creation for Lucene index {0} on region {1}");
+  public static final StringId StringQueryProvider_PARSING_QUERY_0_FAILED_DUE_TO_1 =
+      new StringId(6659, "Parsing query {0} failed due to: {1}");
 
   /** Testing strings, messageId 90000-99999 **/
 
