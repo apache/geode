@@ -16,8 +16,6 @@
 package org.apache.geode.cache.query.facets.lang;
 
 
-// import java.util.*;
-
 
 public class Department {
   private String _name;

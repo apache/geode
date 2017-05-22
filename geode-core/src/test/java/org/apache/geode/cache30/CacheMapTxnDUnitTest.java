@@ -20,13 +20,8 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -45,6 +40,11 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+import java.util.Set;
 
 @Category(DistributedTest.class)
 public class CacheMapTxnDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat

@@ -14,9 +14,8 @@
  */
 package org.apache.geode.cache.client;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheWriterException;
@@ -35,6 +34,8 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
+
+import java.util.Properties;
 
 /**
  * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or

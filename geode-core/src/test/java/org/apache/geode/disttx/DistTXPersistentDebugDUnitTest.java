@@ -14,10 +14,7 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -34,6 +31,8 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {

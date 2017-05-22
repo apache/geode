@@ -14,13 +14,21 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import java.util.*;
-import java.lang.reflect.Method;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexCreationHelper;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Value representing a current iteration element. This is the representation used during

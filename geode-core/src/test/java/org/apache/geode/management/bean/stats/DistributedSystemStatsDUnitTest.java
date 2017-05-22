@@ -16,18 +16,8 @@ package org.apache.geode.management.bean.stats;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.util.Set;
-
-import javax.management.ObjectName;
-
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -39,6 +29,15 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.Set;
+import javax.management.ObjectName;
 
 @Category(DistributedTest.class)
 @SuppressWarnings({"unused", "serial"})

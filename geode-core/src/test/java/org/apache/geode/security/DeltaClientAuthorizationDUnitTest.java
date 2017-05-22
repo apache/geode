@@ -15,14 +15,17 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheClient;
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.security.SecurityTestUtils.KEYS;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.getCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.cache.Region;
@@ -32,6 +35,10 @@ import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * @since GemFire 6.1

@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
-
-import java.util.concurrent.TimeUnit;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -27,6 +25,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.util.concurrent.TimeUnit;
 
 @Category(DistributedTest.class)
 public class TombstoneDUnitTest extends JUnit4CacheTestCase {

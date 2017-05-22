@@ -14,20 +14,17 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.internal.AvailablePort.*;
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-
-import org.apache.geode.internal.AvailablePortHelper;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.concatProperties;
+import static org.apache.geode.security.SecurityTestUtils.createCacheClientForMultiUserMode;
+import static org.apache.geode.security.SecurityTestUtils.createProxyCache;
+import static org.apache.geode.security.SecurityTestUtils.getProxyCaches;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
@@ -42,12 +39,20 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.query.internal.cq.ClientCQImpl;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCase {

@@ -17,8 +17,18 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.awaitility.Awaitility.with;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.FlakyTest;
@@ -31,11 +41,6 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.awaitility.Awaitility.with;
-import static org.junit.Assert.fail;
 
 /**
  * Test for Bug 44418.

@@ -14,11 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
@@ -38,10 +36,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class tests the response of GemFire to various occurrences of {@link VirtualMachineError}

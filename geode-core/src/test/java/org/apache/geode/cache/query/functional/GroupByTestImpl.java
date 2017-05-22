@@ -19,17 +19,10 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CacheUtils;
@@ -43,6 +36,15 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.aggregate.AbstractAggregator;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Tests the group by queries with or without aggreagte functions

@@ -14,9 +14,13 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.junit.Assert.assertThat;
 
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.junit.Before;
@@ -24,9 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for FastLogger when using the default log4j2 config for GemFire.

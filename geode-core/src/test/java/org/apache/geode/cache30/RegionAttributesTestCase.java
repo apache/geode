@@ -14,24 +14,34 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Properties;
-// import org.apache.geode.cache.util.*;
-// import java.util.*;
+
+
 
 /**
  * An abstract class whose test methods test the functionality of a {@link RegionAttributes},

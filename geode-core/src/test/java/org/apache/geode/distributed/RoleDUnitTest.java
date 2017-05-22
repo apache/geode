@@ -14,16 +14,11 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -33,6 +28,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Tests the setting of Roles in a DistributedSystem

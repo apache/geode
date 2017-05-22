@@ -17,13 +17,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Properties;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
@@ -50,6 +45,11 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * The test creates two datastores with a partitioned region, and also running a cache server each.

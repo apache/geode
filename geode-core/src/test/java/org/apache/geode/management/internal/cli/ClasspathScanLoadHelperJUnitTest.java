@@ -14,12 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import static org.junit.Assert.*;
-
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.management.internal.cli.domain.AbstractImpl;
@@ -29,6 +25,10 @@ import org.apache.geode.management.internal.cli.domain.Interface1;
 import org.apache.geode.management.internal.cli.domain.Interface2;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Set;
 
 @Category(UnitTest.class)
 public class ClasspathScanLoadHelperJUnitTest {

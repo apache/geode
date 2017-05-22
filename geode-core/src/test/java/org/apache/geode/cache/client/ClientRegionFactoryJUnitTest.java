@@ -14,7 +14,35 @@
  */
 package org.apache.geode.cache.client;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
+import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY_HEAP_LRU;
+import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY_OVERFLOW;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL_HEAP_LRU;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL_OVERFLOW;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL_PERSISTENT;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.internal.ProxyRegion;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
@@ -33,11 +61,6 @@ import org.junit.rules.TestName;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Properties;
-
-import static org.apache.geode.cache.client.ClientRegionShortcut.*;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Unit test for the ClientRegionFactory class

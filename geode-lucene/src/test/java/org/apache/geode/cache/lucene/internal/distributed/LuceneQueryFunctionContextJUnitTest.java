@@ -15,10 +15,8 @@
 package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
@@ -28,6 +26,8 @@ import org.apache.geode.cache.lucene.internal.StringQueryProvider;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class LuceneQueryFunctionContextJUnitTest {

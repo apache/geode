@@ -14,26 +14,45 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.internal.AvailablePort.*;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheClient;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheServer;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.*;
-import static org.apache.geode.security.SecurityTestUtils.*;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.registerAllInterest;
+import static org.apache.geode.security.SecurityTestUtils.AUTHFAIL_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.AUTHREQ_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NOFORCE_AUTHREQ_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.SECURITY_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
 import static org.apache.geode.security.SecurityTestUtils.createCacheClient;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-import static org.apache.geode.test.dunit.Wait.*;
-
-import java.io.IOException;
-import java.util.Properties;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
+import static org.apache.geode.security.SecurityTestUtils.doGets;
+import static org.apache.geode.security.SecurityTestUtils.doLocalGets;
+import static org.apache.geode.security.SecurityTestUtils.doNGets;
+import static org.apache.geode.security.SecurityTestUtils.doNLocalGets;
+import static org.apache.geode.security.SecurityTestUtils.doNPuts;
+import static org.apache.geode.security.SecurityTestUtils.doProxyCacheClose;
+import static org.apache.geode.security.SecurityTestUtils.doPuts;
+import static org.apache.geode.security.SecurityTestUtils.doSimpleGet;
+import static org.apache.geode.security.SecurityTestUtils.doSimplePut;
+import static org.apache.geode.security.SecurityTestUtils.getAndClearLocatorString;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.security.SecurityTestUtils.registerExpectedExceptions;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.pause;
 
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+
+import java.io.IOException;
+import java.util.Properties;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 
 public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTestCase {
 

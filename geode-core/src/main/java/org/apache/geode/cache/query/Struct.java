@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query;
 
-// import java.util.*;
+
 import org.apache.geode.cache.query.types.StructType;
 
 /**

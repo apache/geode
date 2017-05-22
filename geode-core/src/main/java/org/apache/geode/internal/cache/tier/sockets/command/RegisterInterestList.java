@@ -17,19 +17,23 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.operations.RegisterInterestOperationContext;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.cache.DynamicRegionFactory;
-import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.operations.RegisterInterestOperationContext;
-import org.apache.geode.i18n.StringId;
 
 import java.io.IOException;
 import java.util.ArrayList;

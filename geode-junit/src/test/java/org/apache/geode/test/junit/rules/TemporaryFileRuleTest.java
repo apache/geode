@@ -16,17 +16,18 @@
 
 package org.apache.geode.test.junit.rules;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.File;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.io.Files;
+
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
 
 @Category(IntegrationTest.class)
 public class TemporaryFileRuleTest {

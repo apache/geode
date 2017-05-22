@@ -24,12 +24,19 @@ package org.apache.geode.internal.jta;
  * 
  * @since GemFire 4.0
  */
-import java.io.Serializable;
-import javax.transaction.*;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.io.Serializable;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 public class UserTransactionImpl implements UserTransaction, Serializable {
   private static final long serialVersionUID = 2994652455204901910L;

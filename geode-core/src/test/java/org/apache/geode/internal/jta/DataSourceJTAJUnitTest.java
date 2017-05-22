@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
@@ -25,16 +29,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
 
 /**
  * This test case is to test the following test scenarios: 1) Get Simple DS outside transaction,

@@ -14,20 +14,10 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -44,6 +34,18 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(IntegrationTest.class)
 public class NumericQueryJUnitTest {

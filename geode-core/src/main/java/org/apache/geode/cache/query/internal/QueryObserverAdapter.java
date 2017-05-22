@@ -14,9 +14,12 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
 
-import org.apache.geode.cache.query.*;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * This class provides 'do-nothing' implementations of all of the methods of interface

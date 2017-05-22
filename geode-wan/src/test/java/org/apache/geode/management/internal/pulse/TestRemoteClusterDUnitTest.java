@@ -14,20 +14,10 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-
-import java.util.Map;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
@@ -37,11 +27,9 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.MBeanUtil;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
 import org.apache.geode.management.RegionMXBean;
-
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -49,6 +37,14 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Map;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 /**
  * This is for testing remote Cluster

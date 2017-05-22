@@ -16,7 +16,7 @@ package org.apache.geode.internal.tcp;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
 
 

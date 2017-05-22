@@ -14,11 +14,10 @@
  */
 package org.apache.geode.test.fake;
 
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
@@ -34,6 +33,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Factory methods for fake objects for use in test.

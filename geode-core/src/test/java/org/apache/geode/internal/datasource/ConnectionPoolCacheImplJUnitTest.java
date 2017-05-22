@@ -19,6 +19,10 @@
  */
 package org.apache.geode.internal.datasource;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
@@ -29,15 +33,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.naming.Context;
-import javax.sql.PooledConnection;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.fail;
+import javax.naming.Context;
+import javax.sql.PooledConnection;
 
 /*
  * this is a Multithreaded test for datasource connection pool.

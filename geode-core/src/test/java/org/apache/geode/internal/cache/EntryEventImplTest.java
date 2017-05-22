@@ -14,16 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.SerializedCacheValue;
@@ -31,6 +30,13 @@ import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @Category(UnitTest.class)
 public class EntryEventImplTest {

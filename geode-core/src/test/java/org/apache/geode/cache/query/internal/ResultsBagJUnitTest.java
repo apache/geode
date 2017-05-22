@@ -14,15 +14,9 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.*;
-
-import java.io.DataInputStream;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
@@ -30,6 +24,13 @@ import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.DataInputStream;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Test ResultsBag, including null elements

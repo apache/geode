@@ -14,7 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.SystemMembershipEvent;
+import org.apache.geode.admin.SystemMembershipListener;
 import org.apache.geode.distributed.DistributedMember;
 
 /**

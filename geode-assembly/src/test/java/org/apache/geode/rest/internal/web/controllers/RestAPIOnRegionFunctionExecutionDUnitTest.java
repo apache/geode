@@ -14,23 +14,9 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
@@ -52,6 +38,21 @@ import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Dunit Test to validate OnRegion function execution with REST APIs

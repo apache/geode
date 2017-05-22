@@ -14,15 +14,16 @@
  */
 package org.apache.geode.management.internal.web.http;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.geode.management.internal.web.AbstractWebTestCase;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -35,9 +36,12 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import org.apache.geode.management.internal.web.AbstractWebTestCase;
-import org.apache.geode.management.internal.web.domain.Link;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The ClientHttpRequestJUnitTest class is a test suite of test cases testing the contract and

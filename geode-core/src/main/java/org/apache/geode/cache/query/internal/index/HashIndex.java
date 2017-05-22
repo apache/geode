@@ -14,24 +14,9 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -76,6 +61,20 @@ import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A HashIndex is an index that can be used for equal and not equals queries It is created only when

@@ -14,17 +14,19 @@
  */
 package org.apache.geode.distributed.internal;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.SystemConnectException;
-import org.apache.geode.internal.*;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
+import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;

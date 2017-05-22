@@ -14,11 +14,11 @@
  */
 package org.apache.geode.test.golden;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.test.process.ProcessWrapper;
+import org.junit.Test;
 
 /**
  * Abstract test case for tests verifying that test output with a log message of

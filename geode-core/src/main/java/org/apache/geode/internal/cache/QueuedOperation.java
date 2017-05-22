@@ -14,13 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedMember;
-import java.io.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Represents a single operation that can be queued for reliable delivery. Instances are owned in

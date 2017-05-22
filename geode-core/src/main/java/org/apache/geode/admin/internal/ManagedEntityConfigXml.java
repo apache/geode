@@ -17,7 +17,12 @@ package org.apache.geode.admin.internal;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.xml.sax.*;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXParseException;
 
 import java.io.InputStream;
 

@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.LogWriter;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -25,12 +30,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.Random;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.LogWriter;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link SortLogFile} program.

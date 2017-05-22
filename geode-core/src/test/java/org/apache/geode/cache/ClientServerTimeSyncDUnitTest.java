@@ -14,12 +14,7 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -29,13 +24,23 @@ import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 @Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {

@@ -14,16 +14,23 @@
  */
 package org.apache.geode;
 
-import java.io.*;
-import java.text.BreakIterator;
-import java.util.*;
-
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.DocErrorReporter;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.RootDoc;
-
 import junit.framework.TestCase;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.BreakIterator;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Set;
+import java.util.TreeSet;
 import perffmwk.Formatter;
 
 /**

@@ -14,13 +14,10 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.util.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
@@ -30,7 +27,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.*;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -46,6 +43,13 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 @Category(DistributedTest.class)
 public class Bug39356DUnitTest extends JUnit4CacheTestCase {

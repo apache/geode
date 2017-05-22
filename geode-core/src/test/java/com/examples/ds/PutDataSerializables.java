@@ -14,8 +14,12 @@
  */
 package com.examples.ds;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
+
 import java.util.Date;
 import java.util.Properties;
 

@@ -14,21 +14,23 @@
  */
 package org.apache.geode.management.internal.configuration;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * JUnit Test for {@link ZipUtils}

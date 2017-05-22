@@ -17,7 +17,8 @@
  */
 package org.apache.geode.internal.cache.tier;
 
-import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 
 /**
  * 

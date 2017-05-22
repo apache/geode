@@ -14,21 +14,21 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.internal.cache.lru.HeapEvictor;
 import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 
 @Category(DistributedTest.class)
 @Ignore("TODO: Test was disabled by renaming to DisabledTest")

@@ -14,15 +14,17 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RequiredRoles;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Provides functionality helpful to testing Reliability and RequiredRoles.

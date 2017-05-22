@@ -23,7 +23,9 @@ package org.apache.geode.internal.datasource;
  * stored.
  * 
  */
-import java.io.*;
+
+import java.io.PrintWriter;
+import java.io.Serializable;
 
 public class ConfiguredDataSourceProperties implements Serializable {
 

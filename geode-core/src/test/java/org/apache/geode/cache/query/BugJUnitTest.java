@@ -20,20 +20,20 @@
 package org.apache.geode.cache.query;
 
 import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.stream.IntStream;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
+import org.apache.geode.cache.query.data.TestData.MyValue;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
@@ -41,7 +41,16 @@ import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.cache.query.data.TestData.MyValue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * Tests reported bugs

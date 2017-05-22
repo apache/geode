@@ -15,28 +15,24 @@
 package org.apache.geode.tools.pulse.controllers;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.io.File;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.tools.pulse.internal.controllers.PulseController;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConfig;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,7 +53,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Category(IntegrationTest.class)
 @PrepareForTest(Repository.class)

@@ -14,29 +14,31 @@
  */
 package org.apache.geode.management;
 
-import org.apache.geode.management.internal.SystemManagementService;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.awaitility.Awaitility;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.ObjectName;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import javax.management.ObjectName;
 
 /**
  * Tests for WAN artifacts like Sender and Receiver. The purpose of this test is not to check WAN

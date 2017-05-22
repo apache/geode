@@ -14,11 +14,18 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.message.MessageFactory;
@@ -27,8 +34,6 @@ import org.apache.logging.log4j.spi.ExtendedLogger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests the FastLogger class which wraps and delegates to an actual Logger with optimizations

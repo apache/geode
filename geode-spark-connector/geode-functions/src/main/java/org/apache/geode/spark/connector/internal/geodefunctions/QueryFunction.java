@@ -18,14 +18,14 @@ package org.apache.geode.spark.connector.internal.geodefunctions;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.*;
-import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
+
 import java.util.Iterator;
 
 public class QueryFunction implements Function {

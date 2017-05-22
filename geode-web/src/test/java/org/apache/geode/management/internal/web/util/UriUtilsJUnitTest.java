@@ -14,15 +14,16 @@
  */
 package org.apache.geode.management.internal.web.util;
 
-import static org.junit.Assert.*;
-
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import org.apache.geode.management.internal.web.AbstractWebTestCase;
 import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.util.Map;
 
 /**
  * The UriUtilsJUnitTest class is a test suite of test cases testing the contract and functionality

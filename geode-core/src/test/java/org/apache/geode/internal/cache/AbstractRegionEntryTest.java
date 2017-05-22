@@ -14,18 +14,18 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.assertj.core.api.Assertions;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class AbstractRegionEntryTest {

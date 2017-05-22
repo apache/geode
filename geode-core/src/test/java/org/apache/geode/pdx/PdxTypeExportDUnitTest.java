@@ -14,17 +14,7 @@
  */
 package org.apache.geode.pdx;
 
-import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.util.Collection;
+import static org.junit.Assert.assertEquals;
 
 import com.examples.snapshot.MyObjectPdx;
 import com.examples.snapshot.MyObjectPdx.MyEnumPdx;
@@ -37,7 +27,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -46,6 +35,13 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
 
 @Category({DistributedTest.class, SerializationTest.class})
 public class PdxTypeExportDUnitTest extends JUnit4CacheTestCase {

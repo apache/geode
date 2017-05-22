@@ -14,20 +14,12 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
-import org.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -35,7 +27,10 @@ import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySen
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.net.SocketException;
 import java.util.Set;

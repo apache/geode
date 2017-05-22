@@ -19,15 +19,10 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
-
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -52,6 +47,13 @@ import org.apache.geode.cache.query.internal.index.IndexManager.TestHook;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
+import java.util.List;
 
 @Category(IntegrationTest.class)
 public class LikePredicateJUnitTest {

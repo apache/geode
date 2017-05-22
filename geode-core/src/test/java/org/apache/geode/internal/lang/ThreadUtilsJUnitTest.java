@@ -15,13 +15,12 @@
 package org.apache.geode.internal.lang;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import java.lang.Thread.State;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import edu.umd.cs.mtc.MultithreadedTestCase;
-import edu.umd.cs.mtc.TestFramework;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -32,7 +31,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.lang.Thread.State;
+import java.util.concurrent.atomic.AtomicBoolean;
+import edu.umd.cs.mtc.MultithreadedTestCase;
+import edu.umd.cs.mtc.TestFramework;
 
 /**
  * The ThreadUtilsJUnitTest class is a test suite of test cases for testing the contract and

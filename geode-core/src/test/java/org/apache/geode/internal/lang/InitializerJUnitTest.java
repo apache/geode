@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.lang;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -24,8 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The InitializerJUnitTest class is a test suite of test cases testing the contract and

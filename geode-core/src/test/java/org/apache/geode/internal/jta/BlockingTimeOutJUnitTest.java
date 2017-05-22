@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
@@ -27,18 +32,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 import java.util.Random;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertNotNull;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 @Category(IntegrationTest.class)
 public class BlockingTimeOutJUnitTest {

@@ -14,10 +14,10 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.util.Arrays;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -28,6 +28,9 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * An instance of this class is delegated to by test classes that test disk regions.

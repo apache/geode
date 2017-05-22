@@ -15,8 +15,12 @@
 
 package org.apache.geode.cache.query;
 
-import java.util.*;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Contains the results of a {@linkplain org.apache.geode.cache.query.Query#execute() executing} a

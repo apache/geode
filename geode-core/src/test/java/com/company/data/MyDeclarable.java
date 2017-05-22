@@ -14,7 +14,7 @@
  */
 package com.company.data;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Declarable;
 
 /**
  * A <code>Declarable</code> object

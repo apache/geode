@@ -19,8 +19,23 @@
  */
 package org.apache.geode.internal.datasource;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -32,18 +47,6 @@ import javax.naming.Context;
 import javax.sql.PooledConnection;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category(IntegrationTest.class)
 public class AbstractPoolCacheJUnitTest {

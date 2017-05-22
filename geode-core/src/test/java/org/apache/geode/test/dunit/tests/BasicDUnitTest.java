@@ -14,16 +14,18 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.apache.geode.test.dunit.Invoke.*;
-import static com.googlecode.catchexception.CatchException.*;
-import static com.googlecode.catchexception.throwable.CatchThrowable.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static com.googlecode.catchexception.throwable.CatchThrowable.catchThrowable;
+import static com.googlecode.catchexception.throwable.CatchThrowable.caughtThrowable;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitEnv;
@@ -32,6 +34,10 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * This class tests the basic functionality of the distributed unit test framework.

@@ -15,8 +15,8 @@
 
 package org.apache.geode.internal.cache.lru;
 
-import org.apache.geode.*;
-// import org.apache.geode.internal.*;
+import org.apache.geode.StatisticsFactory;
+
 
 /**
  * Statistics for the HeapLRUCapacityController, which treats the counter statistic differently than

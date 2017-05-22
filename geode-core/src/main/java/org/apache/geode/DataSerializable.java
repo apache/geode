@@ -14,7 +14,10 @@
  */
 package org.apache.geode;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * An interface for objects whose state can be written/read as primitive types and strings ("data").

@@ -14,7 +14,16 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
+import static org.apache.geode.internal.lang.SystemUtils.getBootClassPath;
+import static org.apache.geode.internal.lang.SystemUtils.getClassPath;
+import static org.apache.geode.internal.lang.SystemUtils.getOsArchitecture;
+import static org.apache.geode.internal.lang.SystemUtils.getOsName;
+import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
+
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
 
 import java.io.File;
 import java.io.InputStream;
@@ -27,11 +36,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * This class provides build and version information about GemFire. It gathers this information from

@@ -14,20 +14,20 @@
  */
 package org.apache.geode.test.junit.rules.examples;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import org.apache.geode.test.junit.Repeat;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.RepeatRule;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.Repeat;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.rules.RepeatRule;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The RepeatingTestCasesExampleTest class is a test suite of test cases testing the contract and

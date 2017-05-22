@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSCODE;
@@ -33,9 +40,6 @@ import org.junit.rules.ExpectedException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
-
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class MemoryBlockNodeJUnitTest {

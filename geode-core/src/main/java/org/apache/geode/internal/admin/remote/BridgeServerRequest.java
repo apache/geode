@@ -19,7 +19,9 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * A message that is sent to a VM that hosts a cache to perform an administrative operation on one

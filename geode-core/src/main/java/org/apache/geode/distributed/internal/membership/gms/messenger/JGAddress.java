@@ -22,7 +22,11 @@ import org.jgroups.Global;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;

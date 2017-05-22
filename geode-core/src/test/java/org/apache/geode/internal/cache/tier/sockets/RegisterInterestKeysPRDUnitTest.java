@@ -14,17 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import org.apache.geode.cache.*;
+import org.junit.experimental.categories.Category;
 
 /**
  * subclass of UpdatePropagationDUnitTest to exercise partitioned regions

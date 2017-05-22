@@ -14,15 +14,14 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.assertj.core.api.Assertions.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class JUnit4GetDefaultDiskStoreNameDUnitTest extends JUnit4DistributedTestCase {

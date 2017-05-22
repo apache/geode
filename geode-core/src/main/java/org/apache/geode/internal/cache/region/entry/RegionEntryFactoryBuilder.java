@@ -14,7 +14,39 @@
  */
 package org.apache.geode.internal.cache.region.entry;
 
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.RegionEntryFactory;
+import org.apache.geode.internal.cache.VMStatsDiskLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VMStatsDiskLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VMStatsDiskRegionEntryHeap;
+import org.apache.geode.internal.cache.VMStatsDiskRegionEntryOffHeap;
+import org.apache.geode.internal.cache.VMStatsLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VMStatsLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VMStatsRegionEntryHeap;
+import org.apache.geode.internal.cache.VMStatsRegionEntryOffHeap;
+import org.apache.geode.internal.cache.VMThinDiskLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VMThinDiskLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VMThinDiskRegionEntryHeap;
+import org.apache.geode.internal.cache.VMThinDiskRegionEntryOffHeap;
+import org.apache.geode.internal.cache.VMThinLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VMThinLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VMThinRegionEntryHeap;
+import org.apache.geode.internal.cache.VMThinRegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedStatsDiskLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedStatsDiskLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedStatsDiskRegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedStatsDiskRegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedStatsLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedStatsLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedStatsRegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedStatsRegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedThinDiskLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedThinDiskLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedThinDiskRegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedThinDiskRegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedThinLRURegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedThinLRURegionEntryOffHeap;
+import org.apache.geode.internal.cache.VersionedThinRegionEntryHeap;
+import org.apache.geode.internal.cache.VersionedThinRegionEntryOffHeap;
 
 public class RegionEntryFactoryBuilder {
   public RegionEntryFactory getRegionEntryFactoryOrNull(boolean statsEnabled, boolean isLRU,

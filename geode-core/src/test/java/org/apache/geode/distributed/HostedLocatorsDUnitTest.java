@@ -14,6 +14,14 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Host.getHost;
+
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
@@ -39,11 +47,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Host.getHost;
 
 /**
  * Extracted from LocatorLauncherLocalIntegrationTest.

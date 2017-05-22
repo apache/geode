@@ -14,20 +14,14 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.DistributedTestUtils.*;
-import static org.junit.Assert.*;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.Random;
-
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
@@ -59,7 +53,17 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.Random;
 
 @Category({DistributedTest.class, ClientServerTest.class})
 public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase {

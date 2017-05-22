@@ -14,14 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -39,7 +34,13 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * To verify that new events get generated on the node by get operation for key that is not present

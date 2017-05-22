@@ -14,11 +14,20 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_3;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -29,11 +38,8 @@ import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)

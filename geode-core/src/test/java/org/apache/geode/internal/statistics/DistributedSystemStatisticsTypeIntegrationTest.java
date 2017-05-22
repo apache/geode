@@ -14,11 +14,17 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Properties;
-
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,11 +32,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.util.Properties;
 
 /**
  * Integration tests for {@link StatisticsType} as implemented by {@link DistributedSystem}.

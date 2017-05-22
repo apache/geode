@@ -14,21 +14,24 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Category(UnitTest.class)
 public class CompiledInJUnitTest {

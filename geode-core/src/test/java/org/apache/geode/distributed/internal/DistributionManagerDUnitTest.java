@@ -14,24 +14,14 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.awaitility.Awaitility;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.ACK_SEVERE_ALERT_THRESHOLD;
+import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.admin.AdminDistributedSystem;
@@ -65,7 +55,20 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.net.InetAddress;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class tests the functionality of the {@link DistributionManager} class.

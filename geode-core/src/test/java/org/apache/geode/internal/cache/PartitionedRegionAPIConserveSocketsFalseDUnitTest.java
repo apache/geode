@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * Test all the PartitionedRegion api calls when ConserveSockets is set to false

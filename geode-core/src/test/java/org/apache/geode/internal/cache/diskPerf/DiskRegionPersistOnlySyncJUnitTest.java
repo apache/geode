@@ -14,12 +14,8 @@
  */
 package org.apache.geode.internal.cache.diskPerf;
 
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.RegionAttributes;
@@ -30,6 +26,10 @@ import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Arrays;
 
 /**
  * Disk region perf test for Persist only with sync writes.

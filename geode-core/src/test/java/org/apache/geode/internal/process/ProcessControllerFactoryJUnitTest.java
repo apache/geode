@@ -14,17 +14,16 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
-import javax.management.ObjectName;
-
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.File;
+import javax.management.ObjectName;
 
 /**
  * @since GemFire 8.0

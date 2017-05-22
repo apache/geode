@@ -14,14 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class EntryScoreJUnitTest {

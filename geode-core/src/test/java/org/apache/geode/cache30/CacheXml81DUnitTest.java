@@ -14,12 +14,10 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheXmlException;
@@ -33,6 +31,10 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.XmlParser;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
 
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases should extend this

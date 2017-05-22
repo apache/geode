@@ -14,12 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
@@ -28,6 +24,9 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * Performs eviction stat dunit tests for off-heap regions.

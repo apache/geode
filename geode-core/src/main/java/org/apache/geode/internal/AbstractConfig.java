@@ -14,7 +14,17 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PREFIX;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
+
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.FlowControlParams;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,14 +44,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.UnmodifiableException;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.FlowControlParams;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * Provides an implementation of the {@link Config} interface that implements functionality that all

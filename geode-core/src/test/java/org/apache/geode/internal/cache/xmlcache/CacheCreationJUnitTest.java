@@ -14,16 +14,21 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.CacheServerLauncher;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -31,11 +36,10 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheServerLauncher;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Category(UnitTest.class)
 public class CacheCreationJUnitTest {

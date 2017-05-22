@@ -14,9 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-import static org.apache.geode.test.dunit.Wait.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -31,7 +33,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;

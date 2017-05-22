@@ -14,19 +14,22 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.mockito.Mockito.*;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {

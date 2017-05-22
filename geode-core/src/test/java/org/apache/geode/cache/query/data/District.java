@@ -21,8 +21,8 @@
 
 package org.apache.geode.cache.query.data;
 
+import java.io.Serializable;
 import java.util.Set;
-import java.io.*;
 
 /**
  *

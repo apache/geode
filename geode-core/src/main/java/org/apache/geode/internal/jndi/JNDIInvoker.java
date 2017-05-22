@@ -27,14 +27,18 @@ import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 
-import javax.naming.*;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.naming.NoInitialContextException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
 
 /**
  * <p>

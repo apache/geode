@@ -14,26 +14,26 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.Properties;
-
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.util.Properties;
 
 @Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class BlockingHARegionJUnitTest {

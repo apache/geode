@@ -14,19 +14,19 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests extracted from LocatorLoadSnapshotJUnitTest

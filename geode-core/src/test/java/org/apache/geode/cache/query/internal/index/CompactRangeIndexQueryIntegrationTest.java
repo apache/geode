@@ -14,36 +14,22 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.query.CacheUtils;
-import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.PortfolioPdx;
-
-import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
-import org.apache.geode.cache.query.internal.index.IndexProtocol;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(IntegrationTest.class)
 public class CompactRangeIndexQueryIntegrationTest {

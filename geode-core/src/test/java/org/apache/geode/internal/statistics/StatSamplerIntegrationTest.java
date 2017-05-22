@@ -14,16 +14,20 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.awaitility.Awaitility.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.junit.Assert.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -34,13 +38,11 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Integration tests for statistics sampling.

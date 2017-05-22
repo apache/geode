@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.cache.region.entry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)

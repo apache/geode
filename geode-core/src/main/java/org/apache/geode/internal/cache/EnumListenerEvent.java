@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionMembershipListener;
+import org.apache.geode.cache.RegionRoleListener;
+import org.apache.geode.cache.RoleEvent;
 
 public abstract class EnumListenerEvent {
 

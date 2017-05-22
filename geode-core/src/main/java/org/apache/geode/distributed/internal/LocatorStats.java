@@ -14,13 +14,17 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * This class maintains statistics for the locator

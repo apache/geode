@@ -14,7 +14,18 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,15 +33,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class NetViewJUnitTest {

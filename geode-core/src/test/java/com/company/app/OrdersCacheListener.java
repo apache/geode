@@ -14,7 +14,10 @@
  */
 package com.company.app;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.RegionEvent;
 
 /**
  * com.company.app.OrdersCacheListener. Cache listener impl for CacheXmlxxTest

@@ -14,16 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.util.Set;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
@@ -41,6 +32,11 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Set;
 
 /**
  * Test to verify the meta-data cleanUp done at the time of cache close Op. This test creates 2

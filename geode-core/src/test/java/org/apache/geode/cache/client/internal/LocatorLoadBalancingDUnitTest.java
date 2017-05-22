@@ -14,18 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -37,6 +25,7 @@ import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.server.ServerLoadProbeAdapter;
 import org.apache.geode.cache.server.ServerMetrics;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
@@ -46,12 +35,17 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.io.Serializable;

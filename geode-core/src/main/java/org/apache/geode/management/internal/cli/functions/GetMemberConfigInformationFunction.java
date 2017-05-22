@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -31,9 +33,12 @@ import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /****
  * 

@@ -14,12 +14,7 @@
  */
 package org.apache.geode.pdx.internal;
 
-import static java.lang.Integer.*;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.logging.log4j.Logger;
+import static java.lang.Integer.valueOf;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStore;
@@ -36,6 +31,10 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TypeRegistry {
   private static final Logger logger = LogService.getLogger();

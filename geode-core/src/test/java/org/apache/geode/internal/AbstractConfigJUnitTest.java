@@ -14,16 +14,20 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KEYSTORE_PASSWORD;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 @Category(UnitTest.class)
 public class AbstractConfigJUnitTest {

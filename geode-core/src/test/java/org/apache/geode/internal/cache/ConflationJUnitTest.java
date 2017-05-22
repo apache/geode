@@ -20,16 +20,14 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.Collection;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import org.junit.After;
-import org.junit.Before;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.util.Collection;
 
 /**
  * This test does a check that conflation in the buffer happen correctly

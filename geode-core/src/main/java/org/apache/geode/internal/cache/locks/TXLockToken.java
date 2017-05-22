@@ -15,12 +15,13 @@
 
 package org.apache.geode.internal.cache.locks;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-// import org.apache.geode.cache.Region;
-import java.io.*;
 
-import org.apache.commons.lang.StringUtils;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Represents one transaction lock.

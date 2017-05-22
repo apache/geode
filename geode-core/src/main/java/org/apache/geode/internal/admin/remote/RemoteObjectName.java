@@ -16,13 +16,13 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.*;
-// import org.apache.geode.cache.*;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-// import org.apache.geode.distributed.internal.*;
-import java.io.*;
-// import java.util.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 
 /**
  * Used to name an object in a region. This class is needed so that the console will not need to

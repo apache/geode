@@ -14,20 +14,24 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.util.List;
-
+import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.File;
+import java.util.List;
 
 /**
  * Unit tests for the StatisticsMonitor class. No disk IO.

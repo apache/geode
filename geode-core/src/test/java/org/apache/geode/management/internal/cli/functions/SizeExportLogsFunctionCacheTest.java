@@ -14,10 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;

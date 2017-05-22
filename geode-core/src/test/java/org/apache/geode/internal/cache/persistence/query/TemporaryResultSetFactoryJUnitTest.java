@@ -14,16 +14,7 @@
  */
 package org.apache.geode.internal.cache.persistence.query;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.persistence.query.IndexMap.IndexEntry;
@@ -32,6 +23,14 @@ import org.apache.geode.internal.cache.persistence.query.mock.NaturalComparator;
 import org.apache.geode.internal.cache.persistence.query.mock.Pair;
 import org.apache.geode.internal.cache.persistence.query.mock.PairComparator;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Category(UnitTest.class)
 public class TemporaryResultSetFactoryJUnitTest {

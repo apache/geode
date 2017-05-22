@@ -14,8 +14,22 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedSystem;
@@ -23,9 +37,6 @@ import org.junit.Assert;
 
 import java.io.Serializable;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 
 /**

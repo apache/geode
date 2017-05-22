@@ -15,15 +15,6 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Set;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DM;
@@ -43,6 +34,12 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * A processor for sending a message to the elder asking it for the grantor of a dlock service.

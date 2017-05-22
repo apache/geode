@@ -14,17 +14,17 @@
  */
 package org.apache.geode.internal.net;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.internal.security.SecurableCommunicationChannel.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.Properties;
-
+import org.apache.geode.distributed.ClientSocketFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,10 +32,10 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.ClientSocketFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.Properties;
 
 /**
  * Integration tests for ClientSocketFactory.

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 

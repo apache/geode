@@ -14,15 +14,11 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -53,10 +49,14 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client to server, server

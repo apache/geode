@@ -14,8 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+import org.apache.geode.CopyHelper;
+import org.apache.geode.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -23,12 +28,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.CopyHelper;
-import org.apache.geode.cache.lucene.LuceneQueryFactory;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TopEntriesJUnitTest {

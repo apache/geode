@@ -14,9 +14,12 @@
  */
 package com.company.app;
 
-import java.util.Properties;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.LoaderHelper;
 
-import org.apache.geode.cache.*;
+import java.util.Properties;
 
 /**
  * A <code>CacheLoader</code> that is <code>Declarable</code>

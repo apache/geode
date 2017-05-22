@@ -14,14 +14,10 @@
  */
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Random;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import redis.clients.jedis.Jedis;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -37,6 +33,11 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Random;
+import redis.clients.jedis.Jedis;
 
 @Category(DistributedTest.class)
 public class RedisDistDUnitTest extends JUnit4DistributedTestCase {

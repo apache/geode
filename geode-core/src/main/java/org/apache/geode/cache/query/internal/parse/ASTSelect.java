@@ -16,14 +16,12 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
+import antlr.Token;
+import antlr.collections.AST;
+import org.apache.geode.cache.query.internal.QCompiler;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import antlr.*;
-import antlr.collections.*;
-
-import org.apache.geode.cache.query.internal.QCompiler;
-import org.apache.geode.cache.query.internal.CompiledValue;
 
 public class ASTSelect extends GemFireAST {
   private static final long serialVersionUID = 1389351692304773456L;

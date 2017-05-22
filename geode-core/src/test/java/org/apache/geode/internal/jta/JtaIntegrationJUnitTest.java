@@ -14,7 +14,17 @@
  */
 package org.apache.geode.internal.jta;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -25,9 +35,6 @@ import org.junit.experimental.categories.Category;
 
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Moved some non-DUnit tests over from org/apache/geode/internal/jta/dunit/JTADUnitTest

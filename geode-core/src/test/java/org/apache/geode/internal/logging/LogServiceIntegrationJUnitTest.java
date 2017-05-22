@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogServiceIntegrationTestSupport.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.logging.LogServiceIntegrationTestSupport.writeConfigFile;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.net.URL;
-
+import org.apache.geode.internal.logging.log4j.Configurator;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
@@ -35,8 +34,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.logging.log4j.Configurator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.net.URL;
 
 /**
  * Integration tests for LogService and how it configures and uses log4j2

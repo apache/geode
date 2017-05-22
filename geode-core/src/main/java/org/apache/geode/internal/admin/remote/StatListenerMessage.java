@@ -16,12 +16,14 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-// import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-import java.io.*;
-// import java.util.*;
+import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 
 /**
  * A message that is sent to a particular console distribution manager when changes have been

@@ -14,24 +14,36 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.BucketAdvisor;
+import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.junit.After;
@@ -42,21 +54,14 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
-import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
-import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
-import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
-import org.apache.geode.internal.cache.BucketNotFoundException;
-import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
-import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Category(UnitTest.class)
 public class PartitionedRepositoryManagerJUnitTest {

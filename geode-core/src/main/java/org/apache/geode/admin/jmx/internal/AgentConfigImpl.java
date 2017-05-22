@@ -14,8 +14,30 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_CIPHERS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_ENABLED;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
+import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.admin.jmx.Agent;
+import org.apache.geode.admin.jmx.AgentConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.util.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,17 +51,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.admin.DistributionLocatorConfig;
-import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
-import org.apache.geode.admin.internal.InetAddressUtil;
-import org.apache.geode.admin.jmx.Agent;
-import org.apache.geode.admin.jmx.AgentConfig;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.util.IOUtils;
 
 /**
  * Provides the JMX Agent configuration properties.

@@ -14,9 +14,11 @@
  */
 package org.apache.geode.cache.client;
 
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache.*; // for javadocs
-import org.apache.geode.cache.query.*; // for javadocs
 
 
 /**

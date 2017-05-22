@@ -14,9 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import java.util.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.internal.offheap.Releasable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The internal implementation of the {@link TransactionEvent} interface

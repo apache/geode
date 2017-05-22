@@ -14,13 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
@@ -54,6 +49,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
 

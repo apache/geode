@@ -16,31 +16,30 @@ package org.apache.geode.distributed;
 
 import static java.lang.Integer.parseInt;
 import static java.net.NetworkInterface.getNetworkInterfaces;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.distributed.internal.DistributionManager.*;
-import static org.apache.geode.internal.AvailablePort.*;
-import static org.apache.geode.internal.AvailablePortHelper.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_FLOW_CONTROL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD;
+import static org.apache.geode.distributed.internal.DistributionManager.NORMAL_DM_TYPE;
+import static org.apache.geode.distributed.internal.DistributionManager.SERIAL_EXECUTOR;
+import static org.apache.geode.internal.AvailablePort.MULTICAST;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.assertj.core.api.Assertions.*;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
-import java.util.Properties;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
@@ -59,6 +58,20 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+import java.util.Properties;
 
 /**
  * Tests the functionality of the {@link DistributedSystem} class.

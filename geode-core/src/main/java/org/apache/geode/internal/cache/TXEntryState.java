@@ -15,8 +15,21 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
+
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -41,8 +54,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
 
 /**
  * TXEntryState is the entity that tracks transactional changes, except for those tracked by

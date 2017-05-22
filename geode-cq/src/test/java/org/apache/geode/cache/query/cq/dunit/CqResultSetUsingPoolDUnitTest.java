@@ -14,19 +14,8 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
@@ -37,7 +26,6 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -47,6 +35,15 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class tests the ContinuousQuery mechanism in GemFire.

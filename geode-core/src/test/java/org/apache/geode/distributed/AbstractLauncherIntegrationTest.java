@@ -14,6 +14,10 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
@@ -26,9 +30,6 @@ import org.junit.rules.TestName;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Properties;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Integration tests for AbstractLauncher class. These tests require file system I/O.

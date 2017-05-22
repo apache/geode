@@ -15,10 +15,10 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.util.*;
-
 import org.apache.geode.cache.query.internal.NullToken;
 import org.apache.geode.cache.query.internal.Undefined;
+
+import java.util.Comparator;
 
 /**
  * A general comparator that will let us compare different numeric types for equality

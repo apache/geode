@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.util.concurrent;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +26,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.Timeout;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 
 @Category(UnitTest.class)
 public class SemaphoreReadWriteLockJUnitTest {

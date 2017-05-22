@@ -14,13 +14,18 @@
  */
 package com.main;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionConfig;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * This is a member representing site 2 who wants to receive data from site 1

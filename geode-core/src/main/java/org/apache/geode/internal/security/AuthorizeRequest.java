@@ -15,19 +15,28 @@
 
 package org.apache.geode.internal.security;
 
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.operations.*;
+import org.apache.geode.cache.operations.CloseCQOperationContext;
+import org.apache.geode.cache.operations.DestroyOperationContext;
+import org.apache.geode.cache.operations.ExecuteCQOperationContext;
+import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
+import org.apache.geode.cache.operations.GetDurableCQsOperationContext;
+import org.apache.geode.cache.operations.GetOperationContext;
+import org.apache.geode.cache.operations.InterestType;
+import org.apache.geode.cache.operations.InvalidateOperationContext;
+import org.apache.geode.cache.operations.KeySetOperationContext;
+import org.apache.geode.cache.operations.OperationContext;
+import org.apache.geode.cache.operations.PutAllOperationContext;
+import org.apache.geode.cache.operations.PutOperationContext;
+import org.apache.geode.cache.operations.QueryOperationContext;
+import org.apache.geode.cache.operations.RegionClearOperationContext;
+import org.apache.geode.cache.operations.RegionCreateOperationContext;
+import org.apache.geode.cache.operations.RegionDestroyOperationContext;
+import org.apache.geode.cache.operations.RegisterInterestOperationContext;
+import org.apache.geode.cache.operations.RemoveAllOperationContext;
+import org.apache.geode.cache.operations.StopCQOperationContext;
+import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -37,6 +46,16 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
+
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class implements authorization calls for various operations. It provides methods to invoke

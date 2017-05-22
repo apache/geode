@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -23,9 +23,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 

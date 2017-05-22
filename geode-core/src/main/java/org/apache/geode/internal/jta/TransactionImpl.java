@@ -18,13 +18,21 @@ package org.apache.geode.internal.jta;
  * TransactionImpl implements the JTA Transaction interface.
  * 
  */
-import javax.transaction.xa.*;
-import javax.transaction.*;
 
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.xa.XAResource;
 
 public class TransactionImpl implements Transaction {
 

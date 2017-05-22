@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.stats50;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
@@ -28,9 +32,6 @@ import java.util.Properties;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  *

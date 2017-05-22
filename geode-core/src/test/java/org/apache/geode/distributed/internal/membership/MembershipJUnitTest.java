@@ -14,6 +14,13 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -22,34 +29,44 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.Properties;
-
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SerialAckedMessage;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
+import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.messages.*;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.io.File;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Properties;
 
 @Category({IntegrationTest.class, MembershipJUnitTest.class})
 public class MembershipJUnitTest {

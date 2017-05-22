@@ -14,9 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.junit.Assert.*;
-
-import java.security.Principal;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
@@ -25,6 +24,8 @@ import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
+
+import java.security.Principal;
 
 /**
  * Test authorization class for testing the accessibility of query bind parameters from

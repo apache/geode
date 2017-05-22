@@ -17,7 +17,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -27,6 +26,12 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * An object of this class gets created during the organization of operands in a CompiledJunction.

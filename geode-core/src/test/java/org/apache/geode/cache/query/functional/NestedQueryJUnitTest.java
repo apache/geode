@@ -19,20 +19,11 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.ErrorCollector;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CacheUtils;
@@ -41,13 +32,24 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Utils;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ErrorCollector;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 
 @Category(IntegrationTest.class)
 public class NestedQueryJUnitTest {

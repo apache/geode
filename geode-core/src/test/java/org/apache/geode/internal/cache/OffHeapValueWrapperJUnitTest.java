@@ -14,15 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.internal.cache.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
@@ -32,6 +25,13 @@ import org.apache.geode.internal.offheap.NullOutOfOffHeapMemoryListener;
 import org.apache.geode.internal.offheap.SlabImpl;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 @Category(UnitTest.class)
 public class OffHeapValueWrapperJUnitTest {

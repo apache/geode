@@ -14,14 +14,21 @@
  */
 package org.apache.geode.memcached;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASValue;
+import net.spy.memcached.MemcachedClient;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import net.spy.memcached.CASResponse;
-import net.spy.memcached.CASValue;
-import net.spy.memcached.MemcachedClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,9 +43,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class GemcachedDevelopmentJUnitTest {

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache.snapshot;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import com.examples.snapshot.MyObject;
 import org.apache.geode.cache.Cache;
@@ -29,8 +30,6 @@ import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 public class SnapshotTestCase {
   protected File store;

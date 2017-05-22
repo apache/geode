@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**

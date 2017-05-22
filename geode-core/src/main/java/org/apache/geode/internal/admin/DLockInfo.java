@@ -15,9 +15,10 @@
 
 package org.apache.geode.internal.admin;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+
 import java.io.Serializable;
 import java.util.Date;
-import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * Represents display information about a single distributed lock

@@ -15,17 +15,9 @@
 
 package org.apache.geode.internal.cache.tx;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region.Entry;
@@ -41,6 +33,14 @@ import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 @Category(UnitTest.class)
 public class AbstractPeerTXRegionStubTest {

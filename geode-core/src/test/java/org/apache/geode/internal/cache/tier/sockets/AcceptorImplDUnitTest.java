@@ -15,7 +15,11 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.awaitility.Awaitility;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.GemFireCache;
@@ -36,16 +40,12 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.List;
 import java.util.Properties;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for AcceptorImpl.

@@ -14,13 +14,7 @@
  */
 package org.apache.geode.internal.cache.diskPerf;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.Arrays;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Scope;
@@ -28,6 +22,11 @@ import org.apache.geode.internal.cache.DiskRegionHelperFactory;
 import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Arrays;
 
 /**
  * Consolidated Disk Region Perftest. Overflow, Persist, OverflowWithPersist modes are tested for

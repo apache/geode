@@ -14,10 +14,13 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.LogWriter;
-import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 /**

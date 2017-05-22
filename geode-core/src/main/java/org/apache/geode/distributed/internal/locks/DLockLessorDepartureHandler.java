@@ -15,7 +15,7 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * Provides hook for handling departure of a lease holder (lessor).

@@ -14,18 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.util.Iterator;
-
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -43,11 +33,15 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Iterator;
 
 /**
  * 

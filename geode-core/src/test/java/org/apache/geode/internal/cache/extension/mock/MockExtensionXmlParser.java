@@ -15,16 +15,16 @@
 
 package org.apache.geode.internal.cache.extension.mock;
 
-import static org.junit.Assert.*;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.internal.cache.xmlcache.XmlParser;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Mock Extension {@link XmlParser}.

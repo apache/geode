@@ -14,7 +14,18 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,15 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
-import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test ResultsBag Limit behaviour

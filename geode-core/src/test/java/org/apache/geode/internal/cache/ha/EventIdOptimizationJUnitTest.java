@@ -14,16 +14,15 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.nio.ByteBuffer;
-
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.nio.ByteBuffer;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client to server, server

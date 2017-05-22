@@ -14,13 +14,15 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class MemoryThresholdsJUnitTest {

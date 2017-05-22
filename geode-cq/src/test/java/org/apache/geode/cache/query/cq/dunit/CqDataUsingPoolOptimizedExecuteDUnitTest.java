@@ -14,19 +14,12 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag

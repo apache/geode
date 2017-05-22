@@ -15,17 +15,17 @@
 
 package org.apache.geode.cache.query.internal.types;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
-
-import org.apache.geode.cache.query.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.util.Arrays;
 
 /**
  * Implementation of StructType

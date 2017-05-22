@@ -15,13 +15,14 @@
 package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
@@ -46,7 +47,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.search.Query;
@@ -57,6 +57,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Category(UnitTest.class)
 public class LuceneQueryFunctionJUnitTest {

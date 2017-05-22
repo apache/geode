@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * A marker interface that denotes {@link DistributionMessage}s that require a reply. Messages that

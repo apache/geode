@@ -18,23 +18,27 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.*;
-import java.io.*;
-
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ExternalizableDSFID;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAttributes;
-import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ExternalizableDSFID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.internal.util.VersionedArrayList;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Maintains configuration information for a PartitionedRegion. Instances are stored in the

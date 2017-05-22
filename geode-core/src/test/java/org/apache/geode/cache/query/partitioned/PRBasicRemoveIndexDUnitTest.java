@@ -14,10 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.query.Utils.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.cache.query.Utils.createPortfolioData;
 
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
@@ -25,6 +22,8 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Basic functional test for removing index from a partitioned region system.

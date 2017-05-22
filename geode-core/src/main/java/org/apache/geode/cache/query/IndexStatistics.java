@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query;
 
-// import java.util.*;
+
 
 /**
  * Provides statistics about a GemFire cache {@link Index}.

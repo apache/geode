@@ -15,23 +15,18 @@
 
 package org.apache.geode.internal.security;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.operations.*;
+import org.apache.geode.cache.operations.GetOperationContext;
+import org.apache.geode.cache.operations.OperationContext;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.cache.operations.PutOperationContext;
+import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.internal.ResultsCollectionWrapper;
 import org.apache.geode.cache.query.internal.CqEntry;
+import org.apache.geode.cache.query.internal.ResultsCollectionWrapper;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -40,6 +35,13 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * An authorization implementation for testing that checks for authorization information in

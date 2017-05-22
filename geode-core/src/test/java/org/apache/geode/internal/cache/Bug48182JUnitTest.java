@@ -14,7 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -23,11 +32,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * TestCase that emulates the conditions that produce defect 48182 and ensures that the fix works

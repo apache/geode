@@ -14,23 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
@@ -42,6 +28,21 @@ import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
 import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The IndexCommandsJUnitTest class is a test suite of test cases testing the contract and

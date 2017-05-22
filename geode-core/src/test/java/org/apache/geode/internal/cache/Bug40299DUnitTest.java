@@ -14,13 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -40,6 +35,11 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Properties;
 
 /**
  * Bug40299 DUNIT Test: The Clear operation during a NetSearchMessage.doGet() in progress can cause

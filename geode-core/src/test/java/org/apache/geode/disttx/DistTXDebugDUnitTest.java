@@ -14,13 +14,8 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -45,9 +40,14 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * TODO: reenable this test and fix it when work on Dist TX resumes -- it fails with no members to

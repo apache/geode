@@ -14,19 +14,24 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.net.Socket;
-import java.nio.ByteBuffer;
-
+import org.apache.geode.internal.Version;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.Version;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 
 @Category({UnitTest.class, ClientServerTest.class})
 public class MessageJUnitTest {

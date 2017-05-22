@@ -14,18 +14,17 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
-
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.util.StopWatch;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.util.StopWatch;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Tests performance of logging when level is OFF.

@@ -17,22 +17,11 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.cache.query.Utils.*;
-
-import java.util.ArrayList;
-
-import parReg.query.unittest.NewPortfolio;
-import util.TestException;
+import static org.apache.geode.cache.query.Utils.createNewPortfoliosAndPositions;
+import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -56,7 +45,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper.TestQueryFunction;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.ForceReattemptException;
@@ -68,6 +56,14 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import parReg.query.unittest.NewPortfolio;
+import util.TestException;
 
 /**
  *

@@ -14,14 +14,14 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.auth;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.i18n.LocalizedStrings.*;
-
-import java.security.Principal;
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
+import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED;
+import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION;
+import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS;
+import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT;
 
 import org.apache.commons.lang.StringUtils;
-
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -35,6 +35,9 @@ import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
+
+import java.security.Principal;
+import java.util.Properties;
 
 public class GMSAuthenticator implements Authenticator {
 

@@ -15,15 +15,15 @@
  */
 package org.apache.geode.tools.pulse.tests.ui;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.function.Supplier;
-
+import org.apache.geode.tools.pulse.tests.JMXProperties;
+import org.apache.geode.tools.pulse.tests.Member;
+import org.apache.geode.tools.pulse.tests.PulseTestData;
+import org.apache.geode.tools.pulse.tests.PulseTestLocators;
+import org.apache.geode.tools.pulse.tests.Region;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -34,11 +34,12 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import org.apache.geode.tools.pulse.tests.JMXProperties;
-import org.apache.geode.tools.pulse.tests.Member;
-import org.apache.geode.tools.pulse.tests.PulseTestData;
-import org.apache.geode.tools.pulse.tests.PulseTestLocators;
-import org.apache.geode.tools.pulse.tests.Region;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Supplier;
 
 public class PulseTestUtils {
   private static Supplier<WebDriver> driverProvider;

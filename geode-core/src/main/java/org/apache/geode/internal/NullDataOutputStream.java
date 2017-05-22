@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
 import org.apache.geode.DataSerializer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
 
 /**
  * NullDataOutputStream is an OutputStream that also implements DataOutput and does not store any

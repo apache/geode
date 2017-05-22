@@ -14,12 +14,14 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
-import org.apache.geode.distributed.internal.membership.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager shuts down.

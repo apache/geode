@@ -15,7 +15,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.MEGABYTE;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;

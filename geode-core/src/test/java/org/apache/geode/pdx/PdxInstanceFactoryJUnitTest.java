@@ -14,6 +14,11 @@
  */
 package org.apache.geode.pdx;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
@@ -23,7 +28,11 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import org.apache.geode.pdx.internal.*;
+import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxInstanceEnum;
+import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
@@ -31,11 +40,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.*;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedHashSet;
+import java.util.Vector;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxInstanceFactoryJUnitTest {

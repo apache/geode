@@ -14,11 +14,26 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.*;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.DistributionLocator;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessType;
@@ -38,9 +53,6 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.BindException;
 import java.net.InetAddress;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
 
 /**
  * Tests usage of LocatorLauncher as a local API in existing JVM.

@@ -19,7 +19,18 @@
  */
 package org.apache.geode.internal.util.concurrent;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.internal.util.concurrent.cm.ConcurrentHashMapJUnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.JSR166TestCase;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -33,13 +44,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.util.concurrent.cm.ConcurrentHashMapJUnitTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.JSR166TestCase;
 
 /**
  * Adopted from the JSR166 test cases. {@link ConcurrentHashMapJUnitTest}

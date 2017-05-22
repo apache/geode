@@ -14,15 +14,14 @@
  */
 package org.apache.geode.cache30;
 
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.experimental.categories.Category;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.util.Properties;
 
 @Category({DistributedTest.class, MembershipTest.class, ClientServerTest.class})
 public class ReconnectWithUDPSecurityDUnitTest extends ReconnectDUnitTest {

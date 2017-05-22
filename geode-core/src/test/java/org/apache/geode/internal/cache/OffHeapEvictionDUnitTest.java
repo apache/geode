@@ -14,13 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -36,6 +32,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * Performs eviction dunit tests for off-heap memory.

@@ -14,33 +14,32 @@
  */
 package org.apache.geode.cache.query;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.GatewayException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.GatewayException;
-import org.apache.geode.cache.RegionExistsException;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 public class CacheUtils {
   private static final Logger logger = LogService.getLogger();

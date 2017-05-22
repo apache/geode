@@ -14,7 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.HashMap;
@@ -22,13 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.util.StopWatch;
 
 /**
  * Integration TestCase for StatSampler.

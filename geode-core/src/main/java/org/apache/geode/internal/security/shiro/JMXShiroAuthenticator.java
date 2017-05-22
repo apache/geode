@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.security.shiro;
 
-import static org.apache.geode.management.internal.security.ResourceConstants.*;
+import static org.apache.geode.management.internal.security.ResourceConstants.MISSING_CREDENTIALS_MESSAGE;
+
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationFailedException;
 
 import java.security.Principal;
 import java.util.Collections;
@@ -25,11 +30,6 @@ import javax.management.remote.JMXAuthenticator;
 import javax.management.remote.JMXConnectionNotification;
 import javax.management.remote.JMXPrincipal;
 import javax.security.auth.Subject;
-
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.security.AuthenticationFailedException;
 
 /**
  * this will make JMX authentication to use Shiro for Authentication

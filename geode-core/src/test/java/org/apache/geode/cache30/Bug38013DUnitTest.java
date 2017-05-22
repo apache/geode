@@ -14,18 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -41,6 +30,14 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Test to make sure PR cache values are lazily deserialized

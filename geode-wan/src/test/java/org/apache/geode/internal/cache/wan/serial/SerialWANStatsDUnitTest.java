@@ -14,25 +14,21 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-
-import static org.apache.geode.test.dunit.Wait.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Wait.pause;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Category(DistributedTest.class)
 public class SerialWANStatsDUnitTest extends WANTestBase {

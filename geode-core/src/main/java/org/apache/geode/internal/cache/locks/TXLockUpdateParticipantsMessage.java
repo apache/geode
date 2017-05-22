@@ -16,15 +16,18 @@
 package org.apache.geode.internal.cache.locks;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.distributed.internal.MessageWithReply;
-import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
+import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.LockGrantorDestroyedException;
-import java.io.*;
+import org.apache.geode.internal.InternalDataSerializer;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Set;
 
 /**

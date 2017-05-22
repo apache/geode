@@ -14,17 +14,17 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 
 public class PerformanceTestFunction extends FunctionAdapter {
 

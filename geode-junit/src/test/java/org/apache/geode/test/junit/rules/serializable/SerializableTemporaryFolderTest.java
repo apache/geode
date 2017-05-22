@@ -14,12 +14,13 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
-import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_FOLDER;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_PARENT_FOLDER;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

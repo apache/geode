@@ -15,13 +15,20 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
-
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
-import java.text.*;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class Description

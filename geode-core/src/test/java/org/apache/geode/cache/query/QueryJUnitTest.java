@@ -23,25 +23,10 @@
  */
 package org.apache.geode.cache.query;
 
-import static org.junit.Assert.*;
-import static org.junit.runners.MethodSorters.*;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.query.internal.index.IndexProtocol;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -51,7 +36,22 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 /**
  *

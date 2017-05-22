@@ -14,13 +14,10 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -29,6 +26,11 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class tests the functionality of the {@link VM} class.

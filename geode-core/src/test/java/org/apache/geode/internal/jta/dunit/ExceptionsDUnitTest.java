@@ -14,8 +14,21 @@
  */
 package org.apache.geode.internal.jta.dunit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.jta.CacheUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
+import org.junit.experimental.categories.Category;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,20 +42,6 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.jta.CacheUtils;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {

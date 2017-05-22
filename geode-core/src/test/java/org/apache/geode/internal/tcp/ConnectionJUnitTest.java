@@ -14,15 +14,10 @@
  */
 package org.apache.geode.internal.tcp;
 
-import static org.mockito.Mockito.*;
-
-import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.DM;
@@ -30,7 +25,14 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class ConnectionJUnitTest {

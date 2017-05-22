@@ -14,9 +14,12 @@
  */
 package parReg.query.unittest;
 
-import java.util.*;
-import java.io.Serializable;
 import org.apache.geode.cache.Declarable;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 /**
  * Represents a number of shares of a stock ("security") held in a {@link NewPortfolio}.

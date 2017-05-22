@@ -14,13 +14,12 @@
  */
 package org.apache.geode.test.dunit;
 
-import static org.apache.geode.test.dunit.Jitter.*;
-import static org.junit.Assert.*;
-
-import org.apache.logging.log4j.Logger;
+import static org.apache.geode.test.dunit.Jitter.jitterInterval;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
 /**
  * <code>Wait</code> provides static utility methods to wait for some asynchronous action with

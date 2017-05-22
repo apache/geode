@@ -14,14 +14,14 @@
  */
 package org.apache.geode.cache.query.internal.types;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class TypeUtilTest {

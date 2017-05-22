@@ -15,7 +15,8 @@
 package org.apache.geode.internal.cache.functions;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;

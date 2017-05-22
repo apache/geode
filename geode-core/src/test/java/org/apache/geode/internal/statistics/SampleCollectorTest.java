@@ -14,27 +14,31 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.util.List;
-
-import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.statistics.TestSampleHandler.Info;
 import org.apache.geode.internal.statistics.TestSampleHandler.ResourceInstanceInfo;
 import org.apache.geode.internal.statistics.TestSampleHandler.ResourceTypeInfo;
 import org.apache.geode.internal.statistics.TestSampleHandler.SampledInfo;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Unit tests for {@link SampleCollector}.

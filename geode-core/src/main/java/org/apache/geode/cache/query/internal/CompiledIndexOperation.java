@@ -14,13 +14,21 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
-
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class Description

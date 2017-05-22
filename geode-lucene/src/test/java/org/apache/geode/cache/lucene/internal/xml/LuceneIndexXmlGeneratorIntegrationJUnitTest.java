@@ -15,6 +15,11 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -31,9 +36,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexXmlGeneratorIntegrationJUnitTest {

@@ -14,14 +14,14 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.util.*;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>

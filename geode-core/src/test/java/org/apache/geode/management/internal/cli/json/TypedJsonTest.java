@@ -14,7 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.json;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;

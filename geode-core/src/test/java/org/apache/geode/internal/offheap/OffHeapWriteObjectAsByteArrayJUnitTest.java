@@ -14,21 +14,22 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 @Category(UnitTest.class)
 public class OffHeapWriteObjectAsByteArrayJUnitTest {

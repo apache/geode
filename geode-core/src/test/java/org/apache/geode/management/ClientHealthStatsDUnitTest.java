@@ -14,28 +14,15 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Host.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.apache.geode.test.dunit.NetworkUtils.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Properties;
-
-import javax.management.ObjectName;
-
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryEvent;
@@ -54,6 +41,19 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Properties;
+import javax.management.ObjectName;
 
 /**
  * Client health stats check

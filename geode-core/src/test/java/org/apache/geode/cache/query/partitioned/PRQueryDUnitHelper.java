@@ -14,20 +14,10 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-
-import util.TestException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
@@ -82,6 +72,18 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.util.test.TestUtil;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import util.TestException;
 
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases

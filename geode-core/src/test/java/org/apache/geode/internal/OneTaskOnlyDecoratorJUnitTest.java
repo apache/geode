@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -22,11 +27,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OneTaskOnlyDecoratorJUnitTest {

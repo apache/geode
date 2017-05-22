@@ -14,17 +14,14 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
-import org.junit.Test;
-
-import org.apache.geode.internal.cache.wan.WANTestBase;
 
 public class SerialWANConflationDUnitTest extends WANTestBase {
 

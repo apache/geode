@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.locks;
 
 import org.apache.geode.distributed.internal.locks.DLockBatchId;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /** Specifies a set of keys to try-lock within the scope of a region */
 public interface TXLockId extends DLockBatchId {

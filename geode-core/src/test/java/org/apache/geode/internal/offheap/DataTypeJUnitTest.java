@@ -15,8 +15,38 @@
 package org.apache.geode.internal.offheap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.DataSerializableJUnitTest.DataSerializableImpl;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -45,32 +75,6 @@ import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.DataSerializableJUnitTest.DataSerializableImpl;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.PdxType;
-import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the DataType support for off-heap MemoryInspector.

@@ -14,14 +14,17 @@
  */
 package org.apache.geode.internal.admin;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Iterator;
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.SSLUtil;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * The SSL configuration settings for a GemFire distributed system.

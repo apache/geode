@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.tcp;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.test.junit.categories.UnitTest;

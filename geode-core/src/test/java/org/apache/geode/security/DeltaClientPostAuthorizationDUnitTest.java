@@ -14,19 +14,16 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.concatProperties;
+import static org.apache.geode.security.SecurityTestUtils.createCacheClient;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
@@ -38,6 +35,14 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 /**
  * @since GemFire 6.1

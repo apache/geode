@@ -14,17 +14,16 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
 
-import java.util.Stack;
-
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Stack;
 
 /**
  * Unit tests for {@link AbstractXmlParser}.

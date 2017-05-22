@@ -14,13 +14,7 @@
  */
 package org.apache.geode;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -40,6 +34,11 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+
+import java.util.Properties;
 
 /**
  * Extracted from TXWriterJUnitTest to share with TXWriterOOMEJUnitTest.

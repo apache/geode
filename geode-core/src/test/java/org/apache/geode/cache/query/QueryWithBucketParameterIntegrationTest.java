@@ -15,12 +15,10 @@
 
 package org.apache.geode.cache.query;
 
-import static org.apache.geode.cache.query.data.TestData.*;
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
+import static org.apache.geode.cache.query.data.TestData.populateRegion;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
@@ -32,11 +30,14 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @implNote This test class has been designed to test the query execution using the

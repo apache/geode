@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.Mockito.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Exposes GEODE-537: NPE in JTA AFTER_COMPLETION command processing

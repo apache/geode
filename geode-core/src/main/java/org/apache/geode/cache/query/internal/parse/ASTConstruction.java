@@ -16,8 +16,9 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
-import org.apache.geode.cache.query.internal.*;
+import antlr.Token;
+import org.apache.geode.cache.query.internal.QCompiler;
+import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.internal.Assert;
 
 public class ASTConstruction extends GemFireAST {

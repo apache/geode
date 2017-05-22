@@ -15,11 +15,13 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.cache.locks.*;
-// import java.io.*;
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Used to reserve region entries, during a transaction commit, for modification by the transaction.

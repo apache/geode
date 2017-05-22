@@ -15,10 +15,10 @@
 
 package org.apache.geode.distributed.internal;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+
 import java.util.List;
 import java.util.Set;
-
-import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * This interface specifies callback methods that are invoked when remote GemFire systems enter and

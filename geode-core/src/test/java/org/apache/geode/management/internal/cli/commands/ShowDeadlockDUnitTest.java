@@ -55,9 +55,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-
 /**
  * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command
  * processor for executing the "show deadlock" command

@@ -14,11 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
@@ -29,6 +26,9 @@ import org.apache.geode.internal.offheap.OffHeapStoredObject;
 import org.apache.geode.internal.offheap.SlabImpl;
 import org.apache.geode.internal.offheap.TinyStoredObject;
 import org.apache.geode.internal.util.BlobHelper;
+import org.junit.Test;
+
+import java.io.IOException;
 
 public abstract class OldValueImporterTestBase {
 

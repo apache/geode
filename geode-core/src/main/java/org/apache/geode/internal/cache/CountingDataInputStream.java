@@ -14,7 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A data input stream that counts the bytes it plans on reading.

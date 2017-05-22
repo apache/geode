@@ -14,6 +14,13 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 import org.apache.geode.management.internal.cli.result.TableBuilder;
 import org.apache.geode.management.internal.cli.result.TableBuilder.Row;
 import org.apache.geode.management.internal.cli.result.TableBuilder.RowGroup;
@@ -32,10 +39,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Testing TableBuilder and TableBuilderHelper using mocks for Gfsh

@@ -16,12 +16,10 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import org.apache.logging.log4j.Logger;
-
-import antlr.*;
-
+import antlr.Token;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
 public class ASTMethodInvocation extends GemFireAST {
   private static final Logger logger = LogService.getLogger();

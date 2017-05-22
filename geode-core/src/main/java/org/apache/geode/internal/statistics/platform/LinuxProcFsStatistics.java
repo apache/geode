@@ -17,7 +17,11 @@ package org.apache.geode.internal.statistics.platform;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;

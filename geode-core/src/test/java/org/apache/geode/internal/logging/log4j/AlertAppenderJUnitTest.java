@@ -14,21 +14,10 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.junit.Assert.*;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
@@ -36,6 +25,19 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Tests the AlertAppender.

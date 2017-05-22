@@ -16,7 +16,7 @@
 package org.apache.geode.internal.cache.locks;
 
 import org.apache.geode.DataSerializable;
-// import org.apache.geode.cache.Region;
+
 import java.util.Set;
 
 /** Specifies a set of keys to try-lock within the scope of a region */

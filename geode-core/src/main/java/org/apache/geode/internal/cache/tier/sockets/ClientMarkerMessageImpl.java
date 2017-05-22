@@ -20,7 +20,9 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Class <code>ClientMarkerMessageImpl</code> is a marker message that is placed in the

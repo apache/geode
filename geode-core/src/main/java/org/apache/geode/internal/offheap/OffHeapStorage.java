@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.offheap;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -22,8 +26,8 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 import java.lang.reflect.Method;
 

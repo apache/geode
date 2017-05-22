@@ -14,19 +14,17 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.util.Properties;
 
 /**
  * Tests Global Region with ConcurrencyChecksEnabled and OffHeap memory.

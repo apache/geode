@@ -14,12 +14,8 @@
  */
 package org.apache.geode.modules.session;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -33,7 +29,9 @@ import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Base {

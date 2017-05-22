@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache;
 
-// import java.io.*;
+
 
 /**
  * Contains information about an event affecting an entry, including its identity and the the

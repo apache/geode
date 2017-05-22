@@ -23,7 +23,11 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * Class <code>ClientInterestMessageImpl</code> represents an update to the a client's interest

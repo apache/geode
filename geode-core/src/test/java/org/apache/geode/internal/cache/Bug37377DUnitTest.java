@@ -14,17 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -36,6 +28,14 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Bug37377 DUNIT Test: The Clear operation during a GII in progress can leave a Entry in the Oplog

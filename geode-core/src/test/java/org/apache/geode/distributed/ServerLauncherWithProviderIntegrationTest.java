@@ -14,6 +14,11 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.ServerLauncher.Builder;
@@ -24,9 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Extracted from ServerLauncherLocalIntegrationTest.

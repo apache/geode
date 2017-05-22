@@ -15,7 +15,7 @@
 package org.apache.geode.distributed.internal.locks;
 
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * DLockGrantorHelper provides testing operations that are not normally exposed in the DLockGrantor.

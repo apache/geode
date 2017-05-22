@@ -14,9 +14,10 @@
  */
 package org.apache.geode.codeAnalysis.decode;
 
-import java.io.*;
-
 import org.apache.geode.codeAnalysis.decode.cp.CpUtf8;
+
+import java.io.DataInputStream;
+import java.io.IOException;
 
 
 public class CompiledMethod implements Comparable {

@@ -14,14 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.awaitility.Awaitility.*;
-import static org.awaitility.Duration.*;
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Duration.TEN_SECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -39,7 +36,10 @@ import org.apache.geode.internal.cache.ha.HAHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * This is the bugtest for bug no. 36738. When Object of class ClientUpdateMessage gets deserialized

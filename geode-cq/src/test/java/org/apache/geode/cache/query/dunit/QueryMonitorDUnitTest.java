@@ -15,9 +15,9 @@
 
 package org.apache.geode.cache.query.dunit;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -62,13 +62,13 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Tests for QueryMonitoring service.

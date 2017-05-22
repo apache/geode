@@ -14,8 +14,10 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
-import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.writeField;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_FOLDER;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_PARENT_FOLDER;
 
 import org.junit.rules.TemporaryFolder;
 

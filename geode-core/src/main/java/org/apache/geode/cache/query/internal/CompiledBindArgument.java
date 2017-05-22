@@ -15,15 +15,15 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
-
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxString;
+
+import java.util.Set;
 
 /**
  * Class Description

@@ -14,21 +14,17 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(DistributedTest.class)
 public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {

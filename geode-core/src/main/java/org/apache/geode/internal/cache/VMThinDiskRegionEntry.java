@@ -16,8 +16,6 @@
 package org.apache.geode.internal.cache;
 
 
-// import org.apache.geode.cache.*;
-// import org.apache.geode.distributed.internal.DM;
 
 /**
  * Implementation class of RegionEntry interface. VM -> entries stored in VM memory Thin -> no extra

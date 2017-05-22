@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class TestDelta implements Delta, DataSerializable, Cloneable {
 

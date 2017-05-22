@@ -14,13 +14,8 @@
  */
 package org.apache.geode.cache;
 
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -37,6 +32,11 @@ import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+import java.util.Set;
 
 @Category(DistributedTest.class)
 public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {

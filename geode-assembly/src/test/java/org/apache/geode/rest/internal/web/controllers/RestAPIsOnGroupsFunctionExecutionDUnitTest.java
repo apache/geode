@@ -14,18 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.assertFalse;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -35,6 +24,16 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)

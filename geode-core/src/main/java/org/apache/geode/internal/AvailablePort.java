@@ -21,7 +21,17 @@ import org.apache.geode.internal.net.SocketCreator;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
 

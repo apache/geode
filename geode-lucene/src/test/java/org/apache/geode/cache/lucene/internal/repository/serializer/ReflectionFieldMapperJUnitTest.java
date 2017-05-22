@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.lucene.document.Document;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test of the ReflectionFieldMapperClass. Tests that all field types are mapped correctly.

@@ -16,7 +16,10 @@ package com.examples.ds;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
-import java.io.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class User implements DataSerializable {
   private String name;

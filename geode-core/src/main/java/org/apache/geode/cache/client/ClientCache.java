@@ -15,12 +15,15 @@
 
 package org.apache.geode.cache.client;
 
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.query.QueryService;
+
 import java.net.InetSocketAddress;
 import java.util.Properties;
 import java.util.Set;
-
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.QueryService;
 
 /**
  * A ClientCache instance controls the life cycle of the local singleton cache in a client.

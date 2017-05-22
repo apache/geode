@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.DistributedSystemHealthConfig;
 
 /**
  * The implementation of <code>DistributedSystemHealthConfig</code>. Note that because it never

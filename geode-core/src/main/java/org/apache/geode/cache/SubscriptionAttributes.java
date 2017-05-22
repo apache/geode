@@ -15,7 +15,13 @@
 package org.apache.geode.cache;
 
 import org.apache.geode.DataSerializable;
-import java.io.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * Configuration attributes for defining subscriber requirements and behavior for a

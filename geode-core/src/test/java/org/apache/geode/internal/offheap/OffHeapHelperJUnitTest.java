@@ -14,20 +14,25 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.hamcrest.CoreMatchers.*;
 
-import java.nio.ByteBuffer;
-
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.VMCachedDeserializable;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.nio.ByteBuffer;
 
 @Category(UnitTest.class)
 public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {

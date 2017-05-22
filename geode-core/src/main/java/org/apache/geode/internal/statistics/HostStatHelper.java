@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.Statistics;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.LinuxProcessStats;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;

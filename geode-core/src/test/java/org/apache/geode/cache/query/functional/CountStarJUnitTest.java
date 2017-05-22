@@ -17,15 +17,9 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -41,6 +35,13 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * This test runs {Select COUNT(*) from /regionName [where clause]} queries on different types of

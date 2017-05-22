@@ -17,16 +17,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertFalse;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -40,6 +31,14 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
 
 @Category(IntegrationTest.class)
 public class AsynchIndexMaintenanceJUnitTest {

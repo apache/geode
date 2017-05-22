@@ -14,12 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
-
-import java.io.IOException;
-import java.util.Arrays;
-
-import org.apache.logging.log4j.Logger;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InvalidDeltaException;
@@ -77,6 +73,10 @@ import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.ConvertableToBytes;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Abstract implementation class of RegionEntry interface. This is the topmost implementation class

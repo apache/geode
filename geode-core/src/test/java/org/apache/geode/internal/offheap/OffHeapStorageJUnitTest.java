@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.DistributedSystem;
@@ -27,10 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @Category(UnitTest.class)
 public class OffHeapStorageJUnitTest {

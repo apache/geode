@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.jmx;
 
-// import org.apache.geode.admin.AdminDistributedSystem;
+
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.jmx.internal.AgentConfigImpl;
 import org.apache.geode.admin.jmx.internal.AgentImpl;

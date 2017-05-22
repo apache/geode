@@ -14,14 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.Index;
@@ -30,10 +23,11 @@ import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.functional.NonDistinctOrderByTestImplementation;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.junit.Test;
 
 public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
 

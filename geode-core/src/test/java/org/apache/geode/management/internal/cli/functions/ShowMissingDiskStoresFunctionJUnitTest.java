@@ -14,23 +14,32 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionRegionConfig;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
@@ -42,23 +51,16 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionRegionConfig;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
-import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
-import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Category(UnitTest.class)
 public class ShowMissingDiskStoresFunctionJUnitTest {

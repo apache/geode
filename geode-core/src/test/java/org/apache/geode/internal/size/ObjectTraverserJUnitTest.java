@@ -14,16 +14,20 @@
  */
 package org.apache.geode.internal.size;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.*;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Category(UnitTest.class)
 public class ObjectTraverserJUnitTest {

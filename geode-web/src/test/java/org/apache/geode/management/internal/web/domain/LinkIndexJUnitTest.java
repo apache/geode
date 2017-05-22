@@ -14,7 +14,18 @@
  */
 package org.apache.geode.management.internal.web.domain;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.web.AbstractWebTestCase;
+import org.apache.geode.management.internal.web.http.HttpMethod;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,14 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.geode.internal.util.CollectionUtils;
-import org.apache.geode.management.internal.web.AbstractWebTestCase;
-import org.apache.geode.management.internal.web.http.HttpMethod;
-import org.apache.geode.test.junit.categories.UnitTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * The LinkIndexJUnitTest class is a test suite of test cases testing the contract and functionality

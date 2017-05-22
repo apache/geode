@@ -14,7 +14,8 @@
  */
 package org.apache.geode.sequence;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 
 /**

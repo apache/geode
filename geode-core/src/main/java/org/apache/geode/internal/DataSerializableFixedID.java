@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * An interface that implements data serialization for internal GemFire product classes that have a

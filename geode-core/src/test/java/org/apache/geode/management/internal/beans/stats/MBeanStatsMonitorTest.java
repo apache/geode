@@ -14,12 +14,22 @@
  */
 package org.apache.geode.management.internal.beans.stats;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.statistics.FakeValueMonitor;
+import org.apache.geode.internal.statistics.ValueMonitor;
+import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor.DefaultHashMap;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,14 +40,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.statistics.FakeValueMonitor;
-import org.apache.geode.internal.statistics.ValueMonitor;
-import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor.DefaultHashMap;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(UnitTest.class)
 public class MBeanStatsMonitorTest {

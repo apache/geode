@@ -14,7 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
 
 /**
  * A <code>CacheLoader</code> used in testing. Users should override the "2" method.

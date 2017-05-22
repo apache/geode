@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.logging.log4j.custom;
 
-import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.CONFIG_LAYOUT_PREFIX;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.createConfigFileIn;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.defineLogStatementRegex;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.Configurator;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
@@ -33,9 +36,7 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.Configurator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
 
 /**
  * Integration tests with custom log4j2 configuration.

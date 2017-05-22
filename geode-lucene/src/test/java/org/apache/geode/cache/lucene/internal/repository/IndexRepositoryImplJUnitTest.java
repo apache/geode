@@ -15,21 +15,25 @@
 
 package org.apache.geode.cache.lucene.internal.repository;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.IntSupplier;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.Type2;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -41,15 +45,14 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
-import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
-import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
-import org.apache.geode.cache.lucene.internal.filesystem.File;
-import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
-import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import org.apache.geode.cache.lucene.internal.repository.serializer.Type2;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
 
 /**
  * Test of the {@link IndexRepository} and everything below it. This tests that we can save gemfire

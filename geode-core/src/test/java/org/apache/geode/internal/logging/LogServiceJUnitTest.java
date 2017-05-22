@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.logging;
 
-import static junitparams.JUnitParamsRunner.*;
-import static org.assertj.core.api.Assertions.*;
+import static junitparams.JUnitParamsRunner.$;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URL;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.logging.log4j.AppenderContext;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.logging.log4j.Level;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,9 +28,9 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.log4j.AppenderContext;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.net.URL;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * Unit tests for LogService

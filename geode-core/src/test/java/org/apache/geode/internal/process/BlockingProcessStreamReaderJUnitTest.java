@@ -14,8 +14,22 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
+
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -24,16 +38,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
-import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests BlockingProcessStreamReader. Most tests are skipped on Windows due to TRAC bug #51967 which

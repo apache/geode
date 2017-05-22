@@ -14,23 +14,21 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
-
-import javax.management.ObjectName;
-
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.Serializable;
+import javax.management.ObjectName;
 
 @Category(DistributedTest.class)
 @SuppressWarnings({"serial", "unused"})

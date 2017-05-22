@@ -14,17 +14,17 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.junit.Assert.*;
-
-import org.apache.shiro.authz.permission.WildcardPermission;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.shiro.authz.permission.WildcardPermission;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class ResourcePermissionTest {

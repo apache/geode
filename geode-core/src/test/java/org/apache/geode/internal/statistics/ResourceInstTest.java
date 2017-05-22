@@ -14,20 +14,19 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.MockitoAnnotations.*;
-
-import java.lang.reflect.Field;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.Mock;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceType;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatArchiveFile;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
+
+import java.lang.reflect.Field;
 
 /**
  * Unit tests for {@link ResourceInst}.

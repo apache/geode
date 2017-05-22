@@ -35,7 +35,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 
-// import java.util.*;
+
 
 /**
  * A message that is sent to a particular distribution manager to get its current

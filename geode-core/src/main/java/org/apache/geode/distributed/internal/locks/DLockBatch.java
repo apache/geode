@@ -15,8 +15,9 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import java.util.*;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+
+import java.util.List;
 
 /**
  * Collection of distributed locks to be processed as a batch.

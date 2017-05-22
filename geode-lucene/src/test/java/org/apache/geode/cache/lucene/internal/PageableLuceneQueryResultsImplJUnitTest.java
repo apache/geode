@@ -14,13 +14,30 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,24 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.LuceneResultStruct;
-import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
-import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class PageableLuceneQueryResultsImplJUnitTest {

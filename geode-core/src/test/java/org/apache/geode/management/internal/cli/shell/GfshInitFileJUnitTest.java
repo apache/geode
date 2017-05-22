@@ -14,18 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -39,8 +35,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  * Unit tests for supplying an init file to Gfsh.

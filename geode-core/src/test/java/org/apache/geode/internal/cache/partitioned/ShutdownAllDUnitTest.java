@@ -14,21 +14,10 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.apache.geode.internal.lang.ThrowableUtils.*;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.internal.lang.ThrowableUtils.getRootCause;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.admin.AdminDistributedSystemFactory;
@@ -65,6 +54,18 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tests the basic use cases for PR persistence.

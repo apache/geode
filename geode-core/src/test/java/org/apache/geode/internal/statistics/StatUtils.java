@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.internal.SystemAdmin.StatSpec;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -24,12 +29,6 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-
-import org.apache.geode.internal.SystemAdmin.StatSpec;
-import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
-import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 
 /**
  * @since Geode 1.0

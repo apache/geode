@@ -14,7 +14,27 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotSame;
+import static org.apache.geode.test.dunit.Assert.assertSame;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+
+import org.apache.geode.CanonicalInstantiator;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.statistics.StatArchiveWriter;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,24 +52,24 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import org.apache.geode.CanonicalInstantiator;
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.statistics.StatArchiveWriter;
-import org.apache.geode.internal.tcp.ByteBufferInputStream;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link DataSerializable} class.

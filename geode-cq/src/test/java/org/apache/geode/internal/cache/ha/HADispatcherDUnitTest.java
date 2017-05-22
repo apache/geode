@@ -14,9 +14,39 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqExistsException;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
@@ -41,16 +71,6 @@ import org.junit.experimental.categories.Category;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 /**
  * This Dunit test is to verify that when the dispatcher of CS dispatches the Event , the peer's
