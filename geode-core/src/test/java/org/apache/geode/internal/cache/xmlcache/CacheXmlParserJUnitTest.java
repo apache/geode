@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
@@ -48,6 +49,11 @@ public class CacheXmlParserJUnitTest {
 
   private static final String NAMESPACE_URI =
       "urn:java:org.apache.geode.internal.cache.xmlcache.MockXmlParser";
+
+  @After
+  public void tearDown() throws Exception {
+    InternalDistributedSystem.removeSystem(InternalDistributedSystem.getConnectedInstance());
+  }
 
   /**
    * Test {@link CacheXmlParser#getDelegate(String)}.

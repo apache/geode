@@ -330,6 +330,10 @@ public class InternalDistributedSystem extends DistributedSystem
     return sys;
   }
 
+  public static boolean removeSystem(InternalDistributedSystem oldSystem) {
+    return DistributedSystem.removeSystem(oldSystem);
+  }
+
   /**
    * Returns a connection to the distributed system that is suitable for administration. For
    * administration, we are not as strict when it comes to existing connections.
