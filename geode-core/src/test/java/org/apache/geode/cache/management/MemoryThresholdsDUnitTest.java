@@ -906,8 +906,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // should not fail
     server1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        FunctionService.onMembers(getSystem()).execute(function);
-        FunctionService.onMembers(getSystem()).execute(function2);
+        FunctionService.onMembers().execute(function);
+        FunctionService.onMembers().execute(function2);
         return null;
       }
     });
@@ -944,13 +944,13 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         try {
           getCache().getLoggerI18n().fine(addExpectedFunctionExString);
-          FunctionService.onMembers(getSystem()).execute(function);
+          FunctionService.onMembers().execute(function);
           getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
           fail("expected low memory exception was not thrown");
         } catch (LowMemoryException e) {
           // expected
         }
-        FunctionService.onMembers(getSystem()).execute(function2);
+        FunctionService.onMembers().execute(function2);
         return null;
       }
     });
@@ -1031,8 +1031,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // should not fail
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        FunctionService.onMembers(getSystem()).execute(function);
-        FunctionService.onMembers(getSystem()).execute(function2);
+        FunctionService.onMembers().execute(function);
+        FunctionService.onMembers().execute(function2);
         return null;
       }
     });
@@ -1067,13 +1067,13 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         try {
           getCache().getLoggerI18n().fine(addExpectedFunctionExString);
-          FunctionService.onMembers(getSystem()).execute(function);
+          FunctionService.onMembers().execute(function);
           getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
           fail("expected low memory exception was not thrown");
         } catch (LowMemoryException e) {
           // expected
         }
-        FunctionService.onMembers(getSystem()).execute(function2);
+        FunctionService.onMembers().execute(function2);
         return null;
       }
     });
@@ -1205,10 +1205,10 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
     server2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        FunctionService.onMembers(getSystem()).execute(function);
-        FunctionService.onMember(getSystem(), s1).execute(function);
-        FunctionService.onMembers(getSystem()).execute(function2);
-        FunctionService.onMember(getSystem(), s1).execute(function2);
+        FunctionService.onMembers().execute(function);
+        FunctionService.onMember(s1).execute(function);
+        FunctionService.onMembers().execute(function2);
+        FunctionService.onMember(s1).execute(function2);
         return null;
       }
     });
@@ -1241,19 +1241,19 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     server2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         try {
-          FunctionService.onMembers(getSystem()).execute(function);
+          FunctionService.onMembers().execute(function);
           fail("expected LowMemoryExcception was not thrown");
         } catch (LowMemoryException e) {
           // expected
         }
         try {
-          FunctionService.onMember(getSystem(), s1).execute(function);
+          FunctionService.onMember(s1).execute(function);
           fail("expected LowMemoryExcception was not thrown");
         } catch (LowMemoryException e) {
           // expected
         }
-        FunctionService.onMembers(getSystem()).execute(function2);
-        FunctionService.onMember(getSystem(), s1).execute(function2);
+        FunctionService.onMembers().execute(function2);
+        FunctionService.onMember(s1).execute(function2);
         return null;
       }
     });
