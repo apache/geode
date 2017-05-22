@@ -41,10 +41,10 @@ You can interact with Apache Lucene indexes through a Java API,
 through the `gfsh` command-line utility,
 or by means of the `cache.xml` configuration file.
 
-To use Apache Lucene to create and uses indexes,
+To use Apache Lucene to create and use indexes,
 you will need two pieces of information:
 
-1.  The name of the region to be indexed or searched
+1.  The name of the region to be indexed and searched
 2.  The names of the fields you wish to index
 
 ## Key Points ###
@@ -88,7 +88,8 @@ gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags
 
 ``` pre
 // Create an index, specifying a custom analyzer for the second field
-// Note: "null" in the first analyzer position uses the default analyzer for the first field
+// Note: "null" in the first analyzer position uses the default analyzer
+// for the first field
 gfsh>create lucene index --name=indexName --region=/orders
   --field=customer,tags --analyzer=null,org.apache.lucene.analysis.bg.BulgarianAnalyzer
 ```
@@ -110,9 +111,12 @@ option to be `__REGION_VALUE_FIELD`.
  
     <region name="region" refid="PARTITION">
         <lucene:index name="index">
-          <lucene:field name="a" analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
-          <lucene:field name="b" analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
-          <lucene:field name="c" analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
+          <lucene:field name="a" 
+                        analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+          <lucene:field name="b" 
+                        analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
+          <lucene:field name="c" 
+                        analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
         </lucene:index>
     </region>
 </cache>
@@ -124,14 +128,15 @@ option to be `__REGION_VALUE_FIELD`.
 For details, see the [gfsh search lucene](gfsh/command-pages/search.html#search_lucene") command reference page.
 
 ``` pre
-gfsh> lucene search --regionName=/orders -queryStrings="John*" --defaultField=field1 --limit=100
+gfsh> lucene search --regionName=/orders -queryStrings="John*" --defaultField=field1
+   --limit=100
 ```
 
 ### <a id="api-query-example" class="no-quick-link"></a>Java API Example to Query using a Lucene Index
 
 ``` pre
 LuceneQuery<String, Person> query = luceneService.createLuceneQueryFactory()
-  .setResultLimit(10)
+  .setLimit(10)
   .create(indexName, regionName, "name:John AND zipcode:97006", defaultField);
 
 Collection<Person> results = query.findValues();
@@ -153,12 +158,17 @@ an `IllegalStateException`,
 issuing an error message similar to:
 
 ``` pre
-java.lang.IllegalStateException: The parent region [/orders] in colocation chain cannot be destroyed,
- unless all its children [[/indexName#_orders.files]] are destroyed
-at org.apache.geode.internal.cache.PartitionedRegion.checkForColocatedChildren(PartitionedRegion.java:7231)
-at org.apache.geode.internal.cache.PartitionedRegion.destroyRegion(PartitionedRegion.java:7243)
-at org.apache.geode.internal.cache.AbstractRegion.destroyRegion(AbstractRegion.java:308)
-at DestroyLuceneIndexesAndRegionFunction.destroyRegion(DestroyLuceneIndexesAndRegionFunction.java:46)
+java.lang.IllegalStateException: The parent region [/orders] in colocation chain
+ cannot be destroyed, unless all its children [[/indexName#_orders.files]] are
+ destroyed
+at org.apache.geode.internal.cache.PartitionedRegion
+    .checkForColocatedChildren(PartitionedRegion.java:7231)
+at org.apache.geode.internal.cache.PartitionedRegion
+    .destroyRegion(PartitionedRegion.java:7243)
+at org.apache.geode.internal.cache.AbstractRegion
+    .destroyRegion(AbstractRegion.java:308)
+at DestroyLuceneIndexesAndRegionFunction
+    .destroyRegion(DestroyLuceneIndexesAndRegionFunction.java:46)
 ```
 ### <a id="gfsh-destroy-example" class="no-quick-link"></a>Gfsh Example to Destroy a Lucene Index
 
@@ -177,7 +187,7 @@ Error occurred while destroying region "orders".
 ## <a id="lucene-index-change" class="no-quick-link"></a>Changing an Index
 
 Changing an index requires rebuilding it.
-Implement these steps in `gfsh` to change an index:
+Implement these steps to change an index:
 
 1. Export all region data
 2. Destroy the Lucene index
@@ -211,23 +221,25 @@ on the client (accessor) similar to:
 ``` pre
 Exception in thread "main" org.apache.geode.cache.lucene.LuceneQueryException:
  Lucene Query cannot be executed within a transaction
-at org.apache.geode.cache.lucene.internal.LuceneQueryImpl.findTopEntries(LuceneQueryImpl.java:124)
-at org.apache.geode.cache.lucene.internal.LuceneQueryImpl.findPages(LuceneQueryImpl.java:98)
-at org.apache.geode.cache.lucene.internal.LuceneQueryImpl.findPages(LuceneQueryImpl.java:94)
+at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
+    .findTopEntries(LuceneQueryImpl.java:124)
+at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
+    .findPages(LuceneQueryImpl.java:98)
+at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
+    .findPages(LuceneQueryImpl.java:94)
 at TestClient.executeQuerySingleMethod(TestClient.java:196)
 at TestClient.main(TestClient.java:59)
 ```
-- If the Lucene index is not created prior to creating the region,
-an exception will be thrown while attempting to create the Lucene index,
-issuing an error message similar to:
+- Lucene indexes must be created prior to creating the region.
+If an attempt is made to create a Lucene index after creating the region,
+the error message will be similar to:
 
 ``` pre
-[error 2017/05/02 15:19:26.018 PDT <main> tid=0x1] java.lang.IllegalStateException:
- Must create Lucene index full_index on region /data because it is defined in another member.
-Exception in thread "main" java.lang.IllegalStateException:
- Must create Lucene index full_index on region /data because it is defined in another member.
-at org.apache.geode.internal.cache.CreateRegionProcessor$CreateRegionMessage.handleCacheDistributionAdvisee(CreateRegionProcessor.java:478)
-at org.apache.geode.internal.cache.CreateRegionProcessor$CreateRegionMessage.process(CreateRegionProcessor.java:379)
+       Member                | Status
+---------------------------- | ------------------------------------------------------
+192.0.2.0(s2:97639)<v2>:1026 | Failed: The lucene index must be created before region
+192.0.2.0(s3:97652)<v3>:1027 | Failed: The lucene index must be created before region
+192.0.2.0(s1:97626)<v1>:1025 | Failed: The lucene index must be created before region
 ```
 - An invalidate operation on a region entry does not invalidate a corresponding
 Lucene index entry.
@@ -245,14 +257,19 @@ an `UnsupportedOperationException` will be thrown,
 issuing an error message similar to:
 
 ``` pre
-[error 2017/05/02 16:12:32.461 PDT <main> tid=0x1] java.lang.UnsupportedOperationException:
+[error 2017/05/02 16:12:32.461 PDT <main> tid=0x1] 
+ java.lang.UnsupportedOperationException:
  Lucene indexes on regions with eviction and action local destroy are not supported
 Exception in thread "main" java.lang.UnsupportedOperationException:
  Lucene indexes on regions with eviction and action local destroy are not supported
-at org.apache.geode.cache.lucene.internal.LuceneRegionListener.beforeCreate(LuceneRegionListener.java:85)
-at org.apache.geode.internal.cache.GemFireCacheImpl.invokeRegionBefore(GemFireCacheImpl.java:3154)
-at org.apache.geode.internal.cache.GemFireCacheImpl.createVMRegion(GemFireCacheImpl.java:3013)
-at org.apache.geode.internal.cache.GemFireCacheImpl.basicCreateRegion(GemFireCacheImpl.java:2991)
+at org.apache.geode.cache.lucene.internal.LuceneRegionListener
+    .beforeCreate(LuceneRegionListener.java:85)
+at org.apache.geode.internal.cache.GemFireCacheImpl
+    .invokeRegionBefore(GemFireCacheImpl.java:3154)
+at org.apache.geode.internal.cache.GemFireCacheImpl
+    .createVMRegion(GemFireCacheImpl.java:3013)
+at org.apache.geode.internal.cache.GemFireCacheImpl
+    .basicCreateRegion(GemFireCacheImpl.java:2991)
 ```
 - Be aware that using the same field name in different objects
 where the field has different data types 
