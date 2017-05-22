@@ -1057,7 +1057,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         assertNotNull(ds);
         Execution memberExecution = null;
         DistributedMember localmember = ds.getDistributedMember();
-        memberExecution = FunctionService.onMember(ds, localmember);
+        memberExecution = FunctionService.onMember(localmember);
 
         memberExecution.setArguments("Key");
         try {

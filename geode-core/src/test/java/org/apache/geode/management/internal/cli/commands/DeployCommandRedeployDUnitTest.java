@@ -166,8 +166,7 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
   private void assertThatFunctionHasVersion(String functionId, String version) {
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
-    Execution execution =
-        FunctionService.onMember(distributedSystem, distributedSystem.getDistributedMember());
+    Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
     List<String> result = (List<String>) execution.execute(functionId).getResult();
     assertThat(result.get(0)).isEqualTo(version);
   }
