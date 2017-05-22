@@ -243,7 +243,8 @@ public class ClassPathLoaderIntegrationTest {
 
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
-    Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
+    Execution execution =
+        FunctionService.onMember(distributedSystem, distributedSystem.getDistributedMember());
     ResultCollector resultCollector = execution.execute("JarDeployerDUnitFunction");
     @SuppressWarnings("unchecked")
     List<String> result = (List<String>) resultCollector.getResult();
@@ -267,7 +268,8 @@ public class ClassPathLoaderIntegrationTest {
         FileUtils.readFileToByteArray(jarVersion1));
 
     assertThatClassCanBeLoaded("jddunit.function.MyFunction");
-    Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
+    Execution execution =
+        FunctionService.onMember(distributedSystem, distributedSystem.getDistributedMember());
 
     List<String> result = (List<String>) execution.execute("MyFunction").getResult();
     assertThat(result.get(0)).isEqualTo("Version1");
