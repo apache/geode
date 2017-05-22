@@ -23,6 +23,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -806,8 +807,6 @@ public class QueryUtils {
    * 
    */
   static StructType createStructTypeForRuntimeIterators(List runTimeIterators) {
-    Support.Assert(runTimeIterators.size() > 1,
-        "The number of Iterators passed should be greater than 1 to create a structSet");
     int len = runTimeIterators.size();
     String[] fieldNames = new String[len];
     String[] indexAlternativeFieldNames = new String[len];
@@ -886,10 +885,9 @@ public class QueryUtils {
       }
       return null;
     }
-
-    Index lhsIndx = lhsIndxData.getIndex();
-    Index rhsIndx = rhsIndxData.getIndex();
-    if (((IndexProtocol) lhsIndx).isValid() && ((IndexProtocol) rhsIndx).isValid()) {
+    IndexProtocol lhsIndx = lhsIndxData.getIndex();
+    IndexProtocol rhsIndx = rhsIndxData.getIndex();
+    if (lhsIndx.isValid() && rhsIndx.isValid()) {
       return new IndexData[] {lhsIndxData, rhsIndxData};
     }
     return null;
@@ -1463,10 +1461,15 @@ public class QueryUtils {
         }
       }
     }
-    Support.Assert(totalFinalList.size() > 1,
-        " Since we are in relationship index this itself means that we have atleast two RuntimeIterators");
+    SelectResults returnSet;
     StructType stype = createStructTypeForRuntimeIterators(totalFinalList);
-    SelectResults returnSet = QueryUtils.createStructCollection(context, stype);
+    if (totalFinalList.size() == 1) {
+      returnSet = QueryUtils.createResultCollection(context, new ObjectTypeImpl(stype.getClass()));
+    } else {
+      returnSet = QueryUtils.createStructCollection(context, stype);
+    }
+
+
     RuntimeIterator[][] mappings = new RuntimeIterator[2][];
     mappings[0] = ich1.indexFieldToItrsMapping;
     mappings[1] = ich2.indexFieldToItrsMapping;
