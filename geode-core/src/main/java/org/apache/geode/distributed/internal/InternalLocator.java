@@ -228,11 +228,13 @@ public class InternalLocator extends Locator implements ConnectListener {
       return false;
     }
     synchronized (locatorLock) {
-      if (hasLocator()) {
-        if (locator.equals(InternalLocator.locator)) {
-          InternalLocator.locator = null;
-          return true;
-        }
+      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
+      LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
+      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
+      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
+      if (locator != null && locator.equals(InternalLocator.locator)) {
+        InternalLocator.locator = null;
+        return true;
       }
       return false;
     }
@@ -281,26 +283,6 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
       InternalLocator.locator = locator;
     }
-  }
-
-  /**
-   * Creates a distribution locator that runs in this VM on the given port and bind address and
-   * creates a distributed system.
-   * 
-   * @param port the tcp/ip port to listen on
-   * @param logFile the file that log messages should be written to
-   * @param logger a log writer that should be used (logFile parameter is ignored)
-   * @param securityLogger the logger to be used for security related log messages
-   * @param dsProperties optional properties to configure the distributed system (e.g., mcast
-   *        addr/port, other locators)
-   * @param hostnameForClients the name to give to clients for connecting to this locator
-   * @since GemFire 7.0
-   */
-  public static InternalLocator startLocator(int port, File logFile, File stateFile,
-      InternalLogWriter logger, InternalLogWriter securityLogger, InetAddress bindAddress,
-      Properties dsProperties, String hostnameForClients) throws IOException {
-    return startLocator(port, logFile, stateFile, logger, securityLogger, bindAddress, true,
-        dsProperties, hostnameForClients);
   }
 
   /**
@@ -615,7 +597,8 @@ public class InternalLocator extends Locator implements ConnectListener {
       InternalLogWriter logger, InternalLogWriter logger1, InetAddress addr,
       Properties dsProperties, boolean peerLocator, boolean serverLocator, String s, boolean b1)
       throws IOException {
-    return startLocator(locatorPort, logFile, stateFile, logger, logger1, addr, dsProperties, s);
+    return startLocator(locatorPort, logFile, stateFile, logger, logger1, addr, true, dsProperties,
+        s);
   }
 
   class SharedConfigurationRunnable implements Runnable {

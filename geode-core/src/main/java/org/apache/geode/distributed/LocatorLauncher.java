@@ -649,7 +649,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         // TODO : remove the extra param for loadFromSharedConfigDir
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
-              getBindAddress(), getDistributedSystemProperties(), getHostnameForClients());
+              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
         } finally {
           ProcessLauncherContext.remove();
         }

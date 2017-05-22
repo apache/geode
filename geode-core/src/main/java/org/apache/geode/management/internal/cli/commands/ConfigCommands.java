@@ -18,11 +18,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -47,6 +47,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -72,6 +73,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
       new GetMemberConfigInformationFunction();
   private final AlterRuntimeConfigFunction alterRunTimeConfigFunction =
       new AlterRuntimeConfigFunction();
+  private static Logger logger = LogService.getLogger();
 
   @CliCommand(value = {CliStrings.DESCRIBE_CONFIG}, help = CliStrings.DESCRIBE_CONFIG__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
@@ -252,10 +254,10 @@ public class ConfigCommands extends AbstractCommandsSupport {
   public Result alterRuntimeConfig(
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String memberNameOrId,
+          help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] memberNameOrId,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__GROUP},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String group,
+          help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] group,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT},
           help = CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT__HELP) Integer archiveDiskSpaceLimit,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT},
@@ -287,153 +289,138 @@ public class ConfigCommands extends AbstractCommandsSupport {
 
     Map<String, String> runTimeDistributionConfigAttributes = new HashMap<>();
     Map<String, String> rumTimeCacheAttributes = new HashMap<>();
-    Set<DistributedMember> targetMembers;
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
 
-    try {
+    if (targetMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    }
 
-      targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
+    if (archiveDiskSpaceLimit != null) {
+      runTimeDistributionConfigAttributes.put(
+          CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT,
+          archiveDiskSpaceLimit.toString());
+    }
 
-      if (archiveDiskSpaceLimit != null) {
-        runTimeDistributionConfigAttributes.put(
-            CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT,
-            archiveDiskSpaceLimit.toString());
-      }
+    if (archiveFileSizeLimit != null) {
+      runTimeDistributionConfigAttributes.put(
+          CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT,
+          archiveFileSizeLimit.toString());
+    }
 
-      if (archiveFileSizeLimit != null) {
-        runTimeDistributionConfigAttributes.put(
-            CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT,
-            archiveFileSizeLimit.toString());
-      }
+    if (logDiskSpaceLimit != null) {
+      runTimeDistributionConfigAttributes.put(
+          CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, logDiskSpaceLimit.toString());
+    }
 
-      if (logDiskSpaceLimit != null) {
-        runTimeDistributionConfigAttributes.put(
-            CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, logDiskSpaceLimit.toString());
-      }
+    if (logFileSizeLimit != null) {
+      runTimeDistributionConfigAttributes.put(
+          CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, logFileSizeLimit.toString());
+    }
 
-      if (logFileSizeLimit != null) {
-        runTimeDistributionConfigAttributes.put(
-            CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, logFileSizeLimit.toString());
-      }
+    if (logLevel != null && !logLevel.isEmpty()) {
+      runTimeDistributionConfigAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL,
+          logLevel);
+    }
 
-      if (logLevel != null && !logLevel.isEmpty()) {
-        runTimeDistributionConfigAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL,
-            logLevel);
-      }
+    if (statisticArchiveFile != null && !statisticArchiveFile.isEmpty()) {
+      runTimeDistributionConfigAttributes
+          .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, statisticArchiveFile);
+    }
 
-      if (statisticArchiveFile != null && !statisticArchiveFile.isEmpty()) {
-        runTimeDistributionConfigAttributes
-            .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, statisticArchiveFile);
-      }
+    if (statisticSampleRate != null) {
+      runTimeDistributionConfigAttributes.put(
+          CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, statisticSampleRate.toString());
+    }
 
-      if (statisticSampleRate != null) {
-        runTimeDistributionConfigAttributes.put(
-            CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE,
-            statisticSampleRate.toString());
-      }
-
-      if (statisticSamplingEnabled != null) {
-        runTimeDistributionConfigAttributes.put(STATISTIC_SAMPLING_ENABLED,
-            statisticSamplingEnabled.toString());
-      }
-
-
-      // Attributes that are set on the cache.
-      if (setCopyOnRead != null) {
-        rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ,
-            setCopyOnRead.toString());
-      }
-
-      if (lockLease != null && lockLease > 0 && lockLease < Integer.MAX_VALUE) {
-        rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE,
-            lockLease.toString());
-      }
-
-      if (lockTimeout != null && lockTimeout > 0 && lockTimeout < Integer.MAX_VALUE) {
-        rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT,
-            lockTimeout.toString());
-      }
-
-      if (messageSyncInterval != null && messageSyncInterval > 0
-          && messageSyncInterval < Integer.MAX_VALUE) {
-        rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL,
-            messageSyncInterval.toString());
-      }
-
-      if (searchTimeout != null && searchTimeout > 0 && searchTimeout < Integer.MAX_VALUE) {
-        rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT,
-            searchTimeout.toString());
-      }
-
-      if (!runTimeDistributionConfigAttributes.isEmpty() || !rumTimeCacheAttributes.isEmpty()) {
-        Map<String, String> allRunTimeAttributes = new HashMap<>();
-        allRunTimeAttributes.putAll(runTimeDistributionConfigAttributes);
-        allRunTimeAttributes.putAll(rumTimeCacheAttributes);
-
-        ResultCollector<?, ?> rc = CliUtil.executeFunction(alterRunTimeConfigFunction,
-            allRunTimeAttributes, targetMembers);
-        List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
-        CompositeResultData crd = ResultBuilder.createCompositeResultData();
-        TabularResultData tabularData = crd.addSection().addTable();
-        Set<String> successfulMembers = new TreeSet<>();
-        Set<String> errorMessages = new TreeSet<>();
+    if (statisticSamplingEnabled != null) {
+      runTimeDistributionConfigAttributes.put(STATISTIC_SAMPLING_ENABLED,
+          statisticSamplingEnabled.toString());
+    }
 
 
-        for (CliFunctionResult result : results) {
-          if (result.getThrowable() != null) {
-            errorMessages.add(result.getThrowable().getMessage());
-          } else {
-            successfulMembers.add(result.getMemberIdOrName());
-          }
-        }
-        final String lineSeparator = System.getProperty("line.separator");
-        if (!successfulMembers.isEmpty()) {
-          StringBuilder successMessageBuilder = new StringBuilder();
+    // Attributes that are set on the cache.
+    if (setCopyOnRead != null) {
+      rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ,
+          setCopyOnRead.toString());
+    }
 
-          successMessageBuilder.append(CliStrings.ALTER_RUNTIME_CONFIG__SUCCESS__MESSAGE);
-          successMessageBuilder.append(lineSeparator);
+    if (lockLease != null && lockLease > 0 && lockLease < Integer.MAX_VALUE) {
+      rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE,
+          lockLease.toString());
+    }
 
-          for (String member : successfulMembers) {
-            successMessageBuilder.append(member);
-            successMessageBuilder.append(lineSeparator);
-          }
+    if (lockTimeout != null && lockTimeout > 0 && lockTimeout < Integer.MAX_VALUE) {
+      rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT,
+          lockTimeout.toString());
+    }
 
-          Properties properties = new Properties();
-          properties.putAll(runTimeDistributionConfigAttributes);
+    if (messageSyncInterval != null && messageSyncInterval > 0
+        && messageSyncInterval < Integer.MAX_VALUE) {
+      rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL,
+          messageSyncInterval.toString());
+    }
 
-          Result result = ResultBuilder.createInfoResult(successMessageBuilder.toString());
+    if (searchTimeout != null && searchTimeout > 0 && searchTimeout < Integer.MAX_VALUE) {
+      rumTimeCacheAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT,
+          searchTimeout.toString());
+    }
 
-          // Set the Cache attributes to be modified
-          final XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.CACHE)
-              .withAttributes(rumTimeCacheAttributes).build();
-          persistClusterConfiguration(result,
-              () -> getSharedConfiguration().modifyXmlAndProperties(properties, xmlEntity,
-                  group != null ? group.split(",") : null));
-          return result;
-        } else {
-          StringBuilder errorMessageBuilder = new StringBuilder();
-          errorMessageBuilder.append("Following errors occurred while altering runtime config");
-          errorMessageBuilder.append(lineSeparator);
+    if (runTimeDistributionConfigAttributes.isEmpty() && rumTimeCacheAttributes.isEmpty()) {
+      return ResultBuilder
+          .createUserErrorResult(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+    }
 
-          for (String errorMessage : errorMessages) {
-            errorMessageBuilder.append(errorMessage);
-            errorMessageBuilder.append(lineSeparator);
-          }
-          return ResultBuilder.createUserErrorResult(errorMessageBuilder.toString());
-        }
+    Map<String, String> allRunTimeAttributes = new HashMap<>();
+    allRunTimeAttributes.putAll(runTimeDistributionConfigAttributes);
+    allRunTimeAttributes.putAll(rumTimeCacheAttributes);
+
+    ResultCollector<?, ?> rc =
+        CliUtil.executeFunction(alterRunTimeConfigFunction, allRunTimeAttributes, targetMembers);
+    List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
+    Set<String> successfulMembers = new TreeSet<>();
+    Set<String> errorMessages = new TreeSet<>();
+
+    for (CliFunctionResult result : results) {
+      if (result.getThrowable() != null) {
+        logger.info("Function failed: " + result.getThrowable());
+        errorMessages.add(result.getThrowable().getMessage());
       } else {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+        successfulMembers.add(result.getMemberIdOrName());
       }
-    } catch (CommandResultException crex) {
-      return crex.getResult();
-    } catch (CacheClosedException e) {
-      return ResultBuilder.createGemFireErrorResult(e.getMessage());
-    } catch (FunctionInvocationTargetException e) {
-      return ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.ALTER_RUNTIME_CONFIG));
-    } catch (Exception e) {
-      return ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE, e.getClass(), e.getMessage()));
+    }
+    final String lineSeparator = System.getProperty("line.separator");
+    if (!successfulMembers.isEmpty()) {
+      StringBuilder successMessageBuilder = new StringBuilder();
+
+      successMessageBuilder.append(CliStrings.ALTER_RUNTIME_CONFIG__SUCCESS__MESSAGE);
+      successMessageBuilder.append(lineSeparator);
+
+      for (String member : successfulMembers) {
+        successMessageBuilder.append(member);
+        successMessageBuilder.append(lineSeparator);
+      }
+
+      Properties properties = new Properties();
+      properties.putAll(runTimeDistributionConfigAttributes);
+
+      Result result = ResultBuilder.createInfoResult(successMessageBuilder.toString());
+
+      // Set the Cache attributes to be modified
+      final XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.CACHE)
+          .withAttributes(rumTimeCacheAttributes).build();
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().modifyXmlAndProperties(properties, xmlEntity, group));
+      return result;
+    } else {
+      StringBuilder errorMessageBuilder = new StringBuilder();
+      errorMessageBuilder.append("Following errors occurred while altering runtime config");
+      errorMessageBuilder.append(lineSeparator);
+
+      for (String errorMessage : errorMessages) {
+        errorMessageBuilder.append(errorMessage);
+        errorMessageBuilder.append(lineSeparator);
+      }
+      return ResultBuilder.createUserErrorResult(errorMessageBuilder.toString());
     }
   }
 

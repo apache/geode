@@ -59,6 +59,7 @@ import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
@@ -331,9 +332,10 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
   }
 
-  @Category(FlakyTest.class) // GEODE-1313
   @Test
   public void testAlterRuntimeConfigRandom() throws Exception {
+    IgnoredException.addIgnoredException(
+        "java.lang.IllegalArgumentException: Could not set \"log-disk-space-limit\"");
     final String member1 = "VM1";
     final String controller = "controller";
 
@@ -352,16 +354,13 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(NAME, member1);
         getSystem(localProps);
-        Cache cache = getCache();
+        getCache();
       }
     });
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     CommandResult cmdResult = executeCommand(csb.getCommandString());
     String resultAsString = commandResultToString(cmdResult);
-
-    getLogWriter().info("#SB Result\n");
-    getLogWriter().info(resultAsString);
 
     assertEquals(true, cmdResult.getStatus().equals(Status.ERROR));
     assertTrue(resultAsString.contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE));
@@ -371,10 +370,9 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     cmdResult = executeCommand(csb.getCommandString());
     resultAsString = commandResultToString(cmdResult);
 
-    getLogWriter().info("#SB Result\n");
-    getLogWriter().info(resultAsString);
-
     assertEquals(true, cmdResult.getStatus().equals(Status.ERROR));
+    assertTrue(
+        resultAsString.contains("Could not set \"log-disk-space-limit\" to \"2,000,000,000\""));
   }
 
   @Test

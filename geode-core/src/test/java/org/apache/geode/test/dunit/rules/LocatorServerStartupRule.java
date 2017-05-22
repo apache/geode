@@ -75,8 +75,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     DUnitLauncher.closeAndCheckForSuspects();
     restoreSystemProperties.after();
     temporaryFolder.delete();
-    Arrays.stream(members).filter(Objects::nonNull)
-        .forEach(MemberVM::stopMemberAndCleanupVMIfNecessary);
+    Arrays.stream(members).filter(Objects::nonNull).forEach(MemberVM::stopMember);
   }
 
   public MemberVM<Locator> startLocatorVM(int index) throws Exception {
@@ -139,7 +138,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   public void stopMember(int index) {
     MemberVM member = members[index];
-    member.stopMemberAndCleanupVMIfNecessary();
+    member.stopMember();
   }
 
   /**
