@@ -14,14 +14,11 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -35,6 +32,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Wait;
+import org.junit.Test;
 
 /**
  * An abstract class whose test methods test the functionality of {@link CacheLoader}s that are

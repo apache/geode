@@ -16,14 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.*;
+
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
-import java.io.*;
-// import java.util.*;
-import org.apache.geode.distributed.internal.membership.*;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * A message that is sent to a particular distribution manager to get its current

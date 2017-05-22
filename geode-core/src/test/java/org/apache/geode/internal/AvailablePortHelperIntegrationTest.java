@@ -14,10 +14,20 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.internal.AvailablePort.*;
-import static org.apache.geode.internal.AvailablePortHelper.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.apache.geode.internal.AvailablePort.Keeper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -27,17 +37,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import org.apache.geode.internal.AvailablePort.Keeper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)

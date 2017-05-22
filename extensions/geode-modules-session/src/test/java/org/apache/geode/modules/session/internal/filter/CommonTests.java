@@ -14,7 +14,21 @@
  */
 package org.apache.geode.modules.session.internal.filter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import com.mockrunner.mock.web.MockHttpServletRequest;
+import com.mockrunner.mock.web.MockHttpServletResponse;
+import com.mockrunner.mock.web.MockHttpSession;
+import com.mockrunner.servlet.BasicServletTestCaseAdapter;
+import org.apache.geode.modules.session.filter.SessionCachingFilter;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -30,14 +44,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
-
-import org.apache.geode.modules.session.filter.SessionCachingFilter;
-import com.mockrunner.mock.web.MockHttpServletRequest;
-import com.mockrunner.mock.web.MockHttpServletResponse;
-import com.mockrunner.mock.web.MockHttpSession;
-import com.mockrunner.servlet.BasicServletTestCaseAdapter;
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
  * This servlet tests the effects of the downstream SessionCachingFilter filter. When these tests

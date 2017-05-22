@@ -14,15 +14,14 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.List;
-
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Arrays;
+import java.util.List;
 
 @Category(UnitTest.class)
 public class LineWrapUnitJUnitTest {

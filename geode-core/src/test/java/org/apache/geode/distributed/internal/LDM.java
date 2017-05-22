@@ -14,14 +14,13 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Properties;
 
 /**
  * A little class for testing the local DistributionManager

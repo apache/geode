@@ -23,7 +23,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
-// import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+
 
 /**
  * Class <code>ClientRegionEventImpl</code> is a region event with the client's host and port for

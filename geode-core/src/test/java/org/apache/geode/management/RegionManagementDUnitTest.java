@@ -30,30 +30,14 @@ package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.apache.geode.cache.Region.*;
-import static org.apache.geode.management.internal.MBeanJMXAdapter.*;
-import static org.apache.geode.test.dunit.Host.*;
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedRegionMbeanName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getRegionMBeanName;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -80,6 +64,23 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 /**
  * This class checks and verifies various data and operations exposed through RegionMXBean

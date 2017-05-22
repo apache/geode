@@ -14,6 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
@@ -34,9 +40,6 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 @Category(DistributedTest.class)
 public class ShellCommandsDUnitTest extends CliCommandTestBase {

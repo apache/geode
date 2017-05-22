@@ -15,14 +15,14 @@
 package org.apache.geode.admin;
 
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-import java.lang.reflect.Constructor;
-
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.lang.reflect.Constructor;
 
 /**
  * AlertLevel Tester.

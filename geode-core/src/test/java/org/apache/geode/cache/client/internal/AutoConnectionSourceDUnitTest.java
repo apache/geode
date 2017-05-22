@@ -14,25 +14,43 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.NoAvailableLocatorsException;
+import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.membership.ClientMembership;
+import org.apache.geode.management.membership.ClientMembershipEvent;
+import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Assert;
-import org.junit.*;
-import org.junit.experimental.categories.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.client.*;
-import org.apache.geode.cache.server.*;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.cache.*;
-import org.apache.geode.management.membership.*;
-import org.apache.geode.test.dunit.*;
-import org.apache.geode.test.junit.categories.*;
+import java.io.Serializable;
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Tests cases that are particular for the auto connection source - dynamically discovering servers,

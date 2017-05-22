@@ -25,7 +25,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
-// import java.net.*;
+
 
 /**
  * A message that is sent in response to a {@link LicenseInfoRequest}.

@@ -14,13 +14,15 @@
  */
 package org.apache.geode.internal.cache.locks;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.locks.LockGrantorId;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.DataSerializer;
-import java.io.*;
 
-import org.apache.geode.distributed.internal.locks.LockGrantorId;
-import org.apache.geode.distributed.internal.membership.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Identifies a group of transaction locks.

@@ -14,13 +14,13 @@
  */
 package org.apache.geode.test.golden;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.process.ProcessWrapper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.process.ProcessWrapper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that test output missing an expected line (at the middle of the golden file) will fail

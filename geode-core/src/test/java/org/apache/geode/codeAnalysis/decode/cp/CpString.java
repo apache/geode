@@ -14,7 +14,8 @@
  */
 package org.apache.geode.codeAnalysis.decode.cp;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class CpString extends Cp {
   int string_index; // har har - points to a Utf8 holding the string's guts

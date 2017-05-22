@@ -14,18 +14,16 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Arrays;
 
 @Category(UnitTest.class)
 public class DiskDirRuleTest {

@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.

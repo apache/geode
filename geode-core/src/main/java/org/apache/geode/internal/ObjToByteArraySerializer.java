@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
+import java.io.DataOutput;
+import java.io.IOException;
 
 
 /**

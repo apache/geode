@@ -14,14 +14,13 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_TRANSACTIONS;
 
 import org.apache.geode.cache30.TXRestrictionsDUnitTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * Same tests as that of {@link TXRestrictionsDUnitTest} after setting "distributed-transactions"

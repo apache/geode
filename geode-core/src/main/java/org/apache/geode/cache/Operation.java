@@ -16,9 +16,10 @@
 
 package org.apache.geode.cache;
 
-import java.io.*;
-import org.apache.geode.internal.cache.OpType;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.OpType;
+
+import java.io.ObjectStreamException;
 
 /**
  * Enumerated type for an event operation. This class describes the operation that generated the

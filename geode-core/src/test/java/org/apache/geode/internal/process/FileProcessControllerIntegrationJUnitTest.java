@@ -14,21 +14,21 @@
  */
 package org.apache.geode.internal.process;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static org.awaitility.Awaitility.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.hamcrest.Matchers.*;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static com.googlecode.catchexception.CatchException.verifyException;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.with;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-
+import org.apache.geode.distributed.AbstractLauncher.Status;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.LocatorLauncher.Builder;
+import org.apache.geode.distributed.LocatorLauncher.LocatorState;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,11 +37,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.distributed.AbstractLauncher.Status;
-import org.apache.geode.distributed.LocatorLauncher.Builder;
-import org.apache.geode.distributed.LocatorLauncher.LocatorState;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Integration tests for FileProcessController.

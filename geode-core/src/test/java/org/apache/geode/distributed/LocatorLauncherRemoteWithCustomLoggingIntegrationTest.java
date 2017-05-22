@@ -16,12 +16,15 @@ package org.apache.geode.distributed;
 
 import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.CONFIG_LAYOUT_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.geode.internal.logging.log4j.custom.CustomConfiguration;
+import org.apache.geode.internal.process.ProcessStreamReader;
+import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.junit.Before;
@@ -29,14 +32,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.logging.log4j.custom.CustomConfiguration;
-import org.apache.geode.internal.process.ProcessStreamReader;
-import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Integration tests for launching a Locator in a forked process with custom logging configuration

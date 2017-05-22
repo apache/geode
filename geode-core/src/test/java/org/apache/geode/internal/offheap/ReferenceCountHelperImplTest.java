@@ -15,28 +15,27 @@
 
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import static org.mockito.Mockito.*;
-
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.*;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * PowerMock used in this test to verify static method MemoryAllocatorImpl.debugLog

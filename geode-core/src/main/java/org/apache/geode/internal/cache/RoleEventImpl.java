@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.*;
-import java.util.*;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Operation;
@@ -24,6 +22,14 @@ import org.apache.geode.cache.RoleEvent;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Implementation of a RoleEvent. Super class is DataSerializable but this class is probably never

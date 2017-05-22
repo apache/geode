@@ -14,10 +14,14 @@
  */
 package org.apache.geode.cache;
 
-import java.io.*;
-import java.util.*;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Indicates that an attempt to send a distributed cache event to one or more

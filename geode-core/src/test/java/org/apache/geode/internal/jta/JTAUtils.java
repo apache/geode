@@ -24,25 +24,24 @@ package org.apache.geode.internal.jta;
  *
  */
 
-// import java.io.*;
-import java.util.*;
-// import java.net.*;
-import org.apache.geode.cache.*;
-// import org.apache.geode.distributed.*;
-// import org.apache.geode.util.concurrent.locks.*;
-// import java.util.Hashtable;
-// import javax.naming.InitialContext;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Region;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import javax.naming.Context;
-import java.sql.*;
-import javax.sql.*;
-// import javax.transaction.*;
-// import java.lang.Exception.*;
-// import java.lang.RuntimeException;
-// import java.sql.SQLException.*;
 import javax.naming.NamingException;
-// import javax.naming.NoInitialContextException;
-// import javax.transaction.SystemException;
-// import org.apache.geode.internal.jta.CacheUtils;
+import javax.sql.DataSource;
+
+
 
 public class JTAUtils {
 

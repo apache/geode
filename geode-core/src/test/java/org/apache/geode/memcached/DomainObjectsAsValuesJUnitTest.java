@@ -14,22 +14,23 @@
  */
 package org.apache.geode.memcached;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.concurrent.Future;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import net.spy.memcached.MemcachedClient;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.concurrent.Future;
 
 @Category(IntegrationTest.class)
 public class DomainObjectsAsValuesJUnitTest {

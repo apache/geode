@@ -14,13 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.cache.TransactionId;
-import org.apache.geode.internal.DSFIDFactory;
-import java.io.*;
-import org.apache.geode.distributed.internal.membership.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * The implementation of the {@link TransactionId} interface stored in the transaction state and

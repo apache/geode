@@ -19,13 +19,17 @@
  */
 package org.apache.geode.cache30;
 
-import java.util.*;
-
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
   final public Set destroys = Collections.synchronizedSet(new HashSet());

@@ -14,14 +14,21 @@
  */
 package org.apache.geode.internal.cache.lru;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
-import java.util.*;
+import java.util.Properties;
 
 /**
  * A <code>CapacityController</code> that will remove the least recently used (LRU) entry from a

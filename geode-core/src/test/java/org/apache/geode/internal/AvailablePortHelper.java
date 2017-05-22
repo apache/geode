@@ -14,8 +14,14 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.internal.AvailablePort.*;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getAddress;
+import static org.apache.geode.internal.AvailablePort.isPortKeepable;
+
+import org.apache.geode.internal.AvailablePort.Keeper;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -23,8 +29,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.geode.internal.AvailablePort.Keeper;
 
 /**
  * Provides helper methods for acquiring a set of unique available ports. It is not safe to simply

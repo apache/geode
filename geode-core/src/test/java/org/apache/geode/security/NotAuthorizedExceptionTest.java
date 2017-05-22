@@ -14,24 +14,24 @@
  */
 package org.apache.geode.security;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.io.NotSerializableException;
-import java.io.Serializable;
-import java.security.Principal;
-import javax.naming.NamingException;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.security.Principal;
+import javax.naming.NamingException;
 
 /**
  * Unit tests for {@link NotAuthorizedException}.

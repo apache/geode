@@ -16,7 +16,7 @@
 
 package org.apache.geode.cache;
 
-import java.io.*;
+import java.io.ObjectStreamException;
 
 /**
  * Enumerated type for region mirroring.

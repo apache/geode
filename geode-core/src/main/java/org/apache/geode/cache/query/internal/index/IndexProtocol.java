@@ -14,10 +14,9 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-// import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.FunctionDomainException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+
 import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryException;
@@ -29,7 +28,10 @@ import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.RegionEntry;
-import java.util.*;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public interface IndexProtocol extends Index {
   /**

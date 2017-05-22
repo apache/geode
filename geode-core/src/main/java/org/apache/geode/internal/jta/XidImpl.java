@@ -21,7 +21,9 @@ package org.apache.geode.internal.jta;
  * 
  * @since GemFire 4.0
  */
-import javax.transaction.xa.*;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 
 public class XidImpl implements Xid {
 

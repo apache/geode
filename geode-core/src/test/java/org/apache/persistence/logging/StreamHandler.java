@@ -14,7 +14,8 @@
  */
 package org.apache.persistence.logging;
 
-import java.io.*;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 /**
  * A <code>StreamHandler</code> exports log records to an <code>OutputStream</code>.

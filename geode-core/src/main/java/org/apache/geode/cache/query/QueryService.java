@@ -14,9 +14,12 @@
  */
 package org.apache.geode.cache.query;
 
-import java.util.*;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.Undefined;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Interface for the query service, which is used for instantiating queries, creating and destroying

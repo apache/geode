@@ -14,12 +14,14 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.*;
-import static junitparams.JUnitParamsRunner.*;
-import static org.assertj.core.api.Assertions.*;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_GATEWAYRECEIVER__GROUP;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_GATEWAYRECEIVER__MEMBER;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_GATEWAYSENDER;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_GATEWAYSENDER__ID;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

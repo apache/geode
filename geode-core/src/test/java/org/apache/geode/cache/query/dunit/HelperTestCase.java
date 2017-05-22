@@ -14,13 +14,9 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertFalse;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -52,6 +48,10 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class HelperTestCase extends JUnit4CacheTestCase {

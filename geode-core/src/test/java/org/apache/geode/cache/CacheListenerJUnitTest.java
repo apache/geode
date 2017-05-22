@@ -14,6 +14,13 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.RegionMembershipListenerAdapter;
 import org.apache.geode.cache.util.RegionRoleListenerAdapter;
@@ -28,10 +35,6 @@ import org.junit.experimental.categories.Category;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Unit test for basic CacheListener feature. NOTE: these tests using a loner DistributedSystem and

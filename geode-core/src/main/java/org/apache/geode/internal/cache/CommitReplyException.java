@@ -15,7 +15,9 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.distributed.internal.ReplyException;
-import java.util.*;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Contains exceptions generated when attempting to process a commit operation.

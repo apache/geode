@@ -14,14 +14,9 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_TRANSACTIONS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.TXJUnitTest;
 import org.apache.geode.cache.CacheException;
@@ -30,6 +25,11 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * Run the basic transaction functionality tests in TXJUnitTest after setting

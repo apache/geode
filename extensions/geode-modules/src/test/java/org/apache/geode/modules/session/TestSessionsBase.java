@@ -14,8 +14,26 @@
  */
 package org.apache.geode.modules.session;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import com.meterware.httpunit.GetMethodWebRequest;
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebRequest;
+import com.meterware.httpunit.WebResponse;
+import org.apache.catalina.core.StandardWrapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.modules.session.catalina.DeltaSessionManager;
+import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -24,21 +42,6 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
-import org.apache.catalina.core.StandardWrapper;
-import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.modules.session.catalina.DeltaSessionManager;
-import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 
 public abstract class TestSessionsBase {
 

@@ -16,13 +16,18 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-import org.apache.geode.internal.admin.*;
-import org.apache.geode.cache.*;
-import java.io.*;
-// import java.util.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.admin.CacheSnapshot;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 
 public class SnapshotResultMessage extends PooledDistributionMessage implements AdminMessageType {
   private CacheSnapshot results;

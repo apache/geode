@@ -20,10 +20,16 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
-import antlr.collections.*;
+import antlr.LLkParser;
+import antlr.ParserSharedInputState;
+import antlr.TokenBuffer;
+import antlr.TokenStream;
+import antlr.collections.AST;
 import antlr.debug.misc.ASTFrame;
-import java.io.*;
+
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 
 /**
  *

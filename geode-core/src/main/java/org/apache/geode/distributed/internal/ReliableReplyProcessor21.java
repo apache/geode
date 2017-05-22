@@ -15,9 +15,13 @@
 
 package org.apache.geode.distributed.internal;
 
-import java.util.*;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This is a reply processor which tracks departed members in order for reliable messaging to

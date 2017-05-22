@@ -16,8 +16,10 @@ package org.apache.geode.cache;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
-import java.util.*;
+import java.io.ObjectStreamException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Specifies how the region is affected by resumption of reliability when one or more missing

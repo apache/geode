@@ -20,16 +20,20 @@
  */
 package org.apache.geode.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.After;
+import org.junit.Before;
 
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
-
-import org.junit.After;
-import org.junit.Before;
 
 /**
  * Base class for JSR166 Junit TCK tests. Defines some constants, utility methods and classes, as

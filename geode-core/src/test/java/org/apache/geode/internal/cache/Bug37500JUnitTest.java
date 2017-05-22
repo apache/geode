@@ -16,17 +16,12 @@ package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.fail;
 
-import java.io.File;
-
-import org.junit.After;
-import org.junit.Before;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Scope;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import static org.junit.Assert.*;
+import java.io.File;
 
 /**
  * This is a bugtest for bug 37500.

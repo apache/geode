@@ -15,10 +15,15 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.extension.Extension;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
@@ -26,15 +31,11 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.cache.lucene.LuceneService;
-import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.internal.cache.extension.Extensible;
-import org.apache.geode.internal.cache.extension.Extension;
-import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>> {
   private Region region;

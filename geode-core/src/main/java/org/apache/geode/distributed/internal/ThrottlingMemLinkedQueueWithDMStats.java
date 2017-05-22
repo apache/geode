@@ -15,8 +15,8 @@
 
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.distributed.internal.DistributionStats;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * An instance of ThrottlingMemLinkedQueue allows the instantiator to specify a maximum queue

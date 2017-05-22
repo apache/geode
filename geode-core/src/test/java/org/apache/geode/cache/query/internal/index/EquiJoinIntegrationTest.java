@@ -14,17 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -44,6 +34,15 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.functional.StructSetOrResultsSet;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(IntegrationTest.class)
 public class EquiJoinIntegrationTest {

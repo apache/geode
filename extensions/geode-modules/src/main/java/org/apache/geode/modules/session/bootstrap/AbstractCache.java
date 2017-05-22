@@ -14,6 +14,11 @@
  */
 package org.apache.geode.modules.session.bootstrap;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.distributed.internal.AbstractDistributionConfig;
@@ -33,8 +38,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 public abstract class AbstractCache {
 

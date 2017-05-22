@@ -14,15 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.management.internal.cli.functions.ExportLogsFunction.Args;
 import org.apache.commons.io.FileUtils;
+import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.internal.cli.functions.ExportLogsFunction.Args;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;

@@ -14,17 +14,19 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ServiceLoader;
-
+import org.apache.geode.internal.ClassPathLoader;
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import org.apache.geode.internal.ClassPathLoader;
+import java.util.ServiceLoader;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and {@link DefaultEntityResolver2}.

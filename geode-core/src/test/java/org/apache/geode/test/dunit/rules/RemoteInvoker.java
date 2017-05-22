@@ -14,12 +14,12 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.test.dunit.Invoke.*;
-
-import java.io.Serializable;
+import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
+
+import java.io.Serializable;
 
 /**
  * Provides remote invocation support to a {@code TestRule}. These methods will invoke a

@@ -14,17 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.geode.cache.util.GatewayConflictHelper;
-import org.apache.geode.cache.util.GatewayConflictResolver;
-import org.apache.geode.cache.util.TimestampedEntryEvent;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -36,12 +28,21 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.util.GatewayConflictHelper;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.cache.util.TimestampedEntryEvent;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 @Category(DistributedTest.class)
 public class CacheXml70DUnitTest extends CacheXml66DUnitTest {

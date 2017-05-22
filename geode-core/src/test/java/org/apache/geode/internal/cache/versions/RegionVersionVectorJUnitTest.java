@@ -14,18 +14,9 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -35,6 +26,16 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Category(UnitTest.class)
 public class RegionVersionVectorJUnitTest {

@@ -15,9 +15,32 @@
 package org.apache.geode.internal.statistics;
 
 import static org.apache.geode.internal.statistics.StatArchiveFormat.NANOS_PER_MILLI;
-import static org.apache.geode.internal.statistics.TestStatArchiveWriter.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.apache.geode.internal.statistics.TestStatArchiveWriter.WRITER_INITIAL_DATE_MILLIS;
+import static org.apache.geode.internal.statistics.TestStatArchiveWriter.WRITER_PREVIOUS_TIMESTAMP_NANOS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -31,24 +54,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
-
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Integration tests for {@link StatArchiveWriter} and {@link StatArchiveReader}.

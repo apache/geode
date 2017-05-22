@@ -20,7 +20,9 @@ import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Used to make InterestResultPolicy implement DataSerializableFixedID

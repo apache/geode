@@ -14,6 +14,15 @@
  */
 package org.apache.geode.cache.snapshot;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
 import org.apache.geode.cache.CacheFactory;
@@ -34,9 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class RegionSnapshotJUnitTest extends SnapshotTestCase {

@@ -14,20 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.HashMap;
-import java.util.Map;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
@@ -36,6 +27,15 @@ import org.apache.geode.cache.snapshot.RegionGenerator;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(IntegrationTest.class)
 public class OfflineSnapshotJUnitTest {

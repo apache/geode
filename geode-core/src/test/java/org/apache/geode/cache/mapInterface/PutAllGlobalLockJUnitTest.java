@@ -14,16 +14,9 @@
  */
 package org.apache.geode.cache.mapInterface;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-import java.util.TreeMap;
-
-import org.apache.geode.test.junit.categories.DLockTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -35,7 +28,14 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+import java.util.TreeMap;
 
 @Category({IntegrationTest.class, DLockTest.class})
 public class PutAllGlobalLockJUnitTest { // TODO: reformat

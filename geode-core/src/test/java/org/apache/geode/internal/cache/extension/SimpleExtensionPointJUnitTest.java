@@ -14,19 +14,22 @@
  */
 package org.apache.geode.internal.cache.extension;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.test.fake.Fakes;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SimpleExtensionPoint}.

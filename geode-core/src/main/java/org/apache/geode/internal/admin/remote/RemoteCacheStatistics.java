@@ -15,8 +15,11 @@
 package org.apache.geode.internal.admin.remote;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.*;
-import java.io.*;
+import org.apache.geode.cache.CacheStatistics;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * This class represents a snapshot of a {@link org.apache.geode.cache.CacheStatistics} from a

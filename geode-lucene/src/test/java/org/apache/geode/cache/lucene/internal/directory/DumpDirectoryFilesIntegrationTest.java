@@ -14,11 +14,9 @@
  */
 package org.apache.geode.cache.lucene.internal.directory;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -27,7 +25,6 @@ import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.DiskDirRule;
-
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
@@ -37,6 +34,9 @@ import org.apache.lucene.store.FSDirectory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 @Category(IntegrationTest.class)
 public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {

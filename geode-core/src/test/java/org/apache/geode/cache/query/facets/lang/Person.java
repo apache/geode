@@ -15,7 +15,8 @@
 
 package org.apache.geode.cache.query.facets.lang;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
 
 public class Person {
   private String _ssn;

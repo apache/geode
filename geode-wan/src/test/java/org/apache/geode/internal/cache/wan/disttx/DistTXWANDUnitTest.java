@@ -14,11 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -26,6 +22,9 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class DistTXWANDUnitTest extends WANTestBase {

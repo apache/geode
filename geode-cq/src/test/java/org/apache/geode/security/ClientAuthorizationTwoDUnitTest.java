@@ -14,15 +14,14 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests for authorization from client to server. This tests for authorization of all operations

@@ -14,7 +14,14 @@
  */
 package org.apache.geode.distributed.internal.deadlock;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -27,14 +34,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TODO: can we get rid of the Thread.sleep calls?

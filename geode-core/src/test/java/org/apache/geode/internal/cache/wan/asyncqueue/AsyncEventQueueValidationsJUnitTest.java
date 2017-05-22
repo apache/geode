@@ -17,20 +17,11 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static junitparams.JUnitParamsRunner.*;
-import static org.junit.Assert.*;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -43,6 +34,16 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException
 import org.apache.geode.internal.cache.wan.MyGatewayEventFilter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)

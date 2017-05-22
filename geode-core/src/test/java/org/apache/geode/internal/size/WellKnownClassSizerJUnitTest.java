@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.size;
 
-import static org.apache.geode.internal.size.SizeTestUtil.*;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.internal.size.SizeTestUtil.OBJECT_SIZE;
+import static org.apache.geode.internal.size.SizeTestUtil.roundup;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class WellKnownClassSizerJUnitTest {

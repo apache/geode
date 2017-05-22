@@ -14,7 +14,19 @@
  */
 package org.apache.geode.pdx;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
@@ -25,17 +37,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
-
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
-import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class ByteSourceJUnitTest {

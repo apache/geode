@@ -14,16 +14,15 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_TRANSACTIONS;
 
-import java.util.Properties;
-
+import org.apache.geode.internal.cache.execute.PRTransactionWithVersionsDUnitTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.execute.PRTransactionWithVersionsDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class PRDistTXWithVersionsDUnitTest extends PRTransactionWithVersionsDUnitTest {

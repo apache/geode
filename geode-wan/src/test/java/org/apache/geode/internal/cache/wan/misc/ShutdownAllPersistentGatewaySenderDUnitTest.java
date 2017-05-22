@@ -14,12 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import static org.junit.Assert.*;
-
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AdminException;
@@ -38,6 +33,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Set;
 
 @Category(DistributedTest.class)
 public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {

@@ -14,14 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
 
 @SuppressWarnings("serial")
 @Category(DistributedTest.class)

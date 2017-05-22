@@ -14,8 +14,24 @@
  */
 package org.apache.geode.internal.jta;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+import org.junit.runners.MethodSorters;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,22 +48,6 @@ import java.util.Random;
 import javax.naming.Context;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-import org.junit.runners.MethodSorters;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * TODO: this test has no assertions or validations of any sort

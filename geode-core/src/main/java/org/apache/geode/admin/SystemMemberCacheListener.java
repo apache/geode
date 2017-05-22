@@ -14,7 +14,9 @@
  */
 package org.apache.geode.admin;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
 
 /**
  * A listener whose callback methods can be used to track the lifecycle of {@link Cache caches} and

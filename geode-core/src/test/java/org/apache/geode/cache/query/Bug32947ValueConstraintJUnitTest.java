@@ -14,8 +14,19 @@
  */
 package org.apache.geode.cache.query;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.data.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.data.Address;
+import org.apache.geode.cache.query.data.Data;
+import org.apache.geode.cache.query.data.Employee;
+import org.apache.geode.cache.query.data.Manager;
+import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -26,9 +37,6 @@ import org.junit.experimental.categories.Category;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.fail;
 
 /**
  * Junit test for checking the value constraint region attributes.

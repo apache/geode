@@ -15,14 +15,13 @@
 package org.apache.geode.cache.query.dunit;
 
 
-import java.io.*;
-import java.util.HashSet;
-import java.util.Set;
-import org.apache.geode.*;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class PositionPdxVersion implements Serializable, PdxSerializable, Comparable {

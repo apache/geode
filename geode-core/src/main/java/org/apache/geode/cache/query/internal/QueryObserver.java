@@ -14,8 +14,12 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * This interface is used by testing/debugging code to be notified of query events. See the

@@ -14,22 +14,29 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.VMThinRegionEntryHeapIntKey;
+import org.apache.geode.internal.cache.VMThinRegionEntryHeapLongKey;
+import org.apache.geode.internal.cache.VMThinRegionEntryHeapObjectKey;
+import org.apache.geode.internal.cache.VMThinRegionEntryHeapStringKey1;
+import org.apache.geode.internal.cache.VMThinRegionEntryHeapStringKey2;
+import org.apache.geode.internal.cache.VMThinRegionEntryHeapUUIDKey;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 import java.util.UUID;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class InlineKeyJUnitTest {

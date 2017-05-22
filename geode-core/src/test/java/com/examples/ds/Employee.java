@@ -16,7 +16,10 @@ package com.examples.ds;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import java.io.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Date;
 
 public class Employee implements DataSerializable {

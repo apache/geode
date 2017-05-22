@@ -14,7 +14,19 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.ByteArrayData;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.DataInput;
 import java.io.DataOutputStream;
@@ -23,16 +35,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.ByteArrayData;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests {@link StartupMessageData}.

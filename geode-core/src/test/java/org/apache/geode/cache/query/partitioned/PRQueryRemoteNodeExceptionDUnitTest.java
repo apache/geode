@@ -17,14 +17,8 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.query.Utils.*;
-import static org.junit.Assert.*;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.cache.query.Utils.createPortfolioData;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -46,6 +40,11 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This test verifies exception handling on coordinator node for remote as well as local querying.

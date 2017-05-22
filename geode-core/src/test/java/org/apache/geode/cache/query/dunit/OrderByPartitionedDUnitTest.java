@@ -14,10 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -35,6 +32,8 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {

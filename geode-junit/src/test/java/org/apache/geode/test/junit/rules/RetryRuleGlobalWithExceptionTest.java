@@ -14,10 +14,10 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
+import org.apache.geode.test.junit.Retry;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,8 +25,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import org.apache.geode.test.junit.Retry;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.List;
 
 /**
  * Unit tests for {@link RetryRule} involving global scope (ie rule affects all tests in the test

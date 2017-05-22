@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-// import org.apache.geode.admin.ConfigurationParameter;
+
 import org.apache.geode.internal.Assert;
 
 import javax.management.Descriptor;

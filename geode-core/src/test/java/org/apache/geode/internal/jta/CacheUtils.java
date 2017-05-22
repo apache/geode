@@ -20,6 +20,9 @@
 
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
@@ -28,16 +31,14 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.util.test.TestUtil;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  * 

@@ -14,16 +14,9 @@
  */
 package org.apache.geode.distributed;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static com.googlecode.catchexception.CatchException.verifyException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
 import org.apache.geode.distributed.AbstractLauncher.Status;
@@ -31,6 +24,13 @@ import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Unit tests for LocatorLauncher.LocatorState

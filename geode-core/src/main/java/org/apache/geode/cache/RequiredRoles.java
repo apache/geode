@@ -20,7 +20,8 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Provides information on presence or absence of a <code>Region</code>'s required roles.

@@ -19,18 +19,8 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
-
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CacheUtils;
@@ -42,7 +32,17 @@ import org.apache.geode.cache.query.internal.CompiledFunction;
 import org.apache.geode.cache.query.internal.CompiledLiteral;
 import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
 
 @Category(IntegrationTest.class)
 public class FunctionJUnitTest {

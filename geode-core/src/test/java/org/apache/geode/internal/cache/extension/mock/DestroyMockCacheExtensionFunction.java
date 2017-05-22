@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache.extension.mock;
 
-import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.*;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.ELEMENT_CACHE;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.NAMESPACE;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.PREFIX;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;

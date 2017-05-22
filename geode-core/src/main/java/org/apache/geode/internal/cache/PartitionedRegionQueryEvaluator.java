@@ -14,16 +14,42 @@
  */
 package org.apache.geode.internal.cache;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.geode.CopyHelper;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.CompiledGroupBySelect;
+import org.apache.geode.cache.query.internal.CompiledSelect;
+import org.apache.geode.cache.query.internal.CompiledSortCriterion;
+import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.CumulativeNonDistinctResults;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
+import org.apache.geode.cache.query.internal.NWayMergeResults;
+import org.apache.geode.cache.query.internal.OrderByComparator;
+import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
+import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.ResultsSet;
+import org.apache.geode.cache.query.internal.SortedResultsBag;
+import org.apache.geode.cache.query.internal.SortedStructBag;
+import org.apache.geode.cache.query.internal.StructSet;
 import org.apache.geode.cache.query.internal.utils.PDXUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
@@ -32,12 +58,23 @@ import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.internal.cache.partitioned.StreamingPartitionOperation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class sends the query on various <code>PartitionedRegion</code> data store nodes and

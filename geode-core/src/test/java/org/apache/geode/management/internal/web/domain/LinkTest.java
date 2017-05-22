@@ -14,15 +14,16 @@
  */
 package org.apache.geode.management.internal.web.domain;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.net.URI;
-
-import org.apache.geode.management.internal.web.http.HttpMethod;
 
 @Category(UnitTest.class)
 public class LinkTest {

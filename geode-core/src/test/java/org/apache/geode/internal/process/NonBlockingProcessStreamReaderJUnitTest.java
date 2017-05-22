@@ -14,16 +14,18 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.junit.Assert.*;
-
-import java.util.concurrent.Callable;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.concurrent.Callable;
 
 /**
  * Tests NonBlockingProcessStreamReader which was introduced to fix TRAC bug #51967.

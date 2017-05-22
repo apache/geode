@@ -15,7 +15,7 @@
 
 package hydra;
 
-import org.apache.geode.*;
+import org.apache.geode.GemFireException;
 
 /**
  * Abstract class for clients giving scheduling instructions to the hydra master.

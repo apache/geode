@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -27,10 +29,7 @@ import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 
 
 public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {

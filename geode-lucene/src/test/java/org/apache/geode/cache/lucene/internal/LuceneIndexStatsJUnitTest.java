@@ -15,19 +15,23 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
-
-import java.util.function.IntSupplier;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+
+import java.util.function.IntSupplier;
 
 @Category(UnitTest.class)
 public class LuceneIndexStatsJUnitTest {

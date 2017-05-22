@@ -20,8 +20,19 @@
 
 package org.apache.geode.cache.query.functional;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Numbers;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -31,8 +42,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 // TODO:TEST clean this up and add assertions
 /**

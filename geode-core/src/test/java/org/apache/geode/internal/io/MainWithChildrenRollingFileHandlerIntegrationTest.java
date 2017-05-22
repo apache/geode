@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.io;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.File;
-import java.util.regex.Pattern;
-
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +25,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.util.regex.Pattern;
 
 @Category(IntegrationTest.class)
 public class MainWithChildrenRollingFileHandlerIntegrationTest {

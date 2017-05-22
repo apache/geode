@@ -14,19 +14,11 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.apache.geode.internal.util.BlobHelper.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.EOFException;
-import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.internal.util.BlobHelper.deserializeBlob;
+import static org.apache.geode.internal.util.BlobHelper.serializeTo;
+import static org.apache.geode.internal.util.BlobHelper.serializeToBlob;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ByteArrayDataInput;
@@ -34,6 +26,16 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.EOFException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Unit Tests for {@link BlobHelper}.

@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.*;
-
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+
+import java.util.Set;
 
 
 /**

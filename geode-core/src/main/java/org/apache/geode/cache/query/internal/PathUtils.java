@@ -14,19 +14,23 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.lang.reflect.*;
-import java.util.*;
-
 import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.types.ObjectType;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 
 /**

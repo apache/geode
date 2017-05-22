@@ -14,23 +14,19 @@
  */
 package org.apache.geode.internal.cache.partitioned.fixed;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Category(DistributedTest.class)
 public class FixedPartitioningWithColocationAndPersistenceDUnitTest

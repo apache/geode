@@ -17,6 +17,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -41,8 +43,6 @@ import org.apache.geode.security.NotAuthorizedException;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Authenticates this client (or a user) on a server. This op ideally should get executed

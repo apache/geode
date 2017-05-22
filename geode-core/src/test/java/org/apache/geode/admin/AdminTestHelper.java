@@ -14,7 +14,9 @@
  */
 package org.apache.geode.admin;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.apache.geode.distributed.internal.DistributionManager;
 
 public class AdminTestHelper {

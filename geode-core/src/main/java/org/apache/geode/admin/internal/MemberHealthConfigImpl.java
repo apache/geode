@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.MemberHealthConfig;
 
 // @todo Make this class (and all of its subclasses) {@link java.io.Externalizable} or
 // {@link org.apache.geode.DataSerializable}.

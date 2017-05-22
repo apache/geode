@@ -14,10 +14,15 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import java.util.Properties;
-
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.junit.After;
@@ -25,11 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
 
 /**
  * The JettyHelperJUnitTest class is a test suite of test cases testing the contract and

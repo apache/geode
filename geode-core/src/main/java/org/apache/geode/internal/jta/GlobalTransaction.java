@@ -22,15 +22,29 @@ package org.apache.geode.internal.jta;
  * 
  * @since GemFire 4.0
  */
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import java.util.*;
-import javax.transaction.xa.*;
-import javax.transaction.*;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 public class GlobalTransaction {
 

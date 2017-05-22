@@ -15,10 +15,9 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
-// import antlr.collections.*;
-import org.apache.geode.internal.Assert;
+import antlr.Token;
 import org.apache.geode.cache.query.internal.QCompiler;
+import org.apache.geode.internal.Assert;
 
 /**
  *

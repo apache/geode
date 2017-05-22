@@ -14,10 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import static org.apache.geode.test.dunit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -32,7 +30,8 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * DUnit test for operations on ParallelGatewaySender

@@ -14,14 +14,13 @@
  */
 package org.apache.geode.management.internal.web.http.converter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Calendar;
-
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -35,8 +34,11 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Calendar;
 
 /**
  * The SerializableObjectHttpMessageConverterJUnitTest class is a test suite of test cases testing

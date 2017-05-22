@@ -14,13 +14,8 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import static org.junit.Assert.*;
-
-import java.util.Collection;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.CqException;
@@ -47,6 +42,11 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * This class tests the ContinuousQuery mechanism in GemFire. This includes the test with different

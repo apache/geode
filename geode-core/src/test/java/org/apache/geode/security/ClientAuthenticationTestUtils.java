@@ -14,13 +14,15 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
+import static org.apache.geode.security.SecurityTestUtils.getCache;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.Region;
+
+import java.util.Properties;
 
 /**
  * Extracted from ClientAuthenticationDUnitTest

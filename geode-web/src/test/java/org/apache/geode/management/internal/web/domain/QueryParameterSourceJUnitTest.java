@@ -14,20 +14,22 @@
  */
 package org.apache.geode.management.internal.web.domain;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
-
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
-
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * The QueryParameterSourceJUnitTest class is a test suite of test cases testing the contract and

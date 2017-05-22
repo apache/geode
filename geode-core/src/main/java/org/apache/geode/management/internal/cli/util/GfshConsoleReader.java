@@ -69,7 +69,7 @@ public class GfshConsoleReader extends GfeConsoleReader {
 
 // package org.apache.geode.management.internal.cli.util;
 //
-// import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+
 //
 // public class GfshConsoleReader extends GfeConsoleReader {
 //

@@ -14,15 +14,14 @@
  */
 package org.apache.geode.distributed;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
+import org.apache.geode.internal.process.ProcessControllerFactory;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.process.ProcessControllerFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Subclass of ServerLauncherLocalDUnitTest which forces the code to not find the Attach API which

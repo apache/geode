@@ -15,7 +15,7 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * Used to provide information on a grantor request made to the elder.

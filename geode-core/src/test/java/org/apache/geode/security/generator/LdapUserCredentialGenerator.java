@@ -14,6 +14,8 @@
  */
 package org.apache.geode.security.generator;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_DHALGO;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.logging.LogService;
@@ -26,8 +28,6 @@ import org.apache.logging.log4j.Logger;
 import java.security.Principal;
 import java.util.Properties;
 import java.util.Random;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 

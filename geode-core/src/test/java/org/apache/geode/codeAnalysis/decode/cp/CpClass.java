@@ -14,9 +14,10 @@
  */
 package org.apache.geode.codeAnalysis.decode.cp;
 
-import java.io.*;
-
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
+
+import java.io.DataInputStream;
+import java.io.IOException;
 
 
 public class CpClass extends Cp {

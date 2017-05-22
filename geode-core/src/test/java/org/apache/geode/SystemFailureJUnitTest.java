@@ -14,17 +14,17 @@
  */
 package org.apache.geode;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.TimeUnit;
-
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.awaitility.Awaitility;
+import java.util.concurrent.TimeUnit;
 
 @Category(UnitTest.class)
 public class SystemFailureJUnitTest {

@@ -14,14 +14,13 @@
  */
 package org.apache.geode.cache.util;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class PasswordUtilJUnitTest {

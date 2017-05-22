@@ -15,19 +15,22 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-// import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
-import org.apache.geode.internal.cache.IdentityArrayList;
 import org.apache.geode.distributed.internal.locks.DLockBatch;
 import org.apache.geode.distributed.internal.locks.DLockBatchId;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.IdentityArrayList;
+import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
 
-import java.io.*;
-import java.util.*;
-import org.apache.geode.distributed.internal.membership.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Adapts multiple TXRegionLockRequests to one DLockBatch for DLock to use.

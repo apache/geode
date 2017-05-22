@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.custom.BasicAppender;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -34,9 +33,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.custom.BasicAppender;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 /**
  * Integration tests with accept and deny of GEODE_VERBOSE and GEMFIRE_VERBOSE.

@@ -14,19 +14,8 @@
  */
 package org.apache.geode.cache.snapshot;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.Arrays;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.examples.snapshot.MyPdxSerializer;
 import org.apache.geode.cache.Cache;
@@ -34,13 +23,21 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.snapshot.SnapshotFileMapper;
 import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.Arrays;
 
 @Category(DistributedTest.class)
 public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {

@@ -16,8 +16,10 @@ package org.apache.geode.internal.datasource;
 
 /**
  */
+
 import java.io.Serializable;
-import javax.sql.*;
+import javax.sql.ConnectionPoolDataSource;
+import javax.sql.XADataSource;
 
 /**
  * GemFireConnectionPoolManager implements ConnectionProvider interface for managing the the

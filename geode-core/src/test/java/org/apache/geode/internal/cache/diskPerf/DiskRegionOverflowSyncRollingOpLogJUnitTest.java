@@ -14,23 +14,22 @@
  */
 package org.apache.geode.internal.cache.diskPerf;
 
-import org.apache.geode.internal.cache.*;
-
-import java.util.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.CacheObserverAdapter;
+import org.apache.geode.internal.cache.CacheObserverHolder;
+import org.apache.geode.internal.cache.DiskRegionHelperFactory;
+import org.apache.geode.internal.cache.DiskRegionProperties;
+import org.apache.geode.internal.cache.DiskRegionTestingBase;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Arrays;
 
 /**
  * 1) Performance of Get Operation for Entry faulting in from current Op Log 2) Performance of Get

@@ -14,17 +14,17 @@
  */
 package org.apache.geode.test.golden;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.process.ProcessWrapper;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.process.ProcessWrapper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Basic unit testing of the golden testing framework. This tests an example which is expected to

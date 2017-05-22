@@ -15,8 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.internal.cache.lru.*;
-// import org.apache.geode.internal.util.Sizeof;
+import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+
 
 /**
  * Internal implementation of {@link RegionMap} for regions stored in normal VM memory that maintain

@@ -15,8 +15,8 @@
 
 package org.apache.geode.cache.query;
 
-// import java.util.*;
-import org.apache.geode.cache.*;
+
+import org.apache.geode.cache.Region;
 
 /**
  * An index that is built over the data stored in a GemFire {@link Region}.

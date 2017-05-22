@@ -14,16 +14,15 @@
  */
 package org.apache.geode.annotations;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.lang.reflect.AnnotatedElement;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.annotations.experimentalpackage.ClassInExperimentalPackage;
 import org.apache.geode.experimental.nonexperimentalpackage.ClassInNonExperimentalPackage;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.lang.reflect.AnnotatedElement;
 
 /**
  * Unit tests for the <tt>Experimental</tt> annotation. Verifies that the annotation can be applied

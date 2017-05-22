@@ -14,9 +14,10 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
-import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.admin.SystemMemberCacheListener;
+import org.apache.geode.admin.SystemMemberRegionEvent;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * An event that describes an operation on a region. Instances of this are delivered to a

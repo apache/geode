@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.lang;
 
-import static org.assertj.core.api.Assertions.*;
-import static com.googlecode.catchexception.CatchException.*;
+import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Unit tests for {@link ThrowableUtils}

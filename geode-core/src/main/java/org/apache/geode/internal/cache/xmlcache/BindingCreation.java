@@ -19,7 +19,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents the data given for binding a DataSource to JNDI tree. It encapsulates to

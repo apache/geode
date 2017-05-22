@@ -23,7 +23,12 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.logging.log4j.Logger;
 
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A connection source where the list of endpoints is specified explicitly.

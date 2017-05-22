@@ -14,16 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import java.util.concurrent.CountDownLatch;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Disk LRU region recovery tests.

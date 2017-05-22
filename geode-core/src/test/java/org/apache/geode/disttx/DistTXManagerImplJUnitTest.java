@@ -14,12 +14,9 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static junit.framework.TestCase.*;
-
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
+import static junit.framework.TestCase.assertTrue;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -29,6 +26,9 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXManagerImplJUnitTest;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * Same tests as that of {@link TXManagerImplJUnitTest} after setting "distributed-transactions"

@@ -14,19 +14,33 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
-import java.io.*;
-import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.internal.cache.EntriesSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EntriesSet;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Implementation of SelectResults that wraps an existing java.util.Collection and optionally adds a

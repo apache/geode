@@ -14,13 +14,12 @@
  */
 package org.apache.geode.test.process;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for ProcessWrapper.

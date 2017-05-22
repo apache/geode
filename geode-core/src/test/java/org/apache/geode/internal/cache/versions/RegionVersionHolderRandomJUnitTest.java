@@ -14,19 +14,18 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * A test of the region version holder, where all of the test methods will now build there RVV by

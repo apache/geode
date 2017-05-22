@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
-import java.nio.*;
+import java.io.OutputStream;
+import java.nio.BufferOverflowException;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 
 /**
  * An OutputStream that wraps to a ByteBuffer

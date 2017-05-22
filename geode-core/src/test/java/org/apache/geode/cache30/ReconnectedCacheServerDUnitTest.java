@@ -14,10 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
@@ -31,6 +30,8 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category({DistributedTest.class, MembershipTest.class, ClientServerTest.class})
 public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {

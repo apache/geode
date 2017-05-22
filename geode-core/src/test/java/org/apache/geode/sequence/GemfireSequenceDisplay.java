@@ -17,16 +17,32 @@ package org.apache.geode.sequence;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.io.Filter;
 import org.apache.geode.internal.sequencelog.io.GraphReader;
-import org.apache.geode.internal.sequencelog.model.*;
-import org.apache.geode.sequence.*;
+import org.apache.geode.internal.sequencelog.model.Edge;
+import org.apache.geode.internal.sequencelog.model.Graph;
+import org.apache.geode.internal.sequencelog.model.GraphID;
+import org.apache.geode.internal.sequencelog.model.GraphSet;
+import org.apache.geode.internal.sequencelog.model.Vertex;
 
-import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 
 /**
  */

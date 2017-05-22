@@ -18,7 +18,7 @@ package org.apache.geode.cache;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
+import java.io.ObjectStreamException;
 
 /**
  * Enumerated type for region data policy. The data policy specifies how this local cache will

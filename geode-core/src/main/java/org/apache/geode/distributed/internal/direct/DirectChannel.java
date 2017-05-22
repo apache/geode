@@ -15,22 +15,37 @@
 
 package org.apache.geode.distributed.internal.direct;
 
-import org.apache.geode.*;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.ToDataException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.tcp.*;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.tcp.BaseMsgStreamer;
+import org.apache.geode.internal.tcp.ConnectExceptions;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.internal.tcp.ConnectionException;
+import org.apache.geode.internal.tcp.MemberShunnedException;
+import org.apache.geode.internal.tcp.MsgStreamer;
+import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +54,12 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 /**

@@ -14,15 +14,14 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import org.apache.geode.security.TestSecurityManager;
-import org.junit.BeforeClass;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
 import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 
 /**
  * Integration tests for {@link IntegratedSecurityService} using shiro-ini.json.

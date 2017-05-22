@@ -14,7 +14,11 @@
  */
 package org.apache.geode.test.golden;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.test.process.OutputFormatter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,8 +28,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.geode.test.process.OutputFormatter;
 
 /**
  * Compares test output to golden text file.

@@ -15,14 +15,9 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.test.dunit.Wait.pause;
-import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Execution;
@@ -33,7 +28,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Assert;
@@ -42,6 +36,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /*
  * Base class for tests of FunctionService that are agnostic to the type of Execution that they are

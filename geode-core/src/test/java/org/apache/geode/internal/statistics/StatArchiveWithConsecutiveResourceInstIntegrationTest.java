@@ -14,16 +14,15 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.File;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.ARCHIVE_FILE_NAME;
+import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.STATS_SPEC_STRING;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.geode.internal.SystemAdmin.StatSpec;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -33,10 +32,11 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.SystemAdmin.StatSpec;
-import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
-import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Confirms existence of GEODE-1782 and its fix.

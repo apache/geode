@@ -14,7 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.*;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.GIGABYTE;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.MEGABYTE;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.TERABYTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;

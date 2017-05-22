@@ -14,7 +14,8 @@
  */
 package org.apache.geode.test.golden;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.process.ProcessWrapper;
@@ -26,8 +27,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Test framework for launching processes and comparing output to expected golden output.

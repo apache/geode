@@ -14,18 +14,19 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.management.internal.cli.dto.Car;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 @Category(UnitTest.class)
 public class DataCommandJsonJUnitTest {

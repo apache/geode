@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.lru;
 
-// import org.apache.geode.cache.Region;
+
 import org.apache.geode.internal.cache.RegionEntry;
-// import org.apache.geode.internal.cache.LocalRegion;
+
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 /**

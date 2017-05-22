@@ -17,9 +17,11 @@ package org.apache.geode.internal;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.util.*;
-import java.lang.reflect.*;
 import java.io.InvalidClassException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class defines general native utils.

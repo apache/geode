@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.util;
 
 import static java.io.File.separator;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +32,6 @@ import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.text.ParseException;
 
 @Category(UnitTest.class)

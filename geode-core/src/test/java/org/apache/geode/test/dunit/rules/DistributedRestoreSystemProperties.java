@@ -14,14 +14,14 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static java.lang.System.*;
-
-import java.util.Properties;
-
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import static java.lang.System.getProperties;
+import static java.lang.System.setProperties;
 
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+
+import java.util.Properties;
 
 /**
  * Distributed version of RestoreSystemProperties which affects all DUnit JVMs including the Locator

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo davidw Delegate to a "parent" config for properties that are not overridden.

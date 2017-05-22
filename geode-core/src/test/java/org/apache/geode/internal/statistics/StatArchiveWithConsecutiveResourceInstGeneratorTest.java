@@ -14,17 +14,16 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.apache.geode.internal.statistics.StatUtils.*;
+import static org.apache.geode.internal.statistics.StatUtils.compareStatArchiveFiles;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Compares the output results of {@link StatArchiveWithConsecutiveResourceInstGenerator} against

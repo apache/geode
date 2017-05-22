@@ -16,12 +16,15 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
-import java.util.*;
-import java.sql.*;
-import org.apache.geode.cache.query.*;
+import antlr.Token;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.StringTokenizer;
 
 public class ASTLiteral extends GemFireAST {
   private static final long serialVersionUID = 8374021603235812835L;

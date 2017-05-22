@@ -14,11 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -27,6 +23,9 @@ import org.apache.geode.internal.cache.lru.HeapEvictor;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class PartitionedRegionOffHeapEvictionDUnitTest extends PartitionedRegionEvictionDUnitTest {

@@ -15,19 +15,20 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
-import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.*;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.ANALYZER;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.FIELD;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.INDEX;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAME;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAMESPACE;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
-import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public class LuceneXmlParser extends AbstractXmlParser {
 

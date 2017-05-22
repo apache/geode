@@ -14,15 +14,15 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.mockito.Mockito.*;
-
-import org.junit.After;
-import org.junit.experimental.categories.Category;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class MemoryIndexStoreWithInplaceModificationJUnitTest extends MemoryIndexStoreJUnitTest {

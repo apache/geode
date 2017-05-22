@@ -18,13 +18,14 @@ package org.apache.geode.internal.admin.remote;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.admin.*;
-// import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.locks.*;
-// import org.apache.geode.internal.*;
-import java.io.*;
+import org.apache.geode.distributed.internal.locks.DLockToken;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.DLockInfo;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Date;
-import org.apache.geode.distributed.internal.membership.*;
 
 public class RemoteDLockInfo implements DLockInfo, DataSerializable {
   private static final long serialVersionUID = 3350265007784675017L;

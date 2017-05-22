@@ -14,16 +14,17 @@
  */
 package org.apache.geode.admin.internal;
 
-// import org.apache.geode.admin.DistributedSystemConfig;
-// import org.apache.geode.admin.ManagedEntity;
+
 import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.net.SocketCreator;
 
 import java.io.File;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 /**
  * The abstract superclass of objects that configure a managed entity such as a GemFire cache server

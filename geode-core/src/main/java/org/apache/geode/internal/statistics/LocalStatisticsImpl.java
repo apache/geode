@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.statistics.StatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeImpl;
-// import org.apache.geode.util.IntArray;
-// import org.apache.geode.util.LongArray;
+
+
 
 /**
  * An implementation of {@link Statistics} that stores its statistics in local java memory.

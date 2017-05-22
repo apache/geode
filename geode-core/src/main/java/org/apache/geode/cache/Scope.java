@@ -18,7 +18,8 @@ package org.apache.geode.cache;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
  * Enumerated type for region distribution scope.

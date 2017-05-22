@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.Region;
 
 /**
  * This implementation of {@link org.apache.geode.cache.Region.Entry} does nothing but provide an

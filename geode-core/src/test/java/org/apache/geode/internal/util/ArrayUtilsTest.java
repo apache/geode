@@ -14,17 +14,21 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.apache.geode.internal.util.ArrayUtils.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.util.ArrayUtils.asList;
+import static org.apache.geode.internal.util.ArrayUtils.getElementAtIndex;
+import static org.apache.geode.internal.util.ArrayUtils.getFirst;
+import static org.apache.geode.internal.util.ArrayUtils.toByteArray;
+import static org.apache.geode.internal.util.ArrayUtils.toBytes;
+import static org.apache.geode.internal.util.ArrayUtils.toIntegerArray;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import java.util.List;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ArrayUtils}.

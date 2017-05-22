@@ -14,14 +14,16 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
-import static org.apache.geode.internal.util.HostName.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.IOException;
+import static org.apache.geode.internal.lang.SystemUtils.LINUX_OS_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.MAC_OSX_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.SOLARIS_OS_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.WINDOWS_OS_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.isWindows;
+import static org.apache.geode.internal.util.HostName.COMPUTER_NAME_PROPERTY;
+import static org.apache.geode.internal.util.HostName.HOSTNAME_PROPERTY;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -29,6 +31,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 

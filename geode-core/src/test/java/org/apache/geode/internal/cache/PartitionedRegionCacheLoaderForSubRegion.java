@@ -14,15 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import java.util.Properties;
-
-import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.PartitionAttributesFactory;
+
+import java.util.Properties;
 
 /**
  * This class is cacheLoader for the partition region

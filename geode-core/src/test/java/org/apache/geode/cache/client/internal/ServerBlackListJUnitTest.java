@@ -14,24 +14,24 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.junit.Assert.*;
-
-import java.util.Collections;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.client.internal.ServerBlackList.BlackListListenerAdapter;
 import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collections;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Category({UnitTest.class, ClientServerTest.class})
 public class ServerBlackListJUnitTest {

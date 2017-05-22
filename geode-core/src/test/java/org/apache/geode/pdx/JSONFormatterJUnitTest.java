@@ -14,16 +14,25 @@
  */
 package org.apache.geode.pdx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.text.SimpleDateFormat;
-import java.util.List;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,18 +41,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
-import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class JSONFormatterJUnitTest {

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query.data;
 
-import java.sql.*;
-import java.io.*;
+import java.io.Serializable;
+import java.sql.Timestamp;
 
 /*
  * author: Prafulla Chaudhari

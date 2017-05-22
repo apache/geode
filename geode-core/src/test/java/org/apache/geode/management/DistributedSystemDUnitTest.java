@@ -14,36 +14,16 @@
  */
 package org.apache.geode.management;
 
-import static java.lang.management.ManagementFactory.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.management.internal.MBeanJMXAdapter.*;
-import static org.apache.geode.test.dunit.Host.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationFilter;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrId;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.Alert;
@@ -59,6 +39,27 @@ import org.apache.geode.management.internal.beans.SequenceNumber;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.management.ListenerNotFoundException;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 /**
  * Distributed System management tests

@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * <p>

@@ -28,10 +28,13 @@ import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
-// import org.apache.geode.distributed.DistributedSystem;
-// import java.util.*;
+
 
 public class TailLogResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();

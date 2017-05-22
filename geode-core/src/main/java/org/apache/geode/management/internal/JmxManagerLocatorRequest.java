@@ -14,6 +14,11 @@
  */
 package org.apache.geode.management.internal;
 
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -21,12 +26,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.net.*;
 
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a

@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
-import java.util.Collections;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.MemoryBlock;
 import org.apache.geode.internal.offheap.RefCountChangeInfo;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
-import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+
+import java.util.Collections;
+import java.util.List;
 
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {

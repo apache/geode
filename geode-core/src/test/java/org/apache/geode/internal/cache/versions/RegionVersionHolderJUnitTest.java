@@ -14,20 +14,21 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
-
-import java.net.InetAddress;
-import java.util.BitSet;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.net.InetAddress;
+import java.util.BitSet;
 
 @Category(UnitTest.class)
 public class RegionVersionHolderJUnitTest {

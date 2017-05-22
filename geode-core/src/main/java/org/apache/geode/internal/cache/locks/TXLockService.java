@@ -16,9 +16,10 @@
 package org.apache.geode.internal.cache.locks;
 
 import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.distributed.internal.locks.*;
+import org.apache.geode.distributed.internal.locks.DLockService;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Provides transaction locking service for coordinating transactions.

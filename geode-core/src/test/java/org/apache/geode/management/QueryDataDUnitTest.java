@@ -14,36 +14,21 @@
  */
 package org.apache.geode.management;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.cache.FixedPartitionAttributes.*;
-import static org.apache.geode.cache.query.Utils.*;
-import static org.apache.geode.management.internal.ManagementConstants.*;
-import static org.apache.geode.management.internal.ManagementStrings.*;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
+import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.apache.geode.management.internal.ManagementConstants.DEFAULT_QUERY_LIMIT;
+import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__INVALID_QUERY;
+import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__JOIN_OP_EX;
+import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND;
+import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND_ON_MEMBERS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import javax.management.ObjectName;
-
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -55,12 +40,12 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.query.data.Portfolio; // TODO
+import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver; // TODO
+import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.BeanUtilFuncs;
 import org.apache.geode.management.internal.cli.json.TypedJson;
@@ -71,6 +56,25 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedUseJacksonForJsonPathRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import javax.management.ObjectName;
 
 /**
  * Distributed tests for {@link DistributedSystemMXBean#queryData(String, String, int)}.

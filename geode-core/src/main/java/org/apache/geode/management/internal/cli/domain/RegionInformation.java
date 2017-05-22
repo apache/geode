@@ -19,7 +19,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /***
  * Gives the most basic common information of a region Used by the GetRegionsFunction for 'list

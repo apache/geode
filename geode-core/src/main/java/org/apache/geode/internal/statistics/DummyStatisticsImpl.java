@@ -14,11 +14,13 @@
  */
 package org.apache.geode.internal.statistics;
 
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
-
-import org.apache.geode.*;
 
 /**
  * An implementation of {@link Statistics} that does nothing. Setting the "gemfire.statsDisabled" to

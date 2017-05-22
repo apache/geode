@@ -14,13 +14,9 @@
  */
 package org.apache.geode.distributed;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.net.URL;
-import java.util.Properties;
-
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +25,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.FileWriter;
+import java.net.URL;
+import java.util.Properties;
 
 /**
  * Integration tests for DistributedSystem class. These tests require file system I/O.

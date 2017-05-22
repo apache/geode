@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.statistics.platform;
 
-import org.apache.geode.*;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 
 /**
  * Instances of this interface provide methods that create operating system instances of

@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -34,6 +32,10 @@ import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntr
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
 
 @Category(UnitTest.class)
 public class FetchEntriesMessageJUnitTest {

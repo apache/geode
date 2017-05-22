@@ -14,13 +14,15 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
 import org.apache.geode.distributed.DistributedSystem;
 import org.junit.After;
 import org.junit.Before;
 
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Provides common setUp and tearDown for testing the Admin API.

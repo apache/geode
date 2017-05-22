@@ -16,8 +16,8 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.assertj.core.data.Offset;

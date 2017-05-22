@@ -24,7 +24,6 @@ package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;
 
-// import org.apache.geode.cache.query.internal.StructSet;
 import java.util.HashSet;
 import java.util.Set;
 

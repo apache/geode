@@ -14,17 +14,9 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -33,6 +25,14 @@ import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 /**
  * Tests for authorization from client to server. This tests for authorization with post-process

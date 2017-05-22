@@ -15,11 +15,17 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.Map;
-import java.util.Stack;
-
+import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
+import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.junit.After;
@@ -30,13 +36,8 @@ import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.internal.cache.xmlcache.RegionCreation;
-import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Map;
+import java.util.Stack;
 
 @Category(UnitTest.class)
 public class LuceneIndexXmlParserJUnitTest {

@@ -14,8 +14,19 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexNameConflictException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.functional.StructSetOrResultsSet;
 import org.apache.geode.cache.query.internal.DefaultQuery;
@@ -31,8 +42,6 @@ import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Set;
-
-import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class IndexHintJUnitTest {

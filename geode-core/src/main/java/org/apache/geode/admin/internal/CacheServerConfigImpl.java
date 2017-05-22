@@ -14,11 +14,11 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+
 import org.apache.geode.admin.CacheServerConfig;
 import org.apache.geode.admin.CacheVmConfig;
 import org.apache.geode.internal.admin.GemFireVM;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * An implementation of <code>CacheVmConfig</code>

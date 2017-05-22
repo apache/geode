@@ -18,9 +18,12 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Version;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * This message simply contains a date

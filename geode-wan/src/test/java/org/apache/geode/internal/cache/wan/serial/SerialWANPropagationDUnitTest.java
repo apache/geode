@@ -14,19 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.Map;
-
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Scope;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -39,6 +33,12 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.Map;
 
 @Category(DistributedTest.class)
 public class SerialWANPropagationDUnitTest extends WANTestBase {

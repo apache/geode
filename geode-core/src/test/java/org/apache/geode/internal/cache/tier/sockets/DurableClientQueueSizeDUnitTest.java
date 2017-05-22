@@ -14,28 +14,16 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.cache.query.functional.QueryREUpdateInProgressJUnitTest.regionName;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.util.JSR166TestCase.m2;
-import static org.junit.Assert.*;
-
-import org.awaitility.Awaitility;
-
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.RegionEvent;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -54,7 +42,17 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
