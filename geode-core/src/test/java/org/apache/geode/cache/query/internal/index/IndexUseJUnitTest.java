@@ -1367,7 +1367,7 @@ public class IndexUseJUnitTest {
 
   @Test
   public void testIndexUseSelfJoin() throws Exception {
-    String[] queries = {"SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.status = p2.status",
+    String[] queries = {"SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.status = p1.status",
         "SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.ID = p2.ID",
         "SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.P1.secId = p2.P1.secId",
         "SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.status = p2.status and p1.status = 'active'",
@@ -1376,6 +1376,51 @@ public class IndexUseJUnitTest {
         "SELECT * FROM /pos p1, /pos p2 where p1.P1.secId = p2.P1.secId",
         "SELECT * FROM /pos p1, /pos p2 where p1.status = p2.status and p1.status = 'active'",
         "SELECT * FROM /pos p1, /pos p2 where p1.ID = p2.ID and p1.ID < 2"};
+
+    SelectResults[][] sr = new SelectResults[queries.length][2];
+    for (int j = 0; j < queries.length; j++) {
+      Query q = qs.newQuery(queries[j]);
+      QueryObserverImpl observer = new QueryObserverImpl();
+      QueryObserverHolder.setInstance(observer);
+      sr[j][0] = (SelectResults) q.execute();
+      if (sr[j][0].size() == 0) {
+        fail("Query " + q.getQueryString() + " should have returned results");
+      }
+      if (!observer.isIndexesUsed) {
+        fail("Index should have been used for query '" + q.getQueryString() + "'");
+      }
+    }
+    qs.removeIndexes();
+    for (int j = 0; j < queries.length; j++) {
+      Query q = qs.newQuery(queries[j]);
+      QueryObserverImpl observer = new QueryObserverImpl();
+      QueryObserverHolder.setInstance(observer);
+      sr[j][1] = (SelectResults) q.execute();
+      if (sr[j][1].size() == 0) {
+        fail("Query " + q.getQueryString() + " should have returned results");
+      }
+      if (observer.isIndexesUsed) {
+        fail("Index should not be used for query '" + q.getQueryString() + "'");
+      }
+    }
+    CacheUtils.compareResultsOfWithAndWithoutIndex(sr);
+  }
+
+  @Test
+  public void testIndexUseSelfJoinUsingOneRegion() throws Exception {
+    String[] queries = {"SELECT DISTINCT * FROM /pos p1 where p1.status = p1.status",
+        "SELECT DISTINCT * FROM /pos p1 where p1.ID = p1.ID",
+        "SELECT DISTINCT * FROM /pos p1 where p1.P1.secId = p1.P1.secId",
+        "SELECT DISTINCT * FROM /pos p1 where p1.status = p1.status and p1.status = 'active'",
+        "SELECT DISTINCT * FROM /pos p1 where p1.ID = p1.ID and p1.ID < 2",
+        "SELECT * FROM /pos p1 where p1.ID = p1.ID",
+        "SELECT * FROM /pos p1 where p1.P1.secId = p1.P1.secId",
+        "SELECT * FROM /pos p1 where p1.status = p1.status and p1.status = 'active'",
+        "SELECT * FROM /pos p1 where p1.ID = p1.ID and p1.ID < 2",
+        "SELECT DISTINCT * FROM /pos p1 WHERE p1.ID IN (SELECT DISTINCT p1.ID FROM /pos p1)",
+        "SELECT * FROM /pos p1 WHERE p1.ID IN (SELECT DISTINCT p1.ID FROM /pos p1)",
+        "SELECT DISTINCT * FROM /pos p1 WHERE p1.ID IN (SELECT DISTINCT p2.ID FROM /pos p2)",
+        "SELECT * FROM /pos p1 WHERE p1.ID IN (SELECT DISTINCT p2.ID FROM /pos p2)"};
 
     SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int j = 0; j < queries.length; j++) {
