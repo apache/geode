@@ -15,7 +15,7 @@
 package org.apache.geode.cache.persistence;
 
 import org.apache.geode.GemFireException;
-import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.cache.DiskAccessException;
 
 /**
  * Thrown when a member with persistence is recovering, and it discovers that the data it has on
@@ -28,7 +28,7 @@ import org.apache.geode.admin.AdminDistributedSystem;
  * 
  * @since GemFire 6.5
  */
-public class ConflictingPersistentDataException extends GemFireException {
+public class ConflictingPersistentDataException extends DiskAccessException {
 
   private static final long serialVersionUID = -2629287782021455875L;
 
@@ -47,7 +47,5 @@ public class ConflictingPersistentDataException extends GemFireException {
   public ConflictingPersistentDataException(Throwable cause) {
     super(cause);
   }
-
-
 
 }

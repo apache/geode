@@ -81,6 +81,7 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexMaintenanceException;
@@ -6595,8 +6596,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @see InitialImageOperation#processChunk
    */
   public void handleDiskAccessException(DiskAccessException dae, boolean duringInitialization) {
-    // these will rethrow the originating exception
-    if (duringInitialization || causedByRDE(dae)) {
+
+    if (duringInitialization && !(dae instanceof ConflictingPersistentDataException)) {
+      return;
+    }
+
+    if (causedByRDE(dae)) {
       return;
     }
 

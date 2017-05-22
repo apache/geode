@@ -66,6 +66,7 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
   private volatile Set<PersistentMemberID> allMembersWaitingFor;
   private volatile Set<PersistentMemberID> offlineMembersWaitingFor;
   protected final Object lock;
+  private static PersistenceAdvisorObserver observer = null;
 
   private static final int PERSISTENT_VIEW_RETRY =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PERSISTENT_VIEW_RETRY", 5);
@@ -716,6 +717,11 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
       throws ReplyException {
     PersistentStateQueryResults remoteStates = getMyStateOnMembers(replicates);
     boolean equal = false;
+
+    if (observer != null) {
+      observer.observe(regionPath);
+    }
+
     for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : remoteStates.stateOnPeers
         .entrySet()) {
       InternalDistributedMember member = entry.getKey();
@@ -730,12 +736,12 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
                 .toLocalizedString(myId));
       }
 
-
       if (myId != null && stateOnPeer == null) {
         String message = LocalizedStrings.CreatePersistentRegionProcessor_SPLIT_DISTRIBUTED_SYSTEM
             .toLocalizedString(regionPath, member, remoteId, myId);
         throw new ConflictingPersistentDataException(message);
       }
+
       if (myId != null && stateOnPeer == PersistentMemberState.EQUAL) {
         equal = true;
       }
@@ -1337,5 +1343,13 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
 
   public boolean isOnline() {
     return online;
+  }
+
+  public static interface PersistenceAdvisorObserver {
+    default public void observe(String regionPath) {}
+  }
+
+  public static void setPersistenceAdvisorObserver(PersistenceAdvisorObserver o) {
+    observer = o;
   }
 }

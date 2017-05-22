@@ -110,6 +110,15 @@ public class DiskAccessException extends CacheRuntimeException {
   }
 
   /**
+   * Constructs a new <code>DiskAccessException</code> with a message string.
+   *
+   * @param msg the message string
+   */
+  public DiskAccessException(String msg) {
+    super(msg);
+  }
+
+  /**
    * Returns true if this exception originated from a remote node.
    */
   public boolean isRemote() {

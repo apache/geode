@@ -34,6 +34,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
+import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DiskRegion;
@@ -43,6 +44,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
+import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -54,6 +56,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.awaitility.Awaitility;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -70,6 +73,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTestCase {
 
   public static String PR_REGION_NAME = "region";
+  public static String PR_CHILD_REGION_NAME = "childRegion";
   // This must be bigger than the dunit ack-wait-threshold for the revoke
   // tests. The command line is setting the ack-wait-threshold to be
   // 60 seconds.
@@ -205,7 +209,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
 
       public void run() {
         Cache cache = getCache();
-        LogWriterUtils.getLogWriter().info("creating data in " + regionName);
+        cache.getLogger().info("creating data in " + regionName);
         Region region = cache.getRegion(regionName);
 
         for (int i = startKey; i < endKey; i++) {
@@ -378,6 +382,82 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
       }
     };
     return createPR;
+  }
+
+  protected void createCoLocatedPR(VM vm, int setRedundantCopies,
+      boolean setPersistenceAdvisorObserver) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+
+      // Wait for both nested PRs to be created
+      final CountDownLatch recoveryDone = new CountDownLatch(2);
+      ResourceObserver observer = new InternalResourceManager.ResourceObserverAdapter() {
+        @Override
+        public void recoveryFinished(Region region) {
+          recoveryDone.countDown();
+        }
+      };
+      InternalResourceManager.setResourceObserver(observer);
+
+      // Wait for parent and child region to be created.
+      // And throw exception while region is getting initialized.
+      final CountDownLatch childRegionCreated = new CountDownLatch(1);
+      if (setPersistenceAdvisorObserver) {
+        PersistenceAdvisorImpl
+            .setPersistenceAdvisorObserver(new PersistenceAdvisorImpl.PersistenceAdvisorObserver() {
+              public void observe(String regionPath) {
+                if (regionPath.contains(PR_CHILD_REGION_NAME)) {
+                  try {
+                    childRegionCreated.await(MAX_WAIT, TimeUnit.MILLISECONDS);
+                  } catch (Exception e) {
+                    Assert.fail("Exception", e);
+                  }
+                  throw new ConflictingPersistentDataException(
+                      "Testing Cache Close with ConflictingPersistentDataException for region."
+                          + regionPath);
+                }
+              }
+            });
+      }
+
+      // Create region.
+      try {
+        DiskStore ds = cache.findDiskStore("disk");
+        if (ds == null) {
+          ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+        }
+
+        // Parent Region
+        PartitionAttributesFactory paf =
+            new PartitionAttributesFactory().setRedundantCopies(setRedundantCopies);
+        AttributesFactory af = new AttributesFactory();
+        af.setPartitionAttributes(paf.create());
+        af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+        af.setDiskStoreName("disk");
+        cache.createRegion(PR_REGION_NAME, af.create());
+
+        // Colocated region
+        paf = (new PartitionAttributesFactory()).setRedundantCopies(setRedundantCopies)
+            .setColocatedWith(PR_REGION_NAME);
+        af = new AttributesFactory();
+        af.setPartitionAttributes(paf.create());
+        af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+        af.setDiskStoreName("disk");
+        cache.createRegion(PR_CHILD_REGION_NAME, af.create());
+
+        // Count down on region create.
+        childRegionCreated.countDown();
+
+        try {
+          recoveryDone.await(MAX_WAIT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+          Assert.fail("interrupted", e);
+        }
+
+      } finally {
+        PersistenceAdvisorImpl.setPersistenceAdvisorObserver(null);
+      }
+    });
   }
 
   private SerializableRunnable getCreatePRRunnable(final int redundancy, final int recoveryDelay) {
