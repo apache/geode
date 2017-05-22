@@ -100,7 +100,8 @@ public class RollbackFunction implements Function {
       ArrayList args = new ArrayList();
       args.add(txId);
       args.add(NestedTransactionFunction.ROLLBACK);
-      Execution ex = FunctionService.onMember(member).setArguments(args);
+      Execution ex =
+          FunctionService.onMember(cache.getDistributedSystem(), member).setArguments(args);
       if (isDebugEnabled) {
         logger.debug(
             "RollbackFunction: for transaction: {} executing NestedTransactionFunction on member: {}",
