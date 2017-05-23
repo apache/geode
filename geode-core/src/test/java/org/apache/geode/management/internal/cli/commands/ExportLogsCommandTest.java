@@ -127,7 +127,7 @@ public class ExportLogsCommandTest {
     final Execution mockFunctionExecutor = mock(Execution.class);
     final ExportLogsCommand cmd =
         createExportLogsCommand(mockCache, mockDistributedMember, mockFunctionExecutor);
-    cmd.sizeCheckIsEnabledAndWithinDiskSpaceOfMember("clusterMember", 0, MEGABYTE + 1024, MEGABYTE);
+    cmd.checkIfExportLogsOverflowsDisk("clusterMember", 0, MEGABYTE + 1024, MEGABYTE);
   }
 
   @Test
@@ -137,8 +137,7 @@ public class ExportLogsCommandTest {
     final Execution mockFunctionExecutor = mock(Execution.class);
     final ExportLogsCommand cmd =
         createExportLogsCommand(mockCache, mockDistributedMember, mockFunctionExecutor);
-    cmd.sizeCheckIsEnabledAndWithinDiskSpaceOfMember("clusterMember", 10 * MEGABYTE,
-        MEGABYTE - 1024, MEGABYTE);
+    cmd.checkIfExportLogsOverflowsDisk("clusterMember", 10 * MEGABYTE, MEGABYTE - 1024, MEGABYTE);
   }
 
   @Test
@@ -148,8 +147,8 @@ public class ExportLogsCommandTest {
     final Execution mockFunctionExecutor = mock(Execution.class);
     final ExportLogsCommand cmd =
         createExportLogsCommand(mockCache, mockDistributedMember, mockFunctionExecutor);
-    assertThatThrownBy(() -> cmd.sizeCheckIsEnabledAndWithinDiskSpaceOfMember("clusterMember",
-        10 * MEGABYTE, MEGABYTE + 1024, MEGABYTE)).isInstanceOf(ManagementException.class);
+    assertThatThrownBy(() -> cmd.checkIfExportLogsOverflowsDisk("clusterMember", 10 * MEGABYTE,
+        MEGABYTE + 1024, MEGABYTE)).isInstanceOf(ManagementException.class);
   }
 
   @Test

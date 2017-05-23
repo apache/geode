@@ -142,7 +142,7 @@ public class ExportLogsCommand implements CommandMarker {
         // The sum of the estimated export sizes from each member should not exceed the
         // disk available on the locator
         try {
-          sizeCheckIsEnabledAndWithinDiskSpaceOfMember("locator", parseFileSizeLimit(fileSizeLimit),
+          checkIfExportLogsOverflowsDisk("locator", parseFileSizeLimit(fileSizeLimit),
               totalEstimatedExportSize, getLocalDiskAvailable());
         } catch (ManagementException e) {
           return ResultBuilder.createUserErrorResult(e.getMessage());
@@ -201,8 +201,7 @@ public class ExportLogsCommand implements CommandMarker {
       logger.info("Zipping into: " + exportedLogsZipFile.toString());
       ZipUtils.zipDirectory(exportedLogsDir, exportedLogsZipFile);
       try {
-        isFileSizeCheckEnabledAndWithinLimit(parseFileSizeLimit(fileSizeLimit),
-            exportedLogsZipFile.toFile());
+        checkFileSizeWithinLimit(parseFileSizeLimit(fileSizeLimit), exportedLogsZipFile.toFile());
       } catch (ManagementException e) {
         FileUtils.deleteQuietly(exportedLogsZipFile.toFile());
         return ResultBuilder.createUserErrorResult(e.getMessage());
@@ -263,9 +262,10 @@ public class ExportLogsCommand implements CommandMarker {
   }
 
   /**
-   * Throws ManagementException if file size is over fileSizeLimit bytes
+   * @throws ManagementException if checking is enabled (fileSizeLimit > 0) and file size is over
+   *         fileSizeLimit bytes
    */
-  void isFileSizeCheckEnabledAndWithinLimit(long fileSizeLimitBytes, File file) {
+  void checkFileSizeWithinLimit(long fileSizeLimitBytes, File file) {
     if (fileSizeLimitBytes > 0) {
       if (FileUtils.sizeOf(file) > fileSizeLimitBytes) {
         StringBuilder sb = new StringBuilder();
@@ -280,10 +280,11 @@ public class ExportLogsCommand implements CommandMarker {
 
 
   /**
-   * Throws ManagementException if export file size checking is enabled and the space required on a
-   * cluster member to filter and zip up files to be exported exceeds the disk space available
+   * @throws ManagementException if export file size checking is enabled (fileSizeLimit > 0) and the
+   *         space required on a cluster member to filter and zip up files to be exported exceeds
+   *         the disk space available
    */
-  void sizeCheckIsEnabledAndWithinDiskSpaceOfMember(String memberName, long fileSizeLimitBytes,
+  void checkIfExportLogsOverflowsDisk(String memberName, long fileSizeLimitBytes,
       long estimatedSize, long diskAvailable) {
     if (fileSizeLimitBytes > 0) {
       StringBuilder sb = new StringBuilder();
