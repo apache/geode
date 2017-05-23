@@ -43,6 +43,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexImplFactory;
 import org.apache.geode.cache.lucene.internal.LuceneRawIndex;
 import org.apache.geode.cache.lucene.internal.LuceneRawIndexFactory;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.cache.BucketNotFoundException;
@@ -76,6 +77,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+
 
   @Test
   public void shouldCreateIndexWriterWithAnalyzersWhenSettingPerFieldAnalyzers()

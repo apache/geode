@@ -198,6 +198,39 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  public void createIndexShouldTrimAnalyzerNames() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(-1);
+    vm1.invoke(() -> {
+      getCache();
+    });
+
+    List<String> analyzerNames = new ArrayList<>();
+    analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
+    analyzerNames.add(KeywordAnalyzer.class.getCanonicalName());
+    analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
+
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
+        "\"org.apache.lucene.analysis.standard.StandardAnalyzer, org.apache.lucene.analysis.core.KeywordAnalyzer, org.apache.lucene.analysis.standard.StandardAnalyzer\"");
+
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    vm1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      createRegion();
+      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+      final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
+      assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
+      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
+    });
+  }
+
+  @Test
   public void createIndexWithoutRegionShouldReturnCorrectResults() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
     vm1.invoke(() -> {
