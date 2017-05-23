@@ -15,8 +15,10 @@
 
 package org.apache.geode.protocol.client;
 
-import com.google.protobuf.Any;
+import static org.apache.geode.protocol.client.EncodingTypeThingyKt.serializerFromProtoEnum;
+
 import com.google.protobuf.ByteString;
+
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
@@ -24,6 +26,7 @@ import org.apache.geode.protocol.protobuf.RegionAPI;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Random;
 
 public class MessageUtils {
@@ -35,40 +38,29 @@ public class MessageUtils {
     return new ByteArrayInputStream(messageByteArray);
   }
 
-  public static ClientProtocol.Message makePutMessage() {
+  public static ClientProtocol.Message makeGetMessageFor(String region, String key) {
     Random random = new Random();
     ClientProtocol.MessageHeader.Builder messageHeader =
         ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt());
 
-    BasicTypes.Key.Builder key =
-        BasicTypes.Key.newBuilder().setKey(ByteString.copyFrom(createByteArrayOfSize(64)));
+    BasicTypes.EncodedValue.Builder keyBuilder = getEncodedValueBuilder(key);
 
-    BasicTypes.Value.Builder value =
-        BasicTypes.Value.newBuilder().setValue(ByteString.copyFrom(createByteArrayOfSize(512)));
-
-    RegionAPI.PutRequest.Builder putRequestBuilder =
-        RegionAPI.PutRequest.newBuilder().setRegionName("TestRegion")
-            .setEntry(BasicTypes.Entry.newBuilder().setKey(key).setValue(value));
-
+    RegionAPI.GetRequest.Builder getRequest =
+        RegionAPI.GetRequest.newBuilder().setRegionName(region).setKey(keyBuilder);
     ClientProtocol.Request.Builder request =
-        ClientProtocol.Request.newBuilder().setPutRequest(putRequestBuilder);
+        ClientProtocol.Request.newBuilder().setGetRequest(getRequest);
 
-    ClientProtocol.Message.Builder message =
-        ClientProtocol.Message.newBuilder().setMessageHeader(messageHeader).setRequest(request);
-
-    return message.build();
+    return ClientProtocol.Message.newBuilder().setMessageHeader(messageHeader).setRequest(request)
+        .build();
   }
 
-  public static ClientProtocol.Message makePutMessageFor(String region, String key, String value) {
+  public static ClientProtocol.Message makePutMessageFor(String region, Object key, Object value) {
     Random random = new Random();
     ClientProtocol.MessageHeader.Builder messageHeader =
         ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt());
 
-    BasicTypes.Key.Builder keyBuilder =
-        BasicTypes.Key.newBuilder().setKey(ByteString.copyFromUtf8(key));
-
-    BasicTypes.Value.Builder valueBuilder =
-        BasicTypes.Value.newBuilder().setValue(ByteString.copyFromUtf8(value));
+    BasicTypes.EncodedValue.Builder keyBuilder = getEncodedValueBuilder(key);
+    BasicTypes.EncodedValue.Builder valueBuilder = getEncodedValueBuilder(value);
 
     RegionAPI.PutRequest.Builder putRequestBuilder =
         RegionAPI.PutRequest.newBuilder().setRegionName(region)
@@ -82,28 +74,10 @@ public class MessageUtils {
     return message.build();
   }
 
-  public static ClientProtocol.Message makeGetMessageFor(String region, String key) {
-    Random random = new Random();
-    ClientProtocol.MessageHeader.Builder messageHeader =
-        ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt());
+  private static BasicTypes.EncodedValue.Builder getEncodedValueBuilder(Object value) {
+    BasicTypes.EncodingType encodingType = EncodingTypeThingyKt.getEncodingTypeForObjectKT(value);
 
-    BasicTypes.Key.Builder keyBuilder =
-        BasicTypes.Key.newBuilder().setKey(ByteString.copyFromUtf8(key));
-
-    RegionAPI.GetRequest.Builder getRequest =
-        RegionAPI.GetRequest.newBuilder().setRegionName(region).setKey(keyBuilder);
-    ClientProtocol.Request.Builder request =
-        ClientProtocol.Request.newBuilder().setGetRequest(getRequest);
-
-    return ClientProtocol.Message.newBuilder().setMessageHeader(messageHeader).setRequest(request)
-        .build();
-  }
-
-  private static byte[] createByteArrayOfSize(int msgSize) {
-    byte[] array = new byte[msgSize];
-    for (int i = 0; i < msgSize; i++) {
-      array[i] = 'a';
-    }
-    return array;
+    return BasicTypes.EncodedValue.newBuilder().setEncodingType(encodingType)
+        .setValue(ByteString.copyFrom(serializerFromProtoEnum(encodingType).serialize(value)));
   }
 }

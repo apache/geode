@@ -16,20 +16,19 @@
 package org.apache.geode.protocol.client;
 
 
-import com.google.protobuf.InvalidProtocolBufferException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.serialization.Deserializer;
-import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
-
-import static org.apache.geode.protocol.client.MessageUtils.makePutMessage;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,12 +38,19 @@ import java.io.OutputStream;
 
 @Category(UnitTest.class)
 public class ProtobufSerializationDeserializationTest {
-  @Test
-  public void protobufSerializationSmokeTest() throws InvalidProtocolBufferException {
-    ClientProtocol.Message message = makePutMessage();
-    byte[] bytes = message.toByteArray();
-    ClientProtocol.Message message1 = ClientProtocol.Message.parseFrom(bytes);
-    assertEquals(message, message1);
+
+  private Cache mockCache;
+  private Region mockRegion;
+  private final String testRegion = "testRegion";
+  private final String testKey = "testKey";
+  private final String testValue = "testValue";
+
+  @Before
+  public void start() {
+    mockCache = Mockito.mock(Cache.class);
+    mockRegion = Mockito.mock(Region.class);
+    when(mockCache.getRegion(testRegion)).thenReturn(mockRegion);
+
   }
 
   /**
@@ -53,40 +59,27 @@ public class ProtobufSerializationDeserializationTest {
    */
   @Test
   public void testNewClientProtocolPutsOnPutMessage() throws IOException {
-    final String testRegion = "testRegion";
-    final String testKey = "testKey";
-    final String testValue = "testValue";
-    ClientProtocol.Message message = MessageUtils.makePutMessageFor(testRegion, testKey, testValue);
+    ClientProtocol.Message message = MessageUtils.INSTANCE
+        .makePutMessageFor(testRegion, testKey, testValue);
 
-    Deserializer deserializer = SerializationType.BYTE_BLOB.deserializer;
-    Cache mockCache = Mockito.mock(Cache.class);
-    Region mockRegion = Mockito.mock(Region.class);
-    when(mockCache.getRegion("testRegion")).thenReturn(mockRegion);
     OutputStream mockOutputStream = Mockito.mock(OutputStream.class);
 
     ProtobufProtocolMessageHandler newClientProtocol = new ProtobufProtocolMessageHandler();
-    newClientProtocol.receiveMessage(MessageUtils.loadMessageIntoInputStream(message),
-        mockOutputStream, deserializer, SerializationType.STRING.serializer, mockCache);
+    newClientProtocol.receiveMessage(MessageUtils.INSTANCE.loadMessageIntoInputStream(message),
+        mockOutputStream, mockCache);
 
     verify(mockRegion).put(testKey.getBytes(), testValue.getBytes());
   }
 
   @Test
   public void testServerRespondsToPutMessage() throws IOException {
-    final String testRegion = "testRegion";
-    final String testKey = "testKey";
-    final String testValue = "testValue";
-    ClientProtocol.Message message = MessageUtils.makePutMessageFor(testRegion, testKey, testValue);
-
-    Deserializer deserializer = SerializationType.BYTE_BLOB.deserializer;
-    Cache mockCache = Mockito.mock(Cache.class);
-    Region mockRegion = Mockito.mock(Region.class);
-    when(mockCache.getRegion("testRegion")).thenReturn(mockRegion);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream(128);
+    ClientProtocol.Message message = MessageUtils.INSTANCE
+        .makePutMessageFor(testRegion, testKey, testValue);
 
     ProtobufProtocolMessageHandler newClientProtocol = new ProtobufProtocolMessageHandler();
-    newClientProtocol.receiveMessage(MessageUtils.loadMessageIntoInputStream(message), outputStream,
-        deserializer, SerializationType.STRING.serializer, mockCache);
+    newClientProtocol.receiveMessage(MessageUtils.INSTANCE.loadMessageIntoInputStream(message), outputStream,
+        mockCache);
 
     ClientProtocol.Message responseMessage = ClientProtocol.Message
         .parseDelimitedFrom(new ByteArrayInputStream(outputStream.toByteArray()));

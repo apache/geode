@@ -24,6 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface ClientProtocolMessageHandler {
-  void receiveMessage(InputStream inputStream, OutputStream outputStream, Deserializer deserializer,
-      Serializer serializer, Cache cache) throws IOException;
+  void receiveMessage(InputStream inputStream, OutputStream outputStream, Cache cache)
+      throws IOException;
 }

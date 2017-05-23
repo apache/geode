@@ -16,5 +16,5 @@
 package org.apache.geode.serialization;
 
 public interface Serializer<T> {
-  public abstract byte[] serialize(T item);
+  byte[] serialize(T item);
 }

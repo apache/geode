@@ -73,11 +73,11 @@ public class NewClientProtocolTestClient implements AutoCloseable {
         ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt());
     // .setSize() //we don't need to set the size because Protobuf will handle the message frame
 
-    BasicTypes.Key.Builder key =
-        BasicTypes.Key.newBuilder().setKey(ByteString.copyFrom(createByteArrayOfSize(64)));
+    BasicTypes.EncodedValue.Builder key = BasicTypes.EncodedValue.newBuilder()
+        .setValue(ByteString.copyFrom(createByteArrayOfSize(64)));
 
-    BasicTypes.Value.Builder value =
-        BasicTypes.Value.newBuilder().setValue(ByteString.copyFrom(createByteArrayOfSize(512)));
+    BasicTypes.EncodedValue.Builder value = BasicTypes.EncodedValue.newBuilder()
+        .setValue(ByteString.copyFrom(createByteArrayOfSize(512)));
 
     RegionAPI.PutRequest.Builder putRequestBuilder =
         RegionAPI.PutRequest.newBuilder().setRegionName("TestRegion")

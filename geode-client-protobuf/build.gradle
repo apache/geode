@@ -17,19 +17,24 @@
 
 
 apply plugin: 'java'
+apply plugin: 'kotlin'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'idea'
 
 repositories {
   maven { url "https://plugins.gradle.org/m2/" }
+    mavenCentral()
 }
 
 buildscript {
-  repositories {
+    ext.kotlin_version = '1.1.1'
+    repositories {
     maven { url "https://plugins.gradle.org/m2/" }
-  }
+        mavenCentral()
+    }
   dependencies {
     classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.1'
+      classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
   }
 }
 
@@ -48,9 +53,12 @@ dependencies {
   testCompile project (':geode-junit')
   testCompile "org.mockito:mockito-core:2.+"
   testCompile files(project(':geode-core').sourceSets.test.output)
-  // Extra proto source files for test besides the ones residing under
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    // Extra proto source files for test besides the ones residing under
   // "src/test".
   //testProtobuf files("lib/protos-test.tar.gz")
+  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
+  testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 }
 
 protobuf {

@@ -30,12 +30,12 @@ message PutResponse {
 
 message GetRequest {
     string regionName = 1;
-    Key key = 2;
+    EncodedValue key = 2;
     CallbackArguments callbackArg = 3;
 }
 
 message GetResponse {
-    Value result = 1;
+    EncodedValue result = 1;
 }
 
 message PutAllRequest {
@@ -47,14 +47,14 @@ message PutAllRequest {
 
 message PutAllResponse {
     int32 numberOfKeysFailed = 1;
-    repeated Key key = 2;
+    repeated EncodedValue key = 2;
 }
 
 message GetAllRequest {
     string regionName = 1;
     int32 numberOfKeys = 2;
-    repeated Key key = 3;
-    CallbackArguments callbackArg = 4;
+    repeated EncodedValue key = 3;
+    EncodedValue callbackArg = 4;
 }
 
 message GetAllResponse {

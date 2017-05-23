@@ -17,29 +17,36 @@ syntax = "proto3";
 package org.apache.geode.protocol.protobuf;
 
 import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
 
-message Entry{
-    Key key = 1;
-    Value value = 2;
+message Entry {
+    EncodedValue key = 1;
+    EncodedValue value = 2;
 }
 
-message Key {
-    bytes key = 1;
-}
 
-message Value {
-    ValueHeader valueHeader = 1;
+message EncodedValue {
+    EncodingType encodingType = 1;
     bytes value = 2;
 }
 
-message ValueHeader {
-    int32 size = 1;
-    bool isPartial = 2;
+enum EncodingType {
+    INVALID = 0;
+    INT = 1;
+    LONG = 2;
+    SHORT = 3;
+    BYTE = 4;
+    BOOLEAN = 5;
+    BINARY = 6;
+    FLOAT = 7;
+    DOUBLE = 8;
+    STRING = 9;
+    JSON = 10;
 }
 
-message CallbackArguments{
+message CallbackArguments {
     oneof callbackArgs {
-        bool hasCallbackArgument = 1;
-        bytes callbackBytes = 2;
+        google.protobuf.Empty hasCallbackArgument = 1;
+        EncodedValue callbackValue = 2;
     }
 }
