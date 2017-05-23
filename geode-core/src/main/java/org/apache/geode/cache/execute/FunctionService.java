@@ -135,55 +135,6 @@ public class FunctionService {
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * a {@link DistributedMember} of the {@link DistributedSystem}. If the member is not found in the
-   * system, the function execution will throw an Exception. If the member goes down while
-   * dispatching or executing the function on the member, an Exception will be thrown.
-   * 
-   * @param system defines the distributed system
-   * @param distributedMember defines a member in the distributed system
-   * @return Execution
-   * @throws FunctionException if either input parameter is null
-   * @since GemFire 6.0
-   * @deprecated use {@link #onMember(DistributedMember)} instead
-   */
-  public static Execution onMember(DistributedSystem system, DistributedMember distributedMember) {
-    return functionSvcMgr.onMember(system, distributedMember);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * all members of the {@link DistributedSystem}. If one of the members goes down while dispatching
-   * or executing the function on the member, an Exception will be thrown.
-   * 
-   * @param system defines the distributed system
-   * @return Execution
-   * 
-   * @throws FunctionException if DistributedSystem instance passed is null
-   * @since GemFire 6.0
-   * @deprecated use {@link #onMember(String...)} instead
-   */
-  public static Execution onMembers(DistributedSystem system) {
-    return functionSvcMgr.onMembers(system);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * the set of {@link DistributedMember}s of the {@link DistributedSystem}. If one of the members
-   * goes down while dispatching or executing the function, an Exception will be thrown.
-   * 
-   * @param system defines the distributed system
-   * @param distributedMembers set of distributed members on which {@link Function} to be executed
-   * @throws FunctionException if DistributedSystem instance passed is null
-   * @since GemFire 6.0
-   * @deprecated use {@link #onMembers(Set)} instead
-   */
-  public static Execution onMembers(DistributedSystem system,
-      Set<DistributedMember> distributedMembers) {
-    return functionSvcMgr.onMembers(system, distributedMembers);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
    * a {@link DistributedMember}. If the member is not found, executing the function will throw an
    * Exception. If the member goes down while dispatching or executing the function on the member,
    * an Exception will be thrown.

@@ -90,7 +90,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
       collector = execution.execute(TouchPartitionedRegionEntriesFunction.ID, true, false, true);
     } else {
       // Execute the member touch function on all the server(s)
-      Execution execution = FunctionService.onMembers(getCache().getDistributedSystem())
+      Execution execution = FunctionService.onMembers()
           .setArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
       collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID, true, false, false);
     }

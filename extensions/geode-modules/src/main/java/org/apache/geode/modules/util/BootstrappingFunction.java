@@ -115,7 +115,7 @@ public class BootstrappingFunction implements Function, MembershipListener {
   private void bootstrapMember(InternalDistributedMember member) {
     // Create and execute the function
     Cache cache = CacheFactory.getAnyInstance();
-    Execution execution = FunctionService.onMember(cache.getDistributedSystem(), member);
+    Execution execution = FunctionService.onMember(member);
     ResultCollector collector = execution.execute(this);
 
     // Get the result. Nothing is being done with it.
