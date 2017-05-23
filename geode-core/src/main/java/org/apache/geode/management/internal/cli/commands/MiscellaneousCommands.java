@@ -672,11 +672,11 @@ public class MiscellaneousCommands implements CommandMarker {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.EXPORT_STACKTRACE__HELP) String memberNameOrId,
+      help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__GROUP,
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_STACKTRACE__GROUP) String group,
+          help = CliStrings.EXPORT_STACKTRACE__GROUP) String[] group,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
@@ -687,15 +687,17 @@ public class MiscellaneousCommands implements CommandMarker {
 
     Result result = null;
     StringBuffer filePrefix = new StringBuffer("stacktrace");
+
+    if (fileName == null) {
+      fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
+    }
+    final File outFile = new File(fileName);
     try {
-      if (fileName == null) {
-        fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
-      }
-      final File outFile = new File(fileName);
       if (outFile.exists() && failIfFilePresent) {
         return ResultBuilder.createShellClientErrorResult(CliStrings.format(
             CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
       }
+
 
       InternalCache cache = getCache();
       InternalDistributedSystem ads = cache.getInternalDistributedSystem();
@@ -703,13 +705,9 @@ public class MiscellaneousCommands implements CommandMarker {
       InfoResultData resultData = ResultBuilder.createInfoResultData();
 
       Map<String, byte[]> dumps = new HashMap<String, byte[]>();
-      Set<DistributedMember> targetMembers = null;
-
-      if ((group == null || group.isEmpty())
-          && (memberNameOrId == null || memberNameOrId.isEmpty())) {
-        targetMembers = CliUtil.getAllMembers(cache);
-      } else {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc =
@@ -728,9 +726,7 @@ public class MiscellaneousCommands implements CommandMarker {
       resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());
 
       result = ResultBuilder.buildResult(resultData);
-    } catch (CommandResultException crex) {
-      return crex.getResult();
-    } catch (Exception ex) {
+    } catch (IOException ex) {
       result = ResultBuilder
           .createGemFireErrorResult(CliStrings.EXPORT_STACKTRACE__ERROR + ex.getMessage());
     }

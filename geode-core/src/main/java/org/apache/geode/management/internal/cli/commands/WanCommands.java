@@ -78,7 +78,7 @@ public class WanCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String onMember,
+          help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID, mandatory = true,
           help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
@@ -145,7 +145,11 @@ public class WanCommands extends AbstractCommandsSupport {
           gatewayEventFilters, gatewayTransportFilter);
 
       Set<DistributedMember> membersToCreateGatewaySenderOn =
-          CliUtil.findMembersOrThrow(onGroups, onMember == null ? null : onMember.split(","));
+          CliUtil.findMembers(onGroups, onMember);
+
+      if (membersToCreateGatewaySenderOn.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(GatewaySenderCreateFunction.INSTANCE, gatewaySenderFunctionArgs,
@@ -170,8 +174,6 @@ public class WanCommands extends AbstractCommandsSupport {
     } catch (IllegalArgumentException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     }
 
     if (xmlEntity.get() != null) {
@@ -190,11 +192,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.START_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.START_GATEWAYSENDER__GROUP__HELP) String onGroup,
+          help = CliStrings.START_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
       @CliOption(key = CliStrings.START_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String onMember) {
+          help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
     Result result = null;
     final String id = senderId.trim();
@@ -205,7 +207,12 @@ public class WanCommands extends AbstractCommandsSupport {
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       ExecutorService execService = Executors.newCachedThreadPool(new ThreadFactory() {
         AtomicInteger threadNum = new AtomicInteger();
@@ -293,8 +300,6 @@ public class WanCommands extends AbstractCommandsSupport {
       }
       execService.shutdown();
       result = ResultBuilder.buildResult(resultData);
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     } catch (Exception e) {
       LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
@@ -312,11 +317,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.PAUSE_GATEWAYSENDER__GROUP__HELP) String onGroup,
+          help = CliStrings.PAUSE_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
       @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) String onMember) {
+          help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
     Result result = null;
     if (senderId != null) {
@@ -331,9 +336,13 @@ public class WanCommands extends AbstractCommandsSupport {
       GatewaySenderMXBean bean = null;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = null;
 
-      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
+
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -365,8 +374,6 @@ public class WanCommands extends AbstractCommandsSupport {
         }
       }
       result = ResultBuilder.buildResult(resultData);
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     } catch (Exception e) {
       LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
@@ -383,10 +390,10 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.RESUME_GATEWAYSENDER__GROUP__HELP) String onGroup,
+          help = CliStrings.RESUME_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
       @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) String onMember) {
+          help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
     Result result = null;
     if (senderId != null) {
@@ -402,7 +409,12 @@ public class WanCommands extends AbstractCommandsSupport {
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
 
-      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
+
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -434,8 +446,6 @@ public class WanCommands extends AbstractCommandsSupport {
         }
       }
       result = ResultBuilder.buildResult(resultData);
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     } catch (Exception e) {
       LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
@@ -452,11 +462,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.STOP_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.STOP_GATEWAYSENDER__GROUP__HELP) String onGroup,
+          help = CliStrings.STOP_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
       @CliOption(key = CliStrings.STOP_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String onMember) {
+          help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
     Result result = null;
     if (senderId != null)
@@ -470,7 +480,12 @@ public class WanCommands extends AbstractCommandsSupport {
       GatewaySenderMXBean bean = null;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
@@ -498,8 +513,6 @@ public class WanCommands extends AbstractCommandsSupport {
         }
       }
       result = ResultBuilder.buildResult(resultData);
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     } catch (Exception e) {
       LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
@@ -518,7 +531,7 @@ public class WanCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) String onMember,
+          help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
           help = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART__HELP) Boolean manualStart,
@@ -550,7 +563,11 @@ public class WanCommands extends AbstractCommandsSupport {
               socketBufferSize, maximumTimeBetweenPings, gatewayTransportFilters);
 
       Set<DistributedMember> membersToCreateGatewayReceiverOn =
-          CliUtil.findMembersOrThrow(onGroups, onMember == null ? null : onMember.split(","));
+          CliUtil.findMembers(onGroups, onMember);
+
+      if (membersToCreateGatewayReceiverOn.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(GatewayReceiverCreateFunction.INSTANCE,
@@ -576,8 +593,6 @@ public class WanCommands extends AbstractCommandsSupport {
     } catch (IllegalArgumentException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     }
 
     if (xmlEntity.get() != null) {
@@ -653,11 +668,11 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result startGatewayReceiver(@CliOption(key = CliStrings.START_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP) String onGroup,
+      help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
       @CliOption(key = CliStrings.START_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) String onMember) {
+          help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
     Result result = null;
 
     try {
@@ -668,7 +683,12 @@ public class WanCommands extends AbstractCommandsSupport {
       GatewayReceiverMXBean receieverBean = null;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       for (DistributedMember member : dsMembers) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
@@ -715,11 +735,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP) String onGroup,
+          help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
       @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) String onMember) {
+          help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
     Result result = null;
 
@@ -731,7 +751,12 @@ public class WanCommands extends AbstractCommandsSupport {
       GatewayReceiverMXBean receieverBean = null;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       for (DistributedMember member : dsMembers) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
@@ -776,9 +801,9 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listGateway(
       @CliOption(key = CliStrings.LIST_GATEWAY__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String onMember,
+          help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String[] onMember,
       @CliOption(key = CliStrings.LIST_GATEWAY__GROUP, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_GATEWAY__GROUP__HELP) String onGroup) {
+          help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup) {
 
     Result result = null;
     InternalCache cache = getCache();
@@ -786,7 +811,11 @@ public class WanCommands extends AbstractCommandsSupport {
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans =
           new TreeMap<String, Map<String, GatewaySenderMXBean>>();
@@ -838,8 +867,6 @@ public class WanCommands extends AbstractCommandsSupport {
       crd.setHeader(CliStrings.HEADER_GATEWAYS);
       accumulateListGatewayResult(crd, gatewaySenderBeans, gatewayReceiverBeans);
       result = ResultBuilder.buildResult(crd);
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     } catch (Exception e) {
       LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
@@ -856,11 +883,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.STATUS_GATEWAYSENDER__GROUP__HELP) String onGroup,
+          help = CliStrings.STATUS_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
       @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP) String onMember) {
+          help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
     Result result = null;
     if (senderId != null)
@@ -881,8 +908,12 @@ public class WanCommands extends AbstractCommandsSupport {
           crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
               .addTable(CliStrings.TABLE_GATEWAY_SENDER);
 
-      Set<DistributedMember> dsMembers = null;
-      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
+
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -897,8 +928,6 @@ public class WanCommands extends AbstractCommandsSupport {
         }
       }
       result = ResultBuilder.buildResult(crd);
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     } catch (Exception e) {
       LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
@@ -912,11 +941,11 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusGatewayReceiver(@CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.STATUS_GATEWAYRECEIVER__GROUP__HELP) String onGroup,
+      help = CliStrings.STATUS_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
       @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) String onMember) {
+          help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
     Result result = null;
 
@@ -934,7 +963,11 @@ public class WanCommands extends AbstractCommandsSupport {
           crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
               .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
 
-      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+
+      if (dsMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       for (DistributedMember member : dsMembers) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
@@ -949,8 +982,6 @@ public class WanCommands extends AbstractCommandsSupport {
         buildReceiverStatus(member.getId(), null, notAvailableReceiverData);
       }
       result = ResultBuilder.buildResult(crd);
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     } catch (Exception e) {
       LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
@@ -969,7 +1000,7 @@ public class WanCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String onMember,
+          help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
           optionContext = ConverterHint.GATEWAY_SENDER_ID,
           help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id) {
@@ -979,7 +1010,11 @@ public class WanCommands extends AbstractCommandsSupport {
           new GatewaySenderDestroyFunctionArgs(id);
 
       Set<DistributedMember> membersToDestroyGatewaySenderOn =
-          CliUtil.findMembersOrThrow(onGroups, onMember == null ? null : onMember.split(","));
+          CliUtil.findMembers(onGroups, onMember);
+
+      if (membersToDestroyGatewaySenderOn.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(GatewaySenderDestroyFunction.INSTANCE,
@@ -1000,8 +1035,6 @@ public class WanCommands extends AbstractCommandsSupport {
     } catch (IllegalArgumentException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (CommandResultException crex) {
-      result = handleCommandResultException(crex);
     }
     return result;
   }

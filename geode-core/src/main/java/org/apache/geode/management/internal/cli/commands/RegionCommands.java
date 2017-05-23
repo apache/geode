@@ -80,19 +80,18 @@ public class RegionCommands implements CommandMarker {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public Result listRegion(
       @CliOption(key = {CliStrings.LIST_REGION__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_REGION__GROUP__HELP) String group,
+          help = CliStrings.LIST_REGION__GROUP__HELP) String[] group,
       @CliOption(key = {CliStrings.LIST_REGION__MEMBER}, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.LIST_REGION__MEMBER__HELP) String memberNameOrId) {
+          help = CliStrings.LIST_REGION__MEMBER__HELP) String[] memberNameOrId) {
     Result result = null;
     try {
       Set<RegionInformation> regionInfoSet = new LinkedHashSet<RegionInformation>();
       ResultCollector<?, ?> rc = null;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();

@@ -60,8 +60,6 @@ public class StringUtilsJUnitTest {
     assertEquals("123456789", StringUtils.getDigitsOnly("123,456.789"));
   }
 
-
-
   @Test
   public void testWrap() {
     final String line = "The line of text to split for testing purposes!";

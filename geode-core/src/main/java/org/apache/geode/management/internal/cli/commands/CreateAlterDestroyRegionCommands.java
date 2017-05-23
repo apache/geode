@@ -522,11 +522,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             new Object[] {evictionMax}));
       }
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(groups, null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> resultCollector =

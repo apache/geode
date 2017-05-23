@@ -1848,28 +1848,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // if (!anyWithRouting) {
     Set failures = this.partitionedRegion.getDistributionManager().putOutgoing(prMsg);
 
-    // } else {
-    // // Send message to each member. We set a FilterRoutingInfo serialization
-    // // target so that serialization of the PutAllData objects held in the
-    // // message will only serialize the routing entry for the message recipient
-    // Iterator rIter = recipients.iterator();
-    // failures = new HashSet();
-    // while (rIter.hasNext()){
-    // InternalDistributedMember member = (InternalDistributedMember)rIter.next();
-    // FilterRoutingInfo.setSerializationTarget(member);
-    // try {
-    // prMsg.resetRecipients();
-    // prMsg.setRecipient(member);
-    // Set fs = this.partitionedRegion.getDistributionManager().putOutgoing(prMsg);
-    // if (fs != null && !fs.isEmpty()) {
-    // failures.addAll(fs);
-    // }
-    // } finally {
-    // FilterRoutingInfo.clearSerializationTarget();
-    // }
-    // }
-    // }
-
     return failures;
   }
 

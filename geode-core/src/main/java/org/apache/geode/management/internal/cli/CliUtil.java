@@ -281,27 +281,6 @@ public class CliUtil {
     return sb.toString();
   }
 
-  public static Set<DistributedMember> findMembersOrThrow(final String groups, final String members)
-      throws CommandResultException {
-
-    String[] groupsArray = (groups == null ? new String[] {} : groups.split(","));
-    String[] membersArray = (members == null ? new String[] {} : members.split(","));
-
-    return findMembersOrThrow(groupsArray, membersArray);
-  }
-
-  public static Set<DistributedMember> findMembersOrThrow(final String[] groups,
-      final String[] members) throws CommandResultException {
-
-    Set<DistributedMember> matchingMembers = findMembers(groups, members);
-    if (matchingMembers.isEmpty()) {
-      throw new CommandResultException(
-          ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE));
-    }
-
-    return matchingMembers;
-  }
-
   /**
    * Finds all Members (including both servers and locators) which belong to the given arrays of
    * groups or members.
