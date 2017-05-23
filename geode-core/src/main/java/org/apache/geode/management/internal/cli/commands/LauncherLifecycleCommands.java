@@ -1797,12 +1797,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         final ServerLauncher serverLauncher = new ServerLauncher.Builder()
             .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
             // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
-            // server when it was started,
-            // set the disableDefaultServer property in the ServerLauncher.Builder to default status
+            // server when it was started, set the disableDefaultServer property in the
+            // ServerLauncher.Builder to default status
             // to the MemberMBean
             // TODO fix this hack! (how, the 'start server' loop needs it)
-            .setDisableDefaultServer(true).setMemberName(member).setPid(pid)
-            .setWorkingDirectory(workingDirectory).build();
+            .setDisableDefaultServer(true).setPid(pid).setWorkingDirectory(workingDirectory)
+            .build();
 
         final ServerState status = serverLauncher.status();
 
@@ -1854,9 +1854,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
         }
       } else {
-        final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-            .setCommand(ServerLauncher.Command.STOP).setDebug(isDebugging()).setMemberName(member)
-            .setPid(pid).setWorkingDirectory(workingDirectory).build();
+        final ServerLauncher serverLauncher =
+            new ServerLauncher.Builder().setCommand(ServerLauncher.Command.STOP)
+                .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
 
         serverState = serverLauncher.status();
         serverLauncher.stop();
