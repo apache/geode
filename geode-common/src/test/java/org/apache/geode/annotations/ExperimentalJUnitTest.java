@@ -111,10 +111,10 @@ public class ExperimentalJUnitTest {
     return element.getAnnotation(Experimental.class) != null;
   }
 
-  public static interface RegularInterface {
+  public interface RegularInterface {
   }
   @Experimental("This is an experimental interface")
-  public static interface ExperimentalInterface {
+  public interface ExperimentalInterface {
   }
 
   public static class RegularClass {

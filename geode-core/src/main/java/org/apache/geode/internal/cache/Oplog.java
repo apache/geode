@@ -7334,40 +7334,40 @@ public class Oplog implements CompactableOplog, Flushable {
    * Used as the value in the regionMap. Tracks information about what the region has in this oplog.
    */
   public interface DiskRegionInfo {
-    public DiskRegionView getDiskRegion();
+    DiskRegionView getDiskRegion();
 
-    public int addLiveEntriesToList(KRFEntry[] liveEntries, int idx);
+    int addLiveEntriesToList(KRFEntry[] liveEntries, int idx);
 
-    public void addLive(DiskEntry de);
+    void addLive(DiskEntry de);
 
-    public void update(DiskEntry entry);
+    void update(DiskEntry entry);
 
-    public void replaceLive(DiskEntry old, DiskEntry de);
+    void replaceLive(DiskEntry old, DiskEntry de);
 
-    public boolean rmLive(DiskEntry de, Oplog oplog);
+    boolean rmLive(DiskEntry de, Oplog oplog);
 
-    public DiskEntry getNextLiveEntry();
+    DiskEntry getNextLiveEntry();
 
-    public void setDiskRegion(DiskRegionView dr);
+    void setDiskRegion(DiskRegionView dr);
 
-    public long clear(RegionVersionVector rvv);
+    long clear(RegionVersionVector rvv);
 
     /**
      * Return true if we are the first guy to set it to true
      */
-    public boolean testAndSetUnrecovered();
+    boolean testAndSetUnrecovered();
 
-    public boolean getUnrecovered();
+    boolean getUnrecovered();
 
     /**
      * Return true if we are the first guy to set it to false
      */
-    public boolean testAndSetRecovered(DiskRegionView dr);
+    boolean testAndSetRecovered(DiskRegionView dr);
 
     /**
      * Callback to indicate that this oplog has created a krf.
      */
-    public void afterKrfCreated();
+    void afterKrfCreated();
   }
 
   public abstract static class AbstractDiskRegionInfo implements DiskRegionInfo {

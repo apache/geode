@@ -30,51 +30,51 @@ public interface StatisticsManager extends StatisticsFactory {
   /**
    * Called when the Statistics instance <code>s</code> is closed.
    */
-  public void destroyStatistics(Statistics s);
+  void destroyStatistics(Statistics s);
 
   /**
    * Returns a name that can be used to identify the manager
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns a numeric id that can be used to identify the manager
    */
-  public long getId();
+  long getId();
 
   /**
    * Returns the start time of this manager.
    */
-  public long getStartTime();
+  long getStartTime();
 
   /**
    * Returns a value that changes any time a Statistics instance is added or removed from this
    * manager.
    */
-  public int getStatListModCount();
+  int getStatListModCount();
 
   /**
    * Returns a list of all the Statistics this manager is currently managing.
    */
-  public List<Statistics> getStatsList();
+  List<Statistics> getStatsList();
 
   /**
    * Returns the current number of statistics instances.
    */
-  public int getStatisticsCount();
+  int getStatisticsCount();
 
   /**
    * Returns the statistics resource instance given its id.
    */
-  public Statistics findStatistics(long id);
+  Statistics findStatistics(long id);
 
   /**
    * Returns true if the specified statistic resource still exists.
    */
-  public boolean statisticsExists(long id);
+  boolean statisticsExists(long id);
 
   /**
    * Returns an array of all the current statistic resource instances.
    */
-  public Statistics[] getStatistics();
+  Statistics[] getStatistics();
 }

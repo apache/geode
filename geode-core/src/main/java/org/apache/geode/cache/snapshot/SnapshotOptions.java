@@ -34,7 +34,7 @@ public interface SnapshotOptions<K, V> extends Serializable {
    * 
    * @since GemFire 7.0
    */
-  public enum SnapshotFormat {
+  enum SnapshotFormat {
     /** an optimized binary format specific to GemFire */
     GEMFIRE
   }

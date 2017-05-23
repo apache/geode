@@ -23,11 +23,11 @@ import org.apache.geode.internal.cache.tier.sockets.*;
  * 
  */
 public interface Command {
-  public void execute(Message msg, ServerConnection servConn);
+  void execute(Message msg, ServerConnection servConn);
 
-  public final int RESPONDED = 1;
+  int RESPONDED = 1;
 
-  public final int REQUIRES_RESPONSE = 2;
+  int REQUIRES_RESPONSE = 2;
 
-  public final int REQUIRES_CHUNKED_RESPONSE = 3;
+  int REQUIRES_CHUNKED_RESPONSE = 3;
 }

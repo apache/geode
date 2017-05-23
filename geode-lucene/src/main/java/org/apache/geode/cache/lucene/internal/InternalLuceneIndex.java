@@ -20,16 +20,16 @@ import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 
 public interface InternalLuceneIndex extends LuceneIndex {
 
-  public RepositoryManager getRepositoryManager();
+  RepositoryManager getRepositoryManager();
 
   /**
    * Dump the files for this index to the given directory.
    */
-  public void dumpFiles(String directory);
+  void dumpFiles(String directory);
 
   /**
    * Destroy the index
    */
-  public void destroy(boolean initiator);
+  void destroy(boolean initiator);
 
 }

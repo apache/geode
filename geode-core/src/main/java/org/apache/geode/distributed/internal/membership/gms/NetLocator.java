@@ -26,6 +26,6 @@ public interface NetLocator extends TcpHandler {
    * @param mgr
    * @return true if the membership manager was accepted
    */
-  public boolean setMembershipManager(MembershipManager mgr);
+  boolean setMembershipManager(MembershipManager mgr);
 
 }

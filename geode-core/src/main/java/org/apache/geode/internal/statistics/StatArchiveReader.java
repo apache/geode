@@ -397,7 +397,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     }
   }
 
-  public static interface StatValue {
+  public interface StatValue {
     /**
      * {@link StatArchiveReader.StatValue} filter that causes the statistic values to be unfiltered.
      * This causes the raw values written to the archive to be used.
@@ -405,7 +405,7 @@ public class StatArchiveReader implements StatArchiveFormat {
      * This is the default filter for non-counter statistics. To determine if a statistic is not a
      * counter use {@link StatArchiveReader.StatDescriptor#isCounter}.
      */
-    public static final int FILTER_NONE = 0;
+    int FILTER_NONE = 0;
     /**
      * {@link StatArchiveReader.StatValue} filter that causes the statistic values to be filtered to
      * reflect how often they change per second. Since the difference between two samples is used to
@@ -417,7 +417,7 @@ public class StatArchiveReader implements StatArchiveFormat {
      * This is the default filter for counter statistics. To determine if a statistic is a counter
      * use {@link StatArchiveReader.StatDescriptor#isCounter}.
      */
-    public static final int FILTER_PERSEC = 1;
+    int FILTER_PERSEC = 1;
     /**
      * {@link StatArchiveReader.StatValue} filter that causes the statistic values to be filtered to
      * reflect how much they changed between sample periods. Since the difference between two
@@ -426,90 +426,90 @@ public class StatArchiveReader implements StatArchiveFormat {
      * per second value is the instance's first time stamp
      * {@link StatArchiveReader.ResourceInst#getFirstTimeMillis}.
      */
-    public static final int FILTER_PERSAMPLE = 2;
+    int FILTER_PERSAMPLE = 2;
 
     /**
      * Creates and returns a trimmed version of this stat value. Any samples taken before
      * <code>startTime</code> and after <code>endTime</code> are discarded from the resulting value.
      * Set a time parameter to <code>-1</code> to not trim that side.
      */
-    public StatValue createTrimmed(long startTime, long endTime);
+    StatValue createTrimmed(long startTime, long endTime);
 
     /**
      * Returns true if value has data that has been trimmed off it by a start timestamp.
      */
-    public boolean isTrimmedLeft();
+    boolean isTrimmedLeft();
 
     /**
      * Gets the {@link StatArchiveReader.ResourceType type} of the resources that this value belongs
      * to.
      */
-    public ResourceType getType();
+    ResourceType getType();
 
     /**
      * Gets the {@link StatArchiveReader.ResourceInst resources} that this value belongs to.
      */
-    public ResourceInst[] getResources();
+    ResourceInst[] getResources();
 
     /**
      * Returns an array of timestamps for each unfiltered snapshot in this value. Each returned time
      * stamp is the number of millis since midnight, Jan 1, 1970 UTC.
      */
-    public long[] getRawAbsoluteTimeStamps();
+    long[] getRawAbsoluteTimeStamps();
 
     /**
      * Returns an array of timestamps for each unfiltered snapshot in this value. Each returned time
      * stamp is the number of millis since midnight, Jan 1, 1970 UTC. The resolution is seconds.
      */
-    public long[] getRawAbsoluteTimeStampsWithSecondRes();
+    long[] getRawAbsoluteTimeStampsWithSecondRes();
 
     /**
      * Returns an array of doubles containing the unfiltered value of this statistic for each point
      * in time that it was sampled.
      */
-    public double[] getRawSnapshots();
+    double[] getRawSnapshots();
 
     /**
      * Returns an array of doubles containing the filtered value of this statistic for each point in
      * time that it was sampled.
      */
-    public double[] getSnapshots();
+    double[] getSnapshots();
 
     /**
      * Returns the number of samples taken of this statistic's value.
      */
-    public int getSnapshotsSize();
+    int getSnapshotsSize();
 
     /**
      * Returns the smallest of all the samples taken of this statistic's value.
      */
-    public double getSnapshotsMinimum();
+    double getSnapshotsMinimum();
 
     /**
      * Returns the largest of all the samples taken of this statistic's value.
      */
-    public double getSnapshotsMaximum();
+    double getSnapshotsMaximum();
 
     /**
      * Returns the average of all the samples taken of this statistic's value.
      */
-    public double getSnapshotsAverage();
+    double getSnapshotsAverage();
 
     /**
      * Returns the standard deviation of all the samples taken of this statistic's value.
      */
-    public double getSnapshotsStandardDeviation();
+    double getSnapshotsStandardDeviation();
 
     /**
      * Returns the most recent value of all the samples taken of this statistic's value.
      */
-    public double getSnapshotsMostRecent();
+    double getSnapshotsMostRecent();
 
     /**
      * Returns true if sample whose value was different from previous values has been added to this
      * StatValue since the last time this method was called.
      */
-    public boolean hasValueChanged();
+    boolean hasValueChanged();
 
     /**
      * Returns the current filter used to calculate this statistic's values. It will be one of these
@@ -520,7 +520,7 @@ public class StatArchiveReader implements StatArchiveFormat {
      * <li>{@link #FILTER_PERSEC}
      * </ul>
      */
-    public int getFilter();
+    int getFilter();
 
     /**
      * Sets the current filter used to calculate this statistic's values. The default filter is
@@ -535,12 +535,12 @@ public class StatArchiveReader implements StatArchiveFormat {
      *        </ul>
      * @throws IllegalArgumentException if <code>filter</code> is not a valid filter constant.
      */
-    public void setFilter(int filter);
+    void setFilter(int filter);
 
     /**
      * Returns a description of this statistic.
      */
-    public StatDescriptor getDescriptor();
+    StatDescriptor getDescriptor();
   }
 
   protected static abstract class AbstractValue implements StatValue {
@@ -2751,26 +2751,26 @@ public class StatArchiveReader implements StatArchiveFormat {
     }
   }
 
-  public static interface StatSpec extends ValueFilter {
+  public interface StatSpec extends ValueFilter {
     /**
      * Causes all stats that matches this spec, in all archive files, to be combined into a single
      * global stat value.
      */
-    public static final int GLOBAL = 2;
+    int GLOBAL = 2;
     /**
      * Causes all stats that matches this spec, in each archive file, to be combined into a single
      * stat value for each file.
      */
-    public static final int FILE = 1;
+    int FILE = 1;
     /**
      * No combination is done.
      */
-    public final int NONE = 0;
+    int NONE = 0;
 
     /**
      * Returns one of the following values: {@link #GLOBAL}, {@link #FILE}, {@link #NONE}.
      */
-    public int getCombineType();
+    int getCombineType();
   }
 
   /**
@@ -2778,30 +2778,30 @@ public class StatArchiveReader implements StatArchiveFormat {
    * when loading a statistic archive file to reduce the memory footprint. Only statistic data that
    * matches all four will be selected for loading.
    */
-  public static interface ValueFilter {
+  public interface ValueFilter {
     /**
      * Returns true if the specified archive file matches this spec. Any archives whose name does
      * not match this spec will not be selected for loading by this spec.
      */
-    public boolean archiveMatches(File archive);
+    boolean archiveMatches(File archive);
 
     /**
      * Returns true if the specified type name matches this spec. Any types whose name does not
      * match this spec will not be selected for loading by this spec.
      */
-    public boolean typeMatches(String typeName);
+    boolean typeMatches(String typeName);
 
     /**
      * Returns true if the specified statistic name matches this spec. Any stats whose name does not
      * match this spec will not be selected for loading by this spec.
      */
-    public boolean statMatches(String statName);
+    boolean statMatches(String statName);
 
     /**
      * Returns true if the specified instance matches this spec. Any instance whose text id and
      * numeric id do not match this spec will not be selected for loading by this spec.
      */
-    public boolean instanceMatches(String textId, long numericId);
+    boolean instanceMatches(String textId, long numericId);
   }
 
   public static class StatArchiveFile {

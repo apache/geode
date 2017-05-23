@@ -71,7 +71,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * @since GemFire 6.0
    */
   public interface TestHook {
-    public void hook(final int spot) throws RuntimeException;
+    void hook(final int spot) throws RuntimeException;
   }
 
   private static final int MAX_PR_QUERY_RETRIES =

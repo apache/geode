@@ -99,19 +99,19 @@ public interface ConnectionManager {
   /**
    * Test hook to find out current number of connections this manager has.
    */
-  public int getConnectionCount();
+  int getConnectionCount();
 
   void emergencyClose();
 
   /**
    * Used to active a thread local connection
    */
-  public void activate(Connection conn);
+  void activate(Connection conn);
 
   /**
    * Used to passivate a thread local connection
    */
-  public void passivate(Connection conn, boolean accessed);
+  void passivate(Connection conn, boolean accessed);
 
-  public Connection getConnection(Connection conn);
+  Connection getConnection(Connection conn);
 }

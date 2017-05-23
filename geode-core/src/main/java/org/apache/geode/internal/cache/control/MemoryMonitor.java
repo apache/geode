@@ -20,19 +20,19 @@ import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
  * A resource monitor that monitors memory.
  */
 public interface MemoryMonitor extends ResourceMonitor {
-  public MemoryState getState();
+  MemoryState getState();
 
-  public MemoryThresholds getThresholds();
+  MemoryThresholds getThresholds();
 
-  public long getBytesUsed();
+  long getBytesUsed();
 
-  public boolean hasEvictionThreshold();
+  boolean hasEvictionThreshold();
 
-  default public float getCriticalThreshold() {
+  default float getCriticalThreshold() {
     return getThresholds().getCriticalThreshold();
   }
 
-  default public float getEvictionThreshold() {
+  default float getEvictionThreshold() {
     return getThresholds().getEvictionThreshold();
   }
 

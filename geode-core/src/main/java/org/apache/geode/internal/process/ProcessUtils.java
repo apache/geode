@@ -178,12 +178,12 @@ public class ProcessUtils {
    * Defines the SPI for ProcessUtils
    */
   interface InternalProcessUtils {
-    public boolean isProcessAlive(int pid);
+    boolean isProcessAlive(int pid);
 
-    public boolean killProcess(int pid);
+    boolean killProcess(int pid);
 
-    public boolean isAvailable();
+    boolean isAvailable();
 
-    public boolean isAttachApiAvailable();
+    boolean isAttachApiAvailable();
   }
 }

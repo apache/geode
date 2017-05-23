@@ -20,16 +20,16 @@ package org.apache.geode.management;
  */
 public interface CustomMXBean {
 
-  public long getSystemTime();
+  long getSystemTime();
 
-  public void setSystemTime(long systemTime);
+  void setSystemTime(long systemTime);
 
-  public String getName();
+  String getName();
 
-  public void setName(String staticField);
+  void setName(String staticField);
 
-  public String fetchName();
+  String fetchName();
 
-  public void writeName(String staticField);
+  void writeName(String staticField);
 
 }

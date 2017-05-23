@@ -1442,22 +1442,22 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * Replaces what used to be a HashMap<String, Integer>.
    */
   public interface CqNameToOp extends Sendable {
-    public boolean isEmpty();
+    boolean isEmpty();
 
     /**
      * Returns true if calling add would fail.
      */
-    public boolean isFull();
+    boolean isFull();
 
-    public void addToMessage(Message message);
+    void addToMessage(Message message);
 
-    public int size();
+    int size();
 
-    public String[] getNames();
+    String[] getNames();
 
-    public void add(String name, Integer op);
+    void add(String name, Integer op);
 
-    public void delete(String name);
+    void delete(String name);
   }
   /**
    * Contains either zero or one String to int tuples. This is a common case and this impl has a

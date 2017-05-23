@@ -25,7 +25,7 @@ import org.apache.geode.StatisticsType;
  */
 public interface StatisticsNotification extends Iterable<StatisticId> {
 
-  public static enum Type {
+  enum Type {
     /** CounterMonitor threshold was exceeded */
     THRESHOLD_VALUE_EXCEEDED,
     /** GaugeMonitor low-threshold was exceeded */
@@ -41,32 +41,32 @@ public interface StatisticsNotification extends Iterable<StatisticId> {
   }
 
   /** Returns the timestamp of the stat sample */
-  public long getTimeStamp();
+  long getTimeStamp();
 
   /** Returns the notification type */
-  public Type getType();
+  Type getType();
 
   /** Returns an iterator of all the stat instances that met the monitor's criteria */
-  public Iterator<StatisticId> iterator();
+  Iterator<StatisticId> iterator();
 
   /**
    * Returns an iterator of all the stat instances for the specified descriptor that met the
    * monitor's criteria
    */
-  public Iterator<StatisticId> iterator(StatisticDescriptor statDesc);
+  Iterator<StatisticId> iterator(StatisticDescriptor statDesc);
 
   /**
    * Returns an iterator of all the stat instances for the specified statistics instance that met
    * the monitor's criteria
    */
-  public Iterator<StatisticId> iterator(Statistics statistics);
+  Iterator<StatisticId> iterator(Statistics statistics);
 
   /**
    * Returns an iterator of all the stat instances for the specified statistics type that met the
    * monitor's criteria
    */
-  public Iterator<StatisticId> iterator(StatisticsType statisticsType);
+  Iterator<StatisticId> iterator(StatisticsType statisticsType);
 
   /** Returns the value for the specified stat instance */
-  public Number getValue(StatisticId statId) throws StatisticNotFoundException;
+  Number getValue(StatisticId statId) throws StatisticNotFoundException;
 }

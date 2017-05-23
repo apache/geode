@@ -33,34 +33,33 @@ public interface DistTXCoordinatorInterface extends TXStateInterface {
   /**
    * Response for Precommit
    */
-  public boolean getPreCommitResponse() throws UnsupportedOperationInTransactionException;
+  boolean getPreCommitResponse() throws UnsupportedOperationInTransactionException;
 
   /**
    * Response for Rollback
    */
-  public boolean getRollbackResponse() throws UnsupportedOperationInTransactionException;
+  boolean getRollbackResponse() throws UnsupportedOperationInTransactionException;
 
-  public ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
+  ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
       throws UnsupportedOperationInTransactionException;
 
-  public void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
+  void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
       throws UnsupportedOperationInTransactionException;
 
-  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
+  void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
       throws UnsupportedOperationInTransactionException;
 
-  public void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
+  void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
       throws UnsupportedOperationInTransactionException;
 
-  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
+  void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
       throws UnsupportedOperationInTransactionException;
 
-  public void gatherAffectedRegions(HashSet<LocalRegion> regionSet, boolean includePrimaryRegions,
+  void gatherAffectedRegions(HashSet<LocalRegion> regionSet, boolean includePrimaryRegions,
       boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException;
 
-  public void gatherAffectedRegionsName(TreeSet<String> sortedRegionName,
-      boolean includePrimaryRegions, boolean includeRedundantRegions)
-      throws UnsupportedOperationInTransactionException;
+  void gatherAffectedRegionsName(TreeSet<String> sortedRegionName, boolean includePrimaryRegions,
+      boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException;
 
-  public void finalCleanup();
+  void finalCleanup();
 }

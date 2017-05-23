@@ -31,19 +31,19 @@ public interface SessionManager {
    *        the same classloader. This is so that during shutdown, the manager can decide whether or
    *        not to also stop the cache. This option allows the filter's classloader to be passed in.
    */
-  public void start(Object config, ClassLoader loader);
+  void start(Object config, ClassLoader loader);
 
   /**
    * Stop the session manager and free up any resources.
    */
-  public void stop();
+  void stop();
 
   /**
    * Write the session to the region
    *
    * @param session the session to write
    */
-  public void putSession(HttpSession session);
+  void putSession(HttpSession session);
 
   /**
    * Return a session if it exists or null otherwise
@@ -51,7 +51,7 @@ public interface SessionManager {
    * @param id The session id to attempt to retrieve
    * @return a HttpSession object if a session was found otherwise null.
    */
-  public HttpSession getSession(String id);
+  HttpSession getSession(String id);
 
   /**
    * Create a new session, wrapping a container session.
@@ -59,7 +59,7 @@ public interface SessionManager {
    * @param nativeSession
    * @return the HttpSession object
    */
-  public HttpSession wrapSession(HttpSession nativeSession);
+  HttpSession wrapSession(HttpSession nativeSession);
 
   /**
    * Get the wrapped (GemFire) session from a native session id. This method would typically be used
@@ -68,14 +68,14 @@ public interface SessionManager {
    * @param nativeId
    * @return the wrapped GemFire session which maps the native session
    */
-  public HttpSession getWrappingSession(String nativeId);
+  HttpSession getWrappingSession(String nativeId);
 
   /**
    * Destroy the session associated with the given id.
    *
    * @param id The id of the session to destroy.
    */
-  public void destroySession(String id);
+  void destroySession(String id);
 
   /**
    * Destroy the session associated with a given native session
@@ -83,14 +83,14 @@ public interface SessionManager {
    * @param id the id of the native session
    * @return the corresponding Gemfire session which wrapped the native session and was destroyed.
    */
-  public String destroyNativeSession(String id);
+  String destroyNativeSession(String id);
 
   /**
    * Returns the cookie name used to hold the session id. By default this is JSESSIONID.
    *
    * @return the name of the cookie which contains the session id
    */
-  public String getSessionCookieName();
+  String getSessionCookieName();
 
   /**
    * Get the JVM Id - this is a unique string used internally to identify who last touched a
@@ -98,5 +98,5 @@ public interface SessionManager {
    *
    * @return the jvm id
    */
-  public String getJvmId();
+  String getJvmId();
 }

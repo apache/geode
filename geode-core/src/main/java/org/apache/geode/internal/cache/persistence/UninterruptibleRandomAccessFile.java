@@ -92,8 +92,8 @@ public class UninterruptibleRandomAccessFile {
     return this.raf.length();
   }
 
-  private static interface FileOperation {
-    public long doOp(FileChannel channel) throws IOException;
+  private interface FileOperation {
+    long doOp(FileChannel channel) throws IOException;
   }
 
   private class UninterruptibleFileChannelImpl implements UninterruptibleFileChannel {

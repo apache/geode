@@ -154,6 +154,6 @@ class ControlFileWatchdog implements Runnable {
    * Defines the callback to be invoked when the control file exists.
    */
   interface ControlRequestHandler {
-    public void handleRequest() throws IOException;
+    void handleRequest() throws IOException;
   }
 }

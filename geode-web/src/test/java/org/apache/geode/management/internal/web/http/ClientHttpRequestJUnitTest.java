@@ -538,19 +538,19 @@ public class ClientHttpRequestJUnitTest extends AbstractWebTestCase {
   }
 
   @SuppressWarnings("unused")
-  private static interface Library {
-    public String getName();
+  private interface Library {
+    String getName();
   }
 
   @SuppressWarnings("unused")
-  private static interface Book {
-    public String getAuthor();
+  private interface Book {
+    String getAuthor();
 
-    public String getIsbn();
+    String getIsbn();
 
-    public String getTitle();
+    String getTitle();
 
-    public Integer getYear();
+    Integer getYear();
   }
 
 }

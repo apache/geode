@@ -30,24 +30,24 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
  * @since GemFire 5.7
  */
 public interface Connection {
-  public static final long DEFAULT_CONNECTION_ID = 26739;
+  long DEFAULT_CONNECTION_ID = 26739;
 
-  public Socket getSocket();
+  Socket getSocket();
 
-  public ByteBuffer getCommBuffer() throws SocketException;
+  ByteBuffer getCommBuffer() throws SocketException;
 
-  public ConnectionStats getStats();
+  ConnectionStats getStats();
 
   /**
    * Forcefully close the resources used by this connection. This should be called if the connection
    * or the server dies.
    */
-  public void destroy();
+  void destroy();
 
   /**
    * Return true if this connection has been destroyed
    */
-  public boolean isDestroyed();
+  boolean isDestroyed();
 
   /**
    * Gracefully close the connection by notifying the server. It is not necessary to call destroy
@@ -57,29 +57,29 @@ public interface Connection {
    * @throws Exception if there was an error notifying the server. The connection will still be
    *         destroyed.
    */
-  public void close(boolean keepAlive) throws Exception;
+  void close(boolean keepAlive) throws Exception;
 
-  public ServerLocation getServer();
+  ServerLocation getServer();
 
-  public Endpoint getEndpoint();
+  Endpoint getEndpoint();
 
-  public ServerQueueStatus getQueueStatus();
+  ServerQueueStatus getQueueStatus();
 
-  public Object execute(Op op) throws Exception;
+  Object execute(Op op) throws Exception;
 
-  public void emergencyClose();
+  void emergencyClose();
 
-  public short getWanSiteVersion();
+  short getWanSiteVersion();
 
-  public void setWanSiteVersion(short wanSiteVersion);
+  void setWanSiteVersion(short wanSiteVersion);
 
-  public int getDistributedSystemId();
+  int getDistributedSystemId();
 
-  public OutputStream getOutputStream();
+  OutputStream getOutputStream();
 
-  public InputStream getInputStream();
+  InputStream getInputStream();
 
-  public void setConnectionID(long id);
+  void setConnectionID(long id);
 
-  public long getConnectionID();
+  long getConnectionID();
 }

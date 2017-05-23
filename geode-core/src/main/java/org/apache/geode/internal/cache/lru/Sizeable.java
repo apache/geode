@@ -49,12 +49,12 @@ package org.apache.geode.internal.cache.lru;
 public interface Sizeable {
 
   /** The overhead of an object in the VM in bytes */
-  public static final int PER_OBJECT_OVERHEAD = 8; // TODO for a 64bit jvm with small oops this is
-                                                   // 12; for other 64bit jvms it is 16
+  int PER_OBJECT_OVERHEAD = 8; // TODO for a 64bit jvm with small oops this is
+                               // 12; for other 64bit jvms it is 16
 
   /**
    * Returns the size (in bytes) of this object including the {@link #PER_OBJECT_OVERHEAD}.
    */
-  public int getSizeInBytes();
+  int getSizeInBytes();
 
 }

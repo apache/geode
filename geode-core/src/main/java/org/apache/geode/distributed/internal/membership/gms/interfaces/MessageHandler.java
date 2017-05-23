@@ -22,6 +22,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
  */
 public interface MessageHandler {
 
-  public void processMessage(DistributionMessage m);
+  void processMessage(DistributionMessage m);
 
 }

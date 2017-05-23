@@ -102,7 +102,7 @@ public interface SecurityService {
   /**
    * this method would never return null, it either throws an exception or returns an object
    */
-  public static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
+  static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
     Class actualClass = null;
     try {
       actualClass = ClassLoadUtil.classFromName(className);
@@ -128,8 +128,7 @@ public interface SecurityService {
   /**
    * this method would never return null, it either throws an exception or returns an object
    */
-  public static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName,
-      Class<T> expectedClazz) {
+  static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz) {
     T actualObject = null;
     try {
       Method factoryMethod = ClassLoadUtil.methodFromName(factoryMethodName);
@@ -153,7 +152,7 @@ public interface SecurityService {
    * @return an object of type expectedClazz. This method would never return null. It either returns
    *         an non-null object or throws exception.
    */
-  public static <T> T getObjectOfType(String classOrMethod, Class<T> expectedClazz) {
+  static <T> T getObjectOfType(String classOrMethod, Class<T> expectedClazz) {
     T object = null;
     try {
       object = getObjectOfTypeFromClassName(classOrMethod, expectedClazz);
@@ -163,7 +162,7 @@ public interface SecurityService {
     return object;
   }
 
-  public static Properties getCredentials(Properties securityProps) {
+  static Properties getCredentials(Properties securityProps) {
     Properties credentials = null;
     if (securityProps.containsKey(ResourceConstants.USER_NAME)
         && securityProps.containsKey(ResourceConstants.PASSWORD)) {

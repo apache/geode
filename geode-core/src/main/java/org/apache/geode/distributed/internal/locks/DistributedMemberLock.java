@@ -268,7 +268,7 @@ public class DistributedMemberLock implements Lock {
   }
 
   private interface Operation {
-    public boolean operate() throws InterruptedException;
+    boolean operate() throws InterruptedException;
   }
 
   public Condition newCondition() {

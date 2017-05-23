@@ -144,10 +144,10 @@ public class ServerBlackList {
     }
   }
 
-  public static interface BlackListListener {
-    public void serverAdded(ServerLocation location);
+  public interface BlackListListener {
+    void serverAdded(ServerLocation location);
 
-    public void serverRemoved(ServerLocation location);
+    void serverRemoved(ServerLocation location);
   }
 
   public static class BlackListListenerAdapter implements BlackListListener {

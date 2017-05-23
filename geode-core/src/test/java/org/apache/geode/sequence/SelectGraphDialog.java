@@ -113,7 +113,7 @@ public class SelectGraphDialog extends JDialog {
   /**
    * A listener for changes to the graph selections
    */
-  public static interface SelectionListener {
+  public interface SelectionListener {
     void selectionChanged(List<GraphID> selectedIds);
   }
 

@@ -1851,7 +1851,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public interface StatisticsVisitor {
 
-    public void visit(Statistics stat);
+    void visit(Statistics stat);
   }
 
   public Set<String> getAllFunctionExecutionIds() {
@@ -2318,7 +2318,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * 
      * @param sys the the system we are disconnecting from process should take before returning.
      */
-    public void onDisconnect(InternalDistributedSystem sys);
+    void onDisconnect(InternalDistributedSystem sys);
 
   }
 
@@ -2333,7 +2333,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS, which is in a partially disconnected state and cannot be used
      *        for messaging
      */
-    public void reconnecting(InternalDistributedSystem oldSystem);
+    void reconnecting(InternalDistributedSystem oldSystem);
 
     /**
      * Invoked after a reconnect to the distributed system
@@ -2341,8 +2341,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS
      * @param newSystem the new DS
      */
-    public void onReconnect(InternalDistributedSystem oldSystem,
-        InternalDistributedSystem newSystem);
+    void onReconnect(InternalDistributedSystem oldSystem, InternalDistributedSystem newSystem);
   }
 
   /**
@@ -2355,7 +2354,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * 
      * @param sys
      */
-    public void onShutdown(InternalDistributedSystem sys);
+    void onShutdown(InternalDistributedSystem sys);
   }
 
   /**
@@ -2943,7 +2942,7 @@ public class InternalDistributedSystem extends DistributedSystem
     /**
      * Invoked after a connection to the distributed system is created
      */
-    public void onConnect(InternalDistributedSystem sys);
+    void onConnect(InternalDistributedSystem sys);
   }
 
   public String forceStop() {
@@ -3045,8 +3044,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * Privacy Violations that Fortify will complain about.
    * </p>
    */
-  public static interface CreationStackGenerator {
+  public interface CreationStackGenerator {
 
-    public Throwable generateCreationStack(final DistributionConfig config);
+    Throwable generateCreationStack(final DistributionConfig config);
   }
 }

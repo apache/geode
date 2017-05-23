@@ -24,7 +24,7 @@ public interface DirectChannelListener {
    * 
    * @param o the message that should be processed.
    */
-  public void messageReceived(DistributionMessage o);
+  void messageReceived(DistributionMessage o);
 
 
   /**
@@ -32,6 +32,6 @@ public interface DirectChannelListener {
    * 
    * @return the distribution manager
    */
-  public DistributionManager getDM();
+  DistributionManager getDM();
 
 }

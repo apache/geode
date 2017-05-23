@@ -34,6 +34,6 @@ public interface Extensible<T> {
    * @return {@link ExtensionPoint} for this object.
    * @since GemFire 8.1
    */
-  public ExtensionPoint<T> getExtensionPoint();
+  ExtensionPoint<T> getExtensionPoint();
 
 }

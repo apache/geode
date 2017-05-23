@@ -25,15 +25,15 @@ import org.apache.geode.internal.process.ProcessController.Arguments;
  * @since GemFire 8.0
  */
 interface MBeanControllerParameters extends Arguments {
-  public ObjectName getNamePattern();
+  ObjectName getNamePattern();
 
-  public String getPidAttribute();
+  String getPidAttribute();
 
-  public String getStatusMethod();
+  String getStatusMethod();
 
-  public String getStopMethod();
+  String getStopMethod();
 
-  public String[] getAttributes();
+  String[] getAttributes();
 
-  public Object[] getValues();
+  Object[] getValues();
 }

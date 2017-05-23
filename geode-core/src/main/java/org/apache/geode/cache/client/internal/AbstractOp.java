@@ -311,7 +311,7 @@ public abstract class AbstractOp implements Op {
      * 
      * @param msg the current chunk to handle
      */
-    public void handle(ChunkedMessage msg) throws Exception;
+    void handle(ChunkedMessage msg) throws Exception;
   }
 
   /**

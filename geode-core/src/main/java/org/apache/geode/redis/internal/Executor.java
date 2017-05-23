@@ -29,6 +29,6 @@ public interface Executor {
    * @param command The command to be executed
    * @param context The execution context by which this command is to be executed
    */
-  public void executeCommand(Command command, ExecutionHandlerContext context);
+  void executeCommand(Command command, ExecutionHandlerContext context);
 
 }

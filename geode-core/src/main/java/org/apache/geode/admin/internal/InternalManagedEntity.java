@@ -27,31 +27,31 @@ import org.apache.geode.admin.ManagedEntityConfig;
 public interface InternalManagedEntity extends ManagedEntity {
 
   /** The state of a managed entity is unknown. */
-  public static final int UNKNOWN = 10;
+  int UNKNOWN = 10;
 
   /** A managed entity is stopped */
-  public static final int STOPPED = 11;
+  int STOPPED = 11;
 
   /** A managed entity is stopping (being stopped) */
-  public static final int STOPPING = 12;
+  int STOPPING = 12;
 
   /** A managed entity is starting */
-  public static final int STARTING = 13;
+  int STARTING = 13;
 
   /** A managed entity is running (is started) */
-  public static final int RUNNING = 14;
+  int RUNNING = 14;
 
   ////////////////////// Instance Methods //////////////////////
 
   /**
    * Returns the <code>ManagedEntityConfig</code> for this <code>ManagedEntity</code>.
    */
-  public ManagedEntityConfig getEntityConfig();
+  ManagedEntityConfig getEntityConfig();
 
   /**
    * Returns a brief description (such as "locator") of this managed entity.
    */
-  public String getEntityType();
+  String getEntityType();
 
   /**
    * Returns the (local) command to execute in order to start this managed entity. The command
@@ -59,29 +59,29 @@ public interface InternalManagedEntity extends ManagedEntity {
    * command-line arguments. It does not take the {@linkplain ManagedEntityConfig#getRemoteCommand
    * remote command} into account.
    */
-  public String getStartCommand();
+  String getStartCommand();
 
   /**
    * Returns the (local) command to execute in order to stop this managed entity.
    */
-  public String getStopCommand();
+  String getStopCommand();
 
   /**
    * Returns the (local) command to execute in order to determine whether or not this managed entity
    * is runing.
    */
-  public String getIsRunningCommand();
+  String getIsRunningCommand();
 
   /**
    * Returns a descriptive, one-word, unique id for a newly-created <code>ManagedEntity</code>. This
    * ensures that we do not have collisions in the ids of entities.
    */
-  public String getNewId();
+  String getNewId();
 
   /**
    * Returns the distributed system to which this managed entity belongs.
    */
-  public AdminDistributedSystem getDistributedSystem();
+  AdminDistributedSystem getDistributedSystem();
 
   /**
    * Sets the state of this managed entity and informs threads that are waiting for a state change.
@@ -91,6 +91,6 @@ public interface InternalManagedEntity extends ManagedEntity {
    *
    * @see #RUNNING
    */
-  public int setState(int state);
+  int setState(int state);
 
 }

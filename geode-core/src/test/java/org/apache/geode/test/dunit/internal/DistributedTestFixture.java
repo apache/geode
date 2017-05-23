@@ -28,7 +28,7 @@ public interface DistributedTestFixture extends Serializable {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void preSetUp() throws Exception;
+  void preSetUp() throws Exception;
 
   /**
    * {@code postSetUp()} is invoked after {@code DistributedTestCase#setUp()}.
@@ -36,7 +36,7 @@ public interface DistributedTestFixture extends Serializable {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void postSetUp() throws Exception;
+  void postSetUp() throws Exception;
 
   /**
    * {@code preTearDown()} is invoked before {@code DistributedTestCase#tearDown()}.
@@ -44,7 +44,7 @@ public interface DistributedTestFixture extends Serializable {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void preTearDown() throws Exception;
+  void preTearDown() throws Exception;
 
   /**
    * {@code postTearDown()} is invoked after {@code DistributedTestCase#tearDown()}.
@@ -52,7 +52,7 @@ public interface DistributedTestFixture extends Serializable {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void postTearDown() throws Exception;
+  void postTearDown() throws Exception;
 
   /**
    * {@code preTearDownAssertions()} is invoked before any tear down methods have been invoked. If
@@ -61,7 +61,7 @@ public interface DistributedTestFixture extends Serializable {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void preTearDownAssertions() throws Exception;
+  void preTearDownAssertions() throws Exception;
 
   /**
    * {@code postTearDownAssertions()} is invoked after all tear down methods have completed. This
@@ -70,7 +70,7 @@ public interface DistributedTestFixture extends Serializable {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void postTearDownAssertions() throws Exception;
+  void postTearDownAssertions() throws Exception;
 
   /**
    * Returns the {@code Properties} used to define the {@code DistributedSystem}.
@@ -79,11 +79,11 @@ public interface DistributedTestFixture extends Serializable {
    * Override this as needed. This method is called by various {@code getSystem} methods in
    * {@code DistributedTestCase}.
    */
-  public Properties getDistributedSystemProperties();
+  Properties getDistributedSystemProperties();
 
   /**
    * Returns the {@code name} of the test method being executed.
    */
-  public String getName();
+  String getName();
 
 }

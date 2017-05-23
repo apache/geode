@@ -2209,9 +2209,9 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /** Test Hook */
   public interface TestHook {
-    public void await();
+    void await();
 
-    public void release();
+    void release();
   }
 
   @Override

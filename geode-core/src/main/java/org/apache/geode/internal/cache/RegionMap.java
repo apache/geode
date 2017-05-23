@@ -48,7 +48,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * Parameter object used to facilitate construction of an EntriesMap. Modification of fields after
    * the map is constructed has no effect.
    */
-  static class Attributes {
+  class Attributes {
     /**
      * The initial capacity. The implementation performs internal sizing to accommodate this many
      * elements.
@@ -71,48 +71,48 @@ public interface RegionMap extends LRUMapCallbacks {
     // boolean lru = false;
   }
 
-  public RegionEntryFactory getEntryFactory();
+  RegionEntryFactory getEntryFactory();
 
   /**
    * This method should be called before region is initialized to ensure there is no mix of region
    * entries
    */
-  public void setEntryFactory(RegionEntryFactory f);
+  void setEntryFactory(RegionEntryFactory f);
 
   /**
    * Gets the attributes that this map was created with.
    */
-  public Attributes getAttributes();
+  Attributes getAttributes();
 
   /**
    * Tells this map what region owns it.
    */
-  public void setOwner(Object r);
+  void setOwner(Object r);
 
-  public void changeOwner(LocalRegion r);
+  void changeOwner(LocalRegion r);
 
-  public int size();
+  int size();
 
-  public boolean isEmpty();
+  boolean isEmpty();
 
   /**
    * @return number of entries cached in the backing CHM
    */
-  public int sizeInVM();
+  int sizeInVM();
 
-  public Set keySet();
+  Set keySet();
 
   /**
    * Returns a collection of RegionEntry instances.
    */
-  public Collection<RegionEntry> regionEntries();
+  Collection<RegionEntry> regionEntries();
 
   /**
    * Returns a collection of RegionEntry instances from memory only.
    */
-  public Collection<RegionEntry> regionEntriesInVM();
+  Collection<RegionEntry> regionEntriesInVM();
 
-  public boolean containsKey(Object key);
+  boolean containsKey(Object key);
 
   /**
    * fetches the entry from the backing ConcurrentHashMap
@@ -120,9 +120,9 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param key
    * @return the RegionEntry from memory or disk
    */
-  public RegionEntry getEntry(Object key);
+  RegionEntry getEntry(Object key);
 
-  public RegionEntry putEntryIfAbsent(Object key, RegionEntry re);
+  RegionEntry putEntryIfAbsent(Object key, RegionEntry re);
 
   /**
    * fetches the entry from the backing ConcurrentHashMap.
@@ -130,7 +130,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param key
    * @return the RegionEntry from memory
    */
-  public RegionEntry getEntryInVM(Object key);
+  RegionEntry getEntryInVM(Object key);
 
   /**
    * fetches the entry from the backing ConcurrentHashMap only if the entry is considered to be in
@@ -139,7 +139,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param key
    * @return the RegionEntry in operational data
    */
-  public RegionEntry getOperationalEntryInVM(Object key);
+  RegionEntry getOperationalEntryInVM(Object key);
 
   // /**
   // * Removes any entry associated with <code>key</code>.
@@ -158,7 +158,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * Clear the region and, if the parameter rvv is not null, return a collection of the IDs of
    * version sources that are still in the map when the operation completes.
    */
-  public Set<VersionSource> clear(RegionVersionVector rvv);
+  Set<VersionSource> clear(RegionVersionVector rvv);
 
   /**
    * Used by disk regions when recovering data from backup. Currently this "put" is done at a very
@@ -166,7 +166,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * 
    * @return the created RegionEntry or null if entry already existed
    */
-  public RegionEntry initRecoveredEntry(Object key, DiskEntry.RecoveredEntry value);
+  RegionEntry initRecoveredEntry(Object key, DiskEntry.RecoveredEntry value);
 
   /**
    * Used by disk regions when recovering data from backup and initRecoveredEntry has already been
@@ -175,7 +175,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * 
    * @return the updated RegionEntry
    */
-  public RegionEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value);
+  RegionEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value);
 
   /**
    * Used to modify an existing RegionEntry or create a new one when processing the values obtained
@@ -186,9 +186,9 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param sender the sender of the initial image, if IIO. Not needed on clients
    * @param forceValue TODO
    */
-  public boolean initialImagePut(Object key, long lastModified, Object newValue,
-      boolean wasRecovered, boolean deferLRUCallback, VersionTag entryVersion,
-      InternalDistributedMember sender, boolean forceValue);
+  boolean initialImagePut(Object key, long lastModified, Object newValue, boolean wasRecovered,
+      boolean deferLRUCallback, VersionTag entryVersion, InternalDistributedMember sender,
+      boolean forceValue);
 
   /**
    * Destroy an entry the map.
@@ -207,8 +207,8 @@ public interface RegionMap extends LRUMapCallbacks {
    * @see CacheCallback
    * @see AbstractLRURegionMap
    */
-  public boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
-      boolean cacheWrite, boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
+  boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI, boolean cacheWrite,
+      boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException;
 
   /**
@@ -219,10 +219,10 @@ public interface RegionMap extends LRUMapCallbacks {
    *        mode in that it doesn't leave an Invalid token in the cache.
    * @return true if invalidate was done
    */
-  public boolean invalidate(EntryEventImpl event, boolean invokeCallbacks, boolean forceNewEntry,
+  boolean invalidate(EntryEventImpl event, boolean invokeCallbacks, boolean forceNewEntry,
       boolean forceCallbacks) throws EntryNotFoundException;
 
-  public void evictValue(Object key);
+  void evictValue(Object key);
 
   /**
    * @param event the event object for this operation, with the exception that the oldValue
@@ -242,7 +242,7 @@ public interface RegionMap extends LRUMapCallbacks {
    *        because there is a DESTROYED token present then the entry flag blockedDestroyed is set.
    * @return null if put was not done; otherwise reference to put entry
    */
-  public RegionEntry basicPut(EntryEventImpl event, long lastModified, boolean ifNew, boolean ifOld,
+  RegionEntry basicPut(EntryEventImpl event, long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, boolean overwriteDestroyed)
       throws CacheWriterException, TimeoutException;
 
@@ -250,13 +250,13 @@ public interface RegionMap extends LRUMapCallbacks {
    * Write synchronizes the given entry and invokes the runable while holding the lock. Does nothing
    * if the entry does not exist.
    */
-  public void writeSyncIfPresent(Object key, Runnable runner);
+  void writeSyncIfPresent(Object key, Runnable runner);
 
   /**
    * Remove the entry with the given key if it has been marked as destroyed This is currently used
    * in the cleanup phase of getInitialImage.
    */
-  public void removeIfDestroyed(Object key);
+  void removeIfDestroyed(Object key);
 
   /**
    * @param key the key of the entry to destroy
@@ -277,8 +277,8 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param tailKey when not -1, it is the tailKey generated on near-side to be associated with
    *        entry on far-side for WAN
    */
-  public void txApplyDestroy(Object key, TransactionId rmtOrigin, TXRmtEvent event,
-      boolean inTokenMode, boolean inRI, Operation op, EventID eventId, Object aCallbackArgument,
+  void txApplyDestroy(Object key, TransactionId rmtOrigin, TXRmtEvent event, boolean inTokenMode,
+      boolean inRI, Operation op, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, boolean isOperationRemote, TXEntryState txEntryState,
       VersionTag versionTag, long tailKey);
@@ -299,11 +299,11 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param tailKey when not -1, it is the tailKey generated on near-side to be associated with
    *        entry on far-side for WAN
    */
-  public void txApplyInvalidate(Object key, Object newValue, boolean didDestroy,
-      TransactionId rmtOrigin, TXRmtEvent event, boolean localOp, EventID eventId,
-      Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
-      FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
-      TXEntryState txEntryState, VersionTag versionTag, long tailKey);
+  void txApplyInvalidate(Object key, Object newValue, boolean didDestroy, TransactionId rmtOrigin,
+      TXRmtEvent event, boolean localOp, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey);
 
   /**
    * @param putOp describes the operation that did the put
@@ -321,7 +321,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param tailKey when not -1, it is the tailKey generated on near-side to be associated with
    *        entry on far-side for WAN
    */
-  public void txApplyPut(Operation putOp, Object key, Object newValue, boolean didDestroy,
+  void txApplyPut(Operation putOp, Object key, Object newValue, boolean didDestroy,
       TransactionId rmtOrigin, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
@@ -330,16 +330,16 @@ public interface RegionMap extends LRUMapCallbacks {
   /**
    * removes the given key if the enclosing RegionEntry is still in this map
    */
-  public void removeEntry(Object key, RegionEntry value, boolean updateStats);
+  void removeEntry(Object key, RegionEntry value, boolean updateStats);
 
   /**
    * Removes the given key if the enclosing RegionEntry is still in this map for the given
    * EntryEvent
    */
-  public void removeEntry(Object key, RegionEntry re, boolean updateStat, EntryEventImpl event,
+  void removeEntry(Object key, RegionEntry re, boolean updateStat, EntryEventImpl event,
       LocalRegion owner);
 
-  public void copyRecoveredEntries(RegionMap rm);
+  void copyRecoveredEntries(RegionMap rm);
 
   /**
    * Removes an entry that was previously destroyed and made into a tombstone.
@@ -350,7 +350,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param isScheduledTombstone TODO
    * @return true if the tombstone entry was removed from the entry map
    */
-  public boolean removeTombstone(RegionEntry re, VersionHolder destroyedVersion, boolean isEviction,
+  boolean removeTombstone(RegionEntry re, VersionHolder destroyedVersion, boolean isEviction,
       boolean isScheduledTombstone);
 
   /**
@@ -360,22 +360,22 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param destroyedVersion the version that was destroyed
    * @return true of the tombstone is no longer needed (entry was resurrected or evicted)
    */
-  public boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion);
+  boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion);
 
-  public void updateEntryVersion(EntryEventImpl event);
+  void updateEntryVersion(EntryEventImpl event);
 
   /**
    * Decrements the transaction reference count. Some features, like eviction and expiration, will
    * not modify an entry while it is referenced by a transaction.
    */
-  public void decTxRefCount(RegionEntry e);
+  void decTxRefCount(RegionEntry e);
 
-  public void close();
+  void close();
 
   default void lockRegionForAtomicTX(LocalRegion r) {}
 
   default void unlockRegionForAtomicTX(LocalRegion r) {}
 
-  public ARMLockTestHook getARMLockTestHook();
+  ARMLockTestHook getARMLockTestHook();
 
 }

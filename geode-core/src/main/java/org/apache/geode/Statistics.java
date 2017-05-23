@@ -55,7 +55,7 @@ public interface Statistics {
    * value access on a closed statistics always results in zero. A value modification on a closed
    * statistics is ignored.
    */
-  public void close();
+  void close();
 
   //////////////////////// accessor Methods ///////////////////////
 
@@ -67,7 +67,7 @@ public interface Statistics {
    *
    * @see StatisticsType#nameToId
    */
-  public int nameToId(String name);
+  int nameToId(String name);
 
 
   /**
@@ -78,27 +78,27 @@ public interface Statistics {
    *
    * @see StatisticsType#nameToDescriptor
    */
-  public StatisticDescriptor nameToDescriptor(String name);
+  StatisticDescriptor nameToDescriptor(String name);
 
   /**
    * Gets a value that uniquely identifies this statistics.
    */
-  public long getUniqueId();
+  long getUniqueId();
 
   /**
    * Gets the {@link StatisticsType} of this instance.
    */
-  public StatisticsType getType();
+  StatisticsType getType();
 
   /**
    * Gets the text associated with this instance that helps identify it.
    */
-  public String getTextId();
+  String getTextId();
 
   /**
    * Gets the number associated with this instance that helps identify it.
    */
-  public long getNumericId();
+  long getNumericId();
 
   /**
    * Returns true if modifications are atomic. This means that multiple threads, can safely modify
@@ -107,12 +107,12 @@ public interface Statistics {
    * Returns false if modifications are not atomic. This means that modifications to this instance
    * are cheaper but not thread safe.
    */
-  public boolean isAtomic();
+  boolean isAtomic();
 
   /**
    * Returns true if the instance has been {@link #close closed}.
    */
-  public boolean isClosed();
+  boolean isClosed();
 
   //////////////////////// set() Methods ///////////////////////
 
@@ -123,7 +123,7 @@ public interface Statistics {
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public void setInt(int id, int value);
+  void setInt(int id, int value);
 
   /**
    * Sets the value of a named statistic of type <code>int</code>
@@ -131,7 +131,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists named <code>name</code> or if the
    *         statistic with name <code>name</code> is not of type <code>int</code>.
    */
-  public void setInt(String name, int value);
+  void setInt(String name, int value);
 
   /**
    * Sets the value of a described statistic of type <code>int</code>
@@ -139,7 +139,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists for the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>int</code>.
    */
-  public void setInt(StatisticDescriptor descriptor, int value);
+  void setInt(StatisticDescriptor descriptor, int value);
 
   /**
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>long</code>.
@@ -148,7 +148,7 @@ public interface Statistics {
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public void setLong(int id, long value);
+  void setLong(int id, long value);
 
   /**
    * Sets the value of a described statistic of type <code>long</code>
@@ -156,7 +156,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists for the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>long</code>.
    */
-  public void setLong(StatisticDescriptor descriptor, long value);
+  void setLong(StatisticDescriptor descriptor, long value);
 
   /**
    * Sets the value of a named statistic of type <code>long</code>.
@@ -164,7 +164,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists named <code>name</code> or if the
    *         statistic with name <code>name</code> is not of type <code>long</code>.
    */
-  public void setLong(String name, long value);
+  void setLong(String name, long value);
 
   /**
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>double</code>.
@@ -173,7 +173,7 @@ public interface Statistics {
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public void setDouble(int id, double value);
+  void setDouble(int id, double value);
 
   /**
    * Sets the value of a described statistic of type <code>double</code>
@@ -181,7 +181,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists for the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>double</code>.
    */
-  public void setDouble(StatisticDescriptor descriptor, double value);
+  void setDouble(StatisticDescriptor descriptor, double value);
 
   /**
    * Sets the value of a named statistic of type <code>double</code>.
@@ -189,7 +189,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists named <code>name</code> or if the
    *         statistic with name <code>name</code> is not of type <code>double</code>.
    */
-  public void setDouble(String name, double value);
+  void setDouble(String name, double value);
 
   /////////////////////// get() Methods ///////////////////////
 
@@ -199,7 +199,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public int getInt(int id);
+  int getInt(int id);
 
   /**
    * Returns the value of the described statistic of type <code>int</code>.
@@ -207,7 +207,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with the specified
    *         <code>descriptor</code> or if the described statistic is not of type <code>int</code>.
    */
-  public int getInt(StatisticDescriptor descriptor);
+  int getInt(StatisticDescriptor descriptor);
 
   /**
    * Returns the value of the statistic of type <code>int</code> at the given name.
@@ -215,7 +215,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>int</code>.
    */
-  public int getInt(String name);
+  int getInt(String name);
 
   /**
    * Returns the value of the identified statistic of type <code>long</code>.
@@ -223,7 +223,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public long getLong(int id);
+  long getLong(int id);
 
 
   /**
@@ -232,7 +232,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with the specified
    *         <code>descriptor</code> or if the described statistic is not of type <code>long</code>.
    */
-  public long getLong(StatisticDescriptor descriptor);
+  long getLong(StatisticDescriptor descriptor);
 
   /**
    * Returns the value of the statistic of type <code>long</code> at the given name.
@@ -240,7 +240,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>long</code>.
    */
-  public long getLong(String name);
+  long getLong(String name);
 
   /**
    * Returns the value of the identified statistic of type <code>double</code>.
@@ -248,7 +248,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public double getDouble(int id);
+  double getDouble(int id);
 
   /**
    * Returns the value of the described statistic of type <code>double</code>.
@@ -257,7 +257,7 @@ public interface Statistics {
    *         <code>descriptor</code> or if the described statistic is not of type
    *         <code>double</code>.
    */
-  public double getDouble(StatisticDescriptor descriptor);
+  double getDouble(StatisticDescriptor descriptor);
 
   /**
    * Returns the value of the statistic of type <code>double</code> at the given name.
@@ -265,7 +265,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>double</code>.
    */
-  public double getDouble(String name);
+  double getDouble(String name);
 
   /**
    * Returns the value of the identified statistic.
@@ -274,14 +274,14 @@ public interface Statistics {
    *        {@link StatisticsType#nameToDescriptor}.
    * @throws IllegalArgumentException If the described statistic does not exist
    */
-  public Number get(StatisticDescriptor descriptor);
+  Number get(StatisticDescriptor descriptor);
 
   /**
    * Returns the value of the named statistic.
    *
    * @throws IllegalArgumentException If the named statistic does not exist
    */
-  public Number get(String name);
+  Number get(String name);
 
   /**
    * Returns the bits that represent the raw value of the described statistic.
@@ -290,14 +290,14 @@ public interface Statistics {
    *        {@link StatisticsType#nameToDescriptor}.
    * @throws IllegalArgumentException If the described statistic does not exist
    */
-  public long getRawBits(StatisticDescriptor descriptor);
+  long getRawBits(StatisticDescriptor descriptor);
 
   /**
    * Returns the bits that represent the raw value of the named statistic.
    *
    * @throws IllegalArgumentException If the named statistic does not exist
    */
-  public long getRawBits(String name);
+  long getRawBits(String name);
 
   //////////////////////// inc() Methods ////////////////////////
 
@@ -308,7 +308,7 @@ public interface Statistics {
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public void incInt(int id, int delta);
+  void incInt(int id, int delta);
 
   /**
    * Increments the value of the described statistic of type <code>int</code> by the given amount.
@@ -316,7 +316,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>int</code>.
    */
-  public void incInt(StatisticDescriptor descriptor, int delta);
+  void incInt(StatisticDescriptor descriptor, int delta);
 
   /**
    * Increments the value of the statistic of type <code>int</code> with the given name by a given
@@ -325,7 +325,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>int</code>.
    */
-  public void incInt(String name, int delta);
+  void incInt(String name, int delta);
 
   /**
    * Increments the value of the identified statistic of type <code>long</code> by the given amount.
@@ -334,7 +334,7 @@ public interface Statistics {
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public void incLong(int id, long delta);
+  void incLong(int id, long delta);
 
   /**
    * Increments the value of the described statistic of type <code>long</code> by the given amount.
@@ -342,7 +342,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>long</code>.
    */
-  public void incLong(StatisticDescriptor descriptor, long delta);
+  void incLong(StatisticDescriptor descriptor, long delta);
 
   /**
    * Increments the value of the statistic of type <code>long</code> with the given name by a given
@@ -351,7 +351,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>long</code>.
    */
-  public void incLong(String name, long delta);
+  void incLong(String name, long delta);
 
   /**
    * Increments the value of the identified statistic of type <code>double</code> by the given
@@ -361,7 +361,7 @@ public interface Statistics {
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
-  public void incDouble(int id, double delta);
+  void incDouble(int id, double delta);
 
   /**
    * Increments the value of the described statistic of type <code>double</code> by the given
@@ -370,7 +370,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>double</code>.
    */
-  public void incDouble(StatisticDescriptor descriptor, double delta);
+  void incDouble(StatisticDescriptor descriptor, double delta);
 
   /**
    * Increments the value of the statistic of type <code>double</code> with the given name by a
@@ -379,7 +379,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>double</code>.
    */
-  public void incDouble(String name, double delta);
+  void incDouble(String name, double delta);
 
   /**
    * Provide a callback to compute the value of this statistic every sample interval and use that as
@@ -404,7 +404,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If the id is invalid.
    * @since Geode 1.0
    */
-  public IntSupplier setIntSupplier(int id, IntSupplier supplier);
+  IntSupplier setIntSupplier(int id, IntSupplier supplier);
 
   /**
    * Provide a callback to compute the value of this statistic every sample interval and use that as
@@ -430,7 +430,7 @@ public interface Statistics {
    *         statistic named <code>name</code> is not of type <code>int</code>.
    * @since Geode 1.0
    */
-  public IntSupplier setIntSupplier(String name, IntSupplier supplier);
+  IntSupplier setIntSupplier(String name, IntSupplier supplier);
 
 
   /**
@@ -457,7 +457,7 @@ public interface Statistics {
    *         or if the described statistic is not of type <code>int</code>.
    * @since Geode 1.0
    */
-  public IntSupplier setIntSupplier(StatisticDescriptor descriptor, IntSupplier supplier);
+  IntSupplier setIntSupplier(StatisticDescriptor descriptor, IntSupplier supplier);
 
   /**
    * Provide a callback to compute the value of this statistic every sample interval and use that as
@@ -482,7 +482,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If the id is invalid.
    * @since Geode 1.0
    */
-  public LongSupplier setLongSupplier(int id, LongSupplier supplier);
+  LongSupplier setLongSupplier(int id, LongSupplier supplier);
 
   /**
    * Provide a callback to compute the value of this statistic every sample interval and use that as
@@ -507,7 +507,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>long</code>.
    */
-  public LongSupplier setLongSupplier(String name, LongSupplier supplier);
+  LongSupplier setLongSupplier(String name, LongSupplier supplier);
 
 
   /**
@@ -534,7 +534,7 @@ public interface Statistics {
    *         or if the described statistic is not of type <code>long</code>.
    * @since Geode 1.0
    */
-  public LongSupplier setLongSupplier(StatisticDescriptor descriptor, LongSupplier supplier);
+  LongSupplier setLongSupplier(StatisticDescriptor descriptor, LongSupplier supplier);
 
   /**
    * Provide a callback to compute the value of this statistic every sample interval and use that as
@@ -559,7 +559,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If the id is invalid.
    * @since Geode 1.0
    */
-  public DoubleSupplier setDoubleSupplier(int id, DoubleSupplier supplier);
+  DoubleSupplier setDoubleSupplier(int id, DoubleSupplier supplier);
 
   /**
    * Provide a callback to compute the value of this statistic every sample interval and use that as
@@ -585,7 +585,7 @@ public interface Statistics {
    *         statistic named <code>name</code> is not of type <code>double</code>.
    * @since Geode 1.0
    */
-  public DoubleSupplier setDoubleSupplier(String name, DoubleSupplier supplier);
+  DoubleSupplier setDoubleSupplier(String name, DoubleSupplier supplier);
 
 
   /**
@@ -612,5 +612,5 @@ public interface Statistics {
    *         or if the described statistic is not of type <code>double</code>.
    * @since Geode 1.0
    */
-  public DoubleSupplier setDoubleSupplier(StatisticDescriptor descriptor, DoubleSupplier supplier);
+  DoubleSupplier setDoubleSupplier(StatisticDescriptor descriptor, DoubleSupplier supplier);
 }
