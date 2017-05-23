@@ -96,8 +96,13 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
   private Analyzer toAnalyzer(String className) {
     if (className == null)
       className = StandardAnalyzer.class.getCanonicalName();
-    else if (StringUtils.trim(className).equals("") | StringUtils.trim(className).equals("null"))
-      className = StandardAnalyzer.class.getCanonicalName();
+    else {
+      String trimmedClassName = StringUtils.trim(className);
+      if (trimmedClassName.equals("") || trimmedClassName.equals("null"))
+        className = StandardAnalyzer.class.getCanonicalName();
+      else
+        className = trimmedClassName;
+    }
 
     Class<? extends Analyzer> clazz =
         CliUtil.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
