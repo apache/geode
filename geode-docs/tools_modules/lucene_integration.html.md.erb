@@ -61,6 +61,9 @@ There is no way to create a Lucene index on a client.
 
 Create the index before creating the region.
 
+When no analyzer is specified, the default analyzer from
+`org.apache.lucene.analysis.standard.StandardAnalyzer` will be used.
+
 ### <a id="api-create-example" class="no-quick-link"></a>Java API Example to Create an Index
 
 ``` pre
@@ -110,7 +113,7 @@ option to be `__REGION_VALUE_FIELD`.
     version="1.0">
  
     <region name="region" refid="PARTITION">
-        <lucene:index name="index">
+        <lucene:index name="myIndex">
           <lucene:field name="a" 
                         analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
           <lucene:field name="b" 
