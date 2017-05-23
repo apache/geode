@@ -1366,6 +1366,22 @@ public class IndexUseJUnitTest {
   }
 
   @Test
+  public void queryWithOrClauseShouldReturnCorrectResultSet() throws Exception {
+    String query =
+        "SELECT DISTINCT p1.ID FROM /pos p1 where p1.ID IN SET (0,1) OR p1.status = 'active'";
+
+    Query q = qs.newQuery(query);
+    QueryObserverImpl observer = new QueryObserverImpl();
+    QueryObserverHolder.setInstance(observer);
+    SelectResults sr = (SelectResults) q.execute();
+    if (!observer.isIndexesUsed)
+      fail("Index should have been used for query '" + q.getQueryString() + "'");
+
+    assertEquals(sr.size(), 3);
+    qs.removeIndexes();
+  }
+
+  @Test
   public void testIndexUseSelfJoin() throws Exception {
     String[] queries = {"SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.status = p2.status",
         "SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.ID = p2.ID",
