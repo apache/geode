@@ -38,36 +38,35 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   /**
    * Notification type for indicating a cache got created on a member of this distributed system.
    */
-  public static final String NOTIF_CACHE_CREATED =
+  String NOTIF_CACHE_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.created";
   /**
    * Notification type for indicating a cache is closed on a member of this distributed system.
    */
-  public static final String NOTIF_CACHE_CLOSED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
+  String NOTIF_CACHE_CLOSED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
   /**
    * Notification type for indicating a region is created in a cache on a member of this distributed
    * system.
    */
-  public static final String NOTIF_REGION_CREATED =
+  String NOTIF_REGION_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
   /**
    * Notification type for indicating a region was removed from a cache on a member of this
    * distributed system.
    */
-  public static final String NOTIF_REGION_LOST =
+  String NOTIF_REGION_LOST =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.lost";
 
   /** Notification type for indicating client joined */
-  public static final String NOTIF_CLIENT_JOINED =
+  String NOTIF_CLIENT_JOINED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.joined";
 
   /** Notification type for indicating client left */
-  public static final String NOTIF_CLIENT_LEFT =
+  String NOTIF_CLIENT_LEFT =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.left";
 
   /** Notification type for indicating client crashed */
-  public static final String NOTIF_CLIENT_CRASHED =
+  String NOTIF_CLIENT_CRASHED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.crashed";
 
   /**
@@ -75,7 +74,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    *
    * @return the current refresh interval in seconds
    */
-  public int getRefreshInterval();
+  int getRefreshInterval();
 
   /**
    * RefreshInterval is now set only through the AdminDistributedSystem property refreshInterval.
@@ -87,14 +86,14 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * @deprecated since 6.0 use DistributedSystemConfig.refreshInterval instead
    */
   @Deprecated
-  public void setRefreshInterval(int refreshInterval) throws OperationNotSupportedException;
+  void setRefreshInterval(int refreshInterval) throws OperationNotSupportedException;
 
   /**
    * Sets the refresh interval field. Sets interval in seconds between config refreshes; zero or
    * less turns off auto refreshing. Manual refreshing has no effect on when the next scheduled
    * refresh will occur.
    */
-  public void _setRefreshInterval(int refreshInterval);
+  void _setRefreshInterval(int refreshInterval);
 
   /**
    * Gets this member's cache.
@@ -103,21 +102,21 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    *
    * @throws AdminException If this system member does not host a cache
    */
-  public ObjectName manageCache() throws AdminException, MalformedObjectNameException;
+  ObjectName manageCache() throws AdminException, MalformedObjectNameException;
 
   /**
    * Gets all active StatisticResources for this manager.
    *
    * @return array of ObjectName instances
    */
-  public ObjectName[] manageStats() throws AdminException, MalformedObjectNameException;
+  ObjectName[] manageStats() throws AdminException, MalformedObjectNameException;
 
   /**
    * Gets the active StatisticResources for this manager, based on the typeName as the key
    *
    * @return ObjectName of StatisticResourceJMX instance
    */
-  public ObjectName[] manageStat(String statisticsTypeName)
+  ObjectName[] manageStat(String statisticsTypeName)
       throws AdminException, MalformedObjectNameException;
 
   /**
@@ -127,7 +126,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
-  public void handleNotification(Notification notification, Object hb);
+  void handleNotification(Notification notification, Object hb);
 
   /**
    * Add MBean attribute definitions for each ConfigurationParameter.
@@ -136,7 +135,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * @return a new instance of ManagedBean copied from <code>managed</code> but with the new
    *         attributes added
    */
-  public ManagedBean addDynamicAttributes(ManagedBean managed) throws AdminException;
+  ManagedBean addDynamicAttributes(ManagedBean managed) throws AdminException;
 
 
   /**
@@ -145,7 +144,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * 
    * @param event event object corresponding to the creation of the cache
    */
-  public void handleCacheCreate(SystemMemberCacheEvent event);
+  void handleCacheCreate(SystemMemberCacheEvent event);
 
   /**
    * Implementation should handle closure of cache by extracting the details from the given event
@@ -153,7 +152,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * 
    * @param event event object corresponding to the closure of the cache
    */
-  public void handleCacheClose(SystemMemberCacheEvent event);
+  void handleCacheClose(SystemMemberCacheEvent event);
 
   /**
    * Implementation should handle creation of region by extracting the details from the given event
@@ -161,7 +160,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * 
    * @param event event object corresponding to the creation of a region
    */
-  public void handleRegionCreate(SystemMemberRegionEvent event);
+  void handleRegionCreate(SystemMemberRegionEvent event);
 
   /**
    * Implementation should handle loss of region by extracting the details from the given event
@@ -169,7 +168,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * 
    * @param event event object corresponding to the loss of a region
    */
-  public void handleRegionLoss(SystemMemberRegionEvent event);
+  void handleRegionLoss(SystemMemberRegionEvent event);
 
   /**
    * Implementation should handle client membership changes.
@@ -178,7 +177,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * @param eventType membership change type; one of {@link ClientMembershipMessage#JOINED},
    *        {@link ClientMembershipMessage#LEFT}, {@link ClientMembershipMessage#CRASHED}
    */
-  public void handleClientMembership(String clientId, int eventType);
+  void handleClientMembership(String clientId, int eventType);
 
   ////////////////////// Inner Classess //////////////////////
 
@@ -186,7 +185,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * A helper class that provides implementation of the <code>SystemMemberJmx</code> interface as
    * static methods.
    */
-  public static class Helper {
+  class Helper {
     private static final Logger logger = LogService.getLogger();
 
     private static AtomicInteger notificationSequenceNumber = new AtomicInteger();

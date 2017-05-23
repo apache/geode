@@ -16,9 +16,9 @@ package org.apache.geode.pdx.internal;
 
 @SuppressWarnings("rawtypes")
 public interface ComparableEnum extends Comparable {
-  public String getClassName();
+  String getClassName();
 
-  public String getName();
+  String getName();
 
-  public int getOrdinal();
+  int getOrdinal();
 }

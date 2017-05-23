@@ -25,21 +25,21 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
  */
 public interface HAContainerWrapper extends Map {
 
-  public void cleanUp();
+  void cleanUp();
 
-  public Object getEntry(Object key);
+  Object getEntry(Object key);
 
-  public Object getKey(Object key);
+  Object getKey(Object key);
 
-  public String getName();
+  String getName();
 
-  public ClientProxyMembershipID getProxyID(String haRegionName);
+  ClientProxyMembershipID getProxyID(String haRegionName);
 
-  public Object putProxy(String haRegionName, CacheClientProxy proxy);
+  Object putProxy(String haRegionName, CacheClientProxy proxy);
 
-  public Object removeProxy(String haRegionName);
+  Object removeProxy(String haRegionName);
 
-  public CacheClientProxy getProxy(String haRegionName);
+  CacheClientProxy getProxy(String haRegionName);
 
-  public Object putIfAbsent(Object key, Object value);
+  Object putIfAbsent(Object key, Object value);
 }

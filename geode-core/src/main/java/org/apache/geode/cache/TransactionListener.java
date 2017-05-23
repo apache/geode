@@ -45,7 +45,7 @@ public interface TransactionListener extends CacheCallback {
    * @param event the TransactionEvent
    * @see CacheTransactionManager#commit
    */
-  public void afterCommit(TransactionEvent event);
+  void afterCommit(TransactionEvent event);
 
   /**
    * Called after an unsuccessful commit operation.
@@ -53,7 +53,7 @@ public interface TransactionListener extends CacheCallback {
    * @param event the TransactionEvent
    * @see CacheTransactionManager#commit
    */
-  public void afterFailedCommit(TransactionEvent event);
+  void afterFailedCommit(TransactionEvent event);
 
   /**
    * Called after an explicit rollback of a transaction.
@@ -62,5 +62,5 @@ public interface TransactionListener extends CacheCallback {
    * @see CacheTransactionManager#rollback
    * @see CacheTransactionManager#commit
    */
-  public void afterRollback(TransactionEvent event);
+  void afterRollback(TransactionEvent event);
 }

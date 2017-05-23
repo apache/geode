@@ -19,13 +19,13 @@ import java.util.Map;
 public interface CompositeTestMXBean {
   // [A] MBean Attributes
   // 0. Basic
-  public CompositeStats getCompositeStats();
+  CompositeStats getCompositeStats();
 
-  public CompositeStats listCompositeStats();
+  CompositeStats listCompositeStats();
 
-  public Map<String, Integer> getMap();
+  Map<String, Integer> getMap();
 
-  public Integer[] getIntegerArray();
+  Integer[] getIntegerArray();
 
-  public CompositeStats[] getCompositeArray();
+  CompositeStats[] getCompositeArray();
 }

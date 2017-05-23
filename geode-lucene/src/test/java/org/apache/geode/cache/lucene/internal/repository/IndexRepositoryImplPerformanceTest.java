@@ -422,17 +422,17 @@ public class IndexRepositoryImplPerformanceTest {
   }
 
   private interface TestCallbacks {
-    public void init() throws Exception;
+    void init() throws Exception;
 
-    public int query(Query query) throws Exception;
+    int query(Query query) throws Exception;
 
-    public void addObject(String key, String text) throws Exception;
+    void addObject(String key, String text) throws Exception;
 
-    public void commit() throws Exception;
+    void commit() throws Exception;
 
-    public void waitForAsync() throws Exception;
+    void waitForAsync() throws Exception;
 
-    public void cleanup() throws Exception;
+    void cleanup() throws Exception;
   }
 
   private static class Results {

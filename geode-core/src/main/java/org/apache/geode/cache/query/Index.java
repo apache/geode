@@ -49,21 +49,21 @@ public interface Index {
   /**
    * Returns the unique name of this index
    */
-  public String getName();
+  String getName();
 
   /**
    * Get the index type
    * 
    * @return the type of index
    */
-  public IndexType getType();
+  IndexType getType();
 
   /**
    * The Region this index is on
    * 
    * @return the Region for this index
    */
-  public Region<?, ?> getRegion();
+  Region<?, ?> getRegion();
 
   /**
    * Get statistics information for this index.
@@ -73,39 +73,39 @@ public interface Index {
    *         On Map type indexes the stats are created at individual key level that can be viewed in
    *         VSD stats.
    */
-  public IndexStatistics getStatistics();
+  IndexStatistics getStatistics();
 
   /**
    * Get the original fromClause for this index.
    */
-  public String getFromClause();
+  String getFromClause();
 
   /**
    * Get the canonicalized fromClause for this index.
    */
-  public String getCanonicalizedFromClause();
+  String getCanonicalizedFromClause();
 
   /**
    * Get the original indexedExpression for this index.
    */
-  public String getIndexedExpression();
+  String getIndexedExpression();
 
   /**
    * Get the canonicalized indexedExpression for this index.
    */
-  public String getCanonicalizedIndexedExpression();
+  String getCanonicalizedIndexedExpression();
 
   /**
    * Get the original projectionAttributes for this expression.
    * 
    * @return the projectionAttributes, or "*" if there were none specified at index creation.
    */
-  public String getProjectionAttributes();
+  String getProjectionAttributes();
 
   /**
    * Get the canonicalized projectionAttributes for this expression.
    * 
    * @return the projectionAttributes, or "*" if there were none specified at index creation.
    */
-  public String getCanonicalizedProjectionAttributes();
+  String getCanonicalizedProjectionAttributes();
 }

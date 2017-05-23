@@ -31,58 +31,58 @@ public interface DiskStoreMXBean {
   /**
    * Returns the name of the DiskStore.
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns whether disk files are to be automatically compacted.
    * 
    * @return True if disk files are automatically compacted, false otherwise
    */
-  public boolean isAutoCompact();
+  boolean isAutoCompact();
 
   /**
    * Returns the threshold at which an op-log may be compacted. Until it reaches this threshold the
    * op-log will not be compacted. The threshold is a percentage in the range 0..100.
    */
-  public int getCompactionThreshold();
+  int getCompactionThreshold();
 
   /**
    * Returns whether manual compaction of disk files is allowed.
    * 
    * @return True if manual compaction is allowed, false otherwise.
    */
-  public boolean isForceCompactionAllowed();
+  boolean isForceCompactionAllowed();
 
   /**
    * Returns the maximum size (in megabytes) that a single op-log can grow to.
    */
-  public long getMaxOpLogSize();
+  long getMaxOpLogSize();
 
   /**
    * Returns the time (in milliseconds) that can elapse before unwritten data is saved to disk.
    */
-  public long getTimeInterval();
+  long getTimeInterval();
 
   /**
    * Returns the size of the write buffer that this DiskStore will use when writing data to disk.
    */
-  public int getWriteBufferSize();
+  int getWriteBufferSize();
 
   /**
    * Returns the path of the directories to which the region's data will be written.
    */
-  public String[] getDiskDirectories();
+  String[] getDiskDirectories();
 
   /**
    * Returns the maximum number of operations that can be asynchronously queued for saving to disk.
    * When this limit is reached operations will block until they can be put in the queue.
    */
-  public int getQueueSize();
+  int getQueueSize();
 
   /**
    * Returns the total number of bytes of space this DiskStore has used.
    */
-  public long getTotalBytesOnDisk();
+  long getTotalBytesOnDisk();
 
   /**
    * Returns the average latency of disk reads in nanoseconds Its the average latency required to
@@ -92,7 +92,7 @@ public interface DiskStoreMXBean {
    * So this rate won't match the number of bytes put in all regions.This is rate of actual bytes
    * system is persisting.
    */
-  public float getDiskReadsRate();
+  float getDiskReadsRate();
 
   /**
    * Returns the average latency of disk writes in nanoseconds. Its the average latency required to
@@ -102,44 +102,44 @@ public interface DiskStoreMXBean {
    * So this rate won't match the number of bytes put in all regions. This is rate of actual bytes
    * system is persisting.
    */
-  public float getDiskWritesRate();
+  float getDiskWritesRate();
 
   /**
    * Returns the disk reads average latency in nanoseconds. It depicts average time needed to read
    * one byte of data from disk.
    */
-  public long getDiskReadsAvgLatency();
+  long getDiskReadsAvgLatency();
 
   /**
    * Returns the disk writes average latency in nanoseconds. It depicts average time needed to write
    * one byte of data to disk.
    */
-  public long getDiskWritesAvgLatency();
+  long getDiskWritesAvgLatency();
 
   /**
    * Returns the flush time average latency.
    */
-  public long getFlushTimeAvgLatency();
+  long getFlushTimeAvgLatency();
 
   /**
    * Returns the number of entries in the asynchronous queue waiting to be written to disk.
    */
-  public int getTotalQueueSize();
+  int getTotalQueueSize();
 
   /**
    * Returns the number of backups currently in progress on this DiskStore.
    */
-  public int getTotalBackupInProgress();
+  int getTotalBackupInProgress();
 
   /**
    * Returns the number of backups of this DiskStore that have been completed.
    */
-  public int getTotalBackupCompleted();
+  int getTotalBackupCompleted();
 
   /**
    * Returns the number of persistent regions currently being recovered from disk.
    */
-  public int getTotalRecoveriesInProgress();
+  int getTotalRecoveriesInProgress();
 
   /**
    * Requests the DiskStore to start writing to a new op-log. The old oplog will be asynchronously
@@ -150,7 +150,7 @@ public interface DiskStoreMXBean {
    * additional space is available.
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void forceRoll();
+  void forceRoll();
 
   /**
    * Requests the DiskStore to start compacting. The compaction is done even if automatic compaction
@@ -162,14 +162,14 @@ public interface DiskStoreMXBean {
    *         ready to be compacted or that a compaction was already in progress.
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public boolean forceCompaction();
+  boolean forceCompaction();
 
   /**
    * Causes any data that is currently in the asynchronous queue to be written to disk. Does not
    * return until the flush is complete.
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void flush();
+  void flush();
 
   /**
    * Returns the warning threshold for disk usage as a percentage of the total disk volume.
@@ -177,7 +177,7 @@ public interface DiskStoreMXBean {
    * @return the warning percent
    * @since GemFire 8.0
    */
-  public float getDiskUsageWarningPercentage();
+  float getDiskUsageWarningPercentage();
 
   /**
    * Returns the critical threshold for disk usage as a percentage of the total disk volume.
@@ -185,7 +185,7 @@ public interface DiskStoreMXBean {
    * @return the critical percent
    * @since GemFire 8.0
    */
-  public float getDiskUsageCriticalPercentage();
+  float getDiskUsageCriticalPercentage();
 
   /**
    * Sets the value of the disk usage warning percentage.
@@ -193,7 +193,7 @@ public interface DiskStoreMXBean {
    * @param warningPercent the warning percent
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void setDiskUsageWarningPercentage(float warningPercent);
+  void setDiskUsageWarningPercentage(float warningPercent);
 
   /**
    * Sets the value of the disk usage critical percentage.
@@ -201,5 +201,5 @@ public interface DiskStoreMXBean {
    * @param criticalPercent the critical percent
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void setDiskUsageCriticalPercentage(float criticalPercent);
+  void setDiskUsageCriticalPercentage(float criticalPercent);
 }

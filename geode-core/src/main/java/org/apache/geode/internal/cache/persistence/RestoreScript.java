@@ -141,7 +141,7 @@ public class RestoreScript {
     return false;
   }
 
-  private static interface ScriptGenerator {
+  private interface ScriptGenerator {
 
     void writePreamble(PrintWriter writer);
 

@@ -29,11 +29,11 @@ public interface DependencyMonitor {
    * Return a map of resource identifiers to the threads that are blocked waiting for those
    * resources.
    */
-  public Set<Dependency<Thread, Serializable>> getBlockedThreads(Thread[] allThreads);
+  Set<Dependency<Thread, Serializable>> getBlockedThreads(Thread[] allThreads);
 
   /**
    * Return a map of resource indentifiers to the threads that hold that particular resource.
    */
-  public Set<Dependency<Serializable, Thread>> getHeldResources(Thread[] allThreads);
+  Set<Dependency<Serializable, Thread>> getHeldResources(Thread[] allThreads);
 
 }

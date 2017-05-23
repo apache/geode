@@ -36,7 +36,7 @@ public interface PartitionRegionInfo {
    * 
    * @return the full path of the partitioned region that this info describes
    */
-  public String getRegionPath();
+  String getRegionPath();
 
   /**
    * Returns an immutable set of <code>PartitionMemberInfo</code> representing every member that is
@@ -44,7 +44,7 @@ public interface PartitionRegionInfo {
    * 
    * @return set of member info configured for storage space
    */
-  public Set<PartitionMemberInfo> getPartitionMemberInfo();
+  Set<PartitionMemberInfo> getPartitionMemberInfo();
 
   /**
    * Returns the {@link org.apache.geode.cache.PartitionAttributes#getTotalNumBuckets() configured
@@ -52,7 +52,7 @@ public interface PartitionRegionInfo {
    * 
    * @return the configured number of buckets
    */
-  public int getConfiguredBucketCount();
+  int getConfiguredBucketCount();
 
   /**
    * Returns the number of actual buckets that have been created to hold data for the partitioned
@@ -60,7 +60,7 @@ public interface PartitionRegionInfo {
    * 
    * @return the current number of actual buckets that have been created
    */
-  public int getCreatedBucketCount();
+  int getCreatedBucketCount();
 
   /**
    * Returns the number of created buckets that have fewer than the
@@ -70,7 +70,7 @@ public interface PartitionRegionInfo {
    * @return the number of created buckets that have fewer than the configured redundant copies
    * @see #getActualRedundantCopies()
    */
-  public int getLowRedundancyBucketCount();
+  int getLowRedundancyBucketCount();
 
   /**
    * Returns the number of {@link org.apache.geode.cache.PartitionAttributes#getRedundantCopies()
@@ -78,7 +78,7 @@ public interface PartitionRegionInfo {
    * 
    * @return the number of redundant copies the partitioned region was configured for
    */
-  public int getConfiguredRedundantCopies();
+  int getConfiguredRedundantCopies();
 
   /**
    * Returns the lowest number of redundant copies for any bucket holding data for the partitioned
@@ -87,7 +87,7 @@ public interface PartitionRegionInfo {
    * 
    * @return the lowest number of redundant copies for any bucket of the partitioned region.
    */
-  public int getActualRedundantCopies();
+  int getActualRedundantCopies();
 
   /**
    * Returns the {@link org.apache.geode.cache.Region#getFullPath() full path} of the partitioned
@@ -98,5 +98,5 @@ public interface PartitionRegionInfo {
    * @return the full path of the partitioned region that the region is colocated with or null if
    *         there is none.
    */
-  public String getColocatedWith();
+  String getColocatedWith();
 }

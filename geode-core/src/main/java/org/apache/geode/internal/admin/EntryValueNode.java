@@ -23,26 +23,26 @@ public interface EntryValueNode {
   /**
    * Returns true if this node represents a primitive value or String
    */
-  public boolean isPrimitiveOrString();
+  boolean isPrimitiveOrString();
 
   /**
    * Returns the field name, if any
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the class name
    */
-  public String getType();
+  String getType();
 
   /**
    * Returns the fields in physical inspection, or the logical elements in logical inspection
    */
-  public EntryValueNode[] getChildren();
+  EntryValueNode[] getChildren();
 
   /**
    * Returns the wrapped primitive value if this is a primitive or the result of calling
    * <code>toString()</code> if this is an object.
    */
-  public Object getPrimitiveValue();
+  Object getPrimitiveValue();
 }

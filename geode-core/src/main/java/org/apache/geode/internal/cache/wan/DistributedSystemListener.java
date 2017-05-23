@@ -24,8 +24,8 @@ public interface DistributedSystemListener {
 
   // remoteDSId is the distributed-system-id of the distributed system that has joined existing
   // sites
-  public void addedDistributedSystem(int remoteDsId);
+  void addedDistributedSystem(int remoteDsId);
 
   // This is invoked when user explicitly removed the distributed system from the membership
-  public void removedDistributedSystem(int remoteDsId);
+  void removedDistributedSystem(int remoteDsId);
 }

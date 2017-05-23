@@ -31,5 +31,5 @@ public interface LocalStatListener {
    *
    * @param value The new value of the statistic
    */
-  public void statValueChanged(double value);
+  void statValueChanged(double value);
 }

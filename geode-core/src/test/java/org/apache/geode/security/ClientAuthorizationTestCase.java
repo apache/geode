@@ -1309,20 +1309,20 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
      * Get allowed credentials for the given set of operations in the given regions and indices of
      * KEYS in the <code>KEYS</code> array
      */
-    public Properties getAllowedCredentials(OperationCode[] opCodes, String[] regionNames,
+    Properties getAllowedCredentials(OperationCode[] opCodes, String[] regionNames,
         int[] keyIndices, int num);
 
     /**
      * Get disallowed credentials for the given set of operations in the given regions and indices
      * of KEYS in the <code>KEYS</code> array
      */
-    public Properties getDisallowedCredentials(OperationCode[] opCodes, String[] regionNames,
+    Properties getDisallowedCredentials(OperationCode[] opCodes, String[] regionNames,
         int[] keyIndices, int num);
 
     /**
      * Get the {@link CredentialGenerator} if any.
      */
-    public CredentialGenerator getCredentialGenerator();
+    CredentialGenerator getCredentialGenerator();
   }
 
   /**

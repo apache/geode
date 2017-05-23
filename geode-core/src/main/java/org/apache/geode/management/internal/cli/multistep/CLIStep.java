@@ -24,8 +24,8 @@ import org.apache.geode.management.cli.Result;
  */
 public interface CLIStep {
 
-  public Result exec();
+  Result exec();
 
-  public String getName();
+  String getName();
 
 }

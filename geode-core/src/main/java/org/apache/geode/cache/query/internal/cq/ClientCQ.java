@@ -29,10 +29,10 @@ public interface ClientCQ extends InternalCqQuery {
    * @param sendRequestToServer true to send the request to server.
    * @throws CqException
    */
-  public abstract void close(boolean sendRequestToServer) throws CqClosedException, CqException;
+  void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 
-  public abstract void setProxyCache(ProxyCache proxyCache);
+  void setProxyCache(ProxyCache proxyCache);
 
-  public abstract void createOn(Connection recoveredConnection, boolean isDurable);
+  void createOn(Connection recoveredConnection, boolean isDurable);
 
 }

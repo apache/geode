@@ -72,7 +72,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @see Region#put(Object, Object)
    * @see Region#get(Object)
    */
-  public void afterCreate(EntryEvent<K, V> event);
+  void afterCreate(EntryEvent<K, V> event);
 
   /**
    * Handles the event of an entry's value being modified in a region. This entry previously existed
@@ -81,7 +81,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @param event the EntryEvent
    * @see Region#put(Object, Object)
    */
-  public void afterUpdate(EntryEvent<K, V> event);
+  void afterUpdate(EntryEvent<K, V> event);
 
   /**
    * Handles the event of an entry's value being invalidated.
@@ -89,7 +89,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @param event the EntryEvent
    * @see Region#invalidate(Object)
    */
-  public void afterInvalidate(EntryEvent<K, V> event);
+  void afterInvalidate(EntryEvent<K, V> event);
 
   /**
    * Handles the event of an entry being destroyed.
@@ -97,7 +97,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @param event the EntryEvent
    * @see Region#destroy(Object)
    */
-  public void afterDestroy(EntryEvent<K, V> event);
+  void afterDestroy(EntryEvent<K, V> event);
 
   /**
    * Handles the event of a region being invalidated. Events are not invoked for each individual
@@ -108,7 +108,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @see Region#invalidateRegion()
    * @see Region#localInvalidateRegion()
    */
-  public void afterRegionInvalidate(RegionEvent<K, V> event);
+  void afterRegionInvalidate(RegionEvent<K, V> event);
 
   /**
    * Handles the event of a region being destroyed. Events are not invoked for each individual entry
@@ -121,7 +121,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @see Region#close
    * @see Cache#close()
    */
-  public void afterRegionDestroy(RegionEvent<K, V> event);
+  void afterRegionDestroy(RegionEvent<K, V> event);
 
   /**
    * Handles the event of a region being cleared. Events are not invoked for each individual entry
@@ -132,7 +132,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @see Region#clear
    * @since GemFire 5.0
    */
-  public void afterRegionClear(RegionEvent<K, V> event);
+  void afterRegionClear(RegionEvent<K, V> event);
 
   /**
    * Handles the event of a region being created. Events are invoked for each individual region that
@@ -147,7 +147,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @see Region#createSubregion
    * @since GemFire 5.0
    */
-  public void afterRegionCreate(RegionEvent<K, V> event);
+  void afterRegionCreate(RegionEvent<K, V> event);
 
   /**
    * Handles the event of a region being live after receiving the marker from the server.
@@ -157,5 +157,5 @@ public interface CacheListener<K, V> extends CacheCallback {
    * @see Cache#readyForEvents
    * @since GemFire 5.5
    */
-  public void afterRegionLive(RegionEvent<K, V> event);
+  void afterRegionLive(RegionEvent<K, V> event);
 }

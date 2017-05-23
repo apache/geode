@@ -30,5 +30,5 @@ public interface ObjToByteArraySerializer extends DataOutput {
    * 
    * @throws IOException if something goes wrong during serialization
    */
-  public void writeAsSerializedByteArray(Object v) throws IOException;
+  void writeAsSerializedByteArray(Object v) throws IOException;
 }

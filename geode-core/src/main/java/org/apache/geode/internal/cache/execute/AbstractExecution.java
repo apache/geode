@@ -80,11 +80,11 @@ public abstract class AbstractExecution implements InternalExecution {
    */
   protected Collection<InternalDistributedMember> executionNodes = null;
 
-  public static interface ExecutionNodesListener {
+  public interface ExecutionNodesListener {
 
-    public void afterExecutionNodesSet(AbstractExecution execution);
+    void afterExecutionNodesSet(AbstractExecution execution);
 
-    public void reset();
+    void reset();
   }
 
   protected ExecutionNodesListener executionNodesListener = null;

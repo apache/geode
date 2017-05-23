@@ -30,7 +30,7 @@ public interface Filter {
    * 
    * @return SelectResults
    */
-  public SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit)
+  SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException;
 
@@ -85,7 +85,7 @@ public interface Filter {
    * @throws NameResolutionException
    * @throws QueryInvocationTargetException
    */
-  public SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit,
+  SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit,
       boolean completeExpansionNeeded, CompiledValue iterOperands, RuntimeIterator[] indpndntItrs,
       boolean isIntersection, boolean conditioningNeeded, boolean evaluateProjection)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -105,11 +105,11 @@ public interface Filter {
    * @throws NameResolutionException
    * @throws QueryInvocationTargetException
    */
-  public SelectResults auxFilterEvaluate(ExecutionContext context,
-      SelectResults intermediateResults) throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException;
+  SelectResults auxFilterEvaluate(ExecutionContext context, SelectResults intermediateResults)
+      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException;
 
-  public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
+  int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
   /**
@@ -121,7 +121,7 @@ public interface Filter {
    * @throws NameResolutionException
    * @throws QueryInvocationTargetException
    */
-  public boolean isProjectionEvaluationAPossibility(ExecutionContext context)
+  boolean isProjectionEvaluationAPossibility(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException;
 
@@ -136,8 +136,8 @@ public interface Filter {
    * @throws TypeMismatchException
    * @throws NameResolutionException
    */
-  public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
-      ExecutionContext context, boolean completeExpnsNeeded)
+  boolean isConditioningNeededForIndex(RuntimeIterator independentIter, ExecutionContext context,
+      boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
 
   /**
@@ -155,7 +155,7 @@ public interface Filter {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException;
 
-  public int getOperator();
+  int getOperator();
 
   /**
    * This method returns the boolean indicating whether limit can be applied at index level. It
@@ -165,11 +165,10 @@ public interface Filter {
    * 
    * @return true if limit can be applied at index level
    */
-  public boolean isLimitApplicableAtIndexLevel(ExecutionContext context)
-      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException;
+  boolean isLimitApplicableAtIndexLevel(ExecutionContext context) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
-  public boolean isOrderByApplicableAtIndexLevel(ExecutionContext context,
+  boolean isOrderByApplicableAtIndexLevel(ExecutionContext context,
       String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException;
 }

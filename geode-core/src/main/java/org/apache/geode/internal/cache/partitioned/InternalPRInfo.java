@@ -30,10 +30,10 @@ public interface InternalPRInfo extends PartitionRegionInfo, Comparable<Internal
    * 
    * @return set of member details configured for storage space
    */
-  public Set<InternalPartitionDetails> getInternalPartitionDetails();
+  Set<InternalPartitionDetails> getInternalPartitionDetails();
 
   /**
    * Returns a set of members that host a bucket, but are currently offline.
    */
-  public OfflineMemberDetails getOfflineMembers();
+  OfflineMemberDetails getOfflineMembers();
 }

@@ -53,7 +53,7 @@ public interface TransactionEvent {
    * Gets the <code>TransactionId</code> associated this TransactionEvent.
    * 
    */
-  public TransactionId getTransactionId();
+  TransactionId getTransactionId();
 
   /**
    * Gets all "create" EntryEvents for this transaction; <code>Region.create</code> and/or
@@ -63,7 +63,7 @@ public interface TransactionEvent {
    * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
    */
   @Deprecated
-  public List<EntryEvent<?, ?>> getCreateEvents();
+  List<EntryEvent<?, ?>> getCreateEvents();
 
   /**
    * Gets all "destroy" EntryEvents for this transaction; <code>Region.destroy</code> and
@@ -73,7 +73,7 @@ public interface TransactionEvent {
    * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
    */
   @Deprecated
-  public List<EntryEvent<?, ?>> getDestroyEvents();
+  List<EntryEvent<?, ?>> getDestroyEvents();
 
   /**
    * Gets all <code>Region.put</code> EntryEvents for this transaction.
@@ -82,7 +82,7 @@ public interface TransactionEvent {
    * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
    */
   @Deprecated
-  public List<EntryEvent<?, ?>> getPutEvents();
+  List<EntryEvent<?, ?>> getPutEvents();
 
   /**
    * Gets all "invalidate" EntryEvents for this transaction; <code>Region.invalidate</code> and
@@ -92,7 +92,7 @@ public interface TransactionEvent {
    * @deprecated as of GemFire 5.0, use {@link #getEvents} instead
    */
   @Deprecated
-  public List<EntryEvent<?, ?>> getInvalidateEvents();
+  List<EntryEvent<?, ?>> getInvalidateEvents();
 
   /**
    * Returns an ordered list of every {@link CacheEvent} for this transaction. The event order is
@@ -102,13 +102,13 @@ public interface TransactionEvent {
    *         operation performed by this transaction.
    * @since GemFire 5.0
    */
-  public List<CacheEvent<?, ?>> getEvents();
+  List<CacheEvent<?, ?>> getEvents();
 
   /**
    * Gets the Cache for this transaction event
    *
    * @return <code>Cache</code>
    */
-  public Cache getCache();
+  Cache getCache();
 
 }

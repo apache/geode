@@ -68,7 +68,7 @@ public interface SelectResults<E> extends Collection<E> {
    * 
    * @return true if this collection is modifiable, false if not.
    */
-  public boolean isModifiable();
+  boolean isModifiable();
 
   /**
    * Return the number of times element occurs in this collection, that is the number of duplicates
@@ -79,7 +79,7 @@ public interface SelectResults<E> extends Collection<E> {
    * @return the number of occurrances of element
    * @since GemFire 5.1
    */
-  public int occurrences(E element);
+  int occurrences(E element);
 
   /**
    * Returns this <code>SelectResults</code> as a <code>java.util.Set</code>. If this collection is
@@ -88,7 +88,7 @@ public interface SelectResults<E> extends Collection<E> {
    * 
    * @return Is this collection as a <code>java.util.Set</code>?
    */
-  public Set<E> asSet();
+  Set<E> asSet();
 
   /**
    * Returns this <code>SelectedResults</code> as a <code>java.util.List</code>. If this collection
@@ -97,14 +97,14 @@ public interface SelectResults<E> extends Collection<E> {
    * 
    * @return this collection as a java.util.List
    */
-  public List<E> asList();
+  List<E> asList();
 
   /**
    * Return the ObjectType for the type of collection this represents.
    * 
    * @return the CollectionType for the type of collection this represents
    */
-  public CollectionType getCollectionType();
+  CollectionType getCollectionType();
 
   /**
    * Specify a new elementType, overriding any existing known elementType. This modifies the
@@ -113,6 +113,6 @@ public interface SelectResults<E> extends Collection<E> {
    * 
    * @param elementType the new elementType
    */
-  public void setElementType(ObjectType elementType);
+  void setElementType(ObjectType elementType);
 
 }

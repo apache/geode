@@ -28,7 +28,7 @@ public interface CacheTestFixture extends DistributedTestFixture {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void preTearDownCacheTestCase() throws Exception;
+  void preTearDownCacheTestCase() throws Exception;
 
   /**
    * {@code postTearDownCacheTestCase()} is invoked after
@@ -37,6 +37,6 @@ public interface CacheTestFixture extends DistributedTestFixture {
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void postTearDownCacheTestCase() throws Exception;
+  void postTearDownCacheTestCase() throws Exception;
 
 }

@@ -27,6 +27,6 @@ import java.util.EventListener;
 @SuppressWarnings("unused")
 public interface SignalListener extends EventListener {
 
-  public void handle(SignalEvent event);
+  void handle(SignalEvent event);
 
 }

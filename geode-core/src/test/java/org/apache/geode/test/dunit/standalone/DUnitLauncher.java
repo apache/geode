@@ -391,15 +391,15 @@ public class DUnitLauncher {
 
 
   public interface MasterRemote extends Remote {
-    public int getLocatorPort() throws RemoteException;
+    int getLocatorPort() throws RemoteException;
 
-    public void signalVMReady() throws RemoteException;
+    void signalVMReady() throws RemoteException;
 
-    public void ping() throws RemoteException;
+    void ping() throws RemoteException;
 
-    public BounceResult bounce(int pid) throws RemoteException;
+    BounceResult bounce(int pid) throws RemoteException;
 
-    public BounceResult bounce(String version, int pid) throws RemoteException;
+    BounceResult bounce(String version, int pid) throws RemoteException;
   }
 
   public static class Master extends UnicastRemoteObject implements MasterRemote {

@@ -35,6 +35,6 @@ public interface OsStatisticsFactory {
    * <p>
    * The created instance may not be {@link Statistics#isAtomic atomic}.
    */
-  public Statistics createOsStatistics(StatisticsType type, String textId, long numericId,
+  Statistics createOsStatistics(StatisticsType type, String textId, long numericId,
       int osStatFlags);
 }

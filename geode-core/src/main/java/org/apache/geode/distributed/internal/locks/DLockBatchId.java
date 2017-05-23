@@ -23,6 +23,6 @@ import org.apache.geode.distributed.internal.locks.LockGrantorId;
  */
 public interface DLockBatchId extends DataSerializable {
   /** Gets the lock grantor id that granted this lock */
-  public LockGrantorId getLockGrantorId();
+  LockGrantorId getLockGrantorId();
 }
 

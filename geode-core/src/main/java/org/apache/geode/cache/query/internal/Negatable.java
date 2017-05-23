@@ -18,6 +18,6 @@ package org.apache.geode.cache.query.internal;
  * Marker interface to mark CompiledValue classes that know how to negate themselves.
  */
 public interface Negatable {
-  public void negate();
+  void negate();
 }
 

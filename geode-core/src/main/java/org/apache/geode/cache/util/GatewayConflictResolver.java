@@ -46,6 +46,6 @@ public interface GatewayConflictResolver {
    * @param event the event that is in conflict with the current cache state
    * @param helper an object to be used in modifying the course of action for this event
    */
-  public void onEvent(TimestampedEntryEvent event, GatewayConflictHelper helper);
+  void onEvent(TimestampedEntryEvent event, GatewayConflictHelper helper);
 
 }

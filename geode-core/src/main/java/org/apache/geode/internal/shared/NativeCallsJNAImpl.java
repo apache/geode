@@ -134,7 +134,7 @@ public class NativeCallsJNAImpl {
     static final Map<String, String> javaEnv = getModifiableJavaEnv();
 
     /** Signal callback handler for <code>signal</code> native call. */
-    static interface SignalHandler extends Callback {
+    interface SignalHandler extends Callback {
       void callback(int signum);
     }
 

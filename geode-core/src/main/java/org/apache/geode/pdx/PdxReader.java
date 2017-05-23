@@ -43,7 +43,7 @@ public interface PdxReader {
    *         field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public char readChar(String fieldName);
+  char readChar(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -54,7 +54,7 @@ public interface PdxReader {
    *         <code>boolean</code> field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public boolean readBoolean(String fieldName);
+  boolean readBoolean(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -65,7 +65,7 @@ public interface PdxReader {
    *         field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public byte readByte(String fieldName);
+  byte readByte(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -76,7 +76,7 @@ public interface PdxReader {
    *         field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public short readShort(String fieldName);
+  short readShort(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -87,7 +87,7 @@ public interface PdxReader {
    *         field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public int readInt(String fieldName);
+  int readInt(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -98,7 +98,7 @@ public interface PdxReader {
    *         field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public long readLong(String fieldName);
+  long readLong(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -109,7 +109,7 @@ public interface PdxReader {
    *         field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public float readFloat(String fieldName);
+  float readFloat(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -120,7 +120,7 @@ public interface PdxReader {
    *         <code>double</code> field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public double readDouble(String fieldName);
+  double readDouble(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -131,7 +131,7 @@ public interface PdxReader {
    *         <code>String</code> field.
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public String readString(String fieldName);
+  String readString(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -142,7 +142,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not an
    *         <code>Object</code> field.
    */
-  public Object readObject(String fieldName);
+  Object readObject(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -153,7 +153,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>char[]</code> field.
    */
-  public char[] readCharArray(String fieldName);
+  char[] readCharArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -164,7 +164,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>boolean[]</code> field.
    */
-  public boolean[] readBooleanArray(String fieldName);
+  boolean[] readBooleanArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -175,7 +175,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>byte[]</code> field.
    */
-  public byte[] readByteArray(String fieldName);
+  byte[] readByteArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -186,7 +186,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>short[]</code> field.
    */
-  public short[] readShortArray(String fieldName);
+  short[] readShortArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -197,7 +197,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>int[]</code>
    *         field.
    */
-  public int[] readIntArray(String fieldName);
+  int[] readIntArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -208,7 +208,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>long[]</code> field.
    */
-  public long[] readLongArray(String fieldName);
+  long[] readLongArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -219,7 +219,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>float[]</code> field.
    */
-  public float[] readFloatArray(String fieldName);
+  float[] readFloatArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -230,7 +230,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>double[]</code> field.
    */
-  public double[] readDoubleArray(String fieldName);
+  double[] readDoubleArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -241,7 +241,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>String[]</code> field.
    */
-  public String[] readStringArray(String fieldName);
+  String[] readStringArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -252,7 +252,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>Object[]</code> field.
    */
-  public Object[] readObjectArray(String fieldName);
+  Object[] readObjectArray(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -263,7 +263,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
    *         <code>byte[][]</code> field.
    */
-  public byte[][] readArrayOfByteArrays(String fieldName);
+  byte[][] readArrayOfByteArrays(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -274,7 +274,7 @@ public interface PdxReader {
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>Date</code>
    *         field.
    */
-  public Date readDate(String fieldName);
+  Date readDate(String fieldName);
 
   /**
    * Checks if the named field exists and returns the result.
@@ -284,7 +284,7 @@ public interface PdxReader {
    * @param fieldName the name of the field to check
    * @return <code>true</code> if the named field exists; otherwise <code>false</code>
    */
-  public boolean hasField(String fieldName);
+  boolean hasField(String fieldName);
 
   /**
    * Checks if the named field was {@link PdxWriter#markIdentityField(String) marked} as an identity
@@ -297,7 +297,7 @@ public interface PdxReader {
    * @return <code>true</code> if the named field exists and was marked as an identify field;
    *         otherwise <code>false</code>
    */
-  public boolean isIdentityField(String fieldName);
+  boolean isIdentityField(String fieldName);
 
   /**
    * Reads the named field and returns its value.
@@ -306,7 +306,7 @@ public interface PdxReader {
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
    */
-  public Object readField(String fieldName);
+  Object readField(String fieldName);
 
   /**
    * This method returns an object that represents all the unread fields which must be passed to
@@ -320,5 +320,5 @@ public interface PdxReader {
    *
    * @return an object that represents the unread fields.
    */
-  public PdxUnreadFields readUnreadFields();
+  PdxUnreadFields readUnreadFields();
 }

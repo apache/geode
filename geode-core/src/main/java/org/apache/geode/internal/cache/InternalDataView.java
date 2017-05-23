@@ -245,11 +245,11 @@ public interface InternalDataView {
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws DataLocationException;
 
-  abstract void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException;
+  void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException;
 
-  abstract void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException;
+  void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException;
 
-  abstract void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException;
+  void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException;
 
   /**
    * @param localRegion
@@ -259,10 +259,10 @@ public interface InternalDataView {
    */
   Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones);
 
-  public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
+  void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       LocalRegion region);
 
-  public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
+  void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
       LocalRegion region);
 
   Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion);

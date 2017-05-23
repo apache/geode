@@ -35,11 +35,11 @@ public interface RegionListener {
    * modifications. InternalRegionArguments *may* be modified, but only if you are sure the caller
    * is not going to reuse the InternalRegionArguments for something else.
    */
-  public RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
+  RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
       InternalRegionArguments internalRegionArgs);
 
   /**
    * Invoked after a region is created.
    */
-  public void afterCreate(Region region);
+  void afterCreate(Region region);
 }

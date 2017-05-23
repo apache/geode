@@ -1555,7 +1555,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * A visitor interface for the buckets of this region used by
    * {@link RegionAdvisor#accept(BucketVisitor, Object)}.
    */
-  public static interface BucketVisitor<T> {
+  public interface BucketVisitor<T> {
 
     /**
      * Visit a given {@link ProxyBucketRegion} accumulating the results in the given aggregate.

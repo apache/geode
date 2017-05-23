@@ -247,7 +247,7 @@ public class LRUClockJUnitTest {
   }
 
   private interface LRUTestEntry extends LRUClockNode {
-    public int id();
+    int id();
   }
 
   /** test implementation of an LRUClockNode */

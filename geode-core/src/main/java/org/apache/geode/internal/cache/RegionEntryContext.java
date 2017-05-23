@@ -23,18 +23,17 @@ import org.apache.geode.compression.Compressor;
  * @since GemFire 8.0
  */
 public interface RegionEntryContext extends HasCachePerfStats {
-  public static final String DEFAULT_COMPRESSION_PROVIDER =
-      "org.apache.geode.compression.SnappyCompressor";
+  String DEFAULT_COMPRESSION_PROVIDER = "org.apache.geode.compression.SnappyCompressor";
 
   /**
    * Returns the compressor to be used by this region entry when storing the entry value.
    * 
    * @return null if no compressor is assigned or available for the entry.
    */
-  public Compressor getCompressor();
+  Compressor getCompressor();
 
   /**
    * Returns true if region entries are stored off heap.
    */
-  public boolean getOffHeap();
+  boolean getOffHeap();
 }
