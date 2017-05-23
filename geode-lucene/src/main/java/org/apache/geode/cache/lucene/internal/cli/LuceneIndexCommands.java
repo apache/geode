@@ -275,19 +275,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT, unspecifiedDefaultValue = "-1",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT__HELP) final int limit,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE,
-          unspecifiedDefaultValue = "-1",
-          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP) int pageSize,
-
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
           unspecifiedDefaultValue = "false",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly) {
     try {
       LuceneQueryInfo queryInfo =
           new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
-      if (pageSize == -1) {
-        pageSize = Integer.MAX_VALUE;
-      }
+      int pageSize = Integer.MAX_VALUE;
       searchResults = getSearchResults(queryInfo);
       return displayResults(pageSize, keysOnly);
     } catch (FunctionInvocationTargetException ignore) {
