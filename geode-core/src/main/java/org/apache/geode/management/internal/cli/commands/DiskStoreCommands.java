@@ -486,14 +486,11 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
             }
             String notExecutedMembers = CompactRequest.getNotExecutedMembers();
             if (notExecutedMembers != null && !notExecutedMembers.isEmpty()) {
-              notExecutedMembers = "but was not send to " + notExecutedMembers;
-            } else {
-              notExecutedMembers = "all the members";
+              LogWrapper.getInstance()
+                  .info("compact disk-store \"" + diskStoreName
+                      + "\" message was scheduled to be sent to but was not send to "
+                      + notExecutedMembers);
             }
-            LogWrapper.getInstance()
-                .info("compact disk-store \"" + diskStoreName
-                    + "\" message was scheduled to be sent to "
-                    + notExecutedMembers);
           }
 
           // If compaction happened at all, then prepare the summary
