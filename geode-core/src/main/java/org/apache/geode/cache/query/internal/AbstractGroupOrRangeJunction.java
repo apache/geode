@@ -325,7 +325,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
         if (intermediateResults == null) {
           intermediateResults = filterResults;
         } else if (isDistinct && !isConditioningNeeded) {
-          intermediateResults = filterResults;
+          intermediateResults.addAll(filterResults);
         } else {
           intermediateResults = QueryUtils.union(intermediateResults, filterResults, context);
         }
