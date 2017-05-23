@@ -560,19 +560,18 @@ public class FunctionCommands implements CommandMarker {
       @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES,
           help = CliStrings.LIST_FUNCTION__MATCHES__HELP) String matches,
       @CliOption(key = CliStrings.LIST_FUNCTION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_FUNCTION__GROUP__HELP) String groups,
+          help = CliStrings.LIST_FUNCTION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.LIST_FUNCTION__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String members) {
+          help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String[] members) {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;
 
     InternalCache cache = getCache();
 
-    Set<DistributedMember> targetMembers;
-    try {
-      targetMembers = CliUtil.findMembersOrThrow(groups, members);
-    } catch (CommandResultException crex) {
-      return crex.getResult();
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, members);
+
+    if (targetMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     try {

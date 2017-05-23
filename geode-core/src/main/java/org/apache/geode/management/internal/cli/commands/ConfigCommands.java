@@ -199,18 +199,16 @@ public class ConfigCommands extends AbstractCommandsSupport {
   public Result exportConfig(
       @CliOption(key = {CliStrings.EXPORT_CONFIG__MEMBER},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_CONFIG__MEMBER__HELP) String member,
+          help = CliStrings.EXPORT_CONFIG__MEMBER__HELP) String[] member,
       @CliOption(key = {CliStrings.EXPORT_CONFIG__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.EXPORT_CONFIG__GROUP__HELP) String group,
+          help = CliStrings.EXPORT_CONFIG__GROUP__HELP) String[] group,
       @CliOption(key = {CliStrings.EXPORT_CONFIG__DIR},
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
     InfoResultData infoData = ResultBuilder.createInfoResultData();
 
-    Set<DistributedMember> targetMembers;
-    try {
-      targetMembers = CliUtil.findMembersOrThrow(group, member);
-    } catch (CommandResultException crex) {
-      return crex.getResult();
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, member);
+    if (targetMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     try {
