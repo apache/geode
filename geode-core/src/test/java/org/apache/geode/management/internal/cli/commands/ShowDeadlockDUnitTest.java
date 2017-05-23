@@ -173,8 +173,7 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     vm0.invokeAsync(() -> {
       lock.lock();
 
-      ResultCollector collector =
-          FunctionService.onMember(basicGetSystem(), member).execute(new TestFunction());
+      ResultCollector collector = FunctionService.onMember(member).execute(new TestFunction());
       // wait the function to lock the lock on member.
       collector.getResult();
       lock.unlock();

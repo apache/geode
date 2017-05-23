@@ -156,8 +156,8 @@ public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
       Function function1 = new TestFunction(true, TestFunction.TEST_FUNCTION_EXCEPTION);
       FunctionService.registerFunction(function1);
       DistributedMember localmember = getSystemStatic().getDistributedMember();
-      ResultCollector rc = FunctionService.onMember(getSystemStatic(), localmember)
-          .setArguments(Boolean.TRUE).execute(function1.getId());
+      ResultCollector rc = FunctionService.onMember(localmember).setArguments(Boolean.TRUE)
+          .execute(function1.getId());
       rc.getResult();
       Assert.fail("Exception should occur", new Exception("Test Failed"));
     } catch (Exception e) {
