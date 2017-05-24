@@ -129,7 +129,7 @@ private[connector] class DefaultGeodeConnection (
     val collector = new StructStreamingResultCollector(desc)
         // RetrieveRegionResultCollector[(K, V)]
     import scala.collection.JavaConversions.setAsJavaSet
-    val exec = FunctionService.onRegion(region).setArguments(args).withCollector(collector).asInstanceOf[InternalExecution]
+    val exec = FunctionService.onRegion(region).withArgs(args).withCollector(collector).asInstanceOf[InternalExecution]
       .withBucketFilter(split.bucketSet.map(Integer.valueOf))
     exec.setWaitOnExceptionFlag(true)
     exec.execute(RetrieveRegionFunction.ID)
@@ -144,7 +144,7 @@ private[connector] class DefaultGeodeConnection (
     val args: Array[String] = Array[String](queryString, bucketSet.toString)
     val exec = FunctionService.onRegion(region).withCollector(collector).asInstanceOf[InternalExecution]
       .withBucketFilter(bucketSet.map(Integer.valueOf))
-      .setArguments(args)
+      .withArgs(args)
     exec.execute(QueryFunction.ID)
     collector.getResult
   }
