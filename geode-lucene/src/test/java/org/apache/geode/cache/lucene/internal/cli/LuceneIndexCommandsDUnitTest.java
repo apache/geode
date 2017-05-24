@@ -198,7 +198,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void createIndexShouldNotAcceptEmptyRegionNames() {
+  public void createIndexShouldNotAcceptBadIndexOrRegionNames() {
     final VM vm1 = Host.getHost(0).getVM(-1);
     vm1.invoke(() -> {
       getCache();
@@ -210,7 +210,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
     String resultAsString = executeCommandAndLogResult(csb);
-    assertTrue(resultAsString.contains("Region names may not begin with a double-underscore:"));
+    assertTrue(resultAsString.contains("Parameter names may not begin with a double-underscore:"));
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -218,8 +218,25 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
     resultAsString = executeCommandAndLogResult(csb);
-    assertTrue(resultAsString
-        .contains("Region names may only be alphanumeric and may contain hyphens or underscores:"));
+    assertTrue(resultAsString.contains(
+        "Parameter names may only be alphanumeric, though they can contain hyphens or underscores:"));
+
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\'__\'");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains("Parameter names may not begin with a double-underscore:"));
+
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\' @@@*%\'");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(
+        "Parameter names may only be alphanumeric, though they can contain hyphens or underscores:"));
   }
 
   @Test

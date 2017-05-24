@@ -128,7 +128,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return getUniqueIndexName(indexName, regionPath) + regionSuffix;
   }
 
-  public static void validateRegionName(String name) {
+  public static void validateCreateIndexCommandParams(String name, boolean isRegionPath) {
     if (name == null) {
       throw new IllegalArgumentException(
           LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
@@ -140,15 +140,22 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
     if (name.startsWith("__")) {
       throw new IllegalArgumentException(
-          "Region names may not begin with a double-underscore: " + name);
+          "Parameter names may not begin with a double-underscore: " + name);
     }
 
-    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_./]+");
+    final Pattern NAME_PATTERN;
+    if (isRegionPath) {
+      NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_./]+");
+    } else {
+      NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
+    }
+
     // Ensure the region only contains valid characters
     Matcher matcher = NAME_PATTERN.matcher(name);
     if (!matcher.matches()) {
       throw new IllegalArgumentException(
-          "Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
+          "Parameter names may only be alphanumeric, though they can contain hyphens or underscores: "
+              + name);
     }
   }
 
