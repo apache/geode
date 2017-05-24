@@ -17,6 +17,8 @@ package org.apache.geode.cache.lucene.internal;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
@@ -124,6 +126,30 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public static String getUniqueIndexRegionName(String indexName, String regionPath,
       String regionSuffix) {
     return getUniqueIndexName(indexName, regionPath) + regionSuffix;
+  }
+
+  public static void validateRegionPath(String name) {
+    if (name == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
+    }
+    if (name.isEmpty()) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
+    }
+
+    if (name.startsWith("__")) {
+      throw new IllegalArgumentException(
+          "Region names may not begin with a double-underscore: " + name);
+    }
+
+    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_./]+");
+    // Ensure the region only contains valid characters
+    Matcher matcher = NAME_PATTERN.matcher(name);
+    if (!matcher.matches()) {
+      throw new IllegalArgumentException(
+          "Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
+    }
   }
 
   public void createIndex(String indexName, String regionPath,
