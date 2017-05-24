@@ -143,7 +143,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
           "Region names may not begin with a double-underscore: " + name);
     }
 
-    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
+    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_./]+");
     // Ensure the region only contains valid characters
     Matcher matcher = NAME_PATTERN.matcher(name);
     if (!matcher.matches()) {
