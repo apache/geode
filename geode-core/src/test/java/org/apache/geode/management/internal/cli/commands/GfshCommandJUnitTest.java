@@ -30,6 +30,7 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.jmock.Expectations;
@@ -47,11 +48,10 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * The AbstractCommandsSupportJUnitTest class is a test suite of test cases testing the contract and
- * functionality of the AbstractCommandsSupport class for implementing GemFire shell (Gfsh)
- * commands.
+ * The GfshCommandJUnitTest class is a test suite of test cases testing the contract and
+ * functionality of the GfshCommand class for implementing GemFire shell (Gfsh) commands.
  *
- * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ * @see GfshCommand
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
  * @see org.jmock.lib.legacy.ClassImposteriser
@@ -60,15 +60,22 @@ import java.util.Set;
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)
-public class AbstractCommandsSupportJUnitTest {
+public class GfshCommandJUnitTest {
 
   private Mockery mockContext;
+
+  private static class DefaultGfshCommmand implements GfshCommand {
+  }
+
+  private DefaultGfshCommmand defaultGfshCommmand;
 
   @Before
   public void setup() {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
     mockContext.setThreadingPolicy(new Synchroniser());
+
+    defaultGfshCommmand = new DefaultGfshCommmand();
   }
 
   @After
@@ -77,7 +84,7 @@ public class AbstractCommandsSupportJUnitTest {
     mockContext = null;
   }
 
-  private AbstractCommandsSupport createAbstractCommandsSupport(final InternalCache cache) {
+  private GfshCommand createAbstractCommandsSupport(final InternalCache cache) {
     return new TestCommands(cache);
   }
 
@@ -98,59 +105,14 @@ public class AbstractCommandsSupportJUnitTest {
   }
 
   @Test
-  public void testAssertArgumentIsLegal() {
-    AbstractCommandsSupport.assertArgument(true, "");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testAssertArgumentIsIllegal() {
-    try {
-      AbstractCommandsSupport.assertArgument(false, "The actual argument is %1$s!", "illegal");
-    } catch (IllegalArgumentException expected) {
-      assertEquals("The actual argument is illegal!", expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
-  public void testAssetNotNullWithNonNullObject() {
-    AbstractCommandsSupport.assertNotNull(new Object(), "");
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testAssertNotNullWithNullObject() {
-    try {
-      AbstractCommandsSupport.assertNotNull(null, "This is an %1$s message!", "expected");
-    } catch (NullPointerException expected) {
-      assertEquals("This is an expected message!", expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
-  public void testAssertStateIsValid() {
-    AbstractCommandsSupport.assertState(true, "");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void testAssertStateIsInvalid() {
-    try {
-      AbstractCommandsSupport.assertState(false, "The actual state is %1$s!", "invalid");
-    } catch (IllegalStateException expected) {
-      assertEquals("The actual state is invalid!", expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
   public void testConvertDefaultValue() {
-    assertNull(AbstractCommandsSupport.convertDefaultValue(null, StringUtils.EMPTY));
+    assertNull(defaultGfshCommmand.convertDefaultValue(null, StringUtils.EMPTY));
     assertEquals(StringUtils.EMPTY,
-        AbstractCommandsSupport.convertDefaultValue(StringUtils.EMPTY, "test"));
+        defaultGfshCommmand.convertDefaultValue(StringUtils.EMPTY, "test"));
     assertEquals(StringUtils.SPACE,
-        AbstractCommandsSupport.convertDefaultValue(StringUtils.SPACE, "testing"));
-    assertEquals("tested", AbstractCommandsSupport
-        .convertDefaultValue(CliMetaData.ANNOTATION_DEFAULT_VALUE, "tested"));
+        defaultGfshCommmand.convertDefaultValue(StringUtils.SPACE, "testing"));
+    assertEquals("tested",
+        defaultGfshCommmand.convertDefaultValue(CliMetaData.ANNOTATION_DEFAULT_VALUE, "tested"));
   }
 
   @Test
@@ -175,7 +137,7 @@ public class AbstractCommandsSupportJUnitTest {
       }
     });
 
-    final AbstractCommandsSupport commands = createAbstractCommandsSupport(mockCache);
+    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     assertSame(mockMemberTwo, commands.getMember(mockCache, "2"));
   }
@@ -202,7 +164,7 @@ public class AbstractCommandsSupportJUnitTest {
       }
     });
 
-    final AbstractCommandsSupport commands = createAbstractCommandsSupport(mockCache);
+    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     assertSame(mockMemberOne, commands.getMember(mockCache, "One"));
   }
@@ -229,7 +191,7 @@ public class AbstractCommandsSupportJUnitTest {
       }
     });
 
-    final AbstractCommandsSupport commands = createAbstractCommandsSupport(mockCache);
+    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     assertSame(mockMemberSelf, commands.getMember(mockCache, "self"));
   }
@@ -256,7 +218,7 @@ public class AbstractCommandsSupportJUnitTest {
       }
     });
 
-    final AbstractCommandsSupport commands = createAbstractCommandsSupport(mockCache);
+    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     try {
       commands.getMember(mockCache, "zero");
@@ -289,7 +251,7 @@ public class AbstractCommandsSupportJUnitTest {
       }
     });
 
-    final AbstractCommandsSupport commands = createAbstractCommandsSupport(mockCache);
+    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     final Set<DistributedMember> expectedMembers =
         CollectionUtils.asSet(mockMemberOne, mockMemberTwo, mockMemberSelf);
@@ -319,7 +281,7 @@ public class AbstractCommandsSupportJUnitTest {
       }
     });
 
-    final AbstractCommandsSupport commands = createAbstractCommandsSupport(mockCache);
+    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     final Set<DistributedMember> expectedMembers = CollectionUtils.asSet(mockMemberSelf);
     final Set<DistributedMember> actualMembers = commands.getMembers(mockCache);
@@ -345,7 +307,7 @@ public class AbstractCommandsSupportJUnitTest {
         }
       });
 
-      final AbstractCommandsSupport commands =
+      final GfshCommand commands =
           createAbstractCommandsSupport(mockContext.mock(InternalCache.class));
 
       assertFalse(FunctionService.isRegistered("testRegister"));
@@ -374,7 +336,7 @@ public class AbstractCommandsSupportJUnitTest {
         }
       });
 
-      final AbstractCommandsSupport commands =
+      final GfshCommand commands =
           createAbstractCommandsSupport(mockContext.mock(InternalCache.class));
 
       FunctionService.registerFunction(registeredFunction);
@@ -389,22 +351,22 @@ public class AbstractCommandsSupportJUnitTest {
 
   @Test
   public void testToStringOnBoolean() {
-    assertEquals("false", AbstractCommandsSupport.toString(null, null, null));
-    assertEquals("true", AbstractCommandsSupport.toString(true, null, null));
-    assertEquals("true", AbstractCommandsSupport.toString(Boolean.TRUE, null, null));
-    assertEquals("false", AbstractCommandsSupport.toString(false, null, null));
-    assertEquals("false", AbstractCommandsSupport.toString(Boolean.FALSE, null, null));
-    assertEquals("false", AbstractCommandsSupport.toString(true, "false", "true"));
-    assertEquals("true", AbstractCommandsSupport.toString(false, "false", "true"));
-    assertEquals("Yes", AbstractCommandsSupport.toString(true, "Yes", "No"));
-    assertEquals("Yes", AbstractCommandsSupport.toString(false, "No", "Yes"));
-    assertEquals("TRUE", AbstractCommandsSupport.toString(Boolean.TRUE, "TRUE", "FALSE"));
-    assertEquals("FALSE", AbstractCommandsSupport.toString(Boolean.FALSE, "TRUE", "FALSE"));
+    assertEquals("false", defaultGfshCommmand.toString(null, null, null));
+    assertEquals("true", defaultGfshCommmand.toString(true, null, null));
+    assertEquals("true", defaultGfshCommmand.toString(Boolean.TRUE, null, null));
+    assertEquals("false", defaultGfshCommmand.toString(false, null, null));
+    assertEquals("false", defaultGfshCommmand.toString(Boolean.FALSE, null, null));
+    assertEquals("false", defaultGfshCommmand.toString(true, "false", "true"));
+    assertEquals("true", defaultGfshCommmand.toString(false, "false", "true"));
+    assertEquals("Yes", defaultGfshCommmand.toString(true, "Yes", "No"));
+    assertEquals("Yes", defaultGfshCommmand.toString(false, "No", "Yes"));
+    assertEquals("TRUE", defaultGfshCommmand.toString(Boolean.TRUE, "TRUE", "FALSE"));
+    assertEquals("FALSE", defaultGfshCommmand.toString(Boolean.FALSE, "TRUE", "FALSE"));
   }
 
   @Test
   public void testToStringOnThrowable() {
-    assertEquals("test", AbstractCommandsSupport.toString(new Throwable("test"), false));
+    assertEquals("test", defaultGfshCommmand.toString(new Throwable("test"), false));
   }
 
   @Test
@@ -414,10 +376,10 @@ public class AbstractCommandsSupportJUnitTest {
 
     t.printStackTrace(new PrintWriter(writer));
 
-    assertEquals(writer.toString(), AbstractCommandsSupport.toString(t, true));
+    assertEquals(writer.toString(), defaultGfshCommmand.toString(t, true));
   }
 
-  private static class TestCommands extends AbstractCommandsSupport {
+  private static class TestCommands implements GfshCommand {
 
     private final InternalCache cache;
 
@@ -427,7 +389,7 @@ public class AbstractCommandsSupportJUnitTest {
     }
 
     @Override
-    protected InternalCache getCache() {
+    public InternalCache getCache() {
       return this.cache;
     }
   }

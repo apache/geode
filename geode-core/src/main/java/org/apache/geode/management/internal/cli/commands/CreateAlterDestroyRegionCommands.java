@@ -85,7 +85,7 @@ import javax.management.ObjectName;
 /**
  * @since GemFire 7.0
  */
-public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
+public class CreateAlterDestroyRegionCommands implements GfshCommand {
 
   public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS = new TreeSet<>();
 

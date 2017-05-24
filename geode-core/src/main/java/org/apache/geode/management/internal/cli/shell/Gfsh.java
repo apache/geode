@@ -1050,6 +1050,10 @@ public class Gfsh extends JLineShell {
     return operationInvoker != null && operationInvoker.isConnected() && operationInvoker.isReady();
   }
 
+  public static boolean isCurrentInstanceConnectedAndReady() {
+    return (getCurrentInstance() != null && getCurrentInstance().isConnectedAndReady());
+  }
+
   /**
    * @return the operationInvoker
    */

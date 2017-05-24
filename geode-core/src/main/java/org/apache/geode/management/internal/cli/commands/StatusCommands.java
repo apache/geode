@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class StatusCommands extends AbstractCommandsSupport implements CommandMarker {
+public class StatusCommands implements GfshCommand {
   static final FetchSharedConfigurationStatusFunction fetchSharedConfigStatusFunction =
       new FetchSharedConfigurationStatusFunction();
 

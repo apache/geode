@@ -62,7 +62,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -85,7 +84,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @since GemFire 7.0
  */
-public class DataCommands implements CommandMarker {
+public class DataCommands implements GfshCommand {
 
   final int resultItemCount = 9;
 
@@ -94,14 +93,6 @@ public class DataCommands implements CommandMarker {
   private final ImportDataFunction importDataFunction = new ImportDataFunction();
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
 
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})

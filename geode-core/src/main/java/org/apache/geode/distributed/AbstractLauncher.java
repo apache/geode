@@ -591,6 +591,20 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       return new GfJsonObject(map).toString();
     }
 
+    public static boolean isStartingNotRespondingOrNull(final ServiceState serviceState) {
+      return (serviceState == null || serviceState.isStartingOrNotResponding());
+    }
+
+    public boolean isStartingOrNotResponding() {
+      return (Status.NOT_RESPONDING.equals(this.getStatus())
+          || Status.STARTING.equals(this.getStatus()));
+    }
+
+    public boolean isVmWithProcessIdRunning() {
+      // note: this will use JNA if available or return false
+      return ProcessUtils.isProcessAlive(this.getPid());
+    }
+
     /**
      * Gets the Java classpath used when launching the GemFire service.
      *

@@ -643,18 +643,18 @@ public class LuceneIndexCommandsJUnitTest {
     }
 
     @Override
-    protected InternalCache getCache() {
+    public InternalCache getCache() {
       return this.cache;
     }
 
     @Override
-    protected Set<DistributedMember> getMembers(final InternalCache cache) {
+    public Set<DistributedMember> getMembers(final InternalCache cache) {
       assertSame(getCache(), cache);
       return Collections.emptySet();
     }
 
     @Override
-    protected Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
+    public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
       Assert.assertNotNull(members);
       return functionExecutor;
     }

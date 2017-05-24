@@ -52,11 +52,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 /**
  * @since GemFire 7.0
  */
-public class MemberCommands implements CommandMarker {
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
+public class MemberCommands implements GfshCommand {
 
   private static final GetMemberInformationFunction getMemberInformation =
       new GetMemberInformationFunction();
@@ -102,10 +98,6 @@ public class MemberCommands implements CommandMarker {
     }
 
     return result;
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   @CliCommand(value = {CliStrings.DESCRIBE_MEMBER}, help = CliStrings.DESCRIBE_MEMBER__HELP)

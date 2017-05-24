@@ -28,7 +28,7 @@ import org.springframework.shell.core.annotation.CliOption;
 /**
  * @since GemFire 7.0
  */
-public class GfshHelpCommands implements CommandMarker, CommandManagerAware {
+public class GfshHelpCommands implements GfshCommand, CommandManagerAware {
   private CommandManager commandManager = null;
 
   public void setCommandManager(CommandManager commandManager) {

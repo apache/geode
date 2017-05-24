@@ -36,7 +36,7 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport;
+import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -64,12 +64,12 @@ import java.util.stream.Collectors;
  * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to Lucene
  * indexes defined in Geode.
  *
- * @see AbstractCommandsSupport
+ * @see GfshCommand
  * @see LuceneIndexDetails
  * @see LuceneListIndexFunction
  */
 @SuppressWarnings("unused")
-public class LuceneIndexCommands extends AbstractCommandsSupport {
+public class LuceneIndexCommands implements GfshCommand {
   private static final LuceneCreateIndexFunction createIndexFunction =
       new LuceneCreateIndexFunction();
   private static final LuceneDescribeIndexFunction describeIndexFunction =

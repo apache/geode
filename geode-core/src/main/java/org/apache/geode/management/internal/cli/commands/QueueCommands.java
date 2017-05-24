@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 
  * @since GemFire 8.0
  */
-public class QueueCommands extends AbstractCommandsSupport {
+public class QueueCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE,
       help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)

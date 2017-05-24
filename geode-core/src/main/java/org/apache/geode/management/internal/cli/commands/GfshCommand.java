@@ -23,7 +23,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -37,8 +36,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality
- * for implementing command classes with command for the GemFire shell (gfsh).
+ * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
  * <p>
  * 
  * @see org.apache.geode.cache.Cache
@@ -46,44 +44,20 @@ import java.util.Set;
  * @see org.apache.geode.distributed.DistributedMember
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.springframework.shell.core.CommandMarker
- * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public abstract class AbstractCommandsSupport implements CommandMarker {
-  protected static SecurityService securityService = SecurityService.getSecurityService();
-
-  protected static void assertArgument(final boolean valid, final String message,
-      final Object... args) {
-    if (!valid) {
-      throw new IllegalArgumentException(String.format(message, args));
-    }
-  }
-
-  protected static void assertNotNull(final Object obj, final String message,
-      final Object... args) {
-    if (obj == null) {
-      throw new NullPointerException(String.format(message, args));
-    }
-  }
-
-  protected static void assertState(final boolean valid, final String message,
-      final Object... args) {
-    if (!valid) {
-      throw new IllegalStateException(String.format(message, args));
-    }
-  }
-
-  protected static String convertDefaultValue(final String from, final String to) {
+public interface GfshCommand extends CommandMarker {
+  default String convertDefaultValue(final String from, final String to) {
     return (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(from) ? to : from);
   }
 
-  protected static String toString(final Boolean condition, final String trueValue,
+  default String toString(final Boolean condition, final String trueValue,
       final String falseValue) {
     return (Boolean.TRUE.equals(condition) ? StringUtils.defaultIfBlank(trueValue, "true")
         : StringUtils.defaultIfBlank(falseValue, "false"));
   }
 
-  protected static String toString(final Throwable t, final boolean printStackTrace) {
+  default String toString(final Throwable t, final boolean printStackTrace) {
     String message = t.getMessage();
 
     if (printStackTrace) {
@@ -95,16 +69,16 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     return message;
   }
 
-  protected boolean isConnectedAndReady() {
+  default boolean isConnectedAndReady() {
     return (getGfsh() != null && getGfsh().isConnectedAndReady());
   }
 
-  protected ClusterConfigurationService getSharedConfiguration() {
+  default ClusterConfigurationService getSharedConfiguration() {
     InternalLocator locator = InternalLocator.getLocator();
     return (locator == null) ? null : locator.getSharedConfiguration();
   }
 
-  protected void persistClusterConfiguration(Result result, Runnable runnable) {
+  default void persistClusterConfiguration(Result result, Runnable runnable) {
     if (result == null) {
       throw new IllegalArgumentException("Result should not be null");
     }
@@ -117,24 +91,24 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     }
   }
 
-  protected boolean isDebugging() {
+  default boolean isDebugging() {
     return (getGfsh() != null && getGfsh().getDebug());
   }
 
-  protected boolean isLogging() {
+  default boolean isLogging() {
     return (getGfsh() != null);
   }
 
-  protected InternalCache getCache() {
+  default InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
 
-  protected static Gfsh getGfsh() {
+  default Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
   }
 
   @SuppressWarnings("deprecated")
-  protected DistributedMember getMember(final InternalCache cache, final String memberName) {
+  default DistributedMember getMember(final InternalCache cache, final String memberName) {
     for (final DistributedMember member : getMembers(cache)) {
       if (memberName.equalsIgnoreCase(member.getName())
           || memberName.equalsIgnoreCase(member.getId())) {
@@ -148,67 +122,67 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
 
   /**
    * Gets all members in the GemFire distributed system/cache.
-   *
+   * 
    * @param cache the GemFire cache.
    * @return all members in the GemFire distributed system/cache.
    * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.internal.cache.InternalCache)
    * @deprecated use CliUtil.getAllMembers(org.apache.geode.cache.Cache) instead
    */
   @Deprecated
-  protected Set<DistributedMember> getMembers(final InternalCache cache) {
+  default Set<DistributedMember> getMembers(final InternalCache cache) {
     Set<DistributedMember> members = new HashSet<DistributedMember>(cache.getMembers());
     members.add(cache.getDistributedSystem().getDistributedMember());
     return members;
   }
 
-  protected Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
+  default Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
     return FunctionService.onMembers(members);
   }
 
-  protected void logInfo(final String message) {
+  default void logInfo(final String message) {
     logInfo(message, null);
   }
 
-  protected void logInfo(final Throwable cause) {
+  default void logInfo(final Throwable cause) {
     logInfo(cause.getMessage(), cause);
   }
 
-  protected void logInfo(final String message, final Throwable cause) {
+  default void logInfo(final String message, final Throwable cause) {
     if (isLogging()) {
       getGfsh().logInfo(message, cause);
     }
   }
 
-  protected void logWarning(final String message) {
+  default void logWarning(final String message) {
     logWarning(message, null);
   }
 
-  protected void logWarning(final Throwable cause) {
+  default void logWarning(final Throwable cause) {
     logWarning(cause.getMessage(), cause);
   }
 
-  protected void logWarning(final String message, final Throwable cause) {
+  default void logWarning(final String message, final Throwable cause) {
     if (isLogging()) {
       getGfsh().logWarning(message, cause);
     }
   }
 
-  protected void logSevere(final String message) {
+  default void logSevere(final String message) {
     logSevere(message, null);
   }
 
-  protected void logSevere(final Throwable cause) {
+  default void logSevere(final Throwable cause) {
     logSevere(cause.getMessage(), cause);
   }
 
-  protected void logSevere(final String message, final Throwable cause) {
+  default void logSevere(final String message, final Throwable cause) {
     if (isLogging()) {
       getGfsh().logSevere(message, cause);
     }
   }
 
   @SuppressWarnings("unchecked")
-  protected <T extends Function> T register(T function) {
+  default <T extends Function> T register(T function) {
     if (FunctionService.isRegistered(function.getId())) {
       function = (T) FunctionService.getFunction(function.getId());
     } else {

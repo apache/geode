@@ -2632,6 +2632,18 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
     }
 
+    public static ServerState fromDirectory(final String workingDirectory,
+        final String memberName) {
+      ServerState serverState = new ServerLauncher.Builder().setWorkingDirectory(workingDirectory)
+          .setDisableDefaultServer(true).build().status();
+
+      if (ObjectUtils.equals(serverState.getMemberName(), memberName)) {
+        return serverState;
+      }
+
+      return new ServerState(new ServerLauncher.Builder().build(), Status.NOT_RESPONDING);
+    }
+
     public ServerState(final ServerLauncher launcher, final Status status) {
       this(status, launcher.statusMessage, System.currentTimeMillis(), launcher.getId(),
           identifyPid(), ManagementFactory.getRuntimeMXBean().getUptime(),

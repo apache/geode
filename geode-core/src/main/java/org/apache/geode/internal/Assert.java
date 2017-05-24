@@ -177,4 +177,23 @@ public class Assert {
 
     return true;
   }
+
+  public static void assertArgument(final boolean valid, final String message,
+      final Object... args) {
+    if (!valid) {
+      throw new IllegalArgumentException(String.format(message, args));
+    }
+  }
+
+  public static void assertNotNull(final Object obj, final String message, final Object... args) {
+    if (obj == null) {
+      throw new NullPointerException(String.format(message, args));
+    }
+  }
+
+  public static void assertState(final boolean valid, final String message, final Object... args) {
+    if (!valid) {
+      throw new IllegalStateException(String.format(message, args));
+    }
+  }
 }
