@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.apache.geode.management.internal.cli.GfshParser.LINE_SEPARATOR;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class HelperUnitTest {
   @Test
   public void testGetLongHelp() {
     HelpBlock helpBlock = helper.getHelp(cliCommand, annotations, parameterType);
-    String[] helpLines = helpBlock.toString().split("\n");
+    String[] helpLines = helpBlock.toString().split(LINE_SEPARATOR);
     assertThat(helpLines.length).isEqualTo(14);
     assertThat(helpLines[0]).isEqualTo(Helper.NAME_NAME);
     assertThat(helpLines[2]).isEqualTo(Helper.IS_AVAILABLE_NAME);
@@ -84,7 +85,7 @@ public class HelperUnitTest {
   @Test
   public void testGetShortHelp() {
     HelpBlock helpBlock = helper.getHelp(cliCommand, null, null);
-    String[] helpLines = helpBlock.toString().split("\n");
+    String[] helpLines = helpBlock.toString().split(LINE_SEPARATOR);
     assertThat(helpLines.length).isEqualTo(2);
     assertThat(helpLines[0]).isEqualTo("test (Available)");
     assertThat(helpLines[1]).isEqualTo("This is a test description");
@@ -95,8 +96,8 @@ public class HelperUnitTest {
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test --option=value");
     optionBlock = helper.getOptionDetail(cliOption);
-    assertThat(optionBlock.toString())
-        .isEqualTo("option\n" + "help of option\n" + "Required: true\n");
+    assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
+        + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
   }
 
   @Test
@@ -105,8 +106,8 @@ public class HelperUnitTest {
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test [--option=value]");
     optionBlock = helper.getOptionDetail(cliOption);
-    assertThat(optionBlock.toString())
-        .isEqualTo("option\n" + "help of option\n" + "Required: false\n");
+    assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
+        + LINE_SEPARATOR + "Required: false" + LINE_SEPARATOR);
   }
 
   @Test
@@ -116,7 +117,8 @@ public class HelperUnitTest {
     assertThat(syntax).isEqualTo("test --option=value");
     optionBlock = helper.getOptionDetail(cliOption);
     assertThat(optionBlock.toString())
-        .isEqualTo("option\n" + "help of option\n" + "Synonyms: option2\n" + "Required: true\n");
+        .isEqualTo("option" + LINE_SEPARATOR + "help of option" + LINE_SEPARATOR
+            + "Synonyms: option2" + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
   }
 
   @Test
@@ -126,8 +128,8 @@ public class HelperUnitTest {
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test option2");
     optionBlock = helper.getOptionDetail(cliOption);
-    assertThat(optionBlock.toString())
-        .isEqualTo("option2\n" + "help of option\n" + "Required: true\n");
+    assertThat(optionBlock.toString()).isEqualTo("option2" + LINE_SEPARATOR + "help of option"
+        + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
   }
 
   @Test
@@ -137,8 +139,8 @@ public class HelperUnitTest {
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test [option2]");
     optionBlock = helper.getOptionDetail(cliOption);
-    assertThat(optionBlock.toString())
-        .isEqualTo("option2\n" + "help of option\n" + "Required: false\n");
+    assertThat(optionBlock.toString()).isEqualTo("option2" + LINE_SEPARATOR + "help of option"
+        + LINE_SEPARATOR + "Required: false" + LINE_SEPARATOR);
   }
 
   @Test
@@ -147,8 +149,8 @@ public class HelperUnitTest {
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test --option=value(,value)*");
     optionBlock = helper.getOptionDetail(cliOption);
-    assertThat(optionBlock.toString())
-        .isEqualTo("option\n" + "help of option\n" + "Required: true\n");
+    assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
+        + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
   }
 
   @Test
@@ -158,9 +160,9 @@ public class HelperUnitTest {
     assertThat(syntax).isEqualTo("test --option(=value)?");
 
     optionBlock = helper.getOptionDetail(cliOption);
-    assertThat(optionBlock.toString()).isEqualTo("option\n" + "help of option\n"
-        + "Required: true\n" + "Default (if the parameter is specified without value): true\n");
-
+    assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
+        + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR
+        + "Default (if the parameter is specified without value): true" + LINE_SEPARATOR);
   }
 
   @Test
@@ -171,10 +173,9 @@ public class HelperUnitTest {
     assertThat(syntax).isEqualTo("test --option(=value)?(,value)*");
 
     optionBlock = helper.getOptionDetail(cliOption);
-    assertThat(optionBlock.toString())
-        .isEqualTo("option\n" + "help of option\n" + "Required: true\n"
-            + "Default (if the parameter is specified without value): value1,value2\n");
-
+    assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
+        + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR
+        + "Default (if the parameter is specified without value): value1,value2" + LINE_SEPARATOR);
   }
 
 }
