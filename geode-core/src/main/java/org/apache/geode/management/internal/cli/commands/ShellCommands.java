@@ -54,7 +54,6 @@ import org.apache.geode.management.internal.web.http.support.SimpleHttpRequester
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -90,7 +89,7 @@ import javax.net.ssl.TrustManagerFactory;
  *
  * @since GemFire 7.0
  */
-public class ShellCommands implements CommandMarker {
+public class ShellCommands implements GfshCommand {
 
   // millis that connect --locator will wait for a response from the locator.
   private final static int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
@@ -239,10 +238,6 @@ public class ShellCommands implements CommandMarker {
       throw new IllegalStateException(e.getMessage(), e);
     }
     return infoResultData;
-  }
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
   }
 
   @CliCommand(value = {CliStrings.EXIT, "quit"}, help = CliStrings.EXIT__HELP)

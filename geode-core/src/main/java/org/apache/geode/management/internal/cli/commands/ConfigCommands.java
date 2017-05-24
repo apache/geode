@@ -43,6 +43,7 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -67,7 +68,7 @@ import java.util.TreeSet;
  * @since GemFire 7.0
  *
  */
-public class ConfigCommands extends AbstractCommandsSupport {
+public class ConfigCommands implements GfshCommand {
   private final ExportConfigFunction exportConfigFunction = new ExportConfigFunction();
   private final GetMemberConfigInformationFunction getMemberConfigFunction =
       new GetMemberConfigInformationFunction();
@@ -490,7 +491,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
         try {
           commandResult.saveIncomingFiles(saveDirString);
         } catch (IOException ioex) {
-          getGfsh().logSevere("Unable to export config", ioex);
+          Gfsh.getCurrentInstance().logSevere("Unable to export config", ioex);
         }
       }
 

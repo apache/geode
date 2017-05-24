@@ -2013,6 +2013,18 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       }
     }
 
+    public static LocatorState fromDirectory(final String workingDirectory,
+        final String memberName) {
+      LocatorState locatorState =
+          new LocatorLauncher.Builder().setWorkingDirectory(workingDirectory).build().status();
+
+      if (ObjectUtils.equals(locatorState.getMemberName(), memberName)) {
+        return locatorState;
+      }
+
+      return new LocatorState(new LocatorLauncher.Builder().build(), Status.NOT_RESPONDING);
+    }
+
     public LocatorState(final LocatorLauncher launcher, final Status status) {
       // if status is NOT_RESPONDING then this is executing inside the JVM asking for he status; pid
       // etc will be set according to the caller's JVM instead

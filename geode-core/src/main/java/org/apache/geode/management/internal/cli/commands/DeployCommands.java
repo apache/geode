@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -54,10 +55,10 @@ import java.util.Set;
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ * @see GfshCommand
  * @since GemFire 7.0
  */
-public class DeployCommands extends AbstractCommandsSupport {
+public class DeployCommands implements GfshCommand {
 
   private final DeployFunction deployFunction = new DeployFunction();
   private final UndeployFunction undeployFunction = new UndeployFunction();
@@ -84,6 +85,7 @@ public class DeployCommands extends AbstractCommandsSupport {
 
       // since deploy function can potentially do a lot of damage to security, this action should
       // require these following privileges
+      SecurityService securityService = SecurityService.getSecurityService();
       securityService.authorizeClusterManage();
       securityService.authorizeClusterWrite();
       securityService.authorizeDataManage();

@@ -14,22 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -60,26 +45,29 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public class FunctionCommands implements CommandMarker {
+public class FunctionCommands implements GfshCommand {
 
   private final ListFunctionFunction listFunctionFunction = new ListFunctionFunction();
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
 
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION})
@@ -350,20 +338,6 @@ public class FunctionCommands implements CommandMarker {
     }
 
     return result;
-  }
-
-  DistributedMember getMember(InternalCache cache, String memberNameOrId) {
-    DistributedMember member = null;
-    Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
-    Iterator<DistributedMember> it = dsMembers.iterator();
-    while (it.hasNext()) {
-      DistributedMember tempMember = (DistributedMember) it.next();
-      if (memberNameOrId.equals(tempMember.getId())
-          || memberNameOrId.equals(tempMember.getName())) {
-        return tempMember;
-      }
-    }
-    return member;
   }
 
   void executeAndGetResults(String functionId, String filterString, String resultCollector,

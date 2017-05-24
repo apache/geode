@@ -69,13 +69,13 @@ import java.util.concurrent.atomic.AtomicReference;
  * in GemFire.
  * </p>
  * 
- * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ * @see GfshCommand
  * @see org.apache.geode.management.internal.cli.domain.IndexDetails
  * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public class IndexCommands extends AbstractCommandsSupport {
+public class IndexCommands implements GfshCommand {
 
   private static final CreateIndexFunction createIndexFunction = new CreateIndexFunction();
   private static final DestroyIndexFunction destroyIndexFunction = new DestroyIndexFunction();
@@ -85,12 +85,6 @@ public class IndexCommands extends AbstractCommandsSupport {
       Collections.synchronizedSet(new HashSet<IndexInfo>());
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
-
-  @Override
-  protected Set<DistributedMember> getMembers(final InternalCache cache) {
-    // TODO determine what this does (as it is untested and unmockable!)
-    return CliUtil.getAllMembers(cache);
-  }
 
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false,

@@ -168,6 +168,7 @@ public class CliStrings {
       "Invalid file type, the file extension must be \"{0}\"";
   public static final String GEODE_DATA_FILE_EXTENSION = ".gfd";
   public static final String LOCATOR_HEADER = "Locator";
+  public static final String LOCATOR_TERM_NAME = "Locator";
   public static final String ERROR__MSG__HEADER = "Error";
   public static final String ZIP_FILE_EXTENSION = ".zip";
   // This should be thrown for FunctionInvocationTargetException

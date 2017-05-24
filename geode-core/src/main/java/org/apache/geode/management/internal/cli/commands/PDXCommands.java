@@ -44,7 +44,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class PDXCommands extends AbstractCommandsSupport {
+public class PDXCommands implements GfshCommand {
 
 
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)

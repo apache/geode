@@ -21,7 +21,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport;
+import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
@@ -221,7 +221,7 @@ public class CommandManager {
     try {
       // geode's commands
       foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          AbstractCommandsSupport.class.getPackage().getName(), CommandMarker.class);
+          GfshCommand.class.getPackage().getName(), CommandMarker.class);
 
       for (Class<?> klass : foundClasses) {
         try {

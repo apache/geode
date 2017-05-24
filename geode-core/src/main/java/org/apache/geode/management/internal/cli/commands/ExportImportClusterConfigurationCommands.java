@@ -63,7 +63,7 @@ import java.util.Set;
  * Commands for the cluster configuration
  */
 @SuppressWarnings("unused")
-public class ExportImportClusterConfigurationCommands extends AbstractCommandsSupport {
+public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
   @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},
       help = CliStrings.EXPORT_SHARED_CONFIG__HELP)

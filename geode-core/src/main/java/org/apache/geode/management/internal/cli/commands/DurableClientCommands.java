@@ -54,7 +54,7 @@ import org.springframework.shell.core.annotation.CliOption;
  * </p>
  */
 @SuppressWarnings("unused")
-public class DurableClientCommands extends AbstractCommandsSupport {
+public class DurableClientCommands implements GfshCommand {
 
   private static final ListDurableCqNamesFunction listDurableCqNamesFunction =
       new ListDurableCqNamesFunction();

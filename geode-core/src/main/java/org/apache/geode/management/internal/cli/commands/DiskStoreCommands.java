@@ -99,18 +99,11 @@ import org.apache.geode.security.ResourcePermission.Resource;
 /**
  * The DiskStoreCommands class encapsulates all GemFire Disk Store commands in Gfsh.
  *
- * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ * @see GfshCommand
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public class DiskStoreCommands extends AbstractCommandsSupport {
-
-  @Override
-  protected Set<DistributedMember> getMembers(final InternalCache cache) {
-    // TODO determine what this does (as it is untested and unmockable!)
-    return CliUtil.getAllMembers(cache);
-  }
-
+public class DiskStoreCommands implements GfshCommand {
   protected Set<DistributedMember> getNormalMembers(final InternalCache cache) {
     // TODO determine what this does (as it is untested and unmockable!)
     return CliUtil.getAllNormalMembers(cache);
