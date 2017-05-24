@@ -35,6 +35,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -202,6 +203,9 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         }
       }
       result = ResultBuilder.buildResult(tabularResult);
+    } catch (IllegalArgumentException iae) {
+      LogWrapper.getInstance().info(iae.getMessage());
+      result = ResultBuilder.createUserErrorResult(iae.getMessage());
     } catch (CommandResultException crex) {
       result = crex.getResult();
     } catch (Exception e) {

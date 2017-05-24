@@ -231,8 +231,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   // package-private to avoid synthetic accessor
   static final Logger logger = LogService.getLogger();
 
-  private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
-
   /**
    * Internal interface used to simulate failures when performing entry operations
    * 
@@ -7389,6 +7387,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           "Region names may not begin with a double-underscore: " + name);
     }
 
+    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
     // Ensure the region only contains valid characters
     Matcher matcher = NAME_PATTERN.matcher(name);
     if (!matcher.matches()) {
