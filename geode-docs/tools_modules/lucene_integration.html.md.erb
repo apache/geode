@@ -61,7 +61,7 @@ There is no way to create a Lucene index on a client.
 
 Create the index before creating the region.
 
-When no analyzer is specified, the default analyzer from
+When no analyzer is specified, the
 `org.apache.lucene.analysis.standard.StandardAnalyzer` will be used.
 
 ### <a id="api-create-example" class="no-quick-link"></a>Java API Example to Create an Index
@@ -98,6 +98,8 @@ gfsh>create lucene index --name=indexName --region=/orders
 ```
 To use the entire value as a single field set the required `--field`
 option to be `__REGION_VALUE_FIELD`.
+This is only supported when the region entry value is a `String`, `Long`,
+`Integer`, `Float`, or `Double`.
 
 ### <a id="xml-configuration" class="no-quick-link"></a>XML Configuration to Create an Index
 
@@ -120,6 +122,7 @@ option to be `__REGION_VALUE_FIELD`.
                         analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
           <lucene:field name="c" 
                         analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
+          <lucene:field name="d" />
         </lucene:index>
     </region>
 </cache>
