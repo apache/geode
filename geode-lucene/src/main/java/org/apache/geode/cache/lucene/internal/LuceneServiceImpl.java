@@ -232,6 +232,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public void destroyDefinedIndex(String indexName, String regionPath) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/" + regionPath;
+    }
     String uniqueIndexName = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     if (definedIndexMap.containsKey(uniqueIndexName)) {
       definedIndexMap.remove(uniqueIndexName);

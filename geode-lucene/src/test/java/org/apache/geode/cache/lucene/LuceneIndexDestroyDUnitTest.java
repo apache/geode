@@ -401,7 +401,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
 
     // Recreate index and region
     String newIndexName = INDEX_NAME + "+_1";
-    SerializableRunnableIF createIndexNewName = createIndex(newIndexName, "field1");
+    SerializableRunnableIF createIndexNewName = createIndex(newIndexName, REGION_NAME, "field1");
     dataStore1.invoke(() -> initDataStore(createIndexNewName, regionType));
     dataStore2.invoke(() -> initDataStore(createIndexNewName, regionType));
     accessor.invoke(() -> initAccessor(createIndexNewName, regionType));
@@ -455,7 +455,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore1.invoke(() -> destroyDataRegion(true));
 
     // Create new index and region
-    SerializableRunnableIF createNewIndex = createIndex(INDEX_NAME, "field2");
+    SerializableRunnableIF createNewIndex = createIndex(INDEX_NAME, REGION_NAME, "field2");
     dataStore1.invoke(() -> initDataStore(createNewIndex, regionType));
     dataStore2.invoke(() -> initDataStore(createNewIndex, regionType));
     accessor.invoke(() -> initAccessor(createNewIndex, regionType));
@@ -472,14 +472,26 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> executeQuery(INDEX_NAME, "field2Value", "field2", numPuts));
   }
 
-  private SerializableRunnableIF createIndex() {
-    return createIndex(INDEX_NAME, "field1");
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void verifyCreateDestroyDefinedIndex(RegionTestableType regionType) {
+    String[] regionNames = {REGION_NAME, "/" + REGION_NAME};
+    for (String regionName : regionNames) {
+      dataStore1.invoke(createIndex(INDEX_NAME, regionName, "field1"));
+      dataStore1.invoke(() -> verifyDefinedIndexCreated(INDEX_NAME, regionName));
+      dataStore1.invoke(() -> destroyDefinedIndex(INDEX_NAME, regionName));
+      dataStore1.invoke(() -> verifyDefinedIndexDestroyed(INDEX_NAME, regionName));
+    }
   }
 
-  private SerializableRunnableIF createIndex(String indexName, String field) {
+  private SerializableRunnableIF createIndex() {
+    return createIndex(INDEX_NAME, REGION_NAME, "field1");
+  }
+
+  private SerializableRunnableIF createIndex(String indexName, String regionName, String field) {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndexFactory().setFields(field).create(indexName, REGION_NAME);
+      luceneService.createIndexFactory().setFields(field).create(indexName, regionName);
     };
   }
 
@@ -500,6 +512,18 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     assertNotNull(luceneService.getIndex(INDEX1_NAME, REGION_NAME));
     assertNotNull(luceneService.getIndex(INDEX2_NAME, REGION_NAME));
+  }
+
+  private void verifyDefinedIndexCreated(String indexName, String regionName) {
+    LuceneServiceImpl luceneService = (LuceneServiceImpl) LuceneServiceProvider.get(getCache());
+    assertNotNull(luceneService.getDefinedIndex(indexName, regionName));
+    assertEquals(1, getCache().getRegionListeners().size());
+  }
+
+  private void verifyDefinedIndexDestroyed(String indexName, String regionName) {
+    LuceneServiceImpl luceneService = (LuceneServiceImpl) LuceneServiceProvider.get(getCache());
+    assertNull(luceneService.getDefinedIndex(indexName, regionName));
+    assertEquals(0, getCache().getRegionListeners().size());
   }
 
   private void waitUntilFlushed(String indexName) throws Exception {
@@ -596,6 +620,11 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   private void destroyIndex() {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     luceneService.destroyIndex(INDEX_NAME, REGION_NAME);
+  }
+
+  private void destroyDefinedIndex(String indexName, String regionName) {
+    LuceneServiceImpl luceneService = (LuceneServiceImpl) LuceneServiceProvider.get(getCache());
+    luceneService.destroyDefinedIndex(indexName, regionName);
   }
 
   private void destroyIndexes() {
