@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit.cache.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,7 +41,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -59,13 +60,9 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-
 /**
  * This class is the base class for all distributed tests using JUnit 4 that require the creation of
  * a {@link Cache}.
- *
- * TODO: make this class abstract when JUnit3CacheTestCase is deleted
  */
 public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     implements CacheTestFixture {

@@ -26,7 +26,6 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -143,10 +142,14 @@ public abstract class JUnit3CacheTestCase extends JUnit3DistributedTestCase
   }
 
   @Override
-  public void preTearDownCacheTestCase() throws Exception {}
+  public void preTearDownCacheTestCase() throws Exception {
+    // nothing
+  }
 
   @Override
-  public void postTearDownCacheTestCase() throws Exception {}
+  public void postTearDownCacheTestCase() throws Exception {
+    // nothing
+  }
 
   /**
    * Local destroy all root regions and close the cache.
