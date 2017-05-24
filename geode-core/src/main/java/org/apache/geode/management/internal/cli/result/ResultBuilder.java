@@ -22,9 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 
- * 
- * @since GemFire 7.0
+ * Provides methods for creating {@link Result} objects to return from Gfsh command functions
  */
 public class ResultBuilder {
   public static final int CODE_SHELLCLIENT_ABORT_OP = 110;
@@ -38,7 +36,7 @@ public class ResultBuilder {
 
   // errors on member
   public static final int ERRORCODE_PARSING_ERROR = 501;
-  public static final int ERRORCODE_GEMFIRE_ERROR = 505;
+  public static final int ERRORCODE_GEODE_ERROR = 505;
   public static final int ERRORCODE_BADRESPONSE_ERROR = 510;
   public static final int ERRORCODE_BADCONFIG_ERROR = 515;
   public static final int ERRORCODE_USER_ERROR = 520;
@@ -88,17 +86,17 @@ public class ResultBuilder {
   }
 
   /**
-   * Method for convenience to create error result for error in GemFire while executing command.
+   * Method for convenience to create error result for error in Geode while executing command.
    * <p/>
    * Note: To build your own error result, use {@link #createErrorResultData()} to build
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
    * 
    * @param message Message to be shown to the user
-   * @return Result for error in GemFire while executing command.
+   * @return Result for error in Geode while executing command.
    */
   public static Result createGemFireErrorResult(String message) {
-    return createErrorResult(ERRORCODE_GEMFIRE_ERROR,
-        "Could not process command due to GemFire error. " + message);
+    return createErrorResult(ERRORCODE_GEODE_ERROR,
+        "Could not process command due to error. " + message);
   }
 
   public static Result createGemFireUnAuthorizedErrorResult(String message) {
@@ -268,7 +266,7 @@ public class ResultBuilder {
       while (result.hasNextLine()) {
         builder.append(result.nextLine());
       }
-      // TODO - Abhishek - what to do with incoming files??
+      // TODO - what to do with incoming files??
     }
 
     return builder.toString();
