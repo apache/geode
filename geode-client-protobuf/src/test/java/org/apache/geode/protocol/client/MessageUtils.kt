@@ -62,6 +62,24 @@ object MessageUtils {
         return message.build()
     }
 
+    fun makePutMessageForJSON(region: String, key: Any, value: String, keyEncoding: BasicTypes.EncodingType = EncodingTypeThingy.getEncodingTypeForObjectKT(key)): ClientProtocol.Message {
+        val random = Random()
+        val messageHeader = ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt())
+
+        val keyBuilder = getEncodedValueBuilder(key, keyEncoding)
+        val valueBuilder = getEncodedValueBuilder(value, BasicTypes.EncodingType.STRING)
+        valueBuilder.encodingType = BasicTypes.EncodingType.JSON
+
+
+        val putRequestBuilder = RegionAPI.PutRequest.newBuilder().setRegionName(region)
+                .setEntry(BasicTypes.Entry.newBuilder().setKey(keyBuilder).setValue(valueBuilder))
+
+        val request = ClientProtocol.Request.newBuilder().setPutRequest(putRequestBuilder)
+        val message = ClientProtocol.Message.newBuilder().setMessageHeader(messageHeader).setRequest(request)
+
+        return message.build()
+    }
+
     private fun getEncodedValueBuilder(value: Any, encodingType: BasicTypes.EncodingType): BasicTypes.EncodedValue.Builder {
         return BasicTypes.EncodedValue.newBuilder().setEncodingType(encodingType)
                 .setValue(ByteString.copyFrom(EncodingTypeThingy.serializerFromProtoEnum(encodingType).serialize(value)))

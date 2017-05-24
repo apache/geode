@@ -105,8 +105,8 @@ class ProtobufProtocolMessageHandler : ClientProtocolMessageHandler {
         }
     }
 
-    private fun getEncodingTypeForObject(`object`: Any): BasicTypes.EncodingType {
-        return EncodingTypeThingy.getEncodingTypeForObjectKT(`object`)
+    private fun getEncodingTypeForObject(obj: Any): BasicTypes.EncodingType {
+        return EncodingTypeThingy.getEncodingTypeForObjectKT(obj)
     }
 
     private fun makeGetResponseMessageWithValue(objectToReturn: Any): Message {

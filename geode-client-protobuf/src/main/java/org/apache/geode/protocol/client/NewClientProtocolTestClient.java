@@ -15,23 +15,15 @@
 
 package org.apache.geode.protocol.client;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
-import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ClientProtocol.Message;
-import org.apache.geode.protocol.protobuf.RegionAPI;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Random;
 
 
 public class NewClientProtocolTestClient implements AutoCloseable {
@@ -65,39 +57,6 @@ public class NewClientProtocolTestClient implements AutoCloseable {
 
   void printResponse(Message response) {
     System.out.println("response = " + response.toString());
-  }
-
-  private Message generateMessage() {
-    Random random = new Random();
-    ClientProtocol.MessageHeader.Builder messageHeader =
-        ClientProtocol.MessageHeader.newBuilder().setCorrelationId(random.nextInt());
-    // .setSize() //we don't need to set the size because Protobuf will handle the message frame
-
-    BasicTypes.EncodedValue.Builder key = BasicTypes.EncodedValue.newBuilder()
-        .setValue(ByteString.copyFrom(createByteArrayOfSize(64)));
-
-    BasicTypes.EncodedValue.Builder value = BasicTypes.EncodedValue.newBuilder()
-        .setValue(ByteString.copyFrom(createByteArrayOfSize(512)));
-
-    RegionAPI.PutRequest.Builder putRequestBuilder =
-        RegionAPI.PutRequest.newBuilder().setRegionName("TestRegion")
-            .setEntry(BasicTypes.Entry.newBuilder().setKey(key).setValue(value));
-
-    ClientProtocol.Request.Builder request =
-        ClientProtocol.Request.newBuilder().setPutRequest(putRequestBuilder);
-
-    Message.Builder message =
-        Message.newBuilder().setMessageHeader(messageHeader).setRequest(request);
-
-    return message.build();
-  }
-
-  private static byte[] createByteArrayOfSize(int msgSize) {
-    byte[] array = new byte[msgSize];
-    for (int i = 0; i < msgSize; i++) {
-      array[i] = 'a';
-    }
-    return array;
   }
 
 }

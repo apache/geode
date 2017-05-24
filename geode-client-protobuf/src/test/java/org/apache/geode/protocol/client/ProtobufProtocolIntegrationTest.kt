@@ -32,7 +32,6 @@ import org.junit.Test
 import org.junit.experimental.categories.Category
 import org.junit.runner.RunWith
 import java.io.IOException
-import java.io.Serializable
 import java.util.*
 
 @Category(IntegrationTest::class)
@@ -108,7 +107,7 @@ class ProtobufProtocolIntegrationTest {
     }
 
     @Test
-    fun objectSerializationIntegrationTest() {
+    fun testPrimitiveSerializationIntegration() {
         val inputs = listOf("Foobar", 1000.toLong(), 22, 231.toShort(), (-107).toByte(), byteArrayOf(1, 2, 3, 54, 99))
         for (key in inputs) {
             for (value in inputs) {
@@ -117,14 +116,20 @@ class ProtobufProtocolIntegrationTest {
                 }
             }
         }
-//        val jsonString = "{ \"_id\": \"5924ba3f3918de8404fc1321\", \"index\": 0, \"guid\": \"bd27d3fa-8870-4f0d-ab4d-73adf7cbe58b\", \"isActive\": false, \"balance\": \"$1,934.31\", \"picture\": \"http://placehold.it/32x32\", \"age\": 39, \"eyeColor\": \"blue\", \"name\": \"Holt Dickson\", \"gender\": \"male\", \"company\": \"INQUALA\", \"email\": \"holtdickson@inquala.com\", \"phone\": \"+1 (886) 450-2949\", \"address\": \"933 Diamond Street, Hinsdale, Palau, 2038\", \"about\": \"Cupidatat excepteur labore cillum ea reprehenderit aliquip magna duis aliquip Lorem labore. Aliquip elit ullamco aliqua fugiat aute id irure enim Lorem eu qui nisi aliquip. Et do sit cupidatat sit ut consectetur ullamco aute do nostrud in. Ea voluptate in reprehenderit sit commodo et aliquip officia id eiusmod. Quis voluptate commodo ad esse do cillum ut occaecat non.\r\n\", \"registered\": \"2017-02-01T12:28:49 +08:00\", \"latitude\": -69.313434, \"longitude\": 134.707471, \"tags\": [ \"officia\", \"qui\", \"ullamco\", \"nostrud\", \"ipsum\", \"dolor\", \"officia\" ], \"friends\": [ { \"id\": 0, \"name\": \"Vivian Beach\" }, { \"id\": 1, \"name\": \"Crystal Mills\" }, { \"id\": 2, \"name\": \"Mosley Frank\" } ], \"greeting\": \"Hello, Holt Dickson! You have 2 unread messages.\", \"favoriteFruit\": \"apple\" }"
-//
-//        testMessagePutAndGet(testKey,jsonString,BasicTypes.EncodingType.STRING)
-//        val putMessage = MessageUtils.makePutMessageFor(region = testRegion, key = testKey, value = jsonString, valueEncoding = BasicTypes.EncodingType.STRING)
     }
 
-    private fun testMessagePutAndGet(key: Serializable, value: Serializable, valueEncoding: BasicTypes.EncodingType) {
-        val putMessage = MessageUtils.makePutMessageFor(region = testRegion, key = key, value = value, valueEncoding = valueEncoding)
+    @Test
+    fun testJsonValueSerializationIntegration() {
+        val jsonString = "{\"_id\":\"5924ba3f3918de8404fc1321\",\"index\":0,\"guid\":\"bd27d3fa-8870-4f0d-ab4d-73adf7cbe58b\",\"isActive\":false,\"balance\":\"$1,934.31\",\"picture\":\"http://placehold.it/32x32\",\"age\":39,\"eyeColor\":\"blue\",\"name\":\"Holt Dickson\",\"gender\":\"male\",\"company\":\"INQUALA\",\"email\":\"holtdickson@inquala.com\",\"phone\":\"+1 (886) 450-2949\",\"address\":\"933 Diamond Street, Hinsdale, Palau, 2038\",\"about\":\"Cupidatat excepteur labore cillum ea reprehenderit aliquip magna duis aliquip Lorem labore. Aliquip elit ullamco aliqua fugiat aute id irure enim Lorem eu qui nisi aliquip. Et do sit cupidatat sit ut consectetur ullamco aute do nostrud in. Ea voluptate in reprehenderit sit commodo et aliquip officia id eiusmod. Quis voluptate commodo ad esse do cillum ut occaecat non.\",\"registered\":\"2017-02-01T12:28:49 +08:00\",\"latitude\":-69.313434,\"longitude\":134.707471,\"tags\":[\"officia\",\"qui\",\"ullamco\",\"nostrud\",\"ipsum\",\"dolor\",\"officia\"],\"friends\":[{\"id\":0,\"name\":\"Vivian Beach\"},{\"id\":1,\"name\":\"Crystal Mills\"},{\"id\":2,\"name\":\"Mosley Frank\"}],\"greeting\":\"Hello, Holt Dickson! You have 2 unread messages.\",\"favoriteFruit\":\"apple\"}"
+
+        testMessagePutAndGet(key = testKey, value = jsonString, valueEncoding = BasicTypes.EncodingType.JSON)
+    }
+
+    private fun testMessagePutAndGet(key: Any, value: Any, valueEncoding: BasicTypes.EncodingType) {
+        val putMessage = when (valueEncoding) {
+            BasicTypes.EncodingType.JSON -> MessageUtils.makePutMessageForJSON(region = testRegion, key = key, value = value as String)
+            else -> MessageUtils.makePutMessageFor(region = testRegion, key = key, value = value, valueEncoding = valueEncoding)
+        }
         val responseMessage = testClient.blockingSendMessage(putMessage)
         assertTrue(responseMessage.response.putResponse.success)
 
@@ -137,10 +142,11 @@ class ProtobufProtocolIntegrationTest {
         val serializer = EncodingTypeThingy.serializerFromProtoEnum(messageEncodingType)
         val messageValue = getResponse.response.getResponse.result.value.toByteArray()
 
-        val deserializeValue = serializer.deserializer.deserialize(messageValue)
+        val deserializeValue = serializer.deserialize(messageValue)
         when (messageEncodingType) {
             BasicTypes.EncodingType.BINARY -> assertArrayEquals(value as ByteArray, deserializeValue as ByteArray)
-            else -> assertEquals(value, serializer.deserializer.deserialize(messageValue))
+            BasicTypes.EncodingType.JSON -> assertEquals(value, EncodingTypeThingy.serializerFromProtoEnum(BasicTypes.EncodingType.STRING).deserializer.deserialize(messageValue))
+            else -> assertEquals(value, deserializeValue)
         }
     }
 
