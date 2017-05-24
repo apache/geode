@@ -198,6 +198,31 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  public void createIndexShouldNotAcceptEmptyRegionNames() {
+    final VM vm1 = Host.getHost(0).getVM(-1);
+    vm1.invoke(() -> {
+      getCache();
+    });
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "\'__\'");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains("Region names may not begin with a double-underscore:"));
+
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "\' @@@*%\'");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString
+        .contains("Region names may only be alphanumeric and may contain hyphens or underscores:"));
+  }
+
+  @Test
   public void createIndexShouldTrimAnalyzerNames() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(-1);
     vm1.invoke(() -> {
@@ -497,7 +522,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
     assertEquals(4, data.retrieveAllValues("key").size());
-
   }
 
   @Test

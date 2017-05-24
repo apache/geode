@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateRegionName;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -81,6 +83,8 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
           indexFactory.addField(fields[i], analyzer);
         }
       }
+
+      validateRegionName(indexInfo.getRegionPath());
       indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
 
       // TODO - update cluster configuration by returning a valid XmlEntity
