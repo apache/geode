@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
@@ -322,7 +323,15 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   public void toData(DataOutput dop) throws IOException {
-    DataSerializer.writeByteArray(this.membershipID, dop);
+    Version version = InternalDataSerializer.getVersionForDataStream(dop);
+    if (version.compareTo(Version.GFE_90) <= 0) {
+      InternalDistributedMember member = getDistributedMember();
+      HeapDataOutputStream hdos = new HeapDataOutputStream(version);
+      member.writeEssentialData(hdos);
+      DataSerializer.writeByteArray(hdos.toByteArray(), dop);
+    } else {
+      DataSerializer.writeByteArray(this.membershipID, dop);
+    }
     DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
         dop);
     dop.writeInt(this.bucketID);
