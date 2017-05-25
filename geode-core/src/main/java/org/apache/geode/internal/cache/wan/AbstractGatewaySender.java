@@ -973,6 +973,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
           ev.enqueueEvent(operation, clonedEvent, substituteValue);
         } catch (CancelException e) {
           logger.debug("caught cancel exception", e);
+          throw e;
         } catch (RegionDestroyedException e) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.GatewayImpl_0_AN_EXCEPTION_OCCURRED_WHILE_QUEUEING_1_TO_PERFORM_OPERATION_2_FOR_3,
