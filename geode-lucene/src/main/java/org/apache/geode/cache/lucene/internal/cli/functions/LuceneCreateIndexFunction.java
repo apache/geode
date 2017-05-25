@@ -15,7 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCreateIndexCommandParams;
+import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.INDEX_NAME;
+import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
@@ -67,7 +68,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       LuceneService service = LuceneServiceProvider.get(cache);
 
-      validateCreateIndexCommandParams(indexInfo.getIndexName(), false);
+      INDEX_NAME.validateName(indexInfo.getIndexName());
 
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
@@ -86,7 +87,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
         }
       }
 
-      validateCreateIndexCommandParams(indexInfo.getRegionPath(), true);
+      REGION_PATH.validateName(indexInfo.getRegionPath());
       indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
 
       // TODO - update cluster configuration by returning a valid XmlEntity

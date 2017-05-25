@@ -210,7 +210,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
     String resultAsString = executeCommandAndLogResult(csb);
-    assertTrue(resultAsString.contains("Parameter names may not begin with a double-underscore:"));
+    assertTrue(resultAsString.contains(
+        "Region names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens, underscores, or forward slashes:"));
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -219,7 +220,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains(
-        "Parameter names may only be alphanumeric, though they can contain hyphens or underscores:"));
+        "Region names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens, underscores, or forward slashes:"));
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\'__\'");
@@ -227,7 +228,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
     resultAsString = executeCommandAndLogResult(csb);
-    assertTrue(resultAsString.contains("Parameter names may not begin with a double-underscore:"));
+    assertTrue(resultAsString.contains(
+        "Index names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens or underscores:"));
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\' @@@*%\'");
@@ -236,7 +238,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains(
-        "Parameter names may only be alphanumeric, though they can contain hyphens or underscores:"));
+        "Index names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens or underscores:"));
   }
 
   @Test
