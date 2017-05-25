@@ -128,7 +128,7 @@ public class AbstractStringIdResourceBundle {
   public String getString(StringId key) {
     if (usingRawMode())
       return key.getRawText();
-    String txt = (String) data.get(((StringId) key).id);
+    String txt = (String) data.get(key.id);
     if (txt != null) {
       return txt;
     } else {

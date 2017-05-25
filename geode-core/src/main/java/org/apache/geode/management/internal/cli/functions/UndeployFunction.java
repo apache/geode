@@ -51,7 +51,8 @@ public class UndeployFunction implements Function, InternalEntity {
 
     try {
       final Object[] args = (Object[]) context.getArguments();
-      final String jarFilenameList = (String) args[0]; // Comma separated
+      final String[] jarFilenameList = (String[]) args[0];
+      System.out.println(java.util.Arrays.toString(jarFilenameList));
       InternalCache cache = getCache();
 
       final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
@@ -65,9 +66,11 @@ public class UndeployFunction implements Function, InternalEntity {
       }
 
       String[] undeployedJars = new String[0];
-      if (jarFilenameList == null || jarFilenameList.equals("")) {
+      if (jarFilenameList == null || jarFilenameList.equals("")) { // Undeploy all jars if no args
+                                                                   // given
         final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
-        undeployedJars = new String[jarClassLoaders.size() * 2];
+        undeployedJars = new String[jarClassLoaders.size() * 2]; // Size is x2 to account for jars'
+                                                                 // names and their locations
         int index = 0;
         for (DeployedJar jarClassLoader : jarClassLoaders) {
           undeployedJars[index++] = jarClassLoader.getJarName();
@@ -75,18 +78,17 @@ public class UndeployFunction implements Function, InternalEntity {
             undeployedJars[index++] =
                 ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
           } catch (IllegalArgumentException iaex) {
-            // It's okay for it to have have been uneployed from this server
+            // It's okay for it to have have been undeployed from this server
             undeployedJars[index++] = iaex.getMessage();
           }
         }
       } else {
         List<String> undeployedList = new ArrayList<String>();
-        StringTokenizer jarTokenizer = new StringTokenizer(jarFilenameList, ",");
-        while (jarTokenizer.hasMoreTokens()) {
-          String jarFilename = jarTokenizer.nextToken().trim();
+        for (int i = 0; i < jarFilenameList.length; i += 2) {
+          String jarName = jarFilenameList[i].trim();
           try {
-            undeployedList.add(jarFilename);
-            undeployedList.add(ClassPathLoader.getLatest().getJarDeployer().undeploy(jarFilename));
+            undeployedList.add(jarName);
+            undeployedList.add(ClassPathLoader.getLatest().getJarDeployer().undeploy(jarName));
           } catch (IllegalArgumentException iaex) {
             // It's okay for it to not have been deployed to this server
             undeployedList.add(iaex.getMessage());

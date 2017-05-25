@@ -302,10 +302,10 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result gc(
-      @CliOption(key = CliStrings.GC__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.GC__MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__MEMBER__HELP) String memberId) {
     InternalCache cache = getCache();
@@ -364,9 +364,9 @@ public class MiscellaneousCommands implements CommandMarker {
             return ResultBuilder.createUserErrorResult((String) object);
           } else {
             Map<String, String> resultMap = (Map<String, String>) object;
-            toTabularResultData(resultTable, (String) resultMap.get("MemberId"),
-                (String) resultMap.get("HeapSizeBeforeGC"),
-                (String) resultMap.get("HeapSizeAfterGC"), (String) resultMap.get("TimeSpentInGC"));
+            toTabularResultData(resultTable, resultMap.get("MemberId"),
+                resultMap.get("HeapSizeBeforeGC"), resultMap.get("HeapSizeAfterGC"),
+                resultMap.get("TimeSpentInGC"));
           }
         } else {
           LogWrapper.getInstance().fine("ResultMap was null ");
@@ -670,13 +670,12 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
+  public Result exportStackTrace(@CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
       help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__GROUP,
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_STACKTRACE__GROUP) String[] group,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.GROUP) String[] group,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
@@ -1841,9 +1840,9 @@ public class MiscellaneousCommands implements CommandMarker {
       interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ChangeLogLevelInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__GROUPS, unspecifiedDefaultValue = "",
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, unspecifiedDefaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
           optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",
@@ -1871,8 +1870,8 @@ public class MiscellaneousCommands implements CommandMarker {
           Iterator<DistributedMember> it = ds.iterator();
           while (it.hasNext()) {
             DistributedMember mem = it.next();
-            if (mem.getName() == null ? false
-                : mem.getName().equals(member) || mem.getId().equals(member)) {
+            if (mem.getName() != null
+                && (mem.getName().equals(member) || mem.getId().equals(member))) {
               dsMembers.add(mem);
               break;
             }
