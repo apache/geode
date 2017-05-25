@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal.xml;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
@@ -71,6 +72,30 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     expectedIndexes.put("index1", new String[] {"a", "b", "c", "d"});
     expectedIndexes.put("index2", new String[] {"f", "g"});
     validateExpectedIndexes(region, expectedIndexes);
+  }
+
+  /**
+   * Test that we parse the index fields correctly
+   */
+  @Test(expected = CacheXmlException.class)
+  public void invalidXmlShouldThrowParseException() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+  }
+
+  /**
+   * Test that we parse the index fields correctly
+   */
+  @Test(expected = CacheXmlException.class)
+  public void invalidLuceneElementShouldThrowParseException() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+  }
+
+  /**
+   * Test that we parse the index fields correctly
+   */
+  @Test(expected = CacheXmlException.class)
+  public void invalidXmlLocationShouldThrowParseException() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
   }
 
   @Test
