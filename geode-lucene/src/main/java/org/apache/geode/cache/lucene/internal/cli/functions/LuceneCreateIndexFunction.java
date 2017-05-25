@@ -104,7 +104,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       className = StandardAnalyzer.class.getCanonicalName();
     else {
       String trimmedClassName = StringUtils.trim(className);
-      if (trimmedClassName.equals("") || trimmedClassName.equals("null"))
+      if (trimmedClassName.equals("") || trimmedClassName.equals("DEFAULT"))
         className = StandardAnalyzer.class.getCanonicalName();
       else
         className = trimmedClassName;
