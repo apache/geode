@@ -40,7 +40,7 @@ public class LuceneCliStrings {
       "Name/Path of the region on which to create the lucene index.";
   public static final String LUCENE_CREATE_INDEX__FIELD = "field";
   public static final String LUCENE_CREATE_INDEX__FIELD_HELP =
-      "fields on the region values which are stored in the lucene index.";
+      "Fields on the region values which are stored in the lucene index.\nUse __REGION_VALUE_FIELD if the entire region value should be indexed.\n__REGION_VALUE_FIELD is valid only if the region values are strings or numbers.";
   public static final String LUCENE_CREATE_INDEX__ANALYZER = "analyzer";
   public static final String LUCENE_CREATE_INDEX__ANALYZER_HELP =
       "Type of the analyzer for each field.";
