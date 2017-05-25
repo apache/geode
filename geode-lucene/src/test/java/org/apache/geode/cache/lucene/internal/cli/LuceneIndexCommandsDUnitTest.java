@@ -298,33 +298,81 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void createIndexWithNullAnalyzerShouldUseStandardAnalyzer() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
+  public void createIndexWithWhitespaceOrDefaultKeywordAnalyzerShouldUseStandardAnalyzer()
+      throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(-1);
     vm1.invoke(() -> {
       getCache();
     });
 
-    String analyzerList = StandardAnalyzer.class.getCanonicalName() + ",null,"
+    // Test whitespace analyzer name
+    String analyzerList = StandardAnalyzer.class.getCanonicalName() + ",     ,"
         + KeywordAnalyzer.class.getCanonicalName();
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "space");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, "'" + analyzerList + "'");
+
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    // Test empty analyzer name
+    analyzerList =
+        StandardAnalyzer.class.getCanonicalName() + ",," + KeywordAnalyzer.class.getCanonicalName();
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "empty");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, analyzerList);
 
-    String resultAsString = executeCommandAndLogResult(csb);
+    resultAsString = executeCommandAndLogResult(csb);
+
+    // Test keyword analyzer name
+    analyzerList = StandardAnalyzer.class.getCanonicalName() + ",DEFAULT,"
+        + KeywordAnalyzer.class.getCanonicalName();
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "keyword");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, analyzerList);
+
+    resultAsString = executeCommandAndLogResult(csb);
 
     vm1.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       createRegion();
-      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+      final LuceneIndex spaceIndex = luceneService.getIndex("space", REGION_NAME);
+      final Map<String, Analyzer> spaceFieldAnalyzers = spaceIndex.getFieldAnalyzers();
+
+      final LuceneIndex emptyIndex = luceneService.getIndex("empty", REGION_NAME);
+      final Map<String, Analyzer> emptyFieldAnalyzers2 = emptyIndex.getFieldAnalyzers();
+
+      final LuceneIndex keywordIndex = luceneService.getIndex("keyword", REGION_NAME);
+      final Map<String, Analyzer> keywordFieldAnalyzers = keywordIndex.getFieldAnalyzers();
+
+      // Test whitespace analyzers
       assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          fieldAnalyzers.get("field1").getClass().getCanonicalName());
+          spaceFieldAnalyzers.get("field1").getClass().getCanonicalName());
       assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          fieldAnalyzers.get("field2").getClass().getCanonicalName());
+          spaceFieldAnalyzers.get("field2").getClass().getCanonicalName());
       assertEquals(KeywordAnalyzer.class.getCanonicalName(),
-          fieldAnalyzers.get("field3").getClass().getCanonicalName());
+          spaceFieldAnalyzers.get("field3").getClass().getCanonicalName());
+
+      // Test empty analyzers
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          emptyFieldAnalyzers2.get("field1").getClass().getCanonicalName());
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          emptyFieldAnalyzers2.get("field2").getClass().getCanonicalName());
+      assertEquals(KeywordAnalyzer.class.getCanonicalName(),
+          emptyFieldAnalyzers2.get("field3").getClass().getCanonicalName());
+
+      // Test keyword analyzers
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          keywordFieldAnalyzers.get("field1").getClass().getCanonicalName());
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          keywordFieldAnalyzers.get("field2").getClass().getCanonicalName());
+      assertEquals(KeywordAnalyzer.class.getCanonicalName(),
+          keywordFieldAnalyzers.get("field3").getClass().getCanonicalName());
     });
   }
 
