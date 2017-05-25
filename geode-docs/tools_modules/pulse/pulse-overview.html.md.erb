@@ -25,24 +25,24 @@ Use Pulse to examine total memory, CPU, and disk space used by members, uptime s
 
 By default, Geode Pulse runs in an embedded container within a Geode JMX manager node. You can optionally deploy Pulse to a Web application server of your choice, so that the tool runs independently of your Geode clusters. Hosting Pulse on an application server also enables you to use SSL for accessing the application.
 
--   **[Pulse System Requirements](system_requirements.html)**
+-   **[Pulse System Requirements](pulse-requirements.html)**
 
     Verify that your system meets the installation and runtime requirements for GemFire Pulse.
 
 
--   **[Pulse Quick Start (Embedded Mode)](quickstart.html#topic_523F6DE33FE54307BBE8F83BB7D9355D)**
+-   **[Running Pulse in Embedded Mode (Quick Start)](pulse-embedded.html)**
 
     Use Pulse in embedded mode to monitor a Geode deployment directly from a Geode JMX Manager. By default, the embedded Pulse application connects to the local JMX Manager that hosts the Pulse application. Optionally, configure Pulse to connect to a Geode system of your choice.
 
--   **[Hosting Pulse on a Web Application Server](quickstart.html#topic_795C97B46B9843528961A094EE520782)**
+-   **[Hosting Pulse on a Web Application Server](pulse-hosted.html)**
 
     Host Pulse on a dedicated Web application server to make the Pulse application available at a consistent address, or to use SSL for accessing the Pulse application. When you host Pulse in this way, you also configure Pulse to connect to a specific locator or JMX Manager node for monitoring.
 
--   **[Configuring Pulse Authentication](quickstart.html#topic_AC9FFAA6FB044279BAED7A3E099E07AC)**
+-   **[Configuring Pulse Authentication](pulse-auth.html)**
 
     Pulse requires all users to authenticate themselves before they can use the Pulse Web application. If you have configured JMX authentication on the Geode JMX Manager node, the Pulse Web application itself may also need to authenticate itself to the Geode JMX Manager node on startup.
 
--   **[Using Pulse Views](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404)**
+-   **[Using Pulse Views](pulse-views.html)**
 
     Pulse provides a variety of different views to help you monitor Geode clusters, members, and regions.
 
