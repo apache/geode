@@ -71,11 +71,11 @@ public class DurableClientCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, mandatory = true,
           help = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID__HELP) final String durableClientId,
 
-      @CliOption(key = CliStrings.LIST_DURABLE_CQS__MEMBER,
+      @CliOption(key = {CliStrings.LIST_DURABLE_CQS__MEMBER, "members"},
           help = CliStrings.LIST_DURABLE_CQS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.LIST_DURABLE_CQS__GROUP,
+      @CliOption(key = {CliStrings.LIST_DURABLE_CQS__GROUP, "groups"},
           help = CliStrings.LIST_DURABLE_CQS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result = null;
@@ -151,10 +151,10 @@ public class DurableClientCommands extends AbstractCommandsSupport {
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID__HELP) final String durableClientId,
       @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME__HELP) final String cqName,
-      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, "members"}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
-      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, "groups"}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
@@ -198,10 +198,10 @@ public class DurableClientCommands extends AbstractCommandsSupport {
   public Result closeDurableClient(
       @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP) final String durableClientId,
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, "members"}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, "groups"}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
@@ -239,11 +239,11 @@ public class DurableClientCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__NAME, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CQS__NAME__HELP) final String cqName,
 
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CQS__MEMBER, "members"}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CQS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CQS__GROUP, "groups"}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CQS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result = null;

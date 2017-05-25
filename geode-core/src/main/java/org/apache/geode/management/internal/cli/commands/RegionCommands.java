@@ -79,9 +79,11 @@ public class RegionCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public Result listRegion(
-      @CliOption(key = {CliStrings.LIST_REGION__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.LIST_REGION__GROUP, "groups"},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_REGION__GROUP__HELP) String[] group,
-      @CliOption(key = {CliStrings.LIST_REGION__MEMBER}, optionContext = ConverterHint.MEMBERIDNAME,
+      @CliOption(key = {CliStrings.LIST_REGION__MEMBER, "members"},
+          optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_REGION__MEMBER__HELP) String[] memberNameOrId) {
     Result result = null;
     try {

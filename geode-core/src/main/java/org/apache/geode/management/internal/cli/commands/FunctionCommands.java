@@ -559,9 +559,11 @@ public class FunctionCommands implements CommandMarker {
   public Result listFunction(
       @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES,
           help = CliStrings.LIST_FUNCTION__MATCHES__HELP) String matches,
-      @CliOption(key = CliStrings.LIST_FUNCTION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.LIST_FUNCTION__GROUP, "groups"},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_FUNCTION__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.LIST_FUNCTION__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+      @CliOption(key = {CliStrings.LIST_FUNCTION__MEMBER, "members"},
+          optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String[] members) {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;

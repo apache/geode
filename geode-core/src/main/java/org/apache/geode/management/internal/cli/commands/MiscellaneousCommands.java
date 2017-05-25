@@ -302,7 +302,7 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result gc(
-      @CliOption(key = CliStrings.GC__GROUP,
+      @CliOption(key = {CliStrings.GC__GROUP, "groups"},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.GC__MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -670,11 +670,11 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
+  public Result exportStackTrace(@CliOption(key = {CliStrings.EXPORT_STACKTRACE__MEMBER, "members"},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
       help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__GROUP,
+      @CliOption(key = {CliStrings.EXPORT_STACKTRACE__GROUP, "groups"},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_STACKTRACE__GROUP) String[] group,
 
@@ -1841,9 +1841,9 @@ public class MiscellaneousCommands implements CommandMarker {
       interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ChangeLogLevelInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER,
+      @CliOption(key = {CliStrings.CHANGE_LOGLEVEL__MEMBER, "members"},
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__GROUPS, unspecifiedDefaultValue = "",
+      @CliOption(key = {CliStrings.CHANGE_LOGLEVEL__GROUPS, "groups"}, unspecifiedDefaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
           optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",
