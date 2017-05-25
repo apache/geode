@@ -99,7 +99,8 @@ public class EventTracker {
   String name;
 
   /**
-   * whether or not this tracker has been initialized with state from another process
+   * whether or not this tracker has been initialized to allow entry operation. replicate region
+   * does not initiate event tracker from its replicates.
    */
   volatile boolean initialized;
 

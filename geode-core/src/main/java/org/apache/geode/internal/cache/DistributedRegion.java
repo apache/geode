@@ -261,6 +261,15 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   }
 
   /**
+   * Record the event state from image provider
+   * 
+   * @param provider the member that provided the initial image and event state
+   */
+  protected void recordEventStateFromImageProvider(InternalDistributedMember provider) {
+    // No Op. Only Bucket region will initiate event states
+  }
+
+  /**
    * Intended for used during construction of a DistributedRegion
    * 
    * @return the advisor to be used by the region

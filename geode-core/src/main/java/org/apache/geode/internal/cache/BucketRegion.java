@@ -29,8 +29,11 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
+import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyProcessor;
+import org.apache.geode.internal.cache.EventTracker.EventSeqnoHolder;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.control.MemoryEvent;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.internal.cache.partitioned.InvalidateMessage;
@@ -92,6 +95,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   private final AtomicLong numOverflowBytesOnDisk = new AtomicLong();
   private final AtomicLong numEntriesInVM = new AtomicLong();
   private final AtomicLong evictions = new AtomicLong();
+  // For GII
+  private CreateRegionReplyProcessor createRegionReplyProcessor;
 
   /**
    * Contains size in bytes of the values stored in theRealMap. Sizes are tallied during put and
@@ -278,6 +283,30 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public void createEventTracker() {
     this.eventTracker = new EventTracker(this);
     this.eventTracker.start();
+  }
+
+  @Override
+  public void registerCreateRegionReplyProcessor(CreateRegionReplyProcessor processor) {
+    this.createRegionReplyProcessor = processor;
+  }
+
+  @Override
+  protected void recordEventStateFromImageProvider(InternalDistributedMember provider) {
+    if (this.createRegionReplyProcessor != null) {
+      Map<ThreadIdentifier, EventSeqnoHolder> providerEventStates =
+          this.createRegionReplyProcessor.getEventState(provider);
+      if (providerEventStates != null) {
+        recordEventState(provider, providerEventStates);
+      } else {
+        // Does not see this to happen. Just in case we get gii from a node
+        // that was not in the cluster originally when we sent
+        // createRegionMessage (its event tracker was saved),
+        // but later available before we could get gii from anyone else.
+        // This will not cause data inconsistent issue. Log this message for debug purpose.
+        logger.info("Could not initiate event tracker from GII provider {}", provider);
+      }
+      this.createRegionReplyProcessor = null;
+    }
   }
 
   @Override
