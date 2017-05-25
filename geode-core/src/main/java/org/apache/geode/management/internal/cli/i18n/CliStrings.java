@@ -2111,10 +2111,10 @@ public class CliStrings {
   public static final String CHANGE_LOGLEVEL = "change loglevel";
   public static final String CHANGE_LOGLEVEL__HELP =
       "This command changes log-level run time on specified servers.";
-  public static final String CHANGE_LOGLEVEL__GROUPS = "groups";
+  public static final String CHANGE_LOGLEVEL__GROUPS = "group";
   public static final String CHANGE_LOGLEVEL__GROUPS__HELP =
       "Groups of members to change the log-level";
-  public static final String CHANGE_LOGLEVEL__MEMBER = "members";
+  public static final String CHANGE_LOGLEVEL__MEMBER = "member";
   public static final String CHANGE_LOGLEVEL__MEMBER__HELP =
       "Name/Id of the member to change the log-level";
   public static final String CHANGE_LOGLEVEL__LOGLEVEL = "loglevel";

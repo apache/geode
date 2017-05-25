@@ -302,7 +302,7 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result gc(
-      @CliOption(key = CliStrings.GC__GROUP,
+      @CliOption(key = {CliStrings.GC__GROUP, "groups"},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.GC__MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -670,13 +670,13 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
+  public Result exportStackTrace(@CliOption(key = {CliStrings.EXPORT_STACKTRACE__MEMBER, "members"},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.EXPORT_STACKTRACE__HELP) String memberNameOrId,
+      help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__GROUP,
+      @CliOption(key = {CliStrings.EXPORT_STACKTRACE__GROUP, "groups"},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_STACKTRACE__GROUP) String group,
+          help = CliStrings.EXPORT_STACKTRACE__GROUP) String[] group,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
@@ -687,15 +687,17 @@ public class MiscellaneousCommands implements CommandMarker {
 
     Result result = null;
     StringBuffer filePrefix = new StringBuffer("stacktrace");
+
+    if (fileName == null) {
+      fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
+    }
+    final File outFile = new File(fileName);
     try {
-      if (fileName == null) {
-        fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
-      }
-      final File outFile = new File(fileName);
       if (outFile.exists() && failIfFilePresent) {
         return ResultBuilder.createShellClientErrorResult(CliStrings.format(
             CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
       }
+
 
       InternalCache cache = getCache();
       InternalDistributedSystem ads = cache.getInternalDistributedSystem();
@@ -703,13 +705,9 @@ public class MiscellaneousCommands implements CommandMarker {
       InfoResultData resultData = ResultBuilder.createInfoResultData();
 
       Map<String, byte[]> dumps = new HashMap<String, byte[]>();
-      Set<DistributedMember> targetMembers = null;
-
-      if ((group == null || group.isEmpty())
-          && (memberNameOrId == null || memberNameOrId.isEmpty())) {
-        targetMembers = CliUtil.getAllMembers(cache);
-      } else {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc =
@@ -728,9 +726,7 @@ public class MiscellaneousCommands implements CommandMarker {
       resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());
 
       result = ResultBuilder.buildResult(resultData);
-    } catch (CommandResultException crex) {
-      return crex.getResult();
-    } catch (Exception ex) {
+    } catch (IOException ex) {
       result = ResultBuilder
           .createGemFireErrorResult(CliStrings.EXPORT_STACKTRACE__ERROR + ex.getMessage());
     }
@@ -1845,9 +1841,9 @@ public class MiscellaneousCommands implements CommandMarker {
       interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ChangeLogLevelInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER,
+      @CliOption(key = {CliStrings.CHANGE_LOGLEVEL__MEMBER, "members"},
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__GROUPS, unspecifiedDefaultValue = "",
+      @CliOption(key = {CliStrings.CHANGE_LOGLEVEL__GROUPS, "groups"}, unspecifiedDefaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
           optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",

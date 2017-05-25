@@ -15,8 +15,10 @@
 
 package org.apache.geode.internal.lang;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.util.CollectionUtils;
 
 /**
  * The StringUtils is an abstract utility class for working with and invoking operations on String
@@ -64,8 +66,6 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
 
     return buffer.toString();
   }
-
-
 
   /**
    * Gets the value of the specified Object as a String. If the Object is null then the first

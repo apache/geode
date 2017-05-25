@@ -401,7 +401,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
       getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      assertEquals("Result: " + cmdResult, Result.Status.OK, cmdResult.getStatus());
 
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");

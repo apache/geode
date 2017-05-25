@@ -71,23 +71,23 @@ public class DurableClientCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, mandatory = true,
           help = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID__HELP) final String durableClientId,
 
-      @CliOption(key = CliStrings.LIST_DURABLE_CQS__MEMBER,
+      @CliOption(key = {CliStrings.LIST_DURABLE_CQS__MEMBER, "members"},
           help = CliStrings.LIST_DURABLE_CQS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.LIST_DURABLE_CQS__GROUP,
+      @CliOption(key = {CliStrings.LIST_DURABLE_CQS__GROUP, "groups"},
           help = CliStrings.LIST_DURABLE_CQS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result = null;
     try {
 
       boolean noResults = true;
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
+
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
       final List<DurableCqNamesResult> results = (List<DurableCqNamesResult>) rc.getResult();
@@ -151,21 +151,21 @@ public class DurableClientCommands extends AbstractCommandsSupport {
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID__HELP) final String durableClientId,
       @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME__HELP) final String cqName,
-      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, "members"}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
-      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, mandatory = false,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
+      @CliOption(key = {CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, "groups"}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
     Result result = null;
     try {
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
+
       String[] params = new String[2];
       params[0] = durableClientId;
       params[1] = cqName;
@@ -198,21 +198,22 @@ public class DurableClientCommands extends AbstractCommandsSupport {
   public Result closeDurableClient(
       @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP) final String durableClientId,
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, "members"}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, mandatory = false,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, "groups"}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
     Result result = null;
     try {
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
+
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(new CloseDurableClientFunction(), durableClientId, targetMembers);
       final List<MemberResult> results = (List<MemberResult>) rc.getResult();
@@ -238,20 +239,19 @@ public class DurableClientCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__NAME, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CQS__NAME__HELP) final String cqName,
 
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CQS__MEMBER, "members"}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CQS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.CLOSE_DURABLE_CQS__GROUP, "groups"}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CQS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result = null;
     try {
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       String[] params = new String[2];

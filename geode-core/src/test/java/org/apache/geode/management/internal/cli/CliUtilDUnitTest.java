@@ -261,35 +261,30 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
   }
 
   public void verifyFindAllMatchingMembers() {
-    try {
-      Set<DistributedMember> set = CliUtil.findMembersOrThrow(GROUP1, null);
-      assertNotNull(set);
-      assertEquals(2, set.size());
-      assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
-      assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
+    Set<DistributedMember> set = CliUtil.findMembers(GROUP1.split(","), null);
+    assertNotNull(set);
+    assertEquals(2, set.size());
+    assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
+    assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
 
-      set = CliUtil.findMembersOrThrow("group1,group2", null);
-      assertNotNull(set);
-      assertEquals(4, set.size());
-      assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
-      assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
-      assertEquals(true, containsMember(set, MEMBER_1_GROUP2));
-      assertEquals(true, containsMember(set, MEMBER_2_GROUP2));
+    set = CliUtil.findMembers(new String[] {"group1", "group2"}, null);
+    assertNotNull(set);
+    assertEquals(4, set.size());
+    assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
+    assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
+    assertEquals(true, containsMember(set, MEMBER_1_GROUP2));
+    assertEquals(true, containsMember(set, MEMBER_2_GROUP2));
 
-      set = CliUtil.findMembersOrThrow(null, MEMBER_1_GROUP1);
-      assertNotNull(set);
-      assertEquals(1, set.size());
-      assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
+    set = CliUtil.findMembers(null, MEMBER_1_GROUP1.split(","));
+    assertNotNull(set);
+    assertEquals(1, set.size());
+    assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
 
-      set = CliUtil.findMembersOrThrow(null, "member1_group1,member2_group2");
-      assertNotNull(set);
-      assertEquals(2, set.size());
-      assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
-      assertEquals(true, containsMember(set, MEMBER_2_GROUP2));
-
-    } catch (CommandResultException e) {
-      Assert.fail("CliUtil failed with exception", e);
-    }
+    set = CliUtil.findMembers(null, new String[] {"member1_group1", "member2_group2"});
+    assertNotNull(set);
+    assertEquals(2, set.size());
+    assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
+    assertEquals(true, containsMember(set, MEMBER_2_GROUP2));
   }
 
   private Object containsMember(Set<DistributedMember> set, String string) {
@@ -311,22 +306,18 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
   public void verifyExecuteFunction() {
     DunitFunction function = new DunitFunction("myfunction");
     Set<DistributedMember> set;
-    try {
-      @SuppressWarnings("rawtypes")
-      Region region1 = getCache().getRegion(COMMON_REGION);
-      region1.clear();
-      set = CliUtil.findMembersOrThrow(GROUP1, null);
-      assertEquals(2, set.size());
-      ResultCollector collector = CliUtil.executeFunction(function, "executeOnGroup", set);
-      collector.getResult();
-      assertEquals(2, region1.size());
-      assertTrue(region1.containsKey(MEMBER_1_GROUP1));
-      assertTrue(region1.containsKey(MEMBER_2_GROUP1));
-      assertEquals("executeOnGroup", region1.get(MEMBER_1_GROUP1));
-      assertEquals("executeOnGroup", region1.get(MEMBER_2_GROUP1));
-    } catch (CommandResultException e) {
-      Assert.fail("Error during querying members", e);
-    }
+    @SuppressWarnings("rawtypes")
+    Region region1 = getCache().getRegion(COMMON_REGION);
+    region1.clear();
+    set = CliUtil.findMembers(GROUP1.split(","), null);
+    assertEquals(2, set.size());
+    ResultCollector collector = CliUtil.executeFunction(function, "executeOnGroup", set);
+    collector.getResult();
+    assertEquals(2, region1.size());
+    assertTrue(region1.containsKey(MEMBER_1_GROUP1));
+    assertTrue(region1.containsKey(MEMBER_2_GROUP1));
+    assertEquals("executeOnGroup", region1.get(MEMBER_1_GROUP1));
+    assertEquals("executeOnGroup", region1.get(MEMBER_2_GROUP1));
   }
 
   public void getRegionAssociatedMembers() {

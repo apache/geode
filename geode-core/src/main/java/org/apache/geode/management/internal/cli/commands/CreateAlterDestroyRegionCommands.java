@@ -120,7 +120,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String useAttributesFrom,
-      @CliOption(key = CliStrings.CREATE_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.CREATE_REGION__GROUP, "groups"},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
@@ -384,7 +385,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   public Result alterRegion(
       @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
-      @CliOption(key = CliStrings.ALTER_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.ALTER_REGION__GROUP, "groups"},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.ALTER_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
           specifiedDefaultValue = "-1",
@@ -522,11 +524,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             new Object[] {evictionMax}));
       }
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(groups, null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> resultCollector =

@@ -50,8 +50,8 @@ public class UndeployFunction implements Function, InternalEntity {
     String memberId = "";
 
     try {
-      final Object[] args = (Object[]) context.getArguments();
-      final String jarFilenameList = (String) args[0]; // Comma separated
+      Object[] args = (Object[]) context.getArguments();
+      String[] jarFilenameList = (String[]) args[0];
       InternalCache cache = getCache();
 
       final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
@@ -64,38 +64,23 @@ public class UndeployFunction implements Function, InternalEntity {
         memberId = member.getName();
       }
 
-      String[] undeployedJars = new String[0];
-      if (jarFilenameList == null || jarFilenameList.equals("")) {
+      if (jarFilenameList == null) {
         final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
-        undeployedJars = new String[jarClassLoaders.size() * 2];
+        jarFilenameList = new String[jarClassLoaders.size() * 2];
         int index = 0;
         for (DeployedJar jarClassLoader : jarClassLoaders) {
-          undeployedJars[index++] = jarClassLoader.getJarName();
+          jarFilenameList[index++] = jarClassLoader.getJarName();
           try {
-            undeployedJars[index++] =
+            jarFilenameList[index++] =
                 ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
           } catch (IllegalArgumentException iaex) {
-            // It's okay for it to have have been uneployed from this server
-            undeployedJars[index++] = iaex.getMessage();
+            // It's okay for it to have have been undeployed from this server
+            jarFilenameList[index++] = iaex.getMessage();
           }
         }
-      } else {
-        List<String> undeployedList = new ArrayList<String>();
-        StringTokenizer jarTokenizer = new StringTokenizer(jarFilenameList, ",");
-        while (jarTokenizer.hasMoreTokens()) {
-          String jarFilename = jarTokenizer.nextToken().trim();
-          try {
-            undeployedList.add(jarFilename);
-            undeployedList.add(ClassPathLoader.getLatest().getJarDeployer().undeploy(jarFilename));
-          } catch (IllegalArgumentException iaex) {
-            // It's okay for it to not have been deployed to this server
-            undeployedList.add(iaex.getMessage());
-          }
-        }
-        undeployedJars = undeployedList.toArray(undeployedJars);
       }
 
-      CliFunctionResult result = new CliFunctionResult(memberId, undeployedJars);
+      CliFunctionResult result = new CliFunctionResult(memberId, jarFilenameList);
       context.getResultSender().lastResult(result);
 
     } catch (CacheClosedException cce) {

@@ -1496,27 +1496,12 @@ public class AttributesFactory<K, V> {
             LocalizedStrings.AttributesFactory_TOTAL_SIZE_OF_PARTITION_REGION_MUST_BE_0
                 .toLocalizedString());
       }
-      // listeners are supported here as of v5.1
-      // if (attrs.getCacheListeners().length > 0) {
-      // throw new IllegalStateException(
-      // "Can not add cache listeners to RegionAttributes when PartitionAttributes are set.");
-      // }
-      // loaders are supported here as of v5.1
-      // if (attrs.getCacheLoader() != null) {
-      // throw new IllegalStateException(
-      // "Can not set CacheLoader in RegionAttributes when PartitionAttributes are set.");
-      // }
+
       if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(attrs.getDataPolicy())) {
         throw new IllegalStateException(
             LocalizedStrings.AttributesFactory_DATA_POLICIES_OTHER_THAN_0_ARE_NOT_ALLOWED_IN_PARTITIONED_REGIONS
                 .toLocalizedString(PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
       }
-      // if ( attrs.getDataPolicy().isEmpty() && pa.getLocalMaxMemory() != 0) {
-      // throw new IllegalStateException(
-      // "A non-zero PartitionAttributes localMaxMemory setting is not compatible" +
-      // " with an empty DataPolicy. Please use DataPolicy.NORMAL instead.");
-      // }
-
       // fix bug #52033 by invoking getLocalMaxMemoryForValidation here
       if (((PartitionAttributesImpl) pa).getLocalMaxMemoryForValidation() < 0) {
         throw new IllegalStateException(

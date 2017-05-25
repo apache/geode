@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -186,17 +187,17 @@ public class IndexCommands extends AbstractCommandsSupport {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_INDEX__REGION__HELP) String regionPath,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.CREATE_INDEX__MEMBER, "members"}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.CREATE_INDEX__MEMBER__HELP) final String memberNameOrID,
+          help = CliStrings.CREATE_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
       @CliOption(key = CliStrings.CREATE_INDEX__TYPE, mandatory = false,
           unspecifiedDefaultValue = "range", optionContext = ConverterHint.INDEX_TYPE,
           help = CliStrings.CREATE_INDEX__TYPE__HELP) final String indexType,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.CREATE_INDEX__GROUP, "groups"}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.CREATE_INDEX__GROUP__HELP) final String group) {
+          help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] group) {
 
     Result result = null;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
@@ -237,8 +238,12 @@ public class IndexCommands extends AbstractCommandsSupport {
 
       IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, idxType);
 
-      final Set<DistributedMember> targetMembers =
-          CliUtil.findMembersOrThrow(group, memberNameOrID);
+      final Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
+
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
 
@@ -309,16 +314,14 @@ public class IndexCommands extends AbstractCommandsSupport {
         }
         result = ResultBuilder.buildResult(erd);
       }
-    } catch (CommandResultException crex) {
-      result = crex.getResult();
     } catch (Exception e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
 
 
     if (xmlEntity.get() != null) {
-      persistClusterConfiguration(result, () -> getSharedConfiguration()
-          .addXmlEntity(xmlEntity.get(), group != null ? group.split(",") : null));
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), group));
     }
 
     return result;
@@ -335,18 +338,18 @@ public class IndexCommands extends AbstractCommandsSupport {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESTROY_INDEX__REGION__HELP) final String regionPath,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.DESTROY_INDEX__MEMBER, "members"}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.DESTROY_INDEX__MEMBER__HELP) final String memberNameOrID,
+          help = CliStrings.DESTROY_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.DESTROY_INDEX__GROUP, "groups"}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String group) {
+          help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group) {
 
     Result result = null;
 
     if (StringUtils.isBlank(indexName) && StringUtils.isBlank(regionPath)
-        && StringUtils.isBlank(memberNameOrID) && StringUtils.isBlank(group)) {
+        && ArrayUtils.isEmpty(group) && ArrayUtils.isEmpty(memberNameOrID)) {
       return ResultBuilder.createUserErrorResult(
           CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
     }
@@ -364,12 +367,10 @@ public class IndexCommands extends AbstractCommandsSupport {
     }
 
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
-    Set<DistributedMember> targetMembers = null;
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
 
-    try {
-      targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrID);
-    } catch (CommandResultException e) {
-      return e.getResult();
+    if (targetMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
@@ -456,8 +457,8 @@ public class IndexCommands extends AbstractCommandsSupport {
       result = ResultBuilder.buildResult(erd);
     }
     if (xmlEntity.get() != null) {
-      persistClusterConfiguration(result, () -> getSharedConfiguration()
-          .deleteXmlEntity(xmlEntity.get(), group != null ? group.split(",") : null));
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), group));
     }
 
     return result;
@@ -537,13 +538,13 @@ public class IndexCommands extends AbstractCommandsSupport {
   // TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.CREATE_DEFINED_INDEXES__MEMBER, "members"}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.CREATE_DEFINED_INDEXES__MEMBER__HELP) final String memberNameOrID,
+          help = CliStrings.CREATE_DEFINED_INDEXES__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.CREATE_DEFINED_INDEXES__GROUP, "groups"}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String group) {
+          help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
     Result result = null;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
@@ -555,10 +556,13 @@ public class IndexCommands extends AbstractCommandsSupport {
     }
 
     try {
-      final Cache cache = CacheFactory.getAnyInstance();
+      final Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
 
-      final Set<DistributedMember> targetMembers =
-          CliUtil.findMembersOrThrow(group, memberNameOrID);
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
+
+      final Cache cache = CacheFactory.getAnyInstance();
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(createDefinedIndexesFunction, indexDefinitions, targetMembers);
 
@@ -622,15 +626,13 @@ public class IndexCommands extends AbstractCommandsSupport {
         }
         result = ResultBuilder.buildResult(erd);
       }
-    } catch (CommandResultException crex) {
-      result = crex.getResult();
     } catch (Exception e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
 
     if (xmlEntity.get() != null) {
-      persistClusterConfiguration(result, () -> getSharedConfiguration()
-          .addXmlEntity(xmlEntity.get(), group != null ? group.split(",") : null));
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), group));
     }
     return result;
   }

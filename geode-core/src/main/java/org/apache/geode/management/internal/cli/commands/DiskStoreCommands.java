@@ -312,7 +312,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           help = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE__HELP) int writeBufferSize,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, mandatory = true,
           help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP) String[] directoriesAndSizes,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__GROUP,
+      @CliOption(key = {CliStrings.CREATE_DISK_STORE__GROUP, "groups"},
           help = CliStrings.CREATE_DISK_STORE__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT,
@@ -353,11 +353,10 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(groups, null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc = CliUtil.executeFunction(new CreateDiskStoreFunction(),
@@ -413,7 +412,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.COMPACT_DISK_STORE__NAME, mandatory = true,
           optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.COMPACT_DISK_STORE__NAME__HELP) String diskStoreName,
-      @CliOption(key = CliStrings.COMPACT_DISK_STORE__GROUP,
+      @CliOption(key = {CliStrings.COMPACT_DISK_STORE__GROUP, "groups"},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.COMPACT_DISK_STORE__GROUP__HELP) String[] groups) {
     Result result = null;
@@ -1403,18 +1402,17 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   public Result destroyDiskStore(
       @CliOption(key = CliStrings.DESTROY_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.DESTROY_DISK_STORE__NAME__HELP) String name,
-      @CliOption(key = CliStrings.DESTROY_DISK_STORE__GROUP,
+      @CliOption(key = {CliStrings.DESTROY_DISK_STORE__GROUP, "groups"},
           help = CliStrings.DESTROY_DISK_STORE__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups) {
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(groups, null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc = CliUtil.executeFunction(new DestroyDiskStoreFunction(),
