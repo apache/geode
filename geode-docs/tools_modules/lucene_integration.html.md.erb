@@ -89,10 +89,10 @@ gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags
 
 ``` pre
 // Create an index, specifying a custom analyzer for the second field
-// Note: "null" in the first analyzer position uses the default analyzer
+// Note: "DEFAULT" in the first analyzer position uses the default analyzer
 // for the first field
 gfsh>create lucene index --name=indexName --region=/orders
-  --field=customer,tags --analyzer=null,org.apache.lucene.analysis.bg.BulgarianAnalyzer
+  --field=customer,tags --analyzer=DEFAULT,org.apache.lucene.analysis.bg.BulgarianAnalyzer
 ```
 To use the entire value as a single field set the required `--field`
 option to be `__REGION_VALUE_FIELD`.
