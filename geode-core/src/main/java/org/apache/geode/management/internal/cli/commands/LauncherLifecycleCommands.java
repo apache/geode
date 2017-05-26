@@ -771,11 +771,19 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
         }
       } else {
-        final LocatorLauncher locatorLauncher =
-            new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
-                .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid)
-                .setPort(locatorPort).setWorkingDirectory(workingDirectory).build();
+        final LocatorLauncher locatorLauncher;
 
+        if ((locatorHost == null) && (locatorPort == null) && (workingDirectory == null)
+            && (pid == null)) {
+          return ResultBuilder.createShellClientErrorResult(
+              String.format(CliStrings.STATUS_LOCATOR__NO_LOCATOR_SPECIFIED_ERROR_MESSAGE,
+                  getLocatorId(locatorHost, locatorPort),
+                  StringUtils.defaultIfBlank(workingDirectory, SystemUtils.CURRENT_DIRECTORY)));
+        } else {
+          locatorLauncher = new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
+              .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid).setPort(locatorPort)
+              .setWorkingDirectory(workingDirectory).build();
+        }
         final LocatorState state = locatorLauncher.status();
         return createStatusLocatorResult(state);
       }
@@ -1794,19 +1802,10 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               .format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
         }
       } else {
-        final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-            .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
-            // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
-            // server when it was started, set the disableDefaultServer property in the
-            // ServerLauncher.Builder to default status
-            // to the MemberMBean
-            // TODO fix this hack! (how, the 'start server' loop needs it)
-            .setDisableDefaultServer(true).setPid(pid).setWorkingDirectory(workingDirectory)
-            .build();
-
-        final ServerState status = serverLauncher.status();
-
-        return ResultBuilder.createInfoResult(status.toString());
+        return ResultBuilder.createShellClientErrorResult(
+            String.format(CliStrings.STATUS_SERVER__NO_SERVER_SPECIFIED_ERROR_MESSAGE,
+                org.apache.geode.cache.server.CacheServer.DEFAULT_PORT,
+                StringUtils.defaultIfBlank(workingDirectory, SystemUtils.CURRENT_DIRECTORY)));
       }
     } catch (IllegalArgumentException | IllegalStateException e) {
       return ResultBuilder.createUserErrorResult(e.getMessage());

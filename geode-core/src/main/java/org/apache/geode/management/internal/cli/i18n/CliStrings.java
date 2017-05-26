@@ -1783,7 +1783,7 @@ public class CliStrings {
 
   /* pause gateway-sender */
   public static final String PAUSE_GATEWAYSENDER = "pause gateway-sender";
-  public static final String PAUSE_GATEWAYSENDER__ID = "id";;
+  public static final String PAUSE_GATEWAYSENDER__ID = "id";
   public static final String PAUSE_GATEWAYSENDER__MEMBER = "member";
   public static final String PAUSE_GATEWAYSENDER__GROUP = "group";
   public static final String PAUSE_GATEWAYSENDER__HELP =
@@ -1937,7 +1937,7 @@ public class CliStrings {
 
   /* resume gateway-sender */
   public static final String RESUME_GATEWAYSENDER = "resume gateway-sender";
-  public static final String RESUME_GATEWAYSENDER__ID = "id";;
+  public static final String RESUME_GATEWAYSENDER__ID = "id";
   public static final String RESUME_GATEWAYSENDER__MEMBER = "member";
   public static final String RESUME_GATEWAYSENDER__GROUP = "group";
   public static final String RESUME_GATEWAYSENDER__HELP =
@@ -2738,6 +2738,8 @@ public class CliStrings {
       "Port on which the Locator is listening. The default is 10334.";
   public static final String STATUS_LOCATOR__GENERAL_ERROR_MESSAGE =
       "An error occurred while attempting to determine the state of Locator on %1$s running in %2$s: %3$s";
+  public static final String STATUS_LOCATOR__NO_LOCATOR_SPECIFIED_ERROR_MESSAGE =
+      "Unable to determine the status of Locator on %1$s running in %2$s. Use 'help status locator' to display detailed usage information.";
   public static final String STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE =
       "No Locator with member name or ID {0} could be found.";
 
@@ -2747,6 +2749,8 @@ public class CliStrings {
   public static final String STATUS_SERVER__DIR = "dir";
   public static final String STATUS_SERVER__DIR__HELP =
       "Working directory in which the Cache Server is running. The default is the current directory.";
+  public static final String STATUS_SERVER__NO_SERVER_SPECIFIED_ERROR_MESSAGE =
+      "Unable to determine the status of Geode Cache server on %1$s running in %2$s. Use 'help status server' to display detailed usage information.";
   public static final String STATUS_SERVER__GENERAL_ERROR_MESSAGE =
       "An error occurred while attempting to determine the status of Geode Cache server: %1$s";
   public static final String STATUS_SERVER__MEMBER = "name";
@@ -2771,7 +2775,7 @@ public class CliStrings {
 
   /* stop gateway-sender */
   public static final String STOP_GATEWAYSENDER = "stop gateway-sender";
-  public static final String STOP_GATEWAYSENDER__ID = "id";;
+  public static final String STOP_GATEWAYSENDER__ID = "id";
   public static final String STOP_GATEWAYSENDER__MEMBER = "member";
   public static final String STOP_GATEWAYSENDER__GROUP = "group";
   public static final String STOP_GATEWAYSENDER__HELP =
