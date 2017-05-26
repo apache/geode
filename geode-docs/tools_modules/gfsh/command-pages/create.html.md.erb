@@ -683,26 +683,31 @@ create lucene index --name=value --region=value --field=value(,value)* [--analyz
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
 | <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the index to create.                                               |         |
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
-| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field of the region values that are referenced by the index. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`.     |         |
-| <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer to extract terms from text                                  |         |
+| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field of the region values that are referenced by the index. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`. |         |
+| <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer to extract terms from text. Use `DEFAULT` to specify the default analyzer.                                  |         |
 | <span class="keyword parmname">\\-\\-group</span>      | The index will be created on all the members in the specified member groups.                     |         |
 
 
 **Example Commands:**
 
 ``` pre
-create region --name=Person --type=PARTITION_REDUNDANT_PERSISTENT
-create lucene index --name=customerIndex --region=/Customer --field=symbol,revenue,SSN,name,email,address,__REGION_VALUE_FIELD
-create lucene index --name=analyzerIndex --region=/Person --field=name,email,address,revenue --analyzer=null,org.apache.lucene.analysis.core.KeywordAnalyzer,examples.MyCharacterAnalyzer,null
+gfsh>create region --name=Person --type=PARTITION_REDUNDANT_PERSISTENT
+
+gfsh>create lucene index --name=customerIndex --region=/Customer 
+     --field=symbol,revenue,SSN,name,email,address,__REGION_VALUE_FIELD
+
+gfsh>create lucene index --name=analyzerIndex --region=/Person 
+     --field=name,email,address,revenue 
+     --analyzer=DEFAULT,org.apache.lucene.analysis.core.KeywordAnalyzer,examples.MyCharacterAnalyzer,DEFAULT
 ```
 
 **Sample Output:**
 
 ``` pre
 gfsh>create lucene index --name=testIndex --region=testRegion --field=__REGION_VALUE_FIELD
-                 Member                  | Status
----------------------------------------- | ---------------------------------
-192.168.1.23(server50505:17200)<v1>:1025 | Successfully created lucene index
+               Member                  | Status
+-------------------------------------- | ---------------------------------
+192.168.1.23(server505:17200)<v1>:1025 | Successfully created lucene index
 ```
 
 ## <a id="topic_54B0985FEC5241CA9D26B0CE0A5EA863" class="no-quick-link"></a>create region
