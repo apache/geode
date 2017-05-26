@@ -50,14 +50,3 @@ When the `http` SSL component is enabled, all HTTP services become
 SSL-enabled and you must configure your client applications
 accordingly. For SSL-enabled Pulse, you will need to configure your
 browsers with proper certificates.
-
-If a JMX manager or locator is configured to use SSL, you can configure Pulse to connect to these
-processes. Create a file named `pulsesecurity.properties` and save it somewhere in the classpath of
-your Web application server. Include standard Java SSL properties, such as:
-
-```
-javax.net.ssl.keyStore={KeyStorePath}
-javax.net.ssl.keyStorePassword={KeyStorePassword}
-javax.net.ssl.trustStore={TrustStorePath}
-javax.net.ssl.trustStorePassword={TrustStorePassword}
-```
