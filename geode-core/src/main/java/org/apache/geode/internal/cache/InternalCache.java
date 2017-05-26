@@ -84,6 +84,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   <T extends CacheService> T getService(Class<T> clazz);
 
+  Collection<CacheService> getServices();
+
   SystemTimer getCCPTimer();
 
   void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client);

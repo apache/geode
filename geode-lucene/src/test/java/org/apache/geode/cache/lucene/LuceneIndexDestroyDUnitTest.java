@@ -24,6 +24,7 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -92,7 +93,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
 
     // Attempt to destroy data region (should fail)
     if (destroyDataRegion) {
-      dataStore1.invoke(() -> destroyDataRegion(false));
+      dataStore1.invoke(() -> destroyDataRegion(false, INDEX_NAME));
     }
 
     // Destroy index (only needs to be done on one member)
@@ -121,7 +122,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
 
     // Attempt to destroy data region (should fail)
     if (destroyDataRegion) {
-      dataStore1.invoke(() -> destroyDataRegion(false));
+      dataStore1.invoke(() -> destroyDataRegion(false, INDEX1_NAME, INDEX2_NAME));
     }
 
     // Destroy indexes (only needs to be done on one member)
@@ -602,7 +603,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     assertEquals(expectedResultsSize, results.size());
   }
 
-  private void destroyDataRegion(boolean shouldSucceed) {
+  private void destroyDataRegion(boolean shouldSucceed, String... indexNames) {
     Region region = getCache().getRegion(REGION_NAME);
     assertNotNull(region);
     try {
@@ -613,6 +614,17 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     } catch (IllegalStateException e) {
       if (shouldSucceed) {
         fail(e);
+      } else {
+        // Verify the correct exception is thrown
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < indexNames.length; i++) {
+          builder.append(indexNames[i]);
+          if (i + 1 != indexNames.length) {
+            builder.append(',');
+          }
+        }
+        assertEquals(LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
+            .toLocalizedString(region.getFullPath(), builder.toString()), e.getLocalizedMessage());
       }
     }
   }

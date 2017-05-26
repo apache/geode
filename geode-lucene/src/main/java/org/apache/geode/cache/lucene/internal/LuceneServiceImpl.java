@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
@@ -113,6 +114,17 @@ public class LuceneServiceImpl implements InternalLuceneService {
   @Override
   public Class<? extends CacheService> getInterface() {
     return InternalLuceneService.class;
+  }
+
+  @Override
+  public void beforeRegionDestroyed(Region region) {
+    List<LuceneIndex> indexes = getIndexes(region.getFullPath());
+    if (!indexes.isEmpty()) {
+      String indexNames = indexes.stream().map(i -> i.getName()).collect(Collectors.joining(","));
+      throw new IllegalStateException(
+          LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
+              .toLocalizedString(region.getFullPath(), indexNames));
+    }
   }
 
   public static String getUniqueIndexName(String indexName, String regionPath) {
@@ -250,6 +262,16 @@ public class LuceneServiceImpl implements InternalLuceneService {
   @Override
   public Collection<LuceneIndex> getAllIndexes() {
     return indexMap.values();
+  }
+
+  public List<LuceneIndex> getIndexes(String regionPath) {
+    List<LuceneIndex> indexes = new ArrayList();
+    for (LuceneIndex index : getAllIndexes()) {
+      if (index.getRegionPath().equals(regionPath)) {
+        indexes.add(index);
+      }
+    }
+    return Collections.unmodifiableList(indexes);
   }
 
   @Override

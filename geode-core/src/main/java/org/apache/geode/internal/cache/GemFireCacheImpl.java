@@ -3670,6 +3670,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return clazz.cast(this.services.get(clazz));
   }
 
+  @Override
+  public Collection<CacheService> getServices() {
+    return Collections.unmodifiableCollection(this.services.values());
+  }
+
   /**
    * Creates the single instance of the Transaction Manager for this cache. Returns the existing one
    * upon request.
