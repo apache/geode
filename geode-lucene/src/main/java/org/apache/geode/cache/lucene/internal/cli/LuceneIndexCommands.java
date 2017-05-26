@@ -53,6 +53,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -184,7 +185,11 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     this.securityService.authorizeRegionManage(regionPath);
     try {
       final InternalCache cache = getCache();
-      LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, fields, analyzers);
+      // trim fields for any leading trailing spaces.
+      String[] trimmedFields =
+          Arrays.stream(fields).map(field -> field.trim()).toArray(size -> new String[size]);
+      LuceneIndexInfo indexInfo =
+          new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers);
       final ResultCollector<?, ?> rc =
           this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
       final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
