@@ -80,13 +80,13 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Rule
-  public ServerStarterRule server =
-      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-          .withProperty(TestSecurityManager.SECURITY_JSON,
-              "org/apache/geode/management/internal/security/clientServer.json")
-          .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
-          .withProperty("security-pdx", pdxPersistent + "").withJMXManager()
-          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
+  public ServerStarterRule server = ServerStarterRule.createWithoutTemporaryWorkingDir()
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+      .withProperty(TestSecurityManager.SECURITY_JSON,
+          "org/apache/geode/management/internal/security/clientServer.json")
+      .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
+      .withProperty("security-pdx", pdxPersistent + "").withJMXManager()
+      .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testRegionGet() {
