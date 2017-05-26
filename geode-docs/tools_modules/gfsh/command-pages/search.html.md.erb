@@ -62,7 +62,7 @@ search lucene --name=value --region=value --queryStrings=value --defaultField=va
 </tr>
 <tr>
 <td><span class="keyword parmname" style="whitespace:nowrap;">&#8209;&#8208;queryStrings</span></td>
-<td><em>Required</em>. Query string to search the lucene index.</td>
+<td><em>Required</em>. Query string to search the lucene index. Surround a string with double quote marks to do an exact match of the string.</td>
 <td> </td>
 </tr>
 <tr>
@@ -84,21 +84,28 @@ search lucene --name=value --region=value --queryStrings=value --defaultField=va
 **Example Commands:**
 
 ``` pre
-gfsh> search lucene --name=testIndex --region=/testRegion --queryStrings=value1 --defaultField=__REGION_VALUE_FIELD
+gfsh> search lucene --name=testIndex --region=/testRegion --queryStrings=value1
+      --defaultField=__REGION_VALUE_FIELD
  
+
+gfsh> search lucene --name=indexOfStrings --region=/stringTestRegion 
+      --queryStrings='__REGION_VALUE_FIELD:"my exact string"'
+      --defaultField=__REGION_VALUE_FIELD
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>search lucene --name=testIndex --region=/testRegion --queryStrings=value* --defaultField=__REGION_VALUE_FIELD
+gfsh>search lucene --name=testIndex --region=/testRegion --queryStrings=value* 
+     --defaultField=__REGION_VALUE_FIELD
 key | value  | score
 --- | ------ | -----
 3   | value3 | 1
 2   | value2 | 1
 1   | value1 | 1
 
-gfsh>search lucene --region=/Person --name=analyzerIndex --defaultField=address --queryStrings="97763"
+gfsh>search lucene --region=/Person --name=analyzerIndex --defaultField=address 
+     --queryStrings="97763"
  key   |                                                   value                                                   | score
 ------ | --------------------------------------------------------------------------------------------------------- | ---------
 key763 | Person{name='Fred Freeloader', email='ffl@example.com', address='763 Miles Dv, Portland_OR_97763', re.. | 1.6694657
