@@ -7057,6 +7057,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public void destroyRegion(Object aCallbackArgument)
       throws CacheWriterException, TimeoutException {
+    invokeBeforeRegionDestroyInServices();
     checkForColocatedChildren();
     getDataView().checkSupportsRegionDestroy();
     checkForLimitedOrNoAccess();

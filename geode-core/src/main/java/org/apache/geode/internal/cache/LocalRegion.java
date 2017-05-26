@@ -1139,6 +1139,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     basicDestroyRegion(event, true);
   }
 
+  protected void invokeBeforeRegionDestroyInServices() {
+    for (CacheService service : this.cache.getServices()) {
+      if (service instanceof RegionService) {
+        ((RegionService) service).beforeRegionDestroyed(this);
+      }
+    }
+  }
+
   public InternalDataView getDataView() {
     final TXStateInterface tx = getTXState();
     if (tx == null) {

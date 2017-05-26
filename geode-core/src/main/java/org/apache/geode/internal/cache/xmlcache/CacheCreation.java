@@ -1959,6 +1959,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public Collection<CacheService> getServices() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
   public SystemTimer getCCPTimer() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
