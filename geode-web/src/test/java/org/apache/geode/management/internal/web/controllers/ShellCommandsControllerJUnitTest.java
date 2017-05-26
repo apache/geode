@@ -14,11 +14,13 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
+import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
@@ -42,6 +44,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,8 +81,8 @@ public class ShellCommandsControllerJUnitTest {
 
   private List<String> getCliCommands() {
     try {
-      Set<Class<?>> commandClasses = ClasspathScanLoadHelper.loadAndGet(
-          "org.apache.geode.management.internal.cli.commands", CommandMarker.class, true);
+      Set<Class<?>> commandClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
+          "org.apache.geode.management.internal.cli.commands", CommandMarker.class);
 
       List<String> commands = new ArrayList<>(commandClasses.size());
 
@@ -107,9 +110,8 @@ public class ShellCommandsControllerJUnitTest {
     String scheme = servletRequest.getScheme();
 
     try {
-      Set<Class<?>> controllerClasses =
-          ClasspathScanLoadHelper.loadAndGet("org.apache.geode.management.internal.web.controllers",
-              AbstractCommandsController.class, true);
+      Set<Class<?>> controllerClasses = scanPackageForClassesExtending(
+          "org.apache.geode.management.internal.web.controllers", AbstractCommandsController.class);
 
       List<String> controllerWebServiceEndpoints = new ArrayList<>(controllerClasses.size());
 
@@ -238,5 +240,14 @@ public class ShellCommandsControllerJUnitTest {
 
     assertTrue(String.format("Link does not have correct scheme %1$s", linkIndex.find(versionCmd)),
         testScheme.equals(linkIndex.find(versionCmd).getHref().getScheme()));
+  }
+
+  public static Set<Class<?>> scanPackageForClassesExtending(String packageToScan,
+      Class<?> superclass) {
+    Set<Class<?>> classesImplementing = new HashSet<>();
+    new FastClasspathScanner(packageToScan).matchSubclassesOf(superclass, classesImplementing::add)
+        .scan();
+
+    return classesImplementing.stream().collect(toSet());
   }
 }

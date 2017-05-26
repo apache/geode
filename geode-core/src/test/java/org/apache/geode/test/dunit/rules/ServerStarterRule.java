@@ -93,6 +93,17 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     }
   }
 
+  /**
+   * By default, the ServerStartRule dynamically changes the "user.dir" system property to point to
+   * a temporary folder. The Path API caches the first value of "user.dir" that it sees, and this
+   * can result in a stale cached value of "user.dir" which points to a directory that no longer
+   * exists, causing later tests to fail. By passing in the real value of "user.dir", we avoid these
+   * problems.
+   */
+  public static ServerStarterRule createWithoutTemporaryWorkingDir() {
+    return new ServerStarterRule(new File(System.getProperty("user.dir")));
+  }
+
   @Override
   public void stopMember() {
     // make sure this cache is the one currently open. A server cache can be recreated due to
