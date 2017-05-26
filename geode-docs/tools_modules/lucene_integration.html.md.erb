@@ -296,8 +296,11 @@ will return `object_2`.
 will return `object_3`.
 - Backups should only be made for regions with Lucene indexes
 when there are no puts, updates, or deletes in progress.
-Incremental backups will not be consistent for the region and
-its index upon restart if these operations were in progress,
-due to the delayed processing associated with the asynchronous event queue.
-If region data needs to be restored from a backup,
-follow the same procedure as given for changing an index.
+A backup might cause an inconsistency between region data and a Lucene index.
+Both the region operation and the associated index operation
+cause disk operations,
+yet those disk operations are not done atomically.
+Therefore, if a backup were taken between
+the persisted write to a region
+and the resulting persisted write to the Lucene index,
+then the backup represents inconsistent data in the region and Lucene index.
