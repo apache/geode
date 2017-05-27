@@ -14,13 +14,13 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import java.io.IOException;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.session.StandardSession;
-
-import java.io.IOException;
 
 public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
 

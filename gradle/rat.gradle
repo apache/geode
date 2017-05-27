@@ -109,6 +109,9 @@ rat {
     'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Event.hbm.xml',
     'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Person.hbm.xml',
 
+    // cargo log files
+    'cargo_logs/*',
+
     // these are test files that don't expect the first element to be a comment
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/domain/CacheElementJUnitTest.xml',
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
