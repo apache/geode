@@ -210,17 +210,15 @@ public class DeployCommandsDUnitTest implements Serializable {
     });
 
     gfshConnector.executeAndVerifyCommand("undeploy");
-    // gfshConnector
-    // .executeAndVerifyCommand("undeploy --jar=" + jar4.getName());
     gfshConnector
         .executeAndVerifyCommand("undeploy --jar=" + jar3.getName() + "," + jar4.getName());
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
-      // assertThatCannotLoad(jarName4, class4);
-      // });
-      // server2.invoke(() -> {
-      // assertThatCannotLoad(jarName3, class3);
-      // assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
     });
   }
 
