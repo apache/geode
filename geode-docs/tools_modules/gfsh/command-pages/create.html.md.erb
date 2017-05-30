@@ -674,7 +674,8 @@ See also [describe lucene index](describe.html#describe_lucene_index), [destroy 
 **Syntax:**
 
 ``` pre
-create lucene index --name=value --region=value --field=value(,value)* [--analyzer=value(,value)*] [--group=value(,value)*]
+create lucene index --name=value --region=value --field=value(,value)*
+  [--analyzer=value(,value)*] [--group=value(,value)*]
 ```
 
 **Parameters, create lucene index:**
@@ -691,15 +692,20 @@ create lucene index --name=value --region=value --field=value(,value)* [--analyz
 **Example Commands:**
 
 ``` pre
-create region --name=Person --type=PARTITION_REDUNDANT_PERSISTENT
-create lucene index --name=customerIndex --region=/Customer --field=symbol,revenue,SSN,name,email,address,__REGION_VALUE_FIELD
-create lucene index --name=analyzerIndex --region=/Person --field=name,email,address,revenue --analyzer=null,org.apache.lucene.analysis.core.KeywordAnalyzer,examples.MyCharacterAnalyzer,null
+create lucene index --name=customerIndex --region=/Customer 
+   --field=__REGION_VALUE_FIELD
+
+create lucene index --name=analyzerIndex --region=/Person 
+   --field=name,email,address,revenue 
+   --analyzer=null,org.apache.lucene.analysis.core.KeywordAnalyzer,
+              examples.MyCharacterAnalyzer,null
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>create lucene index --name=testIndex --region=testRegion --field=__REGION_VALUE_FIELD
+gfsh>create lucene index --name=testIndex --region=testRegion 
+   --field=__REGION_VALUE_FIELD
                  Member                  | Status
 ---------------------------------------- | ---------------------------------
 192.168.1.23(server50505:17200)<v1>:1025 | Successfully created lucene index

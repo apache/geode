@@ -62,12 +62,12 @@ search lucene --name=value --region=value --queryStrings=value --defaultField=va
 </tr>
 <tr>
 <td><span class="keyword parmname" style="whitespace:nowrap;">&#8209;&#8208;queryStrings</span></td>
-<td><em>Required</em>. Query string to search the lucene index.</td>
+<td><em>Required</em>. Query string to search the lucene index. Use <code>__REGION_VALUE_FIELD</code> as the field name within the query string when the field is a primitive value.</td>
 <td> </td>
 </tr>
 <tr>
 <td><span class="keyword parmname" style="whitespace:nowrap;">&#8209;&#8208;defaultField</span></td>
-<td><em>Required</em>. Default field to search in.</td>
+<td><em>Required</em>. Default field to search in. <code>__REGION_VALUE_FIELD</code> identifies the field as a primitive value.</td>
 <td> </td>
 </tr>
 <tr>
