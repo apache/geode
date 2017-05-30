@@ -88,11 +88,11 @@ public class FunctionCommands implements CommandMarker {
       // TODO: Add optioncontext for functionID
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, mandatory = true,
           help = CliStrings.EXECUTE_FUNCTION__ID__HELP) String functionId,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONGROUPS,
+      @CliOption(key = CliStrings.GROUPS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXECUTE_FUNCTION__ONGROUPS__HELP) String[] onGroups,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONMEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.EXECUTE_FUNCTION__ONMEMBER__HELP) String onMember,
@@ -357,7 +357,7 @@ public class FunctionCommands implements CommandMarker {
     Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
     Iterator<DistributedMember> it = dsMembers.iterator();
     while (it.hasNext()) {
-      DistributedMember tempMember = (DistributedMember) it.next();
+      DistributedMember tempMember = it.next();
       if (memberNameOrId.equals(tempMember.getId())
           || memberNameOrId.equals(tempMember.getName())) {
         return tempMember;
@@ -440,11 +440,11 @@ public class FunctionCommands implements CommandMarker {
   public Result destroyFunction(
       @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,
           help = CliStrings.DESTROY_FUNCTION__HELP) String functionId,
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ONGROUPS,
+      @CliOption(key = CliStrings.GROUPS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_FUNCTION__ONGROUPS__HELP) String[] groups,
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ONMEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_FUNCTION__ONMEMBER__HELP) String memberId) {
@@ -491,8 +491,8 @@ public class FunctionCommands implements CommandMarker {
     public Result preExecution(GfshParseResult parseResult) {
       Map<String, String> paramValueMap = parseResult.getParamValueStrings();
       Set<Entry<String, String>> setEnvMap = paramValueMap.entrySet();
-      String onGroup = paramValueMap.get(CliStrings.DESTROY_FUNCTION__ONGROUPS);
-      String onMember = paramValueMap.get(CliStrings.DESTROY_FUNCTION__ONMEMBER);
+      String onGroup = paramValueMap.get(CliStrings.GROUP);
+      String onMember = paramValueMap.get(CliStrings.MEMBER);
 
       if ((onGroup == null && onMember == null)) {
         Response response = readYesNo("Do you really want to destroy "
@@ -559,9 +559,9 @@ public class FunctionCommands implements CommandMarker {
   public Result listFunction(
       @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES,
           help = CliStrings.LIST_FUNCTION__MATCHES__HELP) String matches,
-      @CliOption(key = CliStrings.LIST_FUNCTION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = CliStrings.GROUP, optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_FUNCTION__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.LIST_FUNCTION__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String[] members) {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;

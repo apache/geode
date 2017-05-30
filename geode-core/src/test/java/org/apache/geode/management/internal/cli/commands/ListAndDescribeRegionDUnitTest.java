@@ -211,7 +211,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
 
 
     csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__MEMBER, "Manager");
+    csb.addOption(CliStrings.MEMBER, "Manager");
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
@@ -222,7 +222,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
 
     csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__MEMBER, "Server1");
+    csb.addOption(CliStrings.MEMBER, "Server1");
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
@@ -236,7 +236,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultAsString.contains(SUBREGION1A));
 
     csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__GROUP, "G1");
+    csb.addOption(CliStrings.GROUP, "G1");
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
@@ -247,7 +247,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
 
     csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__GROUP, "G2");
+    csb.addOption(CliStrings.GROUP, "G2");
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);

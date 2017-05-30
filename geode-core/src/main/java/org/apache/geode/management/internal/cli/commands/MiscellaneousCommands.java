@@ -302,10 +302,10 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result gc(
-      @CliOption(key = CliStrings.GC__GROUP,
+      @CliOption(key = CliStrings.GROUP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.GC__MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__MEMBER__HELP) String memberId) {
     InternalCache cache = getCache();
@@ -364,9 +364,9 @@ public class MiscellaneousCommands implements CommandMarker {
             return ResultBuilder.createUserErrorResult((String) object);
           } else {
             Map<String, String> resultMap = (Map<String, String>) object;
-            toTabularResultData(resultTable, (String) resultMap.get("MemberId"),
-                (String) resultMap.get("HeapSizeBeforeGC"),
-                (String) resultMap.get("HeapSizeAfterGC"), (String) resultMap.get("TimeSpentInGC"));
+            toTabularResultData(resultTable, resultMap.get("MemberId"),
+                resultMap.get("HeapSizeBeforeGC"), resultMap.get("HeapSizeAfterGC"),
+                resultMap.get("TimeSpentInGC"));
           }
         } else {
           LogWrapper.getInstance().fine("ResultMap was null ");
@@ -393,11 +393,11 @@ public class MiscellaneousCommands implements CommandMarker {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   // TODO : Verify the auto-completion for multiple values.
   public Result netstat(
-      @CliOption(key = CliStrings.NETSTAT__MEMBER, mandatory = false,
+      @CliOption(key = CliStrings.MEMBER, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.NETSTAT__MEMBER__HELP) String[] members,
-      @CliOption(key = CliStrings.NETSTAT__GROUP, mandatory = false,
+      @CliOption(key = CliStrings.GROUP, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.NETSTAT__GROUP__HELP) String group,
@@ -606,7 +606,7 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result showLog(
-      @CliOption(key = CliStrings.SHOW_LOG_MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.SHOW_LOG_MEMBER_HELP, mandatory = true) String memberNameOrId,
       @CliOption(key = CliStrings.SHOW_LOG_LINE_NUM, unspecifiedDefaultValue = "0",
@@ -670,13 +670,12 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
-      optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
+  public Result exportStackTrace(
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+          help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__GROUP,
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_STACKTRACE__GROUP) String[] group,
+      @CliOption(key = CliStrings.GROUP, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+          help = CliStrings.GROUP) String[] group,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
@@ -799,8 +798,7 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_STATISTICS})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result showMetrics(
-      @CliOption(key = {CliStrings.SHOW_METRICS__MEMBER},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @CliOption(key = {CliStrings.MEMBER}, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.SHOW_METRICS__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = {CliStrings.SHOW_METRICS__REGION}, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.SHOW_METRICS__REGION__HELP) String regionName,
@@ -1841,9 +1839,9 @@ public class MiscellaneousCommands implements CommandMarker {
       interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ChangeLogLevelInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__GROUPS, unspecifiedDefaultValue = "",
+      @CliOption(key = CliStrings.GROUPS, unspecifiedDefaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
           optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",
@@ -1871,8 +1869,8 @@ public class MiscellaneousCommands implements CommandMarker {
           Iterator<DistributedMember> it = ds.iterator();
           while (it.hasNext()) {
             DistributedMember mem = it.next();
-            if (mem.getName() == null ? false
-                : mem.getName().equals(member) || mem.getId().equals(member)) {
+            if (mem.getName() != null
+                && (mem.getName().equals(member) || mem.getId().equals(member))) {
               dsMembers.add(mem);
               break;
             }

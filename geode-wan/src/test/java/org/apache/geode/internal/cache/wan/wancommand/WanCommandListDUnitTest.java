@@ -40,7 +40,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewayWithNoSenderReceiver() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -48,7 +48,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -69,7 +69,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -77,7 +77,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm6.invoke(() -> createAndStartReceiver(nyPort));
     vm7.invoke(() -> createAndStartReceiver(nyPort));
@@ -120,7 +120,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewayReceiver() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer lnPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -128,7 +128,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
     vm3.invoke(() -> createAndStartReceiver(lnPort));
     vm4.invoke(() -> createAndStartReceiver(lnPort));
@@ -167,7 +167,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewaySenderGatewayReceiver() throws GfJsonException {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer lnPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -175,7 +175,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
     vm6.invoke(() -> createAndStartReceiver(nyPort));
 
@@ -227,7 +227,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewaySenderGatewayReceiver_group() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer lnPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -235,7 +235,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
     vm6.invoke(() -> createAndStartReceiver(nyPort));
 
@@ -256,8 +256,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm7.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
 
     pause(10000);
-    String command =
-        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender";
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Serial_Sender";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -277,7 +276,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
 
-    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Parallel_Sender";
+    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Parallel_Sender";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       TabularResultData tableSenderResultData = ((CompositeResultData) cmdResult.getResultData())
@@ -300,7 +299,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
 
-    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Receiver_Group";
+    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Receiver_Group";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -324,8 +323,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
 
-    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP
-        + "=Serial_Sender,Parallel_Sender";
+    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Serial_Sender,Parallel_Sender";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -348,7 +346,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
 
-    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP
+    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP
         + "=Serial_Sender,Parallel_Sender,Receiver_Group";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
