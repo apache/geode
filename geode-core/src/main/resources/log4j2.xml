@@ -17,6 +17,7 @@
     </filters>
     </Logger>
     <Logger name="org.jgroups" level="FATAL" additivity="true"/>
+    <Logger name="org.eclipse.jetty" level="FATAL" additivity="true"/>
     <Root level="INFO">
       <AppenderRef ref="STDOUT"/>
     </Root>
