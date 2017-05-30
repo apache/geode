@@ -135,7 +135,7 @@ public class IntegratedSecurityService implements SecurityService {
     Subject currentUser = SecurityUtils.getSubject();
     GeodeAuthenticationToken token = new GeodeAuthenticationToken(credentials);
     try {
-      logger.info("Logging in " + token.getPrincipal());
+      logger.debug("Logging in " + token.getPrincipal());
       currentUser.login(token);
     } catch (ShiroException e) {
       logger.info(e.getMessage(), e);
@@ -153,7 +153,7 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     try {
-      logger.info("Logging out " + currentUser.getPrincipal());
+      logger.debug("Logging out " + currentUser.getPrincipal());
       currentUser.logout();
     } catch (ShiroException e) {
       logger.info(e.getMessage(), e);
