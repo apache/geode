@@ -1383,7 +1383,7 @@ public class IndexUseJUnitTest {
 
   @Test
   public void testIndexUseSelfJoin() throws Exception {
-    String[] queries = {"SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.status = p1.status",
+    String[] queries = {"SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.status = p2.status",
         "SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.ID = p2.ID",
         "SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.P1.secId = p2.P1.secId",
         "SELECT DISTINCT * FROM /pos p1, /pos p2 where p1.status = p2.status and p1.status = 'active'",
