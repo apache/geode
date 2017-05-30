@@ -60,10 +60,8 @@ public class IndexCommandsController extends AbstractCommandsController {
   public String createIndex(@RequestParam(CliStrings.CREATE_INDEX__NAME) final String name,
       @RequestParam(CliStrings.CREATE_INDEX__EXPRESSION) final String expression,
       @RequestParam(CliStrings.CREATE_INDEX__REGION) final String regionNamePath,
-      @RequestParam(value = CliStrings.CREATE_INDEX__GROUP,
-          required = false) final String groupName,
-      @RequestParam(value = CliStrings.CREATE_INDEX__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.CREATE_INDEX__TYPE,
           defaultValue = DEFAULT_INDEX_TYPE) final String type) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_INDEX);
@@ -74,11 +72,11 @@ public class IndexCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.CREATE_INDEX__TYPE, type);
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.CREATE_INDEX__GROUP, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.CREATE_INDEX__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     return processCommand(command.toString());
@@ -87,18 +85,16 @@ public class IndexCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.POST, value = "/indexes", params = "op=create-defined")
   @ResponseBody
   public String createDefinedIndexes(
-      @RequestParam(value = CliStrings.CREATE_DEFINED_INDEXES__GROUP,
-          required = false) final String groupName,
-      @RequestParam(value = CliStrings.CREATE_DEFINED_INDEXES__MEMBER,
-          required = false) final String memberNameId) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_DEFINED_INDEXES);
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.CREATE_DEFINED_INDEXES__GROUP, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.CREATE_DEFINED_INDEXES__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     return processCommand(command.toString());
@@ -130,10 +126,8 @@ public class IndexCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.DELETE, value = "/indexes")
   @ResponseBody
   public String destroyIndexes(
-      @RequestParam(value = CliStrings.DESTROY_INDEX__GROUP,
-          required = false) final String groupName,
-      @RequestParam(value = CliStrings.DESTROY_INDEX__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.DESTROY_INDEX__REGION,
           required = false) final String regionNamePath) {
     return internalDestroyIndex(null, groupName, memberNameId, regionNamePath);
@@ -142,10 +136,8 @@ public class IndexCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.DELETE, value = "/indexes/{name}")
   @ResponseBody
   public String destroyIndex(@PathVariable("name") final String indexName,
-      @RequestParam(value = CliStrings.DESTROY_INDEX__GROUP,
-          required = false) final String groupName,
-      @RequestParam(value = CliStrings.DESTROY_INDEX__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.DESTROY_INDEX__REGION,
           required = false) final String regionNamePath) {
     return internalDestroyIndex(decode(indexName), groupName, memberNameId, regionNamePath);
@@ -160,11 +152,11 @@ public class IndexCommandsController extends AbstractCommandsController {
     }
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.DESTROY_INDEX__GROUP, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.DESTROY_INDEX__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(regionNamePath)) {

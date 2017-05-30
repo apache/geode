@@ -76,11 +76,11 @@ public class FunctionCommands implements GfshCommand {
       // TODO: Add optioncontext for functionID
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, mandatory = true,
           help = CliStrings.EXECUTE_FUNCTION__ID__HELP) String functionId,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONGROUPS,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXECUTE_FUNCTION__ONGROUPS__HELP) String[] onGroups,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONMEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.EXECUTE_FUNCTION__ONMEMBER__HELP) String onMember,
@@ -124,46 +124,46 @@ public class FunctionCommands implements GfshCommand {
       // validate otherwise return right away. no need to process anything
       if (functionId == null || functionId.length() == 0) {
         ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MISSING_FUNCTIONID);
+                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                        .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MISSING_FUNCTIONID);
         result = ResultBuilder.buildResult(errorResultData);
         return result;
       }
 
       if (onRegion != null && onMember != null && onGroups != null) {
         ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                        .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
         result = ResultBuilder.buildResult(errorResultData);
         return result;
       } else if (onRegion != null && onMember != null) {
         ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                        .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
         result = ResultBuilder.buildResult(errorResultData);
         return result;
       } else if (onMember != null && onGroups != null) {
         ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                        .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
         result = ResultBuilder.buildResult(errorResultData);
         return result;
       } else if (onRegion != null && onGroups != null) {
         ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                        .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
         result = ResultBuilder.buildResult(errorResultData);
         return result;
       } else if (onRegion != null && onMember != null && onGroups != null) {
         ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                        .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
         result = ResultBuilder.buildResult(errorResultData);
         return result;
       } else if ((onRegion == null || onRegion.length() == 0) && (filterString != null)) {
         ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-            .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-            .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION);
+                .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION);
         result = ResultBuilder.buildResult(errorResultData);
         return result;
       }
@@ -172,7 +172,7 @@ public class FunctionCommands implements GfshCommand {
 
       if (resultCollector != null) {
         resultCollectorInstance =
-            (ResultCollector) ClassPathLoader.getLatest().forName(resultCollector).newInstance();
+                (ResultCollector) ClassPathLoader.getLatest().forName(resultCollector).newInstance();
       }
 
       if (filterString != null && filterString.length() > 0) {
@@ -186,28 +186,28 @@ public class FunctionCommands implements GfshCommand {
         if (dsMembers.size() > 0) {
           function = new UserFunctionExecution();
           LogWrapper.getInstance().info(CliStrings
-              .format(CliStrings.EXECUTE_FUNCTION__MSG__EXECUTING_0_ON_ENTIRE_DS, functionId));
+                  .format(CliStrings.EXECUTE_FUNCTION__MSG__EXECUTING_0_ON_ENTIRE_DS, functionId));
           for (DistributedMember member : dsMembers) {
             executeAndGetResults(functionId, filterString, resultCollector, arguments, cache,
-                member, resultTable, onRegion);
+                    member, resultTable, onRegion);
           }
           return ResultBuilder.buildResult(resultTable);
         } else {
           return ResultBuilder
-              .createUserErrorResult(CliStrings.EXECUTE_FUNCTION__MSG__DS_HAS_NO_MEMBERS);
+                  .createUserErrorResult(CliStrings.EXECUTE_FUNCTION__MSG__DS_HAS_NO_MEMBERS);
         }
       } else if (onRegion != null && onRegion.length() > 0) {
         if (cache.getRegion(onRegion) == null) {
           // find a member where region is present
           DistributedRegionMXBean bean = ManagementService.getManagementService(getCache())
-              .getDistributedRegionMXBean(onRegion);
+                  .getDistributedRegionMXBean(onRegion);
           if (bean == null) {
             bean = ManagementService.getManagementService(getCache())
-                .getDistributedRegionMXBean(Region.SEPARATOR + onRegion);
+                    .getDistributedRegionMXBean(Region.SEPARATOR + onRegion);
 
             if (bean == null) {
               return ResultBuilder.createGemFireErrorResult(CliStrings
-                  .format(CliStrings.EXECUTE_FUNCTION__MSG__MXBEAN_0_FOR_NOT_FOUND, onRegion));
+                      .format(CliStrings.EXECUTE_FUNCTION__MSG__MXBEAN_0_FOR_NOT_FOUND, onRegion));
             }
           }
 
@@ -231,11 +231,11 @@ public class FunctionCommands implements GfshCommand {
           }
           if (matchFound == true) {
             executeAndGetResults(functionId, filterString, resultCollector, arguments, cache,
-                member, resultTable, onRegion);
+                    member, resultTable, onRegion);
             return ResultBuilder.buildResult(resultTable);
           } else {
             return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                CliStrings.EXECUTE_FUNCTION__MSG__NO_ASSOCIATED_MEMBER_REGION, " " + onRegion));
+                    CliStrings.EXECUTE_FUNCTION__MSG__NO_ASSOCIATED_MEMBER_REGION, " " + onRegion));
           }
         } else {
           execution = FunctionService.onRegion(cache.getRegion(onRegion));
@@ -258,20 +258,20 @@ public class FunctionCommands implements GfshCommand {
                   strResult.append(obj);
                 }
                 toTabularResultData(resultTable,
-                    cache.getDistributedSystem().getDistributedMember().getId(),
-                    strResult.toString());
+                        cache.getDistributedSystem().getDistributedMember().getId(),
+                        strResult.toString());
               }
               return ResultBuilder.buildResult(resultTable);
             } catch (FunctionException e) {
               return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                  CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_REGION_1_DETAILS_2,
-                  functionId, onRegion, e.getMessage()));
+                      CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_REGION_1_DETAILS_2,
+                      functionId, onRegion, e.getMessage()));
             }
           } else {
             return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_REGION_1_DETAILS_2,
-                functionId, onRegion,
-                CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR));
+                    CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_REGION_1_DETAILS_2,
+                    functionId, onRegion,
+                    CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR));
           }
         }
       } else if (onGroups != null) {
@@ -285,7 +285,7 @@ public class FunctionCommands implements GfshCommand {
         if (dsMembers.size() > 0) {
           for (DistributedMember member : dsMembers) {
             executeAndGetResults(functionId, filterString, resultCollector, arguments, cache,
-                member, resultTable, onRegion);
+                    member, resultTable, onRegion);
           }
           return ResultBuilder.buildResult(resultTable);
         } else {
@@ -295,44 +295,44 @@ public class FunctionCommands implements GfshCommand {
             grps.append(", ");
           }
           return ResultBuilder.createUserErrorResult(
-              CliStrings.format(CliStrings.EXECUTE_FUNCTION__MSG__GROUPS_0_HAS_NO_MEMBERS,
-                  grps.toString().substring(0, grps.toString().length() - 1)));
+                  CliStrings.format(CliStrings.EXECUTE_FUNCTION__MSG__GROUPS_0_HAS_NO_MEMBERS,
+                          grps.toString().substring(0, grps.toString().length() - 1)));
         }
       } else if (onMember != null && onMember.length() > 0) {
         DistributedMember member = CliUtil.getDistributedMemberByNameOrId(onMember); // fix for bug
-                                                                                     // 45658
+        // 45658
         if (member != null) {
           executeAndGetResults(functionId, filterString, resultCollector, arguments, cache, member,
-              resultTable, onRegion);
+                  resultTable, onRegion);
         } else {
           toTabularResultData(resultTable, onMember, CliStrings
-              .format(CliStrings.EXECUTE_FUNCTION__MSG__NO_ASSOCIATED_MEMBER + " " + onMember));
+                  .format(CliStrings.EXECUTE_FUNCTION__MSG__NO_ASSOCIATED_MEMBER + " " + onMember));
         }
         return ResultBuilder.buildResult(resultTable);
       }
     } catch (InstantiationException e) {
       ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
+              .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
       result = ResultBuilder.buildResult(errorResultData);
       return result;
     } catch (IllegalAccessException e) {
       ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
+              .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
       result = ResultBuilder.buildResult(errorResultData);
       return result;
     } catch (IllegalArgumentException e) {
       ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
+              .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
       result = ResultBuilder.buildResult(errorResultData);
       return result;
     } catch (SecurityException e) {
       ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
+              .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
       result = ResultBuilder.buildResult(errorResultData);
       return result;
     } catch (Exception e) {
       ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
+              .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
       result = ResultBuilder.buildResult(errorResultData);
       return result;
     }
@@ -414,11 +414,11 @@ public class FunctionCommands implements GfshCommand {
   public Result destroyFunction(
       @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,
           help = CliStrings.DESTROY_FUNCTION__HELP) String functionId,
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ONGROUPS,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_FUNCTION__ONGROUPS__HELP) String[] groups,
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ONMEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_FUNCTION__ONMEMBER__HELP) String memberId) {
@@ -465,8 +465,8 @@ public class FunctionCommands implements GfshCommand {
     public Result preExecution(GfshParseResult parseResult) {
       Map<String, String> paramValueMap = parseResult.getParamValueStrings();
       Set<Entry<String, String>> setEnvMap = paramValueMap.entrySet();
-      String onGroup = paramValueMap.get(CliStrings.DESTROY_FUNCTION__ONGROUPS);
-      String onMember = paramValueMap.get(CliStrings.DESTROY_FUNCTION__ONMEMBER);
+      String onGroup = paramValueMap.get(CliStrings.GROUP);
+      String onMember = paramValueMap.get(CliStrings.MEMBER);
 
       if ((onGroup == null && onMember == null)) {
         Response response = readYesNo("Do you really want to destroy "
@@ -533,9 +533,11 @@ public class FunctionCommands implements GfshCommand {
   public Result listFunction(
       @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES,
           help = CliStrings.LIST_FUNCTION__MATCHES__HELP) String matches,
-      @CliOption(key = CliStrings.LIST_FUNCTION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_FUNCTION__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.LIST_FUNCTION__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String[] members) {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;

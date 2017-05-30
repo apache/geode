@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Organization: Apache Software Foundation (ASF)
+Title: geode
+Version: 1.2.0-SNAPSHOT
+Created-By: eyeh
+

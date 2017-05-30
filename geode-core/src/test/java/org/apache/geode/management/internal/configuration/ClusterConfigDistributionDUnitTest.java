@@ -95,7 +95,7 @@ public class ClusterConfigDistributionDUnitTest {
         "com.qcdunit.QueueCommandsDUnitTestListener");
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE, null);
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE, "1000");
-    csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP, null);
+    csb.addOptionWithValueCheck(CliStrings.GROUP, null);
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT, "false");
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY, "1000");
     gfshConnector.executeAndVerifyCommand(csb.getCommandString());

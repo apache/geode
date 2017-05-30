@@ -48,17 +48,16 @@ public class RegionCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/regions")
   @ResponseBody
   public String listRegions(
-      @RequestParam(value = CliStrings.LIST_REGION__GROUP, required = false) final String groupName,
-      @RequestParam(value = CliStrings.LIST_REGION__MEMBER,
-          required = false) final String memberNameId) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.LIST_REGION);
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.LIST_REGION__GROUP, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.LIST_REGION__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     return processCommand(command.toString());
@@ -76,7 +75,7 @@ public class RegionCommandsController extends AbstractCommandsController {
   @ResponseBody
   public String alterRegion(final WebRequest request,
       @PathVariable("name") final String regionNamePath,
-      @RequestParam(value = CliStrings.ALTER_REGION__GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
       @RequestParam(value = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
           required = false) final Integer entryIdleTimeExpiration,
       @RequestParam(value = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
@@ -114,8 +113,7 @@ public class RegionCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.ALTER_REGION__REGION, decode(regionNamePath));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.ALTER_REGION__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     addCommandOption(request, command, CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
@@ -159,8 +157,7 @@ public class RegionCommandsController extends AbstractCommandsController {
           required = false) final String regionType,
       @RequestParam(value = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
           required = false) final String regionTemplate,
-      @RequestParam(value = CliStrings.CREATE_REGION__GROUP,
-          required = false) final String[] groups,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
       @RequestParam(value = CliStrings.CREATE_REGION__SKIPIFEXISTS,
           defaultValue = "true") final Boolean skipIfExists,
       @RequestParam(value = CliStrings.CREATE_REGION__KEYCONSTRAINT,
@@ -241,8 +238,7 @@ public class RegionCommandsController extends AbstractCommandsController {
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CREATE_REGION__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     command.addOption(CliStrings.CREATE_REGION__SKIPIFEXISTS,
