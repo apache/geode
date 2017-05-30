@@ -88,6 +88,13 @@ protobuf {
 //  }
 }
 
+sourceSets {
+  main {
+    java {
+      srcDir 'build/generated-src/proto/main/java'
+    }
+  }
+}
 // let IntelliJ know where the generated sources are.
 idea {
   module {
