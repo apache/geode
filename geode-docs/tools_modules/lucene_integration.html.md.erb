@@ -94,10 +94,12 @@ gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags
 gfsh>create lucene index --name=indexName --region=/orders
   --field=customer,tags --analyzer=DEFAULT,org.apache.lucene.analysis.bg.BulgarianAnalyzer
 ```
-To use the entire value as a single field set the required `--field`
-option to be `__REGION_VALUE_FIELD`.
-This is only supported when the region entry value is a `String`, `Long`,
-`Integer`, `Float`, or `Double`.
+The value `__REGION_VALUE_FIELD` identifies when the
+field is a single primitive type.
+Use it to define the `--field` option,
+as there will be no field name to use in the case of a primitive type.
+`__REGION_VALUE_FIELD` supports entry values of type `String`, `Long`,
+`Integer`, `Float`, and `Double`.
 
 ### <a id="xml-configuration" class="no-quick-link"></a>XML Configuration to Create an Index
 
