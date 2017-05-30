@@ -14,9 +14,16 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,6 +46,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.ShellExitCode;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
@@ -1445,7 +1453,7 @@ public class ServerLauncherRemoteIntegrationTest
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
         // -System.out.println("exiting");
-        System.exit(0);
+        System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
       } catch (Throwable t) {
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main error: " + t, t);
         System.exit(-1);

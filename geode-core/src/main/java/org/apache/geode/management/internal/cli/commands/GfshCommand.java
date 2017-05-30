@@ -14,6 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
@@ -29,11 +34,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 import org.springframework.shell.core.CommandMarker;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
@@ -122,7 +122,7 @@ public interface GfshCommand extends CommandMarker {
 
   /**
    * Gets all members in the GemFire distributed system/cache.
-   * 
+   *
    * @param cache the GemFire cache.
    * @return all members in the GemFire distributed system/cache.
    * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.internal.cache.InternalCache)
@@ -130,7 +130,7 @@ public interface GfshCommand extends CommandMarker {
    */
   @Deprecated
   default Set<DistributedMember> getMembers(final InternalCache cache) {
-    Set<DistributedMember> members = new HashSet<DistributedMember>(cache.getMembers());
+    Set<DistributedMember> members = new HashSet<>(cache.getMembers());
     members.add(cache.getDistributedSystem().getDistributedMember());
     return members;
   }

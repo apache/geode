@@ -16,16 +16,17 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static org.apache.geode.internal.Assert.assertState;
 
-import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.management.internal.ManagementConstants;
-
 import java.io.IOException;
 import java.util.Set;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
+
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.internal.ManagementConstants;
 
 public class MXBeanProvider {
 
@@ -57,6 +58,10 @@ public class MXBeanProvider {
    */
   public static MemberMXBean getMemberMXBean(final String member) throws IOException {
     return getMemberMXBean(null, member);
+  }
+
+  public static boolean isMemberMXBeanAvailable(String member) throws IOException {
+    return getMemberMXBean(member) != null;
   }
 
   public static MemberMXBean getMemberMXBean(final String serviceName, final String member)

@@ -14,13 +14,17 @@
  */
 package com.main;
 
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ShellExitCode;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -2
@@ -58,11 +62,11 @@ public class WANBootStrapping_Site2_Remove {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    System.out.println("Stoping locator");
+    System.out.println("Scoping locator");
     locator.stop();
     System.out.println("Locator stopped ");
 
-    System.exit(0);
+    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
   }
 
 

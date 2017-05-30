@@ -14,14 +14,26 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.*;
+
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
-import java.io.*;
 // import java.util.*;
 
 /**
@@ -379,26 +391,28 @@ public class GenerateMBeanHTML extends DefaultHandler {
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
       throws SAXException {
 
-    if (qName.equals(MBEANS_DESCRIPTORS)) {
-      startMBeansDescriptors();
-
-    } else if (qName.equals(MBEAN)) {
-      startMBean(atts);
-
-    } else if (qName.equals(ATTRIBUTE)) {
-      startAttribute(atts);
-
-    } else if (qName.equals(OPERATION)) {
-      startOperation(atts);
-
-    } else if (qName.equals(PARAMETER)) {
-      startParameter(atts);
-
-    } else if (qName.equals(NOTIFICATION)) {
-      startNotification(atts);
-
-    } else if (qName.equals(FIELD)) {
-      startField(atts);
+    switch (qName) {
+      case MBEANS_DESCRIPTORS:
+        startMBeansDescriptors();
+        break;
+      case MBEAN:
+        startMBean(atts);
+        break;
+      case ATTRIBUTE:
+        startAttribute(atts);
+        break;
+      case OPERATION:
+        startOperation(atts);
+        break;
+      case PARAMETER:
+        startParameter(atts);
+        break;
+      case NOTIFICATION:
+        startNotification(atts);
+        break;
+      case FIELD:
+        startField(atts);
+        break;
     }
 
   }
@@ -464,22 +478,22 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
     err.println("");
 
-    System.exit(1);
+    System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
   }
 
   public static void main(String[] args) throws Exception {
     String xmlFileName = null;
     String htmlFileName = null;
 
-    for (int i = 0; i < args.length; i++) {
+    for (String arg : args) {
       if (xmlFileName == null) {
-        xmlFileName = args[i];
+        xmlFileName = arg;
 
       } else if (htmlFileName == null) {
-        htmlFileName = args[i];
+        htmlFileName = arg;
 
       } else {
-        usage("Extraneous command line argument: " + args[i]);
+        usage("Extraneous command line argument: " + arg);
       }
     }
 

@@ -28,12 +28,11 @@ import java.lang.reflect.Proxy;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.ShellExitCode;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CountingDataInputStream;
 import org.apache.geode.internal.cache.DiskInitFile;
@@ -45,6 +44,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -72,7 +72,6 @@ public class DiskInitFileParser {
     boolean endOfFile = false;
     while (!endOfFile) {
       if (dis.atEndOfFile()) {
-        endOfFile = true;
         break;
       }
       byte opCode = dis.readByte();
@@ -216,7 +215,7 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           int size = dis.readInt();
           ConcurrentHashMap<DiskStoreID, RegionVersionHolder<DiskStoreID>> memberToVersion =
-              new ConcurrentHashMap<DiskStoreID, RegionVersionHolder<DiskStoreID>>(size);
+              new ConcurrentHashMap<>(size);
           for (int i = 0; i < size; i++) {
             DiskStoreID id = new DiskStoreID();
             InternalDataSerializer.invokeFromData(id, dis);
@@ -490,7 +489,7 @@ public class DiskInitFileParser {
     if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
       StringBuffer sb = new StringBuffer();
       for (int i = 0; i < OPLOG_TYPE.getLen(); i++) {
-        sb.append(" " + seq[i]);
+        sb.append(" ").append(seq[i]);
       }
       logger.trace(LogMarker.PERSIST_RECOVERY, "oplog magic code: {}", sb);
     }
@@ -583,7 +582,7 @@ public class DiskInitFileParser {
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     if (args.length != 1) {
       System.err.println("Usage: parse filename");
-      System.exit(1);
+      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
     }
     dump(new File(args[0]));
   }
@@ -603,10 +602,9 @@ public class DiskInitFileParser {
 
   private static DiskInitFileInterpreter createPrintingInterpreter(
       DiskInitFileInterpreter wrapped) {
-    DiskInitFileInterpreter interpreter = (DiskInitFileInterpreter) Proxy.newProxyInstance(
+    return (DiskInitFileInterpreter) Proxy.newProxyInstance(
         DiskInitFileInterpreter.class.getClassLoader(), new Class[] {DiskInitFileInterpreter.class},
         new PrintingInterpreter(wrapped));
-    return interpreter;
   }
 
 

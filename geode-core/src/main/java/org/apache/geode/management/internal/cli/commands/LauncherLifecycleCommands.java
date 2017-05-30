@@ -44,6 +44,27 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SER
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getDistributedSystemMXBean;
 import static org.apache.geode.management.internal.cli.util.HostUtils.getLocatorId;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.MalformedObjectNameException;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.server.CacheServer;
@@ -91,26 +112,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import javax.management.MalformedObjectNameException;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools

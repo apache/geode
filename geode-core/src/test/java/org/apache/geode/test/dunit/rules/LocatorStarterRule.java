@@ -18,13 +18,17 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.awaitility.Awaitility;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.process.ControlNotificationHandler;
+import org.apache.geode.internal.process.ControllableProcess;
+import org.apache.geode.internal.process.ProcessType;
+import org.awaitility.Awaitility;
 
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
@@ -46,6 +50,15 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
 
   private transient InternalLocator locator;
 
+  public static int getPid() {
+    FakeLauncher fakeLauncher = (FakeLauncher) LocatorLauncher.getInstance();
+    if (fakeLauncher == null) {
+      return -1;
+    }
+    return fakeLauncher.getPid();
+  }
+
+
   public LocatorStarterRule() {}
 
   public LocatorStarterRule(File workingDir) {
@@ -57,10 +70,11 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
   }
 
   @Override
-  protected void stopMember() {
+  public void stopMember() {
     if (locator != null) {
       locator.stop();
     }
+    FakeLauncher.setInstance(null);
   }
 
   @Override
@@ -88,9 +102,70 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     httpPort = config.getHttpServicePort();
     locator.resetInternalLocatorFileNamesWithCorrectPortNumber(memberPort);
 
+    LocatorLauncher fakeLauncher = new FakeLauncher(new LocatorLauncher.Builder());
+    FakeLauncher.setInstance(fakeLauncher);
+    ((FakeLauncher) fakeLauncher).startProcess(getWorkingDir());
+
     if (config.getEnableClusterConfiguration()) {
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
           .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }
+  }
+
+  public static class FakeLauncher extends LocatorLauncher {
+
+    /**
+     * This class is used to fake calls made via proxy, such as
+     * LocatorLauncher.getInstance().getStatus().
+     */
+
+
+    private static Status status = Status.ONLINE;
+    private transient volatile ControllableProcess process;
+
+    private FakeLauncher(Builder builder) {
+      super(builder);
+    }
+
+    @Override
+    public Integer getPid() {
+      return process.getPid();
+    }
+
+    @Override
+    public LocatorState status() {
+      return new LocatorState(this, status);
+    }
+
+    public static void setStatus(Status newStatus) {
+      status = newStatus;
+    }
+
+    protected static void setInstance(LocatorLauncher instance) {
+      LocatorLauncher.setInstance(instance);
+    }
+
+    public ControllableProcess getProcess() {
+      return process;
+    }
+
+    public void startProcess(File workingDir) {
+      try {
+        ControlNotificationHandler controlHandler = new ControlNotificationHandler() {
+          @Override
+          public void handleStop() {}
+
+          @Override
+          public ServiceState<?> handleStatus() {
+            return null;
+          }
+        };
+
+        this.process =
+            new ControllableProcess(controlHandler, workingDir, ProcessType.LOCATOR, false);
+      } catch (Exception ignored) {
+      }
+    }
+
   }
 }

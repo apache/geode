@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.geode.internal.ShellExitCode;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.Transition;
@@ -54,8 +54,7 @@ public class GemfireLogConverter {
     context.appender = new OutputStreamAppender(output);
     for (File file : files) {
       context.currentMember = null;
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      try {
+      try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
         String line;
         while ((line = reader.readLine()) != null) {
           for (Test test : tests) {
@@ -65,8 +64,6 @@ public class GemfireLogConverter {
             }
           }
         }
-      } finally {
-        reader.close();
       }
     }
   }
@@ -79,7 +76,7 @@ public class GemfireLogConverter {
 
     if (args.length == 0) {
       usage();
-      System.exit(1);
+      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
     }
 
     File outputFile = new File(args[0]);
@@ -95,7 +92,7 @@ public class GemfireLogConverter {
   }
 
   private static ArrayList<Test> buildTests() {
-    ArrayList<Test> tests = new ArrayList<Test>();
+    ArrayList<Test> tests = new ArrayList<>();
 
     // Membership level events
     // [info 2011/04/27 00:43:31.020 PDT dataStoregemfire5_hs20e_16643

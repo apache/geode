@@ -14,10 +14,22 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import java.io.*;
-import java.util.*;
+import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This program sorts the entries in a GemFire log file (one written using a
@@ -88,7 +100,7 @@ public class SortLogFile {
         LocalizedStrings.SortLogFile_SORTS_A_GEMFIRE_LOG_FILE_BY_TIMESTAMP_THE_MERGED_LOG_FILE_IS_WRITTEN_TO_SYSTEM_OUT_OR_A_FILE
             .toLocalizedString());
     err.println("");
-    System.exit(1);
+    System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
   }
 
   public static void main(String[] args) throws IOException {
@@ -135,7 +147,7 @@ public class SortLogFile {
 
     sortLogFile(logFileStream, pw);
 
-    System.exit(0);
+    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
   }
 
 }
