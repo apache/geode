@@ -170,7 +170,8 @@ The `--dir` parameter specifies a local directory to which log files will be wri
 ``` pre
 export logs [--dir=value] [--group=value(,value)*] [--member=value(,value)*] 
 [--log-level=value] [--only-log-level=value] [--merge-log=value] 
-[--start-time=value] [--end-time=value] [logs-only(=value)?] [--stats-only(=value)?]
+[--start-time=value] [--end-time=value] [logs-only(=value)?] 
+[--stats-only(=value)?] [--file-size-limit(=value)?]
 ```
 
 | Name                                                   | Description                                                                                                                | Default Value |
@@ -185,6 +186,7 @@ export logs [--dir=value] [--group=value(,value)*] [--member=value(,value)*]
 | <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd               | no limit      |
 | <span class="keyword parmname">\\-\\-logs-only</span>       | Whether to export only logs (not statistics)               | If parameter not specified: false. If parameter specified without a value: true      |
 | <span class="keyword parmname">\\-\\-stats-only</span>       | Whether to export only statistics (not logs)               | If parameter not specified: false. If parameter specified without a value: true      |
+| <span class="keyword parmname">\\-\\-file-size-limit</span>       | Limits size of the file that can be exported. Specify 0 (zero) for no limit. Value is in megabytes by default or [k,m,g,t] may be specified.              | If parameter not specified: 100m. If parameter specified without a value: 0      |
 
 <span class="tablecap">Table 4. Export Logs Parameters</span>
 
