@@ -85,7 +85,7 @@ import javax.management.QueryExp;
 public abstract class AbstractHttpOperationInvoker implements HttpOperationInvoker {
 
   protected static final long DEFAULT_INITIAL_DELAY = TimeUnit.SECONDS.toMillis(1);
-  protected static final long DEFAULT_PERIOD = TimeUnit.MILLISECONDS.toMillis(500);
+  protected static final long DEFAULT_PERIOD = TimeUnit.MILLISECONDS.toMillis(2000);
 
   protected static final String MBEAN_ATTRIBUTE_LINK_RELATION = "mbean-attribute";
   protected static final String MBEAN_OPERATION_LINK_RELATION = "mbean-operation";
