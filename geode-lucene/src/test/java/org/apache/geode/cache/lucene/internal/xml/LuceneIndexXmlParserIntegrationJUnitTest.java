@@ -82,6 +82,22 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
   }
 
+  /**
+   * Test that we parse the index fields correctly
+   */
+  @Test(expected = CacheXmlException.class)
+  public void invalidLuceneElementShouldThrowParseException() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+  }
+
+  /**
+   * Test that we parse the index fields correctly
+   */
+  @Test(expected = CacheXmlException.class)
+  public void invalidXmlLocationShouldThrowParseException() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+  }
+
   @Test
   public void parseIndexWithAnalyzers() throws FileNotFoundException {
     RegionCreation region = createRegionCreation("region");
