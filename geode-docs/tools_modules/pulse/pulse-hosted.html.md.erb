@@ -94,6 +94,11 @@ of your Geode installation directory. Depending on your application server, you 
 
     Substitute the appropriate paths and passwords for the bracketed placeholders.
 
+6.  To change Pulse logging behavior, edit `log4j2.xml` in the same directory.
+    The default configuration sets the logging level to `INFO` and specifies a message pattern that
+    includes the date, name of the reporting logger, error level, name of the reporting thread, and the error message.
+    Refer to the [Apache Log4j documentation](https://logging.apache.org/log4j/2.x/manual/configuration.html#XML) for details on how to specify `log4j2.xml` content and syntax.
+
 7.  Restart the Web application server.
 
 8.  Access the Pulse application using the address, port, and application URL that you configured in
