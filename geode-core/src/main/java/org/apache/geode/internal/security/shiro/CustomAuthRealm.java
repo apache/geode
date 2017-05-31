@@ -17,6 +17,7 @@ package org.apache.geode.internal.security.shiro;
 import java.io.Serializable;
 import java.util.Properties;
 
+import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authc.AuthenticationException;
@@ -27,8 +28,6 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-
-import org.apache.geode.internal.security.SecurityService;
 
 public class CustomAuthRealm extends AuthorizingRealm {
 
@@ -54,8 +53,8 @@ public class CustomAuthRealm extends AuthorizingRealm {
    * @param securityProperties the security properties to initialize SecurityManager with
    */
   public CustomAuthRealm(String authenticatorFactory, Properties securityProperties) {
-    this.securityManager =
-        SecurityService.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
+    this.securityManager = CallbackInstantiator.getObjectOfTypeFromClassName(authenticatorFactory,
+        SecurityManager.class);
     this.securityManager.init(securityProperties);
   }
 

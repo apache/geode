@@ -192,7 +192,6 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
         }
       }
     }
-    // TODO:KIRK:OK if (le.getValueInVM((RegionEntryContext) _getOwnerObject()) != cd) return false;
     boolean result = false;
     int delta = le.updateEntrySize(_getCCHelper(), new CDValueWrapper(v));
     if (delta != 0) {

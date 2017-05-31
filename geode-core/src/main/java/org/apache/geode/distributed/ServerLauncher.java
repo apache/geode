@@ -283,7 +283,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     this.help = Boolean.TRUE.equals(builder.getHelp());
     this.hostNameForClients = builder.getHostNameForClients();
     this.memberName = builder.getMemberName();
-    // TODO:KIRK: set ThreadLocal for LogService with getLogFile or getLogFileName
     this.pid = builder.getPid();
     this.rebalance = Boolean.TRUE.equals(builder.getRebalance());
     this.redirectOutput = Boolean.TRUE.equals(builder.getRedirectOutput());

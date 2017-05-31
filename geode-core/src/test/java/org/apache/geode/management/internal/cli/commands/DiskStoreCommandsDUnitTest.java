@@ -58,7 +58,6 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -107,7 +106,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("serial")
 public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
-  final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   @Category(FlakyTest.class) // GEODE-2102
   @Test

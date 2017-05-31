@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 
@@ -46,7 +47,8 @@ public class UnregisterInterestList extends BaseCommand {
   private UnregisterInterestList() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
     Part regionNamePart = null, keyPart = null, numberOfKeysPart = null;
     String regionName = null;
@@ -121,7 +123,7 @@ public class UnregisterInterestList extends BaseCommand {
     }
 
     try {
-      this.securityService.authorizeRegionRead(regionName);
+      securityService.authorizeRegionRead(regionName);
     } catch (NotAuthorizedException ex) {
       writeException(clientMessage, ex, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

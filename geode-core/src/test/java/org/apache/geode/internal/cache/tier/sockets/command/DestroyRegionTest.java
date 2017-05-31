@@ -110,7 +110,7 @@ public class DestroyRegionTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.destroyRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.destroyRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataManage();
     verify(this.responseMessage).send(this.serverConnection);
@@ -121,7 +121,7 @@ public class DestroyRegionTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.destroyRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.destroyRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataManage();
     verify(this.responseMessage).send(this.serverConnection);
@@ -133,7 +133,7 @@ public class DestroyRegionTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
     doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataManage();
 
-    this.destroyRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.destroyRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.errorResponseMessage).send(this.serverConnection);
   }
@@ -143,7 +143,7 @@ public class DestroyRegionTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.destroyRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.destroyRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).destroyRegionAuthorize(eq(REGION_NAME), eq(CALLBACK_ARG));
     verify(this.responseMessage).send(this.serverConnection);
@@ -156,7 +156,7 @@ public class DestroyRegionTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .destroyRegionAuthorize(eq(REGION_NAME), eq(CALLBACK_ARG));
 
-    this.destroyRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.destroyRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).destroyRegionAuthorize(eq(REGION_NAME), eq(CALLBACK_ARG));
     verify(this.errorResponseMessage).send(this.serverConnection);

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.security;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -26,7 +25,11 @@ import org.apache.geode.security.GemFireSecurityException;
  */
 public class AccessControlMBean implements AccessControlMXBean {
 
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private final SecurityService securityService;
+
+  public AccessControlMBean(SecurityService securityService) {
+    this.securityService = securityService;
+  }
 
   @Override
   public boolean authorize(String resource, String permission) {

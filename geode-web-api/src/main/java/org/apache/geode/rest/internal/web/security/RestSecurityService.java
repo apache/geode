@@ -12,16 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web.security;
 
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.GemFireSecurityException;
 import org.springframework.stereotype.Component;
 
 @Component("securityService")
 public class RestSecurityService {
-  private SecurityService securityService = SecurityService.getSecurityService();
+
+  private final SecurityService securityService;
+
+  public RestSecurityService() {
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    if (cache != null) {
+      this.securityService = cache.getSecurityService();
+    } else {
+      this.securityService = SecurityServiceFactory.create();
+    }
+  }
 
   public boolean authorize(String resource, String operation) {
     return authorize(resource, operation, null, null);

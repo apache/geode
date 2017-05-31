@@ -14,12 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.geode.cache.query.CqException;
-import org.apache.geode.cache.query.internal.cq.CqQueryImpl;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -32,26 +27,31 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class StopCQ extends BaseCQCommand {
 
-  private final static StopCQ singleton = new StopCQ();
+  private static final StopCQ singleton = new StopCQ();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private StopCQ() {}
+  private StopCQ() {
+    // nothing
+  }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     ClientProxyMembershipID id = serverConnection.getProxyID();
     CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    // Based on MessageType.QUERY
-    // Added by Rao 2/1/2007
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
@@ -86,7 +86,7 @@ public class StopCQ extends BaseCQCommand {
       }
       InternalCqQuery cqQuery = cqService.getCq(serverCqName);
 
-      this.securityService.authorizeDataManage();
+      securityService.authorizeDataManage();
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
@@ -96,7 +96,7 @@ public class StopCQ extends BaseCQCommand {
         if (cqQuery != null) {
           queryStr = cqQuery.getQueryString();
           cqRegionNames = new HashSet();
-          cqRegionNames.add(((CqQueryImpl) cqQuery).getRegionName());
+          cqRegionNames.add(cqQuery.getRegionName());
         }
         authzRequest.stopCQAuthorize(cqName, queryStr, cqRegionNames);
       }
@@ -122,12 +122,9 @@ public class StopCQ extends BaseCQCommand {
 
     serverConnection.setAsTrue(RESPONDED);
 
-    {
-      long oldStart = start;
-      start = DistributionStats.getStatTime();
-      stats.incProcessStopCqTime(start - oldStart);
-    }
-
+    long oldStart = start;
+    start = DistributionStats.getStatTime();
+    stats.incProcessStopCqTime(start - oldStart);
   }
 
 }

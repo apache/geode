@@ -100,7 +100,7 @@ public class ContainsKey66Test {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, 0);
+    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.responseMessage).send(this.serverConnection);
   }
@@ -110,7 +110,7 @@ public class ContainsKey66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, 0);
+    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.responseMessage).send(this.serverConnection);
@@ -123,7 +123,7 @@ public class ContainsKey66Test {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, 0);
+    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
@@ -134,7 +134,7 @@ public class ContainsKey66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, 0);
+    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
     verify(this.responseMessage).send(this.serverConnection);
@@ -147,7 +147,7 @@ public class ContainsKey66Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, 0);
+    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));

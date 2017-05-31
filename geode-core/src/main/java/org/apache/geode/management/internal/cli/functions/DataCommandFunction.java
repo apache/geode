@@ -94,9 +94,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   protected static final String SELECT_STEP_EXEC = "SELECT_EXEC";
   private static final int NESTED_JSON_LENGTH = 20;
 
-  // this needs to be static so that it won't get serialized
-  private static SecurityService securityService = SecurityService.getSecurityService();
-
   @Override
   public String getId() {
     return DataCommandFunction.class.getName();
@@ -136,7 +133,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       }
       DataCommandResult result = null;
       if (request.isGet()) {
-        result = get(request);
+        result = get(request, cache.getSecurityService());
       } else if (request.isLocateEntry()) {
         result = locateEntry(request);
       } else if (request.isPut()) {
@@ -169,13 +166,14 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     return remove(key, keyClass, regionName, removeAllKeys);
   }
 
-  public DataCommandResult get(DataCommandRequest request) {
+  public DataCommandResult get(DataCommandRequest request, SecurityService securityService) {
     String key = request.getKey();
     String keyClass = request.getKeyClass();
     String valueClass = request.getValueClass();
     String regionName = request.getRegionName();
     Boolean loadOnCacheMiss = request.isLoadOnCacheMiss();
-    return get(request.getPrincipal(), key, keyClass, valueClass, regionName, loadOnCacheMiss);
+    return get(request.getPrincipal(), key, keyClass, valueClass, regionName, loadOnCacheMiss,
+        securityService);
   }
 
   public DataCommandResult locateEntry(DataCommandRequest request) {
@@ -296,7 +294,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       List<SelectResultRow> list, AtomicInteger nestedObjectCount) throws GfJsonException {
     for (Object object : selectResults) {
       // Post processing
-      object = securityService.postProcess(principal, null, null, object, false);
+      object = getCache().getSecurityService().postProcess(principal, null, null, object, false);
 
       if (object instanceof Struct) {
         StructImpl impl = (StructImpl) object;
@@ -434,7 +432,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings({"rawtypes"})
   public DataCommandResult get(Object principal, String key, String keyClass, String valueClass,
-      String regionName, Boolean loadOnCacheMiss) {
+      String regionName, Boolean loadOnCacheMiss, SecurityService securityService) {
 
     InternalCache cache = getCache();
 
@@ -836,7 +834,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     return list;
   }
 
-  private static DataCommandResult cachedResult = null;
+  static DataCommandResult cachedResult = null;
 
   public static class SelectDisplayStep extends CLIMultiStepHelper.LocalStep {
 
@@ -916,13 +914,12 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   }
 
   public static class SelectExecStep extends CLIMultiStepHelper.RemoteStep {
+    private static final Logger logger = LogService.getLogger();
 
     private static final long serialVersionUID = 1L;
 
-    private static SecurityService securityService = SecurityService.getSecurityService();
-
     public SelectExecStep(Object[] arguments) {
-      super(SELECT_STEP_EXEC, arguments);
+      super(DataCommandFunction.SELECT_STEP_EXEC, arguments);
     }
 
     @Override
@@ -931,19 +928,19 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       boolean interactive = (Boolean) commandArguments[2];
       DataCommandResult result = _select(remainingQuery);
       int endCount = 0;
-      cachedResult = result;
+      DataCommandFunction.cachedResult = result;
       if (interactive) {
-        endCount = getPageSize();
+        endCount = DataCommandFunction.getPageSize();
       } else {
         if (result.getSelectResult() != null) {
           endCount = result.getSelectResult().size();
         }
       }
       if (interactive) {
-        return result.pageResult(0, endCount, SELECT_STEP_DISPLAY);
+        return result.pageResult(0, endCount, DataCommandFunction.SELECT_STEP_DISPLAY);
       } else {
         return CLIMultiStepHelper.createBannerResult(new String[] {}, new Object[] {},
-            SELECT_STEP_END);
+            DataCommandFunction.SELECT_STEP_END);
       }
     }
 
@@ -971,7 +968,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
         // authorize data read on these regions
         for (String region : regions) {
-          securityService.authorizeRegionRead(region);
+          cache.getSecurityService().authorizeRegionRead(region);
         }
 
         regionsInQuery = Collections.unmodifiableSet(regions);
@@ -983,7 +980,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
             DataCommandRequest request = new DataCommandRequest();
             request.setCommand(CliStrings.QUERY);
             request.setQuery(query);
-            Subject subject = securityService.getSubject();
+            Subject subject = cache.getSecurityService().getSubject();
             if (subject != null) {
               request.setPrincipal(subject.getPrincipal());
             }
@@ -1012,7 +1009,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           || StringUtils.containsIgnoreCase(query, " count(")) {
         return query;
       }
-      return query + " limit " + getFetchSize();
+      return query + " limit " + DataCommandFunction.getFetchSize();
     }
   }
 
@@ -1063,7 +1060,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     return pageSize;
   }
 
-  private static int getFetchSize() {
+  static int getFetchSize() {
     return CommandExecutionContext.getShellFetchSize();
   }
 

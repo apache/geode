@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.commons.io.FileUtils.ONE_MB;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -31,7 +33,6 @@ import org.apache.geode.management.internal.cli.functions.ListDeployedFunction;
 import org.apache.geode.management.internal.cli.functions.UndeployFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -50,11 +51,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
- * <p/>
- * 
+ *
  * @see GfshCommand
  * @since GemFire 7.0
  */
@@ -85,7 +84,7 @@ public class DeployCommands implements GfshCommand {
 
       // since deploy function can potentially do a lot of damage to security, this action should
       // require these following privileges
-      SecurityService securityService = SecurityService.getSecurityService();
+      SecurityService securityService = getCache().getSecurityService();
       securityService.authorizeClusterManage();
       securityService.authorizeClusterWrite();
       securityService.authorizeDataManage();
@@ -282,7 +281,7 @@ public class DeployCommands implements GfshCommand {
       return true;
     }
 
-    return (getGfsh() != null && getGfsh().isConnectedAndReady());
+    return getGfsh() != null && getGfsh().isConnectedAndReady();
   }
 
   /**
@@ -296,15 +295,15 @@ public class DeployCommands implements GfshCommand {
       Map<String, String> paramValueMap = parseResult.getParamValueStrings();
 
       String jar = paramValueMap.get("jar");
-      jar = (jar == null) ? null : jar.trim();
+      jar = jar == null ? null : jar.trim();
 
       String dir = paramValueMap.get("dir");
-      dir = (dir == null) ? null : dir.trim();
+      dir = dir == null ? null : dir.trim();
 
       String group = paramValueMap.get("group");
-      group = (group == null) ? null : group.trim();
+      group = group == null ? null : group.trim();
 
-      String jarOrDir = (jar != null ? jar : dir);
+      String jarOrDir = jar != null ? jar : dir;
 
       if (jar == null && dir == null) {
         return ResultBuilder.createUserErrorResult(
@@ -325,7 +324,7 @@ public class DeployCommands implements GfshCommand {
       if (dir != null) {
         String message =
             "\nDeploying files: " + fileResult.getFormattedFileList() + "\nTotal file size is: "
-                + this.numFormatter.format(((double) fileResult.computeFileSizeTotal() / 1048576))
+                + this.numFormatter.format((double) fileResult.computeFileSizeTotal() / ONE_MB)
                 + "MB\n\nContinue? ";
 
         if (readYesNo(message, Response.YES) == Response.NO) {

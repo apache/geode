@@ -112,7 +112,7 @@ public class RequestTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.request.cmdExecute(this.message, this.serverConnection, 0);
+    this.request.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
     verify(this.responseMessage).send(this.serverConnection);
   }
 
@@ -121,7 +121,7 @@ public class RequestTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.request.cmdExecute(this.message, this.serverConnection, 0);
+    this.request.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.responseMessage).send(this.serverConnection);
@@ -134,7 +134,7 @@ public class RequestTest {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
 
-    this.request.cmdExecute(this.message, this.serverConnection, 0);
+    this.request.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
@@ -145,7 +145,7 @@ public class RequestTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.request.cmdExecute(this.message, this.serverConnection, 0);
+    this.request.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(KEY), eq(CALLBACK_ARG));
     verify(this.responseMessage).send(this.serverConnection);
@@ -158,7 +158,7 @@ public class RequestTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
         eq(KEY), eq(CALLBACK_ARG));
 
-    this.request.cmdExecute(this.message, this.serverConnection, 0);
+    this.request.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(KEY), eq(CALLBACK_ARG));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));

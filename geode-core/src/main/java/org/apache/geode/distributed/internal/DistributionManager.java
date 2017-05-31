@@ -1149,8 +1149,8 @@ public class DistributionManager implements DM {
       start = System.currentTimeMillis();
 
       MyListener l = new MyListener(this);
-      membershipManager =
-          MemberFactory.newMembershipManager(l, system.getConfig(), transport, stats);
+      membershipManager = MemberFactory.newMembershipManager(l, system.getConfig(), transport,
+          stats, system.getSecurityService());
 
       sb.append(System.currentTimeMillis() - start);
 

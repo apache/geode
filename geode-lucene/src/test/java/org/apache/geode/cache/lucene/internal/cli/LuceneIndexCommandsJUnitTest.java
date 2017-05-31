@@ -37,6 +37,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunct
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -50,6 +51,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -85,9 +87,16 @@ import junitparams.Parameters;
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCommandsJUnitTest {
 
+  private InternalCache mockCache;
+
+  @Before
+  public void before() throws Exception {
+    this.mockCache = mock(InternalCache.class, "InternalCache");
+    when(this.mockCache.getSecurityService()).thenReturn(mock(SecurityService.class));
+  }
+
   @Test
-  public void testListIndexWithoutStats() {
-    final InternalCache mockCache = mock(InternalCache.class, "InternalCache");
+  public void testListIndexWithoutStats() throws Exception {
     final String serverName = "mockServer";
     final AbstractExecution mockFunctionExecutor =
         mock(AbstractExecution.class, "Function Executor");
@@ -113,7 +122,7 @@ public class LuceneIndexCommandsJUnitTest {
         .thenReturn(mockResultCollector);
     when(mockResultCollector.getResult()).thenReturn(results);
 
-    final LuceneIndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
+    final LuceneIndexCommands commands = createIndexCommands(this.mockCache, mockFunctionExecutor);
 
     CommandResult result = (CommandResult) commands.listIndex(false);
     TabularResultData data = (TabularResultData) result.getResultData();
@@ -133,8 +142,7 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  public void testListIndexWithStats() {
-    final InternalCache mockCache = mock(InternalCache.class, "InternalCache");
+  public void testListIndexWithStats() throws Exception {
     final String serverName = "mockServer";
     final AbstractExecution mockFunctionExecutor =
         mock(AbstractExecution.class, "Function Executor");
@@ -162,7 +170,7 @@ public class LuceneIndexCommandsJUnitTest {
         .thenReturn(mockResultCollector);
     when(mockResultCollector.getResult()).thenReturn(results);
 
-    final LuceneIndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
+    final LuceneIndexCommands commands = createIndexCommands(this.mockCache, mockFunctionExecutor);
 
     CommandResult result = (CommandResult) commands.listIndex(true);
     TabularResultData data = (TabularResultData) result.getResultData();
@@ -185,9 +193,8 @@ public class LuceneIndexCommandsJUnitTest {
 
   @Test
   public void testCreateIndex() throws Exception {
-    final InternalCache mockCache = mock(InternalCache.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
-    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
 
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     cliFunctionResults.add(new CliFunctionResult("member1", true, "Index Created"));
@@ -215,10 +222,9 @@ public class LuceneIndexCommandsJUnitTest {
 
   @Test
   public void testDescribeIndex() throws Exception {
-    final InternalCache mockCache = mock(InternalCache.class, "InternalCache");
     final String serverName = "mockServer";
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
 
     String[] searchableFields = {"field1", "field2", "field3"};
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
@@ -252,9 +258,8 @@ public class LuceneIndexCommandsJUnitTest {
 
   @Test
   public void testSearchIndex() throws Exception {
-    final InternalCache mockCache = mock(InternalCache.class, "InternalCache");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
@@ -277,10 +282,9 @@ public class LuceneIndexCommandsJUnitTest {
 
   @Ignore
   public void testSearchIndexWithPaging() throws Exception {
-    final InternalCache mockCache = mock(InternalCache.class, "InternalCache");
     final Gfsh mockGfsh = mock(Gfsh.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
     ArgumentCaptor<String> resultCaptor = ArgumentCaptor.forClass(String.class);
 
     LuceneSearchResults result1 = createQueryResults("A", "Result1", Float.valueOf("1.7"));
@@ -345,9 +349,8 @@ public class LuceneIndexCommandsJUnitTest {
 
   @Test
   public void testSearchIndexWithKeysOnly() throws Exception {
-    final InternalCache mockCache = mock(InternalCache.class, "InternalCache");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
@@ -368,9 +371,8 @@ public class LuceneIndexCommandsJUnitTest {
 
   @Test
   public void testSearchIndexWhenSearchResultsHaveSameScore() throws Exception {
-    final InternalCache mockCache = mock(InternalCache.class, "InternalCache");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
@@ -545,9 +547,8 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   private LuceneIndexCommands createTestLuceneIndexCommandsForDestroyIndex() {
-    final InternalCache mockCache = mock(InternalCache.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
-    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
 
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     cliFunctionResults.add(new CliFunctionResult("member", true, "Index Destroyed"));
@@ -656,7 +657,7 @@ public class LuceneIndexCommandsJUnitTest {
     @Override
     public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
       Assert.assertNotNull(members);
-      return functionExecutor;
+      return this.functionExecutor;
     }
   }
 

@@ -120,7 +120,8 @@ public class RegisterInterest61Test {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.registerInterest61.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest61.cmdExecute(this.message, this.serverConnection, this.securityService,
+        0);
 
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
@@ -130,7 +131,8 @@ public class RegisterInterest61Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.registerInterest61.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest61.cmdExecute(this.message, this.serverConnection, this.securityService,
+        0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -143,7 +145,8 @@ public class RegisterInterest61Test {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
 
-    this.registerInterest61.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest61.cmdExecute(this.message, this.serverConnection, this.securityService,
+        0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -154,7 +157,8 @@ public class RegisterInterest61Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.registerInterest61.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest61.cmdExecute(this.message, this.serverConnection, this.securityService,
+        0);
 
     verify(this.authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -168,7 +172,8 @@ public class RegisterInterest61Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
 
-    this.registerInterest61.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest61.cmdExecute(this.message, this.serverConnection, this.securityService,
+        0);
 
     verify(this.authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
 

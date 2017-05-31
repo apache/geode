@@ -33,7 +33,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -49,6 +48,7 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxConfigurationException;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
@@ -79,8 +79,8 @@ public class GatewayReceiverCommand extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null, key = null;

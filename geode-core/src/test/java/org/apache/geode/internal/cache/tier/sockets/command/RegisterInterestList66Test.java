@@ -131,7 +131,8 @@ public class RegisterInterestList66Test {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.registerInterestList66.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterestList66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
@@ -141,7 +142,8 @@ public class RegisterInterestList66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.registerInterestList66.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterestList66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -154,7 +156,8 @@ public class RegisterInterestList66Test {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME));
 
-    this.registerInterestList66.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterestList66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -165,7 +168,8 @@ public class RegisterInterestList66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.registerInterestList66.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterestList66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0);
 
     verify(this.authzRequest).registerInterestListAuthorize(eq(REGION_NAME), any(), any());
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -179,7 +183,8 @@ public class RegisterInterestList66Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .registerInterestListAuthorize(eq(REGION_NAME), any(), any());
 
-    this.registerInterestList66.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterestList66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0);
 
     verify(this.authzRequest).registerInterestListAuthorize(eq(REGION_NAME), any(), any());
 

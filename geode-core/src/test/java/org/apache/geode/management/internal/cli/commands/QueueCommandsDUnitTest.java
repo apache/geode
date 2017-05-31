@@ -77,7 +77,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   @Override
   public final void preSetUp() throws Exception {

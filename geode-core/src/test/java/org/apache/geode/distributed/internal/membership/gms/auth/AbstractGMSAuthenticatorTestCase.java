@@ -65,18 +65,19 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     clearStatics();
     MockitoAnnotations.initMocks(this);
 
-    props = new Properties();
-    securityProps = new Properties();
+    this.props = new Properties();
+    this.securityProps = new Properties();
 
-    when(securityService.isIntegratedSecurity()).thenReturn(isIntegratedSecurity());
-    when(securityService.isPeerSecurityRequired()).thenReturn(true);
-    when(securityService.login(securityProps)).thenReturn(subject);
-    when(distributionConfig.getSecurityProps()).thenReturn(securityProps);
-    when(serviceConfig.getDistributionConfig()).thenReturn(distributionConfig);
-    when(services.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
-    when(services.getConfig()).thenReturn(serviceConfig);
+    when(this.securityService.isIntegratedSecurity()).thenReturn(isIntegratedSecurity());
+    when(this.securityService.isPeerSecurityRequired()).thenReturn(true);
+    when(this.securityService.login(this.securityProps)).thenReturn(this.subject);
+    when(this.distributionConfig.getSecurityProps()).thenReturn(this.securityProps);
+    when(this.serviceConfig.getDistributionConfig()).thenReturn(this.distributionConfig);
+    when(this.services.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
+    when(this.services.getConfig()).thenReturn(this.serviceConfig);
+    when(this.services.getSecurityService()).thenReturn(this.securityService);
 
-    authenticator.init(services);
+    this.authenticator.init(this.services);
   }
 
   protected abstract boolean isIntegratedSecurity();
@@ -135,11 +136,11 @@ public abstract class AbstractGMSAuthenticatorTestCase {
 
     @Override
     public void close() {
-      closed = true;
+      this.closed = true;
     }
 
     public boolean isClosed() {
-      return closed;
+      return this.closed;
     }
 
     public static int getCreateCount() {
@@ -284,11 +285,11 @@ public abstract class AbstractGMSAuthenticatorTestCase {
 
     @Override
     public void close() {
-      closed = true;
+      this.closed = true;
     }
 
     public boolean isClosed() {
-      return closed;
+      return this.closed;
     }
 
     public static int getCreateCount() {

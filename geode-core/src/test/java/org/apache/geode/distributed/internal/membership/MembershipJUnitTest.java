@@ -14,6 +14,13 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -22,57 +29,48 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.Properties;
-
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SerialAckedMessage;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
+import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.messages.*;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.io.File;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Properties;
 
 @Category({IntegrationTest.class, MembershipJUnitTest.class})
 public class MembershipJUnitTest {
-  static Level baseLogLevel;
-
-  @BeforeClass
-  public static void setupClass() {
-    // baseLogLevel = LogService.getBaseLogLevel();
-    // LogService.setBaseLogLevel(Level.DEBUG);
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    // LogService.setBaseLogLevel(baseLogLevel);
-  }
-
-  // @Test
-  // public void testRepeat() throws Exception {
-  // for (int i=0; i<50; i++) {
-  // System.out.println("--------------------run #" + i);
-  // testMultipleManagersInSameProcess();
-  // }
-  // }
 
   /**
    * This test creates a locator with a colocated membership manager and then creates a second
@@ -152,7 +150,8 @@ public class MembershipJUnitTest {
         DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
         DMStats stats1 = mock(DMStats.class);
         System.out.println("creating 1st membership manager");
-        m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
+        m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1,
+            SecurityServiceFactory.create());
         m1.startEventProcessing();
       } finally {
         System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
@@ -162,7 +161,8 @@ public class MembershipJUnitTest {
       DistributedMembershipListener listener2 = mock(DistributedMembershipListener.class);
       DMStats stats2 = mock(DMStats.class);
       System.out.println("creating 2nd membership manager");
-      m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
+      m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2,
+          SecurityServiceFactory.create());
       m2.startEventProcessing();
 
       // we have to check the views with JoinLeave because the membership
@@ -292,7 +292,8 @@ public class MembershipJUnitTest {
         DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
         DMStats stats1 = mock(DMStats.class);
         System.out.println("creating 1st membership manager");
-        m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
+        m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1,
+            SecurityServiceFactory.create());
         m1.startEventProcessing();
       } finally {
         System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
@@ -302,7 +303,8 @@ public class MembershipJUnitTest {
       DistributedMembershipListener listener2 = mock(DistributedMembershipListener.class);
       DMStats stats2 = mock(DMStats.class);
       System.out.println("creating 2nd membership manager");
-      m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
+      m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2,
+          SecurityServiceFactory.create());
       m2.startEventProcessing();
 
       // we have to check the views with JoinLeave because the membership

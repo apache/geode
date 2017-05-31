@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 public class CloseConnection extends BaseCommand {
 
@@ -39,8 +40,8 @@ public class CloseConnection extends BaseCommand {
   private CloseConnection() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     CacheServerStats stats = serverConnection.getCacheServerStats();
     long oldStart = start;
     boolean respondToClient = serverConnection.getClientVersion().compareTo(Version.GFE_90) >= 0;

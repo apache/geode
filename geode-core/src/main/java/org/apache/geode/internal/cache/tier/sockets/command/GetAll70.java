@@ -39,6 +39,7 @@ import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class GetAll70 extends BaseCommand {
@@ -50,8 +51,8 @@ public class GetAll70 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keysPart = null;
     String regionName = null;
     Object[] keys = null;
@@ -76,7 +77,7 @@ public class GetAll70 extends BaseCommand {
     requestSerializedValues = clientMessage.getPart(partIdx++).getInt() == 1;
 
     if (logger.isDebugEnabled()) {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append(serverConnection.getName()).append(": Received getAll request (")
           .append(clientMessage.getPayloadLength()).append(" bytes) from ")
           .append(serverConnection.getSocketString()).append(" for region ").append(regionName)
@@ -123,7 +124,7 @@ public class GetAll70 extends BaseCommand {
     // Send chunk response
     try {
       fillAndSendGetAllResponseChunks(region, regionName, keys, serverConnection,
-          requestSerializedValues);
+          requestSerializedValues, securityService);
       serverConnection.setAsTrue(RESPONDED);
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
@@ -137,7 +138,8 @@ public class GetAll70 extends BaseCommand {
   }
 
   private void fillAndSendGetAllResponseChunks(Region region, String regionName, Object[] keys,
-      ServerConnection servConn, boolean requestSerializedValues) throws IOException {
+      ServerConnection servConn, boolean requestSerializedValues, SecurityService securityService)
+      throws IOException {
 
     // Interpret null keys object as a request to get all key,value entry pairs
     // of the region; otherwise iterate each key and perform the get behavior.
@@ -208,7 +210,7 @@ public class GetAll70 extends BaseCommand {
         }
 
         try {
-          this.securityService.authorizeRegionRead(regionName, key.toString());
+          securityService.authorizeRegionRead(regionName, key.toString());
         } catch (NotAuthorizedException ex) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
@@ -258,7 +260,7 @@ public class GetAll70 extends BaseCommand {
             }
           }
 
-          data = this.securityService.postProcess(regionName, key, data, entry.isObject);
+          data = securityService.postProcess(regionName, key, data, entry.isObject);
 
           // Add the entry to the list that will be returned to the client
           if (keyNotPresent) {

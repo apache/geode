@@ -243,7 +243,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
     this.hostnameForClients = builder.getHostnameForClients();
     this.memberName = builder.getMemberName();
-    // TODO:KIRK: set ThreadLocal for LogService with getLogFile or getLogFileName
     this.pid = builder.getPid();
     this.portSpecified = builder.isPortSpecified();
     this.port = builder.getPort();

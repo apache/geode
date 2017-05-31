@@ -123,7 +123,7 @@ public class RemoveAllTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
@@ -133,7 +133,7 @@ public class RemoveAllTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
       verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME));
@@ -152,7 +152,7 @@ public class RemoveAllTest {
           .authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
     }
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
       verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME));
@@ -166,7 +166,7 @@ public class RemoveAllTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
       verify(this.authzRequest).removeAllAuthorize(eq(REGION_NAME), any(), any());
@@ -184,7 +184,7 @@ public class RemoveAllTest {
       doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
           eq(key.toString()), eq(null));
     }
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
       verify(this.authzRequest).removeAllAuthorize(eq(REGION_NAME), any(), any());
