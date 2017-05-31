@@ -294,11 +294,11 @@ will return `object_2`.
 will return `object_3`.
 - Backups should only be made for regions with Lucene indexes
 when there are no puts, updates, or deletes in progress.
-A backup might cause an inconsistency between region data and a Lucene index,
-if that backup is used to restore a system.
-The Lucene index is persistent.
-If a backup is unlucky enough to be taken between
-a persisted write to a region (causing a disk operation)
-and the resulting persisted write to the Lucene index
-(causing a disk operation),
+A backup might cause an inconsistency between region data and a Lucene index.
+Both the region operation and the associated index operation
+cause disk operations,
+yet those disk operations are not done atomically.
+Therefore, if a backup were taken between
+the persisted write to a region
+and the resulting persisted write to the Lucene index,
 then the backup represents inconsistent data in the region and Lucene index.
