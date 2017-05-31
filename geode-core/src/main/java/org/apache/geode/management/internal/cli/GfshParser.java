@@ -45,6 +45,10 @@ public class GfshParser extends SimpleParser {
   public static final String COMMAND_DELIMITER = ";";
   public static final String CONTINUATION_CHARACTER = "\\";
 
+  private static final char ASCII_UNIT_SEPARATOR = '\u001F';
+  public static final String J_ARGUMENT_DELIMITER = "" + ASCII_UNIT_SEPARATOR;
+  public static final String J_OPTION_CONTEXT = "splittingRegex=" + J_ARGUMENT_DELIMITER;
+
   // pattern used to split the user input with whitespaces except those in quotes (single or double)
   private static Pattern PATTERN =
       Pattern.compile("\\s*([^\\s']*)'([^']*)'\\s+|\\s*([^\\s\"]*)\"([^\"]*)\"\\s+|\\S+");
@@ -131,6 +135,7 @@ public class GfshParser extends SimpleParser {
 
         if (i < tokens.size()) {
           String jArg = tokens.get(i);
+          // remove the quotes around each --J arugments
           if (jArg.charAt(0) == '"' || jArg.charAt(0) == '\'') {
             jArg = jArg.substring(1, jArg.length() - 1);
           }
@@ -151,7 +156,12 @@ public class GfshParser extends SimpleParser {
       if (i == firstJIndex) {
         rawInput.append("--J ");
         if (jArguments.size() > 0) {
-          rawInput.append("\"").append(StringUtils.join(jArguments, ",")).append("\" ");
+          // quote the entire J argument with double quotes, and delimited with a special delimiter,
+          // and we
+          // need to tell the gfsh parser to use this delimiter when splitting the --J argument in
+          // each command
+          rawInput.append("\"").append(StringUtils.join(jArguments, J_ARGUMENT_DELIMITER))
+              .append("\" ");
         }
       }
       // then add the next inputToken
@@ -176,7 +186,6 @@ public class GfshParser extends SimpleParser {
 
     return new GfshParseResult(result.getMethod(), result.getInstance(), result.getArguments(),
         userInput);
-
   }
 
   /**
