@@ -26,6 +26,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;
 
@@ -109,7 +110,10 @@ public class CommandProcessor {
         // do general authorization check here
         Method method = parseResult.getMethod();
         ResourceOperation resourceOperation = method.getAnnotation(ResourceOperation.class);
-        this.securityService.authorize(resourceOperation);
+        if (resourceOperation != null) {
+          this.securityService.authorize(resourceOperation.resource(),
+              resourceOperation.operation(), resourceOperation.target(), ResourcePermission.ALL);
+        }
 
         result = executionStrategy.execute(parseResult);
         if (result instanceof Result) {

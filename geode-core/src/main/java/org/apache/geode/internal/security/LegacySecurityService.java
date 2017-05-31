@@ -14,16 +14,14 @@
  */
 package org.apache.geode.internal.security;
 
-import java.util.Properties;
-import java.util.concurrent.Callable;
-
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
-
-import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
+import java.util.Properties;
+import java.util.concurrent.Callable;
 
 /**
  * Legacy security service with ClientAuthenticator and/or PeerAuthenticator.
@@ -70,8 +68,21 @@ public class LegacySecurityService implements SecurityService {
   }
 
   @Override
-  public void authorize(final ResourceOperation resourceOperation) {
-    // nothing
+  public void authorize(ResourcePermission.Resource resource,
+      ResourcePermission.Operation operation, String target, String key) {
+
+  }
+
+  @Override
+  public void authorize(ResourcePermission.Resource resource,
+      ResourcePermission.Operation operation, ResourcePermission.Target target, String key) {
+
+  }
+
+  @Override
+  public void authorize(ResourcePermission.Resource resource,
+      ResourcePermission.Operation operation, ResourcePermission.Target target) {
+
   }
 
   @Override
@@ -105,6 +116,26 @@ public class LegacySecurityService implements SecurityService {
   }
 
   @Override
+  public void authorizeDiskManage() {
+
+  }
+
+  @Override
+  public void authorizeGatewayManage() {
+
+  }
+
+  @Override
+  public void authorizeJarManage() {
+
+  }
+
+  @Override
+  public void authorizeQueryManage() {
+
+  }
+
+  @Override
   public void authorizeRegionManage(final String regionName) {
     // nothing
   }
@@ -131,22 +162,6 @@ public class LegacySecurityService implements SecurityService {
 
   @Override
   public void authorizeRegionRead(final String regionName, final String key) {
-    // nothing
-  }
-
-  @Override
-  public void authorize(final String resource, final String operation) {
-    // nothing
-  }
-
-  @Override
-  public void authorize(final String resource, final String operation, final String regionName) {
-    // nothing
-  }
-
-  @Override
-  public void authorize(final String resource, final String operation, final String regionName,
-      final String key) {
     // nothing
   }
 

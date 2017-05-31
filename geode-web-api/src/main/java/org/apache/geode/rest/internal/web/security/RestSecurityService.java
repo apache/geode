@@ -21,6 +21,9 @@ import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.GemFireSecurityException;
 import org.springframework.stereotype.Component;
 
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+
 @Component("securityService")
 public class RestSecurityService {
 
@@ -45,7 +48,8 @@ public class RestSecurityService {
 
   public boolean authorize(String resource, String operation, String region, String key) {
     try {
-      securityService.authorize(resource, operation, region, key);
+      securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
+          key);
       return true;
     } catch (GemFireSecurityException ex) {
       return false;

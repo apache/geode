@@ -21,6 +21,8 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
@@ -243,8 +245,8 @@ public class ExampleSecurityManager implements SecurityManager {
         String regionPart = (regionNames != null) ? regionNames : "*";
         String keyPart = (keys != null) ? keys : "*";
 
-        role.permissions
-            .add(new ResourcePermission(resourcePart, operationPart, regionPart, keyPart));
+        role.permissions.add(new ResourcePermission(Resource.valueOf(resourcePart),
+            Operation.valueOf(operationPart), regionPart, keyPart));
       }
 
       roleMap.put(role.name, role);

@@ -17,6 +17,9 @@ package org.apache.geode.internal.security;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Target;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
@@ -38,7 +41,11 @@ public interface SecurityService {
 
   Callable associateWith(Callable callable);
 
-  void authorize(ResourceOperation resourceOperation);
+  void authorize(Resource resource, Operation operation, String target, String key);
+
+  void authorize(Resource resource, Operation operation, Target target, String key);
+
+  void authorize(Resource resource, Operation operation, Target target);
 
   void authorizeClusterManage();
 
@@ -52,6 +59,14 @@ public interface SecurityService {
 
   void authorizeDataRead();
 
+  void authorizeDiskManage();
+
+  void authorizeGatewayManage();
+
+  void authorizeJarManage();
+
+  void authorizeQueryManage();
+
   void authorizeRegionManage(String regionName);
 
   void authorizeRegionManage(String regionName, String key);
@@ -63,12 +78,6 @@ public interface SecurityService {
   void authorizeRegionRead(String regionName);
 
   void authorizeRegionRead(String regionName, String key);
-
-  void authorize(String resource, String operation);
-
-  void authorize(String resource, String operation, String regionName);
-
-  void authorize(String resource, String operation, String regionName, String key);
 
   void authorize(ResourcePermission context);
 

@@ -14,10 +14,14 @@
  */
 package org.apache.geode.management.internal.security;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Target;
 
 import java.io.ObjectInputStream;
 import java.util.Set;
@@ -255,8 +259,15 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       ResourcePermission defaultValue) {
     String resource = (String) descriptor.getFieldValue("resource");
     String operationCode = (String) descriptor.getFieldValue("operation");
+    String targetCode = (String) descriptor.getFieldValue("target");
     if (resource != null && operationCode != null) {
-      return new ResourcePermission(resource, operationCode);
+      if (StringUtils.isBlank(targetCode)) {
+        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
+            targetCode);
+      } else {
+        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
+            Target.valueOf(targetCode).getName());
+      }
     }
     return defaultValue;
   }

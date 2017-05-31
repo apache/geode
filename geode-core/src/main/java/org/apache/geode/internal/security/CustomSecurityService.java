@@ -14,13 +14,6 @@
  */
 package org.apache.geode.internal.security;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessController;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireIOException;
@@ -32,8 +25,12 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -42,10 +39,12 @@ import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
-import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.SecurityManager;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessController;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 public class CustomSecurityService implements SecurityService {
   private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
@@ -154,90 +153,96 @@ public class CustomSecurityService implements SecurityService {
     return currentUser.associateWith(callable);
   }
 
-  @Override
-  public void authorize(final ResourceOperation resourceOperation) {
-    if (resourceOperation == null) {
-      return;
-    }
-
-    authorize(resourceOperation.resource().name(), resourceOperation.operation().name(), null);
-  }
-
-  @Override
   public void authorizeClusterManage() {
-    authorize("CLUSTER", "MANAGE");
+    authorize(Resource.CLUSTER, Operation.MANAGE, Target.ALL, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeClusterWrite() {
-    authorize("CLUSTER", "WRITE");
+    authorize(Resource.CLUSTER, Operation.WRITE, Target.ALL, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeClusterRead() {
-    authorize("CLUSTER", "READ");
+    authorize(Resource.CLUSTER, Operation.READ, Target.ALL, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeDataManage() {
-    authorize("DATA", "MANAGE");
+    authorize(Resource.DATA, Operation.MANAGE, Target.ALL, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeDataWrite() {
-    authorize("DATA", "WRITE");
+    authorize(Resource.DATA, Operation.WRITE, Target.ALL, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeDataRead() {
-    authorize("DATA", "READ");
+    authorize(Resource.DATA, Operation.READ, Target.ALL, ResourcePermission.ALL);
+  }
+
+  @Override
+  public void authorizeDiskManage() {
+    authorize(Resource.CLUSTER, Operation.MANAGE, Target.DISK, ResourcePermission.ALL);
+  }
+
+  @Override
+  public void authorizeGatewayManage() {
+    authorize(Resource.CLUSTER, Operation.MANAGE, Target.GATEWAY, ResourcePermission.ALL);
+  }
+
+  @Override
+  public void authorizeJarManage() {
+    authorize(Resource.CLUSTER, Operation.MANAGE, Target.JAR, ResourcePermission.ALL);
+  }
+
+  @Override
+  public void authorizeQueryManage() {
+    authorize(Resource.CLUSTER, Operation.MANAGE, Target.QUERY, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeRegionManage(final String regionName) {
-    authorize("DATA", "MANAGE", regionName);
+    authorize(Resource.DATA, Operation.MANAGE, regionName, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeRegionManage(final String regionName, final String key) {
-    authorize("DATA", "MANAGE", regionName, key);
+    authorize(Resource.DATA, Operation.MANAGE, regionName, key);
   }
 
   @Override
   public void authorizeRegionWrite(final String regionName) {
-    authorize("DATA", "WRITE", regionName);
+    authorize(Resource.DATA, Operation.WRITE, regionName, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeRegionWrite(final String regionName, final String key) {
-    authorize("DATA", "WRITE", regionName, key);
+    authorize(Resource.DATA, Operation.WRITE, regionName, key);
   }
 
   @Override
   public void authorizeRegionRead(final String regionName) {
-    authorize("DATA", "READ", regionName);
+    authorize(Resource.DATA, Operation.READ, regionName, ResourcePermission.ALL);
   }
 
   @Override
   public void authorizeRegionRead(final String regionName, final String key) {
-    authorize("DATA", "READ", regionName, key);
+    authorize(Resource.DATA, Operation.READ, regionName, key);
   }
 
-  @Override
-  public void authorize(final String resource, final String operation) {
-    authorize(resource, operation, null);
+  public void authorize(Resource resource, Operation operation, ResourcePermission.Target target,
+      String key) {
+    authorize(resource, operation, target.getName(), key);
   }
 
-  @Override
-  public void authorize(final String resource, final String operation, final String regionName) {
-    authorize(resource, operation, regionName, null);
+  public void authorize(Resource resource, Operation operation, ResourcePermission.Target target) {
+    authorize(resource, operation, target, ResourcePermission.ALL);
   }
 
-  @Override
-  public void authorize(final String resource, final String operation, String regionName,
-      final String key) {
-    regionName = StringUtils.stripStart(regionName, "/");
-    authorize(new ResourcePermission(resource, operation, regionName, key));
+  public void authorize(Resource resource, Operation operation, String target, String key) {
+    authorize(new ResourcePermission(resource, operation, target, key));
   }
 
   @Override
