@@ -20,6 +20,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.security.SecurityService;
+
 import java.io.IOException;
 
 public class PeriodicAck extends BaseCommand {
@@ -33,7 +35,8 @@ public class PeriodicAck extends BaseCommand {
   private PeriodicAck() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {

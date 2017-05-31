@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -24,7 +24,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -46,7 +46,8 @@ import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class PDXGfshPostProcessorOnRemoteServerTest {
-  protected static final String REGION_NAME = "AuthRegion";
+
+  private static final String REGION_NAME = "AuthRegion";
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -64,15 +65,22 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
 
     MemberVM<Locator> locatorVM = lsRule.startLocatorVM(0, locatorProps);
 
-    Properties serverProps = new Properties();
+    Properties serverProps = new Properties(locatorProps);
     serverProps.setProperty(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/management/internal/security/clientServer.json");
+    serverProps.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    serverProps.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
     serverProps.setProperty("security-username", "super-user");
     serverProps.setProperty("security-password", "1234567");
+
     MemberVM<Server> serverVM = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
     serverVM.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      assertThat(cache.getSecurityService()).isNotNull();
+      assertThat(cache.getSecurityService().getSecurityManager()).isNotNull();
+      assertThat(cache.getSecurityService().getPostProcessor()).isNotNull();
+
       Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
       for (int i = 0; i < 5; i++) {
         SimpleClass obj = new SimpleClass(i, (byte) i);
@@ -82,7 +90,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
 
     // wait until the region bean is visible
     locatorVM.invoke(() -> {
-      Awaitility.await().pollInterval(500, TimeUnit.MICROSECONDS).atMost(5, TimeUnit.SECONDS)
+      Awaitility.await().pollInterval(500, TimeUnit.MICROSECONDS).atMost(2, TimeUnit.MINUTES)
           .until(() -> {
             Cache cache = CacheFactory.getAnyInstance();
             Object bean = ManagementService.getManagementService(cache)
@@ -101,8 +109,8 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     gfsh.executeAndVerifyCommand("query --query=\"select * from /AuthRegion\"");
 
     serverVM.invoke(() -> {
-      PDXPostProcessor pp =
-          (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
+      PDXPostProcessor pp = (PDXPostProcessor) LocatorServerStartupRule.serverStarter.getCache()
+          .getSecurityService().getPostProcessor();
       // verify that the post processor is called 6 times. (5 for the query, 1 for the get)
       assertEquals(pp.getCount(), 6);
     });

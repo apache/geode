@@ -17,24 +17,23 @@ package org.apache.geode.management.internal.cli.remote;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CommandService;
 import org.apache.geode.management.cli.CommandServiceException;
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
 
-/**
- */
 public class MemberCommandService extends CommandService {
   private final Object modLock = new Object();
 
-  private Cache cache;
+  private InternalCache cache;
   private CommandProcessor commandProcessor;
 
-  public MemberCommandService(Cache cache) throws CommandServiceException {
+  public MemberCommandService(InternalCache cache) throws CommandServiceException {
     this.cache = cache;
     try {
-      this.commandProcessor = new CommandProcessor(cache.getDistributedSystem().getProperties());
+      this.commandProcessor = new CommandProcessor(cache.getDistributedSystem().getProperties(),
+          cache.getSecurityService());
     } catch (ClassNotFoundException e) {
       throw new CommandServiceException("Could not load commands.", e);
     } catch (IOException e) {
@@ -70,12 +69,4 @@ public class MemberCommandService extends CommandService {
     return (this.cache != null && !this.cache.isClosed());
   }
 
-  // @Override
-  // public void stop() {
-  // cache = null;
-  // synchronized (modLock) {
-  // this.commandProcessor.stop();
-  // this.commandProcessor = null;
-  // }
-  // }
 }

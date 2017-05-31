@@ -52,7 +52,9 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
@@ -77,6 +79,10 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   private static final String SUBREGION1C = "subregion1C";
   private static final String PR1 = "PartitionedRegion1";
   private static final String PR2 = "ParitionedRegion2";
+
+  @ClassRule
+  public static ProvideSystemProperty provideSystemProperty =
+      new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
 
   @Override
   public final void postSetUp() throws Exception {

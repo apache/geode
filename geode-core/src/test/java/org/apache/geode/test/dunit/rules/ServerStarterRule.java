@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
@@ -27,6 +26,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +51,7 @@ import java.util.Properties;
  * use {@link LocatorServerStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
-  private transient Cache cache;
+  private transient InternalCache cache;
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;
   private boolean pdxPersistent = false;
@@ -74,7 +74,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     super(workingDir);
   }
 
-  public Cache getCache() {
+  public InternalCache getCache() {
     return cache;
   }
 
@@ -161,7 +161,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     CacheFactory cf = new CacheFactory(this.properties);
     cf.setPdxReadSerialized(pdxPersistent);
     cf.setPdxPersistent(pdxPersistent);
-    cache = cf.create();
+    cache = (InternalCache) cf.create();
     DistributionConfig config =
         ((InternalDistributedSystem) cache.getDistributedSystem()).getConfig();
     server = cache.addCacheServer();

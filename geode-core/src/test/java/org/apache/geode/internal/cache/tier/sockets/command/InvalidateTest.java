@@ -115,7 +115,7 @@ public class InvalidateTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.responseMessage).send(this.serverConnection);
   }
@@ -125,7 +125,7 @@ public class InvalidateTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY_STRING));
     verify(this.responseMessage).send(this.serverConnection);
@@ -138,7 +138,7 @@ public class InvalidateTest {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionWrite(eq(REGION_NAME), eq(KEY_STRING));
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY_STRING));
     verify(this.errorResponseMessage).send(this.serverConnection);
@@ -149,7 +149,7 @@ public class InvalidateTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
         eq(CALLBACK_ARG));
@@ -163,7 +163,7 @@ public class InvalidateTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING), eq(CALLBACK_ARG));
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
         eq(CALLBACK_ARG));

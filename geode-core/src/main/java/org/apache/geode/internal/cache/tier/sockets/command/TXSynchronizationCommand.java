@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -69,7 +70,8 @@ public class TXSynchronizationCommand extends BaseCommand {
    */
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      long start) throws IOException, ClassNotFoundException, InterruptedException {
+      final SecurityService securityService, long start)
+      throws IOException, ClassNotFoundException, InterruptedException {
 
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 

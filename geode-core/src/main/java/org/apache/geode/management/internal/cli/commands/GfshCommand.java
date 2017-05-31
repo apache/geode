@@ -37,8 +37,7 @@ import java.util.Set;
 
 /**
  * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
- * <p>
- * 
+ *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.execute.FunctionService
  * @see org.apache.geode.distributed.DistributedMember
@@ -48,13 +47,13 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public interface GfshCommand extends CommandMarker {
   default String convertDefaultValue(final String from, final String to) {
-    return (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(from) ? to : from);
+    return CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(from) ? to : from;
   }
 
   default String toString(final Boolean condition, final String trueValue,
       final String falseValue) {
-    return (Boolean.TRUE.equals(condition) ? StringUtils.defaultIfBlank(trueValue, "true")
-        : StringUtils.defaultIfBlank(falseValue, "false"));
+    return Boolean.TRUE.equals(condition) ? StringUtils.defaultIfBlank(trueValue, "true")
+        : StringUtils.defaultIfBlank(falseValue, "false");
   }
 
   default String toString(final Throwable t, final boolean printStackTrace) {
@@ -70,12 +69,12 @@ public interface GfshCommand extends CommandMarker {
   }
 
   default boolean isConnectedAndReady() {
-    return (getGfsh() != null && getGfsh().isConnectedAndReady());
+    return getGfsh() != null && getGfsh().isConnectedAndReady();
   }
 
   default ClusterConfigurationService getSharedConfiguration() {
     InternalLocator locator = InternalLocator.getLocator();
-    return (locator == null) ? null : locator.getSharedConfiguration();
+    return locator == null ? null : locator.getSharedConfiguration();
   }
 
   default void persistClusterConfiguration(Result result, Runnable runnable) {
@@ -92,11 +91,11 @@ public interface GfshCommand extends CommandMarker {
   }
 
   default boolean isDebugging() {
-    return (getGfsh() != null && getGfsh().getDebug());
+    return getGfsh() != null && getGfsh().getDebug();
   }
 
   default boolean isLogging() {
-    return (getGfsh() != null);
+    return getGfsh() != null;
   }
 
   default InternalCache getCache() {
@@ -122,7 +121,7 @@ public interface GfshCommand extends CommandMarker {
 
   /**
    * Gets all members in the GemFire distributed system/cache.
-   * 
+   *
    * @param cache the GemFire cache.
    * @return all members in the GemFire distributed system/cache.
    * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.internal.cache.InternalCache)

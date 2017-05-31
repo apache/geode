@@ -150,7 +150,7 @@ public class ExecuteFunction66Test {
   public void nonSecureShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     // verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none
     // of the reply message types get sent?
@@ -161,7 +161,7 @@ public class ExecuteFunction66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataWrite();
     // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
@@ -174,9 +174,8 @@ public class ExecuteFunction66Test {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
     doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataWrite();
 
-    assertThatThrownBy(
-        () -> this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0))
-            .isExactlyInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> this.executeFunction66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0)).isExactlyInstanceOf(NullPointerException.class);
 
     verify(this.securityService).authorizeDataWrite();
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -187,7 +186,7 @@ public class ExecuteFunction66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
@@ -202,9 +201,8 @@ public class ExecuteFunction66Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
-    assertThatThrownBy(
-        () -> this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0))
-            .isExactlyInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> this.executeFunction66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0)).isExactlyInstanceOf(NullPointerException.class);
 
     verify(this.securityService).authorizeDataWrite();
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);

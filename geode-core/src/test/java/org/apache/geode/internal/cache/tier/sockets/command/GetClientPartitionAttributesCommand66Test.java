@@ -73,7 +73,8 @@ public class GetClientPartitionAttributesCommand66Test {
   public void noSecuirtyShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.getClientPartitionAttributesCommand66.cmdExecute(this.message, this.serverConnection, 0);
+    this.getClientPartitionAttributesCommand66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0);
 
     verify(this.responseMessage).send();
   }

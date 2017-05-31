@@ -1,0 +1,136 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.apache.geode.internal.security;
+
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+@Category({UnitTest.class, SecurityTest.class})
+public class SecurityServiceTest {
+
+  private Properties properties;
+  private DistributionConfig distributionConfig;
+  private SecurityService securityService;
+
+  @Before
+  public void before() {
+    this.properties = new Properties();
+    this.distributionConfig = mock(DistributionConfig.class);
+    when(this.distributionConfig.getSecurityProps()).thenReturn(this.properties);
+    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+  }
+
+  @After
+  public void after() throws Exception {
+    this.securityService.close();
+    SecurityUtils.setSecurityManager(null);
+  }
+
+  @Test
+  public void testInitialSecurityFlags() {
+    // initial state of SecurityService
+    assertThat(this.securityService.isIntegratedSecurity()).isFalse();
+    assertThat(this.securityService.isClientSecurityRequired()).isFalse();
+    assertThat(this.securityService.isPeerSecurityRequired()).isFalse();
+  }
+
+  @Test
+  public void testInitWithSecurityManager() {
+    this.properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.TestSecurityManager");
+    this.properties.setProperty(TestSecurityManager.SECURITY_JSON,
+        "org/apache/geode/security/templates/security.json");
+
+    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+
+    assertThat(this.securityService.isIntegratedSecurity()).isTrue();
+    assertThat(this.securityService.isClientSecurityRequired()).isTrue();
+    assertThat(this.securityService.isPeerSecurityRequired()).isTrue();
+  }
+
+  @Test
+  public void testInitWithClientAuthenticator() {
+    this.properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
+    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+
+    assertThat(this.securityService.isIntegratedSecurity()).isFalse();
+    assertThat(this.securityService.isClientSecurityRequired()).isTrue();
+    assertThat(this.securityService.isPeerSecurityRequired()).isFalse();
+  }
+
+  @Test
+  public void testInitWithPeerAuthenticator() {
+    this.properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
+    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+
+    assertThat(this.securityService.isIntegratedSecurity()).isFalse();
+    assertThat(this.securityService.isClientSecurityRequired()).isFalse();
+    assertThat(this.securityService.isPeerSecurityRequired()).isTrue();
+  }
+
+  @Test
+  public void testInitWithAuthenticators() {
+    this.properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
+    this.properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
+
+    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+
+    assertThat(this.securityService.isIntegratedSecurity()).isFalse();
+    assertThat(this.securityService.isClientSecurityRequired()).isTrue();
+    assertThat(this.securityService.isPeerSecurityRequired()).isTrue();
+  }
+
+  @Test
+  public void testInitWithShiroAuthenticator() {
+    this.properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+
+    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+
+    assertThat(this.securityService.isIntegratedSecurity()).isTrue();
+    assertThat(this.securityService.isClientSecurityRequired()).isTrue();
+    assertThat(this.securityService.isPeerSecurityRequired()).isTrue();
+  }
+
+  @Test
+  public void testNoInit() {
+    assertThat(this.securityService.isIntegratedSecurity()).isFalse();
+  }
+
+  @Test
+  public void testInitWithOutsideShiroSecurityManager() {
+    SecurityUtils.setSecurityManager(new DefaultSecurityManager());
+    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+
+    assertThat(this.securityService.isIntegratedSecurity()).isTrue();
+  }
+
+}

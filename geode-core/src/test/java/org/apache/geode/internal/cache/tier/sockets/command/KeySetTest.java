@@ -97,7 +97,7 @@ public class KeySetTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, 0);
+    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
@@ -107,7 +107,7 @@ public class KeySetTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, 0);
+    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -120,7 +120,7 @@ public class KeySetTest {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME));
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, 0);
+    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -131,7 +131,7 @@ public class KeySetTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, 0);
+    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).keySetAuthorize(eq(REGION_NAME));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -144,7 +144,7 @@ public class KeySetTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .keySetAuthorize(eq(REGION_NAME));
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, 0);
+    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).keySetAuthorize(eq(REGION_NAME));
 

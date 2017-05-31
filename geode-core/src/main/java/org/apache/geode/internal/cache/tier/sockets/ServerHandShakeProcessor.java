@@ -29,6 +29,7 @@ import java.net.SocketTimeoutException;
 import java.security.Principal;
 import java.util.Properties;
 
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
@@ -77,7 +78,8 @@ public class ServerHandShakeProcessor {
     currentServerVersion = Version.fromOrdinalOrCurrent(ver);
   }
 
-  public static boolean readHandShake(ServerConnection connection) {
+  public static boolean readHandShake(ServerConnection connection,
+      SecurityService securityService) {
     boolean validHandShake = false;
     Version clientVersion = null;
     try {
@@ -120,7 +122,7 @@ public class ServerHandShakeProcessor {
 
       // Read the appropriate handshake
       if (clientVersion.compareTo(Version.GFE_57) >= 0) {
-        validHandShake = readGFEHandshake(connection, clientVersion);
+        validHandShake = readGFEHandshake(connection, clientVersion, securityService);
       } else {
         connection.refuseHandshake(
             "Unsupported version " + clientVersion + "Server's current version " + Acceptor.VERSION,
@@ -196,7 +198,8 @@ public class ServerHandShakeProcessor {
     hdos.close();
   }
 
-  private static boolean readGFEHandshake(ServerConnection connection, Version clientVersion) {
+  private static boolean readGFEHandshake(ServerConnection connection, Version clientVersion,
+      SecurityService securityService) {
     int handShakeTimeout = connection.getHandShakeTimeout();
     InternalLogWriter securityLogWriter = connection.getSecurityLogWriter();
     try {
@@ -204,7 +207,7 @@ public class ServerHandShakeProcessor {
       DistributedSystem system = connection.getDistributedSystem();
       // hitesh:it will set credentials and principals
       HandShake handshake = new HandShake(socket, handShakeTimeout, system, clientVersion,
-          connection.getCommunicationMode());
+          connection.getCommunicationMode(), securityService);
       connection.setHandshake(handshake);
       ClientProxyMembershipID proxyId = handshake.getMembership();
       connection.setProxyId(proxyId);

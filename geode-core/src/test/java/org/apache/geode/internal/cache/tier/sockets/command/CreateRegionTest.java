@@ -98,7 +98,7 @@ public class CreateRegionTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.responseMessage).send(this.serverConnection);
   }
@@ -110,7 +110,7 @@ public class CreateRegionTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
     // act
-    this.createRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     // assert
     verify(this.securityService).authorizeDataManage();
@@ -123,7 +123,7 @@ public class CreateRegionTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
     doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataManage();
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataManage();
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
@@ -134,7 +134,7 @@ public class CreateRegionTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).createRegionAuthorize(eq(PARENT_REGION_NAME + '/' + REGION_NAME));
     verify(this.responseMessage).send(this.serverConnection);
@@ -147,7 +147,7 @@ public class CreateRegionTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .createRegionAuthorize(eq(PARENT_REGION_NAME + '/' + REGION_NAME));
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, 0);
+    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).createRegionAuthorize(eq(PARENT_REGION_NAME + '/' + REGION_NAME));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));

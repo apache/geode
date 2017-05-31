@@ -29,8 +29,6 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFun
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -79,8 +77,6 @@ public class LuceneIndexCommands implements GfshCommand {
   private static final LuceneDestroyIndexFunction destroyIndexFunction =
       new LuceneDestroyIndexFunction();
   private List<LuceneSearchResults> searchResults = null;
-
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX,
       help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
@@ -182,7 +178,7 @@ public class LuceneIndexCommands implements GfshCommand {
     Result result;
     XmlEntity xmlEntity = null;
 
-    this.securityService.authorizeRegionManage(regionPath);
+    getCache().getSecurityService().authorizeRegionManage(regionPath);
     try {
       final InternalCache cache = getCache();
       // trim fields for any leading trailing spaces.
@@ -328,7 +324,7 @@ public class LuceneIndexCommands implements GfshCommand {
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
     }
 
-    this.securityService.authorizeRegionManage(regionPath);
+    getCache().getSecurityService().authorizeRegionManage(regionPath);
 
     Result result;
     try {

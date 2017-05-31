@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -30,6 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class CreateRegion extends BaseCommand {
@@ -41,8 +39,8 @@ public class CreateRegion extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     Part regionNamePart = null;
     String regionName = null;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
@@ -100,7 +98,7 @@ public class CreateRegion extends BaseCommand {
     }
 
     try {
-      this.securityService.authorizeDataManage();
+      securityService.authorizeDataManage();
     } catch (NotAuthorizedException ex) {
       writeException(clientMessage, ex, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

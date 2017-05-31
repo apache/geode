@@ -14,33 +14,40 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.security.IntegratedSecurityService.getSecurityService;
 import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.dunit.DistributedTestUtils.deleteLocatorStateFile;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.IOException;
-import java.util.Properties;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.internal.security.EnabledSecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.io.IOException;
+import java.util.Properties;
+
 @Category({DistributedTest.class, SecurityTest.class})
-public class SecurityManagerCallbacksDistributedTest extends CacheTestCase {
+public class SecurityManagerLifecycleDistributedTest extends CacheTestCase {
 
   private String locators;
   private VM locatorVM;
@@ -119,14 +126,18 @@ public class SecurityManagerCallbacksDistributedTest extends CacheTestCase {
   }
 
   private void verifyInitAndCloseInvoked() {
-    SpySecurityManager ssm = (SpySecurityManager) getSecurityService().getSecurityManager();
+    SecurityService securityService = getCache().getSecurityService();
+    assertThat(securityService).isNotNull().isInstanceOf(EnabledSecurityService.class);
 
-    assertThat(ssm.initInvoked).isEqualTo(1);
-    assertThat(ssm.closeInvoked).isEqualTo(0);
+    SpySecurityManager ssm =
+        (SpySecurityManager) getCache().getSecurityService().getSecurityManager();
+
+    assertThat(ssm.getInitInvocationCount()).isEqualTo(1);
+    assertThat(ssm.getCloseInvocationCount()).isEqualTo(0);
 
     getCache().close();
 
-    assertThat(ssm.initInvoked).isEqualTo(1);
-    assertThat(ssm.closeInvoked).isEqualTo(1);
+    assertThat(ssm.getInitInvocationCount()).isEqualTo(1);
+    assertThat(ssm.getCloseInvocationCount()).isEqualTo(1);
   }
 }

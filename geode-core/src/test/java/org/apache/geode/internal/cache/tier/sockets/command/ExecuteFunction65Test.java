@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
@@ -153,7 +152,7 @@ public class ExecuteFunction65Test {
   public void nonSecureShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.executeFunction65.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     // verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none
     // of the reply message types get sent?
@@ -164,7 +163,7 @@ public class ExecuteFunction65Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.executeFunction65.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataWrite();
     // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
@@ -177,7 +176,7 @@ public class ExecuteFunction65Test {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
     doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataWrite();
 
-    this.executeFunction65.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataWrite();
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -188,7 +187,7 @@ public class ExecuteFunction65Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.executeFunction65.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
@@ -203,7 +202,7 @@ public class ExecuteFunction65Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
-    this.executeFunction65.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataWrite();
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);

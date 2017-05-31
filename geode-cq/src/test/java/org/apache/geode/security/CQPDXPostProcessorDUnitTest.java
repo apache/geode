@@ -128,7 +128,7 @@ public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
     // wait for events to fire
     Awaitility.await().atMost(1, TimeUnit.SECONDS);
     PDXPostProcessor pp =
-        (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
+        (PDXPostProcessor) server.getCache().getSecurityService().getPostProcessor();
     assertEquals(pp.getCount(), 2);
   }
 

@@ -34,6 +34,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -55,6 +56,7 @@ public class GMSMemberFactory implements MemberServices {
    * @param attr the MemberAttributes
    * @return the new NetMember
    */
+  @Override
   public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr, short version) {
     GMSMember result =
@@ -70,6 +72,7 @@ public class GMSMemberFactory implements MemberServices {
    * @param p the membership port being used
    * @return the new NetMember
    */
+  @Override
   public NetMember newNetMember(InetAddress i, int p) {
     return new GMSMember(MemberAttributes.DEFAULT, i, p, false, true, Version.CURRENT_ORDINAL, 0,
         0);
@@ -83,6 +86,7 @@ public class GMSMemberFactory implements MemberServices {
    * @param p the membership port being used
    * @return the new member
    */
+  @Override
   public NetMember newNetMember(String s, int p) {
     InetAddress inetAddr = null;
     try {
@@ -93,10 +97,11 @@ public class GMSMemberFactory implements MemberServices {
     return newNetMember(inetAddr, p);
   }
 
+  @Override
   public MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      DistributionConfig config, RemoteTransportConfig transport, DMStats stats)
-      throws DistributionException {
-    Services services = new Services(listener, config, transport, stats);
+      DistributionConfig config, RemoteTransportConfig transport, DMStats stats,
+      SecurityService securityService) throws DistributionException {
+    Services services = new Services(listener, config, transport, stats, securityService);
     try {
       services.init();
       services.start();

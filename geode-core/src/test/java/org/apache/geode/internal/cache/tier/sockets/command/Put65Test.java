@@ -160,7 +160,7 @@ public class Put65Test {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.replyMessage).send(this.serverConnection);
   }
@@ -170,7 +170,7 @@ public class Put65Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
     verify(this.replyMessage).send(this.serverConnection);
@@ -183,7 +183,7 @@ public class Put65Test {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(this.serverConnection);
@@ -194,7 +194,7 @@ public class Put65Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
     verify(this.replyMessage).addBytesPart(argument.capture());
@@ -213,7 +213,7 @@ public class Put65Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest).putAuthorize(eq(REGION_NAME),
         eq(KEY), eq(VALUE), eq(true), eq(CALLBACK_ARG));
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
         eq(CALLBACK_ARG));

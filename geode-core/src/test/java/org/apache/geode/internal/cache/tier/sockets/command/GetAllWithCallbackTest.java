@@ -107,7 +107,7 @@ public class GetAllWithCallbackTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
@@ -117,7 +117,7 @@ public class GetAllWithCallbackTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
@@ -143,7 +143,7 @@ public class GetAllWithCallbackTest {
           .authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
     }
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
       verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
@@ -165,7 +165,7 @@ public class GetAllWithCallbackTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
@@ -192,7 +192,7 @@ public class GetAllWithCallbackTest {
           eq(key.toString()), eq(null));
     }
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());

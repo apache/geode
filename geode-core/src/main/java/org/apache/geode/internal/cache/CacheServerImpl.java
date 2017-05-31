@@ -72,6 +72,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
@@ -87,6 +88,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
+
+  private final SecurityService securityService;
 
   /** The acceptor that does the actual serving */
   private volatile AcceptorImpl acceptor;
@@ -135,6 +138,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public CacheServerImpl(InternalCache cache, boolean isGatewayReceiver) {
     super(cache);
     this.isGatewayReceiver = isGatewayReceiver;
+    this.securityService = cache.getSecurityService();
   }
 
   // //////////////////// Instance Methods ///////////////////

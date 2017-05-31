@@ -27,7 +27,9 @@ import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
@@ -64,10 +66,11 @@ public class ServerConnectionTest {
     Socket socket = mock(Socket.class);
     when(socket.getInetAddress()).thenReturn(inetAddress);
 
-    Cache cache = mock(Cache.class);
+    InternalCache cache = mock(InternalCache.class);
+    SecurityService securityService = mock(SecurityService.class);
 
     serverConnection = new ServerConnection(socket, cache, null, null, 0, 0, null,
-        Acceptor.PRIMARY_SERVER_TO_CLIENT, acceptor);
+        Acceptor.PRIMARY_SERVER_TO_CLIENT, acceptor, securityService);
     MockitoAnnotations.initMocks(this);
   }
 

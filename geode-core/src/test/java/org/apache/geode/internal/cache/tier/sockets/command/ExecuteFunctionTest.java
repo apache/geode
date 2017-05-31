@@ -33,7 +33,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -156,7 +155,7 @@ public class ExecuteFunctionTest {
   public void nonSecureShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     // verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none
     // of the reply message types get sent?
@@ -167,7 +166,7 @@ public class ExecuteFunctionTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataWrite();
     // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
@@ -180,7 +179,7 @@ public class ExecuteFunctionTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
     doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataWrite();
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeDataWrite();
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -191,7 +190,7 @@ public class ExecuteFunctionTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
@@ -206,7 +205,7 @@ public class ExecuteFunctionTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }

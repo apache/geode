@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class Put extends BaseCommand {
@@ -47,10 +48,9 @@ public class Put extends BaseCommand {
     return singleton;
   }
 
-
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
@@ -114,8 +114,7 @@ public class Put extends BaseCommand {
         errMessage = LocalizedStrings.Put_THE_INPUT_REGION_NAME_FOR_THE_PUT_REQUEST_IS_NULL
             .toLocalizedString();
       }
-      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
-          serverConnection);
+      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
@@ -151,7 +150,7 @@ public class Put extends BaseCommand {
       byte[] value = valuePart.getSerializedForm();
       boolean isObject = valuePart.isObject();
 
-      this.securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorizeRegionWrite(regionName, key.toString());
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
