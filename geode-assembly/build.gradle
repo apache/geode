@@ -61,6 +61,7 @@ dependencies {
   archives project(':geode-wan')
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
+  archives project(':geode-client-protobuf')
 
   testCompile project(':geode-junit')
   testCompile project(':geode-pulse')
@@ -177,7 +178,10 @@ def cp = {
         it.contains('lucene-analyzers-common') ||
         it.contains('lucene-core') ||
         it.contains('lucene-queries') ||
-        it.contains('lucene-queryparser')
+        it.contains('lucene-queryparser') ||
+
+        // dependencies from geode-client-protobuf
+        it.contains('protobuf-java')
       }
     }
   }.flatten().unique().join(' ')
@@ -336,6 +340,9 @@ distributions {
 
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
+
+        from project(":geode-client-protobuf").configurations.runtime
+        from project(":geode-client-protobuf").configurations.archives.allArtifacts.files
         
         from project(":geode-old-client-support").configurations.runtime
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
