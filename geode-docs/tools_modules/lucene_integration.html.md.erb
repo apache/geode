@@ -247,6 +247,18 @@ the error message will be similar to:
 192.0.2.0(s3:97652)<v3>:1027 | Failed: The lucene index must be created before region
 192.0.2.0(s1:97626)<v1>:1025 | Failed: The lucene index must be created before region
 ```
+- The order of server creation with respect to index and region creation
+is important.
+The cluster configuration service cannot work if servers are created
+after index creation, but before region creation,
+as Lucene indexes are propagated to the cluster configuration after
+region creation.
+To start servers at multiple points within the start-up process,
+use this ordering:
+    1. start server(s)
+    2. create Lucene index
+    3. create region
+    4. start additional server(s)
 - An invalidate operation on a region entry does not invalidate a corresponding
 Lucene index entry.
 A query on a Lucene index that contains values that
