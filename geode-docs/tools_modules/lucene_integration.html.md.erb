@@ -134,8 +134,8 @@ as there will be no field name to use in the case of a primitive type.
 For details, see the [gfsh search lucene](gfsh/command-pages/search.html#search_lucene") command reference page.
 
 ``` pre
-gfsh> lucene search --regionName=/orders -queryStrings="John*" --defaultField=field1
-   --limit=100
+gfsh>search lucene --name=indexName --region=/orders --queryStrings="John*"
+   --defaultField=customer --limit=100
 ```
 
 ### <a id="api-query-example" class="no-quick-link"></a>Java API Example to Query using a Lucene Index
