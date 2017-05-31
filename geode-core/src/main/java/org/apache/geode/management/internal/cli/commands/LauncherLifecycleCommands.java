@@ -777,8 +777,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
             && (pid == null)) {
           return ResultBuilder.createShellClientErrorResult(
               String.format(CliStrings.STATUS_LOCATOR__NO_LOCATOR_SPECIFIED_ERROR_MESSAGE,
-                  getLocatorId(locatorHost, locatorPort),
-                  StringUtils.defaultIfBlank(workingDirectory, SystemUtils.CURRENT_DIRECTORY)));
+                  getLocatorId(locatorHost, locatorPort), SystemUtils.CURRENT_DIRECTORY));
         } else {
           locatorLauncher = new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
               .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid).setPort(locatorPort)
