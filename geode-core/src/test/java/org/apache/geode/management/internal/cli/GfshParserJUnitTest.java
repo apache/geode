@@ -115,7 +115,8 @@ public class GfshParserJUnitTest {
         {"command", "--J", "-Dkey=value", "--option", "'test value'", "--J", "-Dkey2=value2"};
     Arrays.stream(strings).forEach(tokens::add);
     assertThat(GfshParser.getSimpleParserInputFromTokens(tokens))
-        .isEqualTo("command --J \"-Dkey=value,-Dkey2=value2\" --option 'test value'");
+        .isEqualTo("command --J \"-Dkey=value" + GfshParser.J_ARGUMENT_DELIMITER
+            + "-Dkey2=value2\" --option 'test value'");
   }
 
   @Test
@@ -140,6 +141,7 @@ public class GfshParserJUnitTest {
         {"command", "--option", "'test value'", "--J", "-Dkey=value", "--J", "-Dkey2=value2"};
     Arrays.stream(strings).forEach(tokens::add);
     assertThat(GfshParser.getSimpleParserInputFromTokens(tokens))
-        .isEqualTo("command --option 'test value' --J \"-Dkey=value,-Dkey2=value2\"");
+        .isEqualTo("command --option 'test value' --J \"-Dkey=value"
+            + GfshParser.J_ARGUMENT_DELIMITER + "-Dkey2=value2\"");
   }
 }

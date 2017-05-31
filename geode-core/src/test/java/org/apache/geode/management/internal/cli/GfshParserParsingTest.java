@@ -58,8 +58,8 @@ public class GfshParserParsingTest {
         GfshParser.convertToSimpleParserInput(buffer));
 
     buffer = "start locator --J=-Dgemfire.http-service-port=8080 --name=loc1 --J=-Ddummythinghere";
-    assertEquals(
-        "start locator --J \"-Dgemfire.http-service-port=8080,-Ddummythinghere\" --name loc1",
+    assertEquals("start locator --J \"-Dgemfire.http-service-port=8080"
+        + GfshParser.J_ARGUMENT_DELIMITER + "-Ddummythinghere\" --name loc1",
         GfshParser.convertToSimpleParserInput(buffer));
 
     buffer = "start locator --";
@@ -67,13 +67,85 @@ public class GfshParserParsingTest {
 
     buffer =
         "start locator --J=-Dgemfire.http-service-port=8080 --name=loc1 --J=-Ddummythinghere --";
-    assertEquals(
-        "start locator --J \"-Dgemfire.http-service-port=8080,-Ddummythinghere\" --name loc1 --",
+    assertEquals("start locator --J \"-Dgemfire.http-service-port=8080"
+        + GfshParser.J_ARGUMENT_DELIMITER + "-Ddummythinghere\" --name loc1 --",
         GfshParser.convertToSimpleParserInput(buffer));
 
     buffer = "start server --name=name1 --locators=localhost --J=-Dfoo=bar";
     assertEquals("start server --name name1 --locators localhost --J \"-Dfoo=bar\"",
         GfshParser.convertToSimpleParserInput(buffer));
+  }
+
+  @Test
+  public void testStartLocatorJOptionWithComma() throws Exception {
+    buffer =
+        "start locator --name=test --J='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000' --J=-Dfoo=bar";
+    GfshParseResult result = parser.parse(buffer);
+    assertThat(result).isNotNull();
+    Object[] arguments = result.getArguments();
+    // the 17th argument is the jvmarguments;
+    String[] jvmArgs = (String[]) arguments[17];
+    assertThat(jvmArgs).hasSize(2);
+
+    // make sure the resulting jvm arguments do not have quotes (either single or double) around
+    // them.
+    assertThat(jvmArgs[0])
+        .isEqualTo("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000");
+    assertThat(jvmArgs[1]).isEqualTo("-Dfoo=bar");
+  }
+
+  @Test
+  public void testStartServerJOptionWithComma() throws Exception {
+    buffer =
+        "start server --name=test --J='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000' --J='-Dfoo=bar'";
+    GfshParseResult result = parser.parse(buffer);
+    assertThat(result).isNotNull();
+    Object[] arguments = result.getArguments();
+    // the 18th argument is the jvmarguments;
+    String[] jvmArgs = (String[]) arguments[18];
+    assertThat(jvmArgs).hasSize(2);
+
+    // make sure the resulting jvm arguments do not have quotes (either single or double) around
+    // them.
+    assertThat(jvmArgs[0])
+        .isEqualTo("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000");
+    assertThat(jvmArgs[1]).isEqualTo("-Dfoo=bar");
+  }
+
+  @Test
+  public void testStartJConsoleJOptionWithComma() throws Exception {
+    buffer =
+        "start jconsole --J='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000' --J=-Dfoo=bar";
+    GfshParseResult result = parser.parse(buffer);
+    assertThat(result).isNotNull();
+    Object[] arguments = result.getArguments();
+    // the 4th argument is the jvmarguments;
+    String[] jvmArgs = (String[]) arguments[4];
+    assertThat(jvmArgs).hasSize(2);
+
+    // make sure the resulting jvm arguments do not have quotes (either single or double) around
+    // them.
+    assertThat(jvmArgs[0])
+        .isEqualTo("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000");
+    assertThat(jvmArgs[1]).isEqualTo("-Dfoo=bar");
+  }
+
+  @Test
+  public void testStartJvisulvmOptionWithComma() throws Exception {
+    buffer =
+        "start jvisualvm --J=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000\" --J=-Dfoo=bar";
+    GfshParseResult result = parser.parse(buffer);
+    assertThat(result).isNotNull();
+    Object[] arguments = result.getArguments();
+    // the 1st argument is the jvmarguments;
+    String[] jvmArgs = (String[]) arguments[0];
+    assertThat(jvmArgs).hasSize(2);
+
+    // make sure the resulting jvm arguments do not have quotes (either single or double) around
+    // them.
+    assertThat(jvmArgs[0])
+        .isEqualTo("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=30000");
+    assertThat(jvmArgs[1]).isEqualTo("-Dfoo=bar");
   }
 
   @Test
