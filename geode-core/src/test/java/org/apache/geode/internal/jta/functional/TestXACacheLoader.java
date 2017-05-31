@@ -29,7 +29,7 @@ import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.jta.CacheUtils;
 
 /**
@@ -89,7 +89,7 @@ public class TestXACacheLoader implements CacheLoader {
       utx.rollback();
       System.out.println(re.get(args[0]));
       cache.close();
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      System.exit(ExitCode.FATAL.getExitCode());
     } catch (Exception e) {
       e.printStackTrace();
       cache.close();

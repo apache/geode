@@ -39,7 +39,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -179,7 +179,7 @@ public class MergeLogFiles {
         LocalizedStrings.MergeLogFiles_IF_A_DIRECTORY_IS_SPECIFIED_ALL_LOG_FILES_IN_THAT_DIRECTORY_ARE_MERGED
             .toLocalizedString());
     err.println("");
-    System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+    ExitCode.FATAL.doSystemExit();
   }
 
   /**
@@ -341,7 +341,7 @@ public class MergeLogFiles {
     mergeLogFiles(logFiles, logFileNames, mergedFile, tabOut, suppressBlanks, multithreaded,
         patterns);
 
-    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+    ExitCode.NORMAL.doSystemExit();
   }
 
   ////////////////////// Inner Classes //////////////////////

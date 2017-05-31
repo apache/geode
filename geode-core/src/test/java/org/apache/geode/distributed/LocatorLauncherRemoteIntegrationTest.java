@@ -42,7 +42,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -1044,7 +1044,7 @@ public class LocatorLauncherRemoteIntegrationTest
 
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
-        System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+        System.exit(ExitCode.NORMAL.getExitCode());
       } catch (Throwable t) {
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main error: " + t,
             t);

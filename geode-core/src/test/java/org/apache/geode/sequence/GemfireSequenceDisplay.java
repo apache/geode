@@ -36,7 +36,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.io.Filter;
 import org.apache.geode.internal.sequencelog.io.GraphReader;
@@ -268,7 +268,7 @@ public class GemfireSequenceDisplay {
           + "\t-logs (expiremental) instead of using .graph files, parse the gemfire logs to generate the sequence display"
           + "\t-filterkey a java regular expression to match against key names. If specified\n"
           + "The list of key sequence diagrams will only contain matching keys");
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      System.exit(ExitCode.FATAL.getExitCode());
       return;
     }
 

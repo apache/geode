@@ -23,7 +23,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -387,7 +387,7 @@ public class LogFileParser {
   public static void main(String[] args) throws Throwable {
     if (args.length < 1) {
       System.err.println(LocalizedStrings.LogFileParser_MISSING_LOG_FILE_NAME.toLocalizedString());
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      ExitCode.FATAL.doSystemExit();
     }
 
     String logFileName = args[0];

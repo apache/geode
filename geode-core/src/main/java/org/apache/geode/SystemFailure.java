@@ -18,7 +18,7 @@
 package org.apache.geode;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -503,7 +503,7 @@ public final class SystemFailure {
           // ATTENTION: there are VERY FEW places in GemFire where it is
           // acceptable to call System.exit. This is one of those
           // places...
-          System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+          ExitCode.FATAL.doSystemExit();
         }
 
 

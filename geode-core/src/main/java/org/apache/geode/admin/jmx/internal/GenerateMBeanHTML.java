@@ -25,7 +25,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -478,7 +478,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
     err.println("");
 
-    System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+    ExitCode.FATAL.doSystemExit();
   }
 
   public static void main(String[] args) throws Exception {

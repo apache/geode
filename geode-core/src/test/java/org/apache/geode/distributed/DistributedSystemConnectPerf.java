@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import java.io.PrintStream;
 import java.util.Properties;
 
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 
 /**
  * This program is used to measure the amount of time it takes to connect and re-connect to a
@@ -44,7 +44,7 @@ public class DistributedSystemConnectPerf {
         + "to connect/disconnect to a DistributedSystem");
     err.println("");
 
-    System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+    System.exit(ExitCode.FATAL.getExitCode());
   }
 
   public static void main(String[] args) throws Exception {
@@ -124,7 +124,7 @@ public class DistributedSystemConnectPerf {
     out.println("** Average connect time took: " + (totalConnect / iterations) + " ms");
     out.println("** Average disconnect time took: " + (totalDisconnect / iterations) + " ms");
 
-    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+    System.exit(ExitCode.NORMAL.getExitCode());
   }
 
 }

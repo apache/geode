@@ -46,7 +46,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
@@ -1453,7 +1453,7 @@ public class ServerLauncherRemoteIntegrationTest
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
         // -System.out.println("exiting");
-        System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+        System.exit(ExitCode.NORMAL.getExitCode());
       } catch (Throwable t) {
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main error: " + t, t);
         System.exit(-1);

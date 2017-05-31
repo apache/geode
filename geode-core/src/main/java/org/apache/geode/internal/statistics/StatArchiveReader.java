@@ -43,7 +43,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 
@@ -223,7 +223,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     String archiveName = null;
     if (args.length > 1) {
       System.err.println("Usage: [archiveName]");
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      ExitCode.FATAL.doSystemExit();
     } else if (args.length == 1) {
       archiveName = args[0];
     } else {

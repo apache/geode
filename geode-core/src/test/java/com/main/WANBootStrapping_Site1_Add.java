@@ -27,7 +27,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 
 /**
  * This is a member representing site 1 who wants to send data to site 2
@@ -113,6 +113,6 @@ public class WANBootStrapping_Site1_Add {
 
     System.out.println("Sender " + sender.getId() + " is stopped");
 
-    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+    System.exit(ExitCode.NORMAL.getExitCode());
   }
 }

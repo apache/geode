@@ -149,7 +149,7 @@ public class MigrationServer {
       instance = new MigrationServer(cacheXmlFileName, bindAddressName, listenPort);
     } catch (IllegalArgumentException e) {
       System.err.println(e.getMessage());
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      ExitCode.FATAL.doSystemExit();
     }
     instance.createDistributedSystem();
     instance.createCache();

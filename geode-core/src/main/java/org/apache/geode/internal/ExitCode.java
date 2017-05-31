@@ -14,27 +14,32 @@
  */
 package org.apache.geode.internal;
 
-public class ShellExitCode {
+public enum ExitCode {
 
   // The choice of values here is to be consistent with currently expected behavior
   // while allowing for extensibility of exit codes.
-  public static final ShellExitCode NORMAL_EXIT = new ShellExitCode(0);
-  public static final ShellExitCode FATAL_EXIT = new ShellExitCode(1);
-  public static final ShellExitCode COULD_NOT_EXECUTE_COMMAND_EXIT = new ShellExitCode(1);
-  public static final ShellExitCode INVALID_COMMAND_EXIT = new ShellExitCode(1);
-  public static final ShellExitCode COMMAND_NOT_ALLOWED_EXIT = new ShellExitCode(1);
-  public static final ShellExitCode COMMAND_NOT_SUCCESSFUL = new ShellExitCode(1);
-  public static final ShellExitCode INSTALL_FAILURE = new ShellExitCode(2);
+  NORMAL(0),
+  FATAL(1),
+  DEPENDENCY_GRAPH_FAILURE(-1),
+  COULD_NOT_EXECUTE_COMMAND(1),
+  INVALID_COMMAND(1),
+  COMMAND_NOT_ALLOWED(1),
+  COMMAND_NOT_SUCCESSFUL(1),
+  INSTALL_FAILURE(2);
 
   // Field
   private final int exitCode;
 
-  private ShellExitCode(final int exitCode) {
+  ExitCode(final int exitCode) {
     this.exitCode = exitCode;
   }
 
   public int getExitCode() {
     return exitCode;
+  }
+
+  public void doSystemExit() {
+    System.exit(this.exitCode);
   }
 
 }

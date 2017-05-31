@@ -17,7 +17,7 @@ package org.apache.geode.test.dunit.standalone;
 import java.rmi.Naming;
 
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher.MasterRemote;
@@ -65,7 +65,7 @@ public class ChildVM {
       }
     } catch (Throwable t) {
       t.printStackTrace();
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      System.exit(ExitCode.FATAL.getExitCode());
     }
   }
 }

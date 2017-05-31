@@ -503,7 +503,7 @@ public class AvailablePort {
         LocalizedStrings.AvailablePort_THIS_PROGRAM_EITHER_PRINTS_WHETHER_OR_NOT_A_PORT_IS_AVAILABLE_FOR_A_GIVEN_PROTOCOL_OR_IT_PRINTS_OUT_AN_AVAILABLE_PORT_FOR_A_GIVEN_PROTOCOL
             .toLocalizedString());
     err.println("");
-    System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+    ExitCode.FATAL.doSystemExit();
   }
 
   public static void main(String[] args) {
@@ -548,7 +548,7 @@ public class AvailablePort {
         addr = InetAddress.getByName(addrString);
       } catch (Exception e) {
         e.printStackTrace();
-        System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+        ExitCode.FATAL.doSystemExit();
       }
     }
 

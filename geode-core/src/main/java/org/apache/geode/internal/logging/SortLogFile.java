@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -100,7 +100,7 @@ public class SortLogFile {
         LocalizedStrings.SortLogFile_SORTS_A_GEMFIRE_LOG_FILE_BY_TIMESTAMP_THE_MERGED_LOG_FILE_IS_WRITTEN_TO_SYSTEM_OUT_OR_A_FILE
             .toLocalizedString());
     err.println("");
-    System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+    ExitCode.FATAL.doSystemExit();
   }
 
   public static void main(String[] args) throws IOException {
@@ -147,7 +147,7 @@ public class SortLogFile {
 
     sortLogFile(logFileStream, pw);
 
-    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+    ExitCode.NORMAL.doSystemExit();
   }
 
 }

@@ -28,7 +28,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.modules.session.installer.args.Argument;
 import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
 import org.apache.geode.modules.session.installer.args.ArgumentValues;
@@ -118,7 +118,7 @@ public class Installer {
         error.append(ux.getUsage());
       }
       log(error.toString());
-      System.exit(ShellExitCode.INSTALL_FAILURE.getExitCode());
+      ExitCode.INSTALL_FAILURE.doSystemExit();
     }
 
   }

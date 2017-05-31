@@ -22,7 +22,7 @@ import java.util.Set;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
@@ -148,7 +148,7 @@ public class Launcher {
       System.err.println("ERROR : " + isex.getMessage());
     }
 
-    int exitCode = ShellExitCode.COULD_NOT_EXECUTE_COMMAND_EXIT.getExitCode();
+    int exitCode = ExitCode.COULD_NOT_EXECUTE_COMMAND.getExitCode();
 
     if (gfsh != null) {
       final String commandLineCommand = combineStrings(args);
@@ -160,7 +160,7 @@ public class Launcher {
           // help is also available for commands which are not available under
           // allowedCommandLineCommands
           if (gfsh.executeCommand(commandLineCommand).isSuccess()) {
-            exitCode = ShellExitCode.NORMAL_EXIT.getExitCode();
+            exitCode = ExitCode.NORMAL.getExitCode();
           }
         }
       } else {
@@ -175,16 +175,16 @@ public class Launcher {
         if (!commandIsAllowed) {
           System.err.println(
               CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, CliUtil.arrayToString(args)));
-          exitCode = ShellExitCode.COMMAND_NOT_ALLOWED_EXIT.getExitCode();
+          exitCode = ExitCode.COMMAND_NOT_ALLOWED.getExitCode();
         } else {
           boolean success = gfsh.executeScriptLine(commandLineCommand);
           int last = gfsh.getLastExecutionStatus();
           if (last != 0) {
             exitCode = last;
           } else if (!success) {
-            exitCode = ShellExitCode.COMMAND_NOT_SUCCESSFUL.getExitCode();
+            exitCode = ExitCode.COMMAND_NOT_SUCCESSFUL.getExitCode();
           } else {
-            exitCode = ShellExitCode.NORMAL_EXIT.getExitCode();
+            exitCode = ExitCode.NORMAL.getExitCode();
           }
         }
       }

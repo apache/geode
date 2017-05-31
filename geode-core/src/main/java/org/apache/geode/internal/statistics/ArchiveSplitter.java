@@ -30,7 +30,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // import java.text.*;
@@ -549,7 +549,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
     if (args.length != 1) {
       System.err.println(LocalizedStrings.ArchiveSplitter_USAGE.toLocalizedString()
           + ": org.apache.geode.internal.statistics.ArchiveSplitter <archive.gfs>");
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      ExitCode.FATAL.doSystemExit();
     }
     ArchiveSplitter as = new ArchiveSplitter(new File(args[0]));
     as.split();

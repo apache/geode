@@ -26,7 +26,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 
 /**
  * This is a member representing site 2 who wants to receive data from site 1
@@ -98,6 +98,6 @@ public class WANBootStrapping_Site2_Add {
     }
 
     System.out.println("GatewayReceiver " + receiver + " is stopped");
-    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+    System.exit(ExitCode.NORMAL.getExitCode());
   }
 }

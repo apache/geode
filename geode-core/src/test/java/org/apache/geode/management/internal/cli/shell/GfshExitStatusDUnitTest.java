@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.shell;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.distributed.AbstractLauncher.Status;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -139,13 +139,13 @@ public class GfshExitStatusDUnitTest {
   // Bad queries should fail:
   @Test
   public void queryOfflineWithNoMembers() throws Exception {
-    int ExpectedExitCode = ShellExitCode.FATAL_EXIT.getExitCode();
+    int ExpectedExitCode = ExitCode.FATAL.getExitCode();
     makeQueries(ExpectedExitCode, getOfflineStatusQueryStrings());
   }
 
   @Test
   public void queryOnlineWithNoMembers() throws Exception {
-    int ExpectedExitCode = ShellExitCode.FATAL_EXIT.getExitCode();
+    int ExpectedExitCode = ExitCode.FATAL.getExitCode();
     makeQueries(ExpectedExitCode, getOnlineStatusQueryStrings());
   }
 
@@ -155,7 +155,7 @@ public class GfshExitStatusDUnitTest {
 
   @Test
   public void queryOfflineWithMembersLaunched() throws Exception {
-    int ExpectedExitCode = ShellExitCode.NORMAL_EXIT.getExitCode();
+    int ExpectedExitCode = ExitCode.NORMAL.getExitCode();
     launch(false, Status.ONLINE);
     makeQueries(ExpectedExitCode, getOfflineStatusQueryStrings());
   }
@@ -163,7 +163,7 @@ public class GfshExitStatusDUnitTest {
 
   @Test
   public void queryOnlineWithMembersOnline() throws Exception {
-    int ExpectedExitCode = ShellExitCode.NORMAL_EXIT.getExitCode();
+    int ExpectedExitCode = ExitCode.NORMAL.getExitCode();
     launch(true, Status.ONLINE);
     makeQueries(ExpectedExitCode, getOnlineStatusQueryStrings());
   }

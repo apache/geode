@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ShellExitCode;
+import org.apache.geode.internal.ExitCode;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -1
@@ -70,7 +70,7 @@ public class WANBootStrapping_Site1_Remove {
     locator.stop();
     System.out.println("Locator stopped ");
 
-    System.exit(ShellExitCode.NORMAL_EXIT.getExitCode());
+    System.exit(ExitCode.NORMAL.getExitCode());
   }
 
 }

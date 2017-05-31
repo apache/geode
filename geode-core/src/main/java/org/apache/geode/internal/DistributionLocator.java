@@ -113,7 +113,7 @@ public class DistributionLocator {
       System.err.println(
           LocalizedStrings.DistributionLocator_A_ZEROLENGTH_HOSTNAMEFORCLIENTS_WILL_DEFAULT_TO_BINDADDRESS
               .toLocalizedString());
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      ExitCode.FATAL.doSystemExit();
     } else {
       shutdown = false;
     }
@@ -131,7 +131,7 @@ public class DistributionLocator {
           System.err.println(
               LocalizedStrings.DistributionLocator__0_IS_NOT_A_VALID_IP_ADDRESS_FOR_THIS_MACHINE
                   .toLocalizedString(args[1]));
-          System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+          ExitCode.FATAL.doSystemExit();
         }
         address = InetAddress.getByName(args[1]);
       } else {
@@ -183,13 +183,13 @@ public class DistributionLocator {
       logger.fatal(LocalizedMessage.create(
           LocalizedStrings.DistributionLocator_COULD_NOT_BIND_LOCATOR_TO__0__1,
           new Object[] {address, port}));
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      ExitCode.FATAL.doSystemExit();
 
     } catch (Exception ex) {
       logger.fatal(
           LocalizedMessage.create(LocalizedStrings.DistributionLocator_COULD_NOT_START_LOCATOR),
           ex);
-      System.exit(ShellExitCode.FATAL_EXIT.getExitCode());
+      ExitCode.FATAL.doSystemExit();
     }
   }
 
