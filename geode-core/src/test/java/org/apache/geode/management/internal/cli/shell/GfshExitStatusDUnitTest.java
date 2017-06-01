@@ -16,15 +16,13 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.management.internal.cli.shell.MXBeanProvider;
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -34,16 +32,14 @@ import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Awaitility;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-// Originally created in response to GEODE-2971
 
+// Originally created in response to GEODE-2971
 @Category(DistributedTest.class)
 public class GfshExitStatusDUnitTest {
-
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
@@ -53,119 +49,104 @@ public class GfshExitStatusDUnitTest {
   private MemberVM locator;
   private MemberVM server;
 
-  // These initial values will be overwritten at VM launch, but are instantiated to test gfsh
-  // commands that should fail.
-  private static String locatorName = "not-actually-the-locator-name";
-  private Properties locatorProperties;
-  private File locatorDir = new File(System.getProperty("user.dir")).toPath().resolve("not")
-      .resolve("the").resolve("locator").resolve("dir").toFile();
-  private int locatorPID = 10;
-  private int locatorPort = 0;
+  private File locatorDir;
+  private int locatorPID;
 
-  private static String serverName = "not-actually-the-server-name";
-  private Properties serverProperties;
-  private File serverDir = new File(System.getProperty("user.dir")).toPath().resolve("not")
-      .resolve("the").resolve("server").resolve("dir").toFile();
-  private int serverPID = 10;
+  private File serverDir;
+  private int serverPID;
 
 
-  private void connect() throws Exception {
-    assertThat(locator).isNotNull();
-    gfshConnection.connectAndVerify(locator);
+  @Test
+  public void offlineStatusWithInvalidOptionsShouldFail() throws Exception {
+    ExitCode expectedExitCode = ExitCode.FATAL;
+
+    String statusLocatorByPID = "status locator --pid=10";
+    String statusServerByPID = "status server --pid=11";
+    String statusLocatorByDir = "status locator --dir=some-invalid-dir";
+    String statusServerByDir = "status server --dir=some-invalid-dir";
+    String statusLocatorByHostAndPort = "status locator --host=invalid-host-name --port=123";
+    String statusLocatorByPort = "status locator --port=123";
+
+    executeAndVerifyStatusCommands(expectedExitCode, statusLocatorByPID, statusServerByPID,
+        statusLocatorByDir, statusServerByDir, statusLocatorByHostAndPort, statusLocatorByPort);
   }
 
+  @Test
+  public void onlineStatusWithInvalidNameShouldFail() throws Exception {
+    ExitCode expectedExitCode = ExitCode.FATAL;
 
-  private void launch(boolean connectToLocator, Status spoofedStatus) throws Exception {
-    assertThat(locator).isNull();
-    assertThat(server).isNull();
-    ServerStarterRule.FakeLauncher.setStatus(spoofedStatus);
-    LocatorStarterRule.FakeLauncher.setStatus(spoofedStatus);
+    String statusLocator = "status locator --name=invalid-locator-name";
+    String statusServer = "status server --name=invalid-server-name";
 
-    locator = lsRule.startLocatorVM(0, locatorProperties);
-    locatorDir = locator.getWorkingDir();
-    // TODO: these getPid calls need to be RMIs to the locator's xLauncher,
-    // not the local one, to get the correct pid.
-    locatorPID =
-        locator.getVM().invoke((SerializableCallableIF<Integer>) LocatorStarterRule::getPid);
-    locatorPort = locator.getPort();
-    locatorName = locator.getName();
-
-    server = lsRule.startServerVM(1, serverProperties, locatorPort);
-    serverDir = server.getWorkingDir();
-    serverPID = server.getVM().invoke((SerializableCallableIF<Integer>) ServerStarterRule::getPid);
-    serverName = server.getName();
-
-    if (connectToLocator) {
-      connect();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until((Gfsh::isCurrentInstanceConnectedAndReady));
-      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> MXBeanProvider.isMemberMXBeanAvailable(serverName));
-
-
-    }
-
+    executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
   }
 
-  @Before
-  public void setup() throws Exception {
-    locatorProperties = new Properties();
-    serverProperties = new Properties();
+  @Test
+  public void offlineStatusWithValidOptionsShouldSucceedWhenNotConnected() throws Exception {
+    ExitCode expectedExitCode = ExitCode.NORMAL;
+    launch(false, Status.ONLINE);
+
+    String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
+    String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
+    String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
+    String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
+    String statusLocatorByPort = "status locator --port=" + locator.getPort();
+    String statusLocatorByHostAndPort =
+        new CommandStringBuilder("status locator").addOption("host", localhost())
+            .addOption("port", String.valueOf(locator.getPort())).getCommandString();
+
+    executeAndVerifyStatusCommands(expectedExitCode, statusLocatorByPID, statusServerByPID,
+        statusLocatorByDir, statusServerByDir, statusLocatorByHostAndPort, statusLocatorByPort);
   }
 
+  @Test
+  public void onlineStatusWithValidOptionsShouldFailWhenNotConnected() throws Exception {
+    ExitCode expectedExitCode = ExitCode.FATAL;
+    launch(false, Status.ONLINE);
 
-  // These commands should resolve even when not connected to a locator
-  private List<String> getOfflineStatusQueryStrings() {
-    return Arrays.asList(String.format("status locator --dir=%s", locatorDir.getAbsolutePath()),
-        String.format("status locator --pid=%s", String.valueOf(locatorPID)),
-        String.format("status server --dir=%s", serverDir.getAbsolutePath()),
-        String.format("status server --pid=%s", String.valueOf(serverPID)));
+    String statusLocator = "status locator --name=" + locator.getName();
+    String statusServer = "status server --name=" + server.getName();
+
+    executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
   }
 
-  // These commands should resolve only when connected to the locator
-  private List<String> getOnlineStatusQueryStrings() {
-    return Arrays.asList(String.format("status locator --name=%s", locatorName),
-        String.format("status server --name=%s", serverName));
+  @Test
+  public void offlineStatusWithValidOptionsShouldSucceedWhenConnected() throws Exception {
+    ExitCode expectedExitCode = ExitCode.NORMAL;
+    launch(true, Status.ONLINE);
+
+    String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
+    String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
+    String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
+    String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
+    String statusLocatorByPort = "status locator --port=" + locator.getPort();
+    String statusLocatorByHostAndPort =
+        new CommandStringBuilder("status locator").addOption("host", localhost())
+            .addOption("port", String.valueOf(locator.getPort())).getCommandString();
+
+    executeAndVerifyStatusCommands(expectedExitCode, statusLocatorByPID, statusServerByPID,
+        statusLocatorByDir, statusServerByDir, statusLocatorByHostAndPort, statusLocatorByPort);
   }
 
-  private void makeQueries(int expectedExitValue, List<String> queries) throws Exception {
+  @Test
+  public void onlineStatusWithValidOptionsShouldSucceedWhenConnected() throws Exception {
+    ExitCode expectedExitCode = ExitCode.NORMAL;
+    launch(true, Status.ONLINE);
+
+    String statusLocator = "status locator --name=" + locator.getName();
+    String statusServer = "status server --name=" + server.getName();
+
+    executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
+  }
+
+  private void executeAndVerifyStatusCommands(ExitCode expectedExitCode, String... queries)
+      throws Exception {
     SoftAssertions softly = new SoftAssertions();
     for (String q : queries) {
-      softly.assertThat(executeGfshCommand(q)).describedAs(q).isEqualTo(expectedExitValue);
+      softly.assertThat(executeGfshCommand(q)).describedAs(q)
+          .isEqualTo(expectedExitCode.getExitCode());
     }
     softly.assertAll();
-  }
-
-  // Bad queries should fail:
-  @Test
-  public void queryOfflineWithNoMembers() throws Exception {
-    int ExpectedExitCode = ExitCode.FATAL.getExitCode();
-    makeQueries(ExpectedExitCode, getOfflineStatusQueryStrings());
-  }
-
-  @Test
-  public void queryOnlineWithNoMembers() throws Exception {
-    int ExpectedExitCode = ExitCode.FATAL.getExitCode();
-    makeQueries(ExpectedExitCode, getOnlineStatusQueryStrings());
-  }
-
-  // The LocatorStarterRule and ServerStarterRule will spoof member status in a --name query,
-  // but the filesystem and OS handle --dir and --pid options, so these are not correctly spoofed.
-  // --dir and --pid options should succeed even when not connected, --name will require connection.
-
-  @Test
-  public void queryOfflineWithMembersLaunched() throws Exception {
-    int ExpectedExitCode = ExitCode.NORMAL.getExitCode();
-    launch(false, Status.ONLINE);
-    makeQueries(ExpectedExitCode, getOfflineStatusQueryStrings());
-  }
-
-
-  @Test
-  public void queryOnlineWithMembersOnline() throws Exception {
-    int ExpectedExitCode = ExitCode.NORMAL.getExitCode();
-    launch(true, Status.ONLINE);
-    makeQueries(ExpectedExitCode, getOnlineStatusQueryStrings());
   }
 
   private int executeGfshCommand(String cmd) throws Exception {
@@ -173,4 +154,37 @@ public class GfshExitStatusDUnitTest {
     return gfshConnection.getShellExitcode();
   }
 
+  private void connect() throws Exception {
+    assertThat(locator).isNotNull();
+    gfshConnection.connectAndVerify(locator);
+  }
+
+  private void launch(boolean connectToLocator, Status spoofedStatus) throws Exception {
+    assertThat(locator).isNull();
+    assertThat(server).isNull();
+    ServerStarterRule.FakeLauncher.setStatus(spoofedStatus);
+    LocatorStarterRule.FakeLauncher.setStatus(spoofedStatus);
+
+    locator = lsRule.startLocatorVM(0);
+    locatorDir = locator.getWorkingDir();
+    locatorPID =
+        locator.getVM().invoke((SerializableCallableIF<Integer>) LocatorStarterRule::getPid);
+    int locatorPort = locator.getPort();
+
+    server = lsRule.startServerVM(1, locatorPort);
+    serverDir = server.getWorkingDir();
+    serverPID = server.getVM().invoke((SerializableCallableIF<Integer>) ServerStarterRule::getPid);
+
+    if (connectToLocator) {
+      connect();
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .until((Gfsh::isCurrentInstanceConnectedAndReady));
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .until(() -> MXBeanProvider.isMemberMXBeanAvailable(server.getName()));
+    }
+  }
+
+  private String localhost() throws Exception {
+    return InetAddress.getLocalHost().getHostAddress();
+  }
 }
