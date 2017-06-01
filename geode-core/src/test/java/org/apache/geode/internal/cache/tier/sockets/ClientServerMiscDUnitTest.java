@@ -31,12 +31,14 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Op;
@@ -144,17 +146,24 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
   int initServerCache(boolean notifyBySub) {
-    Object[] args = new Object[] {notifyBySub, getMaxThreads()};
-    return ((Integer) server1.invoke(ClientServerMiscDUnitTest.class, "createServerCache", args))
-        .intValue();
+    return initServerCache(notifyBySub, false);
   }
 
   int initServerCache2(boolean notifyBySub) {
-    Object[] args = new Object[] {notifyBySub, getMaxThreads()};
-    return ((Integer) server2.invoke(ClientServerMiscDUnitTest.class, "createServerCache", args))
-        .intValue();
+    return initServerCache2(notifyBySub, false);
   }
 
+  int initServerCache(boolean notifyBySub, boolean isHA) {
+    return initServerCache(notifyBySub, server1, isHA);
+  }
+
+  int initServerCache2(boolean notifyBySub, boolean isHA) {
+    return initServerCache(notifyBySub, server2, isHA);
+  }
+
+  int initServerCache(boolean notifyBySub, VM vm, boolean isHA) {
+    return vm.invoke(() -> createServerCache(notifyBySub, getMaxThreads(), isHA));
+  }
 
   @Test
   public void testConcurrentOperationsWithDRandPR() throws Exception {
@@ -754,30 +763,37 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void createClientCacheV(String h, int port) throws Exception {
-    _createClientCache(h, port, false);
+    _createClientCache(h, false, port);
   }
 
-  public static void createEmptyClientCache(String h, int port) throws Exception {
-    _createClientCache(h, port, true);
+  public static void createEmptyClientCache(String h, int... ports) throws Exception {
+    _createClientCache(h, false, ports);
   }
 
-  public static Pool createClientCache(String h, int port) throws Exception {
-    return _createClientCache(h, port, false);
+  public static Pool createClientCache(String h, int... ports) throws Exception {
+    return _createClientCache(h, false, ports);
   }
 
-  public static Pool _createClientCache(String h, int port, boolean empty) throws Exception {
+  private static PoolFactory addServers(PoolFactory factory, String h, int... ports) {
+    for (int port : ports) {
+      factory.addServer(h, port);
+    }
+    return factory;
+  }
+
+  public static Pool _createClientCache(String h, boolean empty, int... ports) throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     Cache cache = new ClientServerMiscDUnitTest().createCacheV(props);
     ClientServerMiscDUnitTest.static_cache = cache;
-    PoolImpl p =
-        (PoolImpl) PoolManager.createFactory().addServer(h, port).setSubscriptionEnabled(true)
-            .setThreadLocalConnections(true).setReadTimeout(1000).setSocketBufferSize(32768)
-            .setMinConnections(3).setSubscriptionRedundancy(-1).setPingInterval(2000)
-            // .setRetryAttempts(5)
-            // .setRetryInterval(2000)
-            .create("ClientServerMiscDUnitTestPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    PoolImpl p = (PoolImpl) addServers(poolFactory, h, ports).setSubscriptionEnabled(true)
+        .setThreadLocalConnections(true).setReadTimeout(1000).setSocketBufferSize(32768)
+        .setMinConnections(3).setSubscriptionRedundancy(-1).setPingInterval(2000)
+        // .setRetryAttempts(5)
+        // .setRetryInterval(2000)
+        .create("ClientServerMiscDUnitTestPool");
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -849,8 +865,8 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  public static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads)
-      throws Exception {
+  public static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads,
+      boolean isHA) throws Exception {
     Cache cache = new ClientServerMiscDUnitTest().createCacheV(new Properties());
     unsetSlowDispatcherFlag();
     AttributesFactory factory = new AttributesFactory();
@@ -862,7 +878,12 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     Region r2 = cache.createRegion(REGION_NAME2, myAttrs);
     factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.PARTITION);
+    if (isHA) {
+      PartitionAttributesFactory paf = new PartitionAttributesFactory().setRedundantCopies(1);
+      factory.setPartitionAttributes(paf.create());
+    }
     RegionAttributes prAttrs = factory.create();
+
     Region pr = cache.createRegion(PR_REGION_NAME, prAttrs);
     assertNotNull(r1);
     assertNotNull(r2);
@@ -1301,6 +1322,111 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
    */
   public static void unsetSlowDispatcherFlag() {
     CacheClientProxy.isSlowStartForTesting = false;
+  }
+
+  @Test
+  public void testOnSeverMethodsWithProxyClient() throws Exception {
+    testOnServerMothods(false, false);
+  }
+
+  @Test
+  public void testOnSeverMethodsWithCachingProxyClient() throws Exception {
+    testOnServerMothods(true, false);
+  }
+
+  @Test
+  public void testOnSeverMethodsWithProxyClientHA() throws Exception {
+    testOnServerMothods(false, true);
+  }
+
+  @Test
+  public void testOnSeverMethodsWithCachingProxyClientHA() throws Exception {
+    testOnServerMothods(true, true);
+  }
+
+  private void testOnServerMothods(boolean isCachingProxy, boolean isHA) throws Exception {
+    int port1 = initServerCache(true, isHA); // vm0
+    int port2 = initServerCache2(true, isHA); // vm1
+    String serverName = NetworkUtils.getServerHostName(Host.getHost(0));
+    if (isCachingProxy) {
+      createClientCache(serverName, port1, port2);
+    } else {
+      createEmptyClientCache(serverName, port1, port2);
+    }
+    if (isHA) {
+      // add another server for HA scenario
+      initServerCache(true, host.getVM(1), true);
+    }
+    String rName = "/" + REGION_NAME1;
+    String prName = "/" + PR_REGION_NAME;
+
+    verifyIsEmptyOnServer(rName, true);
+    verifyIsEmptyOnServer(prName, true);
+    int size = 10;
+    putIntoRegion(rName, size, isCachingProxy);
+    verifySizeOnServer(rName, size);
+
+    putIntoRegion(prName, size, isCachingProxy);
+    if (isHA) {
+      server1.invoke(() -> closeMyCache());
+    }
+    verifySizeOnServer(prName, size);
+
+    verifyIsEmptyOnServer(rName, false);
+    verifyIsEmptyOnServer(prName, false);
+
+    destroyEntries(rName, size);
+    destroyEntries(prName, size);
+
+    verifyIsEmptyOnServer(rName, true);
+    verifyIsEmptyOnServer(prName, true);
+    verifySizeOnServer(rName, 0);
+    verifySizeOnServer(prName, 0);
+  }
+
+  private void putIntoRegion(String regionName, int size, boolean isCachingProxy) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+    for (int i = 0; i < size; i++) {
+      region.put(i, i);
+    }
+
+    if (isCachingProxy) {
+      for (int i = 0; i < size; i++) {
+        region.localDestroy(i, i);
+      }
+    }
+  }
+
+  private void destroyEntries(String regionName, int size) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+
+    for (int i = 0; i < size; i++) {
+      region.destroy(i);
+    }
+  }
+
+  private void verifySizeOnServer(String regionName, int expectedSize) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+    int actualSize = region.sizeOnServer();
+    assertEquals(
+        "sizeOnServer returns unexpected " + actualSize + " instead of expected " + expectedSize,
+        expectedSize, actualSize);
+  }
+
+  private void verifyIsEmptyOnServer(String regionName, boolean expected) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+    boolean isEmptyOnServer = region.isEmptyOnServer();
+    assertEquals("isEmptyOnServer returns unexpected " + isEmptyOnServer + " instead of expected "
+        + expected, expected, isEmptyOnServer);
+  }
+
+  private void closeMyCache() {
+    Cache cache = getCache();
+    cache.close();
   }
 
 }

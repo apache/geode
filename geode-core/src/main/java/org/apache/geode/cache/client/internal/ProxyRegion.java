@@ -103,6 +103,26 @@ public class ProxyRegion implements Region {
     }
   }
 
+  @Override
+  public int sizeOnServer() {
+    try {
+      preOp();
+      return this.realRegion.sizeOnServer();
+    } finally {
+      postOp();
+    }
+  }
+
+  @Override
+  public boolean isEmptyOnServer() {
+    try {
+      preOp();
+      return this.realRegion.isEmptyOnServer();
+    } finally {
+      postOp();
+    }
+  }
+
   public boolean containsValue(Object value) {
     try {
       preOp();

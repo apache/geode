@@ -3080,12 +3080,14 @@ public class LocalizedStrings {
       new StringId(2866, "Regions with DataPolicy  {0}  do not support loadSnapshot.");
   public static final StringId LocalRegion_REGIONS_WITH_DATAPOLICY_0_DO_NOT_SUPPORT_SAVESNAPSHOT =
       new StringId(2867, "Regions with DataPolicy  {0}  do not support saveSnapshot.");
-
+  public static final StringId LocalRegion_SERVER_ISEMPTY_REQUIRES_A_POOL =
+      new StringId(2868, "isEmptyOnServer requires a pool.");
   public static final StringId LocalRegion_REGION_ATTRIBUTES_MUST_NOT_BE_NULL =
       new StringId(2869, "region attributes must not be null");
   public static final StringId LocalRegion_SERVER_KEYSET_REQUIRES_A_POOL =
       new StringId(2870, "Server keySet requires a pool.");
-
+  public static final StringId LocalRegion_SERVER_SIZE_REQUIRES_A_POOL =
+      new StringId(2871, "sizeOnServer requires a pool.");
   public static final StringId LocalRegion_TX_NOT_IN_PROGRESS =
       new StringId(2872, "tx not in progress");
   public static final StringId LocalRegion_UNEXPECTED_SNAPSHOT_CODE_0_THIS_SNAPSHOT_WAS_PROBABLY_WRITTEN_BY_AN_EARLIER_INCOMPATIBLE_RELEASE =

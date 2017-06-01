@@ -424,6 +424,16 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
+    public int sizeOnServer() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isEmptyOnServer() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Object putIfAbsent(Object key, Object value) {
       throw new UnsupportedOperationException();
     }
