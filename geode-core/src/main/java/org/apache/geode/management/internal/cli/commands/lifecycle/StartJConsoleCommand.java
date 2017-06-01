@@ -58,7 +58,7 @@ public class StartJConsoleCommand implements GfshCommand {
           unspecifiedDefaultValue = "false",
           help = CliStrings.START_JCONSOLE__VERSION__HELP) final boolean version,
       @CliOption(key = CliStrings.START_JCONSOLE__J, optionContext = GfshParser.J_OPTION_CONTEXT,
-          help = CliStrings.START_JCONSOLE__J__HELP) final List<String> jvmArgs) {
+          help = CliStrings.START_JCONSOLE__J__HELP) final String[] jvmArgs) {
     try {
       String[] jconsoleCommandLine =
           createJConsoleCommandLine(null, interval, notile, pluginpath, version, jvmArgs);
@@ -113,7 +113,7 @@ public class StartJConsoleCommand implements GfshCommand {
 
   protected String[] createJConsoleCommandLine(final String member, final int interval,
       final boolean notile, final String pluginpath, final boolean version,
-      final List<String> jvmArgs) {
+      final String[] jvmArgs) {
     List<String> commandLine = new ArrayList<>();
 
     commandLine.add(JdkTool.getJConsolePathname());
