@@ -111,6 +111,12 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     // Verify that the puts succeeded
     client2.invoke(() -> doGets(2));
 
+    // Verify sizeOnServer is correct
+    client1.invoke(() -> verifySizeOnServer(2));
+    client1.invoke(() -> verifyIsEmptyOnServer(false));
+    client2.invoke(() -> verifySizeOnServer(2));
+    client2.invoke(() -> verifyIsEmptyOnServer(false));
+
     if (multiUser) {
       client1.invoke(() -> doProxyCacheClose());
       client2.invoke(() -> doProxyCacheClose());
@@ -196,6 +202,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
 
     // Perform some put operations from client1
     client1.invoke(() -> doPuts(2));
+    client1.invoke(() -> verifySizeOnServer(2));
+    client1.invoke(() -> verifyIsEmptyOnServer(false));
 
     // Start second client with invalid credentials
     // Trying to create the region on client2 should throw a security

@@ -407,6 +407,16 @@ public class LocalDataSet implements Region, QueryExecutor {
     return this.proxy.keySetOnServer();
   }
 
+  @Override
+  public int sizeOnServer() {
+    return this.proxy.sizeOnServer();
+  }
+
+  @Override
+  public boolean isEmptyOnServer() {
+    return this.proxy.isEmptyOnServer();
+  }
+
   public void loadSnapshot(InputStream inputStream)
       throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException {
     throw new UnsupportedOperationException();

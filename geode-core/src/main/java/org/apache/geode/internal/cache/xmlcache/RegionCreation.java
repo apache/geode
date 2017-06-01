@@ -543,6 +543,18 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
         LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
+  @Override
+  public int sizeOnServer() throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  }
+
+  @Override
+  public boolean isEmptyOnServer() throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  }
+
   static class Entry implements Region.Entry {
     private Object key;
     private Object value;

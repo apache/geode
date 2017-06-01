@@ -4070,6 +4070,28 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
+  @Override
+  public int sizeOnServer() {
+    ServerRegionProxy proxy = getServerProxy();
+    if (proxy != null) {
+      return proxy.size();
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_SERVER_SIZE_REQUIRES_A_POOL.toLocalizedString());
+    }
+  }
+
+  @Override
+  public boolean isEmptyOnServer() {
+    ServerRegionProxy proxy = getServerProxy();
+    if (proxy != null) {
+      return proxy.size() == 0;
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_SERVER_ISEMPTY_REQUIRES_A_POOL.toLocalizedString());
+    }
+  }
+
   /**
    * WARNING: this method is overridden in subclasses.
    */

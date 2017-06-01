@@ -663,6 +663,14 @@ public class SecurityTestUtils {
     doPutsP(num, expectedResult, false);
   }
 
+  protected static void verifySizeOnServer(final int size) {
+    verifySizeOnServer(size, NO_EXCEPTION);
+  }
+
+  protected static void verifyIsEmptyOnServer(final boolean isEmpty) {
+    verifyIsEmptyOnServer(isEmpty, NO_EXCEPTION);
+  }
+
   protected static void doMultiUserPuts(final int num, final int numOfUsers,
       final int[] expectedResults) {
     if (numOfUsers != expectedResults.length) {
@@ -975,6 +983,32 @@ public class SecurityTestUtils {
     }
   }
 
+  private static void verifySizeOnServer(final int size, final int expectedResult) {
+    Region region = getRegion(0, expectedResult);
+    try {
+      int sizeOnServer = region.sizeOnServer();
+      if (expectedResult != NO_EXCEPTION) {
+        fail("Expected a NotAuthorizedException while executing sizeOnServer");
+      }
+      assertEquals(size, sizeOnServer);
+    } catch (Exception ex) {
+      fail("Got unexpected exception when executing sizeOnServer", ex);
+    }
+  }
+
+  private static void verifyIsEmptyOnServer(final boolean isEmpty, final int expectedResult) {
+    Region region = getRegion(0, expectedResult);
+    try {
+      boolean isEmptyOnServer = region.isEmptyOnServer();
+      if (expectedResult != NO_EXCEPTION) {
+        fail("Expected a NotAuthorizedException while executing isEmptyOnServer");
+      }
+      assertEquals(isEmpty, isEmptyOnServer);
+    } catch (Exception ex) {
+      fail("Got unexpected exception when executing isEmptyOnServer", ex);
+    }
+  }
+
   private static void doPutsP(final int num, final int expectedResult, final boolean newVals) {
     doPutsP(num, 0, expectedResult, newVals);
   }
@@ -982,24 +1016,7 @@ public class SecurityTestUtils {
   private static void doPutsP(final int num, final int multiUserIndex, final int expectedResult,
       final boolean newVals) {
     assertTrue(num <= KEYS.length);
-    Region region = null;
-
-    try {
-      if (multiUserAuthMode) {
-        region = proxyCaches[multiUserIndex].getRegion(REGION_NAME);
-        regionRef = region;
-      } else {
-        region = getCache().getRegion(REGION_NAME);
-      }
-      assertNotNull(region);
-
-    } catch (Exception ex) {
-      if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing puts: " + ex);
-      } else {
-        fail("Got unexpected exception when doing puts", ex);
-      }
-    }
+    Region region = getRegion(multiUserIndex, expectedResult);
 
     for (int index = 0; index < num; ++index) {
       try {
@@ -1054,6 +1071,27 @@ public class SecurityTestUtils {
         }
       }
     }
+  }
+
+  private static Region getRegion(final int multiUserIndex, final int expectedResult) {
+    Region region = null;
+    try {
+      if (multiUserAuthMode) {
+        region = proxyCaches[multiUserIndex].getRegion(REGION_NAME);
+        regionRef = region;
+      } else {
+        region = getCache().getRegion(REGION_NAME);
+      }
+      assertNotNull(region);
+
+    } catch (Exception ex) {
+      if (expectedResult == OTHER_EXCEPTION) {
+        getLogWriter().info("Got expected exception during getRegion: " + ex);
+      } else {
+        fail("Got unexpected exception during getRegion", ex);
+      }
+    }
+    return region;
   }
 
   private static Map<Field, Object> getSSLFields(final Object obj, final Class[] classes) {

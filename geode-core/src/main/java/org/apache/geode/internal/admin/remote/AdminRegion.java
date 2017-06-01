@@ -419,6 +419,18 @@ public class AdminRegion implements Region {
         LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
+  @Override
+  public int sizeOnServer() throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  }
+
+  @Override
+  public boolean isEmptyOnServer() throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  }
+
   @Override // GemStoneAddition
   public String toString() {
     return "<AdminRegion " + getFullPath() + ">";
