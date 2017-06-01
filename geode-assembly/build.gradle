@@ -181,6 +181,11 @@ def cp = {
 
         // dependencies from geode-client-protobuf
         it.contains('protobuf-java')
+
+        //dependencies for kotlin
+        it.contains('kotlin-stdlib-jre8')
+        it.contains('kotlin-stdlib-jre7')
+        it.contains('kotlin-stdlib')
       }
     }
   }.flatten().unique().join(' ')
