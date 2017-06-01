@@ -256,6 +256,143 @@ public class GfshParserParsingTest {
   }
 
   @Test
+  public void testSynonyms() throws Exception {
+    String command = "export config --members=member1";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+
+    command = "create region --name=test --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+
+    command = "deploy --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    command = "undeploy --groups=group1 --jars=jar1.jar";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("jar")).isEqualTo("jar1.jar");
+
+    command = "create disk-store --name=test --dir=/test --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    command = "destroy disk-store --name=test --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+
+    command = "list durable-cqs --durable-client-id=client1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command =
+        "show subscription-queue-size --durable-client-id=client1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "close durable-client --durable-client-id=client1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command =
+        "close durable-cq --durable-client-id=client1 --durable-cq-name=name1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+
+    command = "list functions --groups=group1 --members=member1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+
+    command =
+        "create index --name=name1 --expression=value --region=region1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "destroy index --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "create defined indexes --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+
+    command = "change loglevel --loglevel=level1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "export stack-traces --file=file1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "gc --member=member1 --groups=group1"; // Cannot make member plural here?
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+
+    command = "create async-event-queue --id=test --listener=listener1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+
+    command = "list regions --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+
+    command = "create gateway-receiver --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "stop gateway-receiver --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "start gateway-receiver --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "status gateway-receiver --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+
+    command =
+        "create gateway-sender --id=id1 --remote-distributed-system-id=123 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "start gateway-sender --id=test --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "pause gateway-sender --id=test --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "resume gateway-sender --id=test --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "stop gateway-sender --id=test --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "destroy gateway-sender --id=test --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+    command = "status gateway-sender --id=id1 --members=member1 --groups=group1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+
+    command = "list gateways --groups=group1 --members=member1";
+    result = parser.parse(command);
+    assertThat(result.getParamValue("group")).isEqualTo("group1");
+    assertThat(result.getParamValue("member")).isEqualTo("member1");
+  }
+
+  @Test
   public void testDeployCommand() throws Exception {
     String command = "deploy --jar=/tmp/junit7552412945092669041/jar1.jar";
     GfshParseResult result = parser.parse(command);

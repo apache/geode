@@ -209,6 +209,7 @@ public class DeployCommandsDUnitTest implements Serializable {
       assertThatCanLoad(jarName4, class4);
     });
 
+    gfshConnector.executeAndVerifyCommand("undeploy");
     gfshConnector
         .executeAndVerifyCommand("undeploy --jar=" + jar3.getName() + "," + jar4.getName());
     server1.invoke(() -> {

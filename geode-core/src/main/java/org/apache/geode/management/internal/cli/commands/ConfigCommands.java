@@ -197,10 +197,11 @@ public class ConfigCommands extends AbstractCommandsSupport {
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportConfig(
-      @CliOption(key = {CliStrings.EXPORT_CONFIG__MEMBER},
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_CONFIG__MEMBER__HELP) String[] member,
-      @CliOption(key = {CliStrings.EXPORT_CONFIG__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXPORT_CONFIG__GROUP__HELP) String[] group,
       @CliOption(key = {CliStrings.EXPORT_CONFIG__DIR},
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
@@ -250,10 +251,10 @@ public class ConfigCommands extends AbstractCommandsSupport {
       interceptor = "org.apache.geode.management.internal.cli.commands.ConfigCommands$AlterRuntimeInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result alterRuntimeConfig(
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] memberNameOrId,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__GROUP},
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] group,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT},
