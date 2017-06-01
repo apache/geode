@@ -40,7 +40,7 @@ public class StartJVisualVMCommand implements GfshCommand {
       CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
   public Result startJVisualVM(
       @CliOption(key = CliStrings.START_JCONSOLE__J, optionContext = GfshParser.J_OPTION_CONTEXT,
-          help = CliStrings.START_JCONSOLE__J__HELP) final List<String> jvmArgs) {
+          help = CliStrings.START_JCONSOLE__J__HELP) final String[] jvmArgs) {
     try {
       String[] jvisualvmCommandLine = createJVisualVMCommandLine(jvmArgs);
 
@@ -75,7 +75,7 @@ public class StartJVisualVMCommand implements GfshCommand {
     }
   }
 
-  protected String[] createJVisualVMCommandLine(final List<String> jvmArgs) {
+  protected String[] createJVisualVMCommandLine(final String[] jvmArgs) {
     List<String> commandLine = new ArrayList<>();
 
     commandLine.add(JdkTool.getJVisualVMPathname());
