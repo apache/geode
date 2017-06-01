@@ -16,9 +16,15 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.management.internal.cli.shell.MXBeanProvider;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -32,12 +38,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 // Originally created in response to GEODE-2971
 
@@ -100,7 +100,7 @@ public class GfshExitStatusDUnitTest {
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
           .until((Gfsh::isCurrentInstanceConnectedAndReady));
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> LauncherLifecycleCommands.isMemberMXBeanAvailable(serverName));
+          .until(() -> MXBeanProvider.isMemberMXBeanAvailable(serverName));
 
 
     }
