@@ -860,6 +860,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-3018
   @Test
   public void testAlterRegionResetCacheListeners() throws IOException {
     setUpJmxManagerOnVm0ThenConnect(null);
@@ -1247,8 +1248,6 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    * Test Description 1. Deploy a JAR with Custom Partition Resolver 2. Create Region with Partition
    * Resolver 3. Region should get created with no Errors 4. Verify Region Partition Attributes for
    * Partition Resolver
-   * 
-   * @throws IOException
    */
   @Test
   public void testCreateRegionWithPartitionResolver() throws IOException {
