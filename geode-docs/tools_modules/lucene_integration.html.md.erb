@@ -185,9 +185,8 @@ prior to destroying its associated Lucene index
 will be similar to:
 
 ``` pre
-Error occurred while destroying region "orders".
- Reason: The parent region [/orders] in colocation chain cannot be destroyed,
- unless all its children [[/indexName#_orders.files]] are destroyed
+Region /orders cannot be destroyed because it defines Lucene index(es)
+  [/ordersIndex]. Destroy all Lucene indexes before destroying the region.
 ```
 
 ## <a id="lucene-index-change" class="no-quick-link"></a>Changing an Index
