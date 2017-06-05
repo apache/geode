@@ -26,6 +26,8 @@ import com.google.common.collect.Sets;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -136,6 +138,13 @@ public class ExportLogsStatsDUnitTest {
 
     String output = connector.execute(commandStringBuilder.toString());
     assertThat(output).contains("No files to be exported");
+  }
+
+  @Test
+  public void testExportedZipFileTooBig() throws Exception {
+    connectIfNeeded();
+    CommandResult result = connector.executeCommand("export logs --file-size-limit=10k");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
   }
 
   protected String getZipPathFromCommandResult(String message) {

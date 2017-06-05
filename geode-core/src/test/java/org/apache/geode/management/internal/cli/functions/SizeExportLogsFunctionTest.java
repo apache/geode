@@ -138,12 +138,13 @@ public class SizeExportLogsFunctionTest {
 
     assertThat(results).isNotNull();
     assertThat(results.size()).isEqualTo(1);
-    List<?> result = (List<?>) results.get(0);
+    Object result = results.get(0);
     assertThat(result).isNotNull();
+    assertThat(result).isInstanceOf(Long.class);
     if (minExpected == maxExpected) {
-      assertThat(((Long) result.get(0))).isEqualTo(minExpected);
+      assertThat(((Long) result)).isEqualTo(minExpected);
     }
-    assertThat(((Long) result.get(0))).isGreaterThanOrEqualTo(minExpected)
+    assertThat(((Long) result)).isGreaterThanOrEqualTo(minExpected)
         .isLessThanOrEqualTo(maxExpected);
   }
 

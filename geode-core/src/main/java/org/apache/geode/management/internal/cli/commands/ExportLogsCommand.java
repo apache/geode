@@ -30,7 +30,6 @@ import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.util.BytesToString;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -39,7 +38,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -113,32 +111,41 @@ public class ExportLogsCommand implements GfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      if (parseFileSizeLimit(fileSizeLimit) > 0) {
+      long userSpecifiedLimit = parseFileSizeLimit(fileSizeLimit);
+      if (userSpecifiedLimit > 0) {
         // Get estimated size of exported logs from all servers before exporting anything
         for (DistributedMember server : targetMembers) {
           SizeExportLogsFunction.Args args = new SizeExportLogsFunction.Args(start, end, logLevel,
               onlyLogLevel, logsOnly, statsOnly);
 
           List<Object> results = (List<Object>) estimateLogSize(args, server).getResult();
-          long estimatedSize = 0;
           if (!results.isEmpty()) {
-            List<?> res = (List<?>) results.get(0);
-            if (res.get(0) instanceof Long) {
-              estimatedSize = (Long) res.get(0);
+            if (results.get(0) instanceof Long) {
+              long estimatedSize = (Long) results.get(0);
+              logger.info("Received estimated export size from member {}: {}", server.getId(),
+                  estimatedSize);
+              totalEstimatedExportSize += estimatedSize;
+            } else if (results.get(0) instanceof ManagementException) {
+              ManagementException exception = (ManagementException) results.get(0);
+              return ResultBuilder.createUserErrorResult(exception.getMessage());
             }
           }
-          logger.info("Received estimated export size from member {}: {}", server.getId(),
-              estimatedSize);
-          totalEstimatedExportSize += estimatedSize;
         }
 
-        // The sum of the estimated export sizes from each member should not exceed the
-        // disk available on the locator
-        try {
-          checkIfExportLogsOverflowsDisk("locator", parseFileSizeLimit(fileSizeLimit),
-              totalEstimatedExportSize, getLocalDiskAvailable());
-        } catch (ManagementException e) {
-          return ResultBuilder.createUserErrorResult(e.getMessage());
+        // first check if totalEstimate file size exceeds available disk space on locator
+        if (totalEstimatedExportSize > getLocalDiskAvailable()) {
+          return ResultBuilder.createUserErrorResult(
+              "Estimated logs size will exceed the available disk space on the locator.");
+        }
+        // then check if total estimated file size exceeds user specified value
+        if (totalEstimatedExportSize > userSpecifiedLimit) {
+          StringBuilder sb = new StringBuilder();
+          sb.append("Estimated exported logs expanded file size = ")
+              .append(totalEstimatedExportSize).append(", ")
+              .append(CliStrings.EXPORT_LOGS__FILESIZELIMIT).append(" = ")
+              .append(userSpecifiedLimit).append(
+                  ". To disable exported logs file size check use option \"--file-size-limit=0\".");
+          return ResultBuilder.createUserErrorResult(sb.toString());
         }
       }
 
@@ -193,14 +200,8 @@ public class ExportLogsCommand implements GfshCommand {
 
       logger.info("Zipping into: " + exportedLogsZipFile.toString());
       ZipUtils.zipDirectory(exportedLogsDir, exportedLogsZipFile);
-      try {
-        checkFileSizeWithinLimit(parseFileSizeLimit(fileSizeLimit), exportedLogsZipFile.toFile());
-      } catch (ManagementException e) {
-        FileUtils.deleteQuietly(exportedLogsZipFile.toFile());
-        return ResultBuilder.createUserErrorResult(e.getMessage());
-      } finally {
-        FileUtils.deleteDirectory(tempDir.toFile());
-      }
+      FileUtils.deleteDirectory(tempDir.toFile());
+
       result = ResultBuilder.createInfoResult(exportedLogsZipFile.toString());
     } catch (Exception ex) {
       logger.error(ex.getMessage(), ex);
@@ -208,7 +209,9 @@ public class ExportLogsCommand implements GfshCommand {
     } finally {
       ExportLogsFunction.destroyExportLogsRegion(cache);
     }
-    logger.debug("Exporting logs returning = {}", result);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Exporting logs returning = {}", result);
+    }
     return result;
   }
 
@@ -229,13 +232,6 @@ public class ExportLogsCommand implements GfshCommand {
   /**
    * Wrapper to enable stubbing of static method call for unit testing
    */
-  long getLocalDiskSize() {
-    return FileUtils.getUserDirectory().getTotalSpace();
-  }
-
-  /**
-   * Wrapper to enable stubbing of static method call for unit testing
-   */
   long getLocalDiskAvailable() {
     return FileUtils.getUserDirectory().getUsableSpace();
   }
@@ -243,7 +239,7 @@ public class ExportLogsCommand implements GfshCommand {
   /**
    * Returns file size limit in bytes
    */
-  private long parseFileSizeLimit(String fileSizeLimit) {
+  long parseFileSizeLimit(String fileSizeLimit) {
     if (StringUtils.isEmpty(fileSizeLimit)) {
       return 0;
     }
@@ -252,44 +248,6 @@ public class ExportLogsCommand implements GfshCommand {
     long byteMultiplier = parseByteMultiplier(fileSizeLimit);
 
     return sizeLimit * byteMultiplier;
-  }
-
-  /**
-   * @throws ManagementException if checking is enabled (fileSizeLimit > 0) and file size is over
-   *         fileSizeLimit bytes
-   */
-  void checkFileSizeWithinLimit(long fileSizeLimitBytes, File file) {
-    if (fileSizeLimitBytes > 0) {
-      if (FileUtils.sizeOf(file) > fileSizeLimitBytes) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Exported logs zip file size = ").append(FileUtils.sizeOf(file)).append(", ")
-            .append(CliStrings.EXPORT_LOGS__FILESIZELIMIT).append(" = ").append(fileSizeLimitBytes)
-            .append(
-                ". To disable exported logs file size check use option \"--file-size-limit=0\".");
-        throw new ManagementException(sb.toString()); // FileTooBigException
-      }
-    }
-  }
-
-
-  /**
-   * @throws ManagementException if export file size checking is enabled (fileSizeLimit > 0) and the
-   *         space required on a cluster member to filter and zip up files to be exported exceeds
-   *         the disk space available
-   */
-  void checkIfExportLogsOverflowsDisk(String memberName, long fileSizeLimitBytes,
-      long estimatedSize, long diskAvailable) {
-    if (fileSizeLimitBytes > 0) {
-      StringBuilder sb = new StringBuilder();
-      BytesToString bytesToString = new BytesToString();
-      if (estimatedSize > diskAvailable) {
-        sb.append("Estimated disk space required (").append(bytesToString.of(estimatedSize))
-            .append(") to consolidate logs on member ").append(memberName)
-            .append(" will exceed available disk space (").append(bytesToString.of(diskAvailable))
-            .append(")");
-        throw new ManagementException(sb.toString()); // FileTooBigException
-      }
-    }
   }
 
   static int parseSize(String diskSpaceLimit) {
