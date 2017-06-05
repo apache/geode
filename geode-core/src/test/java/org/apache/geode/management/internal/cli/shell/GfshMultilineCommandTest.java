@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.shell;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER__GROUP;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.NO_MEMBERS_FOUND_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,13 +43,12 @@ public class GfshMultilineCommandTest {
     gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
     // Execute a command
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MEMBER);
-    csb.addOption(LIST_MEMBER__GROUP, "nogroup");
+    csb.addOption(GROUP, "nogroup");
     gfsh.executeAndVerifyCommand(csb.getCommandString());
     assertThat(gfsh.getGfshOutput().trim()).isEqualTo(NO_MEMBERS_FOUND_MESSAGE);
 
     // Now execute same command with a new Continuation on new line
-    csb =
-        new CommandStringBuilder(LIST_MEMBER).addNewLine().addOption(LIST_MEMBER__GROUP, "nogroup");
+    csb = new CommandStringBuilder(LIST_MEMBER).addNewLine().addOption(GROUP, "nogroup");
     gfsh.executeAndVerifyCommand(csb.getCommandString());
     assertThat(gfsh.getGfshOutput().trim()).isEqualTo(NO_MEMBERS_FOUND_MESSAGE);
   }

@@ -181,7 +181,7 @@ public class IndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_INDEX__REGION__HELP) String regionPath,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
@@ -189,7 +189,7 @@ public class IndexCommands implements GfshCommand {
           unspecifiedDefaultValue = "range", optionContext = ConverterHint.INDEX_TYPE,
           help = CliStrings.CREATE_INDEX__TYPE__HELP) final String indexType,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] group) {
 
@@ -332,11 +332,11 @@ public class IndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESTROY_INDEX__REGION__HELP) final String regionPath,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group) {
 
@@ -420,7 +420,7 @@ public class IndexCommands implements GfshCommand {
       int num = 0;
       for (String memberId : successfulMembers) {
         infoResult.addLine(CliStrings.format(
-            CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));;
+            CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
       }
       result = ResultBuilder.buildResult(infoResult);
 
@@ -532,11 +532,11 @@ public class IndexCommands implements GfshCommand {
   // TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_DEFINED_INDEXES__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 

@@ -159,7 +159,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStoreName);
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
         diskStoreDir.getAbsolutePath());
     cmdResult = executeCommand(commandStringBuilder.toString());
@@ -171,7 +171,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, queue1Name);
-    commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE, "514");
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT, "true");
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE, diskStoreName);
@@ -364,7 +364,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, queueName);
-    commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER,
         "com.qcdunit.QueueCommandsDUnitTestListener");
     cmdResult = executeCommand(commandStringBuilder.toString());
