@@ -340,8 +340,8 @@ public class TcpServer {
       DataInputStream input = null;
       Object request, response;
       try {
-        socketCreator.configureServerSSLSocket(sock);
         sock.setSoTimeout(READ_TIMEOUT);
+        socketCreator.configureServerSSLSocket(sock);
         try {
           input = new DataInputStream(sock.getInputStream());
         } catch (StreamCorruptedException e) {
