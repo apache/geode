@@ -57,7 +57,9 @@ public class ExportLogController extends AbstractCommandsController {
       @RequestParam(value = CliStrings.EXPORT_LOGS__LOGSONLY,
           required = false) final boolean logsOnly,
       @RequestParam(value = CliStrings.EXPORT_LOGS__STATSONLY,
-          required = false) final boolean statsOnly) {
+          required = false) final boolean statsOnly,
+      @RequestParam(value = CliStrings.EXPORT_LOGS__FILESIZELIMIT,
+          required = false) final String fileSizeLimit) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_LOGS);
 
     command.addOption(CliStrings.EXPORT_LOGS__DIR, decode(directory));
@@ -79,6 +81,7 @@ public class ExportLogController extends AbstractCommandsController {
     command.addOption(CliStrings.EXPORT_LOGS__MERGELOG, String.valueOf(mergeLog));
     command.addOption(CliStrings.EXPORT_LOGS__LOGSONLY, String.valueOf(logsOnly));
     command.addOption(CliStrings.EXPORT_LOGS__STATSONLY, String.valueOf(statsOnly));
+    command.addOption(CliStrings.EXPORT_LOGS__FILESIZELIMIT, fileSizeLimit);
 
     if (hasValue(startTime)) {
       command.addOption(CliStrings.EXPORT_LOGS__STARTTIME, startTime);
