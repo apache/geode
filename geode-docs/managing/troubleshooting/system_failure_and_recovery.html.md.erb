@@ -277,8 +277,8 @@ find the reason.
 Description:
 
 The process discovered that it was not in the distributed system and cannot determine why it was
-removed. The membership coordinator removed the member after it failed to respond to an internal are
-you alive message.
+removed. The membership coordinator removed the member after it failed to respond to an internal 
+are-you-alive message.
 
 Response:
 
@@ -308,7 +308,7 @@ that will eventually recover every value.
 
 **Retrieve or Ignore LRU values**
 
-When a system with Persistent LRU regions shuts down, the system does not record which of the values
+When a system with persistent LRU regions shuts down, the system does not record which of the values
 were recently used. On subsequent startup, if values are recovered into an LRU region they may be
 the least recently used instead of the most recently used. Also, if LRU values are recovered on a
 heap or an off-heap LRU region, it is possible that the LRU memory limit will be exceeded, resulting
