@@ -276,8 +276,83 @@ find the reason.
 
 Description:
 
-The process discovered that it was not in the distributed system and cannot determine why it was removed. The membership coordinator removed the member after it failed to respond to an internal are you alive message.
+The process discovered that it was not in the distributed system and cannot determine why it was
+removed. The membership coordinator removed the member after it failed to respond to an internal 
+are-you-alive message.
 
 Response:
 
 The operator should examine the locator processes and logs.
+
+## <a id="restart-failure-persistent-lru" class="no-quick-link"></a> Restart Fails Due To Out-of-Memory Error
+
+This section describes a restart failure that can occur when the stopped system is one that was configured with persistent regions. Specifically:
+
+- Some of the regions of the recovering system, when running, were configured as PERSISTENT regions, which means that they save their data to disk.
+- At least one of the persistent regions was configured to evict least recently used (LRU) data by overflowing values to disk.
+
+### How Data is Recovered From Persistent Regions
+
+Data recovery, upon restart, always recovers keys. You can configure whether and how the system
+recovers the values associated with those keys to populate the system cache.
+
+**Value Recovery**
+
+- Recovering all values immediately during startup slows the startup time but results in consistent
+read performance after the startup on a "hot" cache.
+
+- Recovering no values means quicker startup but a "cold" cache, so the first retrieval of each value will read from disk.
+
+- Retrieving values asynchronously in a background thread allows a relatively quick startup on a "warm" cache
+that will eventually recover every value.
+
+**Retrieve or Ignore LRU values**
+
+When a system with persistent LRU regions shuts down, the system does not record which of the values
+were recently used. On subsequent startup, if values are recovered into an LRU region they may be
+the least recently used instead of the most recently used. Also, if LRU values are recovered on a
+heap or an off-heap LRU region, it is possible that the LRU memory limit will be exceeded, resulting
+in an `OutOfMemoryException` during recovery. For these reasons, LRU value recovery can be treated
+differently than non-LRU values.
+
+## Default Recovery Behavior for Persistent Regions
+
+The default behavior is for the system to recover all keys, then asynchronously recover all data
+values that were resident, leaving LRU values unrecovered. This default strategy is best for
+most applications, because it strikes a balance between recovery speed and cache completeness.
+
+### Configuring Recovery of Persistent Regions
+
+Three Java system parameters allow the developer to control the recovery behavior for persistent regions:
+
+- `gemfire.disk.recoverValues`
+
+  Default = `true`, recover values. If `false`, recover only keys, do not recover values.
+
+  *How used:* When `true`, recovery of the values "warms up" the cache so data retrievals will find
+  their values in the cache, without causing time consuming disk accesses. When `false`, shortens
+  recovery time so the system becomes available for use sooner, but the first retrieval on each key
+  will require a disk read.
+
+- `gemfire.disk.recoverLruValues`
+
+  Default = `false`, do not recover LRU values. If `true`, recover LRU values. If
+  `gemfire.disk.recoverValues` is `false`, then `gemfire.disk.recoverLruValues` is ignored, since
+  no values are recovered.
+
+  *How used:* When `false`, shortens recovery time by ignoring LRU values. When `true`, restores
+  more data values to the cache. Recovery of the LRU values increases heap memory usage and
+  could cause an out-of-memory error, preventing the system from restarting.
+
+- `gemfire.disk.recoverValuesSync`
+
+  Default = `false`, recover values by an asynchronous background process. If `true`, values are
+  recovered synchronously, and recovery is not complete until all values have been retrieved.  If
+  `gemfire.disk.recoverValues` is `false`, then `gemfire.disk.recoverValuesSync` is ignored since
+  no values are recovered.
+
+  *How used:* When `false`, allows the system to become available sooner, but some time must elapse
+  before the entire cache is refreshed. Some key retrievals will require disk access, and some will not.
+  When `true`, prolongs restart time, but ensures that when available for use, the cache is fully
+  populated and data retrieval times will be optimal.
+
