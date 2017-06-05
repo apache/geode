@@ -72,9 +72,9 @@ public class ClusterConfigurationLoader {
 
     String[] jarFileNames = response.getJarNames();
     byte[][] jarBytes = response.getJars();
-    logger.info("Got response with jars: {}", Stream.of(jarFileNames).collect(joining(",")));
 
     if (jarFileNames != null && jarBytes != null) {
+      logger.info("Got response with jars: {}", Stream.of(jarFileNames).collect(joining(",")));
       JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
       jarDeployer.suspendAll();
       try {
