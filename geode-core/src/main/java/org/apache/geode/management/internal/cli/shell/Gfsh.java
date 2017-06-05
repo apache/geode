@@ -26,6 +26,7 @@ import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -210,7 +211,7 @@ public class Gfsh extends JLineShell {
     initializeEnvironment();
     // 7. Create Roo/SpringShell framework objects
     this.executionStrategy = new GfshExecutionStrategy(this);
-    this.parser = new GfshParser();
+    this.parser = new GfshParser(new CommandManager());
     // 8. Set max History file size
     setHistorySize(gfshConfig.getHistorySize());
 
