@@ -21,7 +21,6 @@ import "basicTypes.proto";
 message PutRequest {
     string regionName = 1;
     Entry entry = 2;
-    CallbackArguments callbackArg = 3;
 }
 
 message PutResponse {
@@ -31,33 +30,91 @@ message PutResponse {
 message GetRequest {
     string regionName = 1;
     EncodedValue key = 2;
-    CallbackArguments callbackArg = 3;
 }
 
 message GetResponse {
     EncodedValue result = 1;
 }
 
-message PutAllRequest {
+message PutManyRequest {
     string regionName = 1;
     int32 numberOfEntries = 2;
     repeated Entry entry = 3;
-    CallbackArguments callbackArg = 4;
 }
 
-message PutAllResponse {
+message PutManyResponse {
     int32 numberOfKeysFailed = 1;
     repeated EncodedValue key = 2;
 }
 
-message GetAllRequest {
+message GetManyRequest {
     string regionName = 1;
     int32 numberOfKeys = 2;
     repeated EncodedValue key = 3;
     EncodedValue callbackArg = 4;
 }
 
-message GetAllResponse {
+message GetManyResponse {
     int32 numberOfEntries = 1;
     repeated Entry entries = 2;
+}
+
+message GetRegionsRequest {
+
+}
+
+message GetRegionsResponse {
+    int32 numberOfRegions = 1;
+    repeated Region regions = 2;
+}
+
+message ListKeysRequest {
+    string regionName = 1;
+}
+
+message ListKeysResponse {
+    int32 numberOfKeys = 1;
+    repeated EncodedValue key = 2;
+}
+
+message RemoveRequest {
+    string regionName = 1;
+    EncodedValue key = 2;
+}
+
+message RemoveResponse {
+    bool success = 1;
+}
+
+message RemoveManyRequest {
+    string regionName = 1;
+    repeated EncodedValue key = 2;
+}
+
+message RemoveManyResponse {
+    bool success = 1;
+}
+
+message RemoveAllRequest {
+    string regionName = 1;
+}
+
+message RemoveAllResponse {
+    bool success = 1;
+}
+
+message CreateRegionRequest {
+    string regionName = 1;
+}
+
+message CreateRegionResponse {
+    bool success = 1;
+}
+
+message DestroyRegionRequest {
+    string regionName = 1;
+}
+
+message DestroyRegionResponse {
+    bool success = 1;
 }

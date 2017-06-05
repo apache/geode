@@ -19,12 +19,14 @@ import com.google.protobuf.ByteString
 import org.apache.geode.cache.Cache
 import org.apache.geode.cache.CacheWriterException
 import org.apache.geode.cache.TimeoutException
+import org.apache.geode.distributed.LeaseExpiredException
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler
 import org.apache.geode.internal.logging.LogService
 import org.apache.geode.protocol.protobuf.BasicTypes
 import org.apache.geode.protocol.protobuf.ClientProtocol.*
 import org.apache.geode.protocol.protobuf.RegionAPI
 import org.apache.geode.protocol.protobuf.RegionAPI.*
+import org.apache.geode.protocol.protobuf.ServerAPI
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -49,9 +51,17 @@ class ProtobufProtocolMessageHandler : ClientProtocolMessageHandler {
         when (requestAPICase) {
             Request.RequestAPICase.GETREQUEST -> doGetRequest(request.getRequest, cache).writeDelimitedTo(outputStream)
             Request.RequestAPICase.PUTREQUEST -> doPutRequest(request.putRequest, cache).writeDelimitedTo(outputStream)
+            Request.RequestAPICase.DESTROYREGIONREQUEST -> doDestroyRegionRequest(request.destroyRegionRequest, cache).writeDelimitedTo(outputStream)
+            Request.RequestAPICase.PINGREQUEST -> doPingRequest(request.pingRequest).writeDelimitedTo(outputStream)
             else -> TODO("The message type: $requestAPICase is not supported")
 
         }
+    }
+
+    private fun doPingRequest(pingRequest: ServerAPI.PingRequest): Message {
+        return Message.newBuilder().setResponse(Response.newBuilder().setPingResponse(
+                ServerAPI.PingResponse.newBuilder().setSequenceNumber(pingRequest.sequenceNumber)))
+                .build()
     }
 
     private fun doPutRequest(request: PutRequest, cache: Cache): Message {
@@ -70,6 +80,27 @@ class ProtobufProtocolMessageHandler : ClientProtocolMessageHandler {
             return putResponseWithStatus(false)
         }
 
+    }
+
+    private fun doDestroyRegionRequest(request: DestroyRegionRequest, cache: Cache): Message {
+        val regionName = request.regionName
+
+        val region = cache.getRegion<Any, Any>(regionName)
+        try {
+            region.destroyRegion()
+        } catch (ex: TimeoutException) {
+            logger.warn("Caught normal-ish exception doing region put", ex)
+            return destroyResponseWithValue(false)
+        } catch (ex: LeaseExpiredException) {
+            logger.warn("Caught normal-ish exception doing region put", ex)
+            return destroyResponseWithValue(false)
+        }
+        return destroyResponseWithValue(true)
+    }
+
+    private fun destroyResponseWithValue(success: Boolean): Message {
+        return Message.newBuilder().setResponse(Response.newBuilder().setDestroyRegionResponse(
+                DestroyRegionResponse.newBuilder().setSuccess(success))).build()
     }
 
     private fun deserializeEncodedValue(encodedValue: BasicTypes.EncodedValue): Any {

@@ -16,45 +16,22 @@
 syntax = "proto3";
 package org.apache.geode.protocol.protobuf;
 
-import "google/protobuf/any.proto";
-import "google/protobuf/empty.proto";
+import "basicTypes.proto";
 
-message Entry {
-    EncodedValue key = 1;
-    EncodedValue value = 2;
+// PingResponse sends the same number back.
+message PingRequest {
+    int32 sequenceNumber = 1;
 }
 
-message EncodedValue {
-    EncodingType encodingType = 1;
-    bytes value = 2;
+message PingResponse {
+    int32 sequenceNumber = 1;
 }
 
-enum EncodingType {
-    INVALID = 0;
-    INT = 1;
-    LONG = 2;
-    SHORT = 3;
-    BYTE = 4;
-    BOOLEAN = 5;
-    BINARY = 6;
-    FLOAT = 7;
-    DOUBLE = 8;
-    STRING = 9;
-    JSON = 10;
+message GetServersRequest {
+
 }
 
-message CallbackArguments {
-    oneof callbackArgs {
-        google.protobuf.Empty hasCallbackArgument = 1;
-        EncodedValue callbackValue = 2;
-    }
-}
-
-message Region {
-    string name = 1;
-    // TODO: key, value types?
-}
-
-message Server {
-    string URL = 1;
+message GetServersResponse {
+    int32 numberOfServers = 1;
+    repeated Server servers = 2;
 }

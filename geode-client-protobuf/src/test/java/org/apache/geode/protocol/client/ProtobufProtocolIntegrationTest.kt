@@ -21,9 +21,12 @@ import org.apache.geode.cache.CacheFactory
 import org.apache.geode.cache.Region
 import org.apache.geode.distributed.ConfigurationProperties
 import org.apache.geode.protocol.protobuf.BasicTypes
+import org.apache.geode.protocol.protobuf.ClientProtocol
 import org.apache.geode.protocol.protobuf.ClientProtocol.Message.MessageTypeCase.RESPONSE
 import org.apache.geode.protocol.protobuf.ClientProtocol.Response.ResponseAPICase.GETRESPONSE
 import org.apache.geode.protocol.protobuf.ClientProtocol.Response.ResponseAPICase.PUTRESPONSE
+import org.apache.geode.protocol.protobuf.RegionAPI
+import org.apache.geode.protocol.protobuf.ServerAPI
 import org.apache.geode.test.junit.categories.IntegrationTest
 import org.junit.After
 import org.junit.Assert.*
@@ -161,5 +164,35 @@ class ProtobufProtocolIntegrationTest {
         cacheServer.bindAddress = "localhost"
         cacheServer.start()
         return cache
+    }
+
+    @Test
+    fun testDestroyRegion() {
+        val regionName = regionUnderTest.name
+        assertEquals("testRegion", regionName)
+        assertNotNull(cache.getRegion<Any,Any>(regionName))
+
+        val destroyMessage = ClientProtocol.Message.newBuilder().setRequest(ClientProtocol.Request.newBuilder().setDestroyRegionRequest(
+                RegionAPI.DestroyRegionRequest.newBuilder().setRegionName(regionName))).build()
+
+        val destroyResponse = testClient.blockingSendMessage(destroyMessage)
+
+        assertTrue(destroyResponse.response.destroyRegionResponse.success)
+
+        assertNull(cache.getRegion<Any,Any>(regionName))
+    }
+
+    @Test
+    fun testPing() {
+        val sequenceNumber = 42;
+        val pingMessage =
+                ClientProtocol.Message.newBuilder().setRequest(ClientProtocol.Request.newBuilder()
+                        .setPingRequest(ServerAPI.PingRequest.newBuilder()
+                                .setSequenceNumber(sequenceNumber))
+                ).build()
+
+        val pingResponse = testClient.blockingSendMessage(pingMessage)
+
+        assertEquals(sequenceNumber, pingResponse.response.pingResponse.sequenceNumber)
     }
 }

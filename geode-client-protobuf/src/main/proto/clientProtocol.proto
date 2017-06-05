@@ -18,6 +18,8 @@ package org.apache.geode.protocol.protobuf;
 
 import "google/protobuf/any.proto";
 import "region_API.proto";
+import "server_API.proto";
+import "basicTypes.proto";
 
 message Message {
     MessageHeader messageHeader = 1;
@@ -28,16 +30,26 @@ message Message {
 }
 
 message MessageHeader {
-    int32 correlationId = 2;
-    MetaData metadata = 1;
+    int32 correlationId = 1;
+    MetaData metadata = 2;
 }
 
 message Request {
+    CallbackArguments callbackArg = 1;
     oneof requestAPI {
-        PutRequest putRequest = 1;
-        GetRequest getRequest = 2;
-        PutAllRequest putAllRequest = 3;
-        GetAllRequest getAllRequest = 4;
+        PutRequest putRequest = 2;
+        GetRequest getRequest = 3;
+        PutManyRequest putManyRequest = 4;
+        GetManyRequest getManyRequest = 5;
+        GetRegionsRequest getRegionsRequest = 6;
+        ListKeysRequest listKeysRequest = 7;
+        RemoveRequest removeRequest = 8;
+        RemoveManyRequest removeManyRequest = 9;
+        RemoveAllRequest removeAllRequest = 10;
+        CreateRegionRequest createRegionRequest = 11;
+        DestroyRegionRequest destroyRegionRequest = 12;
+        PingRequest pingRequest = 13;
+        GetServersRequest getServersRequest = 14;
     }
 }
 
@@ -46,8 +58,17 @@ message Response {
     oneof responseAPI {
         PutResponse putResponse = 2;
         GetResponse getResponse = 3;
-        PutAllResponse putAllResponse = 4;
-        GetAllResponse getAllResponse = 5;
+        PutManyResponse putManyResponse = 4;
+        GetManyResponse getManyResponse = 5;
+        GetRegionsResponse getRegionsResponse = 6;
+        ListKeysResponse listKeysResponse = 7;
+        RemoveResponse removeResponse = 8;
+        RemoveManyResponse removeManyResponse = 9;
+        RemoveAllResponse removeAllResponse = 10;
+        CreateRegionResponse createRegionResponse = 11;
+        DestroyRegionResponse destroyRegionResponse = 12;
+        PingResponse pingResponse = 13;
+        GetServersResponse getServersResponse = 14;
     }
 }
 
