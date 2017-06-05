@@ -75,6 +75,13 @@ import java.text.MessageFormat;
  */
 public class CliStrings {
 
+  public static final String GROUP = "group";
+  public static final String GROUPS = "groups";
+  public static final String MEMBER = "member";
+  public static final String MEMBERS = "members";
+  public static final String JAR = "jar";
+  public static final String JARS = "jars";
+
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
@@ -301,7 +308,6 @@ public class CliStrings {
       "Alter a region with the given path and configuration.";
   public static final String ALTER_REGION__REGION = "name";
   public static final String ALTER_REGION__REGION__HELP = "Name/Path of the region to be altered.";
-  public static final String ALTER_REGION__GROUP = "group";
   public static final String ALTER_REGION__GROUP__HELP =
       "Group(s) of members on which the region will be altered.";
   public static final String ALTER_REGION__ENTRYEXPIRATIONIDLETIME = "entry-idle-time-expiration";
@@ -384,10 +390,9 @@ public class CliStrings {
   public static final String ALTER_RUNTIME_CONFIG = "alter runtime";
   public static final String ALTER_RUNTIME_CONFIG__HELP =
       "Alter a subset of member or members configuration properties while running.";
-  public static final String ALTER_RUNTIME_CONFIG__MEMBER = "member";
   public static final String ALTER_RUNTIME_CONFIG__MEMBER__HELP =
       "Name/Id of the member in whose configuration will be altered.";
-  public static final String ALTER_RUNTIME_CONFIG__GROUP = "group";
+
   public static final String ALTER_RUNTIME_CONFIG__GROUP__HELP =
       "Group of members whose configuration will be altered.";
   public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT =
@@ -481,7 +486,6 @@ public class CliStrings {
   public static final String COMPACT_DISK_STORE__NAME = "name";
   public static final String COMPACT_DISK_STORE__NAME__HELP =
       "Name of the disk store to be compacted.";
-  public static final String COMPACT_DISK_STORE__GROUP = "group";
   public static final String COMPACT_DISK_STORE__GROUP__HELP =
       "Group(s) of members that will perform disk compaction. If no group is specified the disk store will be compacted by all members.";
   public static final String COMPACT_DISK_STORE__DISKSTORE_0_DOESNOT_EXIST =
@@ -657,7 +661,6 @@ public class CliStrings {
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE = "listener-param";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP =
       "Parameter name for the AsyncEventListener.  Optionally, parameter names may be followed by # and a value for the parameter.  Example: --listener-param=loadAll --listener-param=maxRead#1024";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__GROUP = "group";
   public static final String CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP =
       "Group(s) of members on which queue will be created. If no group is specified the queue will be created on all members.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__ERROR_WHILE_CREATING_REASON_0 =
@@ -701,7 +704,6 @@ public class CliStrings {
   public static final String CREATE_DISK_STORE__DIRECTORY_AND_SIZE = "dir";
   public static final String CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP =
       "Directories where the disk store files will be written, the directories will be created if they don't exist.  Optionally, directory names may be followed by # and the maximum number of megabytes that the disk store can use in the directory.  Example: --dir=/data/ds1 --dir=/data/ds2#5000";
-  public static final String CREATE_DISK_STORE__GROUP = "group";
   public static final String CREATE_DISK_STORE__GROUP__HELP =
       "Group(s) of members on which the disk store will be created. If no group is specified the disk store will be created on all members.";
   public static final String CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT =
@@ -727,13 +729,11 @@ public class CliStrings {
   public static final String CREATE_INDEX__REGION = "region";
   public static final String CREATE_INDEX__REGION__HELP =
       "Name/Path of the region which corresponds to the \"from\" clause in a query.";
-  public static final String CREATE_INDEX__MEMBER = "member";
   public static final String CREATE_INDEX__MEMBER__HELP =
       "Name/Id of the member in which the index will be created.";
   public static final String CREATE_INDEX__TYPE = "type";
   public static final String CREATE_INDEX__TYPE__HELP =
       "Type of the index. Valid values are: range, key and hash.";
-  public static final String CREATE_INDEX__GROUP = "group";
   public static final String CREATE_INDEX__GROUP__HELP =
       "Group of members in which the index will be created.";
   public static final String CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE =
@@ -790,9 +790,7 @@ public class CliStrings {
       "Indexes successfully created. Use list indexes to get details.";
   public static final String CREATE_DEFINED_INDEXES__FAILURE__MSG =
       "Failed to create some or all indexes \"{0}\" due to following reasons";
-  public static final String CREATE_DEFINED_INDEXES__MEMBER = CREATE_INDEX__MEMBER;
   public static final String CREATE_DEFINED_INDEXES__MEMBER__HELP = CREATE_INDEX__MEMBER__HELP;
-  public static final String CREATE_DEFINED_INDEXES__GROUP = CREATE_INDEX__GROUP;
   public static final String CREATE_DEFINED_INDEXES__GROUP__HELP = CREATE_INDEX__GROUP__HELP;
   public static final String CREATE_DEFINED_INDEXES__MEMBER__MSG = CREATE_INDEX__MEMBER__MSG;
   public static final String CREATE_DEFINED_INDEXES__NUMBER__AND__MEMBER =
@@ -815,7 +813,6 @@ public class CliStrings {
   public static final String CREATE_REGION__REGIONSHORTCUT = "type";
   public static final String CREATE_REGION__REGIONSHORTCUT__HELP =
       "Type of region to create. The following types are pre-defined by the product (see RegionShortcut javadocs for more information): PARTITION, PARTITION_REDUNDANT, PARTITION_PERSISTENT, PARTITION_REDUNDANT_PERSISTENT, PARTITION_OVERFLOW, PARTITION_REDUNDANT_OVERFLOW, PARTITION_PERSISTENT_OVERFLOW, PARTITION_REDUNDANT_PERSISTENT_OVERFLOW, PARTITION_HEAP_LRU, PARTITION_REDUNDANT_HEAP_LRU, REPLICATE, REPLICATE_PERSISTENT, REPLICATE_OVERFLOW, REPLICATE_PERSISTENT_OVERFLOW, REPLICATE_HEAP_LRU, LOCAL, LOCAL_PERSISTENT, LOCAL_HEAP_LRU, LOCAL_OVERFLOW, LOCAL_PERSISTENT_OVERFLOW, PARTITION_PROXY, PARTITION_PROXY_REDUNDANT, and REPLICATE_PROXY.";
-  public static final String CREATE_REGION__GROUP = "group";
   public static final String CREATE_REGION__GROUP__HELP =
       "Group(s) of members on which the region will be created.";
   public static final String CREATE_REGION__USEATTRIBUTESFROM = "template-region";
@@ -1069,17 +1066,14 @@ public class CliStrings {
       "Deploy JARs to a member or members.  Only one of either --jar or --dir may be specified.";
   public static final String DEPLOY__DIR = "dir";
   public static final String DEPLOY__DIR__HELP = "Directory from which to deploy the JARs.";
-  public static final String DEPLOY__GROUP = "group";
   public static final String DEPLOY__GROUP__HELP =
       "Group(s) to which the specified JARs will be deployed. If not specified, deploy will occur on all members.";
-  public static final String DEPLOY__JAR = "jar";
   public static final String DEPLOY__JAR__HELP = "Path of the JAR to deploy.";
 
   /* describe config command */
   public static final String DESCRIBE_CONFIG = "describe config";
   public static final String DESCRIBE_CONFIG__HELP =
       "Display configuration details of a member or members.";
-  public static final String DESCRIBE_CONFIG__MEMBER = "member";
   public static final String DESCRIBE_CONFIG__MEMBER__HELP =
       "Name/Id of the member whose configuration will be described.";
   public static final String DESCRIBE_CONFIG__HIDE__DEFAULTS = "hide-defaults";
@@ -1097,7 +1091,6 @@ public class CliStrings {
   public static final String DESCRIBE_DISK_STORE = "describe disk-store";
   public static final String DESCRIBE_DISK_STORE__HELP =
       "Display information about a member's disk store.";
-  public static final String DESCRIBE_DISK_STORE__MEMBER = "member";
   public static final String DESCRIBE_DISK_STORE__MEMBER__HELP =
       "Name/Id of the member with the disk store to be described.";
   public static final String DESCRIBE_DISK_STORE__NAME = "name";
@@ -1182,7 +1175,6 @@ public class CliStrings {
   public static final String DESTROY_DISK_STORE__NAME = "name";
   public static final String DESTROY_DISK_STORE__NAME__HELP =
       "Name of the disk store that will be destroyed.";
-  public static final String DESTROY_DISK_STORE__GROUP = "group";
   public static final String DESTROY_DISK_STORE__GROUP__HELP =
       "Group(s) of members on which the disk store will be destroyed. If no group is specified the disk store will be destroyed on all members.";
   public static final String DESTROY_DISK_STORE__ERROR_WHILE_DESTROYING_REASON_0 =
@@ -1194,10 +1186,8 @@ public class CliStrings {
       "Destroy/Unregister a function. The default is for the function to be unregistered from all members.";
   public static final String DESTROY_FUNCTION__ID = "id";
   public static final String DESTROY_FUNCTION__ID__HELP = "ID of the function.";
-  public static final String DESTROY_FUNCTION__ONGROUPS = "groups";
   public static final String DESTROY_FUNCTION__ONGROUPS__HELP =
       "Groups of members from which this function will be unregistered.";
-  public static final String DESTROY_FUNCTION__ONMEMBER = "member";
   public static final String DESTROY_FUNCTION__ONMEMBER__HELP =
       "Name/Id of the member from which this function will be unregistered.";
   public static final String DESTROY_FUNCTION__MSG__CANNOT_EXECUTE = "Cannot execute";
@@ -1209,13 +1199,11 @@ public class CliStrings {
   public static final String DESTROY_INDEX__HELP = "Destroy/Remove the specified index.";
   public static final String DESTROY_INDEX__NAME = "name";
   public static final String DESTROY_INDEX__NAME__HELP = "Name of the index to remove.";
-  public static final String DESTROY_INDEX__MEMBER = "member";
   public static final String DESTROY_INDEX__MEMBER__HELP =
       "Name/Id of the member from which the index will be removed.";
   public static final String DESTROY_INDEX__REGION = "region";
   public static final String DESTROY_INDEX__REGION__HELP =
       "Name/Path of the region from which the index will be removed.";
-  public static final String DESTROY_INDEX__GROUP = "group";
   public static final String DESTROY_INDEX__GROUP__HELP =
       "Group of members from which the index will be removed.";
   public static final String DESTROY_INDEX__SUCCESS__MSG =
@@ -1290,10 +1278,8 @@ public class CliStrings {
       "Execute the function with the specified ID. By default will execute on all members.";
   public static final String EXECUTE_FUNCTION__ID = "id";
   public static final String EXECUTE_FUNCTION__ID__HELP = "ID of the function to execute.";
-  public static final String EXECUTE_FUNCTION__ONGROUPS = "groups";
   public static final String EXECUTE_FUNCTION__ONGROUPS__HELP =
       "Groups of members on which the function will be executed.";
-  public static final String EXECUTE_FUNCTION__ONMEMBER = "member";
   public static final String EXECUTE_FUNCTION__ONMEMBER__HELP =
       "Name/Id of the member on which the function will be executed.";
   public static final String EXECUTE_FUNCTION__ONREGION = "region";
@@ -1358,10 +1344,8 @@ public class CliStrings {
   public static final String EXPORT_CONFIG = "export config";
   public static final String EXPORT_CONFIG__HELP =
       "Export configuration properties for a member or members.";
-  public static final String EXPORT_CONFIG__GROUP = "group";
   public static final String EXPORT_CONFIG__GROUP__HELP =
       "Group(s) of members whose configuration will be exported.";
-  public static final String EXPORT_CONFIG__MEMBER = "member";
   public static final String EXPORT_CONFIG__MEMBER__HELP =
       "Name/Id of the member(s) whose configuration will be exported.";
   public static final String EXPORT_CONFIG__DIR = "dir";
@@ -1384,7 +1368,6 @@ public class CliStrings {
   public static final String EXPORT_DATA__FILE = "file";
   public static final String EXPORT_DATA__FILE__HELP =
       "File to which the exported data will be written. The file must have an extension of \".gfd\".";
-  public static final String EXPORT_DATA__MEMBER = "member";
   public static final String EXPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be exported to the specified file on the host where the member is running.";
   public static final String EXPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found";
@@ -1398,10 +1381,8 @@ public class CliStrings {
   public static final String EXPORT_LOGS__DIR = "dir";
   public static final String EXPORT_LOGS__DIR__HELP =
       "Directory to which logs will be written.  This refers to a local directory when exporting logs using an http connection, but refers to the filesystem of the manager when connected via JMX. If not specified, logs are written to the location specified by the user.dir system property.";
-  public static final String EXPORT_LOGS__MEMBER = "member";
   public static final String EXPORT_LOGS__MEMBER__HELP =
       "Name/Id of the member whose log files will be exported.";
-  public static final String EXPORT_LOGS__GROUP = "group";
   public static final String EXPORT_LOGS__GROUP__HELP =
       "Group of members whose log files will be exported.";
   public static final String EXPORT_LOGS__MSG__CANNOT_EXECUTE = "Cannot execute";
@@ -1451,10 +1432,8 @@ public class CliStrings {
   public static final String EXPORT_STACKTRACE = "export stack-traces";
   public static final String EXPORT_STACKTRACE__HELP =
       "Export the stack trace for a member or members.";
-  public static final String EXPORT_STACKTRACE__MEMBER = "member";
   public static final String EXPORT_STACKTRACE__MEMBER__HELP =
       "Name/Id of the member whose stack trace will be exported.";
-  public static final String EXPORT_STACKTRACE__GROUP = "group";
   public static final String EXPORT_STACKTRACE__GROUP__HELP =
       "Group of members whose stack trace will be exported.";
   public static final String EXPORT_STACKTRACE_ALL_STACKS = "all-stacks";
@@ -1480,10 +1459,8 @@ public class CliStrings {
   public static final String GC = "gc";
   public static final String GC__HELP =
       "Force GC (Garbage Collection) on a member or members. The default is for garbage collection to occur on all caching members.";
-  public static final String GC__MEMBER = "member";
   public static final String GC__MEMBER__HELP =
       "Name/Id of the member on which garbage collection will be done.";
-  public static final String GC__GROUP = "group";
   public static final String GC__GROUP__HELP =
       "Group(s) of members on which garbage collection will be done.";
   public static final String GC__MSG__MEMBER_NOT_FOUND = "Member not found";
@@ -1571,7 +1548,6 @@ public class CliStrings {
   public static final String IMPORT_DATA__FILE = "file";
   public static final String IMPORT_DATA__FILE__HELP =
       "File from which the imported data will be read. The file must have an extension of \".gfd\".";
-  public static final String IMPORT_DATA__MEMBER = "member";
   public static final String IMPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be imported from the specified file on the host where the member is running.";
   public static final String IMPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found.";
@@ -1647,7 +1623,6 @@ public class CliStrings {
   public static final String LIST_DEPLOYED = "list deployed";
   public static final String LIST_DEPLOYED__HELP =
       "Display a list of JARs that were deployed to members using the \"deploy\" command.";
-  public static final String LIST_DEPLOYED__GROUP = "group";
   public static final String LIST_DEPLOYED__GROUP__HELP =
       "Group(s) of members for which deployed JARs will be displayed.  If not specified, JARs for all members will be displayed.";
   public static final String LIST_DEPLOYED__NO_JARS_FOUND_MESSAGE = "No JAR Files Found";
@@ -1659,10 +1634,8 @@ public class CliStrings {
   public static final String LIST_FUNCTION__MATCHES = "matches";
   public static final String LIST_FUNCTION__MATCHES__HELP =
       "Pattern that the function ID must match in order to be included. Uses Java pattern matching rules, not UNIX. For example, to match any character any number of times use \".*\" instead of \"*\".";
-  public static final String LIST_FUNCTION__GROUP = "group";
   public static final String LIST_FUNCTION__GROUP__HELP =
       "Group(s) of members for which functions will be displayed.";
-  public static final String LIST_FUNCTION__MEMBER = "member";
   public static final String LIST_FUNCTION__MEMBER__HELP =
       "Name/Id of the member(s) for which functions will be displayed.";
   public static final String LIST_FUNCTION__NO_FUNCTIONS_FOUND_ERROR_MESSAGE = "No Functions Found";
@@ -1670,10 +1643,8 @@ public class CliStrings {
   public static final String LIST_GATEWAY = "list gateways";
   public static final String LIST_GATEWAY__HELP =
       "Display the Gateway Senders and Receivers for a member or members.";
-  public static final String LIST_GATEWAY__GROUP = "group";
   public static final String LIST_GATEWAY__GROUP__HELP =
       "Group(s) of members for which Gateway Senders and Receivers will be displayed.";
-  public static final String LIST_GATEWAY__MEMBER = "member";
   public static final String LIST_GATEWAY__MEMBER__HELP =
       "Member(s) for which Gateway Senders and Receivers will be displayed.";
   /* list index */
@@ -1698,7 +1669,6 @@ public class CliStrings {
   /* 'list member' command */
   public static final String LIST_MEMBER = "list members";
   public static final String LIST_MEMBER__HELP = "Display all or a subset of members.";
-  public static final String LIST_MEMBER__GROUP = "group";
   public static final String LIST_MEMBER__GROUP__HELP =
       "Group name for which members will be displayed.";
   public static final String LIST_MEMBER__MSG__NO_MEMBER_FOUND = NO_MEMBERS_FOUND_MESSAGE;
@@ -1706,10 +1676,8 @@ public class CliStrings {
   /* 'list region' command */
   public static final String LIST_REGION = "list regions";
   public static final String LIST_REGION__HELP = "Display regions of a member or members.";
-  public static final String LIST_REGION__GROUP = "group";
   public static final String LIST_REGION__GROUP__HELP =
       "Group of members for which regions will be displayed.";
-  public static final String LIST_REGION__MEMBER = "member";
   public static final String LIST_REGION__MEMBER__HELP =
       "Name/Id of the member for which regions will be displayed.";
   public static final String LIST_REGION__MSG__NOT_FOUND = "No Regions Found";
@@ -1755,10 +1723,8 @@ public class CliStrings {
   public static final String NETSTAT = "netstat";
   public static final String NETSTAT__HELP =
       "Report network information and statistics via the \"netstat\" operating system command.";
-  public static final String NETSTAT__MEMBER = "member";
   public static final String NETSTAT__MEMBER__HELP =
       "Name/Id of the member(s) on which to run the netstat command.";
-  public static final String NETSTAT__GROUP = "group";
   public static final String NETSTAT__GROUP__HELP =
       "Group of members on which to run the netstat command.";
   public static final String NETSTAT__FILE = "file";
@@ -1784,9 +1750,7 @@ public class CliStrings {
 
   /* pause gateway-sender */
   public static final String PAUSE_GATEWAYSENDER = "pause gateway-sender";
-  public static final String PAUSE_GATEWAYSENDER__ID = "id";;
-  public static final String PAUSE_GATEWAYSENDER__MEMBER = "member";
-  public static final String PAUSE_GATEWAYSENDER__GROUP = "group";
+  public static final String PAUSE_GATEWAYSENDER__ID = "id";
   public static final String PAUSE_GATEWAYSENDER__HELP =
       "Pause the Gateway Sender on a member or members.";
   public static final String PAUSE_GATEWAYSENDER__ID__HELP = "ID of the Gateway Sender.";
@@ -1938,9 +1902,7 @@ public class CliStrings {
 
   /* resume gateway-sender */
   public static final String RESUME_GATEWAYSENDER = "resume gateway-sender";
-  public static final String RESUME_GATEWAYSENDER__ID = "id";;
-  public static final String RESUME_GATEWAYSENDER__MEMBER = "member";
-  public static final String RESUME_GATEWAYSENDER__GROUP = "group";
+  public static final String RESUME_GATEWAYSENDER__ID = "id";
   public static final String RESUME_GATEWAYSENDER__HELP =
       "Resume the Gateway Sender on a member or members.";
   public static final String RESUME_GATEWAYSENDER__ID__HELP = "ID of the Gateway Sender.";
@@ -1977,7 +1939,7 @@ public class CliStrings {
       "Set GFSH variables that can be used by commands. "
           + "For example: if variable \"CACHE_SERVERS_GROUP\" is set then to use it with \""
           + CliStrings.LIST_MEMBER + "\", use \"" + CliStrings.LIST_MEMBER + " --"
-          + CliStrings.LIST_MEMBER__GROUP + "=${CACHE_SERVERS_GROUP}\". "
+          + CliStrings.GROUP + "=${CACHE_SERVERS_GROUP}\". "
           + "The \"echo\" command can be used to know the value of a variable.";
   public static final String SET_VARIABLE__VAR = "name";
   public static final String SET_VARIABLE__VAR__HELP =
@@ -2029,7 +1991,6 @@ public class CliStrings {
   /* Show Log command */
   public static final String SHOW_LOG = "show log";
   public static final String SHOW_LOG_HELP = "Display the log for a member.";
-  public static final String SHOW_LOG_MEMBER = "member";
   public static final String SHOW_LOG_MEMBER_HELP =
       "Name/Id of the member whose log file will be displayed.";
   public static final String SHOW_LOG_LINE_NUM = "lines";
@@ -2047,7 +2008,6 @@ public class CliStrings {
   public static final String SHOW_METRICS__REGION = "region";
   public static final String SHOW_METRICS__REGION__HELP =
       "Name/Path of the region whose metrics will be displayed/exported.";
-  public static final String SHOW_METRICS__MEMBER = "member";
   public static final String SHOW_METRICS__MEMBER__HELP =
       "Name/Id of the member whose metrics will be displayed/exported.";
   public static final String SHOW_METRICS__CATEGORY = "categories";
@@ -2112,10 +2072,8 @@ public class CliStrings {
   public static final String CHANGE_LOGLEVEL = "change loglevel";
   public static final String CHANGE_LOGLEVEL__HELP =
       "This command changes log-level run time on specified servers.";
-  public static final String CHANGE_LOGLEVEL__GROUPS = "groups";
   public static final String CHANGE_LOGLEVEL__GROUPS__HELP =
       "Groups of members to change the log-level";
-  public static final String CHANGE_LOGLEVEL__MEMBER = "members";
   public static final String CHANGE_LOGLEVEL__MEMBER__HELP =
       "Name/Id of the member to change the log-level";
   public static final String CHANGE_LOGLEVEL__LOGLEVEL = "loglevel";
@@ -2143,10 +2101,8 @@ public class CliStrings {
   public static final String CREATE_GATEWAYRECEIVER = "create gateway-receiver";
   public static final String CREATE_GATEWAYRECEIVER__HELP =
       "Create the Gateway Receiver on a member or members.";
-  public static final String CREATE_GATEWAYRECEIVER__GROUP = "group";
   public static final String CREATE_GATEWAYRECEIVER__GROUP__HELP =
       "Group(s) of members on which to create the Gateway Receiver.";
-  public static final String CREATE_GATEWAYRECEIVER__MEMBER = "member";
   public static final String CREATE_GATEWAYRECEIVER__MEMBER__HELP =
       "Name/Id of the member on which to create the Gateway Receiver.";
   public static final String CREATE_GATEWAYRECEIVER__STARTPORT = "start-port";
@@ -2178,8 +2134,6 @@ public class CliStrings {
 
   /* start gateway-receiver */
   public static final String START_GATEWAYRECEIVER = "start gateway-receiver";
-  public static final String START_GATEWAYRECEIVER__MEMBER = "member";
-  public static final String START_GATEWAYRECEIVER__GROUP = "group";
   public static final String START_GATEWAYRECEIVER__HELP =
       "Start the Gateway Receiver on a member or members.";
   public static final String START_GATEWAYRECEIVER__GROUP__HELP =
@@ -2191,10 +2145,8 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER = "create gateway-sender";
   public static final String CREATE_GATEWAYSENDER__HELP =
       "Create the Gateway Sender on a member or members.";
-  public static final String CREATE_GATEWAYSENDER__GROUP = "group";
   public static final String CREATE_GATEWAYSENDER__GROUP__HELP =
       "Group(s) of members on which to create the Gateway Sender.";
-  public static final String CREATE_GATEWAYSENDER__MEMBER = "member";
   public static final String CREATE_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to create the Gateway Sender.";
   public static final String CREATE_GATEWAYSENDER__ID = "id";
@@ -2266,10 +2218,8 @@ public class CliStrings {
       "Start the Gateway Sender on a member or members.";
   public static final String START_GATEWAYSENDER__ID = "id";
   public static final String START_GATEWAYSENDER__ID__HELP = "ID of the Gateway Sender.";
-  public static final String START_GATEWAYSENDER__GROUP = "group";
   public static final String START_GATEWAYSENDER__GROUP__HELP =
       "Group(s) of members on which to start the Gateway Sender.";
-  public static final String START_GATEWAYSENDER__MEMBER = "member";
   public static final String START_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to start the Gateway Sender.";
 
@@ -2278,10 +2228,8 @@ public class CliStrings {
   public static final String DESTROY_GATEWAYSENDER = "destroy gateway-sender";
   public static final String DESTROY_GATEWAYSENDER__HELP =
       "Destroy the Gateway Sender on a member or members.";
-  public static final String DESTROY_GATEWAYSENDER__GROUP = "group";
   public static final String DESTROY_GATEWAYSENDER__GROUP__HELP =
       "Group(s) of members on which to destroy the Gateway Sender.";
-  public static final String DESTROY_GATEWAYSENDER__MEMBER = "member";
   public static final String DESTROY_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to destroy the Gateway Sender.";
   public static final String DESTROY_GATEWAYSENDER__ID = "id";
@@ -2363,7 +2311,6 @@ public class CliStrings {
   public static final String START_LOCATOR__FORCE = "force";
   public static final String START_LOCATOR__FORCE__HELP =
       "Whether to allow the PID file from a previous Locator run to be overwritten.";
-  public static final String START_LOCATOR__GROUP = "group";
   public static final String START_LOCATOR__GROUP__HELP = "Group(s) the Locator will be a part of.";
   public static final String START_LOCATOR__HOSTNAME_FOR_CLIENTS = "hostname-for-clients";
 
@@ -2461,7 +2408,6 @@ public class CliStrings {
   public static final String START_MANAGER__BIND_ADDRESS = "bind-address";
   public static final String START_MANAGER__BIND_ADDRESS__HELP =
       "IP address the Manager listen on for JMX-RMI client connections. The default is to bind to all local addresses.";
-  public static final String START_MANAGER__GROUP = "group";
   public static final String START_MANAGER__GROUP__HELP =
       "Group(s) this Manager will be a part of.";
   public static final String START_MANAGER__MAXHEAP = "max-heap";
@@ -2508,7 +2454,6 @@ public class CliStrings {
   public static final String START_SERVER__FORCE = "force";
   public static final String START_SERVER__FORCE__HELP =
       "Whether to allow the PID file from a previous Cache Server run to be overwritten.";
-  public static final String START_SERVER__GROUP = "group";
   public static final String START_SERVER__GROUP__HELP =
       "Group(s) the Cache Server will be a part of.";
   public static final String START_SERVER__INCLUDE_SYSTEM_CLASSPATH = "include-system-classpath";
@@ -2705,10 +2650,8 @@ public class CliStrings {
   public static final String STATUS_GATEWAYRECEIVER = "status gateway-receiver";
   public static final String STATUS_GATEWAYRECEIVER__HELP =
       "Display the status of a Gateway Receiver.";
-  public static final String STATUS_GATEWAYRECEIVER__GROUP = "group";
   public static final String STATUS_GATEWAYRECEIVER__GROUP__HELP =
       "Group(s) of Gateway Receivers for which to display status.";
-  public static final String STATUS_GATEWAYRECEIVER__MEMBER = "member";
   public static final String STATUS_GATEWAYRECEIVER__MEMBER__HELP =
       "Name/Id of the Gateway Receiver for which to display status.";
 
@@ -2717,10 +2660,8 @@ public class CliStrings {
   public static final String STATUS_GATEWAYSENDER__HELP = "Display the status of a Gateway Sender.";
   public static final String STATUS_GATEWAYSENDER__ID = "id";
   public static final String STATUS_GATEWAYSENDER__ID__HELP = "ID of the Gateway Sender.";
-  public static final String STATUS_GATEWAYSENDER__GROUP = "group";
   public static final String STATUS_GATEWAYSENDER__GROUP__HELP =
       "Group(s) of Gateway Senders for which to display status.";
-  public static final String STATUS_GATEWAYSENDER__MEMBER = "member";
   public static final String STATUS_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the Gateway Sender for which to display status.";
 
@@ -2767,8 +2708,6 @@ public class CliStrings {
 
   /* stop gateway-reciver */
   public static final String STOP_GATEWAYRECEIVER = "stop gateway-receiver";
-  public static final String STOP_GATEWAYRECEIVER__MEMBER = "member";
-  public static final String STOP_GATEWAYRECEIVER__GROUP = "group";
   public static final String STOP_GATEWAYRECEIVER__HELP =
       "Stop the Gateway Receiver on a member or members.";
   public static final String STOP_GATEWAYRECEIVER__GROUP__HELP =
@@ -2778,9 +2717,7 @@ public class CliStrings {
 
   /* stop gateway-sender */
   public static final String STOP_GATEWAYSENDER = "stop gateway-sender";
-  public static final String STOP_GATEWAYSENDER__ID = "id";;
-  public static final String STOP_GATEWAYSENDER__MEMBER = "member";
-  public static final String STOP_GATEWAYSENDER__GROUP = "group";
+  public static final String STOP_GATEWAYSENDER__ID = "id";
   public static final String STOP_GATEWAYSENDER__HELP =
       "Stop the Gateway Sender on a member or members.";
   public static final String STOP_GATEWAYSENDER__ID__HELP = "ID of the Gateway Sender.";
@@ -2840,10 +2777,8 @@ public class CliStrings {
   /* undeploy command */
   public static final String UNDEPLOY = "undeploy";
   public static final String UNDEPLOY__HELP = "Undeploy JARs from a member or members.";
-  public static final String UNDEPLOY__GROUP = "group";
   public static final String UNDEPLOY__GROUP__HELP =
       "Group(s) of members from which to undeploy JARs. If not specified, undeploy will occur on all members.";
-  public static final String UNDEPLOY__JAR = "jar";
   public static final String UNDEPLOY__JAR__HELP =
       "JAR(s) to be undeployed.  If not specified, all JARs will be undeployed.";
   public static final String UNDEPLOY__NO_JARS_FOUND_MESSAGE = "No JAR Files Found";
@@ -3006,10 +2941,8 @@ public class CliStrings {
       "The id used to identify the durable client";
   public static final String LIST_DURABLE_CQS__HELP =
       "List durable client cqs associated with the specified durable client id.";
-  public static final String LIST_DURABLE_CQS__MEMBER = "member";
   public static final String LIST_DURABLE_CQS__MEMBER__HELP =
       "Name/Id of the member for which the durable client is registered and durable cqs will be displayed.";
-  public static final String LIST_DURABLE_CQS__GROUP = "group";
   public static final String LIST_DURABLE_CQS__GROUP__HELP =
       "Group of members for which the durable client is registered and durable cqs will be displayed.";
   public static final String LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT =
@@ -3035,10 +2968,8 @@ public class CliStrings {
   public static final String CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID = DURABLE_CLIENT_ID;
   public static final String CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID__HELP =
       "The id of the durable client";
-  public static final String CLOSE_DURABLE_CQS__MEMBER = "member";
   public static final String CLOSE_DURABLE_CQS__MEMBER__HELP =
       "Name/Id of the member for which the durable client is registered and the cq to be closed.";
-  public static final String CLOSE_DURABLE_CQS__GROUP = "group";
   public static final String CLOSE_DURABLE_CQS__GROUP__HELP =
       "Group of members for which the durable client is registered and the cq to be closed.";
   public static final String CLOSE_DURABLE_CQS__FAILURE__HEADER =
@@ -3055,10 +2986,8 @@ public class CliStrings {
   public static final String CLOSE_DURABLE_CLIENTS__CLIENT__ID = DURABLE_CLIENT_ID;
   public static final String CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP =
       "The id used to identify the durable client.";
-  public static final String CLOSE_DURABLE_CLIENTS__MEMBER = "member";
   public static final String CLOSE_DURABLE_CLIENTS__MEMBER__HELP =
       "Name/Id of the member for which the durable client is to be closed.";
-  public static final String CLOSE_DURABLE_CLIENTS__GROUP = "group";
   public static final String CLOSE_DURABLE_CLIENTS__GROUP__HELP =
       "Group of members for which the durable client is to be closed.";
   public static final String CLOSE_DURABLE_CLIENTS__FAILURE__HEADER =
@@ -3075,10 +3004,8 @@ public class CliStrings {
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME = "durable-cq-name";
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME__HELP =
       "The name that identifies the cq.";
-  public static final String COUNT_DURABLE_CQ_EVENTS__MEMBER = "member";
   public static final String COUNT_DURABLE_CQ_EVENTS__MEMBER__HELP =
       "Name/Id of the member for which the subscription events are to be counted.";
-  public static final String COUNT_DURABLE_CQ_EVENTS__GROUP = "group";
   public static final String COUNT_DURABLE_CQ_EVENTS__GROUP__HELP =
       "Group of members for which the subscription queue events are to be counted.";
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE_CLIENT_NOT_FOUND =
@@ -3229,6 +3156,8 @@ public class CliStrings {
       "Password to securely connect to the cluster.";
   public static final String START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED =
       "password must be specified.";
+
+
 
   /**
    * Creates a MessageFormat with the given pattern and uses it to format the given argument.

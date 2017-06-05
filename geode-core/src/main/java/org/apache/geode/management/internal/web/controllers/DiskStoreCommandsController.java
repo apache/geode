@@ -72,15 +72,13 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.POST, value = "/diskstores/{name}", params = "op=compact")
   public Callable<ResponseEntity<String>> compactDiskStore(
       @PathVariable("name") final String diskStoreNameId,
-      @RequestParam(value = CliStrings.COMPACT_DISK_STORE__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.COMPACT_DISK_STORE);
 
     command.addOption(CliStrings.COMPACT_DISK_STORE__NAME, decode(diskStoreNameId));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.COMPACT_DISK_STORE__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return getProcessCommandCallable(command.toString());
@@ -110,8 +108,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
           defaultValue = "90") final Float diskUsageWarningPercentage,
       @RequestParam(value = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT,
           defaultValue = "99") final Integer diskUsageCriticalPercentage,
-      @RequestParam(value = CliStrings.CREATE_DISK_STORE__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
 
     command.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStoreNameId);
@@ -136,8 +133,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
         String.valueOf(diskUsageCriticalPercentage));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CREATE_DISK_STORE__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -146,9 +142,9 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/diskstores/{name}")
   @ResponseBody
   public String describeDiskStore(@PathVariable("name") final String diskStoreNameId,
-      @RequestParam(CliStrings.DESCRIBE_DISK_STORE__MEMBER) final String memberNameId) {
+      @RequestParam(CliStrings.MEMBER) final String memberNameId) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.DESCRIBE_DISK_STORE);
-    command.addOption(CliStrings.DESCRIBE_DISK_STORE__MEMBER, memberNameId);
+    command.addOption(CliStrings.MEMBER, memberNameId);
     command.addOption(CliStrings.DESCRIBE_DISK_STORE__NAME, decode(diskStoreNameId));
     return processCommand(command.toString());
   }
@@ -157,15 +153,13 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.DELETE, value = "/diskstores/{name}")
   @ResponseBody
   public String destroyDiskStore(@PathVariable("name") final String diskStoreNameId,
-      @RequestParam(value = CliStrings.DESTROY_DISK_STORE__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
 
     command.addOption(CliStrings.DESTROY_DISK_STORE__NAME, decode(diskStoreNameId));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.DESTROY_DISK_STORE__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

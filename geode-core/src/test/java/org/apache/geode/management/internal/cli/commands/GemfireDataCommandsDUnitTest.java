@@ -434,34 +434,32 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     manager.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true,
-            new String[] {DATA_REGION_NAME_VM1_PATH, DATA_REGION_NAME_VM2_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 2, true,
-            new String[] {DATA_REGION_NAME_PATH, DATA_REGION_NAME_CHILD_1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false,
-            new String[] {DATA_REGION_NAME_PATH, DATA_REGION_NAME_CHILD_1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true,
-            new String[] {DATA_REGION_NAME_VM1_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false,
-            new String[] {DATA_REGION_NAME_VM1_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true,
-            new String[] {DATA_REGION_NAME_VM2_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false,
-            new String[] {DATA_REGION_NAME_VM2_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, DATA_PAR_REGION_NAME_VM1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 0, false,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, DATA_PAR_REGION_NAME_VM1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, "/jfgkdfjgkd"}); // one wrong region
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, "/jfgkdfjgkd"}); // one wrong region
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true,
-            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both
+        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true, DATA_REGION_NAME_VM1_PATH,
+            DATA_REGION_NAME_VM2_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 2, true, DATA_REGION_NAME_PATH,
+            DATA_REGION_NAME_CHILD_1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false, DATA_REGION_NAME_PATH,
+            DATA_REGION_NAME_CHILD_1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true, DATA_REGION_NAME_VM1_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false, DATA_REGION_NAME_VM1_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true, DATA_REGION_NAME_VM2_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false, DATA_REGION_NAME_VM2_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true, DATA_PAR_REGION_NAME_VM2_PATH,
+            DATA_PAR_REGION_NAME_VM1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 0, false, DATA_PAR_REGION_NAME_VM2_PATH,
+            DATA_PAR_REGION_NAME_VM1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true, DATA_PAR_REGION_NAME_VM2_PATH,
+            "/jfgkdfjgkd"); // one wrong region
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false, DATA_PAR_REGION_NAME_VM2_PATH,
+            "/jfgkdfjgkd"); // one wrong region
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true, "/dhgfdhgf", "/dhgddhd"); // both
         // regions
         // wrong
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false,
-            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false, "/dhgfdhgf", "/dhgddhd"); // both
         // regions
         // wrong
       }
@@ -1755,7 +1753,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
       CommandStringBuilder csb = new CommandStringBuilder(CliStrings.EXPORT_DATA);
       csb.addOption(CliStrings.EXPORT_DATA__REGION, regionName);
-      csb.addOption(CliStrings.EXPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       csb.addOption(CliStrings.EXPORT_DATA__FILE, filePath);
       String commandString = csb.toString();
 
@@ -1788,7 +1786,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.IMPORT_DATA);
       csb.addOption(CliStrings.IMPORT_DATA__REGION, regionName);
       csb.addOption(CliStrings.IMPORT_DATA__FILE, filePath);
-      csb.addOption(CliStrings.IMPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
 
       commandString = csb.toString();
       cmdResult = executeCommand(commandString);
@@ -1834,7 +1832,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.IMPORT_DATA);
       csb.addOption(CliStrings.IMPORT_DATA__REGION, regionName);
       csb.addOption(CliStrings.IMPORT_DATA__FILE, filePath);
-      csb.addOption(CliStrings.IMPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       csb.addOption(CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, "true");
       commandString = csb.toString();
       cmdResult = executeCommand(commandString);
@@ -1852,7 +1850,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.EXPORT_DATA);
       csb.addOption(CliStrings.EXPORT_DATA__REGION, "FDSERW");
       csb.addOption(CliStrings.EXPORT_DATA__FILE, filePath);
-      csb.addOption(CliStrings.EXPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       commandString = csb.getCommandString();
 
       cmdResult = executeCommand(commandString);
@@ -1864,7 +1862,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.IMPORT_DATA);
       csb.addOption(CliStrings.IMPORT_DATA__REGION, regionName);
       csb.addOption(CliStrings.IMPORT_DATA__FILE, "#WEQW");
-      csb.addOption(CliStrings.IMPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       commandString = csb.getCommandString();
 
       cmdResult = executeCommand(commandString);

@@ -115,7 +115,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String useAttributesFrom,
-      @CliOption(key = CliStrings.CREATE_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
@@ -379,7 +380,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
   public Result alterRegion(
       @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
-      @CliOption(key = CliStrings.ALTER_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.ALTER_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
           specifiedDefaultValue = "-1",
@@ -991,7 +993,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       if (regionMembersList.size() == 0) {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE,
-                new Object[] {regionPath, "jmx-manager-update-rate milliseconds"}));
+                regionPath, "jmx-manager-update-rate milliseconds"));
       }
 
       CliFunctionResult destroyRegionResult;
@@ -999,8 +1001,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
       List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
-      String message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED,
-          new Object[] {regionPath, ""});
+      String message =
+          CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED, regionPath, "");
 
       // Only if there is an error is this set to false
       boolean isRegionDestroyed = true;
@@ -1013,12 +1015,12 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
           LogWrapper.getInstance().info(t.getMessage(), t);
           message = CliStrings.format(
               CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1,
-              new Object[] {regionPath, t.getMessage()});
+              regionPath, t.getMessage());
           isRegionDestroyed = false;
         } else {
           message = CliStrings.format(
               CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
-              new Object[] {regionPath, destroyRegionResult.getMessage()});
+              regionPath, destroyRegionResult.getMessage());
           isRegionDestroyed = false;
         }
       }
@@ -1029,12 +1031,12 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       }
     } catch (IllegalStateException e) {
       result = ResultBuilder.createUserErrorResult(CliStrings.format(
-          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
-          new Object[] {regionPath, e.getMessage()}));
+          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1, regionPath,
+          e.getMessage()));
     } catch (Exception e) {
       result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
-          new Object[] {regionPath, e.getMessage()}));
+          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1, regionPath,
+          e.getMessage()));
     }
 
     if (xmlEntity.get() != null) {

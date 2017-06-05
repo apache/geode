@@ -328,7 +328,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__MEMBER, VM1Name);
+    csb.addOption(CliStrings.MEMBER, VM1Name);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "key");
 
     String commandString = csb.toString();
@@ -352,7 +352,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.DESTROY_INDEX__MEMBER, VM1Name);
+    csb.addOption(CliStrings.MEMBER, VM1Name);
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     resultAsString = commandResultToString(commandResult);
@@ -380,7 +380,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-    csb.addOption(CliStrings.CREATE_INDEX__GROUP, group1);
+    csb.addOption(CliStrings.GROUP, group1);
 
     String commandString = csb.toString();
     CommandResult commandResult = executeCommand(commandString);
@@ -400,7 +400,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.DESTROY_INDEX__GROUP, group1);
+    csb.addOption(CliStrings.GROUP, group1);
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     resultAsString = commandResultToString(commandResult);
@@ -542,7 +542,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "Region");
-    csb.addOption(CliStrings.DESTROY_INDEX__MEMBER, "wrongOne");
+    csb.addOption(CliStrings.MEMBER, "wrongOne");
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     resultAsString = commandResultToString(commandResult);
@@ -583,7 +583,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(true, resultAsString.contains(VM1Name));
 
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__GROUP, group1);
+    csb.addOption(CliStrings.GROUP, group1);
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     resultAsString = commandResultToString(commandResult);
@@ -702,7 +702,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     commandStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     commandStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    commandStringBuilder.addOption(CliStrings.CREATE_INDEX__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION, "\"/" + regionName + " p\"");
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -748,7 +748,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     // Test destroying the index
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     commandStringBuilder.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    commandStringBuilder.addOption(CliStrings.DESTROY_INDEX__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.DESTROY_INDEX__REGION, "/" + regionName);
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());

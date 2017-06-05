@@ -58,7 +58,7 @@ public class QueueCommands implements GfshCommand {
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, mandatory = true,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP) String id,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] groups,
