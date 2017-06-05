@@ -81,8 +81,9 @@ public class GfshParserParsingTest {
     GfshParseResult result = parser.parse(buffer);
     assertThat(result).isNotNull();
     Object[] arguments = result.getArguments();
-    // the 17th argument is the jvmarguments;
-    String[] jvmArgs = (String[]) arguments[17];
+    int indexOfJvmArgumentsParameterInStartLocator = 18;
+
+    String[] jvmArgs = (String[]) arguments[indexOfJvmArgumentsParameterInStartLocator];
     assertThat(jvmArgs).hasSize(2);
 
     // make sure the resulting jvm arguments do not have quotes (either single or double) around
@@ -99,8 +100,8 @@ public class GfshParserParsingTest {
     GfshParseResult result = parser.parse(buffer);
     assertThat(result).isNotNull();
     Object[] arguments = result.getArguments();
-    // the 18th argument is the jvmarguments;
-    String[] jvmArgs = (String[]) arguments[18];
+    int indexOfJvmArgumentsParameterInStartServer = 19;
+    String[] jvmArgs = (String[]) arguments[indexOfJvmArgumentsParameterInStartServer];
     assertThat(jvmArgs).hasSize(2);
 
     // make sure the resulting jvm arguments do not have quotes (either single or double) around

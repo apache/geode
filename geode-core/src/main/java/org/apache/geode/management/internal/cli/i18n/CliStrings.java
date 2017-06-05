@@ -2366,6 +2366,9 @@ public class CliStrings {
   public static final String START_LOCATOR__GROUP = "group";
   public static final String START_LOCATOR__GROUP__HELP = "Group(s) the Locator will be a part of.";
   public static final String START_LOCATOR__HOSTNAME_FOR_CLIENTS = "hostname-for-clients";
+
+  public static final String START_LOCATOR__JMX_MANAGER_HOSTNAME_FOR_CLIENTS__HELP =
+      "Hostname provided to clients by the locator for the location of a JMX Manager.";
   public static final String START_LOCATOR__HOSTNAME_FOR_CLIENTS__HELP =
       "Hostname or IP address that will be sent to clients so they can connect to this Locator. The default is the bind-address of the Locator.";
   public static final String START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH = "include-system-classpath";
@@ -2514,6 +2517,9 @@ public class CliStrings {
   public static final String START_SERVER__INITIAL_HEAP = "initial-heap";
   public static final String START_SERVER__INITIAL_HEAP__HELP =
       "Initial size of the heap in the same format as the JVM -Xms parameter.";
+  public static final String START_SERVER__JMX_MANAGER_HOSTNAME_FOR_CLIENTS__HELP =
+      "Hostname provided to clients by the server for the location of a JMX Manager.";
+
   public static final String START_SERVER__J = "J";
   public static final String START_SERVER__J__HELP =
       "Argument passed to the JVM on which the server will run. For example, --J=-Dfoo.bar=true will set the system property \"foo.bar\" to \"true\".";
