@@ -318,7 +318,7 @@ differently than non-LRU values.
 ## Default Recovery Behavior for Persistent Regions
 
 The default behavior is for the system to recover all keys, then asynchronously recover all data
-values that were resident, leaving LRU values unrecovered. This default strategy is best for
+values, leaving LRU values unrecovered. This default strategy is best for
 most applications, because it strikes a balance between recovery speed and cache completeness.
 
 ### Configuring Recovery of Persistent Regions
@@ -352,7 +352,7 @@ Three Java system parameters allow the developer to control the recovery behavio
   no values are recovered.
 
   *How used:* When `false`, allows the system to become available sooner, but some time must elapse
-  before the entire cache is refreshed. Some key retrievals will require disk access, and some will not.
+  before all values have been read from disk into cache memory. Some key retrievals will require disk access, and some will not.
   When `true`, prolongs restart time, but ensures that when available for use, the cache is fully
   populated and data retrieval times will be optimal.
 
