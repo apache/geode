@@ -28,7 +28,7 @@ When Geode determines that adding or updating an entry would take the region ove
 
 ## <a id="how_eviction_works__section_69E2AA453EDE4E088D1C3332C071AFE1" class="no-quick-link"></a>Eviction in Partitioned Regions
 
-In partitioned regions, Geode removes the oldest entry it can find *in the bucket where the new entry operation is being performed*. Geode maintains LRU entry information on a bucket-by-bucket bases, as the cost of maintaining information across the partitioned region would be too great a performance hit.
+In partitioned regions, Geode removes the oldest entry it can find *in the bucket where the new entry operation is being performed*. Geode maintains LRU entry information on a bucket-by-bucket basis, as the cost of maintaining information across the partitioned region would be too great a performance hit.
 
 -   For memory and entry count eviction, LRU eviction is done in the bucket where the new entry operation is being performed until the overall size of the combined buckets in the member has dropped enough to perform the operation without going over the limit.
 -   For heap eviction, each partitioned region bucket is treated as if it were a separate region, with each eviction action only considering the LRU for the bucket, and not the partitioned region as a whole.
