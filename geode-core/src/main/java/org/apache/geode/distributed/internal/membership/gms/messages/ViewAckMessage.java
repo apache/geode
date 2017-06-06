@@ -37,9 +37,10 @@ public class ViewAckMessage extends HighPriorityDistributionMessage {
     this.preparing = preparing;
   }
 
-  public ViewAckMessage(InternalDistributedMember recipient, NetView alternateView) {
+  public ViewAckMessage(int viewId, InternalDistributedMember recipient, NetView alternateView) {
     super();
     setRecipient(recipient);
+    this.viewId = viewId;
     this.alternateView = alternateView;
     this.preparing = true;
   }
