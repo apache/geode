@@ -76,7 +76,7 @@ Region creation is subject to attribute consistency checks, both internal to the
 The `region` declaration of a replicated region named Portfolios:
 
 ``` pre
-<region name="Portfolios" id="REPLICATE"/>
+<region name="Portfolios" refid="REPLICATE"/>
 ```
 
 The `region` declaration of a partitioned region named myRegion:
@@ -245,8 +245,8 @@ You can create subregions using one of the following methods:
             lock-timeout="60"
             search-timeout="300">
         <!-- Create a region named Portfolios -->
-          <region name="Portfolios" id="REPLICATE">
-              <region name="Private" id="REPLICATE">
+          <region name="Portfolios" refid="REPLICATE">
+              <region name="Private" refid="REPLICATE">
               ...
               </region>
           </region>
