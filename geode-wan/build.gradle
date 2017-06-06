@@ -20,4 +20,5 @@ dependencies {
 
   testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile project(':geode-junit')
+  testCompile project(':geode-old-versions')
 }

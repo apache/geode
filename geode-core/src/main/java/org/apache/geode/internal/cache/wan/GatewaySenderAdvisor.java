@@ -551,7 +551,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       this.senderEventListenerClassNames = DataSerializer.readArrayList(in);
       this.isDiskSynchronous = in.readBoolean();
       this.dispatcherThreads = in.readInt();
-      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.CURRENT) < 0) {
+      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) < 0) {
         Gateway.OrderPolicy oldOrderPolicy = DataSerializer.readObject(in);
         if (oldOrderPolicy != null) {
           if (oldOrderPolicy.name().equals(OrderPolicy.KEY.name())) {
@@ -592,7 +592,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       DataSerializer.writeArrayList(senderEventListenerClassNames, out);
       out.writeBoolean(isDiskSynchronous);
       out.writeInt(dispatcherThreads);
-      if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.CURRENT) < 0
+      if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90) < 0
           && this.orderPolicy != null) {
         String orderPolicyName = this.orderPolicy.name();
         if (orderPolicyName.equals(Gateway.OrderPolicy.KEY.name())) {
