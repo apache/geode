@@ -98,13 +98,6 @@ import joptsimple.OptionSet;
 @SuppressWarnings({"unused"})
 public class ServerLauncher extends AbstractLauncher<String> {
 
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
-  @Deprecated
-  protected static final Integer DEFAULT_SERVER_PORT = getDefaultServerPort();
-
   private static final Map<String, String> helpMap = new HashMap<>();
 
   static {
@@ -153,13 +146,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
         "stop [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
     usageMap.put(Command.VERSION, "version");
   }
-
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
-  @Deprecated
-  public static final String DEFAULT_SERVER_PID_FILE = "vf.gf.server.pid";
 
   private static final String DEFAULT_SERVER_LOG_EXT = ".log";
   private static final String DEFAULT_SERVER_LOG_NAME = "gemfire";
