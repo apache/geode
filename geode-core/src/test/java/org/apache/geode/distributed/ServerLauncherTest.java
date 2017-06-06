@@ -330,7 +330,7 @@ public class ServerLauncherTest {
   public void testSetAndGetServerPort() {
     Builder builder = new Builder();
 
-    assertEquals(ServerLauncher.DEFAULT_SERVER_PORT, builder.getServerPort());
+    assertEquals(Integer.valueOf(CacheServer.DEFAULT_PORT), builder.getServerPort());
     assertSame(builder, builder.setServerPort(0));
     assertEquals(0, builder.getServerPort().intValue());
     assertSame(builder, builder.setServerPort(1));
@@ -342,7 +342,7 @@ public class ServerLauncherTest {
     assertSame(builder, builder.setServerPort(65535));
     assertEquals(65535, builder.getServerPort().intValue());
     assertSame(builder, builder.setServerPort(null));
-    assertEquals(ServerLauncher.DEFAULT_SERVER_PORT, builder.getServerPort());
+    assertEquals(Integer.valueOf(CacheServer.DEFAULT_PORT), builder.getServerPort());
   }
 
   @Test(expected = IllegalArgumentException.class)
