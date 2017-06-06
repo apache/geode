@@ -306,7 +306,9 @@ public class JGroupsMessenger implements Messenger {
         myChannel = (JChannel) oldChannel;
         // scrub the old channel
         ViewId vid = new ViewId(new JGAddress(), 0);
-        View jgv = new View(vid, new ArrayList<>());
+        List<Address> members = new ArrayList<>();
+        members.add(new UUID(0, 0));// TODO open a JGroups JIRA for GEODE-3034
+        View jgv = new View(vid, members);
         this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
         UUID logicalAddress = (UUID) myChannel.getAddress();
         if (logicalAddress instanceof JGAddress) {
