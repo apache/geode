@@ -50,14 +50,14 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
 
   private transient InternalLocator locator;
 
-  public static int getPid() {
-    FakeLauncher fakeLauncher = (FakeLauncher) LocatorLauncher.getInstance();
-    if (fakeLauncher == null) {
-      return -1;
-    }
-    return fakeLauncher.getPid();
-  }
-
+  // public static int getPid() {
+  // FakeLauncher fakeLauncher = (FakeLauncher) LocatorLauncher.getInstance();
+  // if (fakeLauncher == null) {
+  // return -1;
+  // }
+  // return fakeLauncher.getPid();
+  // }
+  //
 
   public LocatorStarterRule() {}
 
@@ -104,7 +104,7 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
 
     LocatorLauncher fakeLauncher = new FakeLauncher(new LocatorLauncher.Builder());
     FakeLauncher.setInstance(fakeLauncher);
-    ((FakeLauncher) fakeLauncher).startProcess(getWorkingDir());
+    // ((FakeLauncher) fakeLauncher).startProcess(getWorkingDir());
 
     if (config.getEnableClusterConfiguration()) {
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
@@ -127,10 +127,10 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
       super(builder);
     }
 
-    @Override
-    public Integer getPid() {
-      return process.getPid();
-    }
+    // @Override
+    // public Integer getPid() {
+    // return process.getPid();
+    // }
 
     @Override
     public LocatorState status() {
@@ -145,27 +145,27 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
       LocatorLauncher.setInstance(instance);
     }
 
-    public ControllableProcess getProcess() {
-      return process;
-    }
-
-    public void startProcess(File workingDir) {
-      try {
-        ControlNotificationHandler controlHandler = new ControlNotificationHandler() {
-          @Override
-          public void handleStop() {}
-
-          @Override
-          public ServiceState<?> handleStatus() {
-            return null;
-          }
-        };
-
-        this.process =
-            new ControllableProcess(controlHandler, workingDir, ProcessType.LOCATOR, false);
-      } catch (Exception ignored) {
-      }
-    }
+    // public ControllableProcess getProcess() {
+    // return process;
+    // }
+    //
+    // public void startProcess(File workingDir) {
+    // try {
+    // ControlNotificationHandler controlHandler = new ControlNotificationHandler() {
+    // @Override
+    // public void handleStop() {}
+    //
+    // @Override
+    // public ServiceState<?> handleStatus() {
+    // return null;
+    // }
+    // };
+    //
+    // this.process =
+    // new ControllableProcess(controlHandler, workingDir, ProcessType.LOCATOR, false);
+    // } catch (Exception ignored) {
+    // }
+    // }
 
   }
 }

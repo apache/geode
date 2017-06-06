@@ -60,15 +60,17 @@ public class GfshExitStatusDUnitTest {
   public void offlineStatusWithInvalidOptionsShouldFail() throws Exception {
     ExitCode expectedExitCode = ExitCode.FATAL;
 
-    String statusLocatorByPID = "status locator --pid=10";
-    String statusServerByPID = "status server --pid=11";
-    String statusLocatorByDir = "status locator --dir=some-invalid-dir";
-    String statusServerByDir = "status server --dir=some-invalid-dir";
+    // String statusLocatorByPID = "status locator --pid=10";
+    // String statusServerByPID = "status server --pid=11";
+    // String statusLocatorByDir = "status locator --dir=some-invalid-dir";
+    // String statusServerByDir = "status server --dir=some-invalid-dir";
     String statusLocatorByHostAndPort = "status locator --host=invalid-host-name --port=123";
     String statusLocatorByPort = "status locator --port=123";
 
-    executeAndVerifyStatusCommands(expectedExitCode, statusLocatorByPID, statusServerByPID,
-        statusLocatorByDir, statusServerByDir, statusLocatorByHostAndPort, statusLocatorByPort);
+    executeAndVerifyStatusCommands(expectedExitCode,
+        // statusLocatorByPID, statusServerByPID,
+        // statusLocatorByDir, statusServerByDir,
+        statusLocatorByHostAndPort, statusLocatorByPort);
   }
 
   @Test
@@ -86,17 +88,19 @@ public class GfshExitStatusDUnitTest {
     ExitCode expectedExitCode = ExitCode.NORMAL;
     launch(false, Status.ONLINE);
 
-    String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
-    String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
-    String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
-    String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
+    // String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
+    // String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
+    // String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
+    // String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
     String statusLocatorByPort = "status locator --port=" + locator.getPort();
     String statusLocatorByHostAndPort =
         new CommandStringBuilder("status locator").addOption("host", localhost())
             .addOption("port", String.valueOf(locator.getPort())).getCommandString();
 
-    executeAndVerifyStatusCommands(expectedExitCode, statusLocatorByPID, statusServerByPID,
-        statusLocatorByDir, statusServerByDir, statusLocatorByHostAndPort, statusLocatorByPort);
+    executeAndVerifyStatusCommands(expectedExitCode,
+        // statusLocatorByPID, statusServerByPID,
+        // statusLocatorByDir, statusServerByDir,
+        statusLocatorByHostAndPort, statusLocatorByPort);
   }
 
   @Test
@@ -115,17 +119,19 @@ public class GfshExitStatusDUnitTest {
     ExitCode expectedExitCode = ExitCode.NORMAL;
     launch(true, Status.ONLINE);
 
-    String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
-    String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
-    String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
-    String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
+    // String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
+    // String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
+    // String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
+    // String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
     String statusLocatorByPort = "status locator --port=" + locator.getPort();
     String statusLocatorByHostAndPort =
         new CommandStringBuilder("status locator").addOption("host", localhost())
             .addOption("port", String.valueOf(locator.getPort())).getCommandString();
 
-    executeAndVerifyStatusCommands(expectedExitCode, statusLocatorByPID, statusServerByPID,
-        statusLocatorByDir, statusServerByDir, statusLocatorByHostAndPort, statusLocatorByPort);
+    executeAndVerifyStatusCommands(expectedExitCode,
+        // statusLocatorByPID, statusServerByPID,
+        // statusLocatorByDir, statusServerByDir,
+        statusLocatorByHostAndPort, statusLocatorByPort);
   }
 
   @Test
@@ -167,13 +173,14 @@ public class GfshExitStatusDUnitTest {
 
     locator = lsRule.startLocatorVM(0);
     locatorDir = locator.getWorkingDir();
-    locatorPID =
-        locator.getVM().invoke((SerializableCallableIF<Integer>) LocatorStarterRule::getPid);
+    // locatorPID =
+    // locator.getVM().invoke((SerializableCallableIF<Integer>) LocatorStarterRule::getPid);
     int locatorPort = locator.getPort();
 
     server = lsRule.startServerVM(1, locatorPort);
     serverDir = server.getWorkingDir();
-    serverPID = server.getVM().invoke((SerializableCallableIF<Integer>) ServerStarterRule::getPid);
+    // serverPID = server.getVM().invoke((SerializableCallableIF<Integer>)
+    // ServerStarterRule::getPid);
 
     if (connectToLocator) {
       connect();

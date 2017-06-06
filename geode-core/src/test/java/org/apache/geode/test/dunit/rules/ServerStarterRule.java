@@ -182,20 +182,20 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
     ServerLauncher fakeLauncher = new FakeLauncher(new ServerLauncher.Builder());
     FakeLauncher.setInstance(fakeLauncher);
-    ((FakeLauncher) fakeLauncher).startProcess(getWorkingDir());
+    // ((FakeLauncher) fakeLauncher).startProcess(getWorkingDir());
   }
 
   public int getEmbeddedLocatorPort() {
     return embeddedLocatorPort;
   }
 
-  public static int getPid() {
-    FakeLauncher fakeLauncher = (FakeLauncher) ServerLauncher.getInstance();
-    if (fakeLauncher == null) {
-      return -1;
-    }
-    return fakeLauncher.getPid();
-  }
+  // public static int getPid() {
+  // FakeLauncher fakeLauncher = (FakeLauncher) ServerLauncher.getInstance();
+  // if (fakeLauncher == null) {
+  // return -1;
+  // }
+  // return fakeLauncher.getPid();
+  // }
 
   public static class FakeLauncher extends ServerLauncher {
 
@@ -225,32 +225,32 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
       ServerLauncher.setInstance(instance);
     }
 
-    @Override
-    public Integer getPid() {
-      return process.getPid();
-    }
+    // @Override
+    // public Integer getPid() {
+    // return process.getPid();
+    // }
+    //
+    // public ControllableProcess getProcess() {
+    // return process;
+    // }
 
-    public ControllableProcess getProcess() {
-      return process;
-    }
-
-    public void startProcess(File workingDir) {
-      try {
-        ControlNotificationHandler controlHandler = new ControlNotificationHandler() {
-          @Override
-          public void handleStop() {}
-
-          @Override
-          public ServiceState<?> handleStatus() {
-            return null;
-          }
-        };
-
-        this.process =
-            new ControllableProcess(controlHandler, workingDir, ProcessType.SERVER, false);
-      } catch (Exception ignored) {
-      }
-    }
+    // public void startProcess(File workingDir) {
+    // try {
+    // ControlNotificationHandler controlHandler = new ControlNotificationHandler() {
+    // @Override
+    // public void handleStop() {}
+    //
+    // @Override
+    // public ServiceState<?> handleStatus() {
+    // return null;
+    // }
+    // };
+    //
+    // this.process =
+    // new ControllableProcess(controlHandler, workingDir, ProcessType.SERVER, false);
+    // } catch (Exception ignored) {
+    // }
+    // }
 
 
   }
