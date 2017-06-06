@@ -19,6 +19,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.awaitility.Awaitility;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -79,6 +81,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSJoinLeaveJUnitTest {
@@ -835,6 +838,61 @@ public class GMSJoinLeaveJUnitTest {
     Assert.assertFalse(nextView.getMembers().contains(mockMembers[1]));
     Assert.assertFalse(nextView.getMembers().contains(mockMembers[2]));
     assertTrue(nextView.getMembers().contains(mockMembers[3]));
+  }
+
+  /**
+   * If a locator is started and sends out a view to take control of the cluster another member that
+   * is also in the process of sending out a view should relinquish control to the new locator.
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testCoordinatorGetsConflictingViewFromLocator() throws Exception {
+    // create the GMSJoinLeave instance we'll be testing
+    initMocks(false);
+    InternalDistributedMember otherMember = mockMembers[0];
+    gmsJoinLeaveMemberId.setVmKind(DistributionManager.NORMAL_DM_TYPE);
+    List<InternalDistributedMember> members = createMemberList(gmsJoinLeaveMemberId, otherMember);
+    prepareAndInstallView(gmsJoinLeaveMemberId, members);
+    NetView installedView = gmsJoinLeave.getView();
+
+    gmsJoinLeave.unitTesting.add("noRandomViewChange"); // keep view numbers predictable
+
+    // create a view coming from the locator that conflicts with the installed view
+    InternalDistributedMember locatorMemberId = new InternalDistributedMember("localhost",
+        mockMembers[mockMembers.length - 1].getPort() + 1);
+    locatorMemberId.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
+    List<InternalDistributedMember> newMemberList = new ArrayList<>(members);
+    newMemberList.add(locatorMemberId);
+    NetView locatorView =
+        new NetView(locatorMemberId, installedView.getViewId() + 10, newMemberList);
+
+    // start the process to make our GMSJoinLeave become coordinator. It will send out a view
+    // and want an ACK from
+    synchronized (gmsJoinLeave.getViewInstallationLock()) {
+      gmsJoinLeave.becomeCoordinator();
+    }
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> gmsJoinLeave.prepareProcessor.isWaiting());
+
+    int newViewId = 6; // becomeCoordinator will bump the initial view Id by 5
+
+    ViewAckMessage msg = new ViewAckMessage(gmsJoinLeaveMemberId, newViewId, true);
+    msg.setSender(gmsJoinLeaveMemberId);
+    gmsJoinLeave.processMessage(msg);
+
+    // ack the view on behalf of the other member, returning a conflicting view coming from a
+    // locator that is trying to become coordinator
+    msg = new ViewAckMessage(newViewId, gmsJoinLeaveMemberId, locatorView);
+    msg.setSender(otherMember);
+    gmsJoinLeave.processMessage(msg);
+
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> gmsJoinLeave.getViewCreator() != null);
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> gmsJoinLeave.getViewCreator().getAbandonedViewCount() > 0);
+    assertEquals(installedView, gmsJoinLeave.getView());
+
   }
 
   /**
