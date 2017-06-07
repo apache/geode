@@ -81,9 +81,10 @@ public class ConfigCommands implements GfshCommand {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeConfig(
       @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.DESCRIBE_CONFIG__MEMBER__HELP, mandatory = true)
-
-      String memberNameOrId, @CliOption(key = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS, help = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS__HELP, unspecifiedDefaultValue = "true", specifiedDefaultValue = "true") boolean hideDefaults) {
+          help = CliStrings.DESCRIBE_CONFIG__MEMBER__HELP, mandatory = true) String memberNameOrId,
+      @CliOption(key = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS,
+          help = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS__HELP, unspecifiedDefaultValue = "true",
+          specifiedDefaultValue = "true") boolean hideDefaults) {
 
     Result result = null;
     try {
