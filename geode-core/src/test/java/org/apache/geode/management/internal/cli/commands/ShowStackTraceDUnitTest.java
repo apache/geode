@@ -106,7 +106,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File mgrStacktraceFile = workDirectory.newFile("managerStacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, mgrStacktraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Manager");
+    csb.addOption(CliStrings.MEMBER, "Manager");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
@@ -116,7 +116,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File serverStacktraceFile = workDirectory.newFile("serverStacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, serverStacktraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Server");
+    csb.addOption(CliStrings.MEMBER, "Server");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
@@ -126,7 +126,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File groupStacktraceFile = workDirectory.newFile("groupstacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, groupStacktraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__GROUP, "G2");
+    csb.addOption(CliStrings.GROUP, "G2");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
@@ -136,7 +136,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File wrongStackTraceFile = workDirectory.newFile("wrongStackTrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, wrongStackTraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "WrongMember");
+    csb.addOption(CliStrings.MEMBER, "WrongMember");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);

@@ -1,0 +1,61 @@
+Apache Geode
+Copyright 2016-2017 The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+
+The following NOTICEs pertain to software distributed with this project.
+
+stream-lib
+Copyright 2016 AddThis
+
+   This product includes software developed by AddThis.
+
+   This product also includes code adapted from:
+
+   Apache Solr (http://lucene.apache.org/solr/)
+   Copyright 2014 The Apache Software Foundation
+
+This product includes software developed by the MX4J
+project (http://mx4j.sourceforge.net).
+
+Jackson Core 2.8.6
+
+  # Jackson JSON processor
+  
+  Jackson is a high-performance, Free/Open Source JSON processing library.
+  It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+  been in development since 2007.
+  It is currently developed by a community of developers, as well as supported
+  commercially by FasterXML.com.
+  
+  ## Licensing
+  
+  Jackson core and extension components may licensed under different licenses.
+  To find the details that apply to this artifact see the accompanying LICENSE file.
+  For more information, including possible other licensing options, contact
+  FasterXML.com (http://fasterxml.com).
+  
+  ## Credits
+  
+  A list of contributors may be found from CREDITS file, which is included
+  in some artifacts (usually source distributions); but is always available
+  from the source code management (SCM) system project uses.
+
+Spring Framework 4.3.6.RELEASE
+Copyright (c) 2002-2017 Pivotal, Inc.
+
+  This product is licensed to you under the Apache License, Version 2.0
+  (the "License"). You may not use this product except in compliance with
+  the License.
+  
+  This product may include a number of subcomponents with separate
+  copyright notices and license terms. Your use of the source code for
+  these subcomponents is subject to the terms and conditions of the
+  subcomponent's license, as noted in the license.txt file.
+
+Spring LDAP Core 2.3.1.RELEASE
+
+   This product includes software developed by the Spring LDAP
+   Project (http://www.springframework.org/ldap).

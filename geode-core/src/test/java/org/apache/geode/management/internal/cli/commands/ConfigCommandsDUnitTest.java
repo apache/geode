@@ -302,7 +302,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     final DistributionConfig config = cache.getSystem().getConfig();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
-    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__MEMBER, controller);
+    csb.addOption(CliStrings.MEMBER, controller);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL, "info");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "50");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "32");
@@ -527,7 +527,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     // Test altering the runtime config
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL, "fine");
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
 

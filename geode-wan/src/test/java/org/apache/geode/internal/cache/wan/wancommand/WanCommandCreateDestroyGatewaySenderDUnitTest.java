@@ -59,7 +59,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyGatewaySenderWithDefault() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -67,7 +67,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -109,7 +109,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -117,7 +117,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -178,7 +178,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateGatewaySender_Error() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -186,7 +186,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -231,7 +231,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyGatewaySenderWithGatewayEventFilters() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -239,7 +239,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -308,7 +308,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyGatewaySenderWithGatewayTransportFilters() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -316,7 +316,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -384,7 +384,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyGatewaySender_OnMember() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -392,17 +392,17 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
     vm5.invoke(() -> createCache(punePort));
 
-    final DistributedMember vm3Member = (DistributedMember) vm3.invoke(() -> getMember());
+    final DistributedMember vm3Member = vm3.invoke(() -> getMember());
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__MEMBER + "=" + vm3Member.getId() + " --"
+        + "=ln" + " --" + CliStrings.MEMBER + "=" + vm3Member.getId() + " --"
         + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
@@ -450,7 +450,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyGatewaySender_Group() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -458,7 +458,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
@@ -466,7 +466,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__GROUP + "=SenderGroup1" + " --"
+        + "=ln" + " --" + CliStrings.GROUP + "=SenderGroup1" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=false" + " --"
@@ -515,7 +515,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyGatewaySender_Group_Scenario2() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -523,7 +523,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
@@ -531,7 +531,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__GROUP + "=SenderGroup1" + " --"
+        + "=ln" + " --" + CliStrings.GROUP + "=SenderGroup1" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=false" + " --"
@@ -578,7 +578,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateDestroyParallelGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -586,7 +586,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -649,7 +649,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testCreateParallelGatewaySender_Error() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -657,7 +657,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -708,7 +708,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
   @Test
   public void testDestroyGatewaySender_NotCreatedSender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -716,7 +716,7 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -763,11 +763,11 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
         CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=" + id;
 
     if (group != null) {
-      command += " --" + CliStrings.DESTROY_GATEWAYSENDER__GROUP + "=" + group;
+      command += " --" + CliStrings.GROUP + "=" + group;
     }
 
     if (member != null) {
-      command += " --" + CliStrings.CREATE_GATEWAYSENDER__MEMBER + "=" + member.getId();
+      command += " --" + CliStrings.MEMBER + "=" + member.getId();
     }
 
     final CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
