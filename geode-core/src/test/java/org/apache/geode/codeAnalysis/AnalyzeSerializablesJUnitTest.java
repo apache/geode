@@ -89,11 +89,6 @@ public class AnalyzeSerializablesJUnitTest {
 
     this.expectedSerializables = loadClassesAndVariables(expectedSerializablesFile);
     Collections.sort(this.expectedSerializables);
-
-    // setup empty actual files
-
-    this.actualDataSerializablesFile = createEmptyFile("actualDataSerializables.dat");
-    this.actualSerializablesFile = createEmptyFile("actualSerializables.dat");
   }
 
   /**
@@ -106,6 +101,10 @@ public class AnalyzeSerializablesJUnitTest {
   @Test
   public void testDataSerializables() throws Exception {
     System.out.println(this.testName.getMethodName() + " starting");
+
+    this.actualDataSerializablesFile = createEmptyFile("actualDataSerializables.dat");
+    System.out.println(this.testName.getMethodName() + " actualDataSerializablesFile="
+        + this.actualDataSerializablesFile.getAbsolutePath());
 
     List<ClassAndMethods> actualDataSerializables = findToDatasAndFromDatas();
     storeClassesAndMethods(actualDataSerializables, this.actualDataSerializablesFile);
@@ -127,6 +126,10 @@ public class AnalyzeSerializablesJUnitTest {
   @Test
   public void testSerializables() throws Exception {
     System.out.println(this.testName.getMethodName() + " starting");
+
+    this.actualSerializablesFile = createEmptyFile("actualSerializables.dat");
+    System.out.println(this.testName.getMethodName() + " actualSerializablesFile="
+        + this.actualSerializablesFile.getAbsolutePath());
 
     List<ClassAndVariables> actualSerializables = findSerializables();
     storeClassesAndVariables(actualSerializables, this.actualSerializablesFile);
