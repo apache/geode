@@ -625,6 +625,7 @@ public class LauncherLifecycleCommands implements GfshCommand {
     return configurationProperties;
   }
 
+
   // TODO re-evaluate whether a MalformedObjectNameException should be thrown here; just because we
   // were not able to find
   // the "current" Locators in order to conveniently add the new member to the GemFire cluster does
