@@ -494,6 +494,18 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
       return result;
 
+    } catch (RuntimeException validationException) {
+      // GEODE-3055
+      PartitionedRegion leader = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      boolean isLeader = leader.equals(this.partitionedRegion);
+      if (!isLeader) {
+        leader.getDataStore().removeBucket(possiblyFreeBucketId, true);
+        logger.info(
+            "For bucket " + possiblyFreeBucketId + ", failed to create cololcated child bucket for "
+                + this.partitionedRegion.getFullPath() + ", removed leader region "
+                + leader.getFullPath() + " bucket.");
+      }
+      throw validationException;
     } finally {
       this.partitionedRegion.getPrStats().endBucketCreate(startTime, createdBucket, isRebalance);
     }
@@ -1417,6 +1429,39 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
   }
 
+  public boolean isRemotePrimaryReadyForColocatedChildren(int bucketId) {
+    boolean isRemotePrimaryReady = true;
+    InternalDistributedMember myId =
+        this.partitionedRegion.getDistributionManager().getDistributionManagerId();
+
+    List<PartitionedRegion> colocatedChildPRs =
+        ColocationHelper.getColocatedChildRegions(this.partitionedRegion);
+    if (colocatedChildPRs != null) {
+      for (PartitionedRegion pr : colocatedChildPRs) {
+        InternalDistributedMember primaryChild = pr.getBucketPrimary(bucketId);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Checking colocated child bucket " + pr + ", bucketId=" + bucketId
+              + ", primary is " + primaryChild);
+        }
+        if (primaryChild == null || myId.equals(primaryChild)) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Colocated bucket region " + pr + " " + bucketId
+                + " does not have a remote primary yet. Not to remove.");
+          }
+          return false;
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger
+                .debug(pr + " bucketId=" + bucketId + " has remote primary, checking its children");
+          }
+          isRemotePrimaryReady = isRemotePrimaryReady
+              && pr.getDataStore().isRemotePrimaryReadyForColocatedChildren(bucketId);
+        }
+      }
+    }
+    return isRemotePrimaryReady;
+  }
+
   /**
    * Removes a redundant bucket hosted by this data store. The rebalancer invokes this method
    * directly or sends this member a message to invoke it.
@@ -1450,7 +1495,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
     // Don't allow the removal of a bucket if we haven't
     // finished recovering from disk
-    if (!this.partitionedRegion.getRedundancyProvider().isPersistentRecoveryComplete()) {
+    if (!forceRemovePrimary
+        && !this.partitionedRegion.getRedundancyProvider().isPersistentRecoveryComplete()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Returning false from removeBucket because we have not finished recovering all colocated regions from disk");
@@ -1471,7 +1517,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
       }
 
+      PartitionedRegion leader = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      boolean isLeader = leader.equals(this.partitionedRegion);
       BucketAdvisor bucketAdvisor = bucketRegion.getBucketAdvisor();
+      InternalDistributedMember myId =
+          this.partitionedRegion.getDistributionManager().getDistributionManagerId();
       Lock writeLock = bucketAdvisor.getActiveWriteLock();
 
       // Fix for 43613 - don't remove the bucket
@@ -1480,8 +1530,31 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       // member is no longer hosting the bucket.
       writeLock.lock();
       try {
+        // forceRemovePrimary==true will enable remove the bucket even when:
+        // 1) it's primary
+        // 2) no other primary ready yet
+        // 3) colocated bucket and its child is not completely ready
         if (!forceRemovePrimary && bucketAdvisor.isPrimary()) {
           return false;
+        }
+
+        if (isLeader) {
+          if (!forceRemovePrimary && !isRemotePrimaryReadyForColocatedChildren(bucketId)) {
+            return false;
+          }
+
+          InternalDistributedMember primary = bucketAdvisor.getPrimary();
+          if (!forceRemovePrimary && (primary == null || myId.equals(primary))) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Bucket region " + bucketRegion
+                  + " does not have a remote primary yet. Not to remove.");
+            }
+            return false;
+          }
+
+          if (logger.isDebugEnabled()) {
+            logger.debug("Bucket region " + bucketRegion + " has primary at " + primary);
+          }
         }
 
         // recurse down to each tier of children to remove first
@@ -1513,8 +1586,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       // because it won't block write operations while we're trying to acquire
       // the activePrimaryMoveLock
       InternalDistributedMember primary = bucketAdvisor.getPrimary();
-      InternalDistributedMember myId =
-          this.partitionedRegion.getDistributionManager().getDistributionManagerId();
       if (!myId.equals(primary)) {
         StateFlushOperation flush = new StateFlushOperation(bucketRegion);
         int executor = DistributionManager.WAITING_POOL_EXECUTOR;
