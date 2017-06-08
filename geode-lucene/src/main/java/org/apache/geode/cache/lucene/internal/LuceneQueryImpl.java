@@ -108,6 +108,9 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
     LuceneFunctionContext<TopEntriesCollector> context =
         new LuceneFunctionContext<>(query, indexName, manager, limit);
+    if (region.getCache().getCacheTransactionManager().exists()) {
+      throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
+    }
 
     // TODO provide a timeout to the user?
     TopEntries<K> entries = null;
