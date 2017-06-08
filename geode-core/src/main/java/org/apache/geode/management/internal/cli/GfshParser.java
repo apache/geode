@@ -177,6 +177,8 @@ public class GfshParser extends SimpleParser {
   public GfshParseResult parse(String userInput) {
     String rawInput = convertToSimpleParserInput(userInput);
 
+    // this tells the simpleParser not to interpret backslash as escaping character
+    rawInput = rawInput.replace("\\", "\\\\");
     // User SimpleParser to parse the input
     ParseResult result = super.parse(rawInput);
 

@@ -262,4 +262,33 @@ public class GfshParserParsingTest {
     assertThat(result).isNotNull();
   }
 
+
+  @Test
+  public void testCommandWithBackSlash() throws Exception {
+    String command =
+        "describe offline-disk-store --name=testDiskStore --disk-dirs=R:\\regrResults\\test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("disk-dirs")).isEqualTo("R:\\regrResults\\test");
+  }
+
+  @Test
+  public void testCommandWithBackSlashTwo() throws Exception {
+    String command = "start locator --name=\\test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("\\test");
+  }
+
+  @Test
+  public void testCommandWithBackSlashThree() throws Exception {
+    String command = "start locator --name=\\myName";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("\\myName");
+  }
+
+  @Test
+  public void testCommandWithBackSlashFour() throws Exception {
+    String command = "start locator --name=\\u0005Name";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("\\u0005Name");
+  }
 }
