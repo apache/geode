@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Awaitility;
 import org.junit.Rule;
+import org.juice;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,153 +47,154 @@ public class GfshExitCodeStatusCommandsDUnitTest {
 
   @Test
   public void testGfsh() throws Exception {
-    Process locatorProcess = realGfshRule
-        .executeCommandsAndWaitAtMost(2, TimeUnit.MINUTES, "start locator --name=locator1");
+    Process locatorProcess = realGfshRule.executeCommandsAndWaitAtMost(2, TimeUnit.MINUTES,
+        "start locator --name=locator1");
     assertThat(locatorProcess.exitValue()).isEqualTo(0);
 
-    Process gfshProcess = realGfshRule.executeCommandsAndWaitAtMost(1, TimeUnit.MINUTES, "connect", "status locator --name=locator1");
+    Process gfshProcess = realGfshRule.executeCommandsAndWaitAtMost(1, TimeUnit.MINUTES, "connect",
+        "status locator --name=locator1");
 
     assertThat(gfshProcess.exitValue()).isEqualTo(0);
   }
 
-//
-//
-//  @Test
-//  public void offlineStatusWithInvalidOptionsShouldFail() throws Exception {
-//    ExitCode expectedExitCode = ExitCode.FATAL;
-//
-//    // String statusLocatorByPID = "status locator --pid=10";
-//    // String statusServerByPID = "status server --pid=11";
-//    // String statusLocatorByDir = "status locator --dir=some-invalid-dir";
-//    // String statusServerByDir = "status server --dir=some-invalid-dir";
-//    String statusLocatorByHostAndPort = "status locator --host=invalid-host-name --port=123";
-//    String statusLocatorByPort = "status locator --port=123";
-//
-//    executeAndVerifyStatusCommands(expectedExitCode,
-//        // statusLocatorByPID, statusServerByPID,
-//        // statusLocatorByDir, statusServerByDir,
-//        statusLocatorByHostAndPort, statusLocatorByPort);
-//  }
-//
-//  @Test
-//  public void onlineStatusWithInvalidNameShouldFail() throws Exception {
-//    ExitCode expectedExitCode = ExitCode.FATAL;
-//
-//    String statusLocator = "status locator --name=invalid-locator-name";
-//    String statusServer = "status server --name=invalid-server-name";
-//
-//    executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
-//  }
-//
-//  @Test
-//  public void offlineStatusWithValidOptionsShouldSucceedWhenNotConnected() throws Exception {
-//    ExitCode expectedExitCode = ExitCode.NORMAL;
-//    launch(false, Status.ONLINE);
-//
-//    // String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
-//    // String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
-//    // String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
-//    // String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
-//    String statusLocatorByPort = "status locator --port=" + locator.getPort();
-//    String statusLocatorByHostAndPort =
-//        new CommandStringBuilder("status locator").addOption("host", localhost())
-//            .addOption("port", String.valueOf(locator.getPort())).getCommandString();
-//
-//    executeAndVerifyStatusCommands(expectedExitCode,
-//        // statusLocatorByPID, statusServerByPID,
-//        // statusLocatorByDir, statusServerByDir,
-//        statusLocatorByHostAndPort, statusLocatorByPort);
-//  }
-//
-//  @Test
-//  public void onlineStatusWithValidOptionsShouldFailWhenNotConnected() throws Exception {
-//    ExitCode expectedExitCode = ExitCode.FATAL;
-//    launch(false, Status.ONLINE);
-//
-//    String statusLocator = "status locator --name=" + locator.getName();
-//    String statusServer = "status server --name=" + server.getName();
-//
-//    executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
-//  }
-//
-//  @Test
-//  public void offlineStatusWithValidOptionsShouldSucceedWhenConnected() throws Exception {
-//    ExitCode expectedExitCode = ExitCode.NORMAL;
-//    launch(true, Status.ONLINE);
-//
-//    // String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
-//    // String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
-//    // String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
-//    // String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
-//    String statusLocatorByPort = "status locator --port=" + locator.getPort();
-//    String statusLocatorByHostAndPort =
-//        new CommandStringBuilder("status locator").addOption("host", localhost())
-//            .addOption("port", String.valueOf(locator.getPort())).getCommandString();
-//
-//    executeAndVerifyStatusCommands(expectedExitCode,
-//        // statusLocatorByPID, statusServerByPID,
-//        // statusLocatorByDir, statusServerByDir,
-//        statusLocatorByHostAndPort, statusLocatorByPort);
-//  }
-//
-//  @Test
-//  public void onlineStatusWithValidOptionsShouldSucceedWhenConnected() throws Exception {
-//    ExitCode expectedExitCode = ExitCode.NORMAL;
-//    launch(true, Status.ONLINE);
-//
-//    String statusLocator = "status locator --name=" + locator.getName();
-//    String statusServer = "status server --name=" + server.getName();
-//
-//    executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
-//  }
-//
-//  private void executeAndVerifyStatusCommands(ExitCode expectedExitCode, String... queries)
-//      throws Exception {
-//    SoftAssertions softly = new SoftAssertions();
-//    for (String q : queries) {
-//      softly.assertThat(executeGfshCommand(q)).describedAs(q)
-//          .isEqualTo(expectedExitCode.getExitCode());
-//    }
-//    softly.assertAll();
-//  }
-//
-//  private int executeGfshCommand(String cmd) throws Exception {
-//    gfshConnection.executeCommand(cmd);
-//    return gfshConnection.getShellExitcode();
-//  }
-//
-//  private void connect() throws Exception {
-//    assertThat(locator).isNotNull();
-//    gfshConnection.connectAndVerify(locator);
-//  }
-//
-//  private void launch(boolean connectToLocator, Status spoofedStatus) throws Exception {
-//    assertThat(locator).isNull();
-//    assertThat(server).isNull();
-//    ServerStarterRule.FakeLauncher.setStatus(spoofedStatus);
-//    LocatorStarterRule.FakeLauncher.setStatus(spoofedStatus);
-//
-//    locator = lsRule.startLocatorVM(0);
-//    locatorDir = locator.getWorkingDir();
-//    // locatorPID =
-//    // locator.getVM().invoke((SerializableCallableIF<Integer>) LocatorStarterRule::getPid);
-//    int locatorPort = locator.getPort();
-//
-//    server = lsRule.startServerVM(1, locatorPort);
-//    serverDir = server.getWorkingDir();
-//    // serverPID = server.getVM().invoke((SerializableCallableIF<Integer>)
-//    // ServerStarterRule::getPid);
-//
-//    if (connectToLocator) {
-//      connect();
-//      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-//          .until((Gfsh::isCurrentInstanceConnectedAndReady));
-//      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-//          .until(() -> MXBeanProvider.isMemberMXBeanAvailable(server.getName()));
-//    }
-//  }
-//
-//  private String localhost() throws Exception {
-//    return InetAddress.getLocalHost().getHostAddress();
-//  }
+  //
+  //
+  // @Test
+  // public void offlineStatusWithInvalidOptionsShouldFail() throws Exception {
+  // ExitCode expectedExitCode = ExitCode.FATAL;
+  //
+  // // String statusLocatorByPID = "status locator --pid=10";
+  // // String statusServerByPID = "status server --pid=11";
+  // // String statusLocatorByDir = "status locator --dir=some-invalid-dir";
+  // // String statusServerByDir = "status server --dir=some-invalid-dir";
+  // String statusLocatorByHostAndPort = "status locator --host=invalid-host-name --port=123";
+  // String statusLocatorByPort = "status locator --port=123";
+  //
+  // executeAndVerifyStatusCommands(expectedExitCode,
+  // // statusLocatorByPID, statusServerByPID,
+  // // statusLocatorByDir, statusServerByDir,
+  // statusLocatorByHostAndPort, statusLocatorByPort);
+  // }
+  //
+  // @Test
+  // public void onlineStatusWithInvalidNameShouldFail() throws Exception {
+  // ExitCode expectedExitCode = ExitCode.FATAL;
+  //
+  // String statusLocator = "status locator --name=invalid-locator-name";
+  // String statusServer = "status server --name=invalid-server-name";
+  //
+  // executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
+  // }
+  //
+  // @Test
+  // public void offlineStatusWithValidOptionsShouldSucceedWhenNotConnected() throws Exception {
+  // ExitCode expectedExitCode = ExitCode.NORMAL;
+  // launch(false, Status.ONLINE);
+  //
+  // // String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
+  // // String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
+  // // String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
+  // // String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
+  // String statusLocatorByPort = "status locator --port=" + locator.getPort();
+  // String statusLocatorByHostAndPort =
+  // new CommandStringBuilder("status locator").addOption("host", localhost())
+  // .addOption("port", String.valueOf(locator.getPort())).getCommandString();
+  //
+  // executeAndVerifyStatusCommands(expectedExitCode,
+  // // statusLocatorByPID, statusServerByPID,
+  // // statusLocatorByDir, statusServerByDir,
+  // statusLocatorByHostAndPort, statusLocatorByPort);
+  // }
+  //
+  // @Test
+  // public void onlineStatusWithValidOptionsShouldFailWhenNotConnected() throws Exception {
+  // ExitCode expectedExitCode = ExitCode.FATAL;
+  // launch(false, Status.ONLINE);
+  //
+  // String statusLocator = "status locator --name=" + locator.getName();
+  // String statusServer = "status server --name=" + server.getName();
+  //
+  // executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
+  // }
+  //
+  // @Test
+  // public void offlineStatusWithValidOptionsShouldSucceedWhenConnected() throws Exception {
+  // ExitCode expectedExitCode = ExitCode.NORMAL;
+  // launch(true, Status.ONLINE);
+  //
+  // // String statusLocatorByPID = "status locator --pid=" + String.valueOf(locatorPID);
+  // // String statusServerByPID = "status server --pid=" + String.valueOf(serverPID);
+  // // String statusLocatorByDir = "status locator --dir=" + locatorDir.getAbsolutePath();
+  // // String statusServerByDir = "status server --dir=" + serverDir.getAbsolutePath();
+  // String statusLocatorByPort = "status locator --port=" + locator.getPort();
+  // String statusLocatorByHostAndPort =
+  // new CommandStringBuilder("status locator").addOption("host", localhost())
+  // .addOption("port", String.valueOf(locator.getPort())).getCommandString();
+  //
+  // executeAndVerifyStatusCommands(expectedExitCode,
+  // // statusLocatorByPID, statusServerByPID,
+  // // statusLocatorByDir, statusServerByDir,
+  // statusLocatorByHostAndPort, statusLocatorByPort);
+  // }
+  //
+  // @Test
+  // public void onlineStatusWithValidOptionsShouldSucceedWhenConnected() throws Exception {
+  // ExitCode expectedExitCode = ExitCode.NORMAL;
+  // launch(true, Status.ONLINE);
+  //
+  // String statusLocator = "status locator --name=" + locator.getName();
+  // String statusServer = "status server --name=" + server.getName();
+  //
+  // executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
+  // }
+  //
+  // private void executeAndVerifyStatusCommands(ExitCode expectedExitCode, String... queries)
+  // throws Exception {
+  // SoftAssertions softly = new SoftAssertions();
+  // for (String q : queries) {
+  // softly.assertThat(executeGfshCommand(q)).describedAs(q)
+  // .isEqualTo(expectedExitCode.getExitCode());
+  // }
+  // softly.assertAll();
+  // }
+  //
+  // private int executeGfshCommand(String cmd) throws Exception {
+  // gfshConnection.executeCommand(cmd);
+  // return gfshConnection.getShellExitcode();
+  // }
+  //
+  // private void connect() throws Exception {
+  // assertThat(locator).isNotNull();
+  // gfshConnection.connectAndVerify(locator);
+  // }
+  //
+  // private void launch(boolean connectToLocator, Status spoofedStatus) throws Exception {
+  // assertThat(locator).isNull();
+  // assertThat(server).isNull();
+  // ServerStarterRule.FakeLauncher.setStatus(spoofedStatus);
+  // LocatorStarterRule.FakeLauncher.setStatus(spoofedStatus);
+  //
+  // locator = lsRule.startLocatorVM(0);
+  // locatorDir = locator.getWorkingDir();
+  // // locatorPID =
+  // // locator.getVM().invoke((SerializableCallableIF<Integer>) LocatorStarterRule::getPid);
+  // int locatorPort = locator.getPort();
+  //
+  // server = lsRule.startServerVM(1, locatorPort);
+  // serverDir = server.getWorkingDir();
+  // // serverPID = server.getVM().invoke((SerializableCallableIF<Integer>)
+  // // ServerStarterRule::getPid);
+  //
+  // if (connectToLocator) {
+  // connect();
+  // Awaitility.await().atMost(60, TimeUnit.SECONDS)
+  // .until((Gfsh::isCurrentInstanceConnectedAndReady));
+  // Awaitility.await().atMost(60, TimeUnit.SECONDS)
+  // .until(() -> MXBeanProvider.isMemberMXBeanAvailable(server.getName()));
+  // }
+  // }
+  //
+  // private String localhost() throws Exception {
+  // return InetAddress.getLocalHost().getHostAddress();
+  // }
 }
