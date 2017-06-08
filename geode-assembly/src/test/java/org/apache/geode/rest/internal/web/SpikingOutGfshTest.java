@@ -16,18 +16,13 @@ package org.apache.geode.rest.internal.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.geode.test.dunit.rules.RealGfshRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Category(IntegrationTest.class)
@@ -44,13 +39,16 @@ public class SpikingOutGfshTest {
 
   @Test
   public void testGfsh() throws Exception {
-    Process locatorProcess =
-        realGfshRule
-            .executeCommandsAndWaitFor(2, TimeUnit.MINUTES, "start locator --name=locator1");
+//   new GfshScript("connect", "statusLocator").awaitAtMost(2, TimeUnit.MINUTES)
+//                  .expectExitValue(0);
+//
+//   realGfshRule.run( gfshScript);
+
+    Process locatorProcess = realGfshRule
+            .executeCommandsAndWaitAtMost(2, TimeUnit.MINUTES, "start locator --name=locator1");
     assertThat(locatorProcess.exitValue()).isEqualTo(0);
 
-    Process gfshProcess = realGfshRule.executeCommandsAndWaitFor(1, TimeUnit.MINUTES, "connect", "status locator");
-//    Process gfshProcess3 = realGfshRule.executeCommands("connect", "start server");
+    Process gfshProcess = realGfshRule.executeCommandsAndWaitAtMost(1, TimeUnit.MINUTES, "connect", "status locator --name=locator1");
 
     assertThat(gfshProcess.exitValue()).isEqualTo(0);
   }

@@ -59,7 +59,7 @@ public class RealGfshRule extends ExternalResource {
     return process;
   }
 
-  public Process executeCommandsAndWaitFor(int timeout, TimeUnit timeUnit, String... commands)
+  public Process executeCommandsAndWaitAtMost(int timeout, TimeUnit timeUnit, String... commands)
       throws IOException, InterruptedException {
     Process process = executeCommands(commands);
     assertThat(process.waitFor(timeout, timeUnit)).isTrue();
@@ -70,7 +70,7 @@ public class RealGfshRule extends ExternalResource {
   private Process executeCommandsAndWaitQuietlyFor(int timeout, TimeUnit timeUnit,
                                                    String... commmands) {
     try {
-      return executeCommandsAndWaitFor(timeout, timeUnit, commmands);
+      return executeCommandsAndWaitAtMost(timeout, timeUnit, commmands);
     } catch (Exception ignore) {
       return null;
     }
