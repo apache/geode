@@ -138,6 +138,30 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.vmViewId = viewId;
   }
 
+
+  /**
+   * Clone a GMSMember
+   * 
+   * @param other the member to create a copy of
+   */
+  public GMSMember(GMSMember other) {
+    this.udpPort = other.udpPort;
+    this.preferredForCoordinator = other.preferredForCoordinator;
+    this.networkPartitionDetectionEnabled = other.networkPartitionDetectionEnabled;
+    this.memberWeight = other.memberWeight;
+    this.inetAddr = other.inetAddr;
+    this.processId = other.processId;
+    this.vmKind = other.vmKind;
+    this.vmViewId = other.vmViewId;
+    this.directPort = other.directPort;
+    this.name = other.name;
+    this.durableClientAttributes = other.durableClientAttributes;
+    this.groups = other.groups;
+    this.versionOrdinal = other.versionOrdinal;
+    this.uuidLSBs = other.uuidLSBs;
+    this.uuidMSBs = other.uuidMSBs;
+  }
+
   public int getPort() {
     return this.udpPort;
   }
