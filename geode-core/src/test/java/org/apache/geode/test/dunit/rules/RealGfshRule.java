@@ -30,6 +30,8 @@ import java.util.function.Predicate;
 
 public class RealGfshRule extends ExternalResource {
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+
   private List<Process> processes = new ArrayList<>();
   private final String gfshPath;
 
@@ -40,6 +42,10 @@ public class RealGfshRule extends ExternalResource {
   @Override
   protected void before() throws IOException {
     temporaryFolder.create();
+  }
+
+  public List<Process> getProcesses() {
+    return processes;
   }
 
   public Process executeCommands(String... commands) throws IOException {
@@ -62,7 +68,6 @@ public class RealGfshRule extends ExternalResource {
   public Process executeCommandsAndWaitAtMost(int timeout, TimeUnit timeUnit, String... commands)
       throws IOException, InterruptedException {
     Process process = executeCommands(commands);
-    // Use Awaitility here? Does that print more nicely when it fails?
     assertThat(process.waitFor(timeout, timeUnit)).isTrue();
 
     return process;
@@ -107,5 +112,9 @@ public class RealGfshRule extends ExternalResource {
 
     Arrays.stream(directories).filter(isServerDir).forEach(stopServerInDir);
     Arrays.stream(directories).filter(isLocatorDir).forEach(stopLocatorInDir);
+  }
+
+  public TemporaryFolder getTemporaryFolder() {
+    return temporaryFolder;
   }
 }

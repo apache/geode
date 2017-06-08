@@ -14,78 +14,182 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.assertj.core.api.SoftAssertions;
-import org.awaitility.Awaitility;
 import org.junit.Rule;
-import org.juice;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.AbstractLauncher.Status;
+import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.test.dunit.rules.RealGfshRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.EndToEndTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 
 // Originally created in response to GEODE-2971
-@Category(EndToEndTest.class)
+@Category(DistributedTest.class)
 public class GfshExitCodeStatusCommandsDUnitTest {
   private static final File GEODE_HOME = new File(System.getenv("GEODE_HOME"));
   private static final String GFSH_PATH = GEODE_HOME.toPath().resolve("bin/gfsh").toString();
+  private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
 
   @Rule
   public RealGfshRule realGfshRule = new RealGfshRule(GFSH_PATH);
 
-  @Test
-  public void testGfsh() throws Exception {
-    Process locatorProcess = realGfshRule.executeCommandsAndWaitAtMost(2, TimeUnit.MINUTES,
-        "start locator --name=locator1");
-    assertThat(locatorProcess.exitValue()).isEqualTo(0);
+  private int locatorPort;
+  private String locatorName;
+  private String serverName;
 
-    Process gfshProcess = realGfshRule.executeCommandsAndWaitAtMost(1, TimeUnit.MINUTES, "connect",
-        "status locator --name=locator1");
-
-    assertThat(gfshProcess.exitValue()).isEqualTo(0);
+  public String startLocatorCommand() {
+    locatorName = nameGenerator.generate('-');
+    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    return new CommandStringBuilder("start locator").addOption("name", locatorName)
+        .addOption("port", String.valueOf(locatorPort)).toString();
   }
 
-  //
-  //
-  // @Test
-  // public void offlineStatusWithInvalidOptionsShouldFail() throws Exception {
-  // ExitCode expectedExitCode = ExitCode.FATAL;
-  //
-  // // String statusLocatorByPID = "status locator --pid=10";
-  // // String statusServerByPID = "status server --pid=11";
-  // // String statusLocatorByDir = "status locator --dir=some-invalid-dir";
-  // // String statusServerByDir = "status server --dir=some-invalid-dir";
-  // String statusLocatorByHostAndPort = "status locator --host=invalid-host-name --port=123";
-  // String statusLocatorByPort = "status locator --port=123";
-  //
-  // executeAndVerifyStatusCommands(expectedExitCode,
-  // // statusLocatorByPID, statusServerByPID,
-  // // statusLocatorByDir, statusServerByDir,
-  // statusLocatorByHostAndPort, statusLocatorByPort);
-  // }
-  //
-  // @Test
-  // public void onlineStatusWithInvalidNameShouldFail() throws Exception {
-  // ExitCode expectedExitCode = ExitCode.FATAL;
-  //
-  // String statusLocator = "status locator --name=invalid-locator-name";
-  // String statusServer = "status server --name=invalid-server-name";
-  //
-  // executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
-  // }
-  //
+  public String startServerCommand() {
+    serverName = nameGenerator.generate('-');
+    return new CommandStringBuilder("start server").addOption("name", serverName).toString();
+  }
+
+
+
+
+  public String connectCommand() {
+    return new CommandStringBuilder("connect").addOption("port", String.valueOf(locatorPort))
+        .toString();
+  }
+
+
+
+
+  public String statusServerCommandByName() {
+    return new CommandStringBuilder("status server").addOption("name", serverName).toString();
+  }
+
+
+
+  public String statusServerCommandByDir() {
+    String serverDir = realGfshRule.getTemporaryFolder().getRoot()
+        .toPath().resolve(serverName).toAbsolutePath().toString();
+    return new CommandStringBuilder("status server").addOption("dir", serverDir).toString();
+  }
+
+  public String statusServerCommandByPid() throws IOException {
+    int serverPid = snoopMemberFile(serverName, "server.pid");
+    return new CommandStringBuilder("status server").addOption("name", String.valueOf(serverPid)).toString();
+  }
+
+
+
+
+
+
+  public String statusLocatorCommandByName() {
+    return new CommandStringBuilder("status locator").addOption("name", locatorName).toString();
+  }
+
+  public String statusLocatorCommandByDir() {
+    String locatorDir = realGfshRule.getTemporaryFolder().getRoot()
+        .toPath().resolve(locatorName).toAbsolutePath().toString();
+    return new CommandStringBuilder("status locator").addOption("dir", locatorDir).toString();
+  }
+
+  public String statusLocatorCommandByPid() throws IOException {
+    int locatorPid = snoopMemberFile(locatorName, "locator.pid");
+    return new CommandStringBuilder("status locator").addOption("name", String.valueOf(locatorPid)).toString();
+  }
+
+
+
+
+  public List<Process> executeStartLocatorAndServer() throws IOException, InterruptedException {
+    return Stream.of(
+        realGfshRule.executeCommands(startLocatorCommand()),
+        realGfshRule.executeCommands(connectCommand(), startServerCommand())).collect(toList());
+  }
+
+  public void executeOfflineStatusCommands() throws IOException, InterruptedException {
+    Process p = realGfshRule.executeCommands(statusServerCommandByDir());
+    Process p2 = realGfshRule.executeCommands(statusServerCommandByPid());
+    Process p3 = realGfshRule.executeCommands(statusLocatorCommandByDir());
+    Process p4 = realGfshRule.executeCommands(statusLocatorCommandByPid());
+  }
+
+  public void executeOnlineStatusCommandsWhileDisconnected() throws IOException, InterruptedException {
+    Process p = realGfshRule.executeCommands(statusServerCommandByName());
+    Process p2 = realGfshRule.executeCommands(statusLocatorCommandByName());
+  }
+
+  public void executeOnlineStatusCommandsWhileConnected() throws IOException, InterruptedException {
+    Process p = realGfshRule.executeCommands(connectCommand(), statusServerCommandByName());
+    Process p2 = realGfshRule.executeCommands(connectCommand(), statusLocatorCommandByName());
+  }
+
+
+
+
+
+  public int snoopMemberFile(String memberName, String filename) throws IOException {
+    File resolved_filename = realGfshRule.getTemporaryFolder().getRoot().toPath()
+        .resolve(memberName).resolve(filename).toFile();
+    PidFile pidFile = new PidFile(resolved_filename);
+    return pidFile.readPid();
+  }
+
+  @Test
+  public void offlineStatusWithInvalidOptionsShouldFail() throws Exception {
+    ExitCode expectedExitCode = ExitCode.FATAL;
+
+    String statusLocatorByPID = "status locator --pid=10";
+    String statusServerByPID = "status server --pid=11";
+    String statusLocatorByDir = "status locator --dir=some-invalid-dir";
+    String statusServerByDir = "status server --dir=some-invalid-dir";
+    String statusLocatorByHostAndPort = "status locator --host=invalid-host-name --port=123";
+    String statusLocatorByPort = "status locator --port=123";
+
+    executeAndVerifyStatusCommands(expectedExitCode,
+        statusLocatorByPID, statusServerByPID,
+        statusLocatorByDir, statusServerByDir,
+        statusLocatorByHostAndPort, statusLocatorByPort);
+  }
+
+  private void executeAndVerifyStatusCommands(ExitCode expectedExitCode, String... queries)
+      throws Exception {
+    SoftAssertions softly = new SoftAssertions();
+    realGfshRule.executeCommandsAndWaitAtMost(1, TimeUnit.MINUTES, queries);
+    for (Process p : realGfshRule.getProcesses()) {
+      softly.assertThat(p.exitValue()).isEqualTo(expectedExitCode.getExitCode());
+    }
+    softly.assertAll();
+  }
+
+
+  private String localhost() throws Exception {
+    return InetAddress.getLocalHost().getHostAddress();
+  }
+
+  @Test
+  public void onlineStatusWithInvalidNameShouldFail() throws Exception {
+    ExitCode expectedExitCode = ExitCode.FATAL;
+
+    String statusLocator = "status locator --name=invalid-locator-name";
+    String statusServer = "status server --name=invalid-server-name";
+
+    executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
+  }
+
   // @Test
   // public void offlineStatusWithValidOptionsShouldSucceedWhenNotConnected() throws Exception {
   // ExitCode expectedExitCode = ExitCode.NORMAL;
@@ -144,57 +248,9 @@ public class GfshExitCodeStatusCommandsDUnitTest {
   //
   // String statusLocator = "status locator --name=" + locator.getName();
   // String statusServer = "status server --name=" + server.getName();
-  //
-  // executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
-  // }
-  //
-  // private void executeAndVerifyStatusCommands(ExitCode expectedExitCode, String... queries)
-  // throws Exception {
-  // SoftAssertions softly = new SoftAssertions();
-  // for (String q : queries) {
-  // softly.assertThat(executeGfshCommand(q)).describedAs(q)
-  // .isEqualTo(expectedExitCode.getExitCode());
-  // }
-  // softly.assertAll();
-  // }
-  //
-  // private int executeGfshCommand(String cmd) throws Exception {
-  // gfshConnection.executeCommand(cmd);
-  // return gfshConnection.getShellExitcode();
-  // }
-  //
-  // private void connect() throws Exception {
-  // assertThat(locator).isNotNull();
-  // gfshConnection.connectAndVerify(locator);
-  // }
-  //
-  // private void launch(boolean connectToLocator, Status spoofedStatus) throws Exception {
-  // assertThat(locator).isNull();
-  // assertThat(server).isNull();
-  // ServerStarterRule.FakeLauncher.setStatus(spoofedStatus);
-  // LocatorStarterRule.FakeLauncher.setStatus(spoofedStatus);
-  //
-  // locator = lsRule.startLocatorVM(0);
-  // locatorDir = locator.getWorkingDir();
-  // // locatorPID =
-  // // locator.getVM().invoke((SerializableCallableIF<Integer>) LocatorStarterRule::getPid);
-  // int locatorPort = locator.getPort();
-  //
-  // server = lsRule.startServerVM(1, locatorPort);
-  // serverDir = server.getWorkingDir();
-  // // serverPID = server.getVM().invoke((SerializableCallableIF<Integer>)
-  // // ServerStarterRule::getPid);
-  //
-  // if (connectToLocator) {
-  // connect();
-  // Awaitility.await().atMost(60, TimeUnit.SECONDS)
-  // .until((Gfsh::isCurrentInstanceConnectedAndReady));
-  // Awaitility.await().atMost(60, TimeUnit.SECONDS)
-  // .until(() -> MXBeanProvider.isMemberMXBeanAvailable(server.getName()));
-  // }
-  // }
-  //
-  // private String localhost() throws Exception {
-  // return InetAddress.getLocalHost().getHostAddress();
-  // }
+
+//  executeAndVerifyStatusCommands(expectedExitCode, statusLocator, statusServer);
+//
+//}
+
 }
