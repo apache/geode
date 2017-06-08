@@ -295,7 +295,8 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     } catch (FunctionException fe) {
       String message = fe.getMessage();
 
-      if (fe.getCause() instanceof FunctionInvocationTargetException) {
+      if ((fe.getCause() instanceof FunctionInvocationTargetException)
+          || (fe instanceof FunctionInvocationTargetException)) {
         if (functionObject.isHA() && logger.isDebugEnabled()) {
           logger.debug("Exception on server while executing function: {}: {}", function, message);
         } else if (logger.isDebugEnabled()) {
