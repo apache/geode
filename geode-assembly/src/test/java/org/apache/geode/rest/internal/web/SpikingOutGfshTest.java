@@ -32,9 +32,11 @@ import java.util.concurrent.TimeUnit;
 
 @Category(IntegrationTest.class)
 public class SpikingOutGfshTest {
-    private static final File GEODE_HOME = new File("/Users/jstewart/projects/open/geode-assembly/build/install/apache-geode");
+  private static final File
+      GEODE_HOME =
+      new File("/Users/jstewart/projects/open/geode-assembly/build/install/apache-geode");
 
-//  private static final File GEODE_HOME = new File(System.getenv("GEODE_HOME"));
+  //  private static final File GEODE_HOME = new File(System.getenv("GEODE_HOME"));
   private static final String GFSH_PATH = GEODE_HOME.toPath().resolve("bin/gfsh").toString();
 
   @Rule
@@ -42,13 +44,14 @@ public class SpikingOutGfshTest {
 
   @Test
   public void testGfsh() throws Exception {
-    Process locatorProcess = realGfshRule.executeCommandsAndWaitFor(2, TimeUnit.MINUTES, "start locator --name=locator1");
-assertThat(locatorProcess.exitValue()).isEqualTo(0);
-//    assertThat(locatorProcess.waitFor(2, TimeUnit.MINUTES)).isTrue();
-    Process gfshProcess =  realGfshRule.executeCommands("connect");
+    Process locatorProcess =
+        realGfshRule
+            .executeCommandsAndWaitFor(2, TimeUnit.MINUTES, "start locator --name=locator1");
+    assertThat(locatorProcess.exitValue()).isEqualTo(0);
 
+    Process gfshProcess = realGfshRule.executeCommandsAndWaitFor(1, TimeUnit.MINUTES, "connect", "status locator");
+//    Process gfshProcess3 = realGfshRule.executeCommands("connect", "start server");
 
-    assertThat(gfshProcess.waitFor(10, TimeUnit.SECONDS)).isTrue();
     assertThat(gfshProcess.exitValue()).isEqualTo(0);
   }
 }

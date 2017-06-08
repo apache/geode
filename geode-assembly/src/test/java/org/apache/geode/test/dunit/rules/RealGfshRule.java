@@ -16,15 +16,17 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class RealGfshRule extends ExternalResource {
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -61,18 +63,22 @@ public class RealGfshRule extends ExternalResource {
       throws IOException, InterruptedException {
     Process process = executeCommands(commands);
     assertThat(process.waitFor(timeout, timeUnit)).isTrue();
-//    assertThat(process.exitValue()).isEqualTo(0);
 
     return process;
   }
 
+  private Process executeCommandsAndWaitQuietlyFor(int timeout, TimeUnit timeUnit,
+                                                   String... commmands) {
+    try {
+      return executeCommandsAndWaitFor(timeout, timeUnit, commmands);
+    } catch (Exception ignore) {
+      return null;
+    }
+  }
+
   @Override
   protected void after() {
-    System.out.println("Cleaning up");
-    try {
-      executeCommandsAndWaitFor(1, TimeUnit.MINUTES, "connect", "stop locator --dir=" + temporaryFolder.getRoot().getAbsolutePath());
-    } catch (Exception ignore) {
-    }
+      stopMembersQuietly();
     processes.stream().forEach(Process::destroyForcibly);
     processes.stream().forEach((Process process) -> {
       try {
@@ -81,5 +87,28 @@ public class RealGfshRule extends ExternalResource {
       }
     });
     temporaryFolder.delete();
+  }
+
+  private void stopMembersQuietly() {
+    File[] directories = temporaryFolder.getRoot().listFiles(File::isDirectory);
+
+    Predicate<File> isServerDir = (File dir) -> Arrays.stream(dir.list())
+        .anyMatch(filename -> filename.endsWith("server.pid"));
+
+    Predicate<File> isLocatorDir = (File dir) -> Arrays.stream(dir.list())
+        .anyMatch(filename -> filename.endsWith("locator.pid"));
+
+    Consumer<File>
+        stopServerInDir =
+        (File dir) -> executeCommandsAndWaitQuietlyFor(1, TimeUnit.MINUTES,
+            "stop server --dir=" + dir.getAbsolutePath());
+
+    Consumer<File>
+        stopLocatorInDir =
+        (File dir) -> executeCommandsAndWaitQuietlyFor(1, TimeUnit.MINUTES,
+            "stop locator --dir=" + dir.getAbsolutePath());
+
+    Arrays.stream(directories).filter(isServerDir).forEach(stopServerInDir);
+    Arrays.stream(directories).filter(isLocatorDir).forEach(stopLocatorInDir);
   }
 }
