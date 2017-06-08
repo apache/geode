@@ -62,6 +62,7 @@ public class RealGfshRule extends ExternalResource {
   public Process executeCommandsAndWaitAtMost(int timeout, TimeUnit timeUnit, String... commands)
       throws IOException, InterruptedException {
     Process process = executeCommands(commands);
+    // Use Awaitility here?  Does that print more nicely when it fails?
     assertThat(process.waitFor(timeout, timeUnit)).isTrue();
 
     return process;
