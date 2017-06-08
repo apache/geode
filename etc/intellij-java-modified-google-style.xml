@@ -1,4 +1,4 @@
-<code_scheme name="GoogleStyle">
+<code_scheme name="GeodeStyle">
   <option name="JAVA_INDENT_OPTIONS">
     <value>
       <option name="INDENT_SIZE" value="2" />
@@ -33,125 +33,15 @@
     <value>
       <package name="" withSubpackages="true" static="true" />
       <emptyLine />
-      <package name="com.google" withSubpackages="true" static="false" />
-      <emptyLine />
-      <package name="android" withSubpackages="true" static="false" />
-      <package name="antenna" withSubpackages="true" static="false" />
-      <package name="antlr" withSubpackages="true" static="false" />
-      <package name="ar" withSubpackages="true" static="false" />
-      <package name="asposewobfuscated" withSubpackages="true" static="false" />
-      <package name="asquare" withSubpackages="true" static="false" />
-      <package name="atg" withSubpackages="true" static="false" />
-      <package name="au" withSubpackages="true" static="false" />
-      <package name="beaver" withSubpackages="true" static="false" />
-      <package name="bibtex" withSubpackages="true" static="false" />
-      <package name="bmsi" withSubpackages="true" static="false" />
-      <package name="bsh" withSubpackages="true" static="false" />
-      <package name="ccl" withSubpackages="true" static="false" />
-      <package name="cern" withSubpackages="true" static="false" />
-      <package name="ChartDirector" withSubpackages="true" static="false" />
-      <package name="checkers" withSubpackages="true" static="false" />
-      <package name="com" withSubpackages="true" static="false" />
-      <package name="COM" withSubpackages="true" static="false" />
-      <package name="common" withSubpackages="true" static="false" />
-      <package name="contribs" withSubpackages="true" static="false" />
-      <package name="corejava" withSubpackages="true" static="false" />
-      <package name="cryptix" withSubpackages="true" static="false" />
-      <package name="cybervillains" withSubpackages="true" static="false" />
-      <package name="dalvik" withSubpackages="true" static="false" />
-      <package name="danbikel" withSubpackages="true" static="false" />
-      <package name="de" withSubpackages="true" static="false" />
-      <package name="EDU" withSubpackages="true" static="false" />
-      <package name="eg" withSubpackages="true" static="false" />
-      <package name="eu" withSubpackages="true" static="false" />
-      <package name="examples" withSubpackages="true" static="false" />
-      <package name="fat" withSubpackages="true" static="false" />
-      <package name="fit" withSubpackages="true" static="false" />
-      <package name="fitlibrary" withSubpackages="true" static="false" />
-      <package name="fmpp" withSubpackages="true" static="false" />
-      <package name="freemarker" withSubpackages="true" static="false" />
-      <package name="gnu" withSubpackages="true" static="false" />
-      <package name="groovy" withSubpackages="true" static="false" />
-      <package name="groovyjarjarantlr" withSubpackages="true" static="false" />
-      <package name="groovyjarjarasm" withSubpackages="true" static="false" />
-      <package name="hak" withSubpackages="true" static="false" />
-      <package name="hep" withSubpackages="true" static="false" />
-      <package name="ie" withSubpackages="true" static="false" />
-      <package name="io" withSubpackages="true" static="false" />
-      <package name="imageinfo" withSubpackages="true" static="false" />
-      <package name="info" withSubpackages="true" static="false" />
-      <package name="it" withSubpackages="true" static="false" />
-      <package name="jal" withSubpackages="true" static="false" />
-      <package name="Jama" withSubpackages="true" static="false" />
-      <package name="japa" withSubpackages="true" static="false" />
-      <package name="japacheckers" withSubpackages="true" static="false" />
-      <package name="jas" withSubpackages="true" static="false" />
-      <package name="jasmin" withSubpackages="true" static="false" />
-      <package name="javancss" withSubpackages="true" static="false" />
-      <package name="javanet" withSubpackages="true" static="false" />
-      <package name="javassist" withSubpackages="true" static="false" />
-      <package name="javazoom" withSubpackages="true" static="false" />
-      <package name="java_cup" withSubpackages="true" static="false" />
-      <package name="jcifs" withSubpackages="true" static="false" />
-      <package name="jetty" withSubpackages="true" static="false" />
-      <package name="JFlex" withSubpackages="true" static="false" />
-      <package name="jj2000" withSubpackages="true" static="false" />
-      <package name="jline" withSubpackages="true" static="false" />
-      <package name="jp" withSubpackages="true" static="false" />
-      <package name="JSci" withSubpackages="true" static="false" />
-      <package name="jsr166y" withSubpackages="true" static="false" />
-      <package name="junit" withSubpackages="true" static="false" />
-      <package name="jxl" withSubpackages="true" static="false" />
-      <package name="jxxload_help" withSubpackages="true" static="false" />
-      <package name="kawa" withSubpackages="true" static="false" />
-      <package name="kea" withSubpackages="true" static="false" />
-      <package name="libcore" withSubpackages="true" static="false" />
-      <package name="libsvm" withSubpackages="true" static="false" />
-      <package name="lti" withSubpackages="true" static="false" />
-      <package name="memetic" withSubpackages="true" static="false" />
-      <package name="mt" withSubpackages="true" static="false" />
-      <package name="mx4j" withSubpackages="true" static="false" />
-      <package name="net" withSubpackages="true" static="false" />
-      <package name="netscape" withSubpackages="true" static="false" />
-      <package name="nl" withSubpackages="true" static="false" />
-      <package name="nu" withSubpackages="true" static="false" />
-      <package name="oauth" withSubpackages="true" static="false" />
-      <package name="ognl" withSubpackages="true" static="false" />
-      <package name="opennlp" withSubpackages="true" static="false" />
-      <package name="oracle" withSubpackages="true" static="false" />
-      <package name="org" withSubpackages="true" static="false" />
-      <package name="penn2dg" withSubpackages="true" static="false" />
-      <package name="pennconverter" withSubpackages="true" static="false" />
-      <package name="pl" withSubpackages="true" static="false" />
-      <package name="prefuse" withSubpackages="true" static="false" />
-      <package name="proguard" withSubpackages="true" static="false" />
-      <package name="repackage" withSubpackages="true" static="false" />
-      <package name="scm" withSubpackages="true" static="false" />
-      <package name="se" withSubpackages="true" static="false" />
-      <package name="serp" withSubpackages="true" static="false" />
-      <package name="simple" withSubpackages="true" static="false" />
-      <package name="soot" withSubpackages="true" static="false" />
-      <package name="sqlj" withSubpackages="true" static="false" />
-      <package name="src" withSubpackages="true" static="false" />
-      <package name="ssa" withSubpackages="true" static="false" />
-      <package name="sun" withSubpackages="true" static="false" />
-      <package name="sunlabs" withSubpackages="true" static="false" />
-      <package name="tcl" withSubpackages="true" static="false" />
-      <package name="testdata" withSubpackages="true" static="false" />
-      <package name="testshell" withSubpackages="true" static="false" />
-      <package name="testsuite" withSubpackages="true" static="false" />
-      <package name="twitter4j" withSubpackages="true" static="false" />
-      <package name="uk" withSubpackages="true" static="false" />
-      <package name="ViolinStrings" withSubpackages="true" static="false" />
-      <package name="weka" withSubpackages="true" static="false" />
-      <package name="wet" withSubpackages="true" static="false" />
-      <package name="winstone" withSubpackages="true" static="false" />
-      <package name="woolfel" withSubpackages="true" static="false" />
-      <package name="wowza" withSubpackages="true" static="false" />
-      <emptyLine />
       <package name="java" withSubpackages="true" static="false" />
+      <emptyLine />
       <package name="javax" withSubpackages="true" static="false" />
+      <emptyLine />
       <package name="" withSubpackages="true" static="false" />
+      <emptyLine />
+      <package name="org.apache.geode" withSubpackages="true" static="false" />
+      <emptyLine />
+      <package name="com.gemstone" withSubpackages="true" static="false" />
     </value>
   </option>
   <option name="STATIC_METHODS_ORDER_WEIGHT" value="5" />
