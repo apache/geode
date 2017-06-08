@@ -15,13 +15,12 @@
 
 package org.apache.geode.tools.pulse;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
@@ -31,9 +30,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @Category(IntegrationTest.class)
 public class PulseSecurityTest {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @ClassRule
   public static ServerStarterRule server =

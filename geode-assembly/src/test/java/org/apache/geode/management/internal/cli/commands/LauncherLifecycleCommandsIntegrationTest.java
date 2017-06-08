@@ -15,10 +15,14 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,17 +38,8 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
-
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * The LauncherLifecycleCommandsIntegrationTest class is a test suite of test cases testing the
@@ -57,6 +52,9 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class LauncherLifecycleCommandsIntegrationTest {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   private LauncherLifecycleCommands launcherCommands;
 

@@ -15,9 +15,8 @@
 
 package org.apache.geode.rest.internal.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
@@ -28,8 +27,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @Category({IntegrationTest.class, RestAPITest.class})
 public class RestServersJUnitTest {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @ClassRule
   public static ServerStarterRule serverStarter =

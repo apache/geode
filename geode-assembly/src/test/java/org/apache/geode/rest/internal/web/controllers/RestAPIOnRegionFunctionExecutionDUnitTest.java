@@ -14,31 +14,8 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.*;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
@@ -50,8 +27,19 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * Dunit Test to validate OnRegion function execution with REST APIs
@@ -63,6 +51,9 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   private final String REPLICATE_REGION_NAME = "sampleRRegion";
 
@@ -275,7 +266,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
         if (rfContext.getArguments() instanceof Boolean) {
           /* return rfContext.getArguments(); */
           if (hasResult()) {
-            rfContext.getResultSender().lastResult((Serializable) rfContext.getArguments());
+            rfContext.getResultSender().lastResult(rfContext.getArguments());
           } else {
             rfContext.getDataSet().getCache().getLogger()
                 .info("Executing function :  SampleFunction.execute(hasResult=false) " + rfContext);
@@ -305,10 +296,10 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
              * return (Serializable)PartitionRegionHelper.getLocalDataForContext(
              * rfContext).get(key);
              */
-            rfContext.getResultSender().lastResult(
-                (Serializable) PartitionRegionHelper.getLocalDataForContext(rfContext).get(key));
+            rfContext.getResultSender()
+                .lastResult(PartitionRegionHelper.getLocalDataForContext(rfContext).get(key));
           } else {
-            rfContext.getResultSender().lastResult((Serializable) rfContext.getDataSet().get(key));
+            rfContext.getResultSender().lastResult(rfContext.getDataSet().get(key));
           }
           /* return (Serializable)rfContext.getDataSet().get(key); */
         } else if (rfContext.getArguments() instanceof Set) {

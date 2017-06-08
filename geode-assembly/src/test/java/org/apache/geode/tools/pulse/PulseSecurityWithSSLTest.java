@@ -15,20 +15,11 @@
 
 package org.apache.geode.tools.pulse;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.util.test.TestUtil.getResourcePath;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.apache.geode.security.SecurableCommunicationChannels;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
 import org.junit.BeforeClass;
@@ -40,12 +31,19 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.util.Properties;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.util.test.TestUtil.getResourcePath;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @Category(IntegrationTest.class)
 public class PulseSecurityWithSSLTest {
 
   private static File jks =
       new File(getResourcePath(PulseSecurityWithSSLTest.class, "/ssl/trusted.keystore"));
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @ClassRule
   public static LocatorStarterRule locator = new LocatorStarterRule();
