@@ -1302,6 +1302,17 @@ public class AcceptorImpl extends Acceptor implements Runnable {
                   logger.warn(LocalizedMessage.create(
                       LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION_DUE_TO_SOCKET_TIMEOUT));
                 } else {
+                  if (ex instanceof SSLException) {
+                    try {
+                      // Try to send a proper rejection message
+                      ServerHandShakeProcessor.refuse(s.getOutputStream(), ex.toString(),
+                          HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
+                    } catch (IOException e) {
+                      if (logger.isDebugEnabled()) {
+                        logger.debug("Bridge server: Unable to write SSL error");
+                      }
+                    }
+                  }
                   logger.warn(LocalizedMessage.create(
                       LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION__0,
                       ex), ex);
