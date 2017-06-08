@@ -46,32 +46,6 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   private static int WAIT_FOR_FLUSH_TIME = 10000;
 
-  @Test
-  public void indexIsNotUpdatedIfTransactionHasNotCommittedYet() throws Exception {
-    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
-        REGION_NAME);
-
-    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
-    region.put("object-1", new TestObject("title 1", "hello world"));
-    region.put("object-2", new TestObject("title 2", "this will not match"));
-    region.put("object-3", new TestObject("title 3", "hello world"));
-    region.put("object-4", new TestObject("hello world", "hello world"));
-
-    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
-        TimeUnit.MILLISECONDS);
-    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
-        "description:\"hello world\"", DEFAULT_FIELD);
-    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
-    assertEquals(3, results.size());
-
-    // begin transaction
-    cache.getCacheTransactionManager().begin();
-    region.put("object-1", new TestObject("title 1", "updated"));
-    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
-        TimeUnit.MILLISECONDS);
-    assertEquals(3, query.findPages().size());
-  }
 
   @Test
   public void indexIsUpdatedAfterTransactionHasCommitted() throws Exception {
