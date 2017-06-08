@@ -30,6 +30,8 @@ import java.util.function.Predicate;
 
 public class RealGfshRule extends ExternalResource {
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+
   private List<Process> processes = new ArrayList<>();
   private final String gfshPath;
 
@@ -40,6 +42,10 @@ public class RealGfshRule extends ExternalResource {
   @Override
   protected void before() throws IOException {
     temporaryFolder.create();
+  }
+
+  public List<Process> getProcesses() {
+    return processes;
   }
 
   public Process executeCommands(String... commands) throws IOException {
@@ -62,14 +68,13 @@ public class RealGfshRule extends ExternalResource {
   public Process executeCommandsAndWaitAtMost(int timeout, TimeUnit timeUnit, String... commands)
       throws IOException, InterruptedException {
     Process process = executeCommands(commands);
-    // Use Awaitility here?  Does that print more nicely when it fails?
     assertThat(process.waitFor(timeout, timeUnit)).isTrue();
 
     return process;
   }
 
   private Process executeCommandsAndWaitQuietlyFor(int timeout, TimeUnit timeUnit,
-                                                   String... commmands) {
+      String... commmands) {
     try {
       return executeCommandsAndWaitAtMost(timeout, timeUnit, commmands);
     } catch (Exception ignore) {
@@ -79,7 +84,7 @@ public class RealGfshRule extends ExternalResource {
 
   @Override
   protected void after() {
-      stopMembersQuietly();
+    stopMembersQuietly();
     processes.stream().forEach(Process::destroyForcibly);
     processes.stream().forEach((Process process) -> {
       try {
@@ -99,17 +104,17 @@ public class RealGfshRule extends ExternalResource {
     Predicate<File> isLocatorDir = (File dir) -> Arrays.stream(dir.list())
         .anyMatch(filename -> filename.endsWith("locator.pid"));
 
-    Consumer<File>
-        stopServerInDir =
-        (File dir) -> executeCommandsAndWaitQuietlyFor(1, TimeUnit.MINUTES,
-            "stop server --dir=" + dir.getAbsolutePath());
+    Consumer<File> stopServerInDir = (File dir) -> executeCommandsAndWaitQuietlyFor(1,
+        TimeUnit.MINUTES, "stop server --dir=" + dir.getAbsolutePath());
 
-    Consumer<File>
-        stopLocatorInDir =
-        (File dir) -> executeCommandsAndWaitQuietlyFor(1, TimeUnit.MINUTES,
-            "stop locator --dir=" + dir.getAbsolutePath());
+    Consumer<File> stopLocatorInDir = (File dir) -> executeCommandsAndWaitQuietlyFor(1,
+        TimeUnit.MINUTES, "stop locator --dir=" + dir.getAbsolutePath());
 
     Arrays.stream(directories).filter(isServerDir).forEach(stopServerInDir);
     Arrays.stream(directories).filter(isLocatorDir).forEach(stopLocatorInDir);
+  }
+
+  public TemporaryFolder getTemporaryFolder() {
+    return temporaryFolder;
   }
 }
