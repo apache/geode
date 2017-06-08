@@ -31,9 +31,9 @@ import org.apache.geode.test.junit.runner.SuiteRunner;
     GemfireDataCommandsDUnitTest.class,
     GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class, IndexCommandsDUnitTest.class,
     ListAndDescribeDiskStoreCommandsDUnitTest.class, ListIndexCommandDUnitTest.class,
-    MemberCommandsDUnitTest.class, MiscellaneousCommandsDUnitTest.class,
-    QueueCommandsDUnitTest.class, ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class,
-    ShowMetricsDUnitTest.class, ShowStackTraceDUnitTest.class})
+    MiscellaneousCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
+    ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class, ShowMetricsDUnitTest.class,
+    ShowStackTraceDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =

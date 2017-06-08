@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -222,8 +223,12 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
     CommandProcessor commandProcessor = new CommandProcessor();
     Result result =
         commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
-    getLogWriter().info("#SB" + getResultAsString(result));
+    String resultOutput = getResultAsString(result);
+    getLogWriter().info(resultOutput);
     assertEquals(true, result.getStatus().equals(Status.OK));
+    assertTrue(resultOutput.contains("me:"));
+    assertTrue(resultOutput.contains("Server1:"));
+    assertTrue(resultOutput.contains("Server2:"));
   }
 
   /**
