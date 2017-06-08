@@ -14,12 +14,8 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
-import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -33,7 +29,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.runner.RunWith;
 
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -66,39 +61,6 @@ public class LuceneQueriesClientDUnitTest extends LuceneQueriesDUnitTest {
 
   protected RegionTestableType[] getListOfRegionTestTypes() {
     return new RegionTestableType[] {RegionTestableType.PARTITION_WITH_CLIENT};
-  }
-
-  // Due to singlehop transactions differences, the exception actually isn't thrown
-  // So the parent test behaves differently if singlehop is enabled or not for a client
-  @Test
-  @Parameters(method = "getListOfRegionTestTypes")
-  public void transactionWithLuceneQueriesShouldThrowException(RegionTestableType regionTestType) {
-    SerializableRunnableIF createIndex = () -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
-    };
-    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
-    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
-    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
-
-    putDataInRegion(accessor);
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
-    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
-
-    accessor.invoke(() -> {
-      Cache cache = getCache();
-      try {
-        LuceneService service = LuceneServiceProvider.get(cache);
-        LuceneQuery<Integer, TestObject> query;
-        query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world",
-            DEFAULT_FIELD);
-        cache.getCacheTransactionManager().begin();
-        PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
-      } finally {
-        cache.getCacheTransactionManager().rollback();
-      }
-    });
-
   }
 
 

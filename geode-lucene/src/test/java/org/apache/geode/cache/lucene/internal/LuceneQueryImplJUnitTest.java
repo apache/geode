@@ -23,6 +23,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.execute.Execution;
@@ -58,6 +60,10 @@ public class LuceneQueryImplJUnitTest {
   private ResultCollector<TopEntriesCollector, TopEntries> collector;
   private Region region;
   private PageableLuceneQueryResults<Object, Object> results;
+  private Cache cache;
+  private CacheTransactionManager cacheTransactionManager;
+
+
 
   @Before
   public void createMocks() {
@@ -65,7 +71,11 @@ public class LuceneQueryImplJUnitTest {
     execution = mock(Execution.class);
     collector = mock(ResultCollector.class);
     provider = mock(LuceneQueryProvider.class);
-
+    cache = mock(Cache.class);
+    cacheTransactionManager = mock(CacheTransactionManager.class);
+    when(region.getCache()).thenReturn(cache);
+    when(region.getCache().getCacheTransactionManager()).thenReturn(cacheTransactionManager);
+    when(region.getCache().getCacheTransactionManager().exists()).thenReturn(false);
     when(execution.setArguments(any())).thenReturn(execution);
     when(execution.withCollector(any())).thenReturn(execution);
     when(execution.execute(anyString())).thenReturn((ResultCollector) collector);
