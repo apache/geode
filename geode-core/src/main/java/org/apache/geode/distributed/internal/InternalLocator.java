@@ -478,9 +478,8 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (logWriter == null) {
       logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config,
           !startDistributedSystem);
-      if (logger.isDebugEnabled()) {
+      if (logger.isDebugEnabled())
         logger.debug("LogWriter for locator is created.");
-      }
     }
 
     if (securityLogWriter == null) {

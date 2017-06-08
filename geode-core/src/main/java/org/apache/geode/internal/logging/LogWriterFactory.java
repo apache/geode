@@ -87,19 +87,19 @@ public class LogWriterFactory {
         // LOG:CONFIG:
         logger.info(LogMarker.CONFIG, Banner.getString(null));
       }
+      System.setProperty(InternalLocator.INHIBIT_DM_BANNER, "true"); // Ensure no more banners will
+                                                                     // be logged
     } else {
       logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
     }
 
     // log the config
-    if (logConfig) {
-      if (!isLoner) {
-        // LOG:CONFIG: changed from config to info
-        logger.info(LogMarker.CONFIG,
-            LocalizedMessage.create(
-                LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
-                config.toLoggerString()));
-      }
+    if (logConfig && !isLoner) {
+      // LOG:CONFIG: changed from config to info
+      logger.info(LogMarker.CONFIG,
+          LocalizedMessage.create(
+              LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
+              config.toLoggerString()));
     }
 
     return logger;

@@ -1797,7 +1797,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[]) statsList.toArray(new Statistics[0]);
+    return statsList.toArray(new Statistics[0]);
   }
 
   // StatisticsFactory methods
@@ -1829,7 +1829,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   public FunctionStats getFunctionStats(String textId) {
-    FunctionStats stats = (FunctionStats) functionExecutionStatsMap.get(textId);
+    FunctionStats stats = functionExecutionStatsMap.get(textId);
     if (stats == null) {
       stats = new FunctionStats(this, textId);
       FunctionStats oldStats = functionExecutionStatsMap.putIfAbsent(textId, stats);
@@ -1870,7 +1870,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public interface StatisticsVisitor {
 
-    public void visit(Statistics stat);
+    void visit(Statistics stat);
   }
 
   public Set<String> getAllFunctionExecutionIds() {
@@ -2167,7 +2167,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private void notifyResourceEventListeners(ResourceEvent event, Object resource) {
     for (Iterator<ResourceEventsListener> iter = resourceListeners.iterator(); iter.hasNext();) {
       try {
-        ResourceEventsListener listener = (ResourceEventsListener) iter.next();
+        ResourceEventsListener listener = iter.next();
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
         // ignore
@@ -2302,7 +2302,7 @@ public class InternalDistributedSystem extends DistributedSystem
               boolean isDurableClient = false;
 
               if (dca != null) {
-                isDurableClient = ((dca.getId() == null || dca.getId().isEmpty()) ? false : true);
+                isDurableClient = (!(dca.getId() == null || dca.getId().isEmpty()));
               }
 
               ((InternalDistributedSystem) ds).disconnect(false,
@@ -2337,7 +2337,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * 
      * @param sys the the system we are disconnecting from process should take before returning.
      */
-    public void onDisconnect(InternalDistributedSystem sys);
+    void onDisconnect(InternalDistributedSystem sys);
 
   }
 
@@ -2352,7 +2352,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS, which is in a partially disconnected state and cannot be used
      *        for messaging
      */
-    public void reconnecting(InternalDistributedSystem oldSystem);
+    void reconnecting(InternalDistributedSystem oldSystem);
 
     /**
      * Invoked after a reconnect to the distributed system
@@ -2360,8 +2360,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS
      * @param newSystem the new DS
      */
-    public void onReconnect(InternalDistributedSystem oldSystem,
-        InternalDistributedSystem newSystem);
+    void onReconnect(InternalDistributedSystem oldSystem, InternalDistributedSystem newSystem);
   }
 
   /**
@@ -2374,7 +2373,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * 
      * @param sys
      */
-    public void onShutdown(InternalDistributedSystem sys);
+    void onShutdown(InternalDistributedSystem sys);
   }
 
   /**
@@ -2427,10 +2426,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return false;
     }
     boolean newDsConnected = (rds == null || !rds.isConnected());
-    if (!newDsConnected) {
-      return false;
-    }
-    return true;
+    return newDsConnected;
   }
 
 
@@ -2754,7 +2750,7 @@ public class InternalDistributedSystem extends DistributedSystem
         if (newDM instanceof DistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
-          if (((DistributionManager) newDM).getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
+          if (newDM.getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
             try {
               CacheConfig config = new CacheConfig();
               if (cacheXML != null) {
@@ -2962,7 +2958,7 @@ public class InternalDistributedSystem extends DistributedSystem
     /**
      * Invoked after a connection to the distributed system is created
      */
-    public void onConnect(InternalDistributedSystem sys);
+    void onConnect(InternalDistributedSystem sys);
   }
 
   public String forceStop() {
@@ -3064,8 +3060,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * Privacy Violations that Fortify will complain about.
    * </p>
    */
-  public static interface CreationStackGenerator {
+  public interface CreationStackGenerator {
 
-    public Throwable generateCreationStack(final DistributionConfig config);
+    Throwable generateCreationStack(final DistributionConfig config);
   }
 }
