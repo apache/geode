@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,8 +34,6 @@ import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.AdminException;
@@ -44,13 +41,15 @@ import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.admin.jmx.AgentFactory;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.JavaCommandBuilder;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A command line utility inspired by the <code>CacheServerLauncher</code> that is responsible for
@@ -135,11 +134,11 @@ public class AgentLauncher {
     out.println("\n");
     out.println(LocalizedStrings.AgentLauncher_AGENT_CONFIGURATION_PROPERTIES.toString());
 
-    SortedMap<String, String> map = new TreeMap<String, String>();
+    SortedMap<String, String> map = new TreeMap<>();
 
     int maxLength = 0;
-    for (Iterator<Object> iter = props.keySet().iterator(); iter.hasNext();) {
-      String prop = (String) iter.next();
+    for (Object o : props.keySet()) {
+      String prop = (String) o;
       int length = prop.length();
       if (length > maxLength) {
         maxLength = length;
@@ -151,9 +150,7 @@ public class AgentLauncher {
               + props.getProperty(prop) + "\")");
     }
 
-    Iterator<Entry<String, String>> entries = map.entrySet().iterator();
-    while (entries.hasNext()) {
-      Entry<String, String> entry = entries.next();
+    for (Entry<String, String> entry : map.entrySet()) {
       String prop = entry.getKey();
       out.print("  ");
       out.println(prop);
@@ -176,7 +173,7 @@ public class AgentLauncher {
     }
     out.println("");
 
-    System.exit(1);
+    ExitCode.FATAL.doSystemExit();
   }
 
   /**
@@ -184,12 +181,12 @@ public class AgentLauncher {
    * value is specified on the command line, a default one is provided.
    */
   protected Map<String, Object> getStartOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
 
     options.put(APPENDTO_LOG_FILE, "false");
     options.put(DIR, IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(".")));
 
-    final List<String> vmArgs = new ArrayList<String>();
+    final List<String> vmArgs = new ArrayList<>();
     options.put(VMARGS, vmArgs);
 
     final Properties agentProps = new Properties();
@@ -263,7 +260,7 @@ public class AgentLauncher {
     // the status file was not successfully written to
     pollAgentUntilRunning();
 
-    System.exit(0);
+    ExitCode.NORMAL.doSystemExit();
   }
 
   private void verifyAndClearStatus() throws Exception {
@@ -316,7 +313,7 @@ public class AgentLauncher {
           .toLocalizedString(startLogFile.getAbsolutePath()));
     }
 
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     // read the passwords from command line
     SocketCreator.readSSLProperties(env, true);
 
@@ -448,7 +445,7 @@ public class AgentLauncher {
           OSProcess.getId(), message, cause));
     } catch (Exception e) {
       logger.fatal(e.getMessage(), e);
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
   }
 
@@ -459,9 +456,10 @@ public class AgentLauncher {
 
       if (isStatus(SHUTDOWN_PENDING, SHUTDOWN_PENDING_AFTER_FAILED_STARTUP)) {
         agent.stop();
-        final int exitCode = (isStatus(SHUTDOWN_PENDING_AFTER_FAILED_STARTUP) ? 1 : 0);
+        final ExitCode exitCode =
+            (isStatus(SHUTDOWN_PENDING_AFTER_FAILED_STARTUP) ? ExitCode.NORMAL : ExitCode.FATAL);
         writeStatus(createStatus(this.status, SHUTDOWN));
-        System.exit(exitCode);
+        exitCode.doSystemExit();
       }
     }
   }
@@ -471,7 +469,7 @@ public class AgentLauncher {
    * line. This method can also be used with getting the status of a agent.
    */
   protected Map<String, Object> getStopOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
 
     options.put(DIR, IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(".")));
 
@@ -497,7 +495,7 @@ public class AgentLauncher {
 
     workingDirectory = IOUtils.tryGetCanonicalFileElseGetAbsoluteFile((File) options.get(DIR));
 
-    int exitStatus = 1;
+    ExitCode exitCode = ExitCode.FATAL;
 
     if (new File(workingDirectory, statusFileName).exists()) {
       spinReadStatus();
@@ -512,7 +510,7 @@ public class AgentLauncher {
         System.out
             .println(LocalizedStrings.AgentLauncher_0_HAS_STOPPED.toLocalizedString(this.basename));
         deleteStatus();
-        exitStatus = 0;
+        exitCode = ExitCode.NORMAL;
       } else {
         System.out
             .println(LocalizedStrings.AgentLauncher_TIMEOUT_WAITING_FOR_0_TO_SHUTDOWN_STATUS_IS_1
@@ -524,7 +522,7 @@ public class AgentLauncher {
               .toLocalizedString(workingDirectory));
     }
 
-    System.exit(exitStatus);
+    exitCode.doSystemExit();
   }
 
   private void pollAgentForShutdown() throws InterruptedException {
@@ -545,7 +543,7 @@ public class AgentLauncher {
     this.workingDirectory =
         IOUtils.tryGetCanonicalFileElseGetAbsoluteFile((File) getStopOptions(args).get(DIR));
     System.out.println(getStatus());
-    System.exit(0);
+    ExitCode.NORMAL.doSystemExit();
   }
 
   /**
@@ -779,7 +777,7 @@ public class AgentLauncher {
     out.println("\t" + LocalizedStrings.AgentLauncher_DIR.toLocalizedString());
     out.println();
 
-    System.exit(1);
+    ExitCode.FATAL.doSystemExit();
   }
 
   /**
@@ -833,7 +831,7 @@ public class AgentLauncher {
       t.printStackTrace();
       System.err.println(
           LocalizedStrings.AgentLauncher_ERROR_0.toLocalizedString(t.getLocalizedMessage()));
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
   }
 
@@ -903,8 +901,8 @@ public class AgentLauncher {
           if (msg != null) {
             buffer.append("\n").append(msg).append(" - ");
           } else {
-            buffer.append("\n " + LocalizedStrings.AgentLauncher_EXCEPTION_IN_0_1
-                .toLocalizedString(this.baseName, exception.getMessage()) + " - ");
+            buffer.append("\n ").append(LocalizedStrings.AgentLauncher_EXCEPTION_IN_0_1
+                .toLocalizedString(this.baseName, exception.getMessage())).append(" - ");
           }
           buffer
               .append(LocalizedStrings.AgentLauncher_SEE_LOG_FILE_FOR_DETAILS.toLocalizedString());

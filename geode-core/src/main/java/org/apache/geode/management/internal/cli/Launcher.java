@@ -14,19 +14,21 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
 import org.springframework.shell.core.ExitShellRequest;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -70,7 +72,7 @@ import joptsimple.OptionSet;
  * <li>multiple commands specified using an option "-e"
  * </ol>
  * </ul>
- *
+ * 
  * @since GemFire 7.0
  */
 public class Launcher {
@@ -92,7 +94,7 @@ public class Launcher {
 
   protected Launcher() {
     this.startupTimeLogHelper = new StartupTimeLogHelper();
-    this.allowedCommandLineCommands = new HashSet<String>();
+    this.allowedCommandLineCommands = new HashSet<>();
 
     this.allowedCommandLineCommands.add(CliStrings.ENCRYPT);
     this.allowedCommandLineCommands.add(CliStrings.RUN);
@@ -140,15 +142,13 @@ public class Launcher {
     try {
       gfsh = Gfsh.getInstance(false, args, new GfshConfig());
       this.startupTimeLogHelper.logStartupTime();
-    } catch (ClassNotFoundException cnfex) {
-      log(cnfex, gfsh);
-    } catch (IOException ioex) {
-      log(ioex, gfsh);
+    } catch (ClassNotFoundException | IOException ex) {
+      log(ex, null);
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
     }
 
-    ExitShellRequest exitRequest = ExitShellRequest.NORMAL_EXIT;
+    int exitCode = ExitCode.COULD_NOT_EXECUTE_COMMAND.getExitCode();
 
     if (gfsh != null) {
       final String commandLineCommand = combineStrings(args);
@@ -159,7 +159,9 @@ public class Launcher {
         } else {
           // help is also available for commands which are not available under
           // allowedCommandLineCommands
-          gfsh.executeCommand(commandLineCommand);
+          if (gfsh.executeCommand(commandLineCommand).isSuccess()) {
+            exitCode = ExitCode.NORMAL.getExitCode();
+          }
         }
       } else {
         boolean commandIsAllowed = false;
@@ -173,19 +175,21 @@ public class Launcher {
         if (!commandIsAllowed) {
           System.err.println(
               CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, CliUtil.arrayToString(args)));
-          exitRequest = ExitShellRequest.FATAL_EXIT;
+          exitCode = ExitCode.COMMAND_NOT_ALLOWED.getExitCode();
         } else {
-          if (!gfsh.executeScriptLine(commandLineCommand)) {
-            if (gfsh.getLastExecutionStatus() != 0)
-              exitRequest = ExitShellRequest.FATAL_EXIT;
-          } else if (gfsh.getLastExecutionStatus() != 0) {
-            exitRequest = ExitShellRequest.FATAL_EXIT;
+          boolean success = gfsh.executeScriptLine(commandLineCommand);
+          int last = gfsh.getLastExecutionStatus();
+          if (last != 0) {
+            exitCode = last;
+          } else if (!success) {
+            exitCode = ExitCode.COMMAND_NOT_SUCCESSFUL.getExitCode();
+          } else {
+            exitCode = ExitCode.NORMAL.getExitCode();
           }
         }
       }
     }
-
-    return exitRequest.getExitCode();
+    return exitCode;
   }
 
   private int parseOptions(final String... args) {
@@ -207,10 +211,8 @@ public class Launcher {
     try {
       gfsh = Gfsh.getInstance(launchShell, args, new GfshConfig());
       this.startupTimeLogHelper.logStartupTime();
-    } catch (ClassNotFoundException cnfex) {
-      log(cnfex, gfsh);
-    } catch (IOException ioex) {
-      log(ioex, gfsh);
+    } catch (ClassNotFoundException | IOException ex) {
+      log(ex, null);
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
     }

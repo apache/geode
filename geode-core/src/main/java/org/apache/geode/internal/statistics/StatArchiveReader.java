@@ -14,12 +14,6 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.DateFormatter;
-
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -45,6 +39,13 @@ import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.DateFormatter;
 
 /**
  * StatArchiveReader provides APIs to read statistic snapshots from an archive file.
@@ -222,7 +223,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     String archiveName = null;
     if (args.length > 1) {
       System.err.println("Usage: [archiveName]");
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     } else if (args.length == 1) {
       archiveName = args[0];
     } else {

@@ -14,13 +14,19 @@
  */
 package com.main;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionConfig;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.internal.ExitCode;
 
 /**
  * This is a member representing site 2 who wants to receive data from site 1
@@ -29,18 +35,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
  * created.
  * 
  * A Region and a GatewayReceiver is created on this member through
- * MyDistributedSustemListener#addedDistributedSystemConnection
+ * MyDistributedSystemListener#addedDistributedSystemConnection
  * 
- * (When this locator gets the locator information from the site 1, MyDistributedSustemListener's
+ * (When this locator gets the locator information from the site 1, MyDistributedSystemListener's
  * addedDistributedSystemConnection will be invoked who will create a region and a GatewayReceiver.)
  * 
  * This member expects region size to be 100. (this site received this data from site1)
  * 
  * This member also check for the receiver's running status.
  * 
- * A GatewayReceiver will be stopped through MyDistributedSustemListener#removedDistributedSystem
+ * A GatewayReceiver will be stopped through MyDistributedSystemListener#removedDistributedSystem
  * (When a remote locator with distributed-system-id = -1 connects to this site,
- * MyDistributedSustemListener's removedDistributedSystem will be invoked who will stop a
+ * MyDistributedSystemListener's removedDistributedSystem will be invoked who will stop a
  * GatewayReceiver.)
  * 
  * 
@@ -73,9 +79,8 @@ public class WANBootStrapping_Site2_Add {
       }
     }
 
-    // region size should be 100. This is the data which will recieve from remote site
+    // region size should be 100. This is the data which will receive from remote site
     while (region.size() != 100) {
-      continue;
     }
     System.out.println("Checked region size : " + region.size());
 
@@ -83,7 +88,7 @@ public class WANBootStrapping_Site2_Add {
 
     // to stop gateway receiver ask to run WANBootStrapping_Site1_Remove program
     while (receiver.isRunning()) {
-      System.out.println("Waitng for receiver to stop through DistributedSystemListener");
+      System.out.println("Waiting for receiver to stop through DistributedSystemListener");
       System.out.println("Start WANBootStrapping_Site1_Remove ");
       try {
         Thread.sleep(2000);
@@ -92,7 +97,7 @@ public class WANBootStrapping_Site2_Add {
       }
     }
 
-    System.out.println("GatewayReciver " + receiver + " is stopped");
-    System.exit(0);
+    System.out.println("GatewayReceiver " + receiver + " is stopped");
+    System.exit(ExitCode.NORMAL.getExitCode());
   }
 }

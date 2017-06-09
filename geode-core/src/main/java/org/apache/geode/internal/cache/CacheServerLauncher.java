@@ -15,7 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +49,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
@@ -175,7 +177,7 @@ public class CacheServerLauncher {
   protected void status(final String[] args) throws Exception {
     workingDir = (File) getStopOptions(args).get(DIR);
     System.out.println(getStatus());
-    System.exit(0);
+    ExitCode.NORMAL.doSystemExit();
   }
 
   /**
@@ -216,11 +218,11 @@ public class CacheServerLauncher {
           launcher.status(args);
         } else {
           launcher.usage();
-          System.exit(1);
+          ExitCode.FATAL.doSystemExit();
         }
       } else {
         launcher.usage();
-        System.exit(1);
+        ExitCode.FATAL.doSystemExit();
       }
 
       throw new Exception(LocalizedStrings.CacheServerLauncher_INTERNAL_ERROR_SHOULDNT_REACH_HERE
@@ -251,7 +253,7 @@ public class CacheServerLauncher {
         System.out.println(
             LocalizedStrings.CacheServerLauncher_ERROR_0.toLocalizedString(t.getMessage()));
       }
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
   }
 
@@ -294,10 +296,10 @@ public class CacheServerLauncher {
    * the command line. If no value is specified on the command line, a default one is provided.
    */
   protected Map<String, Object> getStartOptions(String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
     options.put(DIR, new File(System.getProperty("user.dir")));
 
-    final List<String> vmArgs = new ArrayList<String>();
+    final List<String> vmArgs = new ArrayList<>();
     options.put(VMARGS, vmArgs);
 
     final Properties props = new Properties();
@@ -313,7 +315,7 @@ public class CacheServerLauncher {
       } else if (arg.startsWith("-disable-default-server")) {
         options.put(DISABLE_DEFAULT_SERVER, arg);
       } else if (arg.startsWith("-lock-memory")) {
-        if (System.getProperty("os.name").indexOf("Windows") >= 0) {
+        if (System.getProperty("os.name").contains("Windows")) {
           throw new IllegalArgumentException("Unable to lock memory on this operating system");
         }
         props.put(LOCK_MEMORY, "true");
@@ -402,7 +404,7 @@ public class CacheServerLauncher {
    * Extracts configuration information used when launching the cache server VM.
    */
   protected Map<String, Object> getServerOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
     options.put(DIR, new File("."));
     workingDir = (File) options.get(DIR);
 
@@ -456,7 +458,7 @@ public class CacheServerLauncher {
    * command-line. This method can also be used with getting the status of a cache server.
    */
   protected Map<String, Object> getStopOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
     options.put(DIR, new File("."));
 
     for (final String arg : args) {
@@ -500,7 +502,7 @@ public class CacheServerLauncher {
       return;
     }
 
-    System.exit(0);
+    ExitCode.NORMAL.doSystemExit();
   }
 
   private void verifyAndClearStatus() throws Exception {
@@ -546,7 +548,7 @@ public class CacheServerLauncher {
           "Unable to delete start log file (" + startLogFile.getAbsolutePath() + ")!");
     }
 
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     // read the passwords from command line
     SocketCreator.readSSLProperties(env);
 
@@ -765,7 +767,7 @@ public class CacheServerLauncher {
         }
         if (!reconnected) {
           // shutdown-all disconnected the DS
-          System.exit(0);
+          ExitCode.NORMAL.doSystemExit();
         }
       }
     }
@@ -902,7 +904,7 @@ public class CacheServerLauncher {
 
     // determine the current state of the Cache Server process...
     final File statusFile = new File(this.workingDir, this.statusName);
-    int exitStatus = 1;
+    ExitCode exitCode = ExitCode.FATAL;
 
     if (statusFile.exists()) {
       this.status = spinReadStatus();
@@ -925,7 +927,7 @@ public class CacheServerLauncher {
         System.out.println(
             LocalizedStrings.CacheServerLauncher_0_STOPPED.toLocalizedString(this.baseName));
         deleteStatus();
-        exitStatus = 0;
+        exitCode = ExitCode.NORMAL;
       } else {
         System.out.println(
             LocalizedStrings.CacheServerLauncher_TIMEOUT_WAITING_FOR_0_TO_SHUTDOWN_STATUS_IS_1
@@ -941,7 +943,7 @@ public class CacheServerLauncher {
       return;
     }
 
-    System.exit(exitStatus);
+    exitCode.doSystemExit();
   }
 
   private void pollCacheServerForShutdown() throws InterruptedException {
@@ -1037,7 +1039,7 @@ public class CacheServerLauncher {
       } else {
         e.printStackTrace();
       }
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
   }
 
@@ -1178,7 +1180,7 @@ public class CacheServerLauncher {
           }
           if (status.state == SHUTDOWN) {
             System.out.println(status);
-            System.exit(1);
+            ExitCode.FATAL.doSystemExit();
           }
           break;
         default:
@@ -1203,7 +1205,7 @@ public class CacheServerLauncher {
       } catch (IOException io) {
         // throw new GemFireIOException("Failed reading " + url, io);
         System.out.println("Failed reading " + url);
-        System.exit(1);
+        ExitCode.FATAL.doSystemExit();
       }
       final String logFile = gfprops.getProperty(LOG_FILE);
       if (logFile == null || logFile.length() == 0) {
@@ -1222,7 +1224,7 @@ public class CacheServerLauncher {
    */
   protected void addToServerCommand(final List<String> commandLine,
       final Map<String, Object> options) {
-    final ListWrapper<String> commandLineWrapper = new ListWrapper<String>(commandLine);
+    final ListWrapper<String> commandLineWrapper = new ListWrapper<>(commandLine);
 
     if (Boolean.TRUE.equals(options.get(REBALANCE))) {
       commandLineWrapper.add("-rebalance");
@@ -1284,7 +1286,7 @@ public class CacheServerLauncher {
    */
   protected static class ListWrapper<E> extends AbstractList<E> {
 
-    private static final ThreadLocal<Boolean> addResult = new ThreadLocal<Boolean>();
+    private static final ThreadLocal<Boolean> addResult = new ThreadLocal<>();
 
     private final List<E> list;
 
@@ -1364,7 +1366,6 @@ public class CacheServerLauncher {
           } catch (IOException e) {
             // this could happen if there was a concurrent write to the file
             // eg a stop.
-            continue;
           }
         }
       }

@@ -17,6 +17,8 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.function.Supplier;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -29,8 +31,6 @@ import org.apache.geode.test.junit.rules.DescribedExternalResource;
 import org.json.JSONArray;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
-
-import java.util.function.Supplier;
 
 /**
  * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
@@ -62,6 +62,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private boolean connected = false;
   private IgnoredException ignoredException;
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private boolean lastExecutedSuccess;
 
   public GfshShellConnectionRule() {
     try {
@@ -201,8 +202,12 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return gfsh;
   }
 
+  public int getShellExitcode() {
+    return (!lastExecutedSuccess || gfsh.getCommandExecutionStatus() != 0) ? 1 : 0;
+  }
+
   public CommandResult executeCommand(String command) throws Exception {
-    gfsh.executeCommand(command);
+    lastExecutedSuccess = gfsh.executeCommand(command);
     CommandResult result = (CommandResult) gfsh.getResult();
     if (StringUtils.isBlank(gfsh.outputString) && result != null && result.getContent() != null) {
       if (result.getStatus() == Result.Status.ERROR) {

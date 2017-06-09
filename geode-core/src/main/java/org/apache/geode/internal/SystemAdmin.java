@@ -14,41 +14,80 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 
-import org.apache.geode.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+
+import org.apache.geode.GemFireException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.NoSystemException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.UncreatedSystemException;
+import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.tcpserver.*;
-import org.apache.geode.internal.statistics.StatArchiveReader;
-import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
-import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.MergeLogFiles;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.statistics.StatArchiveReader;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
-
-import java.io.*;
-import java.net.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
-
-import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -123,7 +162,7 @@ public class SystemAdmin {
     }
 
     // read ssl properties
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     SocketCreator.readSSLProperties(env);
 
     List cmdVec = JavaCommandBuilder.buildCommand(getDistributionLocatorPath(), null,
@@ -1190,8 +1229,7 @@ public class SystemAdmin {
               }
             }
           } else {
-            Map<CombinedResources, List<StatValue>> allSpecsMap =
-                new HashMap<CombinedResources, List<StatValue>>();
+            Map<CombinedResources, List<StatValue>> allSpecsMap = new HashMap<>();
             for (int i = 0; i < specs.length; i++) {
               StatValue[] values = reader.matchSpec(specs[i]);
               if (values.length == 0) {
@@ -1200,15 +1238,14 @@ public class SystemAdmin {
                       .toLocalizedString(specs[i].cmdLineSpec));
                 }
               } else {
-                Map<CombinedResources, List<StatValue>> specMap =
-                    new HashMap<CombinedResources, List<StatValue>>();
+                Map<CombinedResources, List<StatValue>> specMap = new HashMap<>();
                 for (StatValue v : values) {
                   CombinedResources key = new CombinedResources(v);
                   List<StatArchiveReader.StatValue> list = specMap.get(key);
                   if (list != null) {
                     list.add(v);
                   } else {
-                    specMap.put(key, new ArrayList<StatValue>(Collections.singletonList(v)));
+                    specMap.put(key, new ArrayList<>(Collections.singletonList(v)));
                   }
                 }
                 if (!quiet) {
@@ -1380,7 +1417,7 @@ public class SystemAdmin {
   protected void usage(String cmd) {
     System.err.println(
         LocalizedStrings.SystemAdmin_USAGE.toLocalizedString() + " " + getUsageString(cmd));
-    System.exit(1);
+    ExitCode.FATAL.doSystemExit();
   }
 
   private final static String[] validCommands = new String[] {"version", "stats", START_LOCATOR,
@@ -1868,7 +1905,7 @@ public class SystemAdmin {
   }
 
   public static List<String> format(String string, int width) {
-    List<String> results = new ArrayList<String>();
+    List<String> results = new ArrayList<>();
     String[] realLines = string.split("\n");
     for (String line : realLines) {
       results.addAll(lineWrapOut(line, width));
@@ -1883,7 +1920,7 @@ public class SystemAdmin {
         Pattern.compile("(.{0," + (width - 1) + "}\\S|\\S{" + (width) + ",})(\n|\\s+|$)");
 
     Matcher matcher = pattern.matcher(string);
-    List<String> lines = new ArrayList<String>();
+    List<String> lines = new ArrayList<>();
     while (matcher.find()) {
       lines.add(matcher.group(1));
     }
@@ -1988,7 +2025,7 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     }
     if (cmdLine.size() == 0) {
       if (help) {
@@ -2023,7 +2060,7 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     }
     if (needsSysDir(cmd) && !help) {
       if (sysDirName != null && sysDirName.length() > 0) {
@@ -2224,7 +2261,7 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (IllegalArgumentException ex) {
       System.err.println(LocalizedStrings.SystemAdmin_ERROR_OPERATION_0_FAILED_BECAUSE_1
           .toLocalizedString(new Object[] {cmd, getExceptionMessage(ex)}));
@@ -2232,14 +2269,14 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (Exception ex) {
       System.err.println(LocalizedStrings.SystemAdmin_ERROR_OPERATION_0_FAILED_BECAUSE_1
           .toLocalizedString(new Object[] {cmd, getExceptionMessage(ex)}));
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     }
   }
 }

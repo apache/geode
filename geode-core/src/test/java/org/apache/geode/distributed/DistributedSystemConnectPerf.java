@@ -14,10 +14,14 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
 import java.io.PrintStream;
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.internal.ExitCode;
 
 /**
  * This program is used to measure the amount of time it takes to connect and re-connect to a
@@ -40,7 +44,7 @@ public class DistributedSystemConnectPerf {
         + "to connect/disconnect to a DistributedSystem");
     err.println("");
 
-    System.exit(1);
+    System.exit(ExitCode.FATAL.getExitCode());
   }
 
   public static void main(String[] args) throws Exception {
@@ -120,7 +124,7 @@ public class DistributedSystemConnectPerf {
     out.println("** Average connect time took: " + (totalConnect / iterations) + " ms");
     out.println("** Average disconnect time took: " + (totalDisconnect / iterations) + " ms");
 
-    System.exit(0);
+    System.exit(ExitCode.NORMAL.getExitCode());
   }
 
 }

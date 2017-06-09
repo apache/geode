@@ -14,9 +14,16 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,6 +42,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -1036,7 +1044,7 @@ public class LocatorLauncherRemoteIntegrationTest
 
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
-        System.exit(0);
+        System.exit(ExitCode.NORMAL.getExitCode());
       } catch (Throwable t) {
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main error: " + t,
             t);

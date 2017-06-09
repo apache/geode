@@ -14,15 +14,23 @@
  */
 package org.apache.geode.internal.jta.functional;
 
-import org.apache.geode.cache.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
+import javax.naming.Context;
 import javax.sql.DataSource;
-import javax.naming.*;
+import javax.transaction.UserTransaction;
 
-import java.sql.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.jta.CacheUtils;
-
-import javax.transaction.*;
 
 /**
  * A <code>CacheLoader</code> used in testing. Users should override the "2" method.
@@ -81,7 +89,7 @@ public class TestXACacheLoader implements CacheLoader {
       utx.rollback();
       System.out.println(re.get(args[0]));
       cache.close();
-      System.exit(1);
+      System.exit(ExitCode.FATAL.getExitCode());
     } catch (Exception e) {
       e.printStackTrace();
       cache.close();

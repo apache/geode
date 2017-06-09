@@ -19,20 +19,24 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.process.ControlNotificationHandler;
+import org.apache.geode.internal.process.ControllableProcess;
+import org.apache.geode.internal.process.ProcessType;
 
 
 /**
@@ -117,6 +121,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
       server.stop();
       server = null;
     }
+    FakeLauncher.setInstance(null);
   }
 
   public ServerStarterRule withPDXPersistent() {
@@ -174,10 +179,79 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     memberPort = server.getPort();
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
+
+    ServerLauncher fakeLauncher = new FakeLauncher(new ServerLauncher.Builder());
+    FakeLauncher.setInstance(fakeLauncher);
+    // ((FakeLauncher) fakeLauncher).startProcess(getWorkingDir());
   }
 
   public int getEmbeddedLocatorPort() {
     return embeddedLocatorPort;
   }
 
+  // public static int getPid() {
+  // FakeLauncher fakeLauncher = (FakeLauncher) ServerLauncher.getInstance();
+  // if (fakeLauncher == null) {
+  // return -1;
+  // }
+  // return fakeLauncher.getPid();
+  // }
+
+  public static class FakeLauncher extends ServerLauncher {
+
+    /**
+     * This class is used to fake calls made via proxy, such as
+     * LocatorLauncher.getInstance().getStatus().
+     *
+     */
+
+    private static Status status = Status.ONLINE;
+    private transient volatile ControllableProcess process;
+
+    public FakeLauncher(Builder builder) {
+      super(builder);
+    }
+
+    @Override
+    public ServerState status() {
+      return new ServerState(this, status);
+    }
+
+    public static void setStatus(Status newStatus) {
+      status = newStatus;
+    }
+
+    protected static void setInstance(ServerLauncher instance) {
+      ServerLauncher.setInstance(instance);
+    }
+
+    // @Override
+    // public Integer getPid() {
+    // return process.getPid();
+    // }
+    //
+    // public ControllableProcess getProcess() {
+    // return process;
+    // }
+
+    // public void startProcess(File workingDir) {
+    // try {
+    // ControlNotificationHandler controlHandler = new ControlNotificationHandler() {
+    // @Override
+    // public void handleStop() {}
+    //
+    // @Override
+    // public ServiceState<?> handleStatus() {
+    // return null;
+    // }
+    // };
+    //
+    // this.process =
+    // new ControllableProcess(controlHandler, workingDir, ProcessType.SERVER, false);
+    // } catch (Exception ignored) {
+    // }
+    // }
+
+
+  }
 }

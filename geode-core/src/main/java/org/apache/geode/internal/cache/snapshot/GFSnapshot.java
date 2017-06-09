@@ -32,6 +32,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.snapshot.SnapshotIterator;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
@@ -75,7 +76,7 @@ public class GFSnapshot {
   public static void main(String[] args) throws Exception {
     if (args.length != 1) {
       System.out.println("Usage: GFSnapshot <file>");
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
 
     GFSnapshotImporter imp = new GFSnapshotImporter(new File(args[0]));

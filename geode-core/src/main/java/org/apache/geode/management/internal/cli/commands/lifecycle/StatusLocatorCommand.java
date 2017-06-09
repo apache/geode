@@ -19,6 +19,7 @@ import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getM
 import static org.apache.geode.management.internal.cli.util.HostUtils.getLocatorId;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
@@ -75,8 +76,12 @@ public class StatusLocatorCommand implements GfshCommand {
                 .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid)
                 .setPort(locatorPort).setWorkingDirectory(workingDirectory).build();
 
-        final LocatorLauncher.LocatorState state = locatorLauncher.status();
-        return createStatusLocatorResult(state);
+        final LocatorLauncher.LocatorState status = locatorLauncher.status();
+        if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
+            || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
+          return ResultBuilder.createShellClientErrorResult(status.toString());
+        }
+        return createStatusLocatorResult(status);
       }
     } catch (IllegalArgumentException | IllegalStateException e) {
       return ResultBuilder.createUserErrorResult(e.getMessage());

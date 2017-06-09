@@ -20,6 +20,33 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
@@ -59,32 +86,6 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.KeyStore;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-
 /**
  *
  * @since GemFire 7.0
@@ -109,8 +110,8 @@ public class ShellCommands implements GfshCommand {
         inputStream = gfSecurityPropertiesUrl.openStream();
         props.load(inputStream);
         if (!props.isEmpty()) {
-          Set<String> jmxSpecificProps = new HashSet<String>();
-          propsMap = new LinkedHashMap<String, String>();
+          Set<String> jmxSpecificProps = new HashSet<>();
+          propsMap = new LinkedHashMap<>();
           Set<Entry<Object, Object>> entrySet = props.entrySet();
           for (Entry<Object, Object> entry : entrySet) {
 
@@ -265,54 +266,38 @@ public class ShellCommands implements GfshCommand {
           optionContext = ConnectionEndpoint.LOCATOR_OPTION_CONTEXT,
           help = CliStrings.CONNECT__LOCATOR__HELP) ConnectionEndpoint locatorTcpHostPort,
       @CliOption(key = {CliStrings.CONNECT__JMX_MANAGER},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConnectionEndpoint.JMXMANAGER_OPTION_CONTEXT,
           help = CliStrings.CONNECT__JMX_MANAGER__HELP) ConnectionEndpoint memberRmiHostPort,
-      @CliOption(key = {CliStrings.CONNECT__USE_HTTP}, mandatory = false,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      @CliOption(key = {CliStrings.CONNECT__USE_HTTP}, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CONNECT__USE_HTTP__HELP) boolean useHttp,
-      @CliOption(key = {CliStrings.CONNECT__URL}, mandatory = false,
+      @CliOption(key = {CliStrings.CONNECT__URL},
           unspecifiedDefaultValue = CliStrings.CONNECT__DEFAULT_BASE_URL,
           help = CliStrings.CONNECT__URL__HELP) String url,
       @CliOption(key = {CliStrings.CONNECT__USERNAME},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__USERNAME__HELP) String userName,
       @CliOption(key = {CliStrings.CONNECT__PASSWORD},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__PASSWORD__HELP) String password,
       @CliOption(key = {CliStrings.CONNECT__KEY_STORE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__KEY_STORE__HELP) String keystore,
       @CliOption(key = {CliStrings.CONNECT__KEY_STORE_PASSWORD},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__KEY_STORE_PASSWORD__HELP) String keystorePassword,
       @CliOption(key = {CliStrings.CONNECT__TRUST_STORE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__TRUST_STORE__HELP) String truststore,
       @CliOption(key = {CliStrings.CONNECT__TRUST_STORE_PASSWORD},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__TRUST_STORE_PASSWORD__HELP) String truststorePassword,
       @CliOption(key = {CliStrings.CONNECT__SSL_CIPHERS},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__SSL_CIPHERS__HELP) String sslCiphers,
       @CliOption(key = {CliStrings.CONNECT__SSL_PROTOCOLS},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__SSL_PROTOCOLS__HELP) String sslProtocols,
       @CliOption(key = CliStrings.CONNECT__SECURITY_PROPERTIES,
           optionContext = ConverterHint.FILE_PATH,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONNECT__SECURITY_PROPERTIES__HELP) final String gfSecurityPropertiesPath,
       @CliOption(key = {CliStrings.CONNECT__USE_SSL}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CONNECT__USE_SSL__HELP) final boolean useSsl) {
     Result result;
     String passwordToUse = decrypt(password);
-    String keystoreToUse = keystore;
-    String keystorePasswordToUse = keystorePassword;
-    String truststoreToUse = truststore;
-    String truststorePasswordToUse = truststorePassword;
-    String sslCiphersToUse = sslCiphers;
-    String sslProtocolsToUse = sslProtocols;
 
     Gfsh gfsh = getGfsh();
     if (gfsh != null && gfsh.isConnectedAndReady()) {
@@ -332,11 +317,10 @@ public class ShellCommands implements GfshCommand {
         }
       }
 
-      sslConfigProps = this.readSSLConfiguration(useSsl, keystoreToUse, keystorePasswordToUse,
-          truststoreToUse, truststorePasswordToUse, sslCiphersToUse, sslProtocolsToUse,
-          gfSecurityPropertiesPath);
+      sslConfigProps = this.readSSLConfiguration(useSsl, keystore, keystorePassword, truststore,
+          truststorePassword, sslCiphers, sslProtocols, gfSecurityPropertiesPath);
     } catch (IOException e) {
-      return handleExcpetion(e, null);
+      return handleException(e, null);
     }
 
     if (useHttp) {
@@ -353,7 +337,7 @@ public class ShellCommands implements GfshCommand {
       String userName, String passwordToUse) {
     Gfsh gfsh = getGfsh();
     try {
-      Map<String, String> securityProperties = new HashMap<String, String>();
+      Map<String, String> securityProperties = new HashMap<>();
 
       // at this point, if userName is not empty, password should not be empty either
       if (userName != null && userName.length() > 0) {
@@ -368,9 +352,7 @@ public class ShellCommands implements GfshCommand {
         }
       }
 
-      Iterator<String> it = sslConfigProps.keySet().iterator();
-      while (it.hasNext()) {
-        String secKey = it.next();
+      for (String secKey : sslConfigProps.keySet()) {
         securityProperties.put(secKey, sslConfigProps.get(secKey));
       }
 
@@ -401,22 +383,22 @@ public class ShellCommands implements GfshCommand {
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       if (!(e instanceof SecurityException) && !(e instanceof AuthenticationFailedException)) {
-        return handleExcpetion(e, null);
+        return handleException(e, null);
       }
 
-      // if it's security exception, and we already sent in username and password, still retuns the
+      // if it's security exception, and we already sent in username and password, still returns the
       // connection error
       if (userName != null) {
-        return handleExcpetion(e, null);
+        return handleException(e, null);
       }
 
-      // otherwise, prompt for username and password and retry the conenction
+      // otherwise, prompt for username and password and retry the connection
       try {
         userName = gfsh.readText(CliStrings.CONNECT__USERNAME + ": ");
         passwordToUse = gfsh.readPassword(CliStrings.CONNECT__PASSWORD + ": ");
         return httpConnect(sslConfigProps, useSsl, url, userName, passwordToUse);
       } catch (IOException ioe) {
-        return handleExcpetion(ioe, null);
+        return handleException(ioe, null);
       }
     } finally {
       Gfsh.redirectInternalJavaLoggers();
@@ -492,34 +474,34 @@ public class ShellCommands implements GfshCommand {
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       if (!(e instanceof SecurityException) && !(e instanceof AuthenticationFailedException)) {
-        return handleExcpetion(e, hostPortToConnect);
+        return handleException(e, hostPortToConnect);
       }
 
       // if it's security exception, and we already sent in username and password, still returns the
       // connection error
       if (userName != null) {
-        return handleExcpetion(e, hostPortToConnect);
+        return handleException(e, hostPortToConnect);
       }
 
-      // otherwise, prompt for username and password and retry the conenction
+      // otherwise, prompt for username and password and retry the connection
       try {
         userName = gfsh.readText(CliStrings.CONNECT__USERNAME + ": ");
         passwordToUse = gfsh.readPassword(CliStrings.CONNECT__PASSWORD + ": ");
         // GEODE-2250 If no value for both username and password, at this point we need to error to
         // avoid a stack overflow.
         if (userName == null && passwordToUse == null)
-          return handleExcpetion(e, hostPortToConnect);
+          return handleException(e, hostPortToConnect);
         return jmxConnect(sslConfigProps, hostPortToConnect, null, useSsl, userName, passwordToUse,
             gfSecurityPropertiesPath, true);
       } catch (IOException ioe) {
-        return handleExcpetion(ioe, hostPortToConnect);
+        return handleException(ioe, hostPortToConnect);
       }
     } finally {
       Gfsh.redirectInternalJavaLoggers();
     }
   }
 
-  private Result handleExcpetion(Exception e, ConnectionEndpoint hostPortToConnect) {
+  private Result handleException(Exception e, ConnectionEndpoint hostPortToConnect) {
     String errorMessage = e.getMessage();
     if (hostPortToConnect != null) {
       errorMessage = CliStrings.format(CliStrings.CONNECT__MSG__ERROR,
@@ -606,7 +588,7 @@ public class ShellCommands implements GfshCommand {
       throws IOException {
 
     Gfsh gfshInstance = getGfsh();
-    final Map<String, String> sslConfigProps = new LinkedHashMap<String, String>();
+    final Map<String, String> sslConfigProps = new LinkedHashMap<>();
 
     // JMX SSL Config 1:
     // First from gfsecurity properties file if it's specified OR
@@ -779,8 +761,7 @@ public class ShellCommands implements GfshCommand {
 
   @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""},
-      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+  public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
       mandatory = true, help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
     Result result = null;
 
@@ -800,10 +781,8 @@ public class ShellCommands implements GfshCommand {
 
   TabularResultData buildResultForEcho(Set<Entry<String, String>> propertyMap) {
     TabularResultData resultData = ResultBuilder.createTabularResultData();
-    Iterator<Entry<String, String>> it = propertyMap.iterator();
 
-    while (it.hasNext()) {
-      Entry<String, String> setEntry = it.next();
+    for (Entry<String, String> setEntry : propertyMap) {
       resultData.accumulate("Property", setEntry.getKey());
       resultData.accumulate("Value", String.valueOf(setEntry.getValue()));
     }
@@ -862,7 +841,6 @@ public class ShellCommands implements GfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result history(
       @CliOption(key = {CliStrings.HISTORY__FILE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.HISTORY__FILE__HELP) String saveHistoryTo,
       @CliOption(key = {CliStrings.HISTORY__CLEAR}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
@@ -889,7 +867,7 @@ public class ShellCommands implements GfshCommand {
 
       while (it.hasNext()) {
         String line = it.next().toString();
-        if (line.isEmpty() == false) {
+        if (!line.isEmpty()) {
           if (flagForLineNumbers) {
             lineNumber++;
             contents.append(String.format("%" + historySizeWordLength + "s  ", lineNumber));
@@ -1026,11 +1004,7 @@ public class ShellCommands implements GfshCommand {
     try {
       result =
           ResultBuilder.buildResult(executeCommand(Gfsh.getCurrentInstance(), command, useConsole));
-    } catch (IllegalStateException e) {
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-      LogWrapper.getInstance()
-          .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");
-    } catch (IOException e) {
+    } catch (IllegalStateException | IOException e) {
       result = ResultBuilder.createUserErrorResult(e.getMessage());
       LogWrapper.getInstance()
           .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");

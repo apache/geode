@@ -14,6 +14,7 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -43,9 +44,6 @@ import javax.management.remote.rmi.RMIConnectorServer;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import mx4j.tools.adaptor.http.HttpAdaptor;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
@@ -59,6 +57,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -71,6 +70,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The GemFire JMX Agent provides the ability to administrate one GemFire distributed system via
@@ -228,13 +228,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
        * will not stop the Agent from working. But we are logging it as it could be an indication of
        * some problem. Also not creating Localized String for the exception.
        */
-    } catch (OperationsException e) {
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.AgentImpl_FAILED_TO_INITIALIZE_MEMBERINFOWITHSTATSMBEAN), e);
-    } catch (MBeanRegistrationException e) {
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.AgentImpl_FAILED_TO_INITIALIZE_MEMBERINFOWITHSTATSMBEAN), e);
-    } catch (AdminException e) {
+    } catch (OperationsException | AdminException | MBeanRegistrationException e) {
       logger.info(LocalizedMessage
           .create(LocalizedStrings.AgentImpl_FAILED_TO_INITIALIZE_MEMBERINFOWITHSTATSMBEAN), e);
     }
@@ -421,10 +415,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
         systemJmx.connect(this.logWriter);
 
         return new ObjectName(systemJmx.getMBeanName());
-      } catch (AdminException e) {
-        logger.warn(e.getMessage(), e);
-        throw e;
-      } catch (RuntimeException e) {
+      } catch (AdminException | RuntimeException e) {
         logger.warn(e.getMessage(), e);
         throw e;
       } catch (VirtualMachineError err) {
@@ -499,8 +490,8 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
         result.append(mainTail);
       }
       if (childTail != null) {
-        result
-            .append("\n" + LocalizedStrings.AgentImpl_TAIL_OF_CHILD_LOG.toLocalizedString() + "\n");
+        result.append("\n").append(LocalizedStrings.AgentImpl_TAIL_OF_CHILD_LOG.toLocalizedString())
+            .append("\n");
         result.append(childTail);
       }
       return result.toString();
@@ -953,13 +944,8 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
         mBeanServer.invoke(rmiRegistryNamingName, "stop", empty, empty);
         MBeanUtil.unregisterMBean(rmiRegistryNamingName);
       }
-    } catch (MalformedObjectNameException e) {
-      logger.warn(e.getMessage(), e);
-    } catch (InstanceNotFoundException e) {
-      logger.warn(e.getMessage(), e);
-    } catch (ReflectionException e) {
-      logger.warn(e.getMessage(), e);
-    } catch (MBeanException e) {
+    } catch (MalformedObjectNameException | MBeanException | ReflectionException
+        | InstanceNotFoundException e) {
       logger.warn(e.getMessage(), e);
     }
 
@@ -1054,7 +1040,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     } catch (RuntimeException ex) {
       System.err
           .println(LocalizedStrings.AgentImpl_FAILED_READING_CONFIGURATION_0.toLocalizedString(ex));
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
       return;
     }
 
@@ -1075,7 +1061,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // is still usable:
       SystemFailure.checkFailure();
       t.printStackTrace();
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
   }
 
@@ -1177,7 +1163,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // The address of the connector
       JMXServiceURL url = new JMXServiceURL(urlString);
 
-      Map<String, Object> env = new HashMap<String, Object>();
+      Map<String, Object> env = new HashMap<>();
       // env.put(Context.INITIAL_CONTEXT_FACTORY,
       // "com.sun.jndi.rmi.registry.RegistryContextFactory");
       // env.put(Context.PROVIDER_URL, "rmi://localhost:1099");
@@ -1545,7 +1531,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @return a string representation suitable for use in a Jmx connection URL
    */
   private static String applyRFC2732(String hostname) {
-    if (hostname.indexOf(":") != -1) {
+    if (hostname.contains(":")) {
       // Assuming an IPv6 literal because of the ':'
       return "[" + hostname + "]";
     }

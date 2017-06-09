@@ -14,6 +14,25 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 import jline.Terminal;
 import jline.console.ConsoleReader;
 import org.apache.geode.internal.Banner;
@@ -46,25 +65,6 @@ import org.springframework.shell.core.JLineLogHandler;
 import org.springframework.shell.core.JLineShell;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ShellStatus.Status;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 /**
  * Extends an interactive shell provided by
@@ -135,16 +135,16 @@ public class Gfsh extends JLineShell {
   // private static final String ANIMATION_SLOT = "A"; //see 46072
   protected static PrintStream gfshout = System.out;
   protected static PrintStream gfsherr = System.err;
-  protected static ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<Gfsh>();
+  protected static ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<>();
   private static Gfsh instance;
   // This flag is used to restrict column trimming to table only types
-  private static ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<Boolean>();
+  private static ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<>();
   private static String OS = System.getProperty("os.name").toLowerCase();
-  private final Map<String, String> env = new TreeMap<String, String>();
-  private final List<String> readonlyAppEnv = new ArrayList<String>();
+  private final Map<String, String> env = new TreeMap<>();
+  private final List<String> readonlyAppEnv = new ArrayList<>();
   // Map to keep reference to actual user specified Command String
   // Should always have one value at the max
-  private final Map<String, String> expandedPropCommandsMap = new HashMap<String, String>();
+  private final Map<String, String> expandedPropCommandsMap = new HashMap<>();
   private final ExecutionStrategy executionStrategy;
   private final GfshParser parser;
   private final LogWrapper gfshFileLogger;
@@ -194,11 +194,8 @@ public class Gfsh extends JLineShell {
     this.gfshConfig = gfshConfig;
     this.gfshFileLogger = LogWrapper.getInstance();
     this.gfshFileLogger.configure(this.gfshConfig);
-    this.ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported()); // TODO -
-    // Abhishek :
-    // should take it
-    // from
-    // ConsoleReader.terminal??
+    this.ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported());
+    // TODO - Abhishek : should take it from ConsoleReader.terminal??
 
     /* 3. log system properties & gfsh environment */
     this.gfshFileLogger.info(Banner.getString(args));
@@ -990,7 +987,7 @@ public class Gfsh extends JLineShell {
   }
 
   public Map<String, String> getEnv() {
-    Map<String, String> map = new TreeMap<String, String>();
+    Map<String, String> map = new TreeMap<>();
     map.putAll(env);
     return map;
   }
