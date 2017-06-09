@@ -82,7 +82,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
 import org.junit.Test;
@@ -102,7 +101,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @since GemFire 4.0
  */
-@Category({DistributedTest.class, MembershipTest.class, FlakyTest.class}) // Flaky: GEODE-2542
+@Category({DistributedTest.class, MembershipTest.class})
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile InternalDistributedSystem system = null;
