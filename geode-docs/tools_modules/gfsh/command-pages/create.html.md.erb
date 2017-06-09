@@ -745,6 +745,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
     [--recovery-delay=value] [--redundant-copies=value]
     [--startup-recovery-delay=value] [--total-max-memory=value]
     [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)]
+    [--partition-resolver=value]
 ```
 
 **Parameters, create region:**
@@ -949,6 +950,10 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <td>Specifies whether the region values are stored in heap memory or off-heap memory. When true, region values are in off-heap memory. If the parameter is specified without a value, the value of true is used.</td>
 <td>false</td>
 </tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-partition-resolver</span></td>
+<td>Specifies the full path to a custom partition resolver. To use the provided default partition resolver, specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code>.</td>
+<td></td>
 </tbody>
 </table>
 
