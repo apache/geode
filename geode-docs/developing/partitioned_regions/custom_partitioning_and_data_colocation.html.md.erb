@@ -31,8 +31,15 @@ This figure shows a region with customer data that is grouped into buckets by cu
 
 <img src="../../images_svg/custom_partitioned.svg" id="custom_partitioning_and_data_colocation__image_1D37D547D3244171BB9CADAEC88E7649" class="image" />
 
-With custom partitioning, you have two choices:
+With custom partitioning, you have three choices:
 
+-   **Default string-based partition resolver**. A default partition
+resolver at `org.apache.geode.cache.util.StringPrefixPartitionResolver`
+groups entries into buckets based on a string portion of the key.
+All keys must be strings, specified with a syntax that includes
+a '|' character that delimits the string.
+The substring that precedes the '|' delimiter within the key
+partitions the entry.  
 -   **Standard custom partitioning**. With standard partitioning, you group entries into buckets, but you do not specify where the buckets reside. Geode always keeps the entries in the buckets you have specified, but may move the buckets around for load balancing.
 -   **Fixed custom partitioning**. With fixed partitioning, you provide standard partitioning plus you specify the exact member where each data entry resides. You do this by assigning the data entry to a bucket and to a partition and by naming specific members as primary and secondary hosts of each partition.
 
@@ -53,6 +60,6 @@ This figure shows two regions with data colocation where the data is partitioned
 
 <img src="../../images_svg/colocated_partitioned_regions.svg" id="custom_partitioning_and_data_colocation__image_525AC474950F473ABCDE8E372583C5DF" class="image" />
 
-Data colocation requires the same data partitioning mechanism for all of the colocated regions. You can use the default partitioning provided by Geode or custom partitioning.
+Data colocation requires the same data partitioning mechanism for all of the colocated regions. You can use the default partitioning provided by Geode or any of the custom partitioning strategies.
 
 You must use the same high availability settings across your colocated regions.
