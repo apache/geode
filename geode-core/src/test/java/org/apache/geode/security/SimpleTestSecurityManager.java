@@ -23,23 +23,20 @@ import java.util.Properties;
  *
  * It is meant for demo purpose, not for production.
  *
- * Authentication: All users whose password matches the username are authenticated. e.g.
+ * Authentiation: All users whose password matches the username are authenticated. e.g.
  * username/password = test/test, user/user, admin/admin
  *
  * Authorization: users whose username is a substring (case insensitive) of the permission required
  * are authorized. e.g. username = data: is authorized for all data operations: data; data:manage
  * data:read data:write username = dataWrite: is authorized for data writes on all regions:
  * data:write data:write:regionA username = cluster: authorized for all cluster operations username
- * = clusterRead: authorized for all cluster read operations
+ * = cluserRead: authorzed for all cluster read operations
  *
  * a user could be a comma separated list of roles as well.
  */
 public class SimpleTestSecurityManager implements SecurityManager {
-
   @Override
-  public void init(final Properties securityProps) {
-    // nothing
-  }
+  public void init(final Properties securityProps) {}
 
   @Override
   public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
@@ -63,7 +60,5 @@ public class SimpleTestSecurityManager implements SecurityManager {
   }
 
   @Override
-  public void close() {
-    // nothing
-  }
+  public void close() {}
 }

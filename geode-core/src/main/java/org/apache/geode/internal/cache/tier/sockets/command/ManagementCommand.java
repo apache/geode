@@ -19,7 +19,6 @@ import java.io.IOException;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.security.SecurityService;
 
 /**
  * TODO: Javadoc everything and edit as needed
@@ -29,8 +28,7 @@ import org.apache.geode.internal.security.SecurityService;
 public class ManagementCommand extends BaseCommand {
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     // TODO Auto-generated method stub
   }

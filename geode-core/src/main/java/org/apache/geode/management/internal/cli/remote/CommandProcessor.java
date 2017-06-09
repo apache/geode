@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * 
+ * 
  * @since GemFire 7.0
  */
 public class CommandProcessor {
@@ -47,18 +49,16 @@ public class CommandProcessor {
 
   private volatile boolean isStopped = false;
 
-  private final SecurityService securityService;
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   public CommandProcessor() throws ClassNotFoundException, IOException {
-    this(null, SecurityServiceFactory.create());
+    this(null);
   }
 
-  public CommandProcessor(Properties cacheProperties, SecurityService securityService)
-      throws ClassNotFoundException, IOException {
+  public CommandProcessor(Properties cacheProperties) throws ClassNotFoundException, IOException {
     this.gfshParser = new GfshParser(cacheProperties);
     this.executionStrategy = new RemoteExecutionStrategy();
     this.logWrapper = LogWrapper.getInstance();
-    this.securityService = securityService;
   }
 
   protected RemoteExecutionStrategy getExecutionStrategy() {

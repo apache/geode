@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -22,25 +24,20 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
 
 public class MonitorCQ extends BaseCQCommand {
 
-  private static final MonitorCQ singleton = new MonitorCQ();
+  private final static MonitorCQ singleton = new MonitorCQ();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private MonitorCQ() {
-    // nothing
-  }
+  private MonitorCQ() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
@@ -74,10 +71,10 @@ public class MonitorCQ extends BaseCQCommand {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received MonitorCq request from {} op: {}{}", serverConnection.getName(),
           serverConnection.getSocketString(), op,
-          regionName != null ? " RegionName: " + regionName : "");
+          (regionName != null) ? " RegionName: " + regionName : "");
     }
 
-    securityService.authorizeClusterRead();
+    this.securityService.authorizeClusterRead();
 
     try {
       CqService cqService = crHelper.getCache().getCqService();
@@ -93,11 +90,13 @@ public class MonitorCQ extends BaseCQCommand {
     } catch (CqException cqe) {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);
+      return;
     } catch (Exception e) {
       String err = LocalizedStrings.MonitorCQ_EXCEPTION_WHILE_HANDLING_THE_MONITOR_REQUEST_OP_IS_0
-          .toLocalizedString(op);
+          .toLocalizedString(Integer.valueOf(op));
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, clientMessage.getTransactionId(), e,
           serverConnection);
+      return;
     }
   }
 

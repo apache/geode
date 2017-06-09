@@ -27,7 +27,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -238,8 +237,7 @@ public class ClientCacheFactory {
       }
       this.dsProps.setProperty(MCAST_PORT, "0");
       this.dsProps.setProperty(LOCATORS, "");
-      InternalDistributedSystem system =
-          (InternalDistributedSystem) DistributedSystem.connect(this.dsProps);
+      DistributedSystem system = DistributedSystem.connect(this.dsProps);
 
       if (instance != null && !instance.isClosed()) {
         // this is ok; just make sure it is a client cache

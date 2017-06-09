@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.query.Query;
@@ -36,38 +42,48 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
-import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 public abstract class BaseCommandQuery extends BaseCommand {
 
   /**
    * Process the give query and sends the resulset back to the client.
    *
+   * @param msg
+   * @param query
+   * @param queryString
+   * @param regionNames
+   * @param start
+   * @param cqQuery
+   * @param queryContext
+   * @param servConn
    * @return true if successful execution false in case of failure.
+   * @throws IOException
    */
   protected boolean processQuery(Message msg, Query query, String queryString, Set regionNames,
       long start, ServerCQ cqQuery, QueryOperationContext queryContext, ServerConnection servConn,
-      boolean sendResults, final SecurityService securityService)
-      throws IOException, InterruptedException {
+      boolean sendResults) throws IOException, InterruptedException {
     return processQueryUsingParams(msg, query, queryString, regionNames, start, cqQuery,
-        queryContext, servConn, sendResults, null, securityService);
+        queryContext, servConn, sendResults, null);
   }
 
   /**
    * Process the give query and sends the resulset back to the client.
    *
+   * @param msg
+   * @param query
+   * @param queryString
+   * @param regionNames
+   * @param start
+   * @param cqQuery
+   * @param queryContext
+   * @param servConn
    * @return true if successful execution false in case of failure.
+   * @throws IOException
    */
   protected boolean processQueryUsingParams(Message msg, Query query, String queryString,
       Set regionNames, long start, ServerCQ cqQuery, QueryOperationContext queryContext,
-      ServerConnection servConn, boolean sendResults, Object[] params,
-      final SecurityService securityService) throws IOException, InterruptedException {
+      ServerConnection servConn, boolean sendResults, Object[] params)
+      throws IOException, InterruptedException {
     ChunkedMessage queryResponseMsg = servConn.getQueryResponseMessage();
     CacheServerStats stats = servConn.getCacheServerStats();
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
@@ -87,7 +103,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
     try {
       // integrated security
       for (Object regionName : regionNames) {
-        securityService.authorizeRegionRead(regionName.toString());
+        this.securityService.authorizeRegionRead(regionName.toString());
       }
 
       // Execute query
@@ -210,8 +226,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
           // send it as a part of ObjectPartList
           if (hasSerializedObjects) {
             sendResultsAsObjectPartList(numberOfChunks, servConn, selectResults.asList(), isStructs,
-                collectionType, queryString, cqQuery, sendCqResultsWithKey, sendResults,
-                securityService);
+                collectionType, queryString, cqQuery, sendCqResultsWithKey, sendResults);
           } else {
             sendResultsAsObjectArray(selectResults, numberOfChunks, servConn, isStructs,
                 collectionType, queryString, cqQuery, sendCqResultsWithKey, sendResults);
@@ -441,8 +456,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
   private void sendResultsAsObjectPartList(int numberOfChunks, ServerConnection servConn, List objs,
       boolean isStructs, CollectionType collectionType, String queryString, ServerCQ cqQuery,
-      boolean sendCqResultsWithKey, boolean sendResults, final SecurityService securityService)
-      throws IOException {
+      boolean sendCqResultsWithKey, boolean sendResults) throws IOException {
     int resultIndex = 0;
     Object result = null;
     for (int j = 0; j < numberOfChunks; j++) {
@@ -485,8 +499,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
           result = objs.get(resultIndex);
         }
         if (sendResults) {
-          addToObjectPartList(serializedObjs, result, collectionType, false, servConn, isStructs,
-              securityService);
+          addToObjectPartList(serializedObjs, result, collectionType, false, servConn, isStructs);
         }
         resultIndex++;
       }
@@ -505,13 +518,13 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
   private void addToObjectPartList(ObjectPartList serializedObjs, Object res,
       CollectionType collectionType, boolean lastChunk, ServerConnection servConn,
-      boolean isStructs, final SecurityService securityService) throws IOException {
+      boolean isStructs) throws IOException {
     if (isStructs && (res instanceof Struct)) {
       Object[] values = ((Struct) res).getFieldValues();
       // create another ObjectPartList for the struct
       ObjectPartList serializedValueObjs = new ObjectPartList(values.length, false);
       for (Object value : values) {
-        addObjectToPartList(serializedValueObjs, null, value, securityService);
+        addObjectToPartList(serializedValueObjs, null, value);
       }
       serializedObjs.addPart(null, serializedValueObjs, ObjectPartList.OBJECT, null);
     } else if (res instanceof Object[]) {// for CQ key-value pairs
@@ -521,16 +534,15 @@ public abstract class BaseCommandQuery extends BaseCommand {
       for (int i = 0; i < values.length; i += 2) {
         Object key = values[i];
         Object value = values[i + 1];
-        addObjectToPartList(serializedValueObjs, key, value, securityService);
+        addObjectToPartList(serializedValueObjs, key, value);
       }
       serializedObjs.addPart(null, serializedValueObjs, ObjectPartList.OBJECT, null);
     } else { // for deserialized objects
-      addObjectToPartList(serializedObjs, null, res, securityService);
+      addObjectToPartList(serializedObjs, null, res);
     }
   }
 
-  private void addObjectToPartList(ObjectPartList objPartList, Object key, Object value,
-      final SecurityService securityService) {
+  private void addObjectToPartList(ObjectPartList objPartList, Object key, Object value) {
     Object object = value;
     boolean isObject = true;
     if (value instanceof CachedDeserializable) {
@@ -539,7 +551,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       isObject = false;
     }
 
-    object = securityService.postProcess(null, key, object, isObject);
+    object = this.securityService.postProcess(null, key, object, isObject);
     if (key != null) {
       objPartList.addPart(null, key, ObjectPartList.OBJECT, null);
     }

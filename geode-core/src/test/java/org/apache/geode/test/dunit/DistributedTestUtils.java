@@ -14,9 +14,6 @@
  */
 package org.apache.geode.test.dunit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
-import static org.junit.Assert.assertEquals;
-
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
@@ -27,6 +24,10 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * <code>DistributedTestUtils</code> provides static utility methods that affect the runtime
@@ -154,7 +155,8 @@ public class DistributedTestUtils {
   }
 
   public static void unregisterDataSerializerInThisVM() {
-    // TODO: delete DataSerializerPropogationDUnitTest.successfullyLoadedTestDataSerializer = false;
+    // TODO:KIRK: delete DataSerializerPropogationDUnitTest.successfullyLoadedTestDataSerializer =
+    // false;
     // unregister all the Dataserializers
     InternalDataSerializer.reinitialize();
     // ensure that all are unregistered

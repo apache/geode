@@ -46,7 +46,6 @@ import javax.management.ReflectionException;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class MBeanSecurityJUnitTest {
-
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())

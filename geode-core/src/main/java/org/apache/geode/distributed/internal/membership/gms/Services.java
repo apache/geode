@@ -26,12 +26,7 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.*;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
@@ -40,8 +35,6 @@ import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.logging.log4j.Logger;
 
@@ -58,26 +51,25 @@ public class Services {
   private static InternalLogWriter staticLogWriter;
   private static InternalLogWriter staticSecurityLogWriter;
 
-  private final Manager manager;
-  private final JoinLeave joinLeave;
-  private final HealthMonitor healthMon;
-  private final Messenger messenger;
-  private final Authenticator auth;
-  private final ServiceConfig config;
-  private final DMStats stats;
-  private final Stopper cancelCriterion;
-  private final SecurityService securityService;
-
+  final private Manager manager;
+  final private JoinLeave joinLeave;
+  private Locator locator;
+  final private HealthMonitor healthMon;
+  final private Messenger messenger;
+  final private Authenticator auth;
+  final private ServiceConfig config;
+  final private DMStats stats;
+  final private Stopper cancelCriterion;
   private volatile boolean stopping;
   private volatile boolean stopped;
   private volatile Exception shutdownCause;
-
-  private Locator locator;
 
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
 
   private final Timer timer = new Timer("Geode Membership Timer", true);
+
+
 
   /**
    * A common logger for membership classes
@@ -104,6 +96,7 @@ public class Services {
     return this.stopped;
   }
 
+
   /**
    * for testing only - create a non-functional Services object with a Stopper
    */
@@ -115,12 +108,11 @@ public class Services {
     this.joinLeave = null;
     this.healthMon = null;
     this.messenger = null;
-    this.securityService = SecurityServiceFactory.create();
     this.auth = null;
   }
 
   public Services(DistributedMembershipListener listener, DistributionConfig config,
-      RemoteTransportConfig transport, DMStats stats, SecurityService securityService) {
+      RemoteTransportConfig transport, DMStats stats) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
     this.config = new ServiceConfig(transport, config);
@@ -128,16 +120,15 @@ public class Services {
     this.joinLeave = new GMSJoinLeave();
     this.healthMon = new GMSHealthMonitor();
     this.messenger = new JGroupsMessenger();
-    this.securityService = securityService;
     this.auth = new GMSAuthenticator();
   }
 
   protected void init() {
     // InternalDistributedSystem establishes this log writer at boot time
     // TODO fix this so that IDS doesn't know about Services
-    this.securityLogWriter = staticSecurityLogWriter;
+    securityLogWriter = staticSecurityLogWriter;
     staticSecurityLogWriter = null;
-    this.logWriter = staticLogWriter;
+    logWriter = staticLogWriter;
     staticLogWriter = null;
     this.auth.init(this);
     this.messenger.init(this);
@@ -195,29 +186,29 @@ public class Services {
   }
 
   public void emergencyClose() {
-    if (this.stopping) {
+    if (stopping) {
       return;
     }
-    this.stopping = true;
+    stopping = true;
     logger.info("Stopping membership services");
-    this.timer.cancel();
+    timer.cancel();
     try {
-      this.joinLeave.emergencyClose();
+      joinLeave.emergencyClose();
     } finally {
       try {
-        this.healthMon.emergencyClose();
+        healthMon.emergencyClose();
       } finally {
         try {
-          this.auth.emergencyClose();
+          auth.emergencyClose();
         } finally {
           try {
-            this.messenger.emergencyClose();
+            messenger.emergencyClose();
           } finally {
             try {
-              this.manager.emergencyClose();
+              manager.emergencyClose();
             } finally {
-              this.cancelCriterion.cancel("Membership services are shut down");
-              this.stopped = true;
+              cancelCriterion.cancel("Membership services are shut down");
+              stopped = true;
             }
           }
         }
@@ -226,31 +217,31 @@ public class Services {
   }
 
   public void stop() {
-    if (this.stopping) {
+    if (stopping) {
       return;
     }
     logger.info("Stopping membership services");
-    this.stopping = true;
+    stopping = true;
     try {
-      this.timer.cancel();
+      timer.cancel();
     } finally {
       try {
-        this.joinLeave.stop();
+        joinLeave.stop();
       } finally {
         try {
-          this.healthMon.stop();
+          healthMon.stop();
         } finally {
           try {
-            this.auth.stop();
+            auth.stop();
           } finally {
             try {
-              this.messenger.stop();
+              messenger.stop();
             } finally {
               try {
-                this.manager.stop();
+                manager.stop();
               } finally {
-                this.cancelCriterion.cancel("Membership services are shut down");
-                this.stopped = true;
+                cancelCriterion.cancel("Membership services are shut down");
+                stopped = true;
               }
             }
           }
@@ -267,10 +258,6 @@ public class Services {
     staticSecurityLogWriter = securityWriter;
   }
 
-  public SecurityService getSecurityService() {
-    return this.securityService;
-  }
-
   public InternalLogWriter getLogWriter() {
     return this.logWriter;
   }
@@ -280,38 +267,38 @@ public class Services {
   }
 
   public Authenticator getAuthenticator() {
-    return this.auth;
+    return auth;
   }
 
   public void installView(NetView v) {
     try {
-      this.auth.installView(v);
+      auth.installView(v);
     } catch (AuthenticationFailedException e) {
       return;
     }
-    if (this.locator != null) {
-      this.locator.installView(v);
+    if (locator != null) {
+      locator.installView(v);
     }
-    this.healthMon.installView(v);
-    this.messenger.installView(v);
-    this.manager.installView(v);
+    healthMon.installView(v);
+    messenger.installView(v);
+    manager.installView(v);
   }
 
   public void memberSuspected(InternalDistributedMember initiator,
       InternalDistributedMember suspect, String reason) {
     try {
-      this.joinLeave.memberSuspected(initiator, suspect, reason);
+      joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
       try {
-        this.healthMon.memberSuspected(initiator, suspect, reason);
+        healthMon.memberSuspected(initiator, suspect, reason);
       } finally {
         try {
-          this.auth.memberSuspected(initiator, suspect, reason);
+          auth.memberSuspected(initiator, suspect, reason);
         } finally {
           try {
-            this.messenger.memberSuspected(initiator, suspect, reason);
+            messenger.memberSuspected(initiator, suspect, reason);
           } finally {
-            this.manager.memberSuspected(initiator, suspect, reason);
+            manager.memberSuspected(initiator, suspect, reason);
           }
         }
       }
@@ -319,11 +306,11 @@ public class Services {
   }
 
   public Manager getManager() {
-    return this.manager;
+    return manager;
   }
 
   public Locator getLocator() {
-    return this.locator;
+    return locator;
   }
 
   public void setLocator(Locator locator) {
@@ -331,11 +318,11 @@ public class Services {
   }
 
   public JoinLeave getJoinLeave() {
-    return this.joinLeave;
+    return joinLeave;
   }
 
   public HealthMonitor getHealthMonitor() {
-    return this.healthMon;
+    return healthMon;
   }
 
   public ServiceConfig getConfig() {
@@ -359,11 +346,11 @@ public class Services {
   }
 
   public Exception getShutdownCause() {
-    return this.shutdownCause;
+    return shutdownCause;
   }
 
   public boolean isShutdownDueToForcedDisconnect() {
-    return this.shutdownCause instanceof ForcedDisconnectException;
+    return shutdownCause instanceof ForcedDisconnectException;
   }
 
   public boolean isAutoReconnectEnabled() {
@@ -371,8 +358,8 @@ public class Services {
   }
 
   public byte[] getPublicKey(InternalDistributedMember mbr) {
-    if (this.locator != null) {
-      return ((GMSLocator) this.locator).getPublicKey(mbr);
+    if (locator != null) {
+      return ((GMSLocator) locator).getPublicKey(mbr);
     }
     return null;
   }
@@ -388,7 +375,7 @@ public class Services {
     public String cancelInProgress() {
       if (Services.this.shutdownCause != null)
         return Services.this.shutdownCause.toString();
-      return this.reasonForStopping;
+      return reasonForStopping;
     }
 
     @Override

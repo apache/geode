@@ -52,18 +52,8 @@ import java.util.Map;
 @Category(IntegrationTest.class)
 public class AnalyzeSerializablesJUnitTest {
 
-  private static final String NEW_LINE = System.getProperty("line.separator");
-
-  private static final String FAIL_MESSAGE = NEW_LINE + NEW_LINE
-      + "If the class is not persisted or sent over the wire add it to the file " + NEW_LINE + "%s"
-      + NEW_LINE + "Otherwise if this doesn't break backward compatibility, copy the file "
-      + NEW_LINE + "%s to " + NEW_LINE + "%s.";
-
   /** all loaded classes */
   private Map<String, CompiledClass> classes;
-
-  private File expectedDataSerializablesFile;
-  private File expectedSerializablesFile;
 
   private List<ClassAndMethodDetails> expectedDataSerializables;
   private List<ClassAndVariableDetails> expectedSerializables;
@@ -86,18 +76,18 @@ public class AnalyzeSerializablesJUnitTest {
 
     // setup expectedDataSerializables
 
-    this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
-    assertThat(this.expectedDataSerializablesFile).exists().canRead();
+    File expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
+    assertThat(expectedDataSerializablesFile).exists().canRead();
 
-    this.expectedDataSerializables = loadClassesAndMethods(this.expectedDataSerializablesFile);
+    this.expectedDataSerializables = loadClassesAndMethods(expectedDataSerializablesFile);
     Collections.sort(this.expectedDataSerializables);
 
     // setup expectedSerializables
 
-    this.expectedSerializablesFile = getResourceAsFile("sanctionedSerializables.txt");
-    assertThat(this.expectedSerializablesFile).exists().canRead();
+    File expectedSerializablesFile = getResourceAsFile("sanctionedSerializables.txt");
+    assertThat(expectedSerializablesFile).exists().canRead();
 
-    this.expectedSerializables = loadClassesAndVariables(this.expectedSerializablesFile);
+    this.expectedSerializables = loadClassesAndVariables(expectedSerializablesFile);
     Collections.sort(this.expectedSerializables);
 
     // setup empty actual files
@@ -122,13 +112,15 @@ public class AnalyzeSerializablesJUnitTest {
 
     String diff =
         diffSortedClassesAndMethods(this.expectedDataSerializables, actualDataSerializables);
-    if (!diff.isEmpty()) {
+    if (diff.length() > 0) {
       System.out.println(
           "++++++++++++++++++++++++++++++testDataSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
-      fail(diff + FAIL_MESSAGE, getSrcPathFor(getResourceAsFile("excludedClasses.txt")),
-          this.actualDataSerializablesFile.getAbsolutePath(),
-          getSrcPathFor(this.expectedDataSerializablesFile));
+      fail(
+          diff + "\n\nIf the class is not persisted or sent over the wire add it to the excludedClasses.txt file in the "
+              + "\norg/apache/geode/codeAnalysis directory.  Otherwise if this doesn't "
+              + "\nbreak backward compatibility move the file actualDataSerializables.dat to the codeAnalysis "
+              + "\ntest directory and rename to sanctionedDataSerializables.txt");
     }
   }
 
@@ -140,20 +132,16 @@ public class AnalyzeSerializablesJUnitTest {
     storeClassesAndVariables(actualSerializables, this.actualSerializablesFile);
 
     String diff = diffSortedClassesAndVariables(this.expectedSerializables, actualSerializables);
-    if (!diff.isEmpty()) {
+    if (diff.length() > 0) {
       System.out.println(
           "++++++++++++++++++++++++++++++testSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
-      fail(diff + FAIL_MESSAGE, getSrcPathFor(getResourceAsFile("excludedClasses.txt")),
-          this.actualSerializablesFile.getAbsolutePath(),
-          getSrcPathFor(this.expectedSerializablesFile));
+      fail(
+          diff + "\n\nIf the class is not persisted or sent over the wire add it to the excludedClasses.txt file in the "
+              + "\n/org/apache/geode/codeAnalysis/ directory.  Otherwise if this doesn't "
+              + "\nbreak backward compatibility move the file actualSerializables.dat to the "
+              + "\ncodeAnalysis test directory and rename to sanctionedSerializables.txt");
     }
-  }
-
-  private String getSrcPathFor(File file) {
-    return file.getAbsolutePath().replace(
-        "build" + File.separator + "resources" + File.separator + "test",
-        "src" + File.separator + "test" + File.separator + "resources");
   }
 
   private void loadClasses() throws IOException {
@@ -186,7 +174,7 @@ public class AnalyzeSerializablesJUnitTest {
     loadClassesFromBuild(new File(buildDir), excludedClasses);
     long finish = System.currentTimeMillis();
 
-    System.out.println("done loading " + this.classes.size() + " classes.  elapsed time = "
+    System.out.println("done loading " + classes.size() + " classes.  elapsed time = "
         + (finish - start) / 1000 + " seconds");
   }
 
@@ -198,7 +186,7 @@ public class AnalyzeSerializablesJUnitTest {
       String line;
       while ((line = br.readLine()) != null) {
         line = line.trim();
-        if (!line.isEmpty() && !line.startsWith("#")) {
+        if (line.length() > 0 && !line.startsWith("#")) {
           excludedClasses.add(line);
         }
       }
@@ -217,7 +205,7 @@ public class AnalyzeSerializablesJUnitTest {
       // each line should have bug#,full-class-name
       while ((line = br.readLine()) != null) {
         line = line.trim();
-        if (!line.isEmpty() && !line.startsWith("#")) {
+        if (line.length() > 0 && !line.startsWith("#")) {
           String[] split = line.split(",");
           if (split.length != 2) {
             fail("unable to load classes due to malformed line in openBugs.txt: " + line);

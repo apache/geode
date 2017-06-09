@@ -35,7 +35,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.internal.security.SecurityService;
 
 public class ClearRegion extends BaseCommand {
 
@@ -48,8 +47,8 @@ public class ClearRegion extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException, InterruptedException {
     Part regionNamePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null;
@@ -116,7 +115,7 @@ public class ClearRegion extends BaseCommand {
 
     try {
       // Clear the region
-      securityService.authorizeRegionWrite(regionName);
+      this.securityService.authorizeRegionWrite(regionName);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

@@ -3913,6 +3913,7 @@ public class DiskStoreImpl implements DiskStore {
           public void writeBatch(Map<Object, RecoveredEntry> entries) throws IOException {
             for (Map.Entry<Object, RecoveredEntry> re : entries.entrySet()) {
               Object key = re.getKey();
+              // TODO:KIRK:OK Rusty's code was value = de.getValueWithContext(drv);
               Object value = re.getValue().getValue();
               writer.snapshotEntry(new SnapshotRecord(key, value));
             }

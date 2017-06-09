@@ -150,8 +150,7 @@ public class UnregisterInterestTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
-        0);
+    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, 0);
     verify(this.replyMessage).send(this.serverConnection);
   }
 
@@ -160,8 +159,7 @@ public class UnregisterInterestTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
-        0);
+    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.replyMessage).send(this.serverConnection);
@@ -174,8 +172,7 @@ public class UnregisterInterestTest {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
-        0);
+    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
@@ -186,8 +183,7 @@ public class UnregisterInterestTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
-        0);
+    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, 0);
 
     verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt());
     verify(this.replyMessage).send(this.serverConnection);
@@ -200,8 +196,7 @@ public class UnregisterInterestTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
         eq(KEY), any());
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
-        0);
+    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, 0);
 
     verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt());
     verify(this.replyMessage).send(eq(this.serverConnection));

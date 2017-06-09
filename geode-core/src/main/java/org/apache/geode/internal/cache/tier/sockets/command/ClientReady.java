@@ -20,7 +20,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 
@@ -36,8 +35,8 @@ public class ClientReady extends BaseCommand {
   private ClientReady() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException {
     CacheServerStats stats = serverConnection.getCacheServerStats();
     {
       long oldStart = start;

@@ -31,6 +31,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
@@ -51,6 +53,7 @@ import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.functions.RegionDestroyFunction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.RegionPath;
@@ -85,6 +88,8 @@ import javax.management.ObjectName;
 public class CreateAlterDestroyRegionCommands implements GfshCommand {
 
   public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS = new TreeSet<>();
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   static {
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_PERSISTENT);
@@ -421,7 +426,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
+    this.securityService.authorizeRegionManage(regionPath);
 
     try {
       InternalCache cache = getCache();

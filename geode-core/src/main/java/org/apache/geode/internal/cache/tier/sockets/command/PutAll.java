@@ -12,6 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Author: Gester Zhou
+ */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -43,7 +46,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.internal.security.SecurityService;
 
 public class PutAll extends BaseCommand {
 
@@ -57,14 +59,14 @@ public class PutAll extends BaseCommand {
   private PutAll() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException, InterruptedException {
     Part regionNamePart = null, numberOfKeysPart = null, keyPart = null, valuePart = null;
     String regionName = null;
     int numberOfKeys = 0;
     Object key = null;
     Part eventPart = null;
-    StringBuilder errMessage = new StringBuilder();
+    StringBuffer errMessage = new StringBuffer();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     CacheServerStats stats = serverConnection.getCacheServerStats();
     boolean replyWithMetaData = false;
@@ -164,7 +166,7 @@ public class PutAll extends BaseCommand {
         serverConnection.setRequestSpecificTimeout(timeout);
       }
 
-      securityService.authorizeRegionWrite(regionName);
+      this.securityService.authorizeRegionWrite(regionName);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

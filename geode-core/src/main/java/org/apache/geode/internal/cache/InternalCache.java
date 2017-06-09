@@ -60,7 +60,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -310,6 +309,4 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass);
 
   void waitForRegisterInterestsInProgress();
-
-  SecurityService getSecurityService();
 }

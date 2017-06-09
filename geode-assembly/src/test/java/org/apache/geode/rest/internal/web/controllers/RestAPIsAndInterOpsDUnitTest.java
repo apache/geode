@@ -14,15 +14,37 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -50,32 +72,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
@@ -85,9 +81,10 @@ import java.util.Properties;
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@SuppressWarnings("serial")
 public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
-  private static final String PEOPLE_REGION_NAME = "People";
+  public static final String PEOPLE_REGION_NAME = "People";
 
   private static final String findAllPeopleQuery =
       "/queries?id=findAllPeople&q=SELECT%20*%20FROM%20/People";
@@ -99,10 +96,19 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
   private static final String[] PARAM_QUERY_IDS_ARRAY =
       {"findAllPeople", "filterByGender", "filterByLastName"};
 
-  private static final String QUERY_ARGS =
+  final static String QUERY_ARGS =
       "[" + "{" + "\"@type\": \"string\"," + "\"@value\": \"Patel\"" + "}" + "]";
 
-  private static final String PERSON_AS_JSON_REPLACE =
+  final static String PERSON_AS_JSON_CAS = "{" + "\"@old\" :" + "{"
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\"," + "\"id\": 101,"
+      + " \"firstName\": \"Mithali\"," + " \"middleName\": \"Dorai\"," + " \"lastName\": \"Raj\","
+      + " \"birthDate\": \"12/04/1982\"," + "\"gender\": \"FEMALE\"" + "}," + "\"@new\" :" + "{"
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\"," + "\"id\": 1101,"
+      + " \"firstName\": \"Virat\"," + " \"middleName\": \"Premkumar\","
+      + " \"lastName\": \"Kohli\"," + " \"birthDate\": \"08/11/1988\"," + "\"gender\": \"MALE\""
+      + "}" + "}";
+
+  final static String PERSON_AS_JSON_REPLACE =
       "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\"," + "\"id\": 501,"
           + " \"firstName\": \"Barack\"," + " \"middleName\": \"Hussein\","
           + " \"lastName\": \"Obama\"," + " \"birthDate\": \"04/08/1961\"," + "\"gender\": \"MALE\""
@@ -149,20 +155,19 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     return Arrays.asList("/geode", "/gemfire-api");
   }
 
-  private String startBridgeServerWithRestService(final String hostName, final String[] groups,
-      final String locators, final String[] regions, final ServerLoadProbe probe)
-      throws IOException {
+  public String startBridgeServerWithRestService(final String hostName, final String[] groups,
+      final String locators, final String[] regions, final ServerLoadProbe probe) {
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     // create Cache of given VM and start HTTP service with REST APIs service
     startBridgeServer(hostName, serverPort, groups, locators, regions, probe);
 
-    return "http://" + hostName + ":" + serverPort + this.urlContext + "/v1";
+    return "http://" + hostName + ":" + serverPort + urlContext + "/v1";
   }
 
-  private int startBridgeServer(String hostName, int restServicerPort, final String[] groups,
-      final String locators, final String[] regions, final ServerLoadProbe probe)
-      throws IOException {
+  @SuppressWarnings("deprecation")
+  protected int startBridgeServer(String hostName, int restServicerPort, final String[] groups,
+      final String locators, final String[] regions, final ServerLoadProbe probe) {
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
@@ -187,15 +192,18 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     server.setPort(0);
     server.setGroups(groups);
     server.setLoadProbe(probe);
-    server.start();
-
+    try {
+      server.start();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     remoteObjects.put(CACHE_KEY, cache);
-    return server.getPort();
+    return new Integer(server.getPort());
   }
 
-  private void doPutsInClientCache() {
+  public void doPutsInClientCache() {
     ClientCache cache = GemFireCacheImpl.getInstance();
-    assertThat(cache).isNotNull();
+    assertNotNull(cache);
     Region<String, Object> region = cache.getRegion(PEOPLE_REGION_NAME);
 
     // put person object
@@ -255,351 +263,484 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
     region.putAll(userMap);
 
-    cache.getLogger().info("Gemfire Cache Client: Puts successfully done");
+    if (cache != null)
+      cache.getLogger().info("Gemfire Cache Client: Puts successfully done");
+
   }
 
-  private void doQueryOpsUsingRestApis(String restEndpoint) throws IOException {
-    // Query TestCase-1 :: Prepare parameterized Queries
+  public void doQueryOpsUsingRestApis(String restEndpoint) {
+    String currentQueryOp = null;
+    try {
+      // Query TestCase-1 :: Prepare parameterized Queries
+      {
+        currentQueryOp = "findAllPeopleQuery";
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpPost post = new HttpPost(restEndpoint + findAllPeopleQuery);
+        post.addHeader("Content-Type", "application/json");
+        post.addHeader("Accept", "application/json");
+        CloseableHttpResponse createNamedQueryResponse = httpclient.execute(post);
+        assertEquals(createNamedQueryResponse.getStatusLine().getStatusCode(), 201);
+        assertNotNull(createNamedQueryResponse.getEntity());
+        createNamedQueryResponse.close();
 
-    CloseableHttpClient httpclient = HttpClients.createDefault();
-    HttpPost post = new HttpPost(restEndpoint + findAllPeopleQuery);
-    post.addHeader("Content-Type", "application/json");
-    post.addHeader("Accept", "application/json");
-    CloseableHttpResponse createNamedQueryResponse = httpclient.execute(post);
-    assertThat(createNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(201);
-    assertThat(createNamedQueryResponse.getEntity()).isNotNull();
-    createNamedQueryResponse.close();
+        post = new HttpPost(restEndpoint + findPeopleByGenderQuery);
+        post.addHeader("Content-Type", "application/json");
+        post.addHeader("Accept", "application/json");
+        createNamedQueryResponse = httpclient.execute(post);
+        assertEquals(createNamedQueryResponse.getStatusLine().getStatusCode(), 201);
+        assertNotNull(createNamedQueryResponse.getEntity());
+        createNamedQueryResponse.close();
 
-    post = new HttpPost(restEndpoint + findPeopleByGenderQuery);
-    post.addHeader("Content-Type", "application/json");
-    post.addHeader("Accept", "application/json");
-    createNamedQueryResponse = httpclient.execute(post);
-    assertThat(createNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(201);
-    assertThat(createNamedQueryResponse.getEntity()).isNotNull();
-    createNamedQueryResponse.close();
+        post = new HttpPost(restEndpoint + findPeopleByLastNameQuery);
+        post.addHeader("Content-Type", "application/json");
+        post.addHeader("Accept", "application/json");
+        createNamedQueryResponse = httpclient.execute(post);
+        assertEquals(createNamedQueryResponse.getStatusLine().getStatusCode(), 201);
+        assertNotNull(createNamedQueryResponse.getEntity());
+        createNamedQueryResponse.close();
+      }
 
-    post = new HttpPost(restEndpoint + findPeopleByLastNameQuery);
-    post.addHeader("Content-Type", "application/json");
-    post.addHeader("Accept", "application/json");
-    createNamedQueryResponse = httpclient.execute(post);
-    assertThat(createNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(201);
-    assertThat(createNamedQueryResponse.getEntity()).isNotNull();
-    createNamedQueryResponse.close();
+      // Query TestCase-2 :: List all parameterized queries
+      {
+        currentQueryOp = "listAllQueries";
+        HttpGet get = new HttpGet(restEndpoint + "/queries");
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpResponse listAllQueriesResponse = httpclient.execute(get);
+        assertEquals(listAllQueriesResponse.getStatusLine().getStatusCode(), 200);
+        assertNotNull(listAllQueriesResponse.getEntity());
 
-    // Query TestCase-2 :: List all parameterized queries
+        HttpEntity entity = listAllQueriesResponse.getEntity();
+        InputStream content = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+        String line;
+        StringBuffer sb = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+          sb.append(line);
+        }
+        listAllQueriesResponse.close();
 
-    HttpGet get = new HttpGet(restEndpoint + "/queries");
-    httpclient = HttpClients.createDefault();
-    CloseableHttpResponse listAllQueriesResponse = httpclient.execute(get);
-    assertThat(listAllQueriesResponse.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(listAllQueriesResponse.getEntity()).isNotNull();
+        // Check whether received response contains expected query IDs.
 
-    HttpEntity entity = listAllQueriesResponse.getEntity();
-    InputStream content = entity.getContent();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-    String line;
-    StringBuilder sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
+        JSONObject jsonObject = new JSONObject(sb.toString());
+        JSONArray jsonArray = jsonObject.getJSONArray("queries");
+        for (int i = 0; i < jsonArray.length(); i++) {
+          assertTrue("PREPARE_PARAMETERIZED_QUERY: function IDs are not matched", Arrays
+              .asList(PARAM_QUERY_IDS_ARRAY).contains(jsonArray.getJSONObject(i).getString("id")));
+        }
+      }
+
+      // Query TestCase-3 :: Run the specified named query passing in scalar values for query
+      // parameters.
+      {
+        currentQueryOp = "filterByLastName";
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpPost post = new HttpPost(restEndpoint + "/queries/filterByLastName");
+        post.addHeader("Content-Type", "application/json");
+        post.addHeader("Accept", "application/json");
+        StringEntity entity = new StringEntity(QUERY_ARGS);
+        post.setEntity(entity);
+        CloseableHttpResponse runNamedQueryResponse = httpclient.execute(post);
+
+        assertEquals(200, runNamedQueryResponse.getStatusLine().getStatusCode());
+        assertNotNull(runNamedQueryResponse.getEntity());
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("unexpected exception", e);
     }
-    listAllQueriesResponse.close();
-
-    // Check whether received response contains expected query IDs.
-
-    JSONObject jsonObject = new JSONObject(sb.toString());
-    JSONArray jsonArray = jsonObject.getJSONArray("queries");
-    for (int i = 0; i < jsonArray.length(); i++) {
-      assertThat(Arrays.asList(PARAM_QUERY_IDS_ARRAY))
-          .contains(jsonArray.getJSONObject(i).getString("id"));
-    }
-
-    // Query TestCase-3 :: Run the specified named query passing in scalar values for query
-    // parameters.
-
-    httpclient = HttpClients.createDefault();
-    post = new HttpPost(restEndpoint + "/queries/filterByLastName");
-    post.addHeader("Content-Type", "application/json");
-    post.addHeader("Accept", "application/json");
-    entity = new StringEntity(QUERY_ARGS);
-    post.setEntity(entity);
-    CloseableHttpResponse runNamedQueryResponse = httpclient.execute(post);
-
-    assertThat(runNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(runNamedQueryResponse.getEntity()).isNotNull();
   }
 
-  private void verifyUpdatesInClientCache() {
+  public void verifyUpdatesInClientCache() {
     ClientCache cache = GemFireCacheImpl.getInstance();
-    assertThat(cache).isNotNull();
+    assertNotNull(cache);
     Region<String, Object> region = cache.getRegion(PEOPLE_REGION_NAME);
 
-    Person expectedPerson = new Person(3L, "Nishka3", "Nilkanth3", "Patel3",
-        DateTimeUtils.createDate(2009, Calendar.JULY, 31), Gender.FEMALE);
-    Object value = region.get("3");
+    {
+      Person expectedPerson = new Person(3L, "Nishka3", "Nilkanth3", "Patel3",
+          DateTimeUtils.createDate(2009, Calendar.JULY, 31), Gender.FEMALE);
+      Object value = region.get("3");
+      if (value instanceof PdxInstance) {
+        PdxInstance pi3 = (PdxInstance) value;
+        Person actualPerson = (Person) pi3.getObject();
+        assertEquals(actualPerson.getId(), expectedPerson.getId());
+        assertEquals(actualPerson.getFirstName(), expectedPerson.getFirstName());
+        assertEquals(actualPerson.getMiddleName(), expectedPerson.getMiddleName());
+        assertEquals(actualPerson.getLastName(), expectedPerson.getLastName());
+        assertEquals(actualPerson.getBirthDate(), expectedPerson.getBirthDate());
+        assertEquals(actualPerson.getGender(), expectedPerson.getGender());
+      } else if (value instanceof Person) {
+        fail(
+            "VerifyUpdatesInClientCache, Get on key 3, Expected to get value of type PdxInstance ");
+      }
+    }
 
-    assertThat(value).isInstanceOf(PdxInstance.class);
-
-    PdxInstance pi3 = (PdxInstance) value;
-    Person actualPerson = (Person) pi3.getObject();
-    assertThat(actualPerson.getId()).isEqualTo(expectedPerson.getId());
-    assertThat(actualPerson.getFirstName()).isEqualTo(expectedPerson.getFirstName());
-    assertThat(actualPerson.getMiddleName()).isEqualTo(expectedPerson.getMiddleName());
-    assertThat(actualPerson.getLastName()).isEqualTo(expectedPerson.getLastName());
-    assertThat(actualPerson.getBirthDate()).isEqualTo(expectedPerson.getBirthDate());
-    assertThat(actualPerson.getGender()).isEqualTo(expectedPerson.getGender());
+    // TODO: uncomment it once following issue encountered in put?op=CAS is fixed or document the
+    // issue
+    // CAS functionality is not working in following test case
+    // step-1: Java client, Region.put("K", A);
+    // Step-2: Rest CAS request for key "K" with data "@old" = A. CAS is failing as existing
+    // PdxInstance in cache and
+    // PdxInstance generated from JSON (CAS request) does not match as their value's type are
+    // getting changed
+    /*
+     * //verify update on key "1" { Object obj = region.get("1"); if (obj instanceof PdxInstance) {
+     * PdxInstance pi = (PdxInstance)obj; Person p1 = (Person)pi.getObject();
+     * System.out.println("Nilkanth1 : verifyUpdatesInClientCache() : GET ON KEY=1" +
+     * p1.toString()); }else {
+     * System.out.println("Nilkanth1 : verifyUpdatesInClientCache() GET ON KEY=1  returned OBJECT: "
+     * + obj.toString()); } }
+     */
 
     // verify update on key "2"
-
-    expectedPerson = new Person(501L, "Barack", "Hussein", "Obama",
-        DateTimeUtils.createDate(1961, Calendar.APRIL, 8), Gender.MALE);
-    value = region.get("2");
-
-    assertThat(value).isInstanceOf(PdxInstance.class);
-
-    pi3 = (PdxInstance) value;
-    actualPerson = (Person) pi3.getObject();
-    assertThat(actualPerson.getId()).isEqualTo(expectedPerson.getId());
-    assertThat(actualPerson.getFirstName()).isEqualTo(expectedPerson.getFirstName());
-    assertThat(actualPerson.getMiddleName()).isEqualTo(expectedPerson.getMiddleName());
-    assertThat(actualPerson.getLastName()).isEqualTo(expectedPerson.getLastName());
-    assertThat(actualPerson.getBirthDate()).isEqualTo(expectedPerson.getBirthDate());
-    assertThat(actualPerson.getGender()).isEqualTo(expectedPerson.getGender());
+    {
+      Person expectedPerson = new Person(501L, "Barack", "Hussein", "Obama",
+          DateTimeUtils.createDate(1961, Calendar.APRIL, 8), Gender.MALE);
+      Object value = region.get("2");
+      if (value instanceof PdxInstance) {
+        PdxInstance pi3 = (PdxInstance) value;
+        Person actualPerson = (Person) pi3.getObject();
+        assertEquals(actualPerson.getId(), expectedPerson.getId());
+        assertEquals(actualPerson.getFirstName(), expectedPerson.getFirstName());
+        assertEquals(actualPerson.getMiddleName(), expectedPerson.getMiddleName());
+        assertEquals(actualPerson.getLastName(), expectedPerson.getLastName());
+        assertEquals(actualPerson.getBirthDate(), expectedPerson.getBirthDate());
+        assertEquals(actualPerson.getGender(), expectedPerson.getGender());
+      } else {
+        fail(
+            "VerifyUpdatesInClientCache, Get on key 2, Expected to get value of type PdxInstance ");
+      }
+    }
 
     // verify Deleted key "13"
+    {
+      Object obj = region.get("13");
+      assertEquals(obj, null);
 
-    Object obj = region.get("13");
-    assertThat(obj).isNull();
+      obj = region.get("14");
+      assertEquals(obj, null);
 
-    obj = region.get("14");
-    assertThat(obj).isNull();
+      obj = region.get("15");
+      assertEquals(obj, null);
 
-    obj = region.get("15");
-    assertThat(obj).isNull();
+      obj = region.get("16");
+      assertEquals(obj, null);
+    }
 
-    obj = region.get("16");
-    assertThat(obj).isNull();
   }
 
-  private void doUpdatesUsingRestApis(String restEndpoint) throws IOException {
-    // Update keys using REST calls
+  public void doUpdatesUsingRestApis(String restEndpoint) {
+    // UPdate keys using REST calls
+    {
 
-    CloseableHttpClient httpclient = HttpClients.createDefault();
-    HttpPut put = new HttpPut(restEndpoint + "/People/3,4,5,6,7,8,9,10,11,12");
-    put.addHeader("Content-Type", "application/json");
-    put.addHeader("Accept", "application/json");
-    StringEntity entity = new StringEntity(PERSON_LIST_AS_JSON);
-    put.setEntity(entity);
-    CloseableHttpResponse result = httpclient.execute(put);
-    assertThat(result).isNotNull();
+      try {
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpPut put = new HttpPut(restEndpoint + "/People/3,4,5,6,7,8,9,10,11,12");
+        put.addHeader("Content-Type", "application/json");
+        put.addHeader("Accept", "application/json");
+        StringEntity entity = new StringEntity(PERSON_LIST_AS_JSON);
+        put.setEntity(entity);
+        CloseableHttpResponse result = httpclient.execute(put);
+      } catch (Exception e) {
+        throw new RuntimeException("unexpected exception", e);
+      }
+    }
 
     // Delete Single keys
-
-    httpclient = HttpClients.createDefault();
-    HttpDelete delete = new HttpDelete(restEndpoint + "/People/13");
-    delete.addHeader("Content-Type", "application/json");
-    delete.addHeader("Accept", "application/json");
-    result = httpclient.execute(delete);
-    assertThat(result).isNotNull();
+    {
+      try {
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpDelete delete = new HttpDelete(restEndpoint + "/People/13");
+        delete.addHeader("Content-Type", "application/json");
+        delete.addHeader("Accept", "application/json");
+        CloseableHttpResponse result = httpclient.execute(delete);
+      } catch (Exception e) {
+        throw new RuntimeException("unexpected exception", e);
+      }
+    }
 
     // Delete set of keys
-
-    httpclient = HttpClients.createDefault();
-    delete = new HttpDelete(restEndpoint + "/People/14,15,16");
-    delete.addHeader("Content-Type", "application/json");
-    delete.addHeader("Accept", "application/json");
-    result = httpclient.execute(delete);
-    assertThat(result).isNotNull();
+    {
+      try {
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpDelete delete = new HttpDelete(restEndpoint + "/People/14,15,16");
+        delete.addHeader("Content-Type", "application/json");
+        delete.addHeader("Accept", "application/json");
+        CloseableHttpResponse result = httpclient.execute(delete);
+      } catch (Exception e) {
+        throw new RuntimeException("unexpected exception", e);
+      }
+    }
 
     // REST put?op=CAS for key 1
+    /*
+     * try { { HttpEntity<Object> entity = new HttpEntity<Object>(PERSON_AS_JSON_CAS, headers);
+     * ResponseEntity<String> result = RestTestUtils.getRestTemplate().exchange( restEndpoint +
+     * "/People/1?op=cas", HttpMethod.PUT, entity, String.class); } } catch
+     * (HttpClientErrorException e) {
+     *
+     * fail("Caught HttpClientErrorException while doing put with op=cas"); }catch
+     * (HttpServerErrorException se) {
+     * fail("Caught HttpServerErrorException while doing put with op=cas"); }
+     */
 
     // REST put?op=REPLACE for key 2
+    {
+      /*
+       * HttpEntity<Object> entity = new HttpEntity<Object>(PERSON_AS_JSON_REPLACE, headers);
+       * ResponseEntity<String> result = RestTestUtils.getRestTemplate().exchange( restEndpoint +
+       * "/People/2?op=replace", HttpMethod.PUT, entity, String.class);
+       */
 
-    httpclient = HttpClients.createDefault();
-    put = new HttpPut(restEndpoint + "/People/2?op=replace");
-    put.addHeader("Content-Type", "application/json");
-    put.addHeader("Accept", "application/json");
-    entity = new StringEntity(PERSON_AS_JSON_REPLACE);
-    put.setEntity(entity);
-    result = httpclient.execute(put);
-    assertThat(result).isNotNull();
+      try {
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpPut put = new HttpPut(restEndpoint + "/People/2?op=replace");
+        put.addHeader("Content-Type", "application/json");
+        put.addHeader("Accept", "application/json");
+        StringEntity entity = new StringEntity(PERSON_AS_JSON_REPLACE);
+        put.setEntity(entity);
+        CloseableHttpResponse result = httpclient.execute(put);
+      } catch (Exception e) {
+        throw new RuntimeException("unexpected exception", e);
+      }
+    }
   }
 
-  private void fetchRestServerEndpoints(String restEndpoint) throws IOException {
+  public void fetchRestServerEndpoints(String restEndpoint) {
     HttpGet get = new HttpGet(restEndpoint + "/servers");
     get.addHeader("Content-Type", "application/json");
     get.addHeader("Accept", "application/json");
     CloseableHttpClient httpclient = HttpClients.createDefault();
+    CloseableHttpResponse response;
 
-    CloseableHttpResponse response = httpclient.execute(get);
-    HttpEntity entity = response.getEntity();
-    InputStream content = entity.getContent();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-    String line;
-    StringBuilder sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
+    try {
+      response = httpclient.execute(get);
+      HttpEntity entity = response.getEntity();
+      InputStream content = entity.getContent();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+      String line;
+      StringBuffer str = new StringBuffer();
+      while ((line = reader.readLine()) != null) {
+        str.append(line);
+      }
+
+      // validate the satus code
+      assertEquals(response.getStatusLine().getStatusCode(), 200);
+
+      if (response.getStatusLine().getStatusCode() == 200) {
+        JSONArray jsonArray = new JSONArray(str.toString());
+
+        // verify total number of REST service endpoints in DS
+        assertEquals(jsonArray.length(), 2);
+      }
+
+    } catch (ClientProtocolException e) {
+      e.printStackTrace();
+      fail(" Rest Request should not have thrown ClientProtocolException!");
+    } catch (IOException e) {
+      e.printStackTrace();
+      fail(" Rest Request should not have thrown IOException!");
+    } catch (JSONException e) {
+      e.printStackTrace();
+      fail(" Rest Request should not have thrown  JSONException!");
     }
 
-    // validate the status code
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-
-    JSONArray jsonArray = new JSONArray(sb.toString());
-
-    // verify total number of REST service endpoints in DS
-    assertThat(jsonArray.length()).isEqualTo(2);
   }
 
-  private void doGetsUsingRestApis(String restEndpoint) throws IOException {
-    // 1. Get on key="1" and validate result.
+  public void doGetsUsingRestApis(String restEndpoint) {
 
-    HttpGet get = new HttpGet(restEndpoint + "/People/1");
-    get.addHeader("Content-Type", "application/json");
-    get.addHeader("Accept", "application/json");
-    CloseableHttpClient httpclient = HttpClients.createDefault();
-    CloseableHttpResponse response = httpclient.execute(get);
+    // HttpHeaders headers = setAcceptAndContentTypeHeaders();
+    String currentOperation = null;
+    JSONObject jObject;
+    JSONArray jArray;
+    try {
+      // 1. Get on key="1" and validate result.
+      {
+        currentOperation = "GET on key 1";
 
-    HttpEntity entity = response.getEntity();
-    InputStream content = entity.getContent();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-    String line;
-    StringBuilder sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
+        HttpGet get = new HttpGet(restEndpoint + "/People/1");
+        get.addHeader("Content-Type", "application/json");
+        get.addHeader("Accept", "application/json");
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpResponse response = httpclient.execute(get);
+
+        HttpEntity entity = response.getEntity();
+        InputStream content = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+        String line;
+        StringBuffer str = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+          str.append(line);
+        }
+
+        jObject = new JSONObject(str.toString());
+
+        assertEquals(jObject.get("id"), 101);
+        assertEquals(jObject.get("firstName"), "Mithali");
+        assertEquals(jObject.get("middleName"), "Dorai");
+        assertEquals(jObject.get("lastName"), "Raj");
+        assertEquals(jObject.get("gender"), Gender.FEMALE.name());
+      }
+
+      // 2. Get on key="16" and validate result.
+      {
+        currentOperation = "GET on key 16";
+
+        HttpGet get = new HttpGet(restEndpoint + "/People/16");
+        get.addHeader("Content-Type", "application/json");
+        get.addHeader("Accept", "application/json");
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpResponse response = httpclient.execute(get);
+
+        HttpEntity entity = response.getEntity();
+        InputStream content = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+        String line;
+        StringBuffer str = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+          str.append(line);
+        }
+
+        jObject = new JSONObject(str.toString());
+
+        assertEquals(jObject.get("id"), 104);
+        assertEquals(jObject.get("firstName"), "Shila");
+        assertEquals(jObject.get("middleName"), "kumari");
+        assertEquals(jObject.get("lastName"), "Dixit");
+        assertEquals(jObject.get("gender"), Gender.FEMALE.name());
+      }
+
+      // 3. Get all (getAll) entries in Region
+      {
+
+        HttpGet get = new HttpGet(restEndpoint + "/People");
+        get.addHeader("Content-Type", "application/json");
+        get.addHeader("Accept", "application/json");
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpResponse result = httpclient.execute(get);
+        assertEquals(result.getStatusLine().getStatusCode(), 200);
+        assertNotNull(result.getEntity());
+
+        HttpEntity entity = result.getEntity();
+        InputStream content = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+        String line;
+        StringBuffer sb = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+          sb.append(line);
+        }
+        result.close();
+
+        try {
+          jObject = new JSONObject(sb.toString());
+          jArray = jObject.getJSONArray("People");
+          assertEquals(jArray.length(), 16);
+        } catch (JSONException e) {
+          fail(" Rest Request ::" + currentOperation + " :: should not have thrown JSONException ");
+        }
+      }
+
+      // 4. GetAll?limit=10 (10 entries) and verify results
+      {
+        HttpGet get = new HttpGet(restEndpoint + "/People?limit=10");
+        get.addHeader("Content-Type", "application/json");
+        get.addHeader("Accept", "application/json");
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpResponse response = httpclient.execute(get);
+        assertEquals(response.getStatusLine().getStatusCode(), 200);
+        assertNotNull(response.getEntity());
+
+        HttpEntity entity = response.getEntity();
+        InputStream content = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+        String line;
+        StringBuffer str = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+          str.append(line);
+        }
+
+        try {
+          jObject = new JSONObject(str.toString());
+          jArray = jObject.getJSONArray("People");
+          assertEquals(jArray.length(), 10);
+        } catch (JSONException e) {
+          fail(" Rest Request ::" + currentOperation + " :: should not have thrown JSONException ");
+        }
+      }
+
+      // 5. Get keys - List all keys in region
+      {
+
+        HttpGet get = new HttpGet(restEndpoint + "/People/keys");
+        get.addHeader("Content-Type", "application/json");
+        get.addHeader("Accept", "application/json");
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpResponse response = httpclient.execute(get);
+        assertEquals(response.getStatusLine().getStatusCode(), 200);
+        assertNotNull(response.getEntity());
+
+        HttpEntity entity = response.getEntity();
+        InputStream content = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+        String line;
+        StringBuffer str = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+          str.append(line);
+        }
+
+        try {
+          jObject = new JSONObject(str.toString());
+          jArray = jObject.getJSONArray("keys");
+          assertEquals(jArray.length(), 16);
+        } catch (JSONException e) {
+          fail(" Rest Request ::" + currentOperation + " :: should not have thrown JSONException ");
+        }
+      }
+
+      // 6. Get data for specific keys
+      {
+
+        HttpGet get = new HttpGet(restEndpoint + "/People/1,3,5,7,9,11");
+        get.addHeader("Content-Type", "application/json");
+        get.addHeader("Accept", "application/json");
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpResponse response = httpclient.execute(get);
+        assertEquals(response.getStatusLine().getStatusCode(), 200);
+        assertNotNull(response.getEntity());
+
+        HttpEntity entity = response.getEntity();
+        InputStream content = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+        String line;
+        StringBuffer str = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+          str.append(line);
+        }
+
+        try {
+          jObject = new JSONObject(str.toString());
+          jArray = jObject.getJSONArray("People");
+          assertEquals(jArray.length(), 6);
+
+        } catch (JSONException e) {
+          fail(" Rest Request ::" + currentOperation + " :: should not have thrown JSONException ");
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("unexpected exception", e);
     }
-
-    JSONObject jObject = new JSONObject(sb.toString());
-
-    assertThat(jObject.get("id")).isEqualTo(101);
-    assertThat(jObject.get("firstName")).isEqualTo("Mithali");
-    assertThat(jObject.get("middleName")).isEqualTo("Dorai");
-    assertThat(jObject.get("lastName")).isEqualTo("Raj");
-    assertThat(jObject.get("gender")).isEqualTo(Gender.FEMALE.name());
-
-    // 2. Get on key="16" and validate result.
-
-    get = new HttpGet(restEndpoint + "/People/16");
-    get.addHeader("Content-Type", "application/json");
-    get.addHeader("Accept", "application/json");
-    httpclient = HttpClients.createDefault();
-    response = httpclient.execute(get);
-
-    entity = response.getEntity();
-    content = entity.getContent();
-    reader = new BufferedReader(new InputStreamReader(content));
-    sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
-    }
-
-    jObject = new JSONObject(sb.toString());
-
-    assertThat(jObject.get("id")).isEqualTo(104);
-    assertThat(jObject.get("firstName")).isEqualTo("Shila");
-    assertThat(jObject.get("middleName")).isEqualTo("kumari");
-    assertThat(jObject.get("lastName")).isEqualTo("Dixit");
-    assertThat(jObject.get("gender")).isEqualTo(Gender.FEMALE.name());
-
-    // 3. Get all (getAll) entries in Region
-
-    get = new HttpGet(restEndpoint + "/People");
-    get.addHeader("Content-Type", "application/json");
-    get.addHeader("Accept", "application/json");
-    httpclient = HttpClients.createDefault();
-    CloseableHttpResponse result = httpclient.execute(get);
-    assertThat(result.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(result.getEntity()).isNotNull();
-
-    entity = result.getEntity();
-    content = entity.getContent();
-    reader = new BufferedReader(new InputStreamReader(content));
-    sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
-    }
-    result.close();
-
-    jObject = new JSONObject(sb.toString());
-    JSONArray jArray = jObject.getJSONArray("People");
-    assertThat(jArray.length()).isEqualTo(16);
-
-    // 4. GetAll?limit=10 (10 entries) and verify results
-
-    get = new HttpGet(restEndpoint + "/People?limit=10");
-    get.addHeader("Content-Type", "application/json");
-    get.addHeader("Accept", "application/json");
-    httpclient = HttpClients.createDefault();
-    response = httpclient.execute(get);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(response.getEntity()).isNotNull();
-
-    entity = response.getEntity();
-    content = entity.getContent();
-    reader = new BufferedReader(new InputStreamReader(content));
-    sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
-    }
-
-    jObject = new JSONObject(sb.toString());
-    jArray = jObject.getJSONArray("People");
-    assertThat(jArray.length()).isEqualTo(10);
-
-    // 5. Get keys - List all keys in region
-
-    get = new HttpGet(restEndpoint + "/People/keys");
-    get.addHeader("Content-Type", "application/json");
-    get.addHeader("Accept", "application/json");
-    httpclient = HttpClients.createDefault();
-    response = httpclient.execute(get);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(response.getEntity()).isNotNull();
-
-    entity = response.getEntity();
-    content = entity.getContent();
-    reader = new BufferedReader(new InputStreamReader(content));
-    sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
-    }
-
-    jObject = new JSONObject(sb.toString());
-    jArray = jObject.getJSONArray("keys");
-    assertThat(jArray.length()).isEqualTo(16);
-
-    // 6. Get data for specific keys
-
-    get = new HttpGet(restEndpoint + "/People/1,3,5,7,9,11");
-    get.addHeader("Content-Type", "application/json");
-    get.addHeader("Accept", "application/json");
-    httpclient = HttpClients.createDefault();
-    response = httpclient.execute(get);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(response.getEntity()).isNotNull();
-
-    entity = response.getEntity();
-    content = entity.getContent();
-    reader = new BufferedReader(new InputStreamReader(content));
-    sb = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      sb.append(line);
-    }
-
-    jObject = new JSONObject(sb.toString());
-    jArray = jObject.getJSONArray("People");
-    assertThat(jArray.length()).isEqualTo(6);
   }
 
-  private void createRegionInClientCache() {
+  public void createRegionInClientCache() {
     ClientCache cache = GemFireCacheImpl.getInstance();
-    assertThat(cache).isNotNull();
+    assertNotNull(cache);
     ClientRegionFactory<String, Object> crf =
         cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
     Region<String, Object> region = crf.create(PEOPLE_REGION_NAME);
+
   }
 
-  private void createRegion() {
+  public void createRegion() {
     Cache cache = GemFireCacheImpl.getInstance();
-    assertThat(cache).isNotNull();
+    assertNotNull(cache);
 
     RegionFactory<String, Object> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
     Region<String, Object> region = rf.create(PEOPLE_REGION_NAME);
@@ -610,6 +751,7 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
    */
   @Test
   public void testInterOpsWithReplicatedRegion() throws Exception {
+
     final Host host = Host.getHost(0);
     VM locator = host.getVM(0);
     VM manager = host.getVM(1);
@@ -660,12 +802,12 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     doQueryOpsUsingRestApis(restEndpoint);
   }
 
-  private void createClientCache(final String host, final int port) {
+  private void createClientCache(final String host, final int port) throws Exception {
     // Connect using the GemFire locator and create a Caching_Proxy cache
-    ClientCache clientCache =
+    ClientCache c =
         new ClientCacheFactory().setPdxReadSerialized(true).addPoolLocator(host, port).create();
 
-    clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+    c.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
   }
 
   private int startManager(final String[] groups, final String locators, final String[] regions,
@@ -700,6 +842,6 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     server.setLoadProbe(probe);
     server.start();
 
-    return server.getPort();
+    return new Integer(server.getPort());
   }
 }

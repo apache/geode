@@ -48,10 +48,8 @@ import org.apache.geode.internal.cache.tier.ConnectionProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.CallbackInstantiator;
-import org.apache.geode.internal.security.Credentials;
+import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -122,7 +120,7 @@ public class HandShake implements ClientHandShake {
 
   public static final byte REPLY_SERVER_IS_LOCATOR = (byte) 67;
 
-  private final SecurityService securityService;
+  private static SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private byte code;
   private int clientReadTimeout = PoolFactory.DEFAULT_READ_TIMEOUT;
@@ -250,21 +248,19 @@ public class HandShake implements ClientHandShake {
   protected HandShake() {
     system = null;
     id = null;
-    this.securityService = SecurityServiceFactory.create();
   }
 
   /**
    * HandShake Constructor used by server side connection
    */
   public HandShake(Socket sock, int timeout, DistributedSystem sys, Version clientVersion,
-      byte communicationMode, SecurityService securityService)
-      throws IOException, AuthenticationRequiredException {
-
+      byte communicationMode) throws IOException, AuthenticationRequiredException {
     this.clientVersion = clientVersion;
     this.system = sys;
-    this.securityService = securityService;
-
-    {
+    // SocketChannel sc = sock.getChannel();
+    /*
+     * if (sc != null) { } else
+     */ {
       int soTimeout = -1;
       try {
         soTimeout = sock.getSoTimeout();
@@ -302,7 +298,7 @@ public class HandShake implements ClientHandShake {
           // Hitesh
           if (this.clientVersion.compareTo(Version.GFE_65) < 0
               || communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-            this.credentials = readCredentials(dis, dos, sys, this.securityService);
+            this.credentials = readCredentials(dis, dos, sys);
           } else {
             this.credentials = this.readCredential(dis, dos, sys);
           }
@@ -339,7 +335,6 @@ public class HandShake implements ClientHandShake {
     this.system = sys;
     setOverrides();
     this.credentials = null;
-    this.securityService = SecurityServiceFactory.create();
   }
 
   public void updateProxyID(InternalDistributedMember idm) {
@@ -363,7 +358,6 @@ public class HandShake implements ClientHandShake {
     this.overrides = handShake.overrides;
     this.system = handShake.system;
     this.id = handShake.id;
-    this.securityService = handShake.securityService;
     // create new one
     this._decrypt = null;
     this._encrypt = null;
@@ -1091,8 +1085,7 @@ public class HandShake implements ClientHandShake {
     // Initialize the keys when either the host is a client that has
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
-    if ((dhSKAlgo != null
-        && dhSKAlgo.length() > 0) /* || securityService.isClientSecurityRequired() */) {
+    if ((dhSKAlgo != null && dhSKAlgo.length() > 0) || securityService.isClientSecurityRequired()) {
       KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
       DHParameterSpec dhSpec = new DHParameterSpec(dhP, dhG, dhL);
       keyGen.initialize(dhSpec);
@@ -1510,13 +1503,12 @@ public class HandShake implements ClientHandShake {
     Properties credentials = null;
     // if no authInit, Try to extract the credentials directly from securityProps
     if (StringUtils.isBlank(authInitMethod)) {
-      return Credentials.getCredentials(securityProperties);
+      return SecurityService.getCredentials(securityProperties);
     }
 
     // if authInit exists
     try {
-      AuthInitialize auth =
-          CallbackInstantiator.getObjectOfType(authInitMethod, AuthInitialize.class);
+      AuthInitialize auth = SecurityService.getObjectOfType(authInitMethod, AuthInitialize.class);
       auth.init(logWriter, securityLogWriter);
       try {
         credentials = auth.getCredentials(securityProperties, server, isPeer);
@@ -1544,8 +1536,7 @@ public class HandShake implements ClientHandShake {
 
   // This assumes that authentication is the last piece of info in handshake
   public static Properties readCredentials(DataInputStream dis, DataOutputStream dos,
-      DistributedSystem system, SecurityService securityService)
-      throws GemFireSecurityException, IOException {
+      DistributedSystem system) throws GemFireSecurityException, IOException {
 
     boolean requireAuthentication = securityService.isClientSecurityRequired();
     Properties credentials = null;
@@ -1680,8 +1671,7 @@ public class HandShake implements ClientHandShake {
    */
   public static Object verifyCredentials(String authenticatorMethod, Properties credentials,
       Properties securityProperties, InternalLogWriter logWriter,
-      InternalLogWriter securityLogWriter, DistributedMember member,
-      SecurityService securityService)
+      InternalLogWriter securityLogWriter, DistributedMember member)
       throws AuthenticationRequiredException, AuthenticationFailedException {
 
     if (!AcceptorImpl.isAuthenticationRequired()) {
@@ -1714,8 +1704,7 @@ public class HandShake implements ClientHandShake {
     String methodName = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     return verifyCredentials(methodName, this.credentials, this.system.getSecurityProperties(),
         (InternalLogWriter) this.system.getLogWriter(),
-        (InternalLogWriter) this.system.getSecurityLogWriter(), this.id.getDistributedMember(),
-        this.securityService);
+        (InternalLogWriter) this.system.getSecurityLogWriter(), this.id.getDistributedMember());
   }
 
   public void sendCredentialsForWan(OutputStream out, InputStream in) {
@@ -1741,10 +1730,10 @@ public class HandShake implements ClientHandShake {
       return;
     }
     String authenticator = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
-    Properties peerWanProps = readCredentials(dis, dos, this.system, this.securityService);
+    Properties peerWanProps = readCredentials(dis, dos, this.system);
     verifyCredentials(authenticator, peerWanProps, this.system.getSecurityProperties(),
         (InternalLogWriter) this.system.getLogWriter(),
-        (InternalLogWriter) this.system.getSecurityLogWriter(), member, this.securityService);
+        (InternalLogWriter) this.system.getSecurityLogWriter(), member);
   }
 
   private static int getKeySize(String skAlgo) {

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.security;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
@@ -23,37 +23,31 @@ import java.util.Arrays;
 import java.util.Properties;
 
 public class PDXPostProcessor implements PostProcessor {
-
-  private static final byte[] BYTES = {1, 0};
-
-  static byte[] bytes() {
-    return BYTES;
-  }
+  public static byte[] BYTES = {1, 0};
 
   private boolean pdx = false;
   private int count = 0;
 
-  @Override
-  public void init(Properties securityProps) {
-    this.pdx = Boolean.parseBoolean(securityProps.getProperty("security-pdx"));
-    this.count = 0;
+  public void init(Properties props) {
+    pdx = Boolean.parseBoolean(props.getProperty("security-pdx"));
+    count = 0;
   }
 
   @Override
   public Object processRegionValue(final Object principal, final String regionName,
       final Object key, final Object value) {
-    this.count++;
+    count++;
     if (value instanceof byte[]) {
-      assertThat(Arrays.equals(BYTES, (byte[]) value)).isTrue();
-    } else if (this.pdx) {
-      assertThat(value).isInstanceOf(PdxInstanceImpl.class);
+      assertTrue(Arrays.equals(BYTES, (byte[]) value));
+    } else if (pdx) {
+      assertTrue(value instanceof PdxInstanceImpl);
     } else {
-      assertThat(value).isInstanceOf(SimpleClass.class);
+      assertTrue(value instanceof SimpleClass);
     }
     return value;
   }
 
   public int getCount() {
-    return this.count;
+    return count;
   }
 }

@@ -24,7 +24,6 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -40,8 +39,7 @@ public class AddPdxEnum extends BaseCommand {
   private AddPdxEnum() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
       throws IOException, ClassNotFoundException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {

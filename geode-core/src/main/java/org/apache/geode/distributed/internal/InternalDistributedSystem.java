@@ -40,9 +40,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.security.PostProcessor;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -111,7 +108,6 @@ import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.SecurityManager;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -295,51 +291,35 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private final Throwable creationStack;
 
-  private volatile SecurityService securityService;
-
   ///////////////////// Static Methods /////////////////////
 
   /**
    * Creates a new instance of <code>InternalDistributedSystem</code> with the given configuration.
    */
   public static InternalDistributedSystem newInstance(Properties config) {
-    return newInstance(config, SecurityConfig.get());
-  }
-
-  public static InternalDistributedSystem newInstance(Properties config,
-      SecurityConfig securityConfig) {
-    if (securityConfig == null) {
-      return newInstance(config, null, null);
-    } else {
-      return newInstance(config, securityConfig.getSecurityManager(),
-          securityConfig.getPostProcessor());
-    }
-  }
-
-  public static InternalDistributedSystem newInstance(Properties config,
-      SecurityManager securityManager, PostProcessor postProcessor) {
     boolean success = false;
     InternalDataSerializer.checkSerializationVersion();
     try {
       SystemFailure.startThreads();
       InternalDistributedSystem newSystem = new InternalDistributedSystem(config);
-      newSystem.initialize(securityManager, postProcessor);
+      newSystem.initialize();
       reconnectAttemptCounter = 0; // reset reconnect count since we just got a new connection
       notifyConnectListeners(newSystem);
       success = true;
       return newSystem;
     } finally {
       if (!success) {
-        // bug44365 - logwriters accumulate, causing mem leak
-        LoggingThreadGroup.cleanUpThreadGroups();
+        LoggingThreadGroup.cleanUpThreadGroups(); // bug44365 - logwriters accumulate, causing mem
+                                                  // leak
         SystemFailure.stopThreads();
       }
     }
   }
 
+
   /**
    * creates a non-functional instance for testing
-   *
+   * 
    * @param nonDefault - non-default distributed system properties
    */
   public static InternalDistributedSystem newInstanceForTesting(DM dm, Properties nonDefault) {
@@ -508,13 +488,22 @@ public class InternalDistributedSystem extends DistributedSystem
 
     this.creationStack =
         TEST_CREATION_STACK_GENERATOR.get().generateCreationStack(this.originalConfig);
+
+    // if (DistributionConfigImpl.multicastTest) {
+    // this.logger.warning("Use of multicast has been forced");
+    // }
+    // if (DistributionConfigImpl.forceDisableTcp) {
+    // this.logger.warning("Use of UDP has been forced");
+    // }
+    // if
+    // (org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager.multicastTest)
+    // {
+    // this.logger.warning("Use of multicast for all distributed cache operations has been forced");
+    // }
+
   }
 
   //////////////////// Instance Methods ////////////////////
-
-  public SecurityService getSecurityService() {
-    return this.securityService;
-  }
 
   /**
    * Registers a listener to the system
@@ -573,7 +562,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Initializes this connection to a distributed system with the current configuration state.
    */
-  private void initialize(SecurityManager securityManager, PostProcessor postProcessor) {
+  private void initialize() {
     if (this.originalConfig.getLocators().equals("")) {
       if (this.originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
@@ -585,10 +574,6 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     this.config = new RuntimeDistributionConfigImpl(this);
-
-    this.securityService =
-        SecurityServiceFactory.create(this.config, securityManager, postProcessor);
-
     if (!this.isLoner) {
       this.attemptingToReconnect = (reconnectAttemptCounter > 0);
     }

@@ -14,6 +14,25 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.regex.Pattern;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CopyException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SerializationException;
@@ -58,27 +77,10 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Semaphore;
-import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public abstract class BaseCommand implements Command {
   protected static final Logger logger = LogService.getLogger();
@@ -113,6 +115,8 @@ public abstract class BaseCommand implements Command {
 
   private static final Semaphore INCOMING_MSG_LIMITER;
 
+  protected SecurityService securityService = IntegratedSecurityService.getSecurityService();
+
   static {
     Semaphore semaphore;
     if (MAX_INCOMING_DATA > 0) {
@@ -136,8 +140,7 @@ public abstract class BaseCommand implements Command {
   }
 
   @Override
-  public void execute(Message clientMessage, ServerConnection serverConnection,
-      SecurityService securityService) {
+  public void execute(Message clientMessage, ServerConnection serverConnection) {
     // Read the request and update the statistics
     long start = DistributionStats.getStatTime();
     if (EntryLogger.isEnabled() && serverConnection != null) {
@@ -153,13 +156,13 @@ public abstract class BaseCommand implements Command {
         TXStateProxy tx = null;
         try {
           tx = txMgr.masqueradeAs(clientMessage, member, false);
-          cmdExecute(clientMessage, serverConnection, securityService, start);
+          cmdExecute(clientMessage, serverConnection, start);
           tx.updateProxyServer(txMgr.getMemberId());
         } finally {
           txMgr.unmasquerade(tx);
         }
       } else {
-        cmdExecute(clientMessage, serverConnection, securityService, start);
+        cmdExecute(clientMessage, serverConnection, start);
       }
 
     } catch (TransactionException | CopyException | SerializationException | CacheWriterException
@@ -262,9 +265,8 @@ public abstract class BaseCommand implements Command {
     return tag;
   }
 
-  public abstract void cmdExecute(final Message clientMessage,
-      final ServerConnection serverConnection, final SecurityService securityService,
-      final long start) throws IOException, ClassNotFoundException, InterruptedException;
+  public abstract void cmdExecute(Message clientMessage, ServerConnection serverConnection,
+      long start) throws IOException, ClassNotFoundException, InterruptedException;
 
   protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
     Message replyMsg = serverConnection.getReplyMessage();

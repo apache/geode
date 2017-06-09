@@ -11,9 +11,12 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 package org.apache.geode.rest.internal.web.security;
 
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -31,6 +34,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @ComponentScan("org.apache.geode.rest.internal.web")
 public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @Autowired
   private GeodeAuthenticationProvider authProvider;
@@ -53,7 +58,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
             "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
         .permitAll().anyRequest().authenticated().and().csrf().disable();
 
-    if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
+    if (securityService.isIntegratedSecurity()) {
       http.httpBasic();
     } else {
       http.authorizeRequests().anyRequest().permitAll();

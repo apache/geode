@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category({IntegrationTest.class, SecurityTest.class})
-public class CacheServerMBeanWithShiroIniIntegrationTest {
+public class CacheServerMBeanShiroJUnitTest {
   private CacheServerMXBean bean;
 
   @ClassRule

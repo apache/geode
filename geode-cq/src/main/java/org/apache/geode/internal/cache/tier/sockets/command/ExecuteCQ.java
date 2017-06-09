@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.operations.ExecuteCQOperationContext;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.Query;
@@ -34,28 +39,21 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.util.Set;
 
 public class ExecuteCQ extends BaseCQCommand {
   protected static final Logger logger = LogService.getLogger();
 
-  private static final ExecuteCQ singleton = new ExecuteCQ();
+  private final static ExecuteCQ singleton = new ExecuteCQ();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private ExecuteCQ() {
-    // nothing
-  }
+  private ExecuteCQ() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+      throws IOException, InterruptedException {
     AcceptorImpl acceptor = serverConnection.getAcceptor();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     ClientProxyMembershipID id = serverConnection.getProxyID();
@@ -71,7 +69,7 @@ public class ExecuteCQ extends BaseCQCommand {
 
     Part isDurablePart = clientMessage.getPart(3);
     byte[] isDurableByte = isDurablePart.getSerializedForm();
-    boolean isDurable = !(isDurableByte == null || isDurableByte[0] == 0);
+    boolean isDurable = (isDurableByte == null || isDurableByte[0] == 0) ? false : true;
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received {} request from {} CqName: {} queryString: {}",
           serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
@@ -118,14 +116,15 @@ public class ExecuteCQ extends BaseCQCommand {
       return;
     }
 
+    long oldstart = start;
     boolean sendResults = false;
+    boolean successQuery = false;
 
     if (clientMessage.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE) {
       sendResults = true;
     }
 
     // Execute the query and send the result-set to client.
-    boolean successQuery = false;
     try {
       if (query == null) {
         query = qService.newQuery(cqQueryString);
@@ -133,11 +132,11 @@ public class ExecuteCQ extends BaseCQCommand {
       }
       ((DefaultQuery) query).setIsCqQuery(true);
       successQuery = processQuery(clientMessage, query, cqQueryString, cqRegionNames, start,
-          cqQuery, executeCQContext, serverConnection, sendResults, securityService);
+          cqQuery, executeCQContext, serverConnection, sendResults);
 
       // Update the CQ statistics.
-      cqQuery.getVsdStats().setCqInitialResultsTime(DistributionStats.getStatTime() - start);
-      stats.incProcessExecuteCqWithIRTime(DistributionStats.getStatTime() - start);
+      cqQuery.getVsdStats().setCqInitialResultsTime((DistributionStats.getStatTime()) - oldstart);
+      stats.incProcessExecuteCqWithIRTime((DistributionStats.getStatTime()) - oldstart);
       // logger.fine("Time spent in execute with initial results :" +
       // DistributionStats.getStatTime() + ", " + oldstart);
     } finally { // To handle any exception.
@@ -145,7 +144,7 @@ public class ExecuteCQ extends BaseCQCommand {
       if (!successQuery) {
         try {
           cqServiceForExec.closeCq(cqName, id);
-        } catch (Exception ignore) {
+        } catch (Exception ex) {
           // Ignore.
         }
       }
@@ -158,7 +157,7 @@ public class ExecuteCQ extends BaseCQCommand {
           clientMessage.getTransactionId(), null, serverConnection);
 
       long start2 = DistributionStats.getStatTime();
-      stats.incProcessCreateCqTime(start2 - start);
+      stats.incProcessCreateCqTime(start2 - oldstart);
     }
     serverConnection.setAsTrue(RESPONDED);
   }

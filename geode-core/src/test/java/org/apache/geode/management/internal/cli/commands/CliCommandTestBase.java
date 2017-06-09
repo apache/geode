@@ -20,8 +20,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_B
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -38,14 +41,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.shell.core.CommandMarker;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -59,26 +60,20 @@ import java.util.regex.Pattern;
  *
  * @deprecated use LocatorServerStartupRule and GfshShellConnectorRule instead.
  */
-@Deprecated
 public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
-
   @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
+  public transient DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
-
   @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-
-  protected int httpPort;
-  protected int jmxPort;
-  protected String jmxHost;
-  protected String gfshDir;
-
-  private final boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
-
-  private transient ManagementService managementService;
+  public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
+  protected transient int httpPort;
+  protected transient int jmxPort;
+  protected transient String jmxHost;
+  protected transient String gfshDir;
+  private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
+  private ManagementService managementService;
   private transient HeadlessGfsh shell;
 
   public static boolean checkIfCommandsAreLoadedOrNot() {
@@ -89,7 +84,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   }
 
   protected static String commandResultToString(final CommandResult commandResult) {
-    assertThat(commandResult).isNotNull();
+    assertNotNull(commandResult);
 
     commandResult.resetToFirstLine();
 
@@ -114,9 +109,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     this.gfshDir = this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath();
   }
 
-  protected void postSetUpCliCommandTestBase() throws Exception {
-    // nothing
-  }
+  protected void postSetUpCliCommandTestBase() throws Exception {}
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -125,9 +118,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     destroyDefaultSetup();
   }
 
-  protected void preTearDownCliCommandTestBase() throws Exception {
-    // nothing
-  }
+  protected void preTearDownCliCommandTestBase() throws Exception {}
 
   /**
    * Create all of the components necessary for the default setup. The provided properties will be
@@ -140,13 +131,14 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @param props the Properties used when creating the cache for this default setup.
    * @return the default testable GemFire shell.
    */
+  @SuppressWarnings("serial")
   protected HeadlessGfsh setUpJmxManagerOnVm0ThenConnect(final Properties props) {
     Object[] result = setUpJMXManagerOnVM(0, props);
     this.jmxHost = (String) result[0];
     this.jmxPort = (Integer) result[1];
     this.httpPort = (Integer) result[2];
     connect(this.jmxHost, this.jmxPort, this.httpPort, getDefaultShell());
-    return this.shell;
+    return shell;
   }
 
   protected Object[] setUpJMXManagerOnVM(int vm, final Properties props) {
@@ -163,9 +155,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       final Properties localProps = (props != null ? props : new Properties());
 
       try {
-        this.jmxHost = InetAddress.getLocalHost().getHostName();
+        jmxHost = InetAddress.getLocalHost().getHostName();
       } catch (UnknownHostException ignore) {
-        this.jmxHost = "localhost";
+        jmxHost = "localhost";
       }
 
       if (!localProps.containsKey(NAME)) {
@@ -178,14 +170,14 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
       final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
-      this.jmxPort = ports[0];
-      this.httpPort = ports[1];
+      jmxPort = ports[0];
+      httpPort = ports[1];
 
       localProps.setProperty(JMX_MANAGER, "true");
       localProps.setProperty(JMX_MANAGER_START, "true");
-      localProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(this.jmxHost));
-      localProps.setProperty(JMX_MANAGER_PORT, String.valueOf(this.jmxPort));
-      localProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(this.httpPort));
+      localProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+      localProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+      localProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
       getSystem(localProps);
       verifyManagementServiceStarted(getCache());
@@ -193,9 +185,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       IgnoredException.addIgnoredException("org.eclipse.jetty.io.EofException");
       IgnoredException.addIgnoredException("java.nio.channels.ClosedChannelException");
 
-      results[0] = this.jmxHost;
-      results[1] = this.jmxPort;
-      results[2] = this.httpPort;
+      results[0] = jmxHost;
+      results[1] = jmxPort;
+      results[2] = httpPort;
       return results;
     });
 
@@ -207,7 +199,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    */
   protected void destroyDefaultSetup() {
     if (this.shell != null) {
-      executeCommand(this.shell, "exit");
+      executeCommand(shell, "exit");
       this.shell.terminate();
       this.shell = null;
     }
@@ -224,12 +216,12 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @param cache Cache to use when creating the management service
    */
   private void verifyManagementServiceStarted(Cache cache) {
-    assertThat(cache).isNotNull();
+    assertTrue(cache != null);
 
     this.managementService = ManagementService.getExistingManagementService(cache);
-    assertThat(this.managementService).isNotNull();
-    assertThat(this.managementService.isManager()).isTrue();
-    assertThat(checkIfCommandsAreLoadedOrNot()).isTrue();
+    assertNotNull(this.managementService);
+    assertTrue(this.managementService.isManager());
+    assertTrue(checkIfCommandsAreLoadedOrNot());
   }
 
   /**
@@ -237,7 +229,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    */
   private void verifyManagementServiceStopped() {
     if (this.managementService != null) {
-      assertThat(this.managementService.isManager()).isFalse();
+      assertFalse(this.managementService.isManager());
       this.managementService = null;
     }
   }
@@ -252,7 +244,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
 
     String endpoint;
-    if (this.useHttpOnConnect) {
+    if (useHttpOnConnect) {
       endpoint = "http://" + host + ":" + httpPort + "/gemfire/v1";
       command.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
       command.addOption(CliStrings.CONNECT__URL, endpoint);
@@ -271,13 +263,12 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     CommandResult result = executeCommand(shell, command.toString());
 
     if (!shell.isConnectedAndReady()) {
-      throw new AssertionError("Execution of " + command + " failed to connect to manager "
-          + endpoint + " result=" + commandResultToString(result));
+      throw new AssertionError("Connect command failed to connect to manager " + endpoint
+          + " result=" + commandResultToString(result));
     }
 
-    info("Successfully connected to managing node using "
-        + (this.useHttpOnConnect ? "HTTP" : "JMX"));
-    assertThat(shell.isConnectedAndReady()).isTrue();
+    info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
+    assertEquals(true, shell.isConnectedAndReady());
   }
 
   /**
@@ -298,7 +289,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    *
    * @return The created shell.
    */
-  private HeadlessGfsh createShell() {
+  protected HeadlessGfsh createShell() {
     try {
       Gfsh.SUPPORT_MUTLIPLESHELL = true;
       String shellId = getClass().getSimpleName() + "_" + getName();
@@ -306,7 +297,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       // Added to avoid trimming of the columns
       info("Started testable shell: " + shell);
       return shell;
-    } catch (ClassNotFoundException | IOException e) {
+    } catch (ClassNotFoundException e) {
+      throw new AssertionError(e);
+    } catch (IOException e) {
       throw new AssertionError(e);
     }
   }
@@ -318,7 +311,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return The result of the command execution
    */
   protected CommandResult executeCommand(String command) {
-    assertThat(command).isNotNull();
+    assert (command != null);
 
     return executeCommand(getDefaultShell(), command);
   }
@@ -331,8 +324,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return The result of the command execution
    */
   protected CommandResult executeCommand(HeadlessGfsh shell, String command) {
-    assertThat(shell).isNotNull();
-    assertThat(command).isNotNull();
+    assert (shell != null);
+    assert (command != null);
 
     CommandResult commandResult = executeCommandWithoutClear(shell, command);
     shell.clearEvents();
@@ -347,8 +340,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @param command Command to execute
    * @return The result of the command execution
    */
+  @SuppressWarnings("unused")
   protected CommandResult executeCommandWithoutClear(String command) {
-    assertThat(command).isNotNull();
+    assert (command != null);
 
     return executeCommandWithoutClear(getDefaultShell(), command);
   }
@@ -363,20 +357,19 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return The result of the command execution
    */
   protected CommandResult executeCommandWithoutClear(HeadlessGfsh shell, String command) {
-    assertThat(shell).isNotNull();
-    assertThat(command).isNotNull();
-
+    assert (shell != null);
+    assert (command != null);
     shell.executeCommand(command);
     if (shell.hasError()) {
-      throw new AssertionError(shell.getError());
+      error("executeCommand completed with error : " + shell.getError());
     }
 
     CommandResult result = null;
     try {
-      // TODO: this can result in ClassCastException if command resulted in error
-      result = (CommandResult) shell.getResult();
+      result = (CommandResult) shell.getResult(); // TODO: this can result in ClassCastException if
+                                                  // command resulted in error
     } catch (InterruptedException ex) {
-      throw new AssertionError(ex);
+      error("shell received InterruptedException");
     }
 
     if (result != null) {
@@ -393,8 +386,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @param printStream Stream to dump the results to
    */
   protected void printResult(final CommandResult commandResult, PrintStream printStream) {
-    assertThat(commandResult).isNotNull();
-    assertThat(printStream).isNotNull();
+    assert (commandResult != null);
+    assert (printStream != null);
 
     commandResult.resetToFirstLine();
     printStream.print(commandResultToString(commandResult));
@@ -407,7 +400,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return The CommandResult object or null if not found.
    */
   protected CommandResult extractCommandResult(Map<String, Object> commandOutput) {
-    assertThat(commandOutput).isNotNull();
+    assert (commandOutput != null);
 
     for (Object resultObject : commandOutput.values()) {
       if (resultObject instanceof CommandResult) {
@@ -429,8 +422,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return The number of matches.
    */
   protected int countMatchesInString(final String stringToSearch, final String stringToCount) {
-    assertThat(stringToSearch).isNotNull();
-    assertThat(stringToCount).isNotNull();
+    assert (stringToSearch != null);
+    assert (stringToCount != null);
 
     int length = stringToSearch.length();
     int count = 0;
@@ -452,8 +445,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return True if a match is found, false otherwise
    */
   protected boolean stringContainsLine(final String stringToSearch, final String stringPattern) {
-    assertThat(stringToSearch).isNotNull();
-    assertThat(stringPattern).isNotNull();
+    assert (stringToSearch != null);
+    assert (stringPattern != null);
 
     Pattern pattern = Pattern.compile("^\\s*" + stringPattern + "\\s*$", Pattern.MULTILINE);
     Matcher matcher = pattern.matcher(stringToSearch);
@@ -468,7 +461,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return The number of lines found.
    */
   protected int countLinesInString(final String stringToSearch, final boolean countBlankLines) {
-    assertThat(stringToSearch).isNotNull();
+    assert (stringToSearch != null);
 
     int length = stringToSearch.length();
     int count = 0;
@@ -510,8 +503,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return The line
    */
   protected String getLineFromString(final String stringToSearch, final int lineNumber) {
-    assertThat(stringToSearch != null).isNotNull();
-    assertThat(lineNumber).isGreaterThan(0);
+    assert (stringToSearch != null);
+    assert (lineNumber > 0);
 
     int length = stringToSearch.length();
     int count = 0;

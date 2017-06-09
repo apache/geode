@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,7 +46,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.internal.security.SecurityService;
 
 /**
  * 
@@ -63,8 +63,8 @@ public class ExecuteRegionFunction61 extends BaseCommand {
   private ExecuteRegionFunction61() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(Message clientMessage, ServerConnection servConn, long start)
+      throws IOException {
     String regionName = null;
     Object function = null;
     Object args = null;
@@ -75,12 +75,12 @@ public class ExecuteRegionFunction61 extends BaseCommand {
     int removedNodesSize = 0;
     Set removedNodesSet = null;
     int filterSize = 0, partNumber = 0;
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     try {
       hasResult = clientMessage.getPart(0).getSerializedForm()[0];
       if (hasResult == 1) {
-        serverConnection.setAsTrue(REQUIRES_RESPONSE);
-        serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+        servConn.setAsTrue(REQUIRES_RESPONSE);
+        servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
       }
       regionName = clientMessage.getPart(1).getString();
       function = clientMessage.getPart(2).getStringOrObject();
@@ -119,8 +119,8 @@ public class ExecuteRegionFunction61 extends BaseCommand {
           LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
           function), exception);
       if (hasResult == 1) {
-        writeChunkedException(clientMessage, exception, serverConnection);
-        serverConnection.setAsTrue(RESPONDED);
+        writeChunkedException(clientMessage, exception, servConn);
+        servConn.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -136,8 +136,8 @@ public class ExecuteRegionFunction61 extends BaseCommand {
             LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
                 .toLocalizedString("region");
       }
-      logger.warn("{}: {}", serverConnection.getName(), message);
-      sendError(hasResult, clientMessage, message, serverConnection);
+      logger.warn("{}: {}", servConn.getName(), message);
+      sendError(hasResult, clientMessage, message, servConn);
       return;
     } else {
       Region region = crHelper.getRegion(regionName);
@@ -145,11 +145,11 @@ public class ExecuteRegionFunction61 extends BaseCommand {
         String message =
             LocalizedStrings.ExecuteRegionFunction_THE_REGION_NAMED_0_WAS_NOT_FOUND_DURING_EXECUTE_FUNCTION_REQUEST
                 .toLocalizedString(regionName);
-        logger.warn("{}: {}", serverConnection.getName(), message);
-        sendError(hasResult, clientMessage, message, serverConnection);
+        logger.warn("{}: {}", servConn.getName(), message);
+        sendError(hasResult, clientMessage, message, servConn);
         return;
       }
-      HandShake handShake = (HandShake) serverConnection.getHandshake();
+      HandShake handShake = (HandShake) servConn.getHandshake();
       int earlierClientReadTimeout = handShake.getClientReadTimeout();
       handShake.setClientReadTimeout(0);
       ServerToClientFunctionResultSender resultSender = null;
@@ -161,15 +161,15 @@ public class ExecuteRegionFunction61 extends BaseCommand {
             String message =
                 LocalizedStrings.ExecuteRegionFunction_THE_FUNCTION_0_HAS_NOT_BEEN_REGISTERED
                     .toLocalizedString(function);
-            logger.warn("{}: {}", serverConnection.getName(), message);
-            sendError(hasResult, clientMessage, message, serverConnection);
+            logger.warn("{}: {}", servConn.getName(), message);
+            sendError(hasResult, clientMessage, message, servConn);
             return;
           }
         } else {
           functionObject = (Function) function;
         }
         // check if the caller is authorized to do this operation on server
-        AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
+        AuthorizeRequest authzRequest = servConn.getAuthzRequest();
         final String functionName = functionObject.getId();
         final String regionPath = region.getFullPath();
         ExecuteFunctionOperationContext executeContext = null;
@@ -180,11 +180,10 @@ public class ExecuteRegionFunction61 extends BaseCommand {
 
         // Construct execution
         AbstractExecution execution = (AbstractExecution) FunctionService.onRegion(region);
-        ChunkedMessage m = serverConnection.getFunctionResponseMessage();
+        ChunkedMessage m = servConn.getFunctionResponseMessage();
         m.setTransactionId(clientMessage.getTransactionId());
-        resultSender =
-            new ServerToClientFunctionResultSender(m, MessageType.EXECUTE_REGION_FUNCTION_RESULT,
-                serverConnection, functionObject, executeContext);
+        resultSender = new ServerToClientFunctionResultSender(m,
+            MessageType.EXECUTE_REGION_FUNCTION_RESULT, servConn, functionObject, executeContext);
 
 
         if (execution instanceof PartitionedRegionFunctionExecutor) {
@@ -200,7 +199,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
 
         if (logger.isDebugEnabled()) {
           logger.debug("Executing Function: {} on Server: {} with Execution: {}",
-              functionObject.getId(), serverConnection, execution);
+              functionObject.getId(), servConn, execution);
         }
         if (hasResult == 1) {
           if (function instanceof String) {
@@ -222,7 +221,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
         final String message =
             LocalizedStrings.ExecuteRegionFunction_SERVER_COULD_NOT_SEND_THE_REPLY
                 .toLocalizedString();
-        sendException(hasResult, clientMessage, message, serverConnection, ioe);
+        sendException(hasResult, clientMessage, message, servConn, ioe);
       } catch (FunctionException fe) {
         String message = fe.getMessage();
 
@@ -257,7 +256,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
               function), fe);
-          sendException(hasResult, clientMessage, message, serverConnection, fe);
+          sendException(hasResult, clientMessage, message, servConn, fe);
         }
 
       } catch (Exception e) {
@@ -265,7 +264,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
             LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
             function), e);
         String message = e.getMessage();
-        sendException(hasResult, clientMessage, message, serverConnection, e);
+        sendException(hasResult, clientMessage, message, servConn, e);
       }
 
       finally {
@@ -274,20 +273,19 @@ public class ExecuteRegionFunction61 extends BaseCommand {
     }
   }
 
-  private void sendException(byte hasResult, Message msg, String message,
-      ServerConnection serverConnection, Throwable e) throws IOException {
+  private void sendException(byte hasResult, Message msg, String message, ServerConnection servConn,
+      Throwable e) throws IOException {
     if (hasResult == 1) {
-      writeFunctionResponseException(msg, MessageType.EXCEPTION, serverConnection, e);
-      serverConnection.setAsTrue(RESPONDED);
+      writeFunctionResponseException(msg, MessageType.EXCEPTION, servConn, e);
+      servConn.setAsTrue(RESPONDED);
     }
   }
 
-  private void sendError(byte hasResult, Message msg, String message,
-      ServerConnection serverConnection) throws IOException {
+  private void sendError(byte hasResult, Message msg, String message, ServerConnection servConn)
+      throws IOException {
     if (hasResult == 1) {
-      writeFunctionResponseError(msg, MessageType.EXECUTE_REGION_FUNCTION_ERROR, message,
-          serverConnection);
-      serverConnection.setAsTrue(RESPONDED);
+      writeFunctionResponseError(msg, MessageType.EXECUTE_REGION_FUNCTION_ERROR, message, servConn);
+      servConn.setAsTrue(RESPONDED);
     }
   }
 }

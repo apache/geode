@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.web.controllers;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -19,6 +20,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
@@ -81,6 +84,8 @@ public abstract class AbstractCommandsController {
   protected static final String REST_API_VERSION = "/v1";
 
   private MemberMXBean managingMemberMXBeanProxy;
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private Class accessControlKlass;
 
@@ -571,8 +576,9 @@ public abstract class AbstractCommandsController {
         return new ResponseEntity<String>(result, HttpStatus.OK);
       }
     };
-    return getCache().getSecurityService().associateWith(callable);
+    return this.securityService.associateWith(callable);
   }
+
 
   /**
    * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
