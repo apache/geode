@@ -278,7 +278,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
    * stagger the starting of locators. This test configures two locators to start up simultaneously
    * and shows that they find each other and form a single system.
    */
-  @Category(FlakyTest.class) // GEODE-1931
   @Test
   public void testStartTwoLocators() throws Exception {
     disconnectAllFromDS();
@@ -304,6 +303,9 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
+    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
+    // GEODE-3052 - split brain on restart from persistent view data
+    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
     startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
   }
 
