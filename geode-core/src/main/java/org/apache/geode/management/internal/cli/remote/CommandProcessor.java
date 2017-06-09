@@ -19,6 +19,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -56,7 +57,7 @@ public class CommandProcessor {
   }
 
   public CommandProcessor(Properties cacheProperties) throws ClassNotFoundException, IOException {
-    this.gfshParser = new GfshParser(cacheProperties);
+    this.gfshParser = new GfshParser(new CommandManager(cacheProperties));
     this.executionStrategy = new RemoteExecutionStrategy();
     this.logWrapper = LogWrapper.getInstance();
   }

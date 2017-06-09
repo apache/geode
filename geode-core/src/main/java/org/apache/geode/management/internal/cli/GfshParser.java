@@ -53,32 +53,18 @@ public class GfshParser extends SimpleParser {
   private static Pattern PATTERN =
       Pattern.compile("\\s*([^\\s']*)'([^']*)'\\s+|\\s*([^\\s\"]*)\"([^\"]*)\"\\s+|\\S+");
 
-
-  private CommandManager commandManager = null;
-
-  public GfshParser() {
-    this(null);
-  }
-
-  public GfshParser(Properties cacheProperties) {
-    this.commandManager = new CommandManager(cacheProperties);
-
+  public GfshParser(CommandManager commandManager) {
     for (CommandMarker command : commandManager.getCommandMarkers()) {
       add(command);
     }
 
-    List<Converter<?>> converters = commandManager.getConverters();
-    for (Converter<?> converter : converters) {
+    for (Converter<?> converter : commandManager.getConverters()) {
       if (converter.getClass().isAssignableFrom(ArrayConverter.class)) {
         ArrayConverter arrayConverter = (ArrayConverter) converter;
-        arrayConverter.setConverters(new HashSet<>(converters));
+        arrayConverter.setConverters(new HashSet<>(commandManager.getConverters()));
       }
       add(converter);
     }
-  }
-
-  public CommandManager getCommandManager() {
-    return commandManager;
   }
 
   static String convertToSimpleParserInput(String userInput) {
@@ -290,19 +276,6 @@ public class GfshParser extends SimpleParser {
     // between userInput and the converted input
     cursor = candidateBeginAt + (userInput.trim().length() - buffer.length());
     return cursor;
-  }
-
-  // convenience method for testing
-  int completeAdvanced(String userInput, final List<Completion> candidates) {
-    return completeAdvanced(userInput, userInput.length(), candidates);
-  }
-
-  /**
-   * test only used to demonstrate what's the super class's completeAdvanced behavior
-   *
-   */
-  int completeSuperAdvanced(String userInput, final List<Completion> candidates) {
-    return super.completeAdvanced(userInput, userInput.length(), candidates);
   }
 
   /**

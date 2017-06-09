@@ -18,8 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.test.dunit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
@@ -28,13 +29,10 @@ import java.util.Map;
 
 @Category(IntegrationTest.class)
 public class GfshParserParsingTest {
-  private static GfshParser parser;
+  @ClassRule
+  public static GfshParserRule parser = new GfshParserRule();
   private String buffer;
 
-  @BeforeClass
-  public static void setUpClass() throws Exception {
-    parser = new GfshParser();
-  }
 
   private Map<String, String> parseParams(String input, String commandMethod) {
     ParseResult parseResult = parser.parse(input);
