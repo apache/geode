@@ -14,32 +14,6 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.URL;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.net.ssl.SSLException;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
@@ -62,6 +36,31 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.StreamCorruptedException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.net.ssl.SSLException;
 
 /**
  * TCP server which listens on a port and delegates requests to a request handler. The server uses
@@ -128,7 +127,7 @@ public class TcpServer {
   private final String threadName;
   private volatile Thread serverThread;
 
-  private SocketCreator socketCreator;
+  protected SocketCreator socketCreator;
 
   /*
    * GemStoneAddition - Initialize versions map. Warning: This map must be compatible with all
@@ -164,13 +163,14 @@ public class TcpServer {
       }
       cfg = new DistributionConfigImpl(sslConfig);
     }
+  }
 
+  protected SocketCreator getSocketCreator() {
     if (this.socketCreator == null) {
       this.socketCreator =
           SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
-    } else {
-      throw new RuntimeException("The socket Creator already exists");
     }
+    return socketCreator;
   }
 
   private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper,
@@ -210,10 +210,10 @@ public class TcpServer {
   private void startServerThread() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
-        srv_sock = socketCreator.createServerSocket(port, BACKLOG);
+        srv_sock = getSocketCreator().createServerSocket(port, BACKLOG);
         bind_address = srv_sock.getInetAddress();
       } else {
-        srv_sock = socketCreator.createServerSocket(port, BACKLOG, bind_address);
+        srv_sock = getSocketCreator().createServerSocket(port, BACKLOG, bind_address);
       }
 
       if (log.isInfoEnabled()) {
@@ -340,8 +340,10 @@ public class TcpServer {
       DataInputStream input = null;
       Object request, response;
       try {
-        socketCreator.configureServerSSLSocket(sock);
+
         sock.setSoTimeout(READ_TIMEOUT);
+        getSocketCreator().configureServerSSLSocket(sock);
+
         try {
           input = new DataInputStream(sock.getInputStream());
         } catch (StreamCorruptedException e) {
@@ -351,7 +353,6 @@ public class TcpServer {
               + (sock.getInetAddress().getHostAddress() + ":" + sock.getPort()), e);
           return;
         }
-
         int gossipVersion = readGossipVersion(sock, input);
 
         short versionOrdinal;
