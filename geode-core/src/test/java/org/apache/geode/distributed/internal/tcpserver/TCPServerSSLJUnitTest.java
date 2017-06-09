@@ -76,10 +76,9 @@ public class TCPServerSSLJUnitTest {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-    server =
-        new DummyTcpServer(port, localhost, sslProperties, null, Mockito.mock(TcpHandler.class),
-            Mockito.mock(PoolStatHelper.class), Thread.currentThread().getThreadGroup(),
-            "server thread");
+    server = new DummyTcpServer(port, localhost, sslProperties, null,
+        Mockito.mock(TcpHandler.class), Mockito.mock(PoolStatHelper.class),
+        Thread.currentThread().getThreadGroup(), "server thread");
     server.start();
   }
 
@@ -140,8 +139,8 @@ public class TCPServerSSLJUnitTest {
     private List<Integer> recordedSocketsTimeouts = new ArrayList<>();
 
     public DummyTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-                          DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-                          ThreadGroup threadGroup, String threadName) {
+        DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+        ThreadGroup threadGroup, String threadName) {
       super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadGroup, threadName);
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
