@@ -16,53 +16,62 @@ package org.apache.geode.internal.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.apache.geode.internal.security.shiro.RealmInitializer;
-import org.apache.geode.security.AuthenticationFailedException;
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.SubjectContext;
+import org.apache.shiro.subject.support.SubjectThreadState;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.util.ThreadState;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.subject.support.SubjectThreadState;
-import org.apache.shiro.util.ThreadState;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.concurrent.Callable;
 
 @Category(UnitTest.class)
-public class EnabledSecurityServiceTest {
+public class IntegratedSecurityServiceTest {
 
   private SecurityManager mockSecurityManager;
-  private PostProcessor mockPostProcessor;
-  private RealmInitializer spyRealmInitializer;
+  private SecurityManagerProvider provider;
   private Subject mockSubject;
+  private org.apache.shiro.mgt.SecurityManager shiroManager;
 
-  private EnabledSecurityService securityService;
-  private EnabledSecurityService securityServiceWithPostProcessor;
+  private IntegratedSecurityService securityService;
 
   @Before
   public void before() throws Exception {
     this.mockSecurityManager = mock(SecurityManager.class);
-    this.mockPostProcessor = mock(PostProcessor.class);
-    this.spyRealmInitializer = spy(RealmInitializer.class);
+    this.shiroManager = mock(org.apache.shiro.mgt.SecurityManager.class);
+    this.provider = mock(SecurityManagerProvider.class);
     this.mockSubject = mock(Subject.class);
+    when(provider.getShiroSecurityManager()).thenReturn(shiroManager);
+    when(provider.getSecurityManager()).thenReturn(mockSecurityManager);
+    when(shiroManager.createSubject(any(SubjectContext.class))).thenReturn(mockSubject);
+    when(mockSubject.getPrincipal()).thenReturn("principal");
 
-    this.securityService =
-        new EnabledSecurityService(this.mockSecurityManager, null, this.spyRealmInitializer);
-    this.securityServiceWithPostProcessor = new EnabledSecurityService(this.mockSecurityManager,
-        this.mockPostProcessor, this.spyRealmInitializer);
+    this.securityService = new IntegratedSecurityService(provider, null);
+  }
+
+  @After
+  public void after() throws Exception {
+    securityService.close();
   }
 
   @Test
   public void bindSubject_nullSubject_shouldReturn_null() throws Exception {
-    ThreadState threadState = this.securityService.bindSubject(null);
-    assertThat(threadState).isNull();
+    assertThatThrownBy(() -> this.securityService.bindSubject(null))
+        .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Anonymous User");
   }
 
   @Test
@@ -72,52 +81,25 @@ public class EnabledSecurityServiceTest {
   }
 
   @Test
-  public void getSubject_beforeLogin_shouldThrow_GemFireSecurityException() throws Exception {
-    assertThatThrownBy(() -> this.securityService.getSubject())
-        .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Anonymous User");
-  }
-
-  @Test
   public void login_nullProperties_shouldReturn_null() throws Exception {
-    Subject subject = this.securityService.login(null);
-    assertThat(subject).isNull();
+    assertThatThrownBy(() -> this.securityService.login(null))
+        .isInstanceOf(AuthenticationRequiredException.class)
+        .hasMessageContaining("credentials are null");
   }
 
   @Test
-  public void login_emptyProperties_shouldThrow_AuthenticationFailedException() throws Exception {
-    assertThatThrownBy(() -> this.securityService.login(new Properties()))
-        .isInstanceOf(AuthenticationFailedException.class)
-        .hasMessageContaining("Please check your credentials");
-  }
-
-  @Ignore("Extract all shiro integration code out of EnabledSecurityService for mocking")
-  @Test
-  public void getSubject_afterLogin_shouldReturnNull() throws Exception {
+  public void getSubject_login_logout() throws Exception {
     this.securityService.login(new Properties());
     Subject subject = this.securityService.getSubject();
-    assertThat(subject).isNull();
-  }
-
-  @Ignore("Extract all shiro integration code out of EnabledSecurityService for mocking")
-  @Test
-  public void getSubject_afterLogout_shouldReturnNull() throws Exception {
-    this.securityService.login(new Properties());
+    assertThat(subject).isNotNull();
+    assertThat(ThreadContext.getSubject()).isNotNull();
     this.securityService.logout();
-    Subject subject = this.securityService.getSubject();
-    assertThat(subject).isNull();
+    assertThat(ThreadContext.getSubject()).isNull();
   }
 
   @Test
-  public void associateWith_callable_beforeLogin_shouldThrow_GemFireSecurityException()
-      throws Exception {
-    assertThatThrownBy(() -> this.securityService.associateWith(mock(Callable.class)))
-        .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Anonymous User");
-  }
-
-  @Test
-  public void associateWith_null_should() throws Exception {
-    assertThatThrownBy(() -> this.securityService.associateWith(null))
-        .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Anonymous User");
+  public void associateWith_null_should_return_null() throws Exception {
+    assertThat(this.securityService.associateWith(null)).isNull();
   }
 
   @Test

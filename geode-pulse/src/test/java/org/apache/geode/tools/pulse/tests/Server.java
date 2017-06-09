@@ -14,19 +14,16 @@
  */
 package org.apache.geode.tools.pulse.tests;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.internal.security.shiro.CustomAuthRealm;
 import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
 import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -73,19 +70,15 @@ public class Server {
       // set up Shiro Security Manager
       Properties securityProperties = new Properties();
       securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonAuthFile);
-      Realm realm = new CustomAuthRealm(TestSecurityManager.class.getName(), securityProperties);
-      SecurityManager securityManager = new DefaultSecurityManager(realm);
-      SecurityUtils.setSecurityManager(securityManager);
+      securityProperties.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
+
+      SecurityService securityService = SecurityServiceFactory.create(securityProperties);
 
       // register the AccessControll bean
-      AccessControlMBean acc = new AccessControlMBean(SecurityServiceFactory.create());
+      AccessControlMBean acc = new AccessControlMBean(securityService);
       ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
       MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
       platformMBeanServer.registerMBean(acc, accessControlMBeanON);
-
-      SecurityService securityService =
-          SecurityServiceFactory.create(securityProperties, new TestSecurityManager(), null);
-      securityService.initSecurity(securityProperties);
 
       // wire in the authenticator and authorizaton
       JMXShiroAuthenticator interceptor = new JMXShiroAuthenticator(securityService);

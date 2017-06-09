@@ -14,23 +14,14 @@
  */
 package org.apache.geode.internal.security;
 
+import java.io.IOException;
+import java.security.AccessController;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
-import org.apache.geode.internal.security.shiro.ShiroPrincipal;
-import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.ResourcePermission.Target;
-import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -39,40 +30,62 @@ import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessController;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
+import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
+import org.apache.geode.internal.security.shiro.ShiroPrincipal;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
-public class CustomSecurityService implements SecurityService {
+/**
+ * Security service with SecurityManager and an optional PostProcessor.
+ */
+public class IntegratedSecurityService implements SecurityService {
   private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
   private final PostProcessor postProcessor;
+  private final org.apache.geode.security.SecurityManager securityManager;
 
-  CustomSecurityService(PostProcessor postProcessor) {
+  /**
+   * this creates a security service using a SecurityManager
+   * 
+   * @param provider this provides shiro security manager
+   * @param postProcessor this can be null
+   */
+  IntegratedSecurityService(SecurityManagerProvider provider, PostProcessor postProcessor) {
+    // provider must provide a shiro security manager, otherwise, this is not integrated security
+    // service at all.
+    assert provider.getShiroSecurityManager() != null;
+    SecurityUtils.setSecurityManager(provider.getShiroSecurityManager());
+
+    this.securityManager = provider.getSecurityManager();
     this.postProcessor = postProcessor;
   }
 
-  @Override
-  public void initSecurity(final Properties securityProps) {
-    if (this.postProcessor != null) {
-      this.postProcessor.init(securityProps);
-    }
+  public PostProcessor getPostProcessor() {
+    return this.postProcessor;
   }
 
-  @Override
-  public ThreadState bindSubject(final Subject subject) {
-    if (subject == null) {
-      return null;
-    }
-
-    ThreadState threadState = new SubjectThreadState(subject);
-    threadState.bind();
-    return threadState;
+  public org.apache.geode.security.SecurityManager getSecurityManager() {
+    return this.securityManager;
   }
 
+  /**
+   * It first looks the shiro subject in AccessControlContext since JMX will use multiple threads to
+   * process operations from the same client, then it looks into Shiro's thead context.
+   *
+   * @return the shiro subject, null if security is not enabled
+   */
   @Override
   public Subject getSubject() {
     Subject currentUser;
@@ -84,7 +97,7 @@ public class CustomSecurityService implements SecurityService {
 
     if (jmxSubject != null) {
       Set<ShiroPrincipal> principals = jmxSubject.getPrincipals(ShiroPrincipal.class);
-      if (principals.size() > 0) {
+      if (!principals.isEmpty()) {
         ShiroPrincipal principal = principals.iterator().next();
         currentUser = principal.getSubject();
         ThreadContext.bind(currentUser);
@@ -102,10 +115,13 @@ public class CustomSecurityService implements SecurityService {
     return currentUser;
   }
 
+  /**
+   * @return return a shiro subject
+   */
   @Override
   public Subject login(final Properties credentials) {
     if (credentials == null) {
-      return null;
+      throw new AuthenticationRequiredException("credentials are null");
     }
 
     // this makes sure it starts with a clean user object
@@ -128,10 +144,6 @@ public class CustomSecurityService implements SecurityService {
   @Override
   public void logout() {
     Subject currentUser = getSubject();
-    if (currentUser == null) {
-      return;
-    }
-
     try {
       logger.debug("Logging out " + currentUser.getPrincipal());
       currentUser.logout();
@@ -139,6 +151,7 @@ public class CustomSecurityService implements SecurityService {
       logger.info(e.getMessage(), e);
       throw new GemFireSecurityException(e.getMessage(), e);
     }
+
     // clean out Shiro's thread local content
     ThreadContext.remove();
   }
@@ -146,11 +159,32 @@ public class CustomSecurityService implements SecurityService {
   @Override
   public Callable associateWith(final Callable callable) {
     Subject currentUser = getSubject();
-    if (currentUser == null) {
-      return callable;
+    return currentUser.associateWith(callable);
+  }
+
+  /**
+   * Binds the passed-in subject to the executing thread. Usage:
+   *
+   * <pre>
+   * ThreadState state = null;
+   * try {
+   *   state = securityService.bindSubject(subject);
+   *   // do the rest of the work as this subject
+   * } finally {
+   *   if (state != null)
+   *     state.clear();
+   * }
+   * </pre>
+   */
+  @Override
+  public ThreadState bindSubject(final Subject subject) {
+    if (subject == null) {
+      throw new GemFireSecurityException("Error: Anonymous User");
     }
 
-    return currentUser.associateWith(callable);
+    ThreadState threadState = new SubjectThreadState(subject);
+    threadState.bind();
+    return threadState;
   }
 
   public void authorizeClusterManage() {
@@ -232,12 +266,11 @@ public class CustomSecurityService implements SecurityService {
     authorize(Resource.DATA, Operation.READ, regionName, key);
   }
 
-  public void authorize(Resource resource, Operation operation, ResourcePermission.Target target,
-      String key) {
+  public void authorize(Resource resource, Operation operation, Target target, String key) {
     authorize(resource, operation, target.getName(), key);
   }
 
-  public void authorize(Resource resource, Operation operation, ResourcePermission.Target target) {
+  public void authorize(Resource resource, Operation operation, Target target) {
     authorize(resource, operation, target, ResourcePermission.ALL);
   }
 
@@ -247,10 +280,6 @@ public class CustomSecurityService implements SecurityService {
 
   @Override
   public void authorize(final ResourcePermission context) {
-    Subject currentUser = getSubject();
-    if (currentUser == null) {
-      return;
-    }
     if (context == null) {
       return;
     }
@@ -258,6 +287,7 @@ public class CustomSecurityService implements SecurityService {
       return;
     }
 
+    Subject currentUser = getSubject();
     try {
       currentUser.checkPermission(context);
     } catch (ShiroException e) {
@@ -269,10 +299,22 @@ public class CustomSecurityService implements SecurityService {
 
   @Override
   public void close() {
+    if (this.securityManager != null) {
+      securityManager.close();
+    }
+    if (this.postProcessor != null) {
+      this.postProcessor.close();
+    }
+
     ThreadContext.remove();
     SecurityUtils.setSecurityManager(null);
   }
 
+  /**
+   * postProcess call already has this logic built in, you don't need to call this everytime you
+   * call postProcess. But if your postProcess is pretty involved with preparations and you need to
+   * bypass it entirely, call this first.
+   */
   @Override
   public boolean needPostProcess() {
     return this.postProcessor != null;
@@ -292,11 +334,7 @@ public class CustomSecurityService implements SecurityService {
     }
 
     if (principal == null) {
-      Subject subject = getSubject();
-      if (subject == null) {
-        return value;
-      }
-      principal = (Serializable) subject.getPrincipal();
+      principal = getSubject().getPrincipal();
     }
 
     String regionName = StringUtils.stripStart(regionPath, "/");
@@ -320,27 +358,17 @@ public class CustomSecurityService implements SecurityService {
   }
 
   @Override
-  public boolean isClientSecurityRequired() {
+  public boolean isIntegratedSecurity() {
     return true;
   }
 
   @Override
-  public boolean isIntegratedSecurity() {
+  public boolean isClientSecurityRequired() {
     return true;
   }
 
   @Override
   public boolean isPeerSecurityRequired() {
     return true;
-  }
-
-  @Override
-  public SecurityManager getSecurityManager() {
-    return null;
-  }
-
-  @Override
-  public PostProcessor getPostProcessor() {
-    return this.postProcessor;
   }
 }
