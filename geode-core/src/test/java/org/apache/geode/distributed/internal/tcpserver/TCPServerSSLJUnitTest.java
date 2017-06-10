@@ -84,7 +84,6 @@ public class TCPServerSSLJUnitTest {
 
   @Test
   public void testSSLSocketTimeOut() throws IOException {
-    boolean caughtLocatorException = false;
     try {
 
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
@@ -96,10 +95,8 @@ public class TCPServerSSLJUnitTest {
 
     } catch (LocatorCancelException e) {
       // we catching the LocatorCancelException. Expected to have the exception thrown
-      caughtLocatorException = true;
     }
 
-    Assert.assertTrue(caughtLocatorException);
     List<Integer> recordedSocketsForSocketCreator = server.getRecordedSocketTimeouts();
 
     Assert.assertEquals(1, recordedSocketsForSocketCreator.size());
