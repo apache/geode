@@ -224,7 +224,6 @@ public class TestCommand {
     createTestCommand("debug --state=on", null);
     createTestCommand("describe connection", null);
     createTestCommand("echo --string=\"Hello World!\"", null);
-    createTestCommand("encrypt password --password=value", null);
     createTestCommand("version", null);
     createTestCommand("sleep", null);
     createTestCommand("sh ls", null);
@@ -249,5 +248,5 @@ public class TestCommand {
 
     // Misc commands
     // createTestCommand("shutdown", clusterManage);
-  };
+  }
 }
