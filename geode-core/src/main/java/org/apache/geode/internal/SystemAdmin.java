@@ -14,41 +14,79 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 
-import org.apache.geode.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+
+import org.apache.geode.GemFireException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.NoSystemException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.UncreatedSystemException;
+import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.tcpserver.*;
-import org.apache.geode.internal.statistics.StatArchiveReader;
-import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
-import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.MergeLogFiles;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.statistics.StatArchiveReader;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.internal.util.JavaCommandBuilder;
-import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
-
-import java.io.*;
-import java.net.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
-
-import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -163,7 +201,7 @@ public class SystemAdmin {
             String msg = tailFile(logFile, false);
             throw new GemFireIOException(
                 LocalizedStrings.SystemAdmin_START_OF_LOCATOR_FAILED_THE_END_OF_0_CONTAINED_THIS_MESSAGE_1
-                    .toLocalizedString(new Object[] {logFile, msg}),
+                    .toLocalizedString(logFile, msg),
                 null);
           } catch (IOException ignore) {
             throw new GemFireIOException(
@@ -335,13 +373,11 @@ public class SystemAdmin {
       ManagerInfo mi = ManagerInfo.loadLocatorInfo(directory);
       if (statusCode == ManagerInfo.KILLED_STATUS_CODE) {
         return LocalizedStrings.SystemAdmin_LOCATOR_IN_0_WAS_KILLED_WHILE_IT_WAS_1_LOCATOR_PROCESS_ID_WAS_2
-            .toLocalizedString(
-                new Object[] {directory, ManagerInfo.statusToString(mi.getManagerStatus()),
-                    Integer.valueOf(mi.getManagerProcessId())});
+            .toLocalizedString(directory, ManagerInfo.statusToString(mi.getManagerStatus()),
+                Integer.valueOf(mi.getManagerProcessId()));
       } else {
         return LocalizedStrings.SystemAdmin_LOCATOR_IN_0_IS_1_LOCATOR_PROCESS_ID_IS_2
-            .toLocalizedString(
-                new Object[] {directory, statusString, Integer.valueOf(mi.getManagerProcessId())});
+            .toLocalizedString(directory, statusString, Integer.valueOf(mi.getManagerProcessId()));
       }
     } catch (UnstartedSystemException ex) {
       return LocalizedStrings.SystemAdmin_LOCATOR_IN_0_IS_STOPPED.toLocalizedString(directory);
@@ -535,7 +571,7 @@ public class SystemAdmin {
       File outputFile = null;
 
       if (cmdLine.size() > 0) {
-        outputFile = new File((String) cmdLine.get(0));
+        outputFile = new File(cmdLine.get(0));
         os = new FileOutputStream(outputFile);
         ps = new PrintWriter(os);
       } else {
@@ -627,7 +663,7 @@ public class SystemAdmin {
   }
 
   public static void showDiskStoreMetadata(ArrayList<String> args) {
-    String dsName = (String) args.get(0);
+    String dsName = args.get(0);
     File[] dirs = argsToFile(args.subList(1, args.size()));
 
     try {
@@ -643,7 +679,7 @@ public class SystemAdmin {
       out.mkdirs();
     }
 
-    String dsName = (String) args.get(0);
+    String dsName = args.get(0);
     File[] dirs = argsToFile(args.subList(1, args.size()));
 
     try {
@@ -757,7 +793,7 @@ public class SystemAdmin {
       } catch (FileNotFoundException ex) {
         throw new GemFireIOException(
             LocalizedStrings.SystemAdmin_COULD_NOT_CREATE_FILE_0_FOR_OUTPUT_BECAUSE_1
-                .toLocalizedString(new Object[] {outOption, getExceptionMessage(ex)}));
+                .toLocalizedString(outOption, getExceptionMessage(ex)));
       }
     } else {
       ps = System.out;
@@ -778,7 +814,7 @@ public class SystemAdmin {
       } catch (FileNotFoundException ex) {
         throw new GemFireIOException(
             LocalizedStrings.SystemAdmin_COULD_NOT_OPEN_TO_0_FOR_READING_BECAUSE_1
-                .toLocalizedString(new Object[] {fileName, getExceptionMessage(ex)}));
+                .toLocalizedString(fileName, getExceptionMessage(ex)));
       }
       if (!quiet) {
         ps.println("  " + fileName);
@@ -1312,7 +1348,7 @@ public class SystemAdmin {
               .toLocalizedString(
                   new Object[] {"commands", "options", "usage", "configuration", "-h"}));
     } else if (topic.equalsIgnoreCase("commands")) {
-      pw.println((String) usageMap.get("gemfire") + " <command> ...");
+      pw.println(usageMap.get("gemfire") + " <command> ...");
       format(pw, (String) helpMap.get("gemfire"), "  ", 0);
       for (int i = 0; i < validCommands.length; i++) {
         pw.println((String) usageMap.get(validCommands[i]));
@@ -1385,10 +1421,10 @@ public class SystemAdmin {
 
   private final static String[] validCommands = new String[] {"version", "stats", START_LOCATOR,
       "stop-locator", "status-locator", "info-locator", "tail-locator-log", "merge-logs",
-      "encrypt-password", "revoke-missing-disk-store", "list-missing-disk-stores",
-      "validate-disk-store", "upgrade-disk-store", "compact-disk-store", "compact-all-disk-stores",
-      "modify-disk-store", "show-disk-store-metadata", "export-disk-store", "shut-down-all",
-      "backup", "print-stacks", "help"};
+      "revoke-missing-disk-store", "list-missing-disk-stores", "validate-disk-store",
+      "upgrade-disk-store", "compact-disk-store", "compact-all-disk-stores", "modify-disk-store",
+      "show-disk-store-metadata", "export-disk-store", "shut-down-all", "backup", "print-stacks",
+      "help"};
 
   protected static String[] getValidCommands() {
     return validCommands.clone();
@@ -1475,28 +1511,23 @@ public class SystemAdmin {
   protected final Map helpMap = new HashMap();
 
   protected void initHelpMap() {
-    helpMap.put("gemfire", LocalizedStrings.SystemAdmin_GEMFIRE_HELP.toLocalizedString(
-        new Object[] {join(validCommands), "-h", "-debug", "-help", "-q", "-J<vmOpt>"}));
+    helpMap.put("gemfire", LocalizedStrings.SystemAdmin_GEMFIRE_HELP
+        .toLocalizedString(join(validCommands), "-h", "-debug", "-help", "-q", "-J<vmOpt>"));
     helpMap.put("version", LocalizedStrings.SystemAdmin_VERSION_HELP.toLocalizedString());
     helpMap.put("help", LocalizedStrings.SystemAdmin_HELP_HELP.toLocalizedString());
     helpMap.put("stats",
-        LocalizedStrings.SystemAdmin_STATS_HELP_PART_A.toLocalizedString(new Object[] {"+",
-            "++", ":", ".", "-details", "-nofilter", "-archive=", "-persec", "-persample",
-            "-prunezeros"}) + "\n"
-            + LocalizedStrings.SystemAdmin_STATS_HELP_PART_B.toLocalizedString(new Object[] {
-                "-starttime", "-archive=", DateFormatter.FORMAT_STRING, "-endtime",}));
-    helpMap.put("encrypt-password",
-        LocalizedStrings.SystemAdmin_ENCRYPTS_A_PASSWORD_FOR_USE_IN_CACHE_XML_DATA_SOURCE_CONFIGURATION
-            .toLocalizedString());
+        LocalizedStrings.SystemAdmin_STATS_HELP_PART_A.toLocalizedString("+", "++", ":", ".",
+            "-details", "-nofilter", "-archive=", "-persec", "-persample", "-prunezeros") + "\n"
+            + LocalizedStrings.SystemAdmin_STATS_HELP_PART_B.toLocalizedString("-starttime",
+                "-archive=", DateFormatter.FORMAT_STRING, "-endtime"));
     helpMap.put(START_LOCATOR,
-        LocalizedStrings.SystemAdmin_START_LOCATOR_HELP.toLocalizedString(new Object[] {"-port=",
+        LocalizedStrings.SystemAdmin_START_LOCATOR_HELP.toLocalizedString("-port=",
             Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir=",
-            "-properties=", "-peer=", "-server=", "-hostname-for-clients=", "-D", "-X"}));
-    helpMap.put("stop-locator",
-        LocalizedStrings.SystemAdmin_STOP_LOCATOR_HELP.toLocalizedString(new Object[] {"-port=",
-            Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir="}));
+            "-properties=", "-peer=", "-server=", "-hostname-for-clients=", "-D", "-X"));
+    helpMap.put("stop-locator", LocalizedStrings.SystemAdmin_STOP_LOCATOR_HELP.toLocalizedString(
+        "-port=", Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir="));
     helpMap.put("status-locator", LocalizedStrings.SystemAdmin_STATUS_LOCATOR_HELP
-        .toLocalizedString(new Object[] {join(ManagerInfo.statusNames), "-dir="}));
+        .toLocalizedString(join(ManagerInfo.statusNames), "-dir="));
     helpMap.put("info-locator",
         LocalizedStrings.SystemAdmin_INFO_LOCATOR_HELP.toLocalizedString("-dir="));
     helpMap.put("tail-locator-log",
@@ -1593,15 +1624,15 @@ public class SystemAdmin {
             .toLocalizedString());
     helpMap.put("-starttime=",
         LocalizedStrings.SystemAdmin_CAUSES_THE_0_COMMAND_TO_IGNORE_STATISTICS_SAMPLES_TAKEN_BEFORE_THIS_TIME_THE_ARGUMENT_FORMAT_MUST_MATCH_1
-            .toLocalizedString(new Object[] {"stats", DateFormatter.FORMAT_STRING}));
+            .toLocalizedString("stats", DateFormatter.FORMAT_STRING));
     helpMap.put("-endtime=",
         LocalizedStrings.SystemAdmin_CAUSES_THE_0_COMMAND_TO_IGNORE_STATISTICS_SAMPLES_TAKEN_AFTER_THIS_TIME_THE_ARGUMENT_FORMAT_MUST_MATCH_1
-            .toLocalizedString(new Object[] {"stats", DateFormatter.FORMAT_STRING}));
+            .toLocalizedString("stats", DateFormatter.FORMAT_STRING));
     helpMap.put("-dir=",
-        LocalizedStrings.SystemAdmin_DIR_ARGUMENT_HELP
-            .toLocalizedString(new Object[] {DistributionConfig.GEMFIRE_PREFIX + "properties",
-                DistributionConfig.GEMFIRE_PREFIX + "systemDirectory", "GEMFIRE", "defaultSystem",
-                "version"}));
+        LocalizedStrings.SystemAdmin_DIR_ARGUMENT_HELP.toLocalizedString(
+            DistributionConfig.GEMFIRE_PREFIX + "properties",
+            DistributionConfig.GEMFIRE_PREFIX + "systemDirectory", "GEMFIRE", "defaultSystem",
+            "version"));
     helpMap.put("-D",
         LocalizedStrings.SystemAdmin_SETS_A_JAVA_SYSTEM_PROPERTY_IN_THE_LOCATOR_VM_USED_MOST_OFTEN_FOR_CONFIGURING_SSL_COMMUNICATION
             .toLocalizedString());
@@ -1649,7 +1680,6 @@ public class SystemAdmin {
     usageMap.put("info-locator", "info-locator [-dir=<locatorDir>]");
     usageMap.put("tail-locator-log", "tail-locator-log [-dir=<locatorDir>]");
     usageMap.put("merge-logs", "merge-logs <logFile>+ [-out=<outFile>]");
-    usageMap.put("encrypt-password", "encrypt-password <passwordString>");
     usageMap.put("validate-disk-store", "validate-disk-store <diskStoreName> <directory>+");
     usageMap.put("upgrade-disk-store",
         "upgrade-disk-store <diskStoreName> <directory>+ [-maxOplogSize=<int>]");
@@ -1733,7 +1763,6 @@ public class SystemAdmin {
     cmdOptionsMap.put("export-disk-store", new String[] {"-outputDir="});
     cmdOptionsMap.put("shut-down-all", new String[] {});
     cmdOptionsMap.put("backup", new String[] {"-baseline="});
-    cmdOptionsMap.put("encrypt-password", new String[] {});
     cmdOptionsMap.put("print-stacks", new String[] {"-all-threads"});
   }
 
@@ -1900,19 +1929,8 @@ public class SystemAdmin {
   }
 
   private static boolean needsSysDir(String cmd) {
-    if (cmd.equalsIgnoreCase("stats")) {
-      return false;
-    }
-    if (cmd.equalsIgnoreCase("merge-logs")) {
-      return false;
-    }
-    if (cmd.equalsIgnoreCase("version")) {
-      return false;
-    }
-    if (cmd.equalsIgnoreCase("help")) {
-      return false;
-    }
-    return true;
+    return !(cmd.equalsIgnoreCase("stats") || cmd.equalsIgnoreCase("merge-logs")
+        || cmd.equalsIgnoreCase("version") || cmd.equalsIgnoreCase("help"));
   }
 
   public static File getProductDir() {
@@ -2206,11 +2224,6 @@ public class SystemAdmin {
           usage(cmd);
         }
         backup((String) cmdLine.get(0));
-      } else if (cmd.equalsIgnoreCase("encrypt-password")) {
-        if (cmdLine.size() != 1) {
-          usage(cmd);
-        }
-        PasswordUtil.encrypt((String) cmdLine.get(0));
       } else if (cmd.equalsIgnoreCase("print-stacks")) {
         printStacks(cmdLine, printStacksOption != null);
       } else {

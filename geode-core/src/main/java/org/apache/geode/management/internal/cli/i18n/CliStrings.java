@@ -1277,13 +1277,6 @@ public class CliStrings {
       "String to be echoed. For example, \"SYS_USER variable is set to ${SYS_USER}\".";
   public static final String ECHO__MSG__NO_GFSH_INSTANCE = "Could not get GFSH Instance";
 
-  /* 'encrypt password' command */
-  public static final String ENCRYPT = "encrypt password";
-  public static final String ENCRYPT__HELP =
-      "Encrypt a password for use in data source configuration.";
-  public static final String ENCRYPT_STRING = "password";
-  public static final String ENCRYPT_STRING__HELP = "Password to be encrypted.";
-
   /* 'execute function' command */
   public static final String EXECUTE_FUNCTION = "execute function";
   public static final String EXECUTE_FUNCTION__HELP =
@@ -1784,7 +1777,7 @@ public class CliStrings {
 
   /* pause gateway-sender */
   public static final String PAUSE_GATEWAYSENDER = "pause gateway-sender";
-  public static final String PAUSE_GATEWAYSENDER__ID = "id";;
+  public static final String PAUSE_GATEWAYSENDER__ID = "id";
   public static final String PAUSE_GATEWAYSENDER__MEMBER = "member";
   public static final String PAUSE_GATEWAYSENDER__GROUP = "group";
   public static final String PAUSE_GATEWAYSENDER__HELP =
@@ -1938,7 +1931,7 @@ public class CliStrings {
 
   /* resume gateway-sender */
   public static final String RESUME_GATEWAYSENDER = "resume gateway-sender";
-  public static final String RESUME_GATEWAYSENDER__ID = "id";;
+  public static final String RESUME_GATEWAYSENDER__ID = "id";
   public static final String RESUME_GATEWAYSENDER__MEMBER = "member";
   public static final String RESUME_GATEWAYSENDER__GROUP = "group";
   public static final String RESUME_GATEWAYSENDER__HELP =
@@ -2778,7 +2771,7 @@ public class CliStrings {
 
   /* stop gateway-sender */
   public static final String STOP_GATEWAYSENDER = "stop gateway-sender";
-  public static final String STOP_GATEWAYSENDER__ID = "id";;
+  public static final String STOP_GATEWAYSENDER__ID = "id";
   public static final String STOP_GATEWAYSENDER__MEMBER = "member";
   public static final String STOP_GATEWAYSENDER__GROUP = "group";
   public static final String STOP_GATEWAYSENDER__HELP =

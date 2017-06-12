@@ -14,14 +14,15 @@
  */
 package org.apache.geode.management.internal.security;
 
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Target;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.shiro.authz.Permission;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.shiro.authz.Permission;
+
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 public class TestCommand {
 
@@ -221,7 +222,6 @@ public class TestCommand {
     createTestCommand("debug --state=on", null);
     createTestCommand("describe connection", null);
     createTestCommand("echo --string=\"Hello World!\"", null);
-    createTestCommand("encrypt password --password=value", null);
     createTestCommand("version", null);
     createTestCommand("sleep", null);
     createTestCommand("sh ls", null);
@@ -246,5 +246,5 @@ public class TestCommand {
 
     // Misc commands
     // createTestCommand("shutdown", clusterManage);
-  };
+  }
 }
