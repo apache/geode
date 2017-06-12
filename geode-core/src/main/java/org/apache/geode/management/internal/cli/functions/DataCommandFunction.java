@@ -124,6 +124,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   @Override
   public void execute(FunctionContext functionContext) {
     try {
+      InternalCache cache = getCache();
       DataCommandRequest request = (DataCommandRequest) functionContext.getArguments();
       if (logger.isDebugEnabled()) {
         logger.debug("Executing function : \n{}\n on member {}", request,
