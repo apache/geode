@@ -15,7 +15,8 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.geode.cache.CacheXmlException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -57,6 +57,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
