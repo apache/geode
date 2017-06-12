@@ -1422,8 +1422,8 @@ public class AcceptorImpl extends Acceptor implements Runnable {
     s.setTcpNoDelay(this.tcpNoDelay);
 
     if (communicationMode == CLIENT_TO_SERVER || communicationMode == GATEWAY_TO_GATEWAY
-        || communicationMode == MONITOR_TO_SERVER
-        || communicationMode == CLIENT_TO_SERVER_FOR_QUEUE) {
+        || communicationMode == MONITOR_TO_SERVER || communicationMode == CLIENT_TO_SERVER_FOR_QUEUE
+        || communicationMode == CLIENT_TO_SERVER_NEW_PROTOCOL) {
       String communicationModeStr = "";
       switch (communicationMode) {
         case CLIENT_TO_SERVER:
@@ -1466,9 +1466,9 @@ public class AcceptorImpl extends Acceptor implements Runnable {
           return;
         }
       }
-      ServerConnection serverConn = new ServerConnection(s, this.cache, this.crHelper, this.stats,
-          AcceptorImpl.handShakeTimeout, this.socketBufferSize, communicationModeStr,
-          communicationMode, this, this.securityService);
+      ServerConnection serverConn = ServerConnectionFactory.makeServerConnection(s, this.cache,
+          this.crHelper, this.stats, AcceptorImpl.handShakeTimeout, this.socketBufferSize,
+          communicationModeStr, communicationMode, this, this.securityService);
       synchronized (this.allSCsLock) {
         this.allSCs.add(serverConn);
         ServerConnection snap[] = this.allSCList; // avoid volatile read

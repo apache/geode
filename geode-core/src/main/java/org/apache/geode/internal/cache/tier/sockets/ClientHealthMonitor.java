@@ -478,12 +478,7 @@ public class ClientHealthMonitor {
           Iterator connectionsIterator = connections.iterator();
           while (connectionsIterator.hasNext()) {
             ServerConnection sc = (ServerConnection) connectionsIterator.next();
-            byte communicationMode = sc.getCommunicationMode();
-            /* Check for all modes that could be used for Client-Server communication */
-            if (communicationMode == Acceptor.CLIENT_TO_SERVER
-                || communicationMode == Acceptor.PRIMARY_SERVER_TO_CLIENT
-                || communicationMode == Acceptor.SECONDARY_SERVER_TO_CLIENT
-                || communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE) {
+            if (sc.isClientServerConnection()) {
               memberId = sc.getMembershipID(); // each ServerConnection has the same member id
               cci.setMemberId(memberId);
               cci.setNumberOfConnections(connections.size());
