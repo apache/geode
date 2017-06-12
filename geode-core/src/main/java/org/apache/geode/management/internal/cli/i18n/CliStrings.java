@@ -36,6 +36,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 
+import java.text.MessageFormat;
+
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -43,8 +45,6 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-
-import java.text.MessageFormat;
 
 /**
  * - * Contains 'String' constants used as key to the Localized strings to be used in classes under
@@ -140,7 +140,7 @@ public class CliStrings {
   public static final String TOPIC_GFSH__DESC = "The Geode Shell";
   public static final String TOPIC_SHARED_CONFIGURATION = "Cluster Configuration";
   public static final String TOPIC_SHARED_CONFIGURATION_HELP =
-      "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfshs command are persisted to the locator hosting the cluster configuration service.";
+      "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfsh command are persisted to the locator hosting the cluster configuration service.";
   public static final String TOPIC_LOGS = "Logs";
   public static final String TOPIC_LOGS__DESC = "Generate log contents as per the need";
   public static final String TOPIC_CLIENT = "Client";
@@ -150,7 +150,7 @@ public class CliStrings {
    * ********* String Constants other than command name, options & help ******
    * *************************************************************************/
 
-  public static final String DESKSTOP_APP_RUN_ERROR_MESSAGE =
+  public static final String DESKTOP_APP_RUN_ERROR_MESSAGE =
       "Running desktop applications is not supported on %1$s.";
   public static final String GEODE_HOME_NOT_FOUND_ERROR_MESSAGE =
       "The GEODE environment variable was not defined.  Please set the GEODE environment variable to the directory where GEODE is installed.";
@@ -203,7 +203,7 @@ public class CliStrings {
   public static final String NO_CLIENT_FOUND = "No client found on this server";
   public static final String NO_CLIENT_FOUND_WITH_CLIENT_ID =
       "No client found with client-id : {0}";
-  public static final String ACTION_SUCCCEEDED_ON_MEMBER = "{0} on following members.";
+  public static final String ACTION_SUCCEEDED_ON_MEMBER = "{0} on following members.";
   public static final String OCCURRED_ON_MEMBERS = "Occurred on members";
   public static final String SHARED_CONFIGURATION_NOT_STARTED =
       "Cluster configuration service is enabled but has not started yet.";
@@ -216,8 +216,8 @@ public class CliStrings {
   public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
   public static final String GFSHPARSER__MSG__VALUE_REQUIRED_FOR_OPTION_0 =
       "Value is required for parameter \"{0}\"";
-  public static final String GFSHPARSER__MSG__AMBIGIOUS_COMMAND_0_FOR_ASSISTANCE_USE_1_OR_HINT_HELP =
-      "Ambigious command \"{0}\" (for assistance press \"{1}\" or type \"hint\" or \"help <command name>\" & then hit ENTER)";
+  public static final String GFSHPARSER__MSG__AMBIGUOUS_COMMAND_0_FOR_ASSISTANCE_USE_1_OR_HINT_HELP =
+      "Ambiguous command \"{0}\" (for assistance press \"{1}\" or type \"hint\" or \"help <command name>\" & then hit ENTER)";
   public static final String GFSHPARSER__MSG__COMMAND_ARGUMENT_0_IS_REQUIRED_USE_HELP =
       "Command parameter \"{0}\" is required. Use \"help <command name>\" for assistance.";
   public static final String GFSHPARSER__MSG__COMMAND_OPTION_0_IS_REQUIRED_USE_HELP =
@@ -583,7 +583,7 @@ public class CliStrings {
       "The gfsecurity.properties file for configuring gfsh to connect to the Locator/Manager. The file's path can be absolute or relative to gfsh directory.";
   public static final String CONNECT__USE_SSL = "use-ssl";
   public static final String CONNECT__USE_SSL__HELP =
-      "Whether to use SSL for communication with Locator and/or JMX Manager. If set to \"true\", will also read \"gfsecurity.properties\". SSL Options take precedence over proeprties file. If none are specified, defaults will be used. The default value for this options is \"false\".";
+      "Whether to use SSL for communication with Locator and/or JMX Manager. If set to \"true\", will also read \"gfsecurity.properties\". SSL Options take precedence over properties file. If none are specified, defaults will be used. The default value for this options is \"false\".";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_AT_0 =
       "Connecting to Manager at {0} ..";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_HTTP_SERVICE_AT_0 =
@@ -1333,7 +1333,7 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_MEMBER_1_ON_REGION_2_DETAILS_3 =
       "While executing function : {0} on member : {1} one region : {2} error occurred : {3}";
   public static final String EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION =
-      "Filters for executing on \"member\"/\"mebers of group\" is not supported.";
+      "Filters for executing on \"member\"/\"members of group\" is not supported.";
 
   /* exit command */
   public static final String EXIT = "exit";
@@ -1373,7 +1373,7 @@ public class CliStrings {
   public static final String EXPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found";
   public static final String EXPORT_DATA__REGION__NOT__FOUND = "Region {0} not found";
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
-      "Data succesfully exported from region : {0} to file : {1} on host : {2}";
+      "Data successfully exported from region : {0} to file : {1} on host : {2}";
 
   /* export logs command */
   public static final String EXPORT_LOGS = "export logs";
@@ -1614,7 +1614,7 @@ public class CliStrings {
   public static final String DESCRIBE_CLIENT_COLUMN_DURABLE = "Is Durable";
   public static final String DESCRIBE_CLIENT_MIN_CONN = "Minimum Connections";
   public static final String DESCRIBE_CLIENT_MAX_CONN = "Maximum Connections";
-  public static final String DESCRIBE_CLIENT_REDUDANCY = "Redudancy";
+  public static final String DESCRIBE_CLIENT_REDUNDANCY = "Redundancy";
   public static final String DESCRIBE_CLIENT_CQs = "Num of CQs";
 
 
@@ -1729,7 +1729,7 @@ public class CliStrings {
       "Group of members on which to run the netstat command.";
   public static final String NETSTAT__FILE = "file";
   public static final String NETSTAT__FILE__HELP =
-      "Text file to which output from the netstat command will be written. A \".txt\" extention will be added if it's not already a part of the specified name.";
+      "Text file to which output from the netstat command will be written. A \".txt\" extension will be added if it's not already a part of the specified name.";
   public static final String NETSTAT__WITHLSOF = "with-lsof";
   public static final String NETSTAT__WITHLSOF__HELP =
       "Whether lsof (list open files) command output should also be displayed. Not applicable for \"Microsoft Windows(TM)\" hosts.";
@@ -1855,9 +1855,9 @@ public class CliStrings {
   public static final String REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS =
       "Distributed system has no regions that can be rebalanced";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception =
-      "Excpetion occurred while rebalancing on member : {0} . Exception is ";
+      "Exception occurred while rebalancing on member : {0} . Exception is ";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1 =
-      "Excpetion occurred while rebalancing on member : {0} . Exception is : {1}";
+      "Exception occurred while rebalancing on member : {0} . Exception is : {1}";
   public static final String REBALANCE__MSG__ERROR_IN_RETRIEVING_MBEAN =
       "Could not retrieve MBean for region : {0}";
   public static final String REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1 =
@@ -1871,7 +1871,7 @@ public class CliStrings {
       "Rebalance will continue in background";
   public static final String REBALANCE__MSG__REGION_NOT_ASSOCIATED_WITH_MORE_THAN_ONE_MEMBER =
       "No regions associated with more than 1 members";
-  public static final String REBALANCE__MSG__EXCEPTION_OCCRED_WHILE_REBALANCING_0 =
+  public static final String REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0 =
       "Exception occurred while rebelancing. Reason : {0}";
 
   /* remove command */
@@ -1961,7 +1961,7 @@ public class CliStrings {
       + "3. APP_LAST_EXIT_STATUS            Numeric value for last command exit status. One of: 0 (success), 1 (error), 2 (crash) (read only)\n"
       + "4. APP_COLLECTION_LIMIT            Number of items in the embedded collection of a result to be iterated. Valid values are: 1-100.\n"
       + "5. APP_QUERY_RESULTS_DISPLAY_MODE  How command results should be shown. Valid values are: table and catalog.\n"
-      + "6. APP_QUIET_EXECUTION.            Whether commands should be excuted in quiet mode. Valid values are: true and false.\n";
+      + "6. APP_QUIET_EXECUTION.            Whether commands should be executed in quiet mode. Valid values are: true and false.\n";
 
   /* 'sh' command */
   public static final String SH = "sh";
@@ -2600,11 +2600,11 @@ public class CliStrings {
 
   public static final String START_SERVER__MAX__CONNECTIONS = "max-connections";
   public static final String START_SERVER__MAX__CONNECTIONS__HELP =
-      "Sets the maxium number of client connections allowed. When the maximum is reached the cache server will stop accepting connections";
+      "Sets the maximum number of client connections allowed. When the maximum is reached the cache server will stop accepting connections";
 
   public static final String START_SERVER__MAX__THREADS = "max-threads";
   public static final String START_SERVER__MAX__THREADS__HELP =
-      "Sets the maxium number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection";
+      "Sets the maximum number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection";
 
   public static final String START_SERVER__MAX__MESSAGE__COUNT = "max-message-count";
   public static final String START_SERVER__MAX__MESSAGE__COUNT__HELP =
@@ -2706,7 +2706,7 @@ public class CliStrings {
   public static final String STATUS_SERVER__PID__HELP =
       "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
 
-  /* stop gateway-reciver */
+  /* stop gateway-receiver */
   public static final String STOP_GATEWAYRECEIVER = "stop gateway-receiver";
   public static final String STOP_GATEWAYRECEIVER__HELP =
       "Stop the Gateway Receiver on a member or members.";
@@ -2804,7 +2804,7 @@ public class CliStrings {
   public static final String UPGRADE_OFFLINE_DISK_STORE__UPGRADE_ATTEMPTED_BUT_NOTHING_TO_UPGRADE =
       "Upgradation was attempted but nothing to upgrade.";
   public static final String UPGRADE_OFFLINE_DISK_STORE__ERROR_WHILE_UPGRADATION_REASON_0 =
-      "Error occurred while perfoming disk store upgrade. Reason: \"{0}\"";
+      "Error occurred while performing disk store upgrade. Reason: \"{0}\"";
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_LOCATE_0_DISKSTORE_IN_1 =
       "Cannot locate disk store \"{0}\" in directory : \"{1}\"";
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__DISKSTORE_IN_USE_COMPACT_DISKSTORE_CAN_BE_USED =
@@ -2921,7 +2921,7 @@ public class CliStrings {
   public static final String GATEWAY_RECEIVER_IS_NOT_RUNNING_ON_MEMBER_0 =
       "GatewayReceiver is not running on member {0}";
   public static final String GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER =
-      "GatewaySenders or GatewayRecievers are not available in cluster";
+      "GatewaySenders or GatewayReceivers are not available in cluster";
   public static final String GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1 =
       "Could not invoke start gateway sender {0} operation on members due to {1}";
   public static final String GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1 =
@@ -3017,9 +3017,9 @@ public class CliStrings {
   public static final String COUNT_DURABLE_CQ_EVENTS__NO__CQS__REGISTERED =
       "No cq's registered on this member";
   public static final String COUNT_DURABLE_CQ_EVENTS__SUBSCRIPTION__QUEUE__SIZE__CQ =
-      "subcription-queue-size for durable-cq : \"{0}\".";
+      "subscription-queue-size for durable-cq : \"{0}\".";
   public static final String COUNT_DURABLE_CQ_EVENTS__SUBSCRIPTION__QUEUE__SIZE__CLIENT =
-      "subcription-queue-size for durable-client : \"{0}\".";
+      "subscription-queue-size for durable-client : \"{0}\".";
 
   /***
    * Cluster Configuration commands
@@ -3187,6 +3187,6 @@ public class CliStrings {
   }
 
 
-  public static final String IGNORE_INTERCEPTORS = "ignoreInterCeptors";
+  public static final String IGNORE_INTERCEPTORS = "ignoreInterceptors";
 
 }

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,6 +78,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * @since GemFire 7.0
@@ -103,7 +103,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
   }
 
   /**
-   * TODO: method createRegion is too complex to analyze
+   * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
+   * is persistent
    */
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
@@ -295,19 +296,20 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
         }
       }
 
+      // Do we prefer to validate or authorize first?
       validateRegionFunctionArgs(cache, regionFunctionArgs);
+      if (isPersistentShortcut(regionFunctionArgs.getRegionShortcut())
+          || isAttributePersistent(regionFunctionArgs.getRegionAttributes())) {
+        getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE, Target.DISK);
+      }
 
       Set<DistributedMember> membersToCreateRegionOn;
       if (groups != null && groups.length != 0) {
         membersToCreateRegionOn = CliUtil.getDistributedMembersByGroup(cache, groups);
         // have only normal members from the group
-        for (Iterator<DistributedMember> it = membersToCreateRegionOn.iterator(); it.hasNext();) {
-          DistributedMember distributedMember = it.next();
-          if (((InternalDistributedMember) distributedMember)
-              .getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
-            it.remove();
-          }
-        }
+        membersToCreateRegionOn
+            .removeIf(distributedMember -> ((InternalDistributedMember) distributedMember)
+                .getVmKind() == DistributionManager.LOCATOR_DM_TYPE);
       } else {
         membersToCreateRegionOn = CliUtil.getAllNormalMembers(cache);
       }
@@ -340,9 +342,6 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     } catch (IllegalArgumentException | IllegalStateException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (RuntimeException e) {
-      LogWrapper.getInstance().info(e.getMessage(), e);
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
@@ -424,7 +423,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
+    getSecurityService().authorizeRegionManage(regionPath);
 
     try {
       InternalCache cache = getCache();
@@ -914,7 +913,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
               } // attributes null check
             } // not IllegalArgumentException or other throwable
           } // iterate over list - there should be only one result in the list
-        } // result list is not null or mpty
+        } // result list is not null or empty
       } // regionAssociatedMembers is not-empty
     } // attributes are null because do not exist on local member
 
@@ -1127,5 +1126,21 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       }
     }
     return foundMembers;
+  }
+
+  private boolean isPersistentShortcut(RegionShortcut shortcut) {
+    return shortcut == RegionShortcut.LOCAL_PERSISTENT
+        || shortcut == RegionShortcut.LOCAL_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.PARTITION_PERSISTENT
+        || shortcut == RegionShortcut.PARTITION_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT
+        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.REPLICATE_PERSISTENT
+        || shortcut == RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
+  }
+
+  private boolean isAttributePersistent(RegionAttributes attributes) {
+    return attributes != null && attributes.getDataPolicy() != null
+        && attributes.getDataPolicy().toString().contains("PERSISTENT");
   }
 }

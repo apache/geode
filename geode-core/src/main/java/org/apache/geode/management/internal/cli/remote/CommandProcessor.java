@@ -14,6 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Properties;
+
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ParseResult;
+
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.cli.CommandProcessingException;
@@ -27,13 +35,6 @@ import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ParseResult;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * @since GemFire 7.0
@@ -85,7 +86,7 @@ public class CommandProcessor {
   }
 
   public Result executeCommand(CommandStatement cmdStmt) {
-    Object result = null;
+    Object result;
     Result commandResult = null;
 
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
