@@ -569,6 +569,10 @@ public class PartitionedRegion extends LocalRegion
     }
   };
 
+  PartitionedRegionRedundancyTracker getRedundancyTracker() {
+    return redundancyTracker;
+  }
+
 
   public static class PRIdMap extends HashMap {
     private static final long serialVersionUID = 3667357372967498179L;
@@ -713,6 +717,8 @@ public class PartitionedRegion extends LocalRegion
 
   private AbstractGatewaySender parallelGatewaySender = null;
 
+  private final PartitionedRegionRedundancyTracker redundancyTracker;
+
   /**
    * Constructor for a PartitionedRegion. This has an accessor (Region API) functionality and
    * contains a datastore for actual storage. An accessor can act as a local cache by having a local
@@ -754,6 +760,9 @@ public class PartitionedRegion extends LocalRegion
     // getScope is overridden to return the correct scope.
     // this.scope = Scope.LOCAL;
     this.redundantCopies = regionAttributes.getPartitionAttributes().getRedundantCopies();
+    this.redundancyTracker =
+        new PartitionedRegionRedundancyTracker(this.totalNumberOfBuckets, this.redundantCopies,
+            this.prStats, getFullPath());
     this.prStats.setConfiguredRedundantCopies(
         regionAttributes.getPartitionAttributes().getRedundantCopies());
     this.prStats.setLocalMaxMemory(
