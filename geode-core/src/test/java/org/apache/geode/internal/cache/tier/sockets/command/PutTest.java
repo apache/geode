@@ -20,6 +20,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
+import org.apache.geode.internal.cache.EventIDHolder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -104,7 +105,7 @@ public class PutTest {
 
     when(this.callbackArgsPart.getObject()).thenReturn(CALLBACK_ARG);
 
-    when(this.eventPart.getSerializedForm()).thenReturn(this.EVENT);
+    when(this.eventPart.getSerializedForm()).thenReturn(EVENT);
 
     when(this.valuePart.getSerializedForm()).thenReturn(VALUE);
     when(this.valuePart.isObject()).thenReturn(true);
@@ -127,8 +128,11 @@ public class PutTest {
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
     when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
 
-    when(this.localRegion.basicBridgePut(eq(KEY), eq(VALUE), eq(null), eq(true), eq(CALLBACK_ARG),
-        any(ClientProxyMembershipID.class), eq(true), any(EntryEventImpl.class))).thenReturn(true);
+    when(this.localRegion.basicBridgePut(eq(KEY), eq(VALUE), isNull(), eq(true), eq(CALLBACK_ARG),
+        isA(ClientProxyMembershipID.class), eq(true), isA(EntryEventImpl.class))).thenReturn(true);
+
+    // here's the actual call made by tests of basicBridgePut...
+    // region.basicBridgePut(key, value, null, isObject, callbackArg, serverConnection.getProxyID(), true, new EventIDHolder(eventId));
   }
 
   @Test
