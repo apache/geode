@@ -138,6 +138,8 @@ public class PartitionedRegionStats {
   private final static int volunteeringThreadsId; // number of threads actively volunteering
   private final static int lowRedundancyBucketCountId; // number of buckets currently without full
                                                        // redundancy
+  private final static int noCopiesBucketCountId; // number of buckets currently without any
+                                                  // redundancy
 
   private final static int configuredRedundantCopiesId;
   private final static int actualRedundantCopiesId;
@@ -308,6 +310,8 @@ public class PartitionedRegionStats {
                 "Current number of threads volunteering for primary.", "threads"),
             f.createIntGauge("lowRedundancyBucketCount",
                 "Current number of buckets without full redundancy.", "buckets"),
+            f.createIntGauge("noCopiesBucketCount",
+                "Current number of buckets without any copies remaining.", "buckets"),
             f.createIntGauge("configuredRedundantCopies",
                 "Configured number of redundant copies for this partitioned region.", "copies"),
             f.createIntGauge("actualRedundantCopies",
@@ -477,6 +481,7 @@ public class PartitionedRegionStats {
     primaryBucketCountId = type.nameToId("primaryBucketCount");
     volunteeringThreadsId = type.nameToId("volunteeringThreads");
     lowRedundancyBucketCountId = type.nameToId("lowRedundancyBucketCount");
+    noCopiesBucketCountId = type.nameToId("noCopiesBucketCount");
 
     getEntriesCompletedId = type.nameToId("getEntryCompleted");
     getEntryTimeId = type.nameToId("getEntryTime");
@@ -899,8 +904,16 @@ public class PartitionedRegionStats {
     return this.stats.getInt(lowRedundancyBucketCountId);
   }
 
+  public int getNoCopiesBucketCount() {
+    return this.stats.getInt(noCopiesBucketCountId);
+  }
+
   public void incLowRedundancyBucketCount(int val) {
     this.stats.incInt(lowRedundancyBucketCountId, val);
+  }
+
+  public void incNoCopiesBucketCount(int val) {
+    this.stats.incInt(noCopiesBucketCountId, val);
   }
 
   public int getConfiguredRedundantCopies() {
