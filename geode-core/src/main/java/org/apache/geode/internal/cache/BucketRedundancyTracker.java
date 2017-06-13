@@ -68,6 +68,7 @@ class BucketRedundancyTracker {
 
   /**
    * Provides the current redundancy of the bucket for this tracker
+   * 
    * @return number of redundant copies of the bucket for this tracker
    */
   int getCurrentRedundancy() {

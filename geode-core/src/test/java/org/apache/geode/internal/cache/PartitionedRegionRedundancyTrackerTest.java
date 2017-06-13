@@ -38,11 +38,8 @@ public class PartitionedRegionRedundancyTrackerTest {
     region = (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("testRegion",
         regionAttributes);
     stats = region.getPrStats();
-    redundancyTracker = new PartitionedRegionRedundancyTracker(
-        region.getTotalNumberOfBuckets(),
-        region.getRedundantCopies(),
-        stats,
-        region.getFullPath());
+    redundancyTracker = new PartitionedRegionRedundancyTracker(region.getTotalNumberOfBuckets(),
+        region.getRedundantCopies(), stats, region.getFullPath());
   }
 
   @After
@@ -99,6 +96,7 @@ public class PartitionedRegionRedundancyTrackerTest {
     redundancyTracker.decrementNoCopiesBucketCount();
     assertEquals(0, stats.getNoCopiesBucketCount());
   }
+
   @Test
   public void reportsCorrectLowestBucketCopies() {
     redundancyTracker.reportBucketCount(1);

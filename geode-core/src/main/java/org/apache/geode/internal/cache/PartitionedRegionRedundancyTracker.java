@@ -43,8 +43,8 @@ public class PartitionedRegionRedundancyTracker {
    * @param stats the statistics container for the region to track
    * @param regionPath the full path of the region to track
    */
-  PartitionedRegionRedundancyTracker(int totalBuckets, int redundantCopies, PartitionedRegionStats stats,
-      String regionPath) {
+  PartitionedRegionRedundancyTracker(int totalBuckets, int redundantCopies,
+      PartitionedRegionStats stats, String regionPath) {
     this.stats = stats;
     this.regionPath = regionPath;
     this.totalBuckets = totalBuckets;
@@ -53,8 +53,8 @@ public class PartitionedRegionRedundancyTracker {
   }
 
   /**
-   * Since consistency was last reached, provides the lowest number of copies of a bucket that
-   * have been remaining across all the buckets in the region
+   * Since consistency was last reached, provides the lowest number of copies of a bucket that have
+   * been remaining across all the buckets in the region
    *
    * @return the number of copies of the bucket with the least copies available
    */
@@ -75,6 +75,7 @@ public class PartitionedRegionRedundancyTracker {
 
   /**
    * Updates the count of copies for the bucket with the least copies if a new low has been reached
+   * 
    * @param bucketCopies number of copies of a bucket remaining
    */
   synchronized void reportBucketCount(int bucketCopies) {

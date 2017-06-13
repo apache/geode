@@ -760,9 +760,8 @@ public class PartitionedRegion extends LocalRegion
     // getScope is overridden to return the correct scope.
     // this.scope = Scope.LOCAL;
     this.redundantCopies = regionAttributes.getPartitionAttributes().getRedundantCopies();
-    this.redundancyTracker =
-        new PartitionedRegionRedundancyTracker(this.totalNumberOfBuckets, this.redundantCopies,
-            this.prStats, getFullPath());
+    this.redundancyTracker = new PartitionedRegionRedundancyTracker(this.totalNumberOfBuckets,
+        this.redundantCopies, this.prStats, getFullPath());
     this.prStats.setConfiguredRedundantCopies(
         regionAttributes.getPartitionAttributes().getRedundantCopies());
     this.prStats.setLocalMaxMemory(
