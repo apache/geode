@@ -83,7 +83,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
         TabularResultData table = (TabularResultData) cmdResult.getResultData();
         List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
-        assertEquals(true, memberNames.size() == 1 ? true : false);
+        assertEquals(true, memberNames.size() == 1);
       } else {
         fail("testGCForGroup failed as CommandResult should be table type");
       }
@@ -101,7 +101,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testGCForMemberID() {
     setUpJmxManagerOnVm0ThenConnect(null);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
+    final String vm1MemberId = vm1.invoke(() -> getMemberId());
     String command = "gc --member=" + vm1MemberId;
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
@@ -112,7 +112,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
         TabularResultData table = (TabularResultData) cmdResult.getResultData();
         List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
-        assertEquals(true, memberNames.size() == 1 ? true : false);
+        assertEquals(true, memberNames.size() == 1);
       } else {
         fail("testGCForGroup failed as CommandResult should be table type");
       }
@@ -128,7 +128,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       props.setProperty(LOG_FILE, "testShowLogDefault.log");
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
+      final String vm1MemberId = vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId;
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -152,7 +152,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     try {
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
+      final String vm1MemberId = vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId + " --lines=50";
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -428,9 +428,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    String commandString =
-        CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL + "=finer" + " --"
-            + CliStrings.CHANGE_LOGLEVEL__MEMBER + "=" + serverName1 + "," + serverName2;
+    String commandString = CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL
+        + "=finer" + " --" + CliStrings.MEMBER + "=" + serverName1 + "," + serverName2;
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testChangeLogLevel commandResult=" + commandResult);
@@ -490,7 +489,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
 
     String commandString = CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL
-        + "=finer" + " --" + CliStrings.CHANGE_LOGLEVEL__GROUPS + "=" + grp1 + "," + grp2;
+        + "=finer" + " --" + CliStrings.GROUPS + "=" + grp1 + "," + grp2;
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testChangeLogLevelForGrps commandResult=" + commandResult);

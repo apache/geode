@@ -803,7 +803,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStoreName);
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
         diskStoreDir.getAbsolutePath());
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
@@ -857,7 +857,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Test destroying the disk store
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStoreName);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -1181,7 +1181,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStore1Name);
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION, "true");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__AUTO_COMPACT, "false");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__COMPACTION_THRESHOLD, "67");
@@ -1211,7 +1211,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Verify that all of the attributes of the disk store were set correctly.
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESCRIBE_DISK_STORE);
-    commandStringBuilder.addOption(CliStrings.DESCRIBE_DISK_STORE__MEMBER, vm1Name);
+    commandStringBuilder.addOption(CliStrings.MEMBER, vm1Name);
     commandStringBuilder.addOption(CliStrings.DESCRIBE_DISK_STORE__NAME, diskStore1Name);
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -1229,7 +1229,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStore2Name);
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__GROUP, "Group2");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group2");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
         diskStore2Dir.getAbsolutePath());
     cmdResult = executeCommand(commandStringBuilder.toString());
@@ -1327,7 +1327,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStore1Name);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     String stringResult = commandResultToString(cmdResult);
@@ -1351,7 +1351,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStore2Name);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, "Group2");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group2");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     stringResult = commandResultToString(cmdResult);
@@ -1376,7 +1376,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStore1Name);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, "Group2");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group2");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     stringResult = commandResultToString(cmdResult);

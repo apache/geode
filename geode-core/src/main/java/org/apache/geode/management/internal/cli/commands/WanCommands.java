@@ -68,11 +68,11 @@ public class WanCommands implements GfshCommand {
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public Result createGatewaySender(@CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUP,
+  public Result createGatewaySender(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
@@ -187,11 +187,11 @@ public class WanCommands implements GfshCommand {
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.START_GATEWAYSENDER__ID__HELP) String senderId,
 
-      @CliOption(key = CliStrings.START_GATEWAYSENDER__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.START_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = CliStrings.START_GATEWAYSENDER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
@@ -245,20 +245,19 @@ public class WanCommands implements GfshCommand {
                 statusList.add(CliStrings.GATEWAY_ERROR);
                 statusList.add(
                     CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1,
-                        new Object[] {id, member.getId()}));
+                        id, member.getId()));
               } else {
                 bean.start();
                 statusList.add(member.getId());
                 statusList.add(CliStrings.GATEWAY_OK);
                 statusList.add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STARTED_ON_MEMBER_1,
-                    new Object[] {id, member.getId()}));
+                    id, member.getId()));
               }
             } else {
               statusList.add(member.getId());
               statusList.add(CliStrings.GATEWAY_ERROR);
-              statusList
-                  .add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-                      new Object[] {id, member.getId()}));
+              statusList.add(CliStrings.format(
+                  CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, id, member.getId()));
             }
             return statusList;
           }
@@ -271,9 +270,8 @@ public class WanCommands implements GfshCommand {
       try {
         futures = execService.invokeAll(callables);
       } catch (InterruptedException ite) {
-        accumulateStartResult(resultData, null, CliStrings.GATEWAY_ERROR,
-            CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1,
-                new Object[] {id, ite.getMessage()}));
+        accumulateStartResult(resultData, null, CliStrings.GATEWAY_ERROR, CliStrings.format(
+            CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id, ite.getMessage()));
       }
 
       for (Future<List> future : futures) {
@@ -286,12 +284,12 @@ public class WanCommands implements GfshCommand {
         } catch (InterruptedException ite) {
           accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
               CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1,
-                  new Object[] {id, ite.getMessage()}));
+                  id, ite.getMessage()));
           continue;
         } catch (ExecutionException ee) {
           accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
               CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1,
-                  new Object[] {id, ee.getMessage()}));
+                  id, ee.getMessage()));
           continue;
         }
       }
@@ -312,11 +310,11 @@ public class WanCommands implements GfshCommand {
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.PAUSE_GATEWAYSENDER__ID__HELP) String senderId,
 
-      @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.PAUSE_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
@@ -352,22 +350,22 @@ public class WanCommands implements GfshCommand {
             if (bean.isPaused()) {
               accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
                   CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_ALREADY_PAUSED_ON_MEMBER_1,
-                      new Object[] {senderId, member.getId()}));
+                      senderId, member.getId()));
             } else {
               bean.pause();
               accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_OK,
-                  CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_PAUSED_ON_MEMBER_1,
-                      new Object[] {senderId, member.getId()}));
+                  CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_PAUSED_ON_MEMBER_1, senderId,
+                      member.getId()));
             }
           } else {
             accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1,
-                    new Object[] {senderId, member.getId()}));
+                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1, senderId,
+                    member.getId()));
           }
         } else {
           accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-              CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-                  new Object[] {senderId, member.getId()}));
+              CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, senderId,
+                  member.getId()));
         }
       }
       result = ResultBuilder.buildResult(resultData);
@@ -385,10 +383,10 @@ public class WanCommands implements GfshCommand {
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.RESUME_GATEWAYSENDER__ID__HELP) String senderId,
 
-      @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.RESUME_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
-      @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
@@ -424,22 +422,22 @@ public class WanCommands implements GfshCommand {
             if (bean.isPaused()) {
               bean.resume();
               accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_OK,
-                  CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_RESUMED_ON_MEMBER_1,
-                      new Object[] {senderId, member.getId()}));
+                  CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_RESUMED_ON_MEMBER_1, senderId,
+                      member.getId()));
             } else {
               accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-                  CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_PAUSED_ON_MEMBER_1,
-                      new Object[] {senderId, member.getId()}));
+                  CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_PAUSED_ON_MEMBER_1, senderId,
+                      member.getId()));
             }
           } else {
             accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1,
-                    new Object[] {senderId, member.getId()}));
+                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1, senderId,
+                    member.getId()));
           }
         } else {
           accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-              CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-                  new Object[] {senderId, member.getId()}));
+              CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, senderId,
+                  member.getId()));
         }
       }
       result = ResultBuilder.buildResult(resultData);
@@ -457,11 +455,11 @@ public class WanCommands implements GfshCommand {
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.STOP_GATEWAYSENDER__ID__HELP) String senderId,
 
-      @CliOption(key = CliStrings.STOP_GATEWAYSENDER__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.STOP_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = CliStrings.STOP_GATEWAYSENDER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
@@ -495,18 +493,18 @@ public class WanCommands implements GfshCommand {
           if (bean.isRunning()) {
             bean.stop();
             accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_OK,
-                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STOPPED_ON_MEMBER_1,
-                    new Object[] {senderId, member.getId()}));
+                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STOPPED_ON_MEMBER_1, senderId,
+                    member.getId()));
 
           } else {
             accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1,
-                    new Object[] {senderId, member.getId()}));
+                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1, senderId,
+                    member.getId()));
           }
         } else {
           accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-              CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-                  new Object[] {senderId, member.getId()}));
+              CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, senderId,
+                  member.getId()));
         }
       }
       result = ResultBuilder.buildResult(resultData);
@@ -521,11 +519,11 @@ public class WanCommands implements GfshCommand {
       help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public Result createGatewayReceiver(@CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
+  public Result createGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember,
@@ -636,12 +634,12 @@ public class WanCommands implements GfshCommand {
             gatewaySenderExists = true;
             bean.rebalance();
             accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_OK,
-                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_REBALANCED_ON_MEMBER_1,
-                    new Object[] {senderId, member.getId()}));
+                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_REBALANCED_ON_MEMBER_1, senderId,
+                    member.getId()));
           } else {
             accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
                 CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-                    new Object[] {senderId, member.getId()}));
+                    senderId, member.getId()));
           }
         }
         if (gatewaySenderExists) {
@@ -663,11 +661,11 @@ public class WanCommands implements GfshCommand {
       help = CliStrings.START_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public Result startGatewayReceiver(@CliOption(key = CliStrings.START_GATEWAYRECEIVER__GROUP,
+  public Result startGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = CliStrings.START_GATEWAYRECEIVER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
     Result result = null;
@@ -730,11 +728,11 @@ public class WanCommands implements GfshCommand {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result stopGatewayReceiver(
 
-      @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
@@ -797,9 +795,11 @@ public class WanCommands implements GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listGateway(
-      @CliOption(key = CliStrings.LIST_GATEWAY__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String[] onMember,
-      @CliOption(key = CliStrings.LIST_GATEWAY__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup) {
 
     Result result = null;
@@ -878,11 +878,11 @@ public class WanCommands implements GfshCommand {
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.STATUS_GATEWAYSENDER__ID__HELP) String senderId,
 
-      @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.STATUS_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
@@ -936,11 +936,11 @@ public class WanCommands implements GfshCommand {
       help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result statusGatewayReceiver(@CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
+  public Result statusGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.STATUS_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
@@ -991,10 +991,10 @@ public class WanCommands implements GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result destroyGatewaySender(
-      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
-      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String[] onMember,

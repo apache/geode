@@ -49,21 +49,18 @@ public class DurableClientCommandsController extends AbstractCommandsController 
   @ResponseBody
   public String listDurableClientContinuousQueries(
       @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-      @RequestParam(value = CliStrings.LIST_DURABLE_CQS__MEMBER,
-          required = false) final String memberNameId,
-      @RequestParam(value = CliStrings.LIST_DURABLE_CQS__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.LIST_DURABLE_CQS);
 
     command.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, decode(durableClientId));
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.LIST_DURABLE_CQS__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.LIST_DURABLE_CQS__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -74,10 +71,8 @@ public class DurableClientCommandsController extends AbstractCommandsController 
   @ResponseBody
   public String countDurableClientContinuousQueryEvents(
       @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER,
-          required = false) final String memberNameId,
-      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     return internalCountDurableClientContinuousQueryEvents(decode(durableClientId), null,
         memberNameId, groups);
   }
@@ -88,10 +83,8 @@ public class DurableClientCommandsController extends AbstractCommandsController 
   public String countDurableClientContinuousQueryEvents(
       @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
       @PathVariable("durable-cq-name") final String durableCqName,
-      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER,
-          required = false) final String memberNameId,
-      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     return internalCountDurableClientContinuousQueryEvents(decode(durableClientId),
         decode(durableCqName), memberNameId, groups);
   }
@@ -108,12 +101,11 @@ public class DurableClientCommandsController extends AbstractCommandsController 
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -124,21 +116,18 @@ public class DurableClientCommandsController extends AbstractCommandsController 
   @ResponseBody
   public String closeDurableClient(
       @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-      @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER,
-          required = false) final String memberNameId,
-      @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CLIENTS);
 
     command.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, decode(durableClientId));
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -150,22 +139,19 @@ public class DurableClientCommandsController extends AbstractCommandsController 
   public String closeDurableContinuousQuery(
       @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
       @PathVariable("durable-cq-name") final String durableCqName,
-      @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__MEMBER,
-          required = false) final String memberNameId,
-      @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__GROUP,
-          required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CQS);
 
     command.addOption(CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID, decode(durableClientId));
     command.addOption(CliStrings.CLOSE_DURABLE_CQS__NAME, decode(durableCqName));
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.CLOSE_DURABLE_CQS__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CLOSE_DURABLE_CQS__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

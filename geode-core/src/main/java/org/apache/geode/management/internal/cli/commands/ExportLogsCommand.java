@@ -68,11 +68,11 @@ public class ExportLogsCommand implements GfshCommand {
   public Result exportLogs(
       @CliOption(key = CliStrings.EXPORT_LOGS__DIR, help = CliStrings.EXPORT_LOGS__DIR__HELP,
           mandatory = false) String dirName,
-      @CliOption(key = CliStrings.EXPORT_LOGS__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXPORT_LOGS__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.EXPORT_LOGS__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_LOGS__MEMBER__HELP) String[] memberIds,

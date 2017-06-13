@@ -244,9 +244,9 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         wc = createMBeanWaitCriterion(5, "", distributedMember, cacheServerPort);
         waitForCriterion(wc, 10000, 500, true);
 
-        final String command = CliStrings.SHOW_METRICS + " --" + CliStrings.SHOW_METRICS__MEMBER
-            + "=" + distributedMember.getId() + " --" + CliStrings.SHOW_METRICS__CACHESERVER__PORT
-            + "=" + cacheServerPort + " --" + CliStrings.SHOW_METRICS__FILE + "=" + exportFileName;
+        final String command = CliStrings.SHOW_METRICS + " --" + CliStrings.MEMBER + "="
+            + distributedMember.getId() + " --" + CliStrings.SHOW_METRICS__CACHESERVER__PORT + "="
+            + cacheServerPort + " --" + CliStrings.SHOW_METRICS__FILE + "=" + exportFileName;
 
         CommandProcessor commandProcessor = new CommandProcessor();
         Result result =

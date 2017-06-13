@@ -50,8 +50,7 @@ public class QueueCommandsController extends AbstractCommandsController {
       @RequestParam(CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER) final String listener,
       @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE,
           required = false) final String[] listenerParametersValues,
-      @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP,
-          required = false) final String[] groups,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
       @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL,
           defaultValue = "false") final Boolean parallel,
       @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION,
@@ -91,8 +90,7 @@ public class QueueCommandsController extends AbstractCommandsController {
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL,

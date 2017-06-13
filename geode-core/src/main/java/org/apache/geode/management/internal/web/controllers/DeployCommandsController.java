@@ -48,13 +48,12 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
 
   @RequestMapping(method = RequestMethod.GET, value = "/deployed")
   @ResponseBody
-  public String listDeployed(@RequestParam(value = CliStrings.LIST_DEPLOYED__GROUP,
-      required = false) final String[] groups) {
+  public String listDeployed(
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.LIST_DEPLOYED);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.LIST_DEPLOYED__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -66,19 +65,18 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
   // @RequestPart(RESOURCES_REQUEST_PARAMETER) final Resource[] jarFileResources,
   public String deploy(
       @RequestParam(RESOURCES_REQUEST_PARAMETER) final MultipartFile[] jarFileResources,
-      @RequestParam(value = CliStrings.DEPLOY__GROUP, required = false) final String[] groups,
-      @RequestParam(value = CliStrings.DEPLOY__JAR, required = false) final String jarFileName,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.JAR, required = false) final String jarFileName,
       @RequestParam(value = CliStrings.DEPLOY__DIR, required = false) final String directory)
       throws IOException {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.DEPLOY);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.DEPLOY__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(jarFileName)) {
-      command.addOption(CliStrings.DEPLOY__JAR, jarFileName);
+      command.addOption(CliStrings.JAR, jarFileName);
     }
 
     if (hasValue(directory)) {
@@ -93,18 +91,16 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
   @RequestMapping(method = RequestMethod.DELETE, value = "/deployed")
   @ResponseBody
   public String undeploy(
-      @RequestParam(value = CliStrings.UNDEPLOY__GROUP, required = false) final String[] groups,
-      @RequestParam(value = CliStrings.UNDEPLOY__JAR,
-          required = false) final String[] jarFileNames) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.JAR, required = false) final String[] jarFileNames) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.UNDEPLOY);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.UNDEPLOY__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(jarFileNames)) {
-      command.addOption(CliStrings.UNDEPLOY__JAR,
+      command.addOption(CliStrings.JAR,
           StringUtils.join(jarFileNames, StringUtils.COMMA_DELIMITER));
     }
 
