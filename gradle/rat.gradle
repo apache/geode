@@ -47,7 +47,7 @@ rat {
 
     // IDE
     'etc/eclipse-java-google-style.xml',
-    'etc/intellij-java-google-style.xml',
+    'etc/intellij-java-modified-google-style.xml',
     'etc/eclipseOrganizeImports.importorder',
     '**/.project',
     '**/.classpath',
