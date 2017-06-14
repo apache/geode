@@ -128,14 +128,12 @@ public class StatisticsImplTest {
     assertEquals(1, stats.invokeSuppliers());
 
     // String message, Object p0, Object p1, Object p2
-    verify(logger, times(1)).warn(anyString(), isNull(), anyInt(),
-        isA(NullPointerException.class));
+    verify(logger, times(1)).warn(anyString(), isNull(), anyInt(), isA(NullPointerException.class));
 
     assertEquals(1, stats.invokeSuppliers());
 
     // Make sure the logger isn't invoked again
-    verify(logger, times(1)).warn(anyString(), isNull(), anyInt(),
-        isA(NullPointerException.class));
+    verify(logger, times(1)).warn(anyString(), isNull(), anyInt(), isA(NullPointerException.class));
   }
 
   @Test
