@@ -516,10 +516,6 @@ public class InternalDistributedSystem extends DistributedSystem
     return this.securityService;
   }
 
-  public void setSecurityService(SecurityService securityService) {
-    this.securityService = securityService;
-  }
-
   /**
    * Registers a listener to the system
    * 
