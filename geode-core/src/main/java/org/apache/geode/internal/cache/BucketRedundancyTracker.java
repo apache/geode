@@ -15,15 +15,15 @@
 package org.apache.geode.internal.cache;
 
 /**
- * Keeps track of redundancy status for a PartitionedRegion and (if enabled) updates the statistics
- * for the region.
+ * Keeps track of redundancy status for a bucket in a PartitionedRegion and update the region's
+ * {@link PartitionedRegionRedundancyTracker} of the bucket's status for the region.
  */
 class BucketRedundancyTracker {
   private boolean redundancySatisfied = false;
   private boolean hasAnyCopies = false;
   private boolean redundancyEverSatisfied = false;
   private boolean hasEverHadCopies = false;
-  private volatile int currentRedundancy = -1;
+  private int currentRedundancy = -1;
   private final int targetRedundancy;
   private final PartitionedRegionRedundancyTracker regionRedundancyTracker;
 
@@ -44,7 +44,7 @@ class BucketRedundancyTracker {
   /**
    * Adjust statistics based on closing a bucket
    */
-  void closeBucket() {
+  synchronized void closeBucket() {
     if (!redundancySatisfied) {
       regionRedundancyTracker.decrementLowRedundancyBucketCount();
       redundancySatisfied = true;
@@ -61,7 +61,7 @@ class BucketRedundancyTracker {
    *
    * @param currentBucketHosts number of current hosts for the bucket
    */
-  void updateStatistics(int currentBucketHosts) {
+  synchronized void updateStatistics(int currentBucketHosts) {
     updateNoCopiesStatistics(currentBucketHosts);
     updateRedundancyStatistics(currentBucketHosts);
   }
