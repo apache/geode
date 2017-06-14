@@ -55,18 +55,23 @@ The following output appears:
 
 ``` pre
 gfsh>start locator --name=locator1
-Starting a GemFire Locator in /home/username/gfsh_tutorial/locator1...
-.................................
-Locator in /home/username/gfsh_tutorial/locator1 on ubuntu.local[10334] as locator1 is currently online.
-Process ID: 5610
-Uptime: 18 seconds
-GemFire Version: 8.1.0
-Java Version: 1.7.0_72
-Log File: /home/username/gfsh_tutorial/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar:/home/username/Pivotal_GemFire_810_b50582_Linux/lib/locator-dependencies.jar
+.....
+Locator in /home/username/gfsh_tutorial/locator1 on 192.0.2.0[10334]
+as locator1 is currently online.
+Process ID: 67666
+Uptime: 6 seconds
+Geode Version: 1.2.0
+Java Version: 1.8.0_92
+Log File: /home/username/gfsh_tutorial/locator1.log
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true
+ -Dgemfire.load-cluster-configuration-from-dir=false
+ -Dgemfire.launcher.registerSignalHandlers=true
+ -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/username/geode/geode-assembly/build/install/apache-geode/lib
+/geode-core-1.2.0.jar:/home/username/geode/geode-assembly/build/install/apache-geode
+/lib/geode-dependencies.jar
 
-Successfully connected to: [host=ubuntu.local, port=1099]
+Successfully connected to: JMX Manager [host=192.0.2.0, port=1099]
 
 Cluster configuration service is up and running.
 ```
@@ -171,16 +176,23 @@ If the server starts successfully, the following output appears:
 
 ``` pre
 gfsh>start server --name=server1 --locators=localhost[10334]
-Starting a GemFire Server in /home/username/gfsh_tutorial/server1...
-.............
-Server in /home/username/gfsh_tutorial/server1 on ubuntu.local[40404] as server1 is currently online.
-Process ID: 5931
-Uptime: 7 seconds
-GemFire Version: 8.1.0
-Java Version: 1.7.0_72
-Log File: /home/username/gfsh_tutorial/server1/server1.log
-JVM Arguments: -Dgemfire.locators=localhost[10334] -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar:/home/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
+Starting a Geode Server in /home/username/gfsh_tutorial/server1/server1.log...
+...
+Server in /home/username/gfsh_tutorial/server1 on 192.0.2.0[40404] as server1
+is currently online.
+Process ID: 68375
+Uptime: 4 seconds
+Geode Version: 1.2.0
+Java Version: 1.8.0_92
+Log File: /home/username//gfsh_tutorial/server1/server1.log
+JVM Arguments: -Dgemfire.locators=localhost[10334]
+ -Dgemfire.use-cluster-configuration=true -Dgemfire.start-dev-rest-api=false
+ -XX:OnOutOfMemoryError=kill -KILL %p
+ -Dgemfire.launcher.registerSignalHandlers=true
+ -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/username/geode/geode-assembly/build/install/apache-geode/lib
+/geode-core-1.2.0.jar:/home/username/geode/geode-assembly/build/install
+/apache-geode/lib/geode-dependencies.jar
 ```
 
 If you run `start server` from gfsh without specifying the member name, gfsh will automatically pick a random member name. This is useful for automation.
@@ -279,16 +291,22 @@ Because only one server is in the distributed system at the moment, the command 
 
 ``` pre
 gfsh>start server --name=server2 --server-port=40405
-Starting a GemFire Server in /home/username/gfsh_tutorial/server2...
-................
-Server in /home/username/gfsh_tutorial/server2 on ubuntu.local[40405] as server2 is currently online.
-Process ID: 6092
-Uptime: 8 seconds
-GemFire Version: 8.1.0
-Java Version: 1.7.0_72
+Starting a Geode Server in /home/username/gfsh_tutorial/server2...
+...
+Server in /home/username/gfsh_tutorial/server2 on 192.0.2.0[40405] as
+server2 is currently online.
+Process ID: 68423
+Uptime: 4 seconds
+Geode Version: 1.2.0
+Java Version: 1.8.0_92
 Log File: /home/username/gfsh_tutorial/server2/server2.log
-JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar:/home/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
+JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334]
+ -Dgemfire.use-cluster-configuration=true -Dgemfire.start-dev-rest-api=false
+ -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true
+ -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/username/geode/geode-assembly/build/install/apache-geode
+/lib/geode-core-1.2.0.jar:/home/username/geode/geode-assembly/build/install
+/apache-geode/lib/geode-dependencies.jar
 ```
 
 **Step 11: Create a replicated region.**
@@ -466,3 +484,9 @@ gfsh>export data --region=region1 --file=region1.gfd --member=server1
 ```
 
 You can later use the `import data` command to import that data into the same region on another member.
+
+**Step 20: Shutdown the cluster.**
+
+``` pre
+gfsh>shutdown --include-locators=true
+```
