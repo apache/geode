@@ -96,7 +96,9 @@ class BucketRedundancyTracker {
         regionRedundancyTracker.incrementLowRedundancyBucketCount();
         redundancySatisfied = false;
       }
-      regionRedundancyTracker.reportBucketCount(currentBucketHosts);
+      if (redundancyEverSatisfied) {
+        regionRedundancyTracker.reportBucketCount(currentBucketHosts);
+      }
     } else if (!redundancySatisfied && actualRedundancy >= targetRedundancy) {
       if (redundancyEverSatisfied) {
         regionRedundancyTracker.decrementLowRedundancyBucketCount();

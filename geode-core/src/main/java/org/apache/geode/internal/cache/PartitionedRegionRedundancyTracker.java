@@ -97,7 +97,7 @@ public class PartitionedRegionRedundancyTracker {
     noCopiesBuckets++;
     stats.incNoCopiesBucketCount(1);
     if (noCopiesBuckets == 1) {
-      logger.warn("No copies remain for " + regionPath);
+      logger.warn("All in memory copies of some data have been lost for " + regionPath);
     }
   }
 
@@ -112,6 +112,8 @@ public class PartitionedRegionRedundancyTracker {
     stats.incLowRedundancyBucketCount(-1);
     if (lowRedundancyBuckets == 0) {
       lowestBucketCopies = targetRedundancy + 1;
+      logger.info("Configured redundancy of " + targetRedundancy + " copies has been restored to "
+          + regionPath);
     }
   }
 

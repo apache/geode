@@ -16,43 +16,38 @@
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
-import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.junit.After;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(UnitTest.class)
 public class PartitionedRegionRedundancyTrackerTest {
   private static final int TARGET_COPIES = 2;
   private static final int TOTAL_BUCKETS = 3;
 
-  private PartitionedRegion region;
   private PartitionedRegionStats stats;
   private PartitionedRegionRedundancyTracker redundancyTracker;
 
   @Before
   public void setup() {
-    PartitionAttributes<Object, Object> regionAttributes = new PartitionAttributesFactory<>()
-        .setTotalNumBuckets(TOTAL_BUCKETS).setRedundantCopies(TARGET_COPIES - 1).create();
-    region = (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("testRegion",
-        regionAttributes);
-    stats = region.getPrStats();
-    redundancyTracker = new PartitionedRegionRedundancyTracker(region.getTotalNumberOfBuckets(),
-        region.getRedundantCopies(), stats, region.getFullPath());
-  }
-
-  @After
-  public void teardown() {
-    region.destroyRegion();
+    stats = mock(PartitionedRegionStats.class);
+    redundancyTracker = new PartitionedRegionRedundancyTracker(TOTAL_BUCKETS, TARGET_COPIES - 1,
+        stats, "testRegion");
   }
 
   @Test
   public void incrementsAndDecrementsLowRedundancyBucketCount() {
     redundancyTracker.incrementLowRedundancyBucketCount();
-    assertEquals(1, stats.getLowRedundancyBucketCount());
+    verify(stats, times(1)).incLowRedundancyBucketCount(1);
     redundancyTracker.decrementLowRedundancyBucketCount();
-    assertEquals(0, stats.getLowRedundancyBucketCount());
+    verify(stats, times(1)).incLowRedundancyBucketCount(-1);
   }
 
   @Test
@@ -61,23 +56,23 @@ public class PartitionedRegionRedundancyTrackerTest {
     for (int i = 0; i < TOTAL_BUCKETS; i++) {
       redundancyTracker.incrementLowRedundancyBucketCount();
     }
-    assertEquals(TOTAL_BUCKETS, stats.getLowRedundancyBucketCount());
+    verify(stats, times(TOTAL_BUCKETS)).incLowRedundancyBucketCount(1);
     redundancyTracker.incrementLowRedundancyBucketCount();
-    assertEquals(TOTAL_BUCKETS, stats.getLowRedundancyBucketCount());
+    verifyNoMoreInteractions(stats);
   }
 
   @Test
   public void willNotDecrementLowRedundancyBucketCountBelowZero() {
     redundancyTracker.decrementLowRedundancyBucketCount();
-    assertEquals(0, stats.getLowRedundancyBucketCount());
+    verifyZeroInteractions(stats);
   }
 
   @Test
   public void incrementsAndDecrementsNoCopiesBucketCount() {
     redundancyTracker.incrementNoCopiesBucketCount();
-    assertEquals(1, stats.getNoCopiesBucketCount());
+    verify(stats, times(1)).incNoCopiesBucketCount(1);
     redundancyTracker.decrementNoCopiesBucketCount();
-    assertEquals(0, stats.getNoCopiesBucketCount());
+    verify(stats, times(1)).incNoCopiesBucketCount(-1);
   }
 
   @Test
@@ -86,15 +81,15 @@ public class PartitionedRegionRedundancyTrackerTest {
     for (int i = 0; i < TOTAL_BUCKETS; i++) {
       redundancyTracker.incrementNoCopiesBucketCount();
     }
-    assertEquals(TOTAL_BUCKETS, stats.getNoCopiesBucketCount());
+    verify(stats, times(TOTAL_BUCKETS)).incNoCopiesBucketCount(1);
     redundancyTracker.incrementNoCopiesBucketCount();
-    assertEquals(TOTAL_BUCKETS, stats.getNoCopiesBucketCount());
+    verifyNoMoreInteractions(stats);
   }
 
   @Test
   public void willNotDecrementNoCopiesBucketCountBelowZero() {
     redundancyTracker.decrementNoCopiesBucketCount();
-    assertEquals(0, stats.getNoCopiesBucketCount());
+    verify(stats, times(0)).incNoCopiesBucketCount(-1);
   }
 
   @Test

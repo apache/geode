@@ -15,94 +15,93 @@
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
-import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.junit.After;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(UnitTest.class)
 public class BucketRedundancyTrackerTest {
   private static final int TARGET_COPIES = 2;
 
-  private PartitionedRegion region;
-  private PartitionedRegionStats stats;
-  private BucketRedundancyTracker redundancyTracker;
+  private PartitionedRegionRedundancyTracker regionRedundancyTracker;
+  private BucketRedundancyTracker bucketRedundancyTracker;
 
   @Before
   public void setup() {
-    PartitionAttributes<Object, Object> regionAttributes = new PartitionAttributesFactory<>()
-        .setTotalNumBuckets(10).setRedundantCopies(TARGET_COPIES - 1).create();
-    region = (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("testRegion",
-        regionAttributes);
-    stats = region.getPrStats();
-    redundancyTracker =
-        new BucketRedundancyTracker(region.getRedundantCopies(), region.getRedundancyTracker());
-  }
-
-  @After
-  public void teardown() {
-    region.destroyRegion();
+    regionRedundancyTracker = mock(PartitionedRegionRedundancyTracker.class);
+    bucketRedundancyTracker =
+        new BucketRedundancyTracker(TARGET_COPIES - 1, regionRedundancyTracker);
   }
 
   @Test
   public void whenRedundancyNeverMetDoesNotWarnOnLowRedundancy() {
-    redundancyTracker.updateStatistics(TARGET_COPIES - 1);
-    assertEquals(0, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
+    verifyZeroInteractions(regionRedundancyTracker);
   }
 
   @Test
   public void incrementsBucketCountOnLowRedundancyForBucket() {
-    redundancyTracker.updateStatistics(TARGET_COPIES);
-    redundancyTracker.updateStatistics(TARGET_COPIES - 1);
-    assertEquals(1, stats.getLowRedundancyBucketCount());
-    assertEquals(0, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
+    verify(regionRedundancyTracker, times(1)).incrementLowRedundancyBucketCount();
+    assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
   @Test
   public void decrementsBucketCountOnRegainingRedundancyForBucket() {
-    redundancyTracker.updateStatistics(TARGET_COPIES);
-    redundancyTracker.updateStatistics(TARGET_COPIES - 1);
-    redundancyTracker.updateStatistics(TARGET_COPIES);
-    assertEquals(0, stats.getLowRedundancyBucketCount());
-    assertEquals(TARGET_COPIES - 1, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
+    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
+    assertEquals(TARGET_COPIES - 1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
   @Test
   public void decrementsBucketCountOnClosingBucketBelowRedundancy() {
-    redundancyTracker.updateStatistics(TARGET_COPIES);
-    redundancyTracker.updateStatistics(TARGET_COPIES - 1);
-    redundancyTracker.closeBucket();
-    assertEquals(0, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
+    bucketRedundancyTracker.closeBucket();
+    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
+    assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
   @Test
   public void decrementsBucketCountOnClosingABucketWithNoCopies() {
-    redundancyTracker.updateStatistics(TARGET_COPIES);
-    redundancyTracker.updateStatistics(TARGET_COPIES - 1);
-    redundancyTracker.updateStatistics(0);
-    redundancyTracker.closeBucket();
-    assertEquals(-1, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
+    bucketRedundancyTracker.updateStatistics(0);
+    bucketRedundancyTracker.closeBucket();
+    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
+    assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
   @Test
   public void doesNotWarnWhenNeverHadAnyCopies() {
-    redundancyTracker.updateStatistics(0);
-    assertEquals(-1, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(0);
+    verifyZeroInteractions(regionRedundancyTracker);
+    assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
   @Test
   public void incrementsBucketCountOnHavingNoCopiesForBucket() {
-    redundancyTracker.updateStatistics(1);
-    redundancyTracker.updateStatistics(0);
-    assertEquals(-1, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(1);
+    bucketRedundancyTracker.updateStatistics(0);
+    verify(regionRedundancyTracker, times(1)).incrementNoCopiesBucketCount();
+    assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
   @Test
   public void decrementsBucketCountOnHavingAtLeastOneCopyOfBucket() {
-    redundancyTracker.updateStatistics(1);
-    redundancyTracker.updateStatistics(0);
-    redundancyTracker.updateStatistics(1);
-    assertEquals(0, redundancyTracker.getCurrentRedundancy());
+    bucketRedundancyTracker.updateStatistics(1);
+    bucketRedundancyTracker.updateStatistics(0);
+    bucketRedundancyTracker.updateStatistics(1);
+    verify(regionRedundancyTracker, times(1)).decrementNoCopiesBucketCount();
+    assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
   }
 }
