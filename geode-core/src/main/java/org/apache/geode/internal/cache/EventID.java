@@ -164,7 +164,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    */
   public static byte[] getMembershipId(ClientProxyMembershipID client) {
     try {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(256, client.getClientVersion());
       ((InternalDistributedMember) client.getDistributedMember()).writeEssentialData(hdos);
       return hdos.toByteArray();
     } catch (IOException ioe) {
