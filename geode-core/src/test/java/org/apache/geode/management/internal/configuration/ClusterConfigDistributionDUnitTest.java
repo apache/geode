@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
@@ -44,6 +43,7 @@ import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDistributionDUnitTest {
+
   private static final String REPLICATE_REGION = "ReplicateRegion1";
   private static final String PARTITION_REGION = "PartitionRegion1";
   private static final String INDEX1 = "ID1";
@@ -67,7 +67,6 @@ public class ClusterConfigDistributionDUnitTest {
     lsRule.startServerVM(1, locator.getPort());
   }
 
-
   @Test
   public void testIndexAndAsyncEventQueueCommands() throws Exception {
     final String DESTROY_REGION = "regionToBeDestroyed";
@@ -87,7 +86,6 @@ public class ClusterConfigDistributionDUnitTest {
 
     String asyncEventQueueJarPath = createAsyncEventQueueJar();
     gfshConnector.executeAndVerifyCommand("deploy --jar=" + asyncEventQueueJarPath);
-
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, AsyncEventQueue1);
@@ -137,7 +135,6 @@ public class ClusterConfigDistributionDUnitTest {
       assertTrue(aeq.getMaximumQueueMemory() == 1000);
     });
   }
-
 
   private String createAsyncEventQueueJar() throws IOException {
     String queueCommandsJarName = this.lsRule.getTempFolder().getRoot().getCanonicalPath()

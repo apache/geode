@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -24,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.security.SimpleTestSecurityManager;
@@ -43,16 +43,16 @@ import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClusterConfigWithSecurityDUnitTest {
-  public String clusterConfigZipPath;
+
+  private String clusterConfigZipPath;
+  private MemberVM locator0;
+  private Properties locatorProps;
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
   public GfshShellConnectionRule connector = new GfshShellConnectionRule();
-
-  MemberVM locator0;
-  Properties locatorProps;
 
   @Before
   public void before() throws Exception {
@@ -64,8 +64,8 @@ public class ClusterConfigWithSecurityDUnitTest {
   }
 
   @Test
-  @Ignore("GEODE-2315")
-  public void testSecurityPropsInheritance() throws Exception {
+  @Ignore("Fails until GEODE-2315 is implemented")
+  public void testSecurityPropsInheritanceOnLocator() throws Exception {
     locatorProps.clear();
     locatorProps.setProperty(LOCATORS, "localhost[" + locator0.getPort() + "]");
     locatorProps.setProperty("security-username", "cluster");
@@ -101,6 +101,24 @@ public class ClusterConfigWithSecurityDUnitTest {
       // the security manager is still the locator's security manager, not the imported one.
       assertThat(properties.getProperty(SECURITY_MANAGER))
           .isEqualTo(SimpleTestSecurityManager.class.getName());
+    });
+  }
+
+  @Test // fails due to GEODE-3062
+  public void testSecurityPropsInheritanceOnServer() throws Exception {
+    Properties serverProps = new Properties();
+    serverProps.setProperty(LOCATORS, "localhost[" + locator0.getPort() + "]");
+    serverProps.setProperty("security-username", "cluster");
+    serverProps.setProperty("security-password", "cluster");
+    MemberVM server = lsRule.startServerVM(1, serverProps);
+
+    // cluster config specifies a security-manager so integrated security should be enabled
+    server.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Properties properties = cache.getDistributedSystem().getSecurityProperties();
+      assertThat(properties.getProperty(SECURITY_MANAGER))
+          .isEqualTo(SimpleTestSecurityManager.class.getName());
+      assertThat(cache.getSecurityService().isIntegratedSecurity()).isTrue();
     });
   }
 

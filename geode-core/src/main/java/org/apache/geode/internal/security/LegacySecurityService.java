@@ -14,17 +14,7 @@
  */
 package org.apache.geode.internal.security;
 
-import java.util.Properties;
-import java.util.concurrent.Callable;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
-
-import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.SecurityManager;
 
 /**
  * implementing SecurityService when only legacy authenticators are specified
@@ -32,12 +22,11 @@ import org.apache.geode.security.SecurityManager;
 public class LegacySecurityService implements SecurityService {
 
   private final boolean hasClientAuthenticator;
-
   private final boolean hasPeerAuthenticator;
 
   LegacySecurityService() {
-    hasClientAuthenticator = false;
-    hasPeerAuthenticator = false;
+    this.hasClientAuthenticator = false;
+    this.hasPeerAuthenticator = false;
   }
 
   LegacySecurityService(final String clientAuthenticator, final String peerAuthenticator) {

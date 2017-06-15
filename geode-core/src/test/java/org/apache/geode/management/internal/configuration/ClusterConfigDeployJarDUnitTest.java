@@ -12,13 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -31,10 +29,13 @@ import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
+
+  private String clusterJar;
+  private String group1Jar;
+  private String group2Jar;
+
   @Rule
   public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
-
-  private String clusterJar, group1Jar, group2Jar;
 
   @Before
   public void before() throws Exception {
@@ -88,7 +89,6 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(locator3);
   }
 
-
   @Test
   public void testDeploy() throws Exception {
     // set up the locator/servers
@@ -133,7 +133,6 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedGroup1Config.verify(server2);
     expectedGroup1and2Config.verify(server3);
   }
-
 
   @Test
   public void testUndeploy() throws Exception {

@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
@@ -34,7 +33,8 @@ import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
-  protected MemberVM locator;
+
+  private MemberVM locator;
 
   @Before
   public void before() throws Exception {
