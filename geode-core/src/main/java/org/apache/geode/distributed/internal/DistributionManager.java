@@ -547,6 +547,7 @@ public class DistributionManager implements DM {
   public static DistributionManager create(InternalDistributedSystem system) {
 
     DistributionManager distributionManager = null;
+    boolean beforeJoined = true;
 
     try {
 
@@ -571,6 +572,8 @@ public class DistributionManager implements DM {
 
       distributionManager = new DistributionManager(system, transport);
       distributionManager.assertDistributionManagerType();
+
+      beforeJoined = false; // we have now joined the system
 
       {
         InternalDistributedMember id = distributionManager.getDistributionManagerId();
@@ -651,7 +654,7 @@ public class DistributionManager implements DM {
         if (logger.isDebugEnabled()) {
           logger.debug("cleaning up incompletely started DistributionManager due to exception", r);
         }
-        distributionManager.uncleanShutdown(true);
+        distributionManager.uncleanShutdown(beforeJoined);
       }
       throw r;
     }
@@ -1149,8 +1152,8 @@ public class DistributionManager implements DM {
       start = System.currentTimeMillis();
 
       MyListener l = new MyListener(this);
-      membershipManager =
-          MemberFactory.newMembershipManager(l, system.getConfig(), transport, stats);
+      membershipManager = MemberFactory.newMembershipManager(l, system.getConfig(), transport,
+          stats, system.getSecurityService());
 
       sb.append(System.currentTimeMillis() - start);
 
@@ -2252,7 +2255,7 @@ public class DistributionManager implements DM {
    * Stops the pusher, puller and processor threads and closes the connection to the transport
    * layer. This should only be used from shutdown() or from the dm initialization code
    */
-  private void uncleanShutdown(boolean duringStartup) {
+  private void uncleanShutdown(boolean beforeJoined) {
     try {
       this.closeInProgress = true; // set here also to fix bug 36736
       removeAllHealthMonitors();
@@ -2294,7 +2297,7 @@ public class DistributionManager implements DM {
         if (this.channel != null) {
           logger.info(LocalizedMessage.create(
               LocalizedStrings.DistributionManager_NOW_CLOSING_DISTRIBUTION_FOR__0, this.myid));
-          this.channel.disconnect(duringStartup);
+          this.channel.disconnect(beforeJoined);
           // this.channel = null; DO NOT NULL OUT INSTANCE VARIABLES AT SHUTDOWN - bug #42087
         }
       }

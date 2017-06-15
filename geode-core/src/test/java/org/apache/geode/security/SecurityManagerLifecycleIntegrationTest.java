@@ -19,11 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
-
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -33,42 +30,44 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.util.Properties;
+
 @Category({IntegrationTest.class, SecurityTest.class})
-public class IntegratedSecurityCacheLifecycleIntegrationTest {
+public class SecurityManagerLifecycleIntegrationTest {
 
   private Properties securityProps;
-  private Cache cache;
+  private InternalCache cache;
   private SecurityService securityService;
 
   @Before
   public void before() {
-    securityService = IntegratedSecurityService.getSecurityService();
-
-    securityProps = new Properties();
-    securityProps.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
+    this.securityProps = new Properties();
+    this.securityProps.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
 
     Properties props = new Properties();
-    props.putAll(securityProps);
+    props.putAll(this.securityProps);
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
 
-    cache = new CacheFactory(props).create();
+    this.cache = (InternalCache) new CacheFactory(props).create();
+
+    this.securityService = this.cache.getSecurityService();
   }
 
   @After
   public void after() {
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
+    if (this.cache != null && !this.cache.isClosed()) {
+      this.cache.close();
     }
   }
 
   @Category(FlakyTest.class) // GEODE-1661
   @Test
   public void initAndCloseTest() {
-    SpySecurityManager ssm = (SpySecurityManager) securityService.getSecurityManager();
-    assertThat(ssm.initInvoked).isEqualTo(1);
-    cache.close();
-    assertThat(ssm.closeInvoked).isEqualTo(1);
+    SpySecurityManager ssm = (SpySecurityManager) this.securityService.getSecurityManager();
+    assertThat(ssm.getInitInvocationCount()).isEqualTo(1);
+    this.cache.close();
+    assertThat(ssm.getCloseInvocationCount()).isEqualTo(1);
   }
 
 }

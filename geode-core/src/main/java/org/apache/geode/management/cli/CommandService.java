@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.DependenciesNotFoundException;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -124,7 +125,7 @@ public abstract class CommandService {
                 .toLocalizedString(new Object[] {nonExistingDependency}));
       }
 
-      localCommandService = new MemberCommandService(cache);
+      localCommandService = new MemberCommandService((InternalCache) cache);
     }
 
     return localCommandService;

@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Represents a request for (full) value of a given event from ha container
@@ -49,8 +50,8 @@ public class RequestEventValue extends BaseCommand {
 
   private RequestEventValue() {}
 
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     Part eventIDPart = null, valuePart = null;
     EventID event = null;
     Object callbackArg = null;

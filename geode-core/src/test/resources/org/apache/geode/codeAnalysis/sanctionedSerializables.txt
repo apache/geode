@@ -447,6 +447,7 @@ org/apache/geode/internal/process/PidUnavailableException,true,-1660269538268828
 org/apache/geode/internal/process/signal/Signal,false,description:java/lang/String,name:java/lang/String,number:int,type:org/apache/geode/internal/process/signal/SignalType
 org/apache/geode/internal/process/signal/SignalEvent,false,signal:org/apache/geode/internal/process/signal/Signal
 org/apache/geode/internal/process/signal/SignalType,false,description:java/lang/String
+org/apache/geode/internal/security/SecurityServiceType,false
 org/apache/geode/internal/sequencelog/GraphType,false
 org/apache/geode/internal/sequencelog/model/GraphID,false,graphName:java/lang/String,type:org/apache/geode/internal/sequencelog/GraphType
 org/apache/geode/internal/size/ReflectionObjectSizer,false

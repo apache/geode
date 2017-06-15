@@ -44,7 +44,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewaySender_ErrorConditions() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -52,16 +52,16 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
+    final DistributedMember vm1Member = vm3.invoke(() -> getMember());
 
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.START_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId() + " --"
-        + CliStrings.START_GATEWAYSENDER__GROUP + "=SenserGroup1";
+        + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId() + " --" + CliStrings.GROUP
+        + "=SenserGroup1";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -86,7 +86,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -94,7 +94,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
@@ -136,7 +136,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewaySender_onMember() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -144,17 +144,17 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
 
     vm3.invoke(() -> verifySenderState("ln", false, false));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
+    final DistributedMember vm1Member = vm3.invoke(() -> getMember());
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.START_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
+        + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId();
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -174,7 +174,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewaySender_Group() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -182,7 +182,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
@@ -197,7 +197,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
 
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.START_GATEWAYSENDER__GROUP + "=SenderGroup1";
+        + "=ln --" + CliStrings.GROUP + "=SenderGroup1";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -225,7 +225,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewaySender_MultipleGroup() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -233,7 +233,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
@@ -254,7 +254,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
 
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.START_GATEWAYSENDER__GROUP + "=SenderGroup1,SenderGroup2";
+        + "=ln --" + CliStrings.GROUP + "=SenderGroup1,SenderGroup2";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -282,7 +282,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewaySender_Group_MissingSenderFromGroup() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -290,7 +290,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
@@ -303,7 +303,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
 
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.START_GATEWAYSENDER__GROUP + "=SenderGroup1";
+        + "=ln --" + CliStrings.GROUP + "=SenderGroup1";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);

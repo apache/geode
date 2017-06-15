@@ -38,8 +38,8 @@ public @interface CliMetaData {
   public static final String ANNOTATION_NULL_VALUE = "__NULL__";
 
   /**
-   * Indicates that the command will only run in the gfsh shell and will not need the management
-   * service
+   * Indicates that the command will only run in the gfsh shell Gfsh ExecutionStrategy will use this
+   * flag to determine whether to invoke remote call or not.
    **/
   boolean shellOnly() default false;
 

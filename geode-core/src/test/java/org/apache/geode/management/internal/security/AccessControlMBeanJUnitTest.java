@@ -31,6 +31,7 @@ import org.junit.experimental.categories.Category;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class AccessControlMBeanJUnitTest {
+
   private AccessControlMXBean bean;
 
   @ClassRule

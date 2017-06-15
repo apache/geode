@@ -32,20 +32,23 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 
 public class GetDurableCQs extends BaseCQCommand {
 
-  private final static GetDurableCQs singleton = new GetDurableCQs();
+  private static final GetDurableCQs singleton = new GetDurableCQs();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private GetDurableCQs() {}
+  private GetDurableCQs() {
+    // nothing
+  }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     AcceptorImpl acceptor = serverConnection.getAcceptor();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     ClientProxyMembershipID id = serverConnection.getProxyID();
@@ -60,13 +63,11 @@ public class GetDurableCQs extends BaseCQCommand {
           serverConnection.getSocketString());
     }
 
-    DefaultQueryService qService = null;
-    CqService cqServiceForExec = null;
-
     try {
-      qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();
+      DefaultQueryService qService =
+          (DefaultQueryService) crHelper.getCache().getLocalQueryService();
 
-      this.securityService.authorizeClusterRead();
+      securityService.authorizeClusterRead();
 
       // Authorization check
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
@@ -74,7 +75,7 @@ public class GetDurableCQs extends BaseCQCommand {
         authzRequest.getDurableCQsAuthorize();
       }
 
-      cqServiceForExec = qService.getCqService();
+      CqService cqServiceForExec = qService.getCqService();
       List<String> durableCqs = cqServiceForExec.getAllDurableClientCqs(id);
 
       ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();
@@ -84,7 +85,7 @@ public class GetDurableCQs extends BaseCQCommand {
 
       List durableCqList = new ArrayList(MAXIMUM_CHUNK_SIZE);
       final boolean isTraceEnabled = logger.isTraceEnabled();
-      for (Iterator it = durableCqs.iterator(); it.hasNext();) {
+      for (Iterator<String> it = durableCqs.iterator(); it.hasNext();) {
         Object durableCqName = it.next();
         durableCqList.add(durableCqName);
         if (isTraceEnabled) {
@@ -103,10 +104,8 @@ public class GetDurableCQs extends BaseCQCommand {
     } catch (CqException cqe) {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);
-      return;
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
-      return;
     }
   }
 
@@ -120,12 +119,11 @@ public class GetDurableCQs extends BaseCQCommand {
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Sending {} durableCQs response chunk{}", servConn.getName(),
-          (lastChunk ? " last " : " "),
-          (logger.isTraceEnabled() ? " keys=" + list + " chunk=<" + chunkedResponseMsg + ">" : ""));
+          lastChunk ? " last " : " ",
+          logger.isTraceEnabled() ? " keys=" + list + " chunk=<" + chunkedResponseMsg + ">" : "");
     }
 
     chunkedResponseMsg.sendChunk(servConn);
   }
-
 
 }

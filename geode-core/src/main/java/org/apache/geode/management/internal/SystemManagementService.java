@@ -144,7 +144,7 @@ public class SystemManagementService extends BaseManagementService {
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {
-      this.agent = new ManagementAgent(system.getConfig());
+      this.agent = new ManagementAgent(system.getConfig(), cache.getSecurityService());
     } else {
       this.agent = null;
     }

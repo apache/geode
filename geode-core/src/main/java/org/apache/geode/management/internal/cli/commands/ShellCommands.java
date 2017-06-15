@@ -55,7 +55,6 @@ import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -1036,11 +1035,5 @@ public class ShellCommands implements GfshCommand {
           .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");
     }
     return result;
-  }
-
-  @CliAvailabilityIndicator({CliStrings.CONNECT, CliStrings.DISCONNECT,
-      CliStrings.DESCRIBE_CONNECTION})
-  public boolean isAvailable() {
-    return true;
   }
 }

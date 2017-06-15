@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -94,8 +95,8 @@ public class Destroy65 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart;
     Part keyPart;
     Part callbackArgPart;
@@ -107,7 +108,7 @@ public class Destroy65 extends BaseCommand {
 
     String regionName = null;
     Object callbackArg = null, key = null;
-    StringBuffer errMessage = new StringBuffer();
+    StringBuilder errMessage = new StringBuilder();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     CacheServerStats stats = serverConnection.getCacheServerStats();
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
@@ -224,7 +225,7 @@ public class Destroy65 extends BaseCommand {
 
     try {
       // for integrated security
-      this.securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorizeRegionWrite(regionName, key.toString());
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

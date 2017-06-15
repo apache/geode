@@ -28,9 +28,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -166,8 +164,6 @@ public class ExportLogsDUnitTest {
   @Test
   public void testExportWithExactLogLevelFilter() throws Exception {
     gfshConnector.executeAndVerifyCommand("export logs --log-level=info --only-log-level=true");
-
-
     Set<String> acceptedLogLevels = Stream.of("info").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
   }
@@ -177,12 +173,6 @@ public class ExportLogsDUnitTest {
     gfshConnector.executeAndVerifyCommand("export logs");
     Set<String> acceptedLogLevels = Stream.of("info", "error", "debug").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
-  }
-
-  @Test
-  public void testExportedZipFileTooBig() throws Exception {
-    CommandResult result = gfshConnector.executeCommand("export logs --file-size-limit=10k");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
   }
 
   @Test

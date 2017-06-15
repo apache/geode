@@ -12,16 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web.security;
 
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.GemFireSecurityException;
 import org.springframework.stereotype.Component;
 
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+
 @Component("securityService")
 public class RestSecurityService {
-  private SecurityService securityService = SecurityService.getSecurityService();
+
+  private final SecurityService securityService;
+
+  public RestSecurityService() {
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    if (cache != null) {
+      this.securityService = cache.getSecurityService();
+    } else {
+      this.securityService = SecurityServiceFactory.create();
+    }
+  }
 
   public boolean authorize(String resource, String operation) {
     return authorize(resource, operation, null, null);
@@ -33,7 +48,8 @@ public class RestSecurityService {
 
   public boolean authorize(String resource, String operation, String region, String key) {
     try {
-      securityService.authorize(resource, operation, region, key);
+      securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
+          key);
       return true;
     } catch (GemFireSecurityException ex) {
       return false;

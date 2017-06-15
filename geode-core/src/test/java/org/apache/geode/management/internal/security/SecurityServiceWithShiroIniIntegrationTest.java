@@ -17,41 +17,42 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
 /**
- * Integration tests for {@link IntegratedSecurityService} using shiro.ini
+ * Integration tests for SecurityService using shiro.ini
  */
 @Category({IntegrationTest.class, SecurityTest.class})
-public class IntegratedSecurityServiceWithIniFileJUnitTest {
+public class SecurityServiceWithShiroIniIntegrationTest {
 
-  protected static Properties props = new Properties();
+  protected Properties props = new Properties();
 
-  private SecurityService securityService = SecurityService.getSecurityService();
-
-  @BeforeClass
-  public static void beforeClass() throws Exception {
-    props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-  }
+  protected SecurityService securityService;
 
   @Before
-  public void before() {
-    securityService.initSecurity(props);
+  public void before() throws Exception {
+    this.props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+    this.securityService = SecurityServiceFactory.create(this.props);
+  }
+
+  @After
+  public void after() throws Exception {
+    this.securityService.logout();
   }
 
   @Test
-  public void testRoot() {
+  public void testRoot() throws Exception {
     this.securityService.login(loginCredentials("root", "secret"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -64,7 +65,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   }
 
   @Test
-  public void testGuest() {
+  public void testGuest() throws Exception {
     this.securityService.login(loginCredentials("guest", "guest"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -75,11 +76,10 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    this.securityService.logout();
   }
 
   @Test
-  public void testRegionAReader() {
+  public void testRegionAReader() throws Exception {
     this.securityService.login(loginCredentials("regionAReader", "password"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -90,11 +90,10 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    this.securityService.logout();
   }
 
   @Test
-  public void testRegionAUser() {
+  public void testRegionAUser() throws Exception {
     this.securityService.login(loginCredentials("regionAUser", "password"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -105,11 +104,10 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    this.securityService.logout();
   }
 
   @Test
-  public void testDataReader() {
+  public void testDataReader() throws Exception {
     this.securityService.login(loginCredentials("dataReader", "12345"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -120,11 +118,10 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    this.securityService.logout();
   }
 
   @Test
-  public void testReader() {
+  public void testReader() throws Exception {
     this.securityService.login(loginCredentials("reader", "12345"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -135,7 +132,6 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterWrite);
-    this.securityService.logout();
   }
 
   private void assertNotAuthorized(ResourcePermission context) {

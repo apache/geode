@@ -14,18 +14,14 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -53,8 +49,17 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test to verify Startup. and failover during startup.
@@ -334,7 +339,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       public void afterPrimaryIdentificationFromBackup(ServerLocation primaryEndpoint) {
         synchronized (HAStartupAndFailoverDUnitTest.class) {
           HAStartupAndFailoverDUnitTest.identifiedPrimary = true;
-          HAStartupAndFailoverDUnitTest.class.notify();
+          HAStartupAndFailoverDUnitTest.class.notifyAll();
         }
       }
     });
@@ -346,7 +351,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       HAStartupAndFailoverDUnitTest.identifiedPrimary = false;
       ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter());
     }
-
   }
 
   public static void stopServer() {
@@ -359,17 +363,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       Assert.fail("while setting stopServer", ex);
     }
   }
-
-  // public static void processException() {
-  // assertIndexDetailsEquals(conn.getServer().getPort(), PORT1.intValue());
-  // try {
-  // pool.processException(new Exception("dummy"), conn);
-  // //Thread.sleep(10000); // why sleep?
-  // }
-  // catch (Exception e) {
-  // fail("While processException(): " + e, e);
-  // }
-  // }
 
   public static void verifyPrimaryShouldNotBeNullAndEPListShouldNotBeEmpty() {
     try {
@@ -386,7 +379,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       assertNull("Primary endpoint should be null as all server are dead", pool.getPrimaryName());
       assertEquals("Endpoint List should be Empty as all server are dead", 0,
           pool.getConnectedServerCount());
-      fail("NoSubscriptionServersAvailableException is expected"); // TODO:KIRK: added this line
+      fail("NoSubscriptionServersAvailableException is expected");
     } catch (NoSubscriptionServersAvailableException e) {
       // pass
     } catch (Exception e) {
@@ -406,9 +399,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-
   public static void waitForPrimaryIdentification() {
-
     assertNotNull(cache);
     if (!identifiedPrimary) {
       synchronized (HAStartupAndFailoverDUnitTest.class) {
@@ -426,7 +417,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     }
-
   }
 
   public static void verifyDispatcherIsAlive() {
@@ -479,9 +469,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
           }
         };
         Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-
-        // assertTrue("Dispatcher on primary should be alive",
-        // proxy._messageDispatcher.isAlive());
       }
 
     } catch (Exception ex) {
@@ -566,7 +553,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     pool = p;
     conn = pool.acquireConnection();
     assertNotNull(conn);
-
   }
 
   public static void createClientCacheWithLargeRetryInterval(String testName, String host)
@@ -591,8 +577,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     pool = p;
     conn = pool.acquireConnection();
     assertNotNull(conn);
-
-
   }
 
   public static void createClientCacheWithLargeRetryIntervalAndWithoutCallbackConnection(
@@ -653,7 +637,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     pool = p;
     conn = pool.acquireConnection();
     assertNotNull(conn);
-
   }
 
   public static Integer createServerCache() throws Exception {
@@ -673,9 +656,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     server1.setMaximumTimeBetweenPings(180000);
     server1.start();
     return new Integer(server1.getPort());
-
   }
-
 
   @Override
   public final void preTearDown() throws Exception {

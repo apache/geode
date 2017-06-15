@@ -45,7 +45,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -211,15 +210,6 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     return results.get(0);
-  }
-
-  @CliAvailabilityIndicator({CliStrings.EXPORT_SHARED_CONFIG, CliStrings.IMPORT_SHARED_CONFIG})
-  public boolean sharedConfigCommandsAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 
   /**

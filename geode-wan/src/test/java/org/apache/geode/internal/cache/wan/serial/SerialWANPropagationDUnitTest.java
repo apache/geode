@@ -360,14 +360,6 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(vm2, vm3);
-
-    // these are part of local site
-    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
-
-    // senders are created on local site
-    vm4.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 500, false, false, null, true));
-    vm5.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 500, false, false, null, true));
 
     // create one RR (RR_1) on remote site
     vm2.invoke(
@@ -375,8 +367,13 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR_1", null, isOffHeap()));
 
-    // start the senders on local site
-    startSenderInVMs("ln", vm4, vm5);
+    createReceiverInVMs(vm2, vm3);
+
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR_1"));
+    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR_1"));
+
+    // these are part of local site
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     // create one RR (RR_1) on local site
     vm4.invoke(
@@ -387,6 +384,14 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR_1", "ln", isOffHeap()));
     vm7.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR_1", "ln", isOffHeap()));
+
+    // senders are created on local site
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 500, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 500, false, false, null, true));
+
+
+    // start the senders on local site
+    startSenderInVMs("ln", vm4, vm5);
 
     IgnoredException.addIgnoredException(BatchException70.class.getName());
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());

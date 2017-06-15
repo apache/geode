@@ -14,11 +14,14 @@
  */
 package org.apache.geode.management.internal.web.controllers.support;
 
-import org.apache.geode.cache.Cache;
+import static org.apache.geode.internal.security.SecurityServiceFactory.findSecurityService;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.web.util.UriUtils;
@@ -48,9 +51,7 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
   private static final Logger logger = LogService.getLogger();
 
-  private Cache cache;
-
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private final SecurityService securityService;
 
   private static final ThreadLocal<Map<String, String>> ENV =
       new ThreadLocal<Map<String, String>>() {
@@ -64,6 +65,14 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
   protected static final String SECURITY_VARIABLE_REQUEST_HEADER_PREFIX =
       DistributionConfig.SECURITY_PREFIX_NAME;
+
+  public LoginHandlerInterceptor() {
+    this(findSecurityService());
+  }
+
+  LoginHandlerInterceptor(SecurityService securityService) {
+    this.securityService = securityService;
+  }
 
   public static Map<String, String> getEnvironment() {
     return ENV.get();
@@ -103,11 +112,6 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
     return true;
   }
-
-  public void setSecurityService(SecurityService securityService) {
-    this.securityService = securityService;
-  }
-
 
   @Override
   public void afterCompletion(final HttpServletRequest request, final HttpServletResponse response,

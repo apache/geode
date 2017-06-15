@@ -133,8 +133,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
     Mockito.doReturn(mockCollector).when(mockManager)
         .reduce(Mockito.argThat(new ArgumentMatcher<Collection<TopEntriesCollector>>() {
           @Override
-          public boolean matches(Object argument) {
-            Collection<TopEntriesCollector> collectors = (Collection<TopEntriesCollector>) argument;
+          public boolean matches(Collection<TopEntriesCollector> argument) {
+            Collection<TopEntriesCollector> collectors = argument;
             return collectors.contains(result1) && collectors.contains(result2);
           }
         }));

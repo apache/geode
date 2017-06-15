@@ -14,9 +14,11 @@
  */
 package org.apache.geode.management.internal.security;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
 
 /**
  * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController and performs
@@ -26,12 +28,17 @@ import org.apache.geode.security.GemFireSecurityException;
  */
 public class AccessControlMBean implements AccessControlMXBean {
 
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private final SecurityService securityService;
+
+  public AccessControlMBean(SecurityService securityService) {
+    this.securityService = securityService;
+  }
 
   @Override
   public boolean authorize(String resource, String permission) {
     try {
-      this.securityService.authorize(resource, permission);
+      this.securityService.authorize(Resource.valueOf(resource), Operation.valueOf(permission),
+          ResourcePermission.ALL, ResourcePermission.ALL);
       return true;
     } catch (GemFireSecurityException e) {
       return false;

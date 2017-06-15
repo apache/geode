@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -42,7 +43,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -51,7 +51,9 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
@@ -77,13 +79,9 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   private static final String PR1 = "PartitionedRegion1";
   private static final String PR2 = "ParitionedRegion2";
 
-  @Override
-  public final void postSetUp() throws Exception {
-    // This test does not require an actual Gfsh connection to work, however when run as part of a
-    // suite, prior tests
-    // may mess up the environment causing this test to fail. Setting this prevents false failures.
-    CliUtil.isGfshVM = false;
-  }
+  @ClassRule
+  public static ProvideSystemProperty provideSystemProperty =
+      new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
@@ -222,8 +220,12 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
     CommandProcessor commandProcessor = new CommandProcessor();
     Result result =
         commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
-    getLogWriter().info("#SB" + getResultAsString(result));
+    String resultOutput = getResultAsString(result);
+    getLogWriter().info(resultOutput);
     assertEquals(true, result.getStatus().equals(Status.OK));
+    assertTrue(resultOutput.contains("me:"));
+    assertTrue(resultOutput.contains("Server1:"));
+    assertTrue(resultOutput.contains("Server2:"));
   }
 
   /**
@@ -265,7 +267,7 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
     setupSystem();
     CommandProcessor commandProcessor = new CommandProcessor();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
-    csb.addOption(CliStrings.LIST_MEMBER__GROUP, "G1");
+    csb.addOption(CliStrings.GROUP, "G1");
     Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
     getLogWriter().info("#SB" + getResultAsString(result));
     assertEquals(true, result.getStatus().equals(Status.OK));

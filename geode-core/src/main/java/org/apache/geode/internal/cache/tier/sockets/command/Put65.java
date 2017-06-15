@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -63,14 +64,15 @@ public class Put65 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long p_start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long p_start)
       throws IOException, InterruptedException {
     long start = p_start;
     Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
     Part eventPart = null;
-    StringBuffer errMessage = new StringBuffer();
+    StringBuilder errMessage = new StringBuilder();
     boolean isDelta = false;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     CacheServerStats stats = serverConnection.getCacheServerStats();
@@ -231,7 +233,7 @@ public class Put65 extends BaseCommand {
       boolean isMetaRegion = region.isUsedForMetaRegion();
       clientMessage.setMetaRegion(isMetaRegion);
 
-      this.securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorizeRegionWrite(regionName, key.toString());
 
       AuthorizeRequest authzRequest = null;
       if (!isMetaRegion) {

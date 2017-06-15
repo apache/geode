@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.configuration.functions;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -28,7 +28,7 @@ public class RecreateCacheFunction implements Function, InternalEntity {
   public void execute(FunctionContext context) {
     CliFunctionResult result = null;
     InternalCache cache = GemFireCacheImpl.getInstance();
-    DistributedSystem ds = cache.getDistributedSystem();
+    InternalDistributedSystem ds = cache.getInternalDistributedSystem();
     CacheConfig cacheConfig = cache.getCacheConfig();
     try {
       cache.close("Re-create Cache", true, true);

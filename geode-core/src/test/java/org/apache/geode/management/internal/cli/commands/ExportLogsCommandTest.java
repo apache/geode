@@ -32,13 +32,14 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.util.BytesToString;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Matchers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -121,39 +122,37 @@ public class ExportLogsCommandTest {
   }
 
   @Test
-  public void sizeTooBigOnMember_sizeChecksDisabled_returnsFalse() throws Exception {
-    final Cache mockCache = mock(Cache.class);
-    final DistributedMember mockDistributedMember = mock(DistributedMember.class);
-    final Execution mockFunctionExecutor = mock(Execution.class);
-    final ExportLogsCommand cmd =
-        createExportLogsCommand(mockCache, mockDistributedMember, mockFunctionExecutor);
-    cmd.checkIfExportLogsOverflowsDisk("clusterMember", 0, MEGABYTE + 1024, MEGABYTE);
+  public void parseSizeLimit_sizeWithoutUnit_shouldReturnMegabytesSize() throws Exception {
+    ExportLogsCommand exportCmd = new ExportLogsCommand();
+    assertThat(exportCmd.parseFileSizeLimit("1000")).isEqualTo(1000 * MEGABYTE);
   }
 
   @Test
-  public void sizeOKOnMember_sizeChecksEnabled_doesNotThrow() throws Exception {
-    final Cache mockCache = mock(Cache.class);
-    final DistributedMember mockDistributedMember = mock(DistributedMember.class);
-    final Execution mockFunctionExecutor = mock(Execution.class);
-    final ExportLogsCommand cmd =
-        createExportLogsCommand(mockCache, mockDistributedMember, mockFunctionExecutor);
-    cmd.checkIfExportLogsOverflowsDisk("clusterMember", 10 * MEGABYTE, MEGABYTE - 1024, MEGABYTE);
+  public void parseSizeLimit_sizeWith_K_shouldReturnKilobytesSize() throws Exception {
+    ExportLogsCommand exportCmd = new ExportLogsCommand();
+    assertThat(exportCmd.parseFileSizeLimit("1000k")).isEqualTo(1000 * KILOBYTE);
   }
 
   @Test
-  public void sizeTooBigOnMember_sizeChecksEnabled_shouldThrow() throws Exception {
-    final Cache mockCache = mock(Cache.class);
-    final DistributedMember mockDistributedMember = mock(DistributedMember.class);
-    final Execution mockFunctionExecutor = mock(Execution.class);
-    final ExportLogsCommand cmd =
-        createExportLogsCommand(mockCache, mockDistributedMember, mockFunctionExecutor);
-    assertThatThrownBy(() -> cmd.checkIfExportLogsOverflowsDisk("clusterMember", 10 * MEGABYTE,
-        MEGABYTE + 1024, MEGABYTE)).isInstanceOf(ManagementException.class);
+  public void parseSizeLimit_sizeWith_M_shouldReturnMegabytesSize() throws Exception {
+    ExportLogsCommand exportCmd = new ExportLogsCommand();
+    assertThat(exportCmd.parseFileSizeLimit("1000m")).isEqualTo(1000 * MEGABYTE);
   }
 
   @Test
-  public void sizeFromAllMembers_greaterThanLocalDiskAvailable_shouldReturnErrorResult()
-      throws Exception {
+  public void parseSizeLimit_sizeWith_G_shouldReturnMegabytesSize() throws Exception {
+    ExportLogsCommand exportCmd = new ExportLogsCommand();
+    assertThat(exportCmd.parseFileSizeLimit("1000g")).isEqualTo(1000 * GIGABYTE);
+  }
+
+  @Test
+  public void parseSizeLimit_sizeWith_T_shouldReturnMegabytesSize() throws Exception {
+    ExportLogsCommand exportCmd = new ExportLogsCommand();
+    assertThat(exportCmd.parseFileSizeLimit("1000t")).isEqualTo(1000 * TERABYTE);
+  }
+
+  @Test
+  public void testTotalEstimateSizeExceedsLocatorAvailableDisk() throws Exception {
     final InternalCache mockCache = mock(InternalCache.class);
     final ExportLogsCommand realCmd = new ExportLogsCommand();
     ExportLogsCommand spyCmd = spy(realCmd);
@@ -174,9 +173,9 @@ public class ExportLogsCommandTest {
     testMembers.add(member2);
 
     ResultCollector testResults1 = new CustomCollector();
-    testResults1.addResult(member1, Arrays.asList(75 * MEGABYTE));
+    testResults1.addResult(member1, 75 * MEGABYTE);
     ResultCollector testResults2 = new CustomCollector();
-    testResults2.addResult(member2, Arrays.asList(60 * MEGABYTE));
+    testResults2.addResult(member2, 60 * MEGABYTE);
 
     doReturn(mockCache).when(spyCmd).getCache();
     doReturn(testMembers).when(spyCmd).getMembers(null, null);
@@ -184,12 +183,92 @@ public class ExportLogsCommandTest {
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
     doReturn(testResults2).when(spyCmd)
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member2));
-    doReturn(125 * MEGABYTE).when(spyCmd).getLocalDiskAvailable();
-    doReturn(GIGABYTE).when(spyCmd).getLocalDiskSize();
+    doReturn(10 * MEGABYTE).when(spyCmd).getLocalDiskAvailable();
 
-    Result res = spyCmd.exportLogs("working dir", null, null, logLevel, onlyLogLevel, false, start,
-        end, logsOnly, statsOnly, "125m");
+    CommandResult res = (CommandResult) spyCmd.exportLogs("working dir", null, null, logLevel,
+        onlyLogLevel, false, start, end, logsOnly, statsOnly, "125m");
     assertThat(res.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(res.toJson())
+        .contains("Estimated logs size will exceed the available disk space on the locator");
+  }
+
+  @Test
+  public void testTotalEstimateSizeExceedsUserSpecifiedValue() throws Exception {
+    final InternalCache mockCache = mock(InternalCache.class);
+    final ExportLogsCommand realCmd = new ExportLogsCommand();
+    ExportLogsCommand spyCmd = spy(realCmd);
+
+    String start = null;
+    String end = null;
+    String logLevel = null;
+    boolean onlyLogLevel = false;
+    boolean logsOnly = false;
+    boolean statsOnly = false;
+
+    InternalDistributedMember member1 = new InternalDistributedMember("member1", 12345);
+    InternalDistributedMember member2 = new InternalDistributedMember("member2", 98765);
+    member1.getNetMember().setName("member1");
+    member2.getNetMember().setName("member2");
+    Set<DistributedMember> testMembers = new HashSet<>();
+    testMembers.add(member1);
+    testMembers.add(member2);
+
+    ResultCollector testResults1 = new CustomCollector();
+    testResults1.addResult(member1, 75 * MEGABYTE);
+    ResultCollector testResults2 = new CustomCollector();
+    testResults2.addResult(member2, 60 * MEGABYTE);
+
+    doReturn(mockCache).when(spyCmd).getCache();
+    doReturn(testMembers).when(spyCmd).getMembers(null, null);
+    doReturn(testResults1).when(spyCmd)
+        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
+    doReturn(testResults2).when(spyCmd)
+        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member2));
+    doReturn(GIGABYTE).when(spyCmd).getLocalDiskAvailable();
+
+    CommandResult res = (CommandResult) spyCmd.exportLogs("working dir", null, null, logLevel,
+        onlyLogLevel, false, start, end, logsOnly, statsOnly, "125m");
+    assertThat(res.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(res.toJson()).contains(
+        "Estimated exported logs expanded file size = 141557760, file-size-limit = 131072000");
+  }
+
+  @Test
+  public void estimateLogSizeExceedsServerDisk() throws Exception {
+    final InternalCache mockCache = mock(InternalCache.class);
+    final ExportLogsCommand realCmd = new ExportLogsCommand();
+    ExportLogsCommand spyCmd = spy(realCmd);
+
+    String start = null;
+    String end = null;
+    String logLevel = null;
+    boolean onlyLogLevel = false;
+    boolean logsOnly = false;
+    boolean statsOnly = false;
+
+    InternalDistributedMember member1 = new InternalDistributedMember("member1", 12345);
+    member1.getNetMember().setName("member1");
+    Set<DistributedMember> testMembers = new HashSet<>();
+    testMembers.add(member1);
+
+    BytesToString bytesToString = new BytesToString();
+    ResultCollector testResults1 = new CustomCollector();
+    StringBuilder sb = new StringBuilder().append("Estimated disk space required (")
+        .append(bytesToString.of(GIGABYTE)).append(") to consolidate logs on member ")
+        .append(member1.getName()).append(" will exceed available disk space (")
+        .append(bytesToString.of(500 * MEGABYTE)).append(")");
+    testResults1.addResult(member1, new ManagementException(sb.toString()));
+
+    doReturn(mockCache).when(spyCmd).getCache();
+    doReturn(testMembers).when(spyCmd).getMembers(null, null);
+    doReturn(testResults1).when(spyCmd)
+        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
+
+    CommandResult res = (CommandResult) spyCmd.exportLogs("working dir", null, null, logLevel,
+        onlyLogLevel, false, start, end, logsOnly, statsOnly, "125m");
+    assertThat(res.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(res.toJson()).contains(
+        "Estimated disk space required (1 GB) to consolidate logs on member member1 will exceed available disk space (500 MB)");
   }
 
   private ExportLogsCommand createExportLogsCommand(final Cache cache,

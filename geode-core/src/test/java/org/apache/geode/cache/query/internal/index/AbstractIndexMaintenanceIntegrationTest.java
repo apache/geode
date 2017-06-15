@@ -14,6 +14,10 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static junit.framework.TestCase.assertFalse;
+import static org.apache.geode.internal.Assert.assertTrue;
+
+import org.apache.geode.pdx.internal.PdxString;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,6 +41,44 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
   @After
   public void tearDown() throws Exception {
     CacheUtils.closeCache();
+  }
+
+  @Test
+  public void setPdxStringFlagWithAPdxStringShouldNotBeChangedAfterTheFirstCall() throws Exception {
+    CacheUtils.startCache();
+    Cache cache = CacheUtils.getCache();
+    LocalRegion region =
+        (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE).create("portfolios");
+    QueryService qs = cache.getQueryService();
+    AbstractIndex statusIndex =
+        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+
+    statusIndex.setPdxStringFlag("StringKey");
+    assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
+    assertFalse(statusIndex.isIndexOnPdxKeys());
+
+    statusIndex.setPdxStringFlag(new PdxString("PdxString Key"));
+    assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
+    assertFalse(statusIndex.isIndexOnPdxKeys());
+  }
+
+  @Test
+  public void setPdxStringFlagWithAStringShouldNotBeChangedAfterTheFirstCall() throws Exception {
+    CacheUtils.startCache();
+    Cache cache = CacheUtils.getCache();
+    LocalRegion region =
+        (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE).create("portfolios");
+    QueryService qs = cache.getQueryService();
+    AbstractIndex statusIndex =
+        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+
+    statusIndex.setPdxStringFlag(new PdxString("PdxString Key"));
+    assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
+    assertTrue(statusIndex.isIndexOnPdxKeys());
+
+    statusIndex.setPdxStringFlag("PdxString Key");
+    assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
+    assertTrue(statusIndex.isIndexOnPdxKeys());
   }
 
   @Test

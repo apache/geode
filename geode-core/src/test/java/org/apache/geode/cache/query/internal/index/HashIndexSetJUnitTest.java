@@ -493,7 +493,7 @@ public class HashIndexSetJUnitTest {
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-      Object evalOn = invocation.getArgumentAt(0, Object.class);
+      Object evalOn = invocation.getArgument(0);
       if (evalOn instanceof Portfolio) {
         Portfolio p = (Portfolio) evalOn;
         return p.indexKey;

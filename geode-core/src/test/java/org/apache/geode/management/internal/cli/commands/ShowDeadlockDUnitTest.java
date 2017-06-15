@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -54,9 +53,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 
 /**
  * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command
@@ -100,17 +96,8 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Override
-  public final void postSetUp() throws Exception {
-    // This test does not require an actual Gfsh connection to work, however when run as part of a
-    // suite, prior tests
-    // may mess up the environment causing this test to fail. Setting this prevents false failures.
-    CliUtil.isGfshVM = false;
-  }
-
-  @Override
   public final void preTearDownCacheTestCase() throws Exception {
     invokeInEveryVM(() -> stuckThreads.forEach(Thread::interrupt));
-    CliUtil.isGfshVM = true;
   }
 
   @Test

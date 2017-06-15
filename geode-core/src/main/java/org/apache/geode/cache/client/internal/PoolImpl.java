@@ -83,10 +83,6 @@ public class PoolImpl implements InternalPool {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final int HANDSHAKE_TIMEOUT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT",
-          AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS);
-
   public static final long SHUTDOWN_TIMEOUT =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.SHUTDOWN_TIMEOUT", 30000);
 
@@ -103,6 +99,7 @@ public class PoolImpl implements InternalPool {
   public volatile static boolean TEST_DURABLE_IS_NET_DOWN = false;
 
   private final String name;
+  private final int socketConnectTimeout;
   private final int freeConnectionTimeout;
   private final int loadConditioningInterval;
   private final int socketBufferSize;
@@ -184,6 +181,7 @@ public class PoolImpl implements InternalPool {
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes) {
     this.pm = pm;
     this.name = name;
+    this.socketConnectTimeout = attributes.getSocketConnectTimeout();
     this.freeConnectionTimeout = attributes.getFreeConnectionTimeout();
     this.loadConditioningInterval = attributes.getLoadConditioningInterval();
     this.socketBufferSize = attributes.getSocketBufferSize();
@@ -246,8 +244,8 @@ public class PoolImpl implements InternalPool {
     source = getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback);
     endpointManager = new EndpointManagerImpl(name, ds, this.cancelCriterion, this.stats);
     connectionFactory = new ConnectionFactoryImpl(source, endpointManager, ds, socketBufferSize,
-        HANDSHAKE_TIMEOUT, readTimeout, proxyId, this.cancelCriterion, usedByGateway, gatewaySender,
-        pingInterval, multiuserSecureModeEnabled, this);
+        socketConnectTimeout, readTimeout, proxyId, this.cancelCriterion, usedByGateway,
+        gatewaySender, pingInterval, multiuserSecureModeEnabled, this);
     if (subscriptionEnabled) {
       queueManager = new QueueManagerImpl(this, endpointManager, source, connectionFactory,
           subscriptionRedundancyLevel, pingInterval, securityLogWriter, proxyId);
@@ -277,6 +275,7 @@ public class PoolImpl implements InternalPool {
     if (p == null)
       return false;
     return getFreeConnectionTimeout() == p.getFreeConnectionTimeout()
+        && getSocketConnectTimeout() == p.getSocketConnectTimeout()
         && getLoadConditioningInterval() == p.getLoadConditioningInterval()
         && getSocketBufferSize() == p.getSocketBufferSize()
         && getMinConnections() == p.getMinConnections()
@@ -385,6 +384,10 @@ public class PoolImpl implements InternalPool {
    */
   public String getName() {
     return this.name;
+  }
+
+  public int getSocketConnectTimeout() {
+    return this.socketConnectTimeout;
   }
 
   public int getFreeConnectionTimeout() {
@@ -641,7 +644,7 @@ public class PoolImpl implements InternalPool {
       return new ExplicitConnectionSourceImpl(getServers());
     } else {
       AutoConnectionSourceImpl source =
-          new AutoConnectionSourceImpl(locators, getServerGroup(), HANDSHAKE_TIMEOUT);
+          new AutoConnectionSourceImpl(locators, getServerGroup(), socketConnectTimeout);
       if (locatorDiscoveryCallback != null) {
         source.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
       }
@@ -662,6 +665,10 @@ public class PoolImpl implements InternalPool {
     if (!getName().equals(other.getName())) {
       throw new RuntimeException(
           LocalizedStrings.PoolImpl_0_ARE_DIFFERENT.toLocalizedString("names"));
+    }
+    if (getSocketConnectTimeout() != other.getSocketConnectTimeout()) {
+      throw new RuntimeException(
+          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("socketConnectimeout"));
     }
     if (getFreeConnectionTimeout() != other.getFreeConnectionTimeout()) {
       throw new RuntimeException(

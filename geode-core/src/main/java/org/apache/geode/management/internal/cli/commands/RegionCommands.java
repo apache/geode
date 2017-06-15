@@ -70,9 +70,11 @@ public class RegionCommands implements GfshCommand {
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public Result listRegion(
-      @CliOption(key = {CliStrings.LIST_REGION__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_REGION__GROUP__HELP) String[] group,
-      @CliOption(key = {CliStrings.LIST_REGION__MEMBER}, optionContext = ConverterHint.MEMBERIDNAME,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_REGION__MEMBER__HELP) String[] memberNameOrId) {
     Result result = null;
     try {
@@ -489,14 +491,4 @@ public class RegionCommands implements GfshCommand {
       }
     }
   }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_REGION, CliStrings.DESCRIBE_REGION})
-  public boolean isRegionCommandAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected //TODO : make this better
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
-  }
-
 }

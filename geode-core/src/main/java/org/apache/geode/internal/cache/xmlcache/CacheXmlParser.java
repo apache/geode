@@ -400,6 +400,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(name);
     stack.push(f);
     String v;
+    v = atts.getValue(SOCKET_CONNECT_TIMEOUT);
+    if (v != null) {
+      f.setSocketConnectTimeout(parseInt(v));
+    }
     v = atts.getValue(FREE_CONNECTION_TIMEOUT);
     if (v != null) {
       f.setFreeConnectionTimeout(parseInt(v));

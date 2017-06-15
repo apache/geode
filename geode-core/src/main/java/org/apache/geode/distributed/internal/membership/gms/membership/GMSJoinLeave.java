@@ -1153,7 +1153,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         FindCoordinatorRequest request, int connectTimeout)
         throws ClassNotFoundException, IOException {
       TcpClient client = new TcpClient();
-      return client.requestToServer(addr.getAddress(), addr.getPort(), request, connectTimeout);
+      return client.requestToServer(addr.getAddress(), addr.getPort(), request, connectTimeout,
+          true);
     }
   }
 

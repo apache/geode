@@ -54,9 +54,6 @@ public class DeployFunction implements Function, InternalEntity {
       final byte[][] jarBytes = (byte[][]) args[1];
       InternalCache cache = getCache();
 
-      final JarDeployer jarDeployer =
-          new JarDeployer(cache.getInternalDistributedSystem().getConfig().getDeployWorkingDir());
-
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
       memberId = member.getId();

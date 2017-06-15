@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Factory methods for fake objects for use in test.
@@ -79,6 +80,7 @@ public class Fakes {
     when(cache.getDistributionManager()).thenReturn(distributionManager);
     when(cache.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(cache.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
+    when(cache.getSecurityService()).thenReturn(mock(SecurityService.class));
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);
@@ -86,6 +88,7 @@ public class Fakes {
     when(system.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(system.getClock()).thenReturn(clock);
     when(system.getLogWriter()).thenReturn(logger);
+    when(system.getSecurityService()).thenReturn(mock(SecurityService.class));
     when(system.createAtomicStatistics(any(), any(), anyLong())).thenReturn(stats);
     when(system.createAtomicStatistics(any(), any())).thenReturn(stats);
 

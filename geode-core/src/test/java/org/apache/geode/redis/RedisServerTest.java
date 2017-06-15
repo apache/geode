@@ -18,6 +18,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -49,6 +50,7 @@ public class RedisServerTest {
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-3065
   public void initializeRedisCreatesThreeRegions() {
     createCache();
     assert (cache.rootRegions().size() == 0);
@@ -59,6 +61,7 @@ public class RedisServerTest {
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-3065
   public void initializeRedisCreatesPartitionedRegionByDefault() {
     createCache();
     assert (cache.rootRegions().size() == 0);
@@ -70,6 +73,7 @@ public class RedisServerTest {
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-3065
   public void initializeRedisCreatesRegionsUsingSystemProperty() {
     createCache();
     assert (cache.rootRegions().size() == 0);

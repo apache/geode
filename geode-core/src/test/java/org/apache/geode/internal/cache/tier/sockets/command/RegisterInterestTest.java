@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -115,7 +115,7 @@ public class RegisterInterestTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.registerInterest.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
@@ -125,7 +125,7 @@ public class RegisterInterestTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.registerInterest.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -138,7 +138,7 @@ public class RegisterInterestTest {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
 
-    this.registerInterest.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -149,7 +149,7 @@ public class RegisterInterestTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.registerInterest.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
@@ -163,7 +163,7 @@ public class RegisterInterestTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
 
-    this.registerInterest.cmdExecute(this.message, this.serverConnection, 0);
+    this.registerInterest.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
 

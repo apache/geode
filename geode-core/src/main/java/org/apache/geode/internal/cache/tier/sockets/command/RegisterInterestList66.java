@@ -12,36 +12,36 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.operations.RegisterInterestOperationContext;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.cache.DynamicRegionFactory;
-import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.operations.RegisterInterestOperationContext;
-import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
- * 
  * All keys of the register interest list are being sent as a single part since 6.6. There is no
  * need to send no keys as a separate part.In earlier versions {@link RegisterInterestList61} number
  * of keys & each individual key was sent as a separate part.
- * 
- * 
+ *
  * @since GemFire 6.6
  */
 public class RegisterInterestList66 extends BaseCommand {
@@ -55,9 +55,9 @@ public class RegisterInterestList66 extends BaseCommand {
   RegisterInterestList66() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
-    Part regionNamePart = null, keyPart = null;// numberOfKeysPart = null;
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
+    Part regionNamePart = null, keyPart = null;
     String regionName = null;
     Object key = null;
     InterestResultPolicy policy;
@@ -68,10 +68,6 @@ public class RegisterInterestList66 extends BaseCommand {
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
     ChunkedMessage chunkedResponseMsg = serverConnection.getRegisterInterestResponseMessage();
 
-    // bserverStats.incLong(readDestroyRequestTimeId,
-    // DistributionStats.getStatTime() - start);
-    // bserverStats.incInt(destroyRequestsId, 1);
-    // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getString();
@@ -139,18 +135,6 @@ public class RegisterInterestList66 extends BaseCommand {
           serverConnection.getSocketString(), numberOfKeys, regionName, keys);
     }
 
-    /*
-     * AcceptorImpl acceptor = servConn.getAcceptor();
-     * 
-     * // Check if the Server is running in NotifyBySubscription=true mode. if
-     * (!acceptor.getCacheClientNotifier().getNotifyBySubscription()) { // This should have been
-     * taken care at the client. String err = LocalizedStrings.
-     * RegisterInterest_INTEREST_REGISTRATION_IS_SUPPORTED_ONLY_FOR_SERVERS_WITH_NOTIFYBYSUBSCRIPTION_SET_TO_TRUE
-     * .toLocalizedString(); writeChunkedErrorResponse(msg,
-     * MessageType.REGISTER_INTEREST_DATA_ERROR, err, servConn); servConn.setAsTrue(RESPONDED);
-     * return; }
-     */
-
     // Process the register interest request
     if (keys.isEmpty() || regionName == null) {
       StringId errMessage = null;
@@ -177,12 +161,9 @@ public class RegisterInterestList66 extends BaseCommand {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.RegisterInterestList_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_LIST_REQUEST,
           new Object[] {serverConnection.getName(), regionName}));
-      // writeChunkedErrorResponse(msg,
-      // MessageType.REGISTER_INTEREST_DATA_ERROR, message);
-      // responded = true;
-    } // else { // region not null
+    }
     try {
-      this.securityService.authorizeRegionRead(regionName);
+      securityService.authorizeRegionRead(regionName);
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
@@ -203,11 +184,6 @@ public class RegisterInterestList66 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
-
-    // Update the statistics and write the reply
-    // bserverStats.incLong(processDestroyTimeId,
-    // DistributionStats.getStatTime() - start);
-    // start = DistributionStats.getStatTime();
 
     boolean isPrimary = serverConnection.getAcceptor().getCacheClientNotifier()
         .getClientProxy(serverConnection.getProxyID()).isPrimary();
@@ -244,18 +220,11 @@ public class RegisterInterestList66 extends BaseCommand {
       }
 
       if (logger.isDebugEnabled()) {
-        // logger.debug(getName() + ": Sent chunk (1 of 1) of register interest
-        // response (" + chunkedResponseMsg.getBufferLength() + " bytes) for
-        // region " + regionName + " key " + key);
         logger.debug(
             "{}: Sent register interest response for the following {} keys in region {}: {}",
             serverConnection.getName(), numberOfKeys, regionName, keys);
       }
-      // bserverStats.incLong(writeDestroyResponseTimeId,
-      // DistributionStats.getStatTime() - start);
-      // bserverStats.incInt(destroyResponsesId, 1);
     } // isPrimary
-    // } // region not null
   }
 
 }

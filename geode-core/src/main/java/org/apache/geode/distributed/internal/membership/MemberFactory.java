@@ -20,6 +20,7 @@ import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberFactory;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.security.SecurityService;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -45,7 +46,7 @@ public class MemberFactory {
    * @param payload the payload for this member
    * @return the new NetMember
    */
-  static public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
+  public static NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
       boolean canBeCoordinator, short version, MemberAttributes payload) {
     return services.newNetMember(i, p, splitBrainEnabled, canBeCoordinator, payload, version);
   }
@@ -57,7 +58,7 @@ public class MemberFactory {
    * @param p the membership port being used
    * @return the new NetMember
    */
-  static public NetMember newNetMember(InetAddress i, int p) {
+  public static NetMember newNetMember(InetAddress i, int p) {
     NetMember result = services.newNetMember(i, p);
     return result;
   }
@@ -69,7 +70,7 @@ public class MemberFactory {
    * @param p the membership port being used
    * @return the new member
    */
-  static public NetMember newNetMember(String s, int p) {
+  public static NetMember newNetMember(String s, int p) {
     return services.newNetMember(s, p);
   }
 
@@ -84,16 +85,17 @@ public class MemberFactory {
    * @param stats are used for recording statistical communications information
    * @return a MembershipManager
    */
-  static public MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      DistributionConfig config, RemoteTransportConfig transport, DMStats stats) {
-    return services.newMembershipManager(listener, config, transport, stats);
+  public static MembershipManager newMembershipManager(DistributedMembershipListener listener,
+      DistributionConfig config, RemoteTransportConfig transport, DMStats stats,
+      SecurityService securityService) {
+    return services.newMembershipManager(listener, config, transport, stats, securityService);
   }
 
   /**
    * currently this is a test method but it ought to be used by InternalLocator to create the peer
    * location TcpHandler
    */
-  static public NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile,
+  public static NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile,
       String locatorString, boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo) {
     return services.newLocatorHandler(bindAddress, stateFile, locatorString,

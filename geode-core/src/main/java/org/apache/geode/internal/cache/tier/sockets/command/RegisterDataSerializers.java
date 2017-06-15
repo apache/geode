@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.Command;
@@ -26,6 +25,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 public class RegisterDataSerializers extends BaseCommand {
 
@@ -37,7 +37,8 @@ public class RegisterDataSerializers extends BaseCommand {
 
   private RegisterDataSerializers() {}
 
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received register dataserializer request ({} parts) from {}",
