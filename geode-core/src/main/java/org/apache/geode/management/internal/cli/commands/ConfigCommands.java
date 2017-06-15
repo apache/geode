@@ -79,11 +79,9 @@ public class ConfigCommands implements GfshCommand {
   @CliCommand(value = {CliStrings.DESCRIBE_CONFIG}, help = CliStrings.DESCRIBE_CONFIG__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result describeConfig(@CliOption(key = CliStrings.DESCRIBE_CONFIG__MEMBER,
-      optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.DESCRIBE_CONFIG__MEMBER__HELP, mandatory = true)
-
-  String memberNameOrId,
+  public Result describeConfig(
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+          help = CliStrings.DESCRIBE_CONFIG__MEMBER__HELP, mandatory = true) String memberNameOrId,
       @CliOption(key = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS,
           help = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS__HELP, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true") boolean hideDefaults) {
@@ -198,10 +196,11 @@ public class ConfigCommands implements GfshCommand {
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportConfig(
-      @CliOption(key = {CliStrings.EXPORT_CONFIG__MEMBER},
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_CONFIG__MEMBER__HELP) String[] member,
-      @CliOption(key = {CliStrings.EXPORT_CONFIG__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXPORT_CONFIG__GROUP__HELP) String[] group,
       @CliOption(key = {CliStrings.EXPORT_CONFIG__DIR},
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
@@ -251,10 +250,10 @@ public class ConfigCommands implements GfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.ConfigCommands$AlterRuntimeInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result alterRuntimeConfig(
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] memberNameOrId,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__GROUP},
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] group,
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT},

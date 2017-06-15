@@ -15,6 +15,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.commons.io.FileUtils.ONE_MB;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -66,7 +68,7 @@ public class DeployCommands implements GfshCommand {
    * Deploy one or more JAR files to members of a group or all members.
    * 
    * @param groups Group(s) to deploy the JAR to or null for all members
-   * @param jar JAR file to deploy
+   * @param jars JAR file to deploy
    * @param dir Directory of JAR files to deploy
    * @return The result of the attempt to deploy
    */
@@ -75,9 +77,10 @@ public class DeployCommands implements GfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   public Result deploy(
-      @CliOption(key = {CliStrings.DEPLOY__GROUP}, help = CliStrings.DEPLOY__GROUP__HELP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.DEPLOY__JAR}, help = CliStrings.DEPLOY__JAR__HELP) String jar,
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
+          help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir) {
     try {
 
@@ -154,10 +157,11 @@ public class DeployCommands implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result undeploy(
-      @CliOption(key = {CliStrings.UNDEPLOY__GROUP}, help = CliStrings.UNDEPLOY__GROUP__HELP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.UNDEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.UNDEPLOY__JAR}, help = CliStrings.UNDEPLOY__JAR__HELP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String jars) {
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, help = CliStrings.UNDEPLOY__JAR__HELP,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String[] jars) {
 
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
@@ -174,6 +178,7 @@ public class DeployCommands implements GfshCommand {
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
       for (CliFunctionResult result : results) {
+
         if (result.getThrowable() != null) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
           tabularData.accumulate("Un-Deployed JAR", "");
@@ -199,8 +204,8 @@ public class DeployCommands implements GfshCommand {
 
       Result result = ResultBuilder.buildResult(tabularData);
       if (tabularData.getStatus().equals(Status.OK)) {
-        persistClusterConfiguration(result, () -> getSharedConfiguration()
-            .removeJars(jars == null ? null : jars.split(","), groups));
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().removeJars(jars, groups));
       }
       return result;
     } catch (VirtualMachineError e) {
@@ -222,7 +227,7 @@ public class DeployCommands implements GfshCommand {
   @CliCommand(value = {CliStrings.LIST_DEPLOYED}, help = CliStrings.LIST_DEPLOYED__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listDeployed(@CliOption(key = {CliStrings.LIST_DEPLOYED__GROUP},
+  public Result listDeployed(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String[] group) {
 
     try {
@@ -282,29 +287,31 @@ public class DeployCommands implements GfshCommand {
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
+      // 2nd argument is the jar
+      String[] jars = (String[]) parseResult.getArguments()[1];
+      // 3rd arguemnt is the dir
+      String dir = (String) parseResult.getArguments()[2];
 
-      String jar = paramValueMap.get("jar");
-      jar = jar == null ? null : jar.trim();
-
-      String dir = paramValueMap.get("dir");
-      dir = dir == null ? null : dir.trim();
-
-      String group = paramValueMap.get("group");
-      group = group == null ? null : group.trim();
-
-      String jarOrDir = jar != null ? jar : dir;
-
-      if (jar == null && dir == null) {
+      if (ArrayUtils.isEmpty(jars) && StringUtils.isBlank(dir)) {
         return ResultBuilder.createUserErrorResult(
             "Parameter \"jar\" or \"dir\" is required. Use \"help <command name>\" for assistance.");
       }
 
+      if (ArrayUtils.isNotEmpty(jars) && StringUtils.isNotBlank(dir)) {
+        return ResultBuilder
+            .createUserErrorResult("Parameters \"jar\" and \"dir\" can not both be specified.");
+      }
+
       FileResult fileResult;
+      String[] filesToUpload = jars;
+      if (filesToUpload == null) {
+        filesToUpload = new String[] {dir};
+      }
       try {
-        fileResult = new FileResult(new String[] {jar != null ? jar : dir});
+
+        fileResult = new FileResult(filesToUpload);
       } catch (FileNotFoundException fnfex) {
-        return ResultBuilder.createGemFireErrorResult("'" + jarOrDir + "' not found.");
+        return ResultBuilder.createGemFireErrorResult("'" + filesToUpload + "' not found.");
       } catch (IOException ioex) {
         return ResultBuilder.createGemFireErrorResult("I/O error when reading jar/dir: "
             + ioex.getClass().getName() + ": " + ioex.getMessage());
@@ -319,7 +326,7 @@ public class DeployCommands implements GfshCommand {
 
         if (readYesNo(message, Response.YES) == Response.NO) {
           return ResultBuilder
-              .createShellClientAbortOperationResult("Aborted deploy of " + jarOrDir + ".");
+              .createShellClientAbortOperationResult("Aborted deploy of " + filesToUpload + ".");
         }
       }
 

@@ -742,7 +742,7 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.EXPORT_DATA__FILE,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true,
           help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
-      @CliOption(key = CliStrings.EXPORT_DATA__MEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME, mandatory = true,
           help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
@@ -798,7 +798,7 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
-      @CliOption(key = CliStrings.IMPORT_DATA__MEMBER, mandatory = true,
+      @CliOption(key = CliStrings.MEMBER, mandatory = true,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,

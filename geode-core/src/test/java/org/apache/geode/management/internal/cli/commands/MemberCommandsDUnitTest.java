@@ -267,7 +267,7 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
     setupSystem();
     CommandProcessor commandProcessor = new CommandProcessor();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
-    csb.addOption(CliStrings.LIST_MEMBER__GROUP, "G1");
+    csb.addOption(CliStrings.GROUP, "G1");
     Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
     getLogWriter().info("#SB" + getResultAsString(result));
     assertEquals(true, result.getStatus().equals(Status.OK));

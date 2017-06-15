@@ -133,7 +133,7 @@ public class DataCommandsController extends AbstractCommandsController {
       @RequestParam(CliStrings.EXPORT_DATA__FILE) final String file) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_DATA);
 
-    command.addOption(CliStrings.EXPORT_DATA__MEMBER, decode(memberNameId));
+    command.addOption(CliStrings.MEMBER, decode(memberNameId));
     command.addOption(CliStrings.EXPORT_DATA__REGION, decode(regionNamePath));
     command.addOption(CliStrings.EXPORT_DATA__FILE, decode(file));
 
@@ -147,7 +147,7 @@ public class DataCommandsController extends AbstractCommandsController {
       @RequestParam(CliStrings.IMPORT_DATA__FILE) final String file) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.IMPORT_DATA);
 
-    command.addOption(CliStrings.IMPORT_DATA__MEMBER, decode(memberNameId));
+    command.addOption(CliStrings.MEMBER, decode(memberNameId));
     command.addOption(CliStrings.IMPORT_DATA__REGION, decode(regionNamePath));
     command.addOption(CliStrings.IMPORT_DATA__FILE, decode(file));
 

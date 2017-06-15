@@ -230,7 +230,7 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
 
       FileUtils.writeByteArrayToFile(jarFile, jarBytes);
       CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
-      csb.addOption(CliStrings.DEPLOY__JAR, queueCommandsJarName);
+      csb.addOption(CliStrings.JAR, queueCommandsJarName);
       executeAndVerifyCommand(csb.getCommandString());
 
       csb = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
@@ -279,7 +279,7 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
   private void destroyDiskStore(final String diskStoreName, final String group) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     csb.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStoreName);
-    csb.addOptionWithValueCheck(CliStrings.DESTROY_DISK_STORE__GROUP, group);
+    csb.addOptionWithValueCheck(CliStrings.GROUP, group);
     executeAndVerifyCommand(csb.toString());
   }
 
@@ -306,7 +306,7 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
     }
 
     if (!isBlank(group)) {
-      csb.addOption(CliStrings.DESTROY_INDEX__GROUP, group);
+      csb.addOption(CliStrings.GROUP, group);
     }
     executeAndVerifyCommand(csb.getCommandString());
   }
@@ -315,7 +315,7 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
     File newDeployableJarFile = new File(jarName);
     this.classBuilder.writeJarFromName("ShareConfigClass", newDeployableJarFile);
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
-    csb.addOption(CliStrings.DEPLOY__JAR, jarName);
+    csb.addOption(CliStrings.JAR, jarName);
     executeAndVerifyCommand(csb.getCommandString());
     jarFileNames.add(jarName);
   }
