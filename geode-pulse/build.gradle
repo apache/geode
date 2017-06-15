@@ -41,7 +41,7 @@ dependencies {
   runtime 'org.springframework:spring-expression:' + project.'springframework.version'
 
   // added only to ensure common version with other geode modules
-  runtime 'org.slf4j:slf4j-log4j12:' + project.'slf4j-api.version'
+  runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
   compile ('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
     exclude module: 'aopalliance'
