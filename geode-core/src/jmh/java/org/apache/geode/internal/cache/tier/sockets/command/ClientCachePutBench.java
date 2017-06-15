@@ -60,9 +60,9 @@ import java.util.concurrent.TimeUnit;
  * 100 random keys and values are generated during setup and the client reuses these in order,
  * looping back around after 100 puts.
  */
-@Measurement(iterations = 3, time = 2, timeUnit = MINUTES)
-@Warmup(iterations = 1, time = 1, timeUnit = MINUTES)
-@Fork(3)
+@Measurement(iterations = 10, time = 2, timeUnit = MINUTES)
+@Warmup(iterations = 2, time = 2, timeUnit = MINUTES)
+@Fork(5)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Thread)
