@@ -18,8 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.test.dunit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
@@ -28,13 +29,10 @@ import java.util.Map;
 
 @Category(IntegrationTest.class)
 public class GfshParserParsingTest {
-  private static GfshParser parser;
+  @ClassRule
+  public static GfshParserRule parser = new GfshParserRule();
   private String buffer;
 
-  @BeforeClass
-  public static void setUpClass() throws Exception {
-    parser = new GfshParser();
-  }
 
   private Map<String, String> parseParams(String input, String commandMethod) {
     ParseResult parseResult = parser.parse(input);
@@ -83,8 +81,9 @@ public class GfshParserParsingTest {
     GfshParseResult result = parser.parse(buffer);
     assertThat(result).isNotNull();
     Object[] arguments = result.getArguments();
-    // the 17th argument is the jvmarguments;
-    String[] jvmArgs = (String[]) arguments[17];
+    int indexOfJvmArgumentsParameterInStartLocator = 18;
+
+    String[] jvmArgs = (String[]) arguments[indexOfJvmArgumentsParameterInStartLocator];
     assertThat(jvmArgs).hasSize(2);
 
     // make sure the resulting jvm arguments do not have quotes (either single or double) around
@@ -101,8 +100,8 @@ public class GfshParserParsingTest {
     GfshParseResult result = parser.parse(buffer);
     assertThat(result).isNotNull();
     Object[] arguments = result.getArguments();
-    // the 18th argument is the jvmarguments;
-    String[] jvmArgs = (String[]) arguments[18];
+    int indexOfJvmArgumentsParameterInStartServer = 19;
+    String[] jvmArgs = (String[]) arguments[indexOfJvmArgumentsParameterInStartServer];
     assertThat(jvmArgs).hasSize(2);
 
     // make sure the resulting jvm arguments do not have quotes (either single or double) around
@@ -262,4 +261,33 @@ public class GfshParserParsingTest {
     assertThat(result).isNotNull();
   }
 
+
+  @Test
+  public void testCommandWithBackSlash() throws Exception {
+    String command =
+        "describe offline-disk-store --name=testDiskStore --disk-dirs=R:\\regrResults\\test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("disk-dirs")).isEqualTo("R:\\regrResults\\test");
+  }
+
+  @Test
+  public void testCommandWithBackSlashTwo() throws Exception {
+    String command = "start locator --name=\\test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("\\test");
+  }
+
+  @Test
+  public void testCommandWithBackSlashThree() throws Exception {
+    String command = "start locator --name=\\myName";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("\\myName");
+  }
+
+  @Test
+  public void testCommandWithBackSlashFour() throws Exception {
+    String command = "start locator --name=\\u0005Name";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("\\u0005Name");
+  }
 }

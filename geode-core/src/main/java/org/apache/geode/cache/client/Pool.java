@@ -62,6 +62,13 @@ public interface Pool {
   public String getName();
 
   /**
+   * Returns the socket connect timeout of this pool.
+   *
+   * @see PoolFactory#setSocketConnectTimeout(int)
+   */
+  public int getSocketConnectTimeout();
+
+  /**
    * Returns the connection timeout of this pool.
    * 
    * @see PoolFactory#setFreeConnectionTimeout

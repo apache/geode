@@ -14,6 +14,15 @@
  */
 package org.apache.geode.management.internal.security;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Target;
+
 import java.io.ObjectInputStream;
 import java.util.Set;
 import javax.management.Attribute;
@@ -42,25 +51,22 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.ResourcePermission;
-
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
  * ManagementInterceptor for authorization
  * 
  * @since Geode 1.0
- *
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
+
+  // TODO: make volatile or verify this is thread-safe
   private MBeanServer mbs;
 
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private final SecurityService securityService;
 
-  public MBeanServerWrapper() {}
+  public MBeanServerWrapper(SecurityService securityService) {
+    this.securityService = securityService;
+  }
 
   private void checkDomain(ObjectName name) {
     if (ManagementConstants.OBJECTNAME__DEFAULTDOMAIN.equals(name.getDomain()))
@@ -253,8 +259,15 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       ResourcePermission defaultValue) {
     String resource = (String) descriptor.getFieldValue("resource");
     String operationCode = (String) descriptor.getFieldValue("operation");
+    String targetCode = (String) descriptor.getFieldValue("target");
     if (resource != null && operationCode != null) {
-      return new ResourcePermission(resource, operationCode);
+      if (StringUtils.isBlank(targetCode)) {
+        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
+            targetCode);
+      } else {
+        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
+            Target.valueOf(targetCode).getName());
+      }
     }
     return defaultValue;
   }

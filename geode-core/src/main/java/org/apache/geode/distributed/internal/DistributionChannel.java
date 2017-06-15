@@ -82,20 +82,20 @@ public class DistributionChannel {
     return membershipManager.send(destinations, content, stats);
   }
 
-  public void disconnect(boolean duringStartup) {
+  public void disconnect(boolean beforeJoined) {
     StringBuffer sb = new StringBuffer();
     sb.append("Disconnected from distribution channel ");
 
     long start = System.currentTimeMillis();
 
-    logger.debug("DistributionChannel disconnecting with " + membershipManager + "; duringStartup="
-        + duringStartup);
+    logger.debug("DistributionChannel disconnecting with " + membershipManager + "; beforeJoined="
+        + beforeJoined);
 
     if (membershipManager != null) {
       sb.append(membershipManager.getLocalMember());
       sb.append(" (took ");
       long begin = System.currentTimeMillis();
-      if (duringStartup) {
+      if (beforeJoined) {
         membershipManager.uncleanShutdown("Failed to start distribution", null);
       } else {
         membershipManager.shutdown();

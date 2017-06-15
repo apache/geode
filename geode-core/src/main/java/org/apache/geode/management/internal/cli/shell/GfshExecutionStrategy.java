@@ -79,7 +79,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       // Check if it's a multi-step command
       MultiStepCommand cmd = method.getAnnotation(MultiStepCommand.class);
       if (cmd != null) {
-        return execCLISteps(logWrapper, shell, parseResult);
+        return execCLISteps(cmd, logWrapper, shell, parseResult);
       }
 
       // check if it's a shell only command

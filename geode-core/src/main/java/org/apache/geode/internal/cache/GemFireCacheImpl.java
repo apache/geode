@@ -126,7 +126,6 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.ClientRegionFactoryImpl;
-import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.control.ResourceManager;
@@ -583,7 +582,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final Map<Class<? extends CacheService>, CacheService> services = new HashMap<>();
 
-  private final SecurityService securityService = SecurityService.getSecurityService();
+  private final SecurityService securityService;
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -726,26 +725,26 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return result;
   }
 
-  public static GemFireCacheImpl createClient(DistributedSystem system, PoolFactory pf,
+  public static GemFireCacheImpl createClient(InternalDistributedSystem system, PoolFactory pf,
       CacheConfig cacheConfig) {
     return basicCreate(system, true, cacheConfig, pf, true, ASYNC_EVENT_LISTENERS, null);
   }
 
-  public static GemFireCacheImpl create(DistributedSystem system, CacheConfig cacheConfig) {
+  public static GemFireCacheImpl create(InternalDistributedSystem system, CacheConfig cacheConfig) {
     return basicCreate(system, true, cacheConfig, null, false, ASYNC_EVENT_LISTENERS, null);
   }
 
-  static GemFireCacheImpl createWithAsyncEventListeners(DistributedSystem system,
+  static GemFireCacheImpl createWithAsyncEventListeners(InternalDistributedSystem system,
       CacheConfig cacheConfig, TypeRegistry typeRegistry) {
     return basicCreate(system, true, cacheConfig, null, false, true, typeRegistry);
   }
 
-  public static Cache create(DistributedSystem system, boolean existingOk,
+  public static Cache create(InternalDistributedSystem system, boolean existingOk,
       CacheConfig cacheConfig) {
     return basicCreate(system, existingOk, cacheConfig, null, false, ASYNC_EVENT_LISTENERS, null);
   }
 
-  private static GemFireCacheImpl basicCreate(DistributedSystem system, boolean existingOk,
+  private static GemFireCacheImpl basicCreate(InternalDistributedSystem system, boolean existingOk,
       CacheConfig cacheConfig, PoolFactory pf, boolean isClient, boolean asyncEventListeners,
       TypeRegistry typeRegistry) throws CacheExistsException, TimeoutException,
       CacheWriterException, GatewayException, RegionExistsException {
@@ -793,7 +792,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * 
    * @param typeRegistry: currently only unit tests set this parameter to a non-null value
    */
-  private GemFireCacheImpl(boolean isClient, PoolFactory pf, DistributedSystem system,
+  private GemFireCacheImpl(boolean isClient, PoolFactory pf, InternalDistributedSystem system,
       CacheConfig cacheConfig, boolean asyncEventListeners, TypeRegistry typeRegistry) {
     this.isClient = isClient;
     this.poolFactory = pf;
@@ -807,8 +806,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       // start JTA transaction manager within this synchronized block
       // to prevent race with cache close. fixes bug 43987
       JNDIInvoker.mapTransactions(system);
-      this.system = (InternalDistributedSystem) system;
+      this.system = system;
       this.dm = this.system.getDistributionManager();
+
+      this.securityService = this.system.getSecurityService();
+
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
         // We only support management on members of a distributed system
         // Should do this: if (!getSystem().isLoner()) {
@@ -925,6 +927,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       this.diskMonitor = new DiskStoreMonitor();
     } // synchronized
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    return this.securityService;
   }
 
   @Override
@@ -1152,17 +1159,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     // apply the cluster's properties configuration and initialize security using that configuration
     ClusterConfigurationLoader.applyClusterPropertiesConfiguration(this, configurationResponse,
         this.system.getConfig());
-
-    // first initialize the security service using the security properties
-    this.securityService.initSecurity(this.system.getConfig().getSecurityProps());
-    // secondly if cacheConfig has a securityManager, use that instead
-    if (this.cacheConfig.getSecurityManager() != null) {
-      this.securityService.setSecurityManager(this.cacheConfig.getSecurityManager());
-    }
-    // if cacheConfig has a postProcessor, use that instead
-    if (this.cacheConfig.getPostProcessor() != null) {
-      this.securityService.setPostProcessor(this.cacheConfig.getPostProcessor());
-    }
 
     SystemMemberCacheEventProcessor.send(this, Operation.CACHE_CREATE);
     this.resourceAdvisor.initializationGate();

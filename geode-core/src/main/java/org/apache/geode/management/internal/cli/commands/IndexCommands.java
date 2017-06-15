@@ -26,8 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -41,7 +39,6 @@ import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyIndexFunction;
 import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -50,7 +47,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -67,8 +63,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * The IndexCommands class encapsulates all GemFire shell (Gfsh) commands related to indexes defined
  * in GemFire.
- * </p>
- * 
+ *
  * @see GfshCommand
  * @see org.apache.geode.management.internal.cli.domain.IndexDetails
  * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
@@ -83,8 +78,6 @@ public class IndexCommands implements GfshCommand {
       new CreateDefinedIndexesFunction();
   private static final Set<IndexInfo> indexDefinitions =
       Collections.synchronizedSet(new HashSet<IndexInfo>());
-
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false,
@@ -181,7 +174,7 @@ public class IndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_INDEX__REGION__HELP) String regionPath,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
@@ -189,14 +182,14 @@ public class IndexCommands implements GfshCommand {
           unspecifiedDefaultValue = "range", optionContext = ConverterHint.INDEX_TYPE,
           help = CliStrings.CREATE_INDEX__TYPE__HELP) final String indexType,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] group) {
 
     Result result = null;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    this.securityService.authorizeRegionManage(regionPath);
+    getCache().getSecurityService().authorizeRegionManage(regionPath);
     try {
       final Cache cache = CacheFactory.getAnyInstance();
 
@@ -312,7 +305,6 @@ public class IndexCommands implements GfshCommand {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
 
-
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), group));
@@ -332,11 +324,11 @@ public class IndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESTROY_INDEX__REGION__HELP) final String regionPath,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group) {
 
@@ -355,9 +347,9 @@ public class IndexCommands implements GfshCommand {
     // requires data manage permission on all regions
     if (StringUtils.isNotBlank(regionPath)) {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
-      this.securityService.authorizeRegionManage(regionName);
+      getCache().getSecurityService().authorizeRegionManage(regionName);
     } else {
-      this.securityService.authorizeDataManage();
+      getCache().getSecurityService().authorizeDataManage();
     }
 
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
@@ -420,7 +412,7 @@ public class IndexCommands implements GfshCommand {
       int num = 0;
       for (String memberId : successfulMembers) {
         infoResult.addLine(CliStrings.format(
-            CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));;
+            CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
       }
       result = ResultBuilder.buildResult(infoResult);
 
@@ -479,7 +471,7 @@ public class IndexCommands implements GfshCommand {
     Result result = null;
     XmlEntity xmlEntity = null;
 
-    this.securityService.authorizeRegionManage(regionPath);
+    getCache().getSecurityService().authorizeRegionManage(regionPath);
 
     int idxType = IndexInfo.RANGE_INDEX;
 
@@ -532,11 +524,11 @@ public class IndexCommands implements GfshCommand {
   // TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_DEFINED_INDEXES__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
@@ -641,14 +633,6 @@ public class IndexCommands implements GfshCommand {
     final InfoResultData infoResult = ResultBuilder.createInfoResultData();
     infoResult.addLine(CliStrings.CLEAR_DEFINED_INDEX__SUCCESS__MSG);
     return ResultBuilder.buildResult(infoResult);
-
-  }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_INDEX, CliStrings.CREATE_INDEX,
-      CliStrings.DESTROY_INDEX, CliStrings.CREATE_DEFINED_INDEXES, CliStrings.CLEAR_DEFINED_INDEXES,
-      CliStrings.DEFINE_INDEX})
-  public boolean indexCommandsAvailable() {
-    return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
   }
 
   protected static class IndexStatisticsDetailsAdapter {
@@ -664,28 +648,28 @@ public class IndexCommands implements GfshCommand {
     }
 
     public String getNumberOfKeys() {
-      return (getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfKeys()) : "");
+      return getIndexStatisticsDetails() != null
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfKeys()) : "";
     }
 
     public String getNumberOfUpdates() {
-      return (getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfUpdates()) : "");
+      return getIndexStatisticsDetails() != null
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfUpdates()) : "";
     }
 
     public String getNumberOfValues() {
-      return (getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfValues()) : "");
+      return getIndexStatisticsDetails() != null
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfValues()) : "";
     }
 
     public String getTotalUpdateTime() {
-      return (getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUpdateTime()) : "");
+      return getIndexStatisticsDetails() != null
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUpdateTime()) : "";
     }
 
     public String getTotalUses() {
-      return (getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUses()) : "");
+      return getIndexStatisticsDetails() != null
+          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUses()) : "";
     }
   }
 

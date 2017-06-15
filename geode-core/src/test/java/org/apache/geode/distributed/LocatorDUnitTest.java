@@ -82,7 +82,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
 import org.junit.Test;
@@ -102,7 +101,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @since GemFire 4.0
  */
-@Category({DistributedTest.class, MembershipTest.class, FlakyTest.class}) // Flaky: GEODE-2542
+@Category({DistributedTest.class, MembershipTest.class})
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile InternalDistributedSystem system = null;
@@ -278,7 +277,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
    * stagger the starting of locators. This test configures two locators to start up simultaneously
    * and shows that they find each other and form a single system.
    */
-  @Category(FlakyTest.class) // GEODE-1931
   @Test
   public void testStartTwoLocators() throws Exception {
     disconnectAllFromDS();
@@ -304,6 +302,9 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
+    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
+    // GEODE-3052 - split brain on restart from persistent view data
+    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
     startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
   }
 

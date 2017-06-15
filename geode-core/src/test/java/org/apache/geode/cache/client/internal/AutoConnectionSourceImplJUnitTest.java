@@ -45,20 +45,15 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import junit.framework.Assert;
-
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -144,65 +139,6 @@ public class AutoConnectionSourceImplJUnitTest {
     } catch (Exception e) {
       // do nothing
     }
-  }
-
-  /**
-   * This test validates the AutoConnectionSourceImpl.updateLocatorInLocatorList method. That method
-   * takes InetSocketAddres of locator which unable to connect to locator. And update that
-   * InetSocketAddres with hostaddress of locator in locatorlist.
-   * 
-   * In this test we validate this using identityHashCode.
-   */
-  @Test
-  public void testLocatorIpChange() {
-    int port = 11011;
-    List<InetSocketAddress> locators = new ArrayList();
-    InetSocketAddress floc1 = new InetSocketAddress("fakeLocalHost1", port);
-    InetSocketAddress floc2 = new InetSocketAddress("fakeLocalHost2", port);
-    locators.add(floc1);
-    locators.add(floc2);
-    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(locators, "", 60 * 1000);
-
-    // This method will create a new InetSocketAddress of floc1
-    src.updateLocatorInLocatorList(floc1);
-
-    List<InetSocketAddress> cLocList = src.getCurrentLocators();
-
-    Assert.assertEquals(2, cLocList.size());
-
-    Iterator<InetSocketAddress> itr = cLocList.iterator();
-
-    while (itr.hasNext()) {
-      InetSocketAddress t = itr.next();
-      Assert.assertFalse("Should have replaced floc1 intsance", t == floc1);
-    }
-  }
-
-  /**
-   * This test validates the AutoConnectionSourceImpl.addbadLocators method. That method adds
-   * badLocator from badLocator list to new Locator list. And it make sure that new locator list
-   * doesn't have similar entry. For that it checks hostname and port only.
-   */
-  @Test
-  public void testAddBadLocator() {
-    int port = 11011;
-    List<InetSocketAddress> locators = new ArrayList();
-    InetSocketAddress floc1 = new InetSocketAddress("fakeLocalHost1", port);
-    InetSocketAddress floc2 = new InetSocketAddress("fakeLocalHost2", port);
-    locators.add(floc1);
-    locators.add(floc2);
-    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(locators, "", 60 * 1000);
-
-
-    Set<InetSocketAddress> badLocators = new HashSet<>();
-    InetSocketAddress b1 = new InetSocketAddress("fakeLocalHost1", port);
-    InetSocketAddress b2 = new InetSocketAddress("fakeLocalHost3", port);
-    badLocators.add(b1);
-    badLocators.add(b2);
-
-    src.addbadLocators(locators, badLocators);
-
-    Assert.assertEquals(3, locators.size());
   }
 
   @Test
@@ -413,6 +349,10 @@ public class AutoConnectionSourceImplJUnitTest {
 
     public boolean isDestroyed() {
       return false;
+    }
+
+    public int getSocketConnectTimeout() {
+      return 0;
     }
 
     public int getFreeConnectionTimeout() {

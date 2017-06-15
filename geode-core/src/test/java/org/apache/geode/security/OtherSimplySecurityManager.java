@@ -12,24 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli;
+package org.apache.geode.security;
 
-import java.util.List;
-
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.MethodTarget;
-
-public abstract class MultipleValueAdapter<T> implements MultipleValueConverter<T> {
-
-  @Override
-  public T convertFromText(String value, Class<?> targetType, String optionContext) {
-    return null;
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    return false;
-  }
-
+public class OtherSimplySecurityManager extends SimpleTestSecurityManager {
 }

@@ -43,6 +43,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class Get70 extends BaseCommand {
@@ -54,8 +55,8 @@ public class Get70 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long startparam)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long startparam) throws IOException {
     long start = startparam;
     Part regionNamePart = null, keyPart = null, valuePart = null;
     String regionName = null;
@@ -131,7 +132,7 @@ public class Get70 extends BaseCommand {
     GetOperationContext getContext = null;
     try {
       // for integrated security
-      this.securityService.authorizeRegionRead(regionName, key.toString());
+      securityService.authorizeRegionRead(regionName, key.toString());
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
@@ -188,7 +189,7 @@ public class Get70 extends BaseCommand {
       }
 
       // post process
-      data = this.securityService.postProcess(regionName, key, data, entry.isObject);
+      data = securityService.postProcess(regionName, key, data, entry.isObject);
 
       long oldStart = start;
       start = DistributionStats.getStatTime();

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
@@ -20,14 +19,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -50,36 +49,38 @@ public class SecurityClusterConfigDUnitTest {
 
   @Before
   public void before() throws Exception {
-    IgnoredException
-        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
-    IgnoredException
-        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+    addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
+    addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(JMX_MANAGER, "false");
     props.setProperty(JMX_MANAGER_START, "false");
     props.setProperty(JMX_MANAGER_PORT, 0 + "");
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-    lsRule.startLocatorVM(0, props);
+
+    this.lsRule.startLocatorVM(0, props);
   }
 
   @Test
   public void testStartServerWithClusterConfig() throws Exception {
     Properties props = new Properties();
+
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty("use-cluster-configuration", "true");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     // initial security properties should only contain initial set of values
-    serverStarter.startServer(props, lsRule.getMember(0).getPort());
-    DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
+    this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort());
+    DistributedSystem ds = this.serverStarter.getCache().getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();
-    assertEquals(4, secProps.size());
-    assertTrue(secProps.containsKey("security-manager"));
-    assertTrue(secProps.containsKey("security-post-processor"));
+    assertThat(secProps).containsKey("security-username");
+    assertThat(secProps).containsKey("security-password");
+    assertThat(secProps).containsKey(SECURITY_MANAGER);
+    assertThat(secProps).containsKey(SECURITY_POST_PROCESSOR);
   }
 
   @Test
@@ -89,67 +90,71 @@ public class SecurityClusterConfigDUnitTest {
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty("use-cluster-configuration", "true");
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     // initial security properties should only contain initial set of values
-    serverStarter.startServer(props, lsRule.getMember(0).getPort());
-    DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
+    this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort());
+    DistributedSystem ds = this.serverStarter.getCache().getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();
-    assertTrue(secProps.containsKey("security-manager"));
-    assertTrue(secProps.containsKey("security-post-processor"));
+    assertThat(secProps).containsKey("security-username");
+    assertThat(secProps).containsKey("security-password");
+    assertThat(secProps).containsKey(SECURITY_MANAGER);
+    assertThat(secProps).containsKey(SECURITY_POST_PROCESSOR);
   }
 
   @Test
-  public void serverWithDifferentSecurityManagerShouldThrowException() {
+  public void serverWithDifferentSecurityManagerShouldThrowGemFireConfigException()
+      throws Exception {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty("security-manager", "mySecurityManager");
-    props.setProperty("use-cluster-configuration", "true");
+    props.setProperty(SECURITY_MANAGER, OtherSimplySecurityManager.class.getName());
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     // initial security properties should only contain initial set of values
-    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
-        .isInstanceOf(GemFireConfigException.class)
-        .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
-
+    assertThatThrownBy(
+        () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
+            .isInstanceOf(GemFireConfigException.class).hasMessage(
+                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
   }
 
   @Test
-  public void serverWithDifferentPostProcessorShouldThrowException() {
+  public void serverWithDifferentPostProcessorShouldThrowGemFireConfigException() throws Exception {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty(SECURITY_POST_PROCESSOR, "this-is-not-ok");
-    props.setProperty("use-cluster-configuration", "true");
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_POST_PROCESSOR, OtherPDXPostProcessor.class.getName());
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     // initial security properties should only contain initial set of values
-    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
-        .isInstanceOf(GemFireConfigException.class)
-        .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
-
+    assertThatThrownBy(
+        () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
+            .isInstanceOf(GemFireConfigException.class).hasMessage(
+                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
   }
 
   @Test
-  public void serverConnectingToSecuredLocatorMustUseClusterConfig() {
+  public void serverConnectingToSecuredLocatorMustUseClusterConfig() throws Exception {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty("security-manager", "mySecurityManager");
-    props.setProperty("use-cluster-configuration", "false");
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
 
-    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
-        .isInstanceOf(GemFireConfigException.class)
-        .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toLocalizedString());
-
+    assertThatThrownBy(
+        () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
+            .isInstanceOf(GemFireConfigException.class).hasMessage(
+                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toLocalizedString());
   }
 
 }

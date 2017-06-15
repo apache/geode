@@ -361,6 +361,10 @@ public class QueueManagerJUnitTest {
 
     public void destroy(boolean keepAlive) {}
 
+    public int getSocketConnectTimeout() {
+      return 0;
+    }
+
     public int getFreeConnectionTimeout() {
       return 0;
     }

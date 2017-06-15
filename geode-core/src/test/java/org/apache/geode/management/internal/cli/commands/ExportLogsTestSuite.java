@@ -28,10 +28,9 @@ import org.junit.runners.Suite;
  */
 
 @Ignore
-@Suite.SuiteClasses({ExportLogsCommandTest.class, ExportLogsFileSizeLimitTest.class,
-    ExportLogsIntegrationTest.class, ExportLogsDUnitTest.class, SizeExportLogsFunctionTest.class,
-    SizeExportLogsFunctionFileTest.class, LogSizerTest.class, LogExporterTest.class,
-    LogExporterIntegrationTest.class})
+@Suite.SuiteClasses({ExportLogsCommandTest.class, ExportLogsDUnitTest.class,
+    SizeExportLogsFunctionTest.class, SizeExportLogsFunctionFileTest.class, LogSizerTest.class,
+    LogExporterTest.class, LogExporterIntegrationTest.class, ExportLogsIntegrationTest.class})
 @RunWith(Suite.class)
 public class ExportLogsTestSuite {
 }

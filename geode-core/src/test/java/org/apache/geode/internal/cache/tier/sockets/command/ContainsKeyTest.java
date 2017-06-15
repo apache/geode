@@ -88,7 +88,7 @@ public class ContainsKeyTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    containsKey.cmdExecute(this.message, this.serverConnection, 0);
+    containsKey.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.replyMessage).send(this.serverConnection);
   }
@@ -98,7 +98,7 @@ public class ContainsKeyTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    containsKey.cmdExecute(this.message, this.serverConnection, 0);
+    containsKey.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.replyMessage).send(this.serverConnection);
@@ -111,7 +111,7 @@ public class ContainsKeyTest {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
 
-    containsKey.cmdExecute(this.message, this.serverConnection, 0);
+    containsKey.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
@@ -123,7 +123,7 @@ public class ContainsKeyTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
 
-    containsKey.cmdExecute(this.message, this.serverConnection, 0);
+    containsKey.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
     verify(this.replyMessage).send(this.serverConnection);
@@ -136,7 +136,7 @@ public class ContainsKeyTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
 
-    containsKey.cmdExecute(this.message, this.serverConnection, 0);
+    containsKey.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));

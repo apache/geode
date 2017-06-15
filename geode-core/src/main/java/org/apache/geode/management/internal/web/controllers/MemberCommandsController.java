@@ -50,8 +50,8 @@ public class MemberCommandsController extends AbstractCommandsController {
   // public String listMembers(@RequestParam(value = "group", required = false) final String
   // groupName,
   // @RequestParam(value = "group", required = false) final String[] groupNames) {
-  public String listMembers(@RequestParam(value = CliStrings.LIST_MEMBER__GROUP,
-      required = false) final String groupName) {
+  public String listMembers(
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.LIST_MEMBER);
 
     // logger.info(String.format("Request Body: %1$s", requestParameters));
@@ -62,7 +62,7 @@ public class MemberCommandsController extends AbstractCommandsController {
     // final String groupName = requestParameters.getFirst("group");
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.LIST_MEMBER__GROUP, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     return processCommand(command.toString());

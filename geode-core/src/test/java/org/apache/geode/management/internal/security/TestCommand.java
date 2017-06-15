@@ -15,6 +15,9 @@
 package org.apache.geode.management.internal.security;
 
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.shiro.authz.Permission;
 
 import java.util.ArrayList;
@@ -24,19 +27,27 @@ public class TestCommand {
 
   public static ResourcePermission none = null;
   public static ResourcePermission everyOneAllowed = new ResourcePermission();
-  public static ResourcePermission dataRead = new ResourcePermission("DATA", "READ");
-  public static ResourcePermission dataWrite = new ResourcePermission("DATA", "WRITE");
-  public static ResourcePermission dataManage = new ResourcePermission("DATA", "MANAGE");
+  public static ResourcePermission dataRead = new ResourcePermission(Resource.DATA, Operation.READ);
+  public static ResourcePermission dataWrite =
+      new ResourcePermission(Resource.DATA, Operation.WRITE);
+  public static ResourcePermission dataManage =
+      new ResourcePermission(Resource.DATA, Operation.MANAGE);
+  public static ResourcePermission diskManage =
+      new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.DISK);
 
-  public static ResourcePermission regionARead = new ResourcePermission("DATA", "READ", "RegionA");
+  public static ResourcePermission regionARead =
+      new ResourcePermission(Resource.DATA, Operation.READ, "RegionA");
   public static ResourcePermission regionAWrite =
-      new ResourcePermission("DATA", "WRITE", "RegionA");
+      new ResourcePermission(Resource.DATA, Operation.WRITE, "RegionA");
   public static ResourcePermission regionAManage =
-      new ResourcePermission("DATA", "MANAGE", "RegionA");
+      new ResourcePermission(Resource.DATA, Operation.MANAGE, "RegionA");
 
-  public static ResourcePermission clusterRead = new ResourcePermission("CLUSTER", "READ");
-  public static ResourcePermission clusterWrite = new ResourcePermission("CLUSTER", "WRITE");
-  public static ResourcePermission clusterManage = new ResourcePermission("CLUSTER", "MANAGE");
+  public static ResourcePermission clusterRead =
+      new ResourcePermission(Resource.CLUSTER, Operation.READ);
+  public static ResourcePermission clusterWrite =
+      new ResourcePermission(Resource.CLUSTER, Operation.WRITE);
+  public static ResourcePermission clusterManage =
+      new ResourcePermission(Resource.CLUSTER, Operation.MANAGE);
 
   private static List<TestCommand> testCommands = new ArrayList<>();
 
@@ -116,7 +127,7 @@ public class TestCommand {
     createTestCommand("backup disk-store --dir=foo", dataRead);
     createTestCommand("list disk-stores", clusterRead);
     createTestCommand("create disk-store --name=foo --dir=bar", dataManage);
-    createTestCommand("compact disk-store --name=foo", dataManage);
+    createTestCommand("compact disk-store --name=foo", diskManage);
     createTestCommand("compact offline-disk-store --name=foo --disk-dirs=bar", null);
     createTestCommand("upgrade offline-disk-store --name=foo --disk-dirs=bar", null);
     createTestCommand("describe disk-store --name=foo --member=baz", clusterRead);

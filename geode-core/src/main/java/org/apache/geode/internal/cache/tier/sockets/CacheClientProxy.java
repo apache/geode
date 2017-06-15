@@ -327,7 +327,7 @@ public class CacheClientProxy implements ClientSession {
   private int numDrainsInProgress = 0;
   private final Object drainsInProgressLock = new Object();
 
-  private SecurityService securityService = SecurityService.getSecurityService();
+  private final SecurityService securityService;
 
   /**
    * Constructor.
@@ -340,10 +340,13 @@ public class CacheClientProxy implements ClientSession {
    */
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
-      Version clientVersion, long acceptorId, boolean notifyBySubscription) throws CacheException {
+      Version clientVersion, long acceptorId, boolean notifyBySubscription,
+      SecurityService securityService) throws CacheException {
+
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
     this._cache = ccn.getCache();
+    this.securityService = securityService;
     this._maximumMessageCount = ccn.getMaximumMessageCount();
     this._messageTimeToLive = ccn.getMessageTimeToLive();
     this._acceptorId = acceptorId;

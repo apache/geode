@@ -35,19 +35,22 @@ public class ClusterConfigurationStatusRetriever {
 
     try {
       final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
-      InetSocketAddress inetSockAddr = new InetSocketAddress(networkAddress, locatorPort);
 
       TcpClient client = new TcpClient();
-      SharedConfigurationStatusResponse statusResponse = (SharedConfigurationStatusResponse) client
-          .requestToServer(inetSockAddr, new SharedConfigurationStatusRequest(), 10000, true);
+      SharedConfigurationStatusResponse statusResponse =
+          (SharedConfigurationStatusResponse) client.requestToServer(networkAddress, locatorPort,
+              new SharedConfigurationStatusRequest(), 10000, true);
+
+
 
       for (int i = 0; i < NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS; i++) {
         if (statusResponse.getStatus().equals(
             org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus.STARTED)
             || statusResponse.getStatus().equals(
                 org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus.NOT_STARTED)) {
-          statusResponse = (SharedConfigurationStatusResponse) client.requestToServer(inetSockAddr,
-              new SharedConfigurationStatusRequest(), 10000, true);
+          statusResponse =
+              (SharedConfigurationStatusResponse) client.requestToServer(networkAddress,
+                  locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
           try {
             Thread.sleep(5000);
           } catch (InterruptedException e) {

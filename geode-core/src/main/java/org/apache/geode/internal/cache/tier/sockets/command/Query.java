@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 
 public class Query extends BaseCommandQuery {
 
@@ -43,8 +44,8 @@ public class Query extends BaseCommandQuery {
   protected Query() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
 
     // Based on MessageType.DESTROY
     // Added by gregp 10/18/05
@@ -89,7 +90,7 @@ public class Query extends BaseCommandQuery {
       }
 
       processQuery(clientMessage, query, queryString, regionNames, start, null, queryContext,
-          serverConnection, true);
+          serverConnection, true, securityService);
     } catch (QueryInvalidException e) {
       throw new QueryInvalidException(e.getMessage() + queryString);
     } catch (QueryExecutionLowMemoryException e) {

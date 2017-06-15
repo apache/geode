@@ -42,9 +42,8 @@ public class ExportLogController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/logs")
   public ResponseEntity<InputStreamResource> exportLogs(
       @RequestParam(value = CliStrings.EXPORT_LOGS__DIR, required = false) final String directory,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__GROUP, required = false) final String[] groups,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.EXPORT_LOGS__LOGLEVEL,
           required = false) final String logLevel,
       @RequestParam(value = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL,
@@ -57,18 +56,19 @@ public class ExportLogController extends AbstractCommandsController {
       @RequestParam(value = CliStrings.EXPORT_LOGS__LOGSONLY,
           required = false) final boolean logsOnly,
       @RequestParam(value = CliStrings.EXPORT_LOGS__STATSONLY,
-          required = false) final boolean statsOnly) {
+          required = false) final boolean statsOnly,
+      @RequestParam(value = CliStrings.EXPORT_LOGS__FILESIZELIMIT,
+          required = false) final String fileSizeLimit) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_LOGS);
 
     command.addOption(CliStrings.EXPORT_LOGS__DIR, decode(directory));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.EXPORT_LOGS__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.EXPORT_LOGS__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(logLevel)) {
@@ -79,6 +79,7 @@ public class ExportLogController extends AbstractCommandsController {
     command.addOption(CliStrings.EXPORT_LOGS__MERGELOG, String.valueOf(mergeLog));
     command.addOption(CliStrings.EXPORT_LOGS__LOGSONLY, String.valueOf(logsOnly));
     command.addOption(CliStrings.EXPORT_LOGS__STATSONLY, String.valueOf(statsOnly));
+    command.addOption(CliStrings.EXPORT_LOGS__FILESIZELIMIT, fileSizeLimit);
 
     if (hasValue(startTime)) {
       command.addOption(CliStrings.EXPORT_LOGS__STARTTIME, startTime);

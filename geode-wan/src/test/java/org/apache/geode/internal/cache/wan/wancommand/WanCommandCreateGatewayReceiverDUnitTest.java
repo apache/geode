@@ -51,14 +51,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiverWithDefault() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -104,14 +104,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiver() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -157,14 +157,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiverWithGatewayTransportFilter() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -215,14 +215,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -273,14 +273,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiver_Error() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -319,20 +319,20 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiver_onMember() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
     vm5.invoke(() -> createCache(punePort));
 
-    final DistributedMember vm3Member = (DistributedMember) vm3.invoke(() -> getMember());
+    final DistributedMember vm3Member = vm3.invoke(() -> getMember());
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -341,7 +341,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
+            + CliStrings.MEMBER + "=" + vm3Member.getId();
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -372,21 +372,21 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiver_onMultipleMembers() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
     vm5.invoke(() -> createCache(punePort));
 
-    final DistributedMember vm3Member = (DistributedMember) vm3.invoke(() -> getMember());
-    final DistributedMember vm4Member = (DistributedMember) vm4.invoke(() -> getMember());
+    final DistributedMember vm3Member = vm3.invoke(() -> getMember());
+    final DistributedMember vm4Member = vm4.invoke(() -> getMember());
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -395,8 +395,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId() + ","
-            + vm4Member.getId();
+            + CliStrings.MEMBER + "=" + vm3Member.getId() + "," + vm4Member.getId();
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -428,14 +427,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiver_onGroup() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
@@ -448,7 +447,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__GROUP + "=receiverGroup1";
+            + CliStrings.GROUP + "=receiverGroup1";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -483,14 +482,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiver_onGroup_Scenario2() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
@@ -503,7 +502,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__GROUP + "=receiverGroup1";
+            + CliStrings.GROUP + "=receiverGroup1";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -535,14 +534,14 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   public void testCreateGatewayReceiver_onMultipleGroups() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
+    int punePort = puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
@@ -555,7 +554,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__GROUP + "=receiverGroup1,receiverGroup2";
+            + CliStrings.GROUP + "=receiverGroup1,receiverGroup2";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);

@@ -32,6 +32,7 @@ import org.junit.experimental.categories.Category;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class MemberMBeanSecurityJUnitTest {
+
   private MemberMXBean bean;
 
   @Rule

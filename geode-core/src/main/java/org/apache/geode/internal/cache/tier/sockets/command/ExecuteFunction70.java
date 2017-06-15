@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * 
@@ -51,9 +52,9 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
   private ExecuteFunction70() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException {
-    super.cmdExecute(clientMessage, serverConnection, start);
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
+    super.cmdExecute(clientMessage, serverConnection, securityService, start);
   }
 
   @Override

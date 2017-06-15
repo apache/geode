@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -128,7 +127,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   }
 
   public void connect(int port, PortType type, String... options) throws Exception {
-    CliUtil.isGfshVM = true;
     if (gfsh == null) {
       this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
           temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
@@ -194,7 +192,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     gfsh.executeCommand("exit");
     gfsh.terminate();
     gfsh = null;
-    CliUtil.isGfshVM = false;
   }
 
   public HeadlessGfsh getGfsh() {
