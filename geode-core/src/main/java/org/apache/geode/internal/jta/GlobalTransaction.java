@@ -21,6 +21,9 @@ package org.apache.geode.internal.jta;
  * 
  * 
  * @since GemFire 4.0
+ * 
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
+ *             transactions.
  */
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -32,6 +35,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
+@Deprecated
 public class GlobalTransaction {
 
   public static boolean DISABLE_TRANSACTION_TIMEOUT_SETTING = false;
