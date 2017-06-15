@@ -185,6 +185,7 @@ See [JCA Resource Adapter Example](jca_adapter_example.html#concept_swv_z2p_wk) 
 ## <a id="concept_8567sdkbigige" class="no-quick-link"></a>Using Geode as the JTA Transaction Manager
 
 You can also use Geode as the JTA transaction manager.
+As of Geode 1.2, Geode's JTA transaction manager is deprecated.
 
 Geode ships with its own implementation of a JTA transaction manager. However, note that this implementation is not XA-compliant; therefore, it does not persist any state, which could lead to an inconsistent state after recovering a crashed member.
 
