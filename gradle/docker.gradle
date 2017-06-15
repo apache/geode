@@ -65,7 +65,7 @@ def dockerConfig = {
 
       args[3] = args[3] + matcher[0][1]
       def workdir = new File(args[3])
-      println "dockerize: making ${workdir}"
+      // println "dockerize: making ${workdir}"
       workdir.mkdirs()
       // println args
 
