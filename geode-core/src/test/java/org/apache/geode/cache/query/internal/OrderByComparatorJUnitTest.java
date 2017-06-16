@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -81,7 +80,8 @@ public class OrderByComparatorJUnitTest {
         Collection base = (Collection) baseField.get(rcw);
         assertTrue(base instanceof SortedStructSet);
         SortedStructSet sss = (SortedStructSet) base;
-        assertTrue(sss.comparator() instanceof OrderByComparatorUnmapped);
+        assertTrue(sss.comparator() instanceof OrderByComparatorMapped);
+
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -118,7 +118,7 @@ public class OrderByComparatorJUnitTest {
         Collection base = (Collection) baseField.get(rcw);
         assertTrue(base instanceof SortedStructSet);
         SortedStructSet sss = (SortedStructSet) base;
-        assertFalse(sss.comparator() instanceof OrderByComparatorUnmapped);
+        assertFalse(sss.comparator() instanceof OrderByComparatorMapped);
         assertTrue(sss.comparator() instanceof OrderByComparator);
       } catch (Exception e) {
         e.printStackTrace();
