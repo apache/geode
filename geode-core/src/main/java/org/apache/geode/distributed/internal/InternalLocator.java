@@ -469,7 +469,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         // if security-log-file then create securityLogWriterAppender
         LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.SECURITY, true, false,
             this.config, false);
-
       }
       // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
     }
