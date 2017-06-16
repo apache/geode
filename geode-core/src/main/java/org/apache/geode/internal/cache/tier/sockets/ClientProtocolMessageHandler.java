@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import org.apache.geode.internal.cache.InternalCache;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -24,6 +25,11 @@ import java.io.OutputStream;
  * Stub, this will be hooked up to the new client protocol when it's implemented.
  */
 public class ClientProtocolMessageHandler {
+  /**
+   * Bogus, but it lets us write an integration test so that nobody breaks our flow.
+   */
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      InternalCache cache) {}
+      InternalCache cache) throws IOException {
+    outputStream.write(inputStream.read());
+  }
 }
