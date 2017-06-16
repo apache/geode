@@ -39,6 +39,10 @@ public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes
    * Register ourselves for de-serialization
    */
   static {
+    registerInstantiator();
+  }
+
+  public static void registerInstantiator() {
     Instantiator.register(new Instantiator(DeltaQueuedSessionAttributes.class, 3479) {
       @Override
       public DataSerializable newInstance() {
