@@ -67,7 +67,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
   @Override
   public void execute(final FunctionContext context) {
     try {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = (InternalCache) context.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
       String memberId = cache.getDistributedSystem().getMemberId();

@@ -41,8 +41,8 @@ public class FunctionServiceMultipleOnMemberDUnitTest extends FunctionServiceBas
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    members.add(vm0.invoke(() -> getSystem().getDistributedMember()));
-    members.add(vm1.invoke(() -> getSystem().getDistributedMember()));
+    members.add(vm0.invoke(() -> getCache().getDistributedSystem().getDistributedMember()));
+    members.add(vm1.invoke(() -> getCache().getDistributedSystem().getDistributedMember()));
   }
 
   @Override
