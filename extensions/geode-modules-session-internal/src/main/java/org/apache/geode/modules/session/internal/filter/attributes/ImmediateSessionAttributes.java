@@ -35,6 +35,10 @@ public class ImmediateSessionAttributes extends AbstractSessionAttributes {
    * Register ourselves for de-serialization
    */
   static {
+    registerInstantiator();
+  }
+
+  public static void registerInstantiator() {
     Instantiator.register(new Instantiator(ImmediateSessionAttributes.class, 347) {
       @Override
       public DataSerializable newInstance() {

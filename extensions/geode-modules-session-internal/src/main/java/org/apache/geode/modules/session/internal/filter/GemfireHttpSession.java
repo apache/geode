@@ -88,6 +88,10 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
    * Register ourselves for de-serialization
    */
   static {
+    registerInstantiator();
+  }
+
+  public static void registerInstantiator() {
     Instantiator.register(new Instantiator(GemfireHttpSession.class, 27315) {
       @Override
       public DataSerializable newInstance() {
