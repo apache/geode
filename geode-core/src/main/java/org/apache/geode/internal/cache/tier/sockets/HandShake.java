@@ -333,13 +333,14 @@ public class HandShake implements ClientHandShake {
   /**
    * Client-side handshake. This form of HandShake can communicate with a server
    */
-  public HandShake(ClientProxyMembershipID id, DistributedSystem sys) {
+  public HandShake(ClientProxyMembershipID id, DistributedSystem sys,
+      SecurityService securityService) {
     this.id = id;
     this.code = REPLY_OK;
     this.system = sys;
     setOverrides();
     this.credentials = null;
-    this.securityService = SecurityServiceFactory.create();
+    this.securityService = securityService;
   }
 
   public void updateProxyID(InternalDistributedMember idm) {
@@ -1703,8 +1704,9 @@ public class HandShake implements ClientHandShake {
     } catch (Exception ex) {
       throw new AuthenticationFailedException(ex.getMessage(), ex);
     } finally {
-      if (auth != null)
+      if (auth != null) {
         auth.close();
+      }
     }
   }
 
