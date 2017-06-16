@@ -50,9 +50,9 @@ public class NewProtocolServerConnection extends ServerConnection {
    * @param acceptor
    */
   public NewProtocolServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,
-                                     CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-                                     byte communicationMode, Acceptor acceptor, ClientProtocolMessageHandler newClientProtocol,
-                                     SecurityService securityService) {
+      CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
+      byte communicationMode, Acceptor acceptor, ClientProtocolMessageHandler newClientProtocol,
+      SecurityService securityService) {
     super(s, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr, communicationMode,
         acceptor, securityService);
     assert (communicationMode == AcceptorImpl.CLIENT_TO_SERVER_NEW_PROTOCOL);
@@ -65,6 +65,7 @@ public class NewProtocolServerConnection extends ServerConnection {
       Socket socket = this.getSocket();
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
+
       // TODO serialization types?
       newClientProtocol.receiveMessage(inputStream, outputStream, this.getCache());
     } catch (IOException e) {
