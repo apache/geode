@@ -31,6 +31,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.awaitility.Awaitility;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -95,7 +96,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
     });
   }
 
-  @Test
+  //@Test
+  @Ignore
   public void testDistributedMemberBytesWithCurrentServerAndOldClient() throws Exception {
     // Start current version server
     int serverPort = initServerCache(true);
