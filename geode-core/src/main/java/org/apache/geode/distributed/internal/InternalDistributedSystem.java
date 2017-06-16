@@ -2189,9 +2189,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * @param resource the actual resource object.
    */
   private void notifyResourceEventListeners(ResourceEvent event, Object resource) {
-    for (Iterator<ResourceEventsListener> iter = resourceListeners.iterator(); iter.hasNext();) {
+    for (ResourceEventsListener listener : resourceListeners) {
       try {
-        ResourceEventsListener listener = iter.next();
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
         // ignore

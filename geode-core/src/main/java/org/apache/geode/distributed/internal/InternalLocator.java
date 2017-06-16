@@ -469,15 +469,13 @@ public class InternalLocator extends Locator implements ConnectListener {
         // if security-log-file then create securityLogWriterAppender
         LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.SECURITY, true, false,
             this.config, false);
-
       }
-        // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
+      // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
     }
 
     // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
     if (logWriter == null) {
-      logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config,
-          false);
+      logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config, false);
       if (logger.isDebugEnabled()) {
         logger.debug("LogWriter for locator is created.");
       }
