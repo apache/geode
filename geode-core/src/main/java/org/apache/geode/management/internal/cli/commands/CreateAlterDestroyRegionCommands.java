@@ -14,7 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -58,26 +79,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 /**
  * @since GemFire 7.0
@@ -206,7 +207,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
             CliStrings.CREATE_REGION__MSG__ONLY_ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_CAN_BE_SPECIFIED);
       } else if (regionShortcut == null && useAttributesFrom == null) {
         throw new IllegalArgumentException(
-            CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_IS_REQUIRED);
+            CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED);
       }
 
       validateRegionPathAndParent(cache, regionPath);
@@ -586,7 +587,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
       if (!regionExists(cache, parentRegionPath)) {
         throw new IllegalArgumentException(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOESNOT_EXIST,
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST,
                 new Object[] {regionPath}));
       }
     }
@@ -992,7 +993,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
 
       if (regionMembersList.size() == 0) {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE,
+            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE,
                 regionPath, "jmx-manager-update-rate milliseconds"));
       }
 

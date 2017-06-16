@@ -14,8 +14,46 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.client.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.ObjectName;
+
+import org.awaitility.Awaitility;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.QueryService;
@@ -43,24 +81,6 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.awaitility.Awaitility;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.management.ObjectName;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 
 /**
  * Dunit class for testing gemfire Client commands : list client , describe client
@@ -223,15 +243,13 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     final VM server1 = Host.getHost(0).getVM(1);
     final VM server2 = Host.getHost(0).getVM(3);
     final VM manager = Host.getHost(0).getVM(0);
-    String serverName1 =
-        (String) server1.invoke("get DistributedMemberID ", () -> getDistributedMemberId());
+    String serverName1 = server1.invoke("get DistributedMemberID ", () -> getDistributedMemberId());
 
-    String serverName2 =
-        (String) server2.invoke("get DistributedMemberID ", () -> getDistributedMemberId());
+    String serverName2 = server2.invoke("get DistributedMemberID ", () -> getDistributedMemberId());
 
     final DistributedMember serverMember1 = getMember(server1);
 
-    String[] clientIds = (String[]) manager.invoke("get Client Ids", () -> {
+    String[] clientIds = manager.invoke("get Client Ids", () -> {
       final SystemManagementService service =
           (SystemManagementService) ManagementService.getManagementService(getCache());
 
@@ -250,7 +268,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     final DistributedMember serverMember2 = getMember(server2);
 
-    String[] clientIds2 = (String[]) manager.invoke("get Client Ids", () -> {
+    String[] clientIds2 = manager.invoke("get Client Ids", () -> {
       final SystemManagementService service =
           (SystemManagementService) ManagementService.getManagementService(getCache());
 
@@ -314,7 +332,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       List<String> minConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MIN_CONN);
       List<String> maxConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MAX_CONN);
       List<String> redudancy =
-          tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUDANCY);
+          tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUNDANCY);
       List<String> numCqs = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_CQs);
 
       getLogWriter().info("testDescribeClientWithServers getHeader numCqs =" + numCqs);
@@ -327,7 +345,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       assertTrue(puts.equals("2"));
       String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
       assertTrue(queue.equals("1"));
-      String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+      String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
       assertTrue(calls.equals("1"));
       String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
       assertTrue(primServer.equals(serverName));
@@ -358,8 +376,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     getLogWriter().info("testDescribeClient commandStr=" + commandString);
 
     final VM server1 = Host.getHost(0).getVM(1);
-    String serverName =
-        (String) server1.invoke("get distributed member Id", () -> getDistributedMemberId());
+    String serverName = server1.invoke("get distributed member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testDescribeClient commandResult=" + commandResult);
@@ -376,7 +393,8 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     List<String> minConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MIN_CONN);
     List<String> maxConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MAX_CONN);
-    List<String> redudancy = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUDANCY);
+    List<String> redudancy =
+        tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUNDANCY);
     List<String> numCqs = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_CQs);
 
     assertTrue(minConn.contains("1"));
@@ -387,7 +405,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(puts.equals("2"));
     String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
     assertTrue(queue.equals("1"));
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
     assertTrue(primServer.equals(serverName));
@@ -417,8 +435,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     getLogWriter().info("testDescribeClientWithServers commandStr=" + commandString);
 
     final VM server1 = Host.getHost(0).getVM(1);
-    String serverName =
-        (String) server1.invoke("get Distributed Member Id", () -> getDistributedMemberId());
+    String serverName = server1.invoke("get Distributed Member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testDescribeClientWithServers commandResult=" + commandResult);
@@ -435,7 +452,8 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     List<String> minConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MIN_CONN);
     List<String> maxConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MAX_CONN);
-    List<String> redudancy = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUDANCY);
+    List<String> redudancy =
+        tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUNDANCY);
     List<String> numCqs = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_CQs);
 
     assertTrue(minConn.contains("1"));
@@ -446,7 +464,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(puts.equals("2"));
     String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
     assertTrue(queue.equals("1"));
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
     assertTrue(primServer.equals(serverName));
@@ -483,7 +501,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     final DistributedMember serverMember = getMember(server1);
 
-    String[] clientIds = (String[]) manager.invoke("get client Ids", () -> {
+    String[] clientIds = manager.invoke("get client Ids", () -> {
       final SystemManagementService service =
           (SystemManagementService) ManagementService.getManagementService(getCache());
       final ObjectName cacheServerMBeanName = service.getCacheServerMBeanName(port0, serverMember);
@@ -491,8 +509,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       return bean.getClientIds();
     });
 
-    String serverName =
-        (String) server1.invoke("get distributed member Id", () -> getDistributedMemberId());
+    String serverName = server1.invoke("get distributed member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testListClient commandResult=" + commandResult);
@@ -543,7 +560,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     final DistributedMember serverMember = getMember(server1);
 
-    String[] clientIds = (String[]) manager.invoke("get client Ids", () -> {
+    String[] clientIds = manager.invoke("get client Ids", () -> {
       final SystemManagementService service =
           (SystemManagementService) ManagementService.getManagementService(getCache());
       final ObjectName cacheServerMBeanName = service.getCacheServerMBeanName(port0, serverMember);
@@ -552,10 +569,10 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     });
 
     String serverName1 =
-        (String) server1.invoke("get distributed member Id", () -> getDistributedMemberId());
+        server1.invoke("get distributed member Id", () -> getDistributedMemberId());
 
     String serverName2 =
-        (String) server2.invoke("get distributed member Id", () -> getDistributedMemberId());
+        server2.invoke("get distributed member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     System.out.println("testListClientForServers commandResult=" + commandResult);
@@ -602,7 +619,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
   }
 
   public DistributedMember getMember(final VM vm) {
-    return (DistributedMember) vm.invoke("Get Member",
+    return vm.invoke("Get Member",
         () -> GemFireCacheImpl.getInstance().getDistributedSystem().getDistributedMember());
   }
 
@@ -635,7 +652,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     setupCqsOnVM(client1);
     waitForMbean();
 
-    clientId = (String) manager.invoke("get client Id", () -> {
+    clientId = manager.invoke("get client Id", () -> {
       Cache cache = GemFireCacheImpl.getInstance();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
@@ -664,7 +681,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     waitForMbean();
 
-    clientId = (String) manager.invoke("get client Id", () -> {
+    clientId = manager.invoke("get client Id", () -> {
       Cache cache = GemFireCacheImpl.getInstance();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
@@ -692,7 +709,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     setupCqsOnVM(client1);
     waitForListClientMbean3();
 
-    clientId = (String) manager.invoke("get client Id", () -> {
+    clientId = manager.invoke("get client Id", () -> {
       Cache cache = GemFireCacheImpl.getInstance();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
@@ -775,7 +792,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
         ccf.setPoolSubscriptionRedundancy(1);
         ccf.setPoolMinConnections(1);
 
-        ClientCache clientCache = (ClientCache) getClientCache(ccf);
+        ClientCache clientCache = getClientCache(ccf);
         // Create region
         if (clientCache.getRegion(Region.SEPARATOR + regionName) == null
             && clientCache.getRegion(regionName) == null) {
@@ -939,7 +956,8 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     List<String> minConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MIN_CONN);
     List<String> maxConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MAX_CONN);
-    List<String> redudancy = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUDANCY);
+    List<String> redudancy =
+        tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUNDANCY);
 
     assertTrue(minConn.contains("1"));
     assertTrue(maxConn.contains("-1"));
@@ -948,7 +966,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String puts = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS);
     assertTrue(puts.equals("2"));
 
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
 
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
@@ -980,8 +998,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String[] clientIds = setupSystemWithSubAndNonSubClient();
 
     final VM server1 = Host.getHost(0).getVM(1);
-    String serverName =
-        (String) server1.invoke("Get DistributedMember Id", () -> getDistributedMemberId());
+    String serverName = server1.invoke("Get DistributedMember Id", () -> getDistributedMemberId());
 
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID
         + "=\"" + clientIds[0] + "\"";
@@ -1019,7 +1036,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     List<String> minConn = tableResultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MIN_CONN);
     List<String> maxConn = tableResultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MAX_CONN);
     List<String> redudancy =
-        tableResultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUDANCY);
+        tableResultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUNDANCY);
 
     assertTrue(minConn.contains("1"));
     assertTrue(maxConn.contains("-1"));
@@ -1028,7 +1045,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String puts = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS);
     assertTrue(puts.equals("2"));
 
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
 
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
@@ -1098,7 +1115,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     waitForMixedClients();
 
-    String[] cliendIds = (String[]) manager.invoke("get client Ids", () -> {
+    String[] cliendIds = manager.invoke("get client Ids", () -> {
       Cache cache = GemFireCacheImpl.getInstance();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
@@ -1132,7 +1149,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
         ccf.setPoolSubscriptionRedundancy(1);
         ccf.setPoolMinConnections(1);
 
-        ClientCache clientCache = (ClientCache) getClientCache(ccf);
+        ClientCache clientCache = getClientCache(ccf);
         // Create region
         if (clientCache.getRegion(Region.SEPARATOR + regionName) == null
             && clientCache.getRegion(regionName) == null) {

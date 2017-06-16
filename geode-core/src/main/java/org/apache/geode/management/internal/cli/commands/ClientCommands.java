@@ -14,7 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.CacheFactory;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.management.ObjectName;
+
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -32,23 +45,9 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import javax.management.ObjectName;
 
 /**
  * @since GemFire 8.0
@@ -112,9 +111,9 @@ public class ClientCommands implements GfshCommand {
       Iterator<Entry<String, List<String>>> it = clientServerMap.entrySet().iterator();
 
       while (it.hasNext()) {
-        Map.Entry<String, List<String>> pairs = (Map.Entry<String, List<String>>) it.next();
-        String client = (String) pairs.getKey();
-        List<String> servers = (List<String>) pairs.getValue();
+        Map.Entry<String, List<String>> pairs = it.next();
+        String client = pairs.getKey();
+        List<String> servers = pairs.getValue();
         StringBuilder serverListForClient = new StringBuilder();
         int serversSize = servers.size();
         int i = 0;
@@ -287,7 +286,7 @@ public class ClientCommands implements GfshCommand {
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_CPU, clientHealthStatus.getCpus());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS,
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS,
           clientHealthStatus.getNumOfCacheListenerCalls());
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_GETS,
           clientHealthStatus.getNumOfGets());
@@ -331,7 +330,7 @@ public class ClientCommands implements GfshCommand {
               str[0].substring(str[0].indexOf("=") + 1));
           poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_MAX_CONN,
               str[1].substring(str[1].indexOf("=") + 1));
-          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_REDUDANCY,
+          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_REDUNDANCY,
               str[2].substring(str[2].indexOf("=") + 1));
           poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_CQs,
               str[3].substring(str[3].indexOf("=") + 1));

@@ -14,7 +14,21 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.json.JSONArray;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -63,19 +77,6 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
-import org.json.JSONArray;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @since GemFire 7.0
@@ -423,7 +424,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
               CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
         } else {
           return DataCommandResult.createRemoveInfoResult(key, null, null,
-              CliStrings.REMOVE__MSG__CLEAREALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
+              CliStrings.REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
         }
       }
     }
