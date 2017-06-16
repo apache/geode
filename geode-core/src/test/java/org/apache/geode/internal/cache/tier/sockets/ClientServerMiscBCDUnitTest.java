@@ -96,7 +96,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
     });
   }
 
-  //@Test
+  // @Test
   @Ignore
   public void testDistributedMemberBytesWithCurrentServerAndOldClient() throws Exception {
     // Start current version server
