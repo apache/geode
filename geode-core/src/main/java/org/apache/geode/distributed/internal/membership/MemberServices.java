@@ -87,4 +87,5 @@ public interface MemberServices {
   NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile, String locatorString,
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
       LocatorStats stats, String securityUDPDHAlgo);
+  
 }
