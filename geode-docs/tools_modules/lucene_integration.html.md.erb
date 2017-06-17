@@ -1,8 +1,6 @@
 ---
 title: Apache Lucene&reg; Integration
 ---
-<a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
-
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -35,85 +33,75 @@ The Apache Lucene integration:
 For more details, see Javadocs for the classes and interfaces that implement Apache Lucene indexes and searches, including
 `LuceneService`, `LuceneQueryFactory`, `LuceneQuery`, and `LuceneResultStruct`.
 
-## <a id="using-the-apache-lucene-integration" class="no-quick-link"></a>Using the Apache Lucene Integration
+# <a id="using-the-apache-lucene-integration" class="no-quick-link"></a>Using the Apache Lucene Integration
 
-You can create Apache Lucene indexes through a Java API, through the `gfsh` command-line utility, or by means of
-the `cache.xml` configuration file.
+You can interact with Apache Lucene indexes through a Java API,
+through the `gfsh` command-line utility,
+or by means of the `cache.xml` configuration file.
 
-To use Apache Lucene Integration, you will need two pieces of information:
+To use Apache Lucene to create and use indexes,
+you will need two pieces of information:
 
-1.  The name of the region to be indexed or searched
+1.  The name of the region to be indexed and searched
 2.  The names of the fields you wish to index
 
+## Key Points ###
 
-### Key Points ###
-
+- Apache Lucene indexes are supported only on partitioned regions.
+Replicated region types are *not* supported.
+- Lucene indexes reside on servers.
+There is no way to create a Lucene index on a client.
 - Only top level fields of objects stored in the region can be indexed.
-- Apache Lucene indexes are supported only on Partitioned regions.
 - A single index supports a single region. Indexes do not support multiple regions.
-- Heterogeneous objects in single region are supported.
-- Join queries between regions are not supported.
-- Nested objects are not supported.
-- The index needs to be created before the region is created.
+- Heterogeneous objects in a single region are supported.
 
-## <a id="java-api-example" class="no-quick-link"></a>Java API Example
+## <a id="lucene-index-create" class="no-quick-link"></a>Creating an Index
+
+Create the index before creating the region.
+
+When no analyzer is specified, the
+`org.apache.lucene.analysis.standard.StandardAnalyzer` will be used.
+
+### <a id="api-create-example" class="no-quick-link"></a>Java API Example to Create an Index
 
 ``` pre
 // Get LuceneService
 LuceneService luceneService = LuceneServiceProvider.get(cache);
  
-// Create Index on fields with default analyzer:
-luceneService.createIndex(indexName, regionName, "field1", "field2", "field3");
+// Create the index on fields with default analyzer
+//  prior to creating the region
+luceneService.createIndexFactory()
+  .addField("name")
+  .addField("zipcode")
+  .create(indexName, regionName);
  
-Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
- 
+Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
+  .create(regionName);
 ```
 
-## <a id="search-example" class="no-quick-link"></a>Search Example
+### <a id="gfsh-create-example" class="no-quick-link"></a>Gfsh Example to Create an Index
+
+For details, see the [gfsh create lucene index](gfsh/command-pages/create.html#create_lucene_index") command reference page.
 
 ``` pre
-LuceneQuery<String, Person> query = luceneService.createLuceneQueryFactory()
-  .setResultLimit(10)
-  .create(indexName, regionName, "Main Street", "address");
-
-Collection<Person> results = query.findValues();
-```
-
-
-## <a id="gfsh-api" class="no-quick-link"></a>Gfsh API
-
-The gfsh command-line utility supports five Apache Lucene actions:
-
-<dt><a href="gfsh/command-pages/create.html#create_lucene_index"><b>create lucene index</b></a></dt>
-    <dd>Create a Lucene index that can be used to execute queries.</dd>
-<dt><a href="gfsh/command-pages/describe.html#describe_lucene_index"><b>describe lucene index</b></a></dt>
-    <dd>Describe a Lucene index.</dd>
-<dt><a href="gfsh/command-pages/destroy.html#destroy_lucene_index"><b>destroy lucene index</b></a></dt>
-    <dd>Destroy a Lucene index.</dd>
-<dt><a href="gfsh/command-pages/list.html#list_lucene_indexes"><b>list lucene indexes</b></a></dt>
-    <dd>List Lucene indexes created for all members.</dd>
-<dt><a href="gfsh/command-pages/search.html#search_lucene"><b>search lucene</b></a></dt>
-    <dd>Search a Lucene index.</dd>
-
-**Gfsh command-line examples:**
-
-``` pre
-// List Index
-gfsh> list lucene indexes --with-stats
-
-// Create Index
 gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags
-
-// Create Index, specifying a custom analyzer for the second field
-// Note: "null" in the first analyzer position means "use the default analyzer for the first field"
-gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags --analyzer=null,org.apache.lucene.analysis.bg.BulgarianAnalyzer
-
-// Execute Lucene query
-gfsh> lucene search --regionName=/orders -queryStrings="John*" --defaultField=field1 --limit=100
 ```
 
+``` pre
+// Create an index, specifying a custom analyzer for the second field
+// Note: "DEFAULT" in the first analyzer position uses the default analyzer
+// for the first field
+gfsh>create lucene index --name=indexName --region=/orders
+  --field=customer,tags --analyzer=DEFAULT,org.apache.lucene.analysis.bg.BulgarianAnalyzer
+```
+The value `__REGION_VALUE_FIELD` identifies when the
+field is a single primitive type.
+Use it to define the `--field` option,
+as there will be no field name to use in the case of a primitive type.
+`__REGION_VALUE_FIELD` supports entry values of type `String`, `Long`,
+`Integer`, `Float`, and `Double`.
 
-## <a id="xml-configuration" class="no-quick-link"></a>XML Configuration
+### <a id="xml-configuration" class="no-quick-link"></a>XML Configuration to Create an Index
 
 ``` pre
 <cache
@@ -127,12 +115,203 @@ gfsh> lucene search --regionName=/orders -queryStrings="John*" --defaultField=fi
     version="1.0">
  
     <region name="region" refid="PARTITION">
-        <lucene:index name="index">
-          <lucene:field name="a" analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
-          <lucene:field name="b" analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
-          <lucene:field name="c" analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
+        <lucene:index name="myIndex">
+          <lucene:field name="a" 
+                        analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+          <lucene:field name="b" 
+                        analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
+          <lucene:field name="c" 
+                        analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
+          <lucene:field name="d" />
         </lucene:index>
     </region>
 </cache>
 ```
+## <a id="lucene-index-query" class="no-quick-link"></a>Queries
 
+### <a id="gfsh-query-example" class="no-quick-link"></a>Gfsh Example to Query using a Lucene Index
+
+For details, see the [gfsh search lucene](gfsh/command-pages/search.html#search_lucene") command reference page.
+
+``` pre
+gfsh>search lucene --name=indexName --region=/orders --queryStrings="John*"
+   --defaultField=customer --limit=100
+```
+
+### <a id="api-query-example" class="no-quick-link"></a>Java API Example to Query using a Lucene Index
+
+``` pre
+LuceneQuery<String, Person> query = luceneService.createLuceneQueryFactory()
+  .setLimit(10)
+  .create(indexName, regionName, "name:John AND zipcode:97006", defaultField);
+
+Collection<Person> results = query.findValues();
+```
+
+## <a id="lucene-index-destroy" class="no-quick-link"></a>Destroying an Index
+
+Since a region destroy operation does not cause the destruction
+of any Lucene indexes,
+destroy any Lucene indexes prior to destroying the associated region.
+
+### <a id="API-destroy-example" class="no-quick-link"></a>Java API Example to Destroy a Lucene Index
+
+``` pre
+luceneService.destroyIndex(indexName, regionName);
+```
+An attempt to destroy a region with a Lucene index will result in
+an `IllegalStateException`,
+issuing an error message similar to:
+
+``` pre
+java.lang.IllegalStateException: The parent region [/orders] in colocation chain
+ cannot be destroyed, unless all its children [[/indexName#_orders.files]] are
+ destroyed
+at org.apache.geode.internal.cache.PartitionedRegion
+    .checkForColocatedChildren(PartitionedRegion.java:7231)
+at org.apache.geode.internal.cache.PartitionedRegion
+    .destroyRegion(PartitionedRegion.java:7243)
+at org.apache.geode.internal.cache.AbstractRegion
+    .destroyRegion(AbstractRegion.java:308)
+at DestroyLuceneIndexesAndRegionFunction
+    .destroyRegion(DestroyLuceneIndexesAndRegionFunction.java:46)
+```
+### <a id="gfsh-destroy-example" class="no-quick-link"></a>Gfsh Example to Destroy a Lucene Index
+
+For details, see the [gfsh destroy lucene index](gfsh/command-pages/destroy.html#destroy_lucene_index") command reference page.
+
+The error message that results from an attempt to destroy a region
+prior to destroying its associated Lucene index
+will be similar to:
+
+``` pre
+Region /orders cannot be destroyed because it defines Lucene index(es)
+  [/ordersIndex]. Destroy all Lucene indexes before destroying the region.
+```
+
+## <a id="lucene-index-change" class="no-quick-link"></a>Changing an Index
+
+Changing an index requires rebuilding it.
+Implement these steps to change an index:
+
+1. Export all region data
+2. Destroy the Lucene index
+3. Destroy the region
+4. Create a new index
+5. Create a new region without the user-defined business logic callbacks
+6. Import the region data with the option to turn on callbacks. 
+The callbacks will be to invoke a Lucene async event listener to index
+the data.
+7. Alter the region to add the user-defined business logic callbacks
+
+## <a id="addl-gfsh-api" class="no-quick-link"></a>Additional Gfsh Commands
+
+See the [gfsh describe lucene index](gfsh/command-pages/describe.html#describe_lucene_index") command reference page for the command that prints details about
+a specific index.
+
+See the [gfsh list lucene index](gfsh/command-pages/list.html#list_lucene_index") command reference page
+for the command that prints details about the 
+Lucene indexes created for all members.
+
+# <a id="LuceneRandC" class="no-quick-link"></a>Requirements and Caveats
+
+- Join queries between regions are not supported.
+- Nested objects are not supported.
+- Lucene indexes will not be stored within off-heap memory.
+- Lucene queries from within transactions are not supported.
+On an attempt to query from within a transaction,
+a `LuceneQueryException` is thrown, issuing an error message
+on the client (accessor) similar to:
+
+``` pre
+Exception in thread "main" org.apache.geode.cache.lucene.LuceneQueryException:
+ Lucene Query cannot be executed within a transaction
+at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
+    .findTopEntries(LuceneQueryImpl.java:124)
+at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
+    .findPages(LuceneQueryImpl.java:98)
+at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
+    .findPages(LuceneQueryImpl.java:94)
+at TestClient.executeQuerySingleMethod(TestClient.java:196)
+at TestClient.main(TestClient.java:59)
+```
+- Lucene indexes must be created prior to creating the region.
+If an attempt is made to create a Lucene index after creating the region,
+the error message will be similar to:
+
+``` pre
+       Member                | Status
+---------------------------- | ------------------------------------------------------
+192.0.2.0(s2:97639)<v2>:1026 | Failed: The lucene index must be created before region
+192.0.2.0(s3:97652)<v3>:1027 | Failed: The lucene index must be created before region
+192.0.2.0(s1:97626)<v1>:1025 | Failed: The lucene index must be created before region
+```
+- The order of server creation with respect to index and region creation
+is important.
+The cluster configuration service cannot work if servers are created
+after index creation, but before region creation,
+as Lucene indexes are propagated to the cluster configuration after
+region creation.
+To start servers at multiple points within the start-up process,
+use this ordering:
+    1. start server(s)
+    2. create Lucene index
+    3. create region
+    4. start additional server(s)
+- An invalidate operation on a region entry does not invalidate a corresponding
+Lucene index entry.
+A query on a Lucene index that contains values that
+have been invalidated can return results that no longer exist.
+Therefore, do not combine entry invalidation with queries on Lucene indexes.
+- Lucene indexes are not supported for regions that have eviction configured
+with a local destroy.
+Eviction can be configured with overflow to disk,
+but only the region data is overflowed to disk,
+not the Lucene index.
+On an attempt to create a region with eviction configured to do local destroy
+(with a Lucene index),
+an `UnsupportedOperationException` will be thrown,
+issuing an error message similar to:
+
+``` pre
+[error 2017/05/02 16:12:32.461 PDT <main> tid=0x1] 
+ java.lang.UnsupportedOperationException:
+ Lucene indexes on regions with eviction and action local destroy are not supported
+Exception in thread "main" java.lang.UnsupportedOperationException:
+ Lucene indexes on regions with eviction and action local destroy are not supported
+at org.apache.geode.cache.lucene.internal.LuceneRegionListener
+    .beforeCreate(LuceneRegionListener.java:85)
+at org.apache.geode.internal.cache.GemFireCacheImpl
+    .invokeRegionBefore(GemFireCacheImpl.java:3154)
+at org.apache.geode.internal.cache.GemFireCacheImpl
+    .createVMRegion(GemFireCacheImpl.java:3013)
+at org.apache.geode.internal.cache.GemFireCacheImpl
+    .basicCreateRegion(GemFireCacheImpl.java:2991)
+```
+- Be aware that using the same field name in different objects
+where the field has different data types 
+may have unexpected consequences.
+For example, if an index on the field SSN has the following entries
+    - `Object_1 object_1` has String SSN = "1111"
+    - `Object_2 object_2` has Integer SSN = 1111
+    - `Object_3 object_3` has Float SSN = 1111.0
+
+    Integers and floats will not be converted into strings.
+    They remain as `IntPoint` and `FloatPoint` within Lucene.
+    The standard analyzer will not try to tokenize these values.
+    The standard analyzer will only try to break up string values.
+    So, a string search for "SSN: 1111" will return `object_1`.
+    An `IntRangeQuery` for `upper limit : 1112` and `lower limit : 1110`
+will return `object_2`.
+    And, a `FloatRangeQuery` with `upper limit : 1111.5` and `lower limit : 1111.0`
+will return `object_3`.
+- Backups should only be made for regions with Lucene indexes
+when there are no puts, updates, or deletes in progress.
+A backup might cause an inconsistency between region data and a Lucene index.
+Both the region operation and the associated index operation
+cause disk operations,
+yet those disk operations are not done atomically.
+Therefore, if a backup were taken between
+the persisted write to a region
+and the resulting persisted write to the Lucene index,
+then the backup represents inconsistent data in the region and Lucene index.

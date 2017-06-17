@@ -14,18 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.text.MessageFormat;
-import java.util.Base64;
-import java.util.zip.DataFormatException;
-
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
@@ -34,6 +22,15 @@ import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Base64;
+import java.util.zip.DataFormatException;
 
 /**
  * 
@@ -234,7 +231,6 @@ public abstract class AbstractResultData implements ResultData {
       byte[] byteArray = Base64.getDecoder().decode(fileDataString);
       byte[] uncompressBytes = CliUtil.uncompressBytes(byteArray, fileDataLength).getData();
 
-      boolean isGfshVM = CliUtil.isGfshVM();
       File fileToDumpData = new File(fileName);
       if (!fileToDumpData.isAbsolute()) {
         if (directory == null || directory.isEmpty()) {
@@ -247,21 +243,19 @@ public abstract class AbstractResultData implements ResultData {
       if (parentDirectory != null) {
         parentDirectory.mkdirs();
       }
+      Gfsh gfsh = Gfsh.getCurrentInstance();
       if (fileToDumpData.exists()) {
         String fileExistsMessage =
             CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__FILE_WITH_NAME_0_EXISTS_IN_1,
                 new Object[] {fileName, fileToDumpData.getParent(), options});
-        if (isGfshVM) {
-          Gfsh gfsh = Gfsh.getCurrentInstance();
-          if (gfsh != null && !gfsh.isQuietMode() && !overwriteAllExisting) {
-            fileExistsMessage = fileExistsMessage + " Overwrite? " + options + " : ";
-            String interaction = gfsh.interact(fileExistsMessage);
-            if ("a".equalsIgnoreCase(interaction.trim())) {
-              overwriteAllExisting = true;
-            } else if (!"y".equalsIgnoreCase(interaction.trim())) {
-              // do not save file & continue
-              continue BYTEARRAY_LOOP;
-            }
+        if (gfsh != null && !gfsh.isQuietMode() && !overwriteAllExisting) {
+          fileExistsMessage = fileExistsMessage + " Overwrite? " + options + " : ";
+          String interaction = gfsh.interact(fileExistsMessage);
+          if ("a".equalsIgnoreCase(interaction.trim())) {
+            overwriteAllExisting = true;
+          } else if (!"y".equalsIgnoreCase(interaction.trim())) {
+            // do not save file & continue
+            continue BYTEARRAY_LOOP;
           }
         } else {
           throw new IOException(fileExistsMessage);
@@ -269,18 +263,17 @@ public abstract class AbstractResultData implements ResultData {
       } else if (!parentDirectory.exists()) {
         handleCondition(CliStrings.format(
             CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_DIRECTORY_OF_0_DOES_NOT_EXIST,
-            fileToDumpData.getAbsolutePath()), isGfshVM);
+            fileToDumpData.getAbsolutePath()));
         return;
       } else if (!parentDirectory.canWrite()) {
         handleCondition(CliStrings.format(
             CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_DIRECTORY_OF_0_IS_NOT_WRITABLE,
-            fileToDumpData.getAbsolutePath()), isGfshVM);
+            fileToDumpData.getAbsolutePath()));
         return;
       } else if (!parentDirectory.isDirectory()) {
         handleCondition(
             CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_OF_0_IS_NOT_DIRECTORY,
-                fileToDumpData.getAbsolutePath()),
-            isGfshVM);
+                fileToDumpData.getAbsolutePath()));
         return;
       }
       if (fileType == FILE_TYPE_TEXT) {
@@ -298,7 +291,7 @@ public abstract class AbstractResultData implements ResultData {
       }
       // System.out.println("fileMessage :: "+fileMessage);
       if (fileMessage != null && !fileMessage.isEmpty()) {
-        if (isGfshVM) {
+        if (gfsh != null) {
           Gfsh.println(
               MessageFormat.format(fileMessage, new Object[] {fileToDumpData.getAbsolutePath()}));
         }
@@ -308,13 +301,11 @@ public abstract class AbstractResultData implements ResultData {
   }
 
   // TODO - Abhishek : prepare common utility for this & ANSI Styling
-  static void handleCondition(String message, boolean isGfshVM) throws IOException {
-    if (isGfshVM) {
-      Gfsh gfsh = Gfsh.getCurrentInstance();
-      // null check required in GfshVM too to avoid test issues
-      if (gfsh != null && !gfsh.isQuietMode()) {
-        gfsh.logWarning(message, null);
-      }
+  static void handleCondition(String message) throws IOException {
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+    // null check required in GfshVM too to avoid test issues
+    if (gfsh != null && !gfsh.isQuietMode()) {
+      gfsh.logWarning(message, null);
     } else {
       throw new IOException(message);
     }

@@ -2498,7 +2498,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
               FunctionService.onRegion(custRegion).execute(TXFunction.id).getResult();
               break;
             case OnMember:
-              FunctionService.onMembers(basicGetSystem()).execute(TXFunction.id).getResult();
+              FunctionService.onMembers().execute(TXFunction.id).getResult();
               break;
           }
           fail("Expected exception not thrown");
@@ -2519,7 +2519,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           case OnMember:
             DistributedMember owner =
                 custRegion.getOwnerForKey(custRegion.getKeyInfo(expectedCustId));
-            FunctionService.onMember(basicGetSystem(), owner).execute(TXFunction.id).getResult();
+            FunctionService.onMember(owner).execute(TXFunction.id).getResult();
             break;
         }
         TXStateProxy tx = mgr.internalSuspend();
@@ -2565,7 +2565,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           case OnMember:
             DistributedMember owner =
                 custRegion.getOwnerForKey(custRegion.getKeyInfo(expectedCustId));
-            FunctionService.onMember(basicGetSystem(), owner).execute(TXFunction.id).getResult();
+            FunctionService.onMember(owner).execute(TXFunction.id).getResult();
             break;
         }
         TXStateProxy tx = mgr.internalSuspend();
@@ -2833,11 +2833,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         members.add(ds1);
         members.add(ds2);
         try {
-          FunctionService.onMembers(basicGetSystem(), members).execute(TXFunction.id).getResult();
+          FunctionService.onMembers(members).execute(TXFunction.id).getResult();
           fail("expected exception not thrown");
         } catch (TransactionException expected) {
         }
-        FunctionService.onMember(basicGetSystem(), owner).execute(TXFunction.id).getResult();
+        FunctionService.onMember(owner).execute(TXFunction.id).getResult();
         assertEquals(expectedCustomer, pr.get(expectedCustId));
         TXStateProxy tx = mgr.internalSuspend();
         assertNull(pr.get(expectedCustId));
@@ -2928,7 +2928,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         } catch (TransactionDataRebalancedException expected) {
         }
         try {
-          FunctionService.onMember(basicGetSystem(), ds2).execute(TXFunction.id).getResult();
+          FunctionService.onMember(ds2).execute(TXFunction.id).getResult();
           fail("expected exception not thrown");
         } catch (TransactionDataNotColocatedException expected) {
         }

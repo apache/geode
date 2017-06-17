@@ -24,6 +24,7 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -39,29 +40,31 @@ public class AddPdxEnum extends BaseCommand {
   private AddPdxEnum() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received get pdx id for enum request ({} parts) from {}",
-          servConn.getName(), msg.getNumberOfParts(), servConn.getSocketString());
+          serverConnection.getName(), clientMessage.getNumberOfParts(),
+          serverConnection.getSocketString());
     }
-    int noOfParts = msg.getNumberOfParts();
+    int noOfParts = clientMessage.getNumberOfParts();
 
-    EnumInfo enumInfo = (EnumInfo) msg.getPart(0).getObject();
-    int enumId = msg.getPart(1).getInt();
+    EnumInfo enumInfo = (EnumInfo) clientMessage.getPart(0).getObject();
+    int enumId = clientMessage.getPart(1).getInt();
 
     try {
-      InternalCache cache = servConn.getCache();
+      InternalCache cache = serverConnection.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
       registry.addRemoteEnum(enumId, enumInfo);
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    writeReply(msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeReply(clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
   }
 }

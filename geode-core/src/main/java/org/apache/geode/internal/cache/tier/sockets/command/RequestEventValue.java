@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Represents a request for (full) value of a given event from ha container
@@ -49,57 +50,60 @@ public class RequestEventValue extends BaseCommand {
 
   private RequestEventValue() {}
 
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     Part eventIDPart = null, valuePart = null;
     EventID event = null;
     Object callbackArg = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     StringBuffer errMessage = new StringBuffer();
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
     // Retrieve the data from the message parts
-    int parts = msg.getNumberOfParts();
-    eventIDPart = msg.getPart(0);
+    int parts = clientMessage.getNumberOfParts();
+    eventIDPart = clientMessage.getPart(0);
 
     if (eventIDPart == null) {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.RequestEventValue_0_THE_EVENT_ID_FOR_THE_GET_EVENT_VALUE_REQUEST_IS_NULL,
-          servConn.getName()));
+          serverConnection.getName()));
       errMessage.append(" The event id for the get event value request is null.");
-      writeErrorResponse(msg, MessageType.REQUESTDATAERROR, errMessage.toString(), servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.REQUESTDATAERROR, errMessage.toString(),
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     } else {
       try {
         event = (EventID) eventIDPart.getObject();
       } catch (Exception e) {
-        writeException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
       if (parts > 1) {
-        valuePart = msg.getPart(1);
+        valuePart = clientMessage.getPart(1);
         try {
           if (valuePart != null) {
             callbackArg = valuePart.getObject();
           }
         } catch (Exception e) {
-          writeException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeException(clientMessage, e, false, serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
       }
       if (logger.isTraceEnabled()) {
-        logger.trace("{}: Received get event value request ({} bytes) from {}", servConn.getName(),
-            msg.getPayloadLength(), servConn.getSocketString());
+        logger.trace("{}: Received get event value request ({} bytes) from {}",
+            serverConnection.getName(), clientMessage.getPayloadLength(),
+            serverConnection.getSocketString());
       }
-      CacheClientNotifier ccn = servConn.getAcceptor().getCacheClientNotifier();
+      CacheClientNotifier ccn = serverConnection.getAcceptor().getCacheClientNotifier();
       // Get the ha container.
       HAContainerWrapper haContainer = (HAContainerWrapper) ccn.getHaContainer();
       if (haContainer == null) {
         String reason = " was not found during get event value request";
-        writeRegionDestroyedEx(msg, "ha container", reason, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeRegionDestroyedEx(clientMessage, "ha container", reason, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
       } else {
         Object[] valueAndIsObject = new Object[2];
         try {
@@ -110,8 +114,9 @@ public class RequestEventValue extends BaseCommand {
                 LocalizedStrings.RequestEventValue_UNABLE_TO_FIND_A_CLIENT_UPDATE_MESSAGE_FOR_0,
                 event));
             String msgStr = "No value found for " + event + " in " + haContainer.getName();
-            writeErrorResponse(msg, MessageType.REQUEST_EVENT_VALUE_ERROR, msgStr, servConn);
-            servConn.setAsTrue(RESPONDED);
+            writeErrorResponse(clientMessage, MessageType.REQUEST_EVENT_VALUE_ERROR, msgStr,
+                serverConnection);
+            serverConnection.setAsTrue(RESPONDED);
             return;
           } else {
             if (logger.isDebugEnabled()) {
@@ -130,20 +135,22 @@ public class RequestEventValue extends BaseCommand {
             valueAndIsObject[1] = Boolean.valueOf(((ClientUpdateMessageImpl) data).valueIsObject());
           }
         } catch (Exception e) {
-          writeException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeException(clientMessage, e, false, serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
 
         Object data = valueAndIsObject[0];
         boolean isObject = (Boolean) valueAndIsObject[1];
 
-        writeResponse(data, callbackArg, msg, isObject, servConn);
-        servConn.setAsTrue(RESPONDED);
-        ccn.getClientProxy(servConn.getProxyID()).getStatistics().incDeltaFullMessagesSent();
+        writeResponse(data, callbackArg, clientMessage, isObject, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
+        ccn.getClientProxy(serverConnection.getProxyID()).getStatistics()
+            .incDeltaFullMessagesSent();
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Wrote get event value response back to {} for ha container {}",
-              servConn.getName(), servConn.getSocketString(), haContainer.getName());
+              serverConnection.getName(), serverConnection.getSocketString(),
+              haContainer.getName());
         }
       }
     }

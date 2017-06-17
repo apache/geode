@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,8 @@ public class GfshJunitTest {
     assertThat(Gfsh.wrapText(testString, 0, -1)).isEqualTo(testString);
     assertThat(Gfsh.wrapText(testString, 0, 0)).isEqualTo(testString);
     assertThat(Gfsh.wrapText(testString, 0, 1)).isEqualTo(testString);
-    assertThat(Gfsh.wrapText(testString, 0, 10)).isEqualTo("This is a\ntest\nstring.");
+    assertThat(Gfsh.wrapText(testString, 0, 10))
+        .isEqualTo("This is a" + Gfsh.LINE_SEPARATOR + "test" + Gfsh.LINE_SEPARATOR + "string.");
     assertThat(Gfsh.wrapText(testString, 1, 100)).isEqualTo(Gfsh.LINE_INDENT + testString);
     assertThat(Gfsh.wrapText(testString, 2, 100))
         .isEqualTo(Gfsh.LINE_INDENT + Gfsh.LINE_INDENT + testString);

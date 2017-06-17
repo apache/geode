@@ -27,15 +27,20 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class MemberMBeanSecurityJUnitTest {
+
   private MemberMXBean bean;
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Rule // do not use a ClassRule since some test will do a shutdownMember
-  public ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server = ServerStarterRule.createWithoutTemporaryWorkingDir()
+      .withJMXManager().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
       .withAutoStart();

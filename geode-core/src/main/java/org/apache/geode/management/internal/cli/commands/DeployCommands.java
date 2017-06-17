@@ -14,9 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.commons.io.FileUtils.ONE_MB;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -30,7 +35,6 @@ import org.apache.geode.management.internal.cli.functions.ListDeployedFunction;
 import org.apache.geode.management.internal.cli.functions.UndeployFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -38,7 +42,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -49,15 +52,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
- * <p/>
- * 
- * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ *
+ * @see GfshCommand
  * @since GemFire 7.0
  */
-public class DeployCommands extends AbstractCommandsSupport {
+public class DeployCommands implements GfshCommand {
 
   private final DeployFunction deployFunction = new DeployFunction();
   private final UndeployFunction undeployFunction = new UndeployFunction();
@@ -67,7 +68,7 @@ public class DeployCommands extends AbstractCommandsSupport {
    * Deploy one or more JAR files to members of a group or all members.
    * 
    * @param groups Group(s) to deploy the JAR to or null for all members
-   * @param jar JAR file to deploy
+   * @param jars JAR file to deploy
    * @param dir Directory of JAR files to deploy
    * @return The result of the attempt to deploy
    */
@@ -76,14 +77,16 @@ public class DeployCommands extends AbstractCommandsSupport {
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   public Result deploy(
-      @CliOption(key = {CliStrings.DEPLOY__GROUP}, help = CliStrings.DEPLOY__GROUP__HELP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.DEPLOY__JAR}, help = CliStrings.DEPLOY__JAR__HELP) String jar,
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
+          help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir) {
     try {
 
       // since deploy function can potentially do a lot of damage to security, this action should
       // require these following privileges
+      SecurityService securityService = getCache().getSecurityService();
       securityService.authorizeClusterManage();
       securityService.authorizeClusterWrite();
       securityService.authorizeDataManage();
@@ -154,20 +157,20 @@ public class DeployCommands extends AbstractCommandsSupport {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result undeploy(
-      @CliOption(key = {CliStrings.UNDEPLOY__GROUP}, help = CliStrings.UNDEPLOY__GROUP__HELP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.UNDEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.UNDEPLOY__JAR}, help = CliStrings.UNDEPLOY__JAR__HELP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String jars) {
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, help = CliStrings.UNDEPLOY__JAR__HELP,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String[] jars) {
 
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(groups, null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc =
@@ -175,6 +178,7 @@ public class DeployCommands extends AbstractCommandsSupport {
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
       for (CliFunctionResult result : results) {
+
         if (result.getThrowable() != null) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
           tabularData.accumulate("Un-Deployed JAR", "");
@@ -200,8 +204,8 @@ public class DeployCommands extends AbstractCommandsSupport {
 
       Result result = ResultBuilder.buildResult(tabularData);
       if (tabularData.getStatus().equals(Status.OK)) {
-        persistClusterConfiguration(result, () -> getSharedConfiguration()
-            .removeJars(jars == null ? null : jars.split(","), groups));
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().removeJars(jars, groups));
       }
       return result;
     } catch (VirtualMachineError e) {
@@ -223,18 +227,17 @@ public class DeployCommands extends AbstractCommandsSupport {
   @CliCommand(value = {CliStrings.LIST_DEPLOYED}, help = CliStrings.LIST_DEPLOYED__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listDeployed(@CliOption(key = {CliStrings.LIST_DEPLOYED__GROUP},
-      help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String group) {
+  public Result listDeployed(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+      help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String[] group) {
 
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc =
@@ -276,15 +279,6 @@ public class DeployCommands extends AbstractCommandsSupport {
     }
   }
 
-  @CliAvailabilityIndicator({CliStrings.DEPLOY, CliStrings.UNDEPLOY, CliStrings.LIST_DEPLOYED})
-  public boolean isConnected() {
-    if (!CliUtil.isGfshVM()) {
-      return true;
-    }
-
-    return (getGfsh() != null && getGfsh().isConnectedAndReady());
-  }
-
   /**
    * Interceptor used by gfsh to intercept execution of deploy command at "shell".
    */
@@ -293,29 +287,31 @@ public class DeployCommands extends AbstractCommandsSupport {
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
+      // 2nd argument is the jar
+      String[] jars = (String[]) parseResult.getArguments()[1];
+      // 3rd arguemnt is the dir
+      String dir = (String) parseResult.getArguments()[2];
 
-      String jar = paramValueMap.get("jar");
-      jar = (jar == null) ? null : jar.trim();
-
-      String dir = paramValueMap.get("dir");
-      dir = (dir == null) ? null : dir.trim();
-
-      String group = paramValueMap.get("group");
-      group = (group == null) ? null : group.trim();
-
-      String jarOrDir = (jar != null ? jar : dir);
-
-      if (jar == null && dir == null) {
+      if (ArrayUtils.isEmpty(jars) && StringUtils.isBlank(dir)) {
         return ResultBuilder.createUserErrorResult(
             "Parameter \"jar\" or \"dir\" is required. Use \"help <command name>\" for assistance.");
       }
 
+      if (ArrayUtils.isNotEmpty(jars) && StringUtils.isNotBlank(dir)) {
+        return ResultBuilder
+            .createUserErrorResult("Parameters \"jar\" and \"dir\" can not both be specified.");
+      }
+
       FileResult fileResult;
+      String[] filesToUpload = jars;
+      if (filesToUpload == null) {
+        filesToUpload = new String[] {dir};
+      }
       try {
-        fileResult = new FileResult(new String[] {jar != null ? jar : dir});
+
+        fileResult = new FileResult(filesToUpload);
       } catch (FileNotFoundException fnfex) {
-        return ResultBuilder.createGemFireErrorResult("'" + jarOrDir + "' not found.");
+        return ResultBuilder.createGemFireErrorResult("'" + filesToUpload + "' not found.");
       } catch (IOException ioex) {
         return ResultBuilder.createGemFireErrorResult("I/O error when reading jar/dir: "
             + ioex.getClass().getName() + ": " + ioex.getMessage());
@@ -325,12 +321,12 @@ public class DeployCommands extends AbstractCommandsSupport {
       if (dir != null) {
         String message =
             "\nDeploying files: " + fileResult.getFormattedFileList() + "\nTotal file size is: "
-                + this.numFormatter.format(((double) fileResult.computeFileSizeTotal() / 1048576))
+                + this.numFormatter.format((double) fileResult.computeFileSizeTotal() / ONE_MB)
                 + "MB\n\nContinue? ";
 
         if (readYesNo(message, Response.YES) == Response.NO) {
           return ResultBuilder
-              .createShellClientAbortOperationResult("Aborted deploy of " + jarOrDir + ".");
+              .createShellClientAbortOperationResult("Aborted deploy of " + filesToUpload + ".");
         }
       }
 

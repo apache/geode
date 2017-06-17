@@ -30,8 +30,7 @@ import java.io.ObjectStreamClass;
 
 /**
  * Reusable Input/Output operation utility methods.
- * <p/>
- * 
+ *
  * @since GemFire 6.6
  */
 @SuppressWarnings("unused")
@@ -44,8 +43,7 @@ public abstract class IOUtils {
    * File.separator character. If the pathname is unspecified (null, empty or blank) then path
    * elements are considered relative to file system root, beginning with File.separator. If array
    * of path elements are null, then the pathname is returned as is.
-   * </p>
-   * 
+   *
    * @param pathname a String value indicating the base pathname.
    * @param pathElements the path elements to append to pathname.
    * @return the path elements appended to the pathname.

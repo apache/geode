@@ -29,13 +29,12 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFun
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -52,6 +51,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -62,12 +62,12 @@ import java.util.stream.Collectors;
  * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to Lucene
  * indexes defined in Geode.
  *
- * @see AbstractCommandsSupport
+ * @see GfshCommand
  * @see LuceneIndexDetails
  * @see LuceneListIndexFunction
  */
 @SuppressWarnings("unused")
-public class LuceneIndexCommands extends AbstractCommandsSupport {
+public class LuceneIndexCommands implements GfshCommand {
   private static final LuceneCreateIndexFunction createIndexFunction =
       new LuceneCreateIndexFunction();
   private static final LuceneDescribeIndexFunction describeIndexFunction =
@@ -77,8 +77,6 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   private static final LuceneDestroyIndexFunction destroyIndexFunction =
       new LuceneDestroyIndexFunction();
   private List<LuceneSearchResults> searchResults = null;
-
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX,
       help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
@@ -180,10 +178,14 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     Result result;
     XmlEntity xmlEntity = null;
 
-    this.securityService.authorizeRegionManage(regionPath);
+    getCache().getSecurityService().authorizeRegionManage(regionPath);
     try {
       final InternalCache cache = getCache();
-      LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, fields, analyzers);
+      // trim fields for any leading trailing spaces.
+      String[] trimmedFields =
+          Arrays.stream(fields).map(field -> field.trim()).toArray(size -> new String[size]);
+      LuceneIndexInfo indexInfo =
+          new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers);
       final ResultCollector<?, ?> rc =
           this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
       final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
@@ -202,6 +204,9 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         }
       }
       result = ResultBuilder.buildResult(tabularResult);
+    } catch (IllegalArgumentException iae) {
+      LogWrapper.getInstance().info(iae.getMessage());
+      result = ResultBuilder.createUserErrorResult(iae.getMessage());
     } catch (CommandResultException crex) {
       result = crex.getResult();
     } catch (Exception e) {
@@ -275,19 +280,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT, unspecifiedDefaultValue = "-1",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT__HELP) final int limit,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE,
-          unspecifiedDefaultValue = "-1",
-          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP) int pageSize,
-
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
           unspecifiedDefaultValue = "false",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly) {
     try {
       LuceneQueryInfo queryInfo =
           new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
-      if (pageSize == -1) {
-        pageSize = Integer.MAX_VALUE;
-      }
+      int pageSize = Integer.MAX_VALUE;
       searchResults = getSearchResults(queryInfo);
       return displayResults(pageSize, keysOnly);
     } catch (FunctionInvocationTargetException ignore) {
@@ -325,7 +324,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
     }
 
-    this.securityService.authorizeRegionManage(regionPath);
+    getCache().getSecurityService().authorizeRegionManage(regionPath);
 
     Result result;
     try {
@@ -581,6 +580,14 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       LuceneCliStrings.LUCENE_CREATE_INDEX, LuceneCliStrings.LUCENE_DESCRIBE_INDEX,
       LuceneCliStrings.LUCENE_LIST_INDEX, LuceneCliStrings.LUCENE_DESTROY_INDEX})
   public boolean indexCommandsAvailable() {
-    return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+
+    // command should always be available on the server
+    if (gfsh == null) {
+      return true;
+    }
+
+    // if in gfshVM, only when gfsh is connected and ready
+    return gfsh.isConnectedAndReady();
   }
 }

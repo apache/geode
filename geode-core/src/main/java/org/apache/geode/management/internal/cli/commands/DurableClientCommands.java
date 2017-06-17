@@ -14,13 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -43,10 +36,15 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * The DurableClientCommands class encapsulates all GemFire shell (Gfsh) commands related to durable
@@ -54,7 +52,7 @@ import org.springframework.shell.core.annotation.CliOption;
  * </p>
  */
 @SuppressWarnings("unused")
-public class DurableClientCommands extends AbstractCommandsSupport {
+public class DurableClientCommands implements GfshCommand {
 
   private static final ListDurableCqNamesFunction listDurableCqNamesFunction =
       new ListDurableCqNamesFunction();
@@ -71,23 +69,23 @@ public class DurableClientCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, mandatory = true,
           help = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID__HELP) final String durableClientId,
 
-      @CliOption(key = CliStrings.LIST_DURABLE_CQS__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.LIST_DURABLE_CQS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.LIST_DURABLE_CQS__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.LIST_DURABLE_CQS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result = null;
     try {
 
       boolean noResults = true;
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
+
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
       final List<DurableCqNamesResult> results = (List<DurableCqNamesResult>) rc.getResult();
@@ -121,9 +119,9 @@ public class DurableClientCommands extends AbstractCommandsSupport {
           for (String cqName : cqNames) {
             if (isFirst) {
               isFirst = false;
-              table.accumulate(CliStrings.LIST_DURABLE_CQS__MEMBER, member);
+              table.accumulate(CliStrings.MEMBER, member);
             } else {
-              table.accumulate(CliStrings.LIST_DURABLE_CQS__MEMBER, "");
+              table.accumulate(CliStrings.MEMBER, "");
             }
             table.accumulate(CliStrings.LIST_DURABLE_CQS__NAME, cqName);
           }
@@ -151,21 +149,21 @@ public class DurableClientCommands extends AbstractCommandsSupport {
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID__HELP) final String durableClientId,
       @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME__HELP) final String cqName,
-      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
-      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, mandatory = false,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
     Result result = null;
     try {
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
+
       String[] params = new String[2];
       params[0] = durableClientId;
       params[1] = cqName;
@@ -198,21 +196,22 @@ public class DurableClientCommands extends AbstractCommandsSupport {
   public Result closeDurableClient(
       @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP) final String durableClientId,
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, mandatory = false,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
     Result result = null;
     try {
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
+
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(new CloseDurableClientFunction(), durableClientId, targetMembers);
       final List<MemberResult> results = (List<MemberResult>) rc.getResult();
@@ -238,20 +237,19 @@ public class DurableClientCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__NAME, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CQS__NAME__HELP) final String cqName,
 
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CQS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String memberNameOrId,
+          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
           help = CliStrings.CLOSE_DURABLE_CQS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String group) {
+          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result = null;
     try {
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException e) {
-        return e.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       String[] params = new String[2];
@@ -345,7 +343,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 
       for (String member : members) {
         long queueSize = memberQueueSizeTable.get(member);
-        table.accumulate(CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, member);
+        table.accumulate(CliStrings.MEMBER, member);
         table.accumulate(queueSizeColumnName, queueSize);
       }
       result = ResultBuilder.buildResult(table);
@@ -415,16 +413,6 @@ public class DurableClientCommands extends AbstractCommandsSupport {
         }
       }
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_DURABLE_CQS, CliStrings.CLOSE_DURABLE_CLIENTS,
-      CliStrings.CLOSE_DURABLE_CQS, CliStrings.COUNT_DURABLE_CQ_EVENTS})
-  public boolean durableCommandsAvailable() {
-    boolean isAvailable = true;
-    if (CliUtil.isGfshVM()) {
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 }
 

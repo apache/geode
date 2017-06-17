@@ -14,29 +14,6 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-
-import javax.naming.Context;
-import javax.transaction.TransactionManager;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
@@ -101,9 +78,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
@@ -136,20 +113,44 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
+import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import javax.naming.Context;
+import javax.transaction.TransactionManager;
 
 /**
  * Represents a {@link Cache} that is created declaratively. Notice that it implements the
@@ -1037,6 +1038,11 @@ public class CacheCreation implements InternalCache {
   @Override
   public void waitForRegisterInterestsInProgress() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    return SecurityServiceFactory.create();
   }
 
   void addDeclarableProperties(final Declarable declarable, final Properties properties) {
@@ -1955,6 +1961,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public <T extends CacheService> T getService(Class<T> clazz) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Collection<CacheService> getServices() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 

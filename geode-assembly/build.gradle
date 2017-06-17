@@ -131,12 +131,13 @@ def cp = {
     .join(' ')
 
   // then add all the dependencies of the dependent jars
-  jars += ' ' + configurations.archives.dependencies.collect { 
+  jars += ' ' + configurations.archives.dependencies.collect {
     it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
       .collect { it.configurations.runtime.collect { it.getName() }.findAll {
         // depedencies from geode-core
         it.contains('antlr') ||
         it.contains('commons-io') ||
+        it.contains('commons-collections') ||
         it.contains('commons-lang') ||
         it.contains('commons-logging') ||
         it.contains('fast-classpath-scanner') ||
@@ -274,8 +275,6 @@ distributions {
         exclude '**/gradle/wrapper/gradle-wrapper.jar'
         exclude '**/.gradle'
         exclude '**/build/**'
-        exclude 'geode-spark-connector/**/target/**'
-        exclude 'geode-spark-connector/project/project'
         exclude '**/.project'
         exclude '**/.classpath'
         exclude '**/.settings/**'

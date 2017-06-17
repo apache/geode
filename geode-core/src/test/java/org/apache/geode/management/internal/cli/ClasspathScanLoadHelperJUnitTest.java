@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Set;
 
+import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,7 +28,6 @@ import org.apache.geode.management.internal.cli.domain.Impl1;
 import org.apache.geode.management.internal.cli.domain.Impl12;
 import org.apache.geode.management.internal.cli.domain.Interface1;
 import org.apache.geode.management.internal.cli.domain.Interface2;
-import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -44,35 +44,27 @@ public class ClasspathScanLoadHelperJUnitTest {
 
   @Test
   public void testLoadAndGet() throws Exception {
-    Set<Class<?>> classLoaded = ClasspathScanLoadHelper.loadAndGet(PACKAGE_NAME, INTERFACE1, true);
+    Set<Class<?>> classLoaded =
+        ClasspathScanLoadHelper.scanPackageForClassesImplementing(PACKAGE_NAME, INTERFACE1);
     assertEquals(2, classLoaded.size());
     assertTrue(classLoaded.contains(IMPL1));
     assertTrue(classLoaded.contains(IMPL2));
-    // impl1 and impl12
 
-    classLoaded = ClasspathScanLoadHelper.loadAndGet(PACKAGE_NAME, INTERFACE1, false);
-    assertEquals(4, classLoaded.size());
-    assertTrue(classLoaded.contains(IMPL1));
-    assertTrue(classLoaded.contains(IMPL2));
-    assertTrue(classLoaded.contains(ABSTRACT_IMPL));
-    assertTrue(classLoaded.contains(INTERFACE1));
-
-    classLoaded = ClasspathScanLoadHelper.loadAndGet(PACKAGE_NAME, INTERFACE2, false);
-    assertEquals(2, classLoaded.size());
-    assertTrue(classLoaded.contains(IMPL2));
-    assertTrue(classLoaded.contains(INTERFACE2));
-
-    classLoaded = ClasspathScanLoadHelper.loadAndGet(PACKAGE_NAME, INTERFACE2, true);
+    classLoaded =
+        ClasspathScanLoadHelper.scanPackageForClassesImplementing(PACKAGE_NAME, INTERFACE2);
     assertEquals(1, classLoaded.size());
     assertTrue(classLoaded.contains(IMPL2));
 
-    classLoaded = ClasspathScanLoadHelper.loadAndGet(WRONG_PACKAGE_NAME, INTERFACE2, true);
+    classLoaded =
+        ClasspathScanLoadHelper.scanPackageForClassesImplementing(WRONG_PACKAGE_NAME, INTERFACE2);
     assertEquals(0, classLoaded.size());
 
-    classLoaded = ClasspathScanLoadHelper.loadAndGet(PACKAGE_NAME, NO_IMPL_INTERFACE, true);
+    classLoaded =
+        ClasspathScanLoadHelper.scanPackageForClassesImplementing(PACKAGE_NAME, NO_IMPL_INTERFACE);
     assertEquals(0, classLoaded.size());
 
-    classLoaded = ClasspathScanLoadHelper.loadAndGet(WRONG_PACKAGE_NAME, NO_IMPL_INTERFACE, true);
+    classLoaded = ClasspathScanLoadHelper.scanPackageForClassesImplementing(WRONG_PACKAGE_NAME,
+        NO_IMPL_INTERFACE);
     assertEquals(0, classLoaded.size());
   }
 }

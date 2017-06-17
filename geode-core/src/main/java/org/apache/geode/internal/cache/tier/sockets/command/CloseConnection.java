@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 public class CloseConnection extends BaseCommand {
 
@@ -39,43 +40,44 @@ public class CloseConnection extends BaseCommand {
   private CloseConnection() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    CacheServerStats stats = servConn.getCacheServerStats();
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
+    CacheServerStats stats = serverConnection.getCacheServerStats();
     long oldStart = start;
-    boolean respondToClient = servConn.getClientVersion().compareTo(Version.GFE_90) >= 0;
+    boolean respondToClient = serverConnection.getClientVersion().compareTo(Version.GFE_90) >= 0;
     start = DistributionStats.getStatTime();
     stats.incReadCloseConnectionRequestTime(start - oldStart);
 
     if (respondToClient) {
       // newer clients will wait for a response or EOFException
-      servConn.setAsTrue(REQUIRES_RESPONSE);
+      serverConnection.setAsTrue(REQUIRES_RESPONSE);
     }
 
     try {
-      servConn.setClientDisconnectCleanly();
-      String clientHost = servConn.getSocketHost();
-      int clientPort = servConn.getSocketPort();
+      serverConnection.setClientDisconnectCleanly();
+      String clientHost = serverConnection.getSocketHost();
+      int clientPort = serverConnection.getSocketPort();
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Received close request ({} bytes) from {}:{}", servConn.getName(),
-            msg.getPayloadLength(), clientHost, clientPort);
+        logger.debug("{}: Received close request ({} bytes) from {}:{}", serverConnection.getName(),
+            clientMessage.getPayloadLength(), clientHost, clientPort);
       }
 
-      Part keepalivePart = msg.getPart(0);
+      Part keepalivePart = clientMessage.getPart(0);
       byte[] keepaliveByte = keepalivePart.getSerializedForm();
       boolean keepalive = (keepaliveByte == null || keepaliveByte[0] == 0) ? false : true;
 
-      servConn.getAcceptor().getCacheClientNotifier().setKeepAlive(servConn.getProxyID(),
-          keepalive);
+      serverConnection.getAcceptor().getCacheClientNotifier()
+          .setKeepAlive(serverConnection.getProxyID(), keepalive);
 
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Processed close request from {}:{}, keepAlive: {}", servConn.getName(),
-            clientHost, clientPort, keepalive);
+        logger.debug("{}: Processed close request from {}:{}, keepAlive: {}",
+            serverConnection.getName(), clientHost, clientPort, keepalive);
       }
     } finally {
       if (respondToClient) {
-        writeReply(msg, servConn);
+        writeReply(clientMessage, serverConnection);
       }
-      servConn.setFlagProcessMessagesAsFalse();
+      serverConnection.setFlagProcessMessagesAsFalse();
 
       stats.incProcessCloseConnectionTime(DistributionStats.getStatTime() - start);
     }

@@ -14,16 +14,16 @@
  */
 package org.apache.geode.distributed;
 
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a distribution locator server that provides discovery information to members and
@@ -250,8 +250,8 @@ public abstract class Locator {
   private static Locator startLocator(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
-    return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress, dsProperties,
-        hostnameForClients);
+    return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress, true,
+        dsProperties, hostnameForClients);
   }
 
   /**

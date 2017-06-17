@@ -14,17 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
@@ -48,15 +37,20 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @since GemFire 7.0
  */
-public class MemberCommands implements CommandMarker {
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
+public class MemberCommands implements GfshCommand {
 
   private static final GetMemberInformationFunction getMemberInformation =
       new GetMemberInformationFunction();
@@ -64,8 +58,8 @@ public class MemberCommands implements CommandMarker {
   @CliCommand(value = {CliStrings.LIST_MEMBER}, help = CliStrings.LIST_MEMBER__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listMember(@CliOption(key = {CliStrings.LIST_MEMBER__GROUP},
-      unspecifiedDefaultValue = "", optionContext = ConverterHint.MEMBERGROUP,
+  public Result listMember(@CliOption(key = {CliStrings.GROUP}, unspecifiedDefaultValue = "",
+      optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.LIST_MEMBER__GROUP__HELP) String group) {
     Result result = null;
 
@@ -102,10 +96,6 @@ public class MemberCommands implements CommandMarker {
     }
 
     return result;
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   @CliCommand(value = {CliStrings.DESCRIBE_MEMBER}, help = CliStrings.DESCRIBE_MEMBER__HELP)
@@ -202,15 +192,6 @@ public class MemberCommands implements CommandMarker {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
     return result;
-  }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_MEMBER, CliStrings.DESCRIBE_MEMBER})
-  public boolean isListMemberAvailable() {
-    boolean isAvailable = true;
-    if (CliUtil.isGfshVM()) {
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 
 }

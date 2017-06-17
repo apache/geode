@@ -84,7 +84,6 @@ public class HeadlessGfsh implements ResultHandler {
     });
 
     this.shell.start();
-    this.shell.setThreadLocalInstance();
 
     try {
       shellStarted.await();
@@ -195,10 +194,6 @@ public class HeadlessGfsh implements ResultHandler {
       this.handler = handler;
     }
 
-    public void setThreadLocalInstance() {
-      gfshThreadLocal.set(this);
-    }
-
     protected void handleExecutionResult(Object result) {
       if (!result.equals(ERROR_RESULT)) {
         super.handleExecutionResult(result);
@@ -222,6 +217,7 @@ public class HeadlessGfsh implements ResultHandler {
     }
 
     public void stop() {
+      super.stop();
       stopCalledThroughAPI = true;
     }
 
@@ -317,11 +313,6 @@ public class HeadlessGfsh implements ResultHandler {
    * HeadlessGfshConfig for tests. Taken from TestableGfsh
    */
   static class HeadlessGfshConfig extends GfshConfig {
-    {
-      // set vm as a gfsh vm
-      CliUtil.isGfshVM = true;
-    }
-
     private File parentDir;
     private String fileNamePrefix;
     private String name;

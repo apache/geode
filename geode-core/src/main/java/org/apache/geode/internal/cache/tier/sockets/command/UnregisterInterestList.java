@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 
@@ -46,48 +47,49 @@ public class UnregisterInterestList extends BaseCommand {
   private UnregisterInterestList() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
     Part regionNamePart = null, keyPart = null, numberOfKeysPart = null;
     String regionName = null;
     Object key = null;
     List keys = null;
     int numberOfKeys = 0, partNumber = 0;
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
     // bserverStats.incLong(readDestroyRequestTimeId,
     // DistributionStats.getStatTime() - start);
     // bserverStats.incInt(destroyRequestsId, 1);
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
-    regionNamePart = msg.getPart(0);
+    regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getString();
 
-    Part isClosingListPart = msg.getPart(1);
+    Part isClosingListPart = clientMessage.getPart(1);
     byte[] isClosingListPartBytes = (byte[]) isClosingListPart.getObject();
     boolean isClosingList = isClosingListPartBytes[0] == 0x01;
     boolean keepalive = false;
     try {
-      Part keepalivePart = msg.getPart(2);
+      Part keepalivePart = clientMessage.getPart(2);
       byte[] keepalivePartBytes = (byte[]) keepalivePart.getObject();
       keepalive = keepalivePartBytes[0] == 0x01;
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    numberOfKeysPart = msg.getPart(3);
+    numberOfKeysPart = clientMessage.getPart(3);
     numberOfKeys = numberOfKeysPart.getInt();
 
     partNumber = 4;
     keys = new ArrayList();
     for (int i = 0; i < numberOfKeys; i++) {
-      keyPart = msg.getPart(partNumber + i);
+      keyPart = clientMessage.getPart(partNumber + i);
       try {
         key = keyPart.getStringOrObject();
       } catch (Exception e) {
-        writeException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
       keys.add(key);
@@ -95,8 +97,8 @@ public class UnregisterInterestList extends BaseCommand {
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Received unregister interest request ({} bytes) from {} for the following {} keys in region {}: {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), numberOfKeys,
-          regionName, keys);
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), numberOfKeys, regionName, keys);
     }
 
     // Process the unregister interest request
@@ -113,22 +115,23 @@ public class UnregisterInterestList extends BaseCommand {
             LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
       }
       String s = errMessage.toLocalizedString();
-      logger.warn("{}: {}", servConn.getName(), s);
-      writeErrorResponse(msg, MessageType.UNREGISTER_INTEREST_DATA_ERROR, s, servConn);
-      servConn.setAsTrue(RESPONDED);
+      logger.warn("{}: {}", serverConnection.getName(), s);
+      writeErrorResponse(clientMessage, MessageType.UNREGISTER_INTEREST_DATA_ERROR, s,
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     try {
-      this.securityService.authorizeRegionRead(regionName);
+      securityService.authorizeRegionRead(regionName);
     } catch (NotAuthorizedException ex) {
-      writeException(msg, ex, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, ex, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
 
-    AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+    AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
     if (authzRequest != null) {
       if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
         try {
@@ -136,8 +139,8 @@ public class UnregisterInterestList extends BaseCommand {
               authzRequest.unregisterInterestListAuthorize(regionName, keys);
           keys = (List) unregisterContext.getKey();
         } catch (NotAuthorizedException ex) {
-          writeException(msg, ex, false, servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeException(clientMessage, ex, false, serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
       }
@@ -155,20 +158,20 @@ public class UnregisterInterestList extends BaseCommand {
      * responded = true; } else {
      */
     // Register interest
-    servConn.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName, keys,
-        isClosingList, servConn.getProxyID(), keepalive);
+    serverConnection.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName,
+        keys, isClosingList, serverConnection.getProxyID(), keepalive);
 
     // Update the statistics and write the reply
     // bserverStats.incLong(processDestroyTimeId,
     // DistributionStats.getStatTime() - start);
     // start = DistributionStats.getStatTime(); WHY ARE GETTING START AND NOT
     // USING IT?
-    writeReply(msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeReply(clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Sent unregister interest response for the following {} keys in region {}: {}",
-          servConn.getName(), numberOfKeys, regionName, keys);
+          serverConnection.getName(), numberOfKeys, regionName, keys);
     }
     // bserverStats.incLong(writeDestroyResponseTimeId,
     // DistributionStats.getStatTime() - start);

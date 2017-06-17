@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
@@ -51,7 +52,7 @@ public class UndeployFunction implements Function, InternalEntity {
 
     try {
       final Object[] args = (Object[]) context.getArguments();
-      final String jarFilenameList = (String) args[0]; // Comma separated
+      final String[] jarFilenameList = (String[]) args[0]; // Comma separated
       InternalCache cache = getCache();
 
       final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
@@ -65,7 +66,7 @@ public class UndeployFunction implements Function, InternalEntity {
       }
 
       String[] undeployedJars = new String[0];
-      if (jarFilenameList == null || jarFilenameList.equals("")) {
+      if (ArrayUtils.isEmpty(jarFilenameList)) {
         final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
         undeployedJars = new String[jarClassLoaders.size() * 2];
         int index = 0;
@@ -81,9 +82,7 @@ public class UndeployFunction implements Function, InternalEntity {
         }
       } else {
         List<String> undeployedList = new ArrayList<String>();
-        StringTokenizer jarTokenizer = new StringTokenizer(jarFilenameList, ",");
-        while (jarTokenizer.hasMoreTokens()) {
-          String jarFilename = jarTokenizer.nextToken().trim();
+        for (String jarFilename : jarFilenameList) {
           try {
             undeployedList.add(jarFilename);
             undeployedList.add(ClassPathLoader.getLatest().getJarDeployer().undeploy(jarFilename));

@@ -28,7 +28,7 @@ public interface PostProcessor {
    * Given the security props of the server, properly initialize the post processor for the server.
    * Initialized at cache creation
    * 
-   * @param securityProps
+   * @param securityProps security properties
    */
   default void init(Properties securityProps) {}
 

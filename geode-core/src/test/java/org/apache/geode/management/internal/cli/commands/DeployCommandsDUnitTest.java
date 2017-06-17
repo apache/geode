@@ -120,7 +120,7 @@ public class DeployCommandsDUnitTest implements Serializable {
   }
 
   @Test
-  public void deployMultipleJarsToOneGroup() throws Exception {
+  public void deployJarsInDirToOneGroup() throws Exception {
     // Deploy of multiple JARs to a single group
     gfshConnector.executeAndVerifyCommand(
         "deploy --group=" + GROUP1 + " --dir=" + subdirWithJars3and4.getCanonicalPath());
@@ -151,6 +151,40 @@ public class DeployCommandsDUnitTest implements Serializable {
       assertThatCannotLoad(jarName4, class4);
     });
   }
+
+  @Test
+  public void deployMultipleJarsToOneGroup() throws Exception {
+    // Deploy of multiple JARs to a single group
+    gfshConnector.executeAndVerifyCommand("deploy --group=" + GROUP1 + " --jars="
+        + jar3.getAbsolutePath() + "," + jar4.getAbsolutePath());
+    String resultString = gfshConnector.getGfshOutput();
+
+    assertThat(resultString).describedAs(resultString).contains(server1.getName());
+    assertThat(resultString).doesNotContain(server2.getName());
+    assertThat(resultString).contains(jarName3);
+    assertThat(resultString).contains(jarName4);
+
+    server1.invoke(() -> {
+      assertThatCanLoad(jarName3, class3);
+      assertThatCanLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+
+    // Undeploy of multiple jars by specifying group
+    gfshConnector.executeAndVerifyCommand("undeploy --jars=" + jarName3 + "," + jarName4);
+    server1.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+  }
+
 
   @Test
   public void deployJarToAllServers() throws Exception {

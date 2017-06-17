@@ -56,6 +56,11 @@ public class LuceneXmlParser extends AbstractXmlParser {
     if (stack.peek() instanceof StringBuffer) {
       stack.pop();
     }
+
+    if (!(stack.peek() instanceof LuceneIndexCreation)) {
+      throw new CacheXmlException(
+          "lucene <field> elements must occur within lucene <index> elements");
+    }
     LuceneIndexCreation creation = (LuceneIndexCreation) stack.peek();
     String name = atts.getValue(NAME);
     String className = atts.getValue(ANALYZER);
@@ -68,6 +73,9 @@ public class LuceneXmlParser extends AbstractXmlParser {
   }
 
   private void startIndex(Attributes atts) {
+    if (!(stack.peek() instanceof RegionCreation)) {
+      throw new CacheXmlException("lucene <index> elements must occur within <region> elements");
+    }
     final RegionCreation region = (RegionCreation) stack.peek();
     String name = atts.getValue(NAME);
     LuceneIndexCreation indexCreation = new LuceneIndexCreation();

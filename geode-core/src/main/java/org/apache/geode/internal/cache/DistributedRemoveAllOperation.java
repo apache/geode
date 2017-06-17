@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.DataPolicy;
@@ -53,6 +51,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Handles distribution of a Region.removeAll operation.
@@ -214,6 +213,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     boolean returnedEv = false;
     try {
       ev.setPossibleDuplicate(entry.isPossibleDuplicate());
+      ev.setIsRedestroyedEntry(entry.getRedestroyedEntry());
       if (entry.versionTag != null && region.concurrencyChecksEnabled) {
         VersionSource id = entry.versionTag.getMemberID();
         if (id != null) {
@@ -279,6 +279,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
     transient boolean inhibitDistribution;
 
+    transient boolean redestroyedEntry;
+
     /**
      * Constructor to use when preparing to send putall data out
      */
@@ -302,6 +304,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       setCallbacksInvoked(event.callbacksInvoked());
       setPossibleDuplicate(event.isPossibleDuplicate());
       setInhibitDistribution(event.getInhibitDistribution());
+      setRedestroyedEntry(event.getIsRedestroyedEntry());
     }
 
     /**
@@ -526,6 +529,14 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
     public void setInhibitDistribution(boolean inhibitDistribution) {
       this.inhibitDistribution = inhibitDistribution;
+    }
+
+    public boolean getRedestroyedEntry() {
+      return redestroyedEntry;
+    }
+
+    public void setRedestroyedEntry(boolean redestroyedEntry) {
+      this.redestroyedEntry = redestroyedEntry;
     }
 
     public boolean isCallbacksInvoked() {

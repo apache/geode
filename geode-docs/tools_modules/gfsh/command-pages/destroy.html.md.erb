@@ -152,25 +152,22 @@ See also [create lucene index](create.html#create_lucene_index), [describe lucen
 **Syntax:**
 
 ``` pre
-destroy lucene index [--name=value] [--region=value]
+destroy lucene index --region=value [--name=value]
 ```
-
-**Note:**
-You must specify at least one of the parameter options. If you enter `destroy lucene index` without any parameters, the command will ask you to specify at least one option.
 
 **Parameters, destroy lucene index:**
 
 | Name                                           | Description                                                                  |
 |------------------------------------------------|------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span>   | Name of the index to be removed.                                            |
-| <span class="keyword parmname">\\-\\-region</span> | Name of the region from which an index or all indexes are to be removed. |
+| <span class="keyword parmname">&#8209;&#8209;region</span> | *Required.* Name of the region from which indexes are to be removed. If no `--name` option is specified, all indexes associated with the region are destroyed.|
+| <span class="keyword parmname">&#8209;&#8209;name</span>   | Name of the index to be removed.                                            |
 
 
 **Example Commands:**
 
 ``` pre
-destroy lucene index --member=server2
-destroy lucene index --name=MyKeyIndex
+destroy lucene index --region=region1
+destroy lucene index --region=region1 --name=MyKeyIndex
 ```
 
 ## <a id="topic_BEDACECF4599407794ACBC0E56B30F65" class="no-quick-link"></a>destroy region

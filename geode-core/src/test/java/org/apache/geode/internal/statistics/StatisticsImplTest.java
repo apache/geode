@@ -22,6 +22,7 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,25 +36,36 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class StatisticsImplTest {
+
+  private Logger originalLogger;
+  private StatisticsImpl stats;
+
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private StatisticsImpl stats;
-
   @Before
   public void createStats() {
-    final StatisticsTypeImpl type = mock(StatisticsTypeImpl.class);
+    originalLogger = StatisticsImpl.logger;
+
+    StatisticsTypeImpl type = mock(StatisticsTypeImpl.class);
     when(type.getIntStatCount()).thenReturn(5);
     when(type.getDoubleStatCount()).thenReturn(5);
     when(type.getLongStatCount()).thenReturn(5);
-    final String textId = "";
-    final long numbericId = 0;
-    final long uniqueId = 0;
-    final int osStatFlags = 0;
-    final boolean atomicIncrements = false;
-    final StatisticsManager system = mock(StatisticsManager.class);
+
+    String textId = "";
+    long numbericId = 0;
+    long uniqueId = 0;
+    int osStatFlags = 0;
+    boolean atomicIncrements = false;
+    StatisticsManager system = mock(StatisticsManager.class);
+
     stats = new LocalStatisticsImpl(type, textId, numbericId, uniqueId, atomicIncrements,
         osStatFlags, system);
+  }
+
+  @After
+  public void tearDown() {
+    StatisticsImpl.logger = originalLogger;
   }
 
   @Test
@@ -108,23 +120,20 @@ public class StatisticsImplTest {
 
   @Test
   public void invokeSuppliersShouldLogErrorOnlyOnce() {
-    final Logger originalLogger = StatisticsImpl.logger;
-    try {
-      final Logger logger = mock(Logger.class);
-      StatisticsImpl.logger = logger;
-      IntSupplier supplier1 = mock(IntSupplier.class);
-      when(supplier1.getAsInt()).thenThrow(NullPointerException.class);
-      stats.setIntSupplier(4, supplier1);
-      assertEquals(1, stats.invokeSuppliers());
-      verify(logger, times(1)).warn(anyString(), anyString(), anyInt(),
-          isA(NullPointerException.class));
-      assertEquals(1, stats.invokeSuppliers());
-      // Make sure the logger isn't invoked again
-      verify(logger, times(1)).warn(anyString(), anyString(), anyInt(),
-          isA(NullPointerException.class));
-    } finally {
-      StatisticsImpl.logger = originalLogger;
-    }
+    Logger logger = mock(Logger.class);
+    StatisticsImpl.logger = logger;
+    IntSupplier supplier1 = mock(IntSupplier.class);
+    when(supplier1.getAsInt()).thenThrow(NullPointerException.class);
+    stats.setIntSupplier(4, supplier1);
+    assertEquals(1, stats.invokeSuppliers());
+
+    // String message, Object p0, Object p1, Object p2
+    verify(logger, times(1)).warn(anyString(), isNull(), anyInt(), isA(NullPointerException.class));
+
+    assertEquals(1, stats.invokeSuppliers());
+
+    // Make sure the logger isn't invoked again
+    verify(logger, times(1)).warn(anyString(), isNull(), anyInt(), isA(NullPointerException.class));
   }
 
   @Test

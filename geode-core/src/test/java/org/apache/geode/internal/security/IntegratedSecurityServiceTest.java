@@ -14,209 +14,153 @@
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.TestPostProcessor;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.SubjectContext;
+import org.apache.shiro.subject.support.SubjectThreadState;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.util.ThreadState;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
+import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class IntegratedSecurityServiceTest {
 
-  private Properties properties;
-  private SecurityService securityService;
+  private SecurityManager mockSecurityManager;
+  private SecurityManagerProvider provider;
+  private Subject mockSubject;
+  private org.apache.shiro.mgt.SecurityManager shiroManager;
+
+  private IntegratedSecurityService securityService;
 
   @Before
-  public void before() {
-    properties = new Properties();
-    securityService = SecurityService.getSecurityService();
-    securityService.initSecurity(properties);
-  }
+  public void before() throws Exception {
+    this.mockSecurityManager = mock(SecurityManager.class);
+    this.shiroManager = mock(org.apache.shiro.mgt.SecurityManager.class);
+    this.provider = mock(SecurityManagerProvider.class);
+    this.mockSubject = mock(Subject.class);
+    when(provider.getShiroSecurityManager()).thenReturn(shiroManager);
+    when(provider.getSecurityManager()).thenReturn(mockSecurityManager);
+    when(shiroManager.createSubject(any(SubjectContext.class))).thenReturn(mockSubject);
+    when(mockSubject.getPrincipal()).thenReturn("principal");
 
-  @Test
-  public void testGetObjectFromConstructor() {
-    String string = SecurityService.getObjectOfType(String.class.getName(), String.class);
-    assertNotNull(string);
-
-    CharSequence charSequence =
-        SecurityService.getObjectOfType(String.class.getName(), CharSequence.class);
-    assertNotNull(charSequence);
-
-    assertThatThrownBy(() -> SecurityService.getObjectOfType("com.abc.testString", String.class))
-        .isInstanceOf(GemFireSecurityException.class);
-
-    assertThatThrownBy(() -> SecurityService.getObjectOfType(String.class.getName(), Boolean.class))
-        .isInstanceOf(GemFireSecurityException.class);
-
-    assertThatThrownBy(() -> SecurityService.getObjectOfType("", String.class))
-        .isInstanceOf(GemFireSecurityException.class);
-
-    assertThatThrownBy(() -> SecurityService.getObjectOfType(null, String.class))
-        .isInstanceOf(GemFireSecurityException.class);
-
-    assertThatThrownBy(() -> SecurityService.getObjectOfType("  ", String.class))
-        .isInstanceOf(GemFireSecurityException.class);
-  }
-
-  @Test
-  public void testGetObjectFromFactoryMethod() {
-    String string =
-        SecurityService.getObjectOfType(Factories.class.getName() + ".getString", String.class);
-    assertNotNull(string);
-
-    CharSequence charSequence =
-        SecurityService.getObjectOfType(Factories.class.getName() + ".getString", String.class);
-    assertNotNull(charSequence);
-
-    assertThatThrownBy(() -> SecurityService
-        .getObjectOfType(Factories.class.getName() + ".getStringNonStatic", String.class))
-            .isInstanceOf(GemFireSecurityException.class);
-
-    assertThatThrownBy(() -> SecurityService
-        .getObjectOfType(Factories.class.getName() + ".getNullString", String.class))
-            .isInstanceOf(GemFireSecurityException.class);
-  }
-
-  @Test
-  public void testInitialSecurityFlags() {
-    // initial state of IntegratedSecurityService
-    assertFalse(securityService.isIntegratedSecurity());
-    assertFalse(securityService.isClientSecurityRequired());
-    assertFalse(securityService.isPeerSecurityRequired());
-  }
-
-  @Test
-  public void testInitWithSecurityManager() {
-    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.TestSecurityManager");
-    properties.setProperty(TestSecurityManager.SECURITY_JSON,
-        "org/apache/geode/security/templates/security.json");
-
-    securityService.initSecurity(properties);
-
-    assertTrue(securityService.isIntegratedSecurity());
-    assertTrue(securityService.isClientSecurityRequired());
-    assertTrue(securityService.isPeerSecurityRequired());
-  }
-
-  @Test
-  public void testInitWithClientAuthenticator() {
-    properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
-
-    securityService.initSecurity(properties);
-    assertFalse(securityService.isIntegratedSecurity());
-    assertTrue(securityService.isClientSecurityRequired());
-    assertFalse(securityService.isPeerSecurityRequired());
-  }
-
-  @Test
-  public void testInitWithPeerAuthenticator() {
-    properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
-
-    securityService.initSecurity(properties);
-
-    assertFalse(securityService.isIntegratedSecurity());
-    assertFalse(securityService.isClientSecurityRequired());
-    assertTrue(securityService.isPeerSecurityRequired());
-  }
-
-  @Test
-  public void testInitWithAuthenticators() {
-    properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
-    properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
-
-    securityService.initSecurity(properties);
-
-    assertFalse(securityService.isIntegratedSecurity());
-    assertTrue(securityService.isClientSecurityRequired());
-    assertTrue(securityService.isPeerSecurityRequired());
-  }
-
-  @Test
-  public void testInitWithShiroAuthenticator() {
-    properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-
-    securityService.initSecurity(properties);
-
-    assertTrue(securityService.isIntegratedSecurity());
-    assertTrue(securityService.isClientSecurityRequired());
-    assertTrue(securityService.isPeerSecurityRequired());
-  }
-
-  @Test
-  public void testNoInit() {
-    assertFalse(securityService.isIntegratedSecurity());
-  }
-
-  @Test
-  public void testInitWithOutsideShiroSecurityManager() {
-    SecurityUtils.setSecurityManager(new DefaultSecurityManager());
-    securityService.initSecurity(properties);
-    assertTrue(securityService.isIntegratedSecurity());
-  }
-
-  @Test
-  public void testSetSecurityManager() {
-    // initially
-    assertFalse(securityService.isIntegratedSecurity());
-
-    // init with client authenticator
-    properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
-    securityService.initSecurity(properties);
-    assertFalse(securityService.isIntegratedSecurity());
-    assertTrue(securityService.isClientSecurityRequired());
-    assertFalse(securityService.isPeerSecurityRequired());
-
-    // set a security manager
-    securityService.setSecurityManager(new SimpleTestSecurityManager());
-    assertTrue(securityService.isIntegratedSecurity());
-    assertTrue(securityService.isClientSecurityRequired());
-    assertTrue(securityService.isPeerSecurityRequired());
-    assertFalse(securityService.needPostProcess());
-
-    // set a post processor
-    securityService.setPostProcessor(new TestPostProcessor());
-    assertTrue(securityService.isIntegratedSecurity());
-    assertTrue(securityService.needPostProcess());
+    this.securityService = new IntegratedSecurityService(provider, null);
   }
 
   @After
-  public void after() {
+  public void after() throws Exception {
     securityService.close();
   }
 
-  private static class Factories {
+  @Test
+  public void bindSubject_nullSubject_shouldReturn_null() throws Exception {
+    assertThatThrownBy(() -> this.securityService.bindSubject(null))
+        .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Anonymous User");
+  }
 
-    public static String getString() {
-      return new String();
-    }
+  @Test
+  public void bindSubject_subject_shouldReturn_ThreadState() throws Exception {
+    ThreadState threadState = this.securityService.bindSubject(this.mockSubject);
+    assertThat(threadState).isNotNull().isInstanceOf(SubjectThreadState.class);
+  }
 
-    public static String getNullString() {
-      return null;
-    }
+  @Test
+  public void login_nullProperties_shouldReturn_null() throws Exception {
+    assertThatThrownBy(() -> this.securityService.login(null))
+        .isInstanceOf(AuthenticationRequiredException.class)
+        .hasMessageContaining("credentials are null");
+  }
 
-    public String getStringNonStatic() {
-      return new String();
-    }
+  @Test
+  public void getSubject_login_logout() throws Exception {
+    this.securityService.login(new Properties());
+    Subject subject = this.securityService.getSubject();
+    assertThat(subject).isNotNull();
+    assertThat(ThreadContext.getSubject()).isNotNull();
+    this.securityService.logout();
+    assertThat(ThreadContext.getSubject()).isNull();
+  }
 
-    public static Boolean getBoolean() {
-      return Boolean.TRUE;
-    }
+  @Test
+  public void associateWith_null_should_return_null() throws Exception {
+    assertThat(this.securityService.associateWith(null)).isNull();
+  }
+
+  @Test
+  public void needPostProcess_returnsFalse() throws Exception {
+    boolean needPostProcess = this.securityService.needPostProcess();
+    assertThat(needPostProcess).isFalse();
+  }
+
+  @Test
+  public void postProcess1_value_shouldReturnSameValue() throws Exception {
+    Object value = new Object();
+    Object result = this.securityService.postProcess(null, null, value, false);
+    assertThat(result).isNotNull().isSameAs(value);
+  }
+
+  @Test
+  public void postProcess1_null_returnsNull() throws Exception {
+    Object result = this.securityService.postProcess(null, null, null, false);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void postProcess2_value_shouldReturnSameValue() throws Exception {
+    Object value = new Object();
+    Object result = this.securityService.postProcess(null, null, null, value, false);
+    assertThat(result).isNotNull().isSameAs(value);
+  }
+
+  @Test
+  public void postProcess2_null_returnsNull() throws Exception {
+    Object result = this.securityService.postProcess(null, null, null, null, false);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void isClientSecurityRequired_returnsTrue() throws Exception {
+    boolean result = this.securityService.isClientSecurityRequired();
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  public void isIntegratedSecurity_returnsTrue() throws Exception {
+    boolean result = this.securityService.isIntegratedSecurity();
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  public void isPeerSecurityRequired_returnsTrue() throws Exception {
+    boolean result = this.securityService.isPeerSecurityRequired();
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  public void getSecurityManager_returnsSecurityManager() throws Exception {
+    SecurityManager securityManager = this.securityService.getSecurityManager();
+    assertThat(securityManager).isNotNull().isSameAs(this.mockSecurityManager);
+  }
+
+  @Test
+  public void getPostProcessor_returnsNull() throws Exception {
+    PostProcessor postProcessor = this.securityService.getPostProcessor();
+    assertThat(postProcessor).isNull();
   }
 }

@@ -65,8 +65,6 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
     return buffer.toString();
   }
 
-
-
   /**
    * Gets the value of the specified Object as a String. If the Object is null then the first
    * non-null String value from the array of default String value is returned. If the array of

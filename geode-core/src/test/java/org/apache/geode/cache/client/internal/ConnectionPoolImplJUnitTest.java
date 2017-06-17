@@ -101,6 +101,7 @@ public class ConnectionPoolImplJUnitTest {
     PoolImpl pool = (PoolImpl) cpf.create("myfriendlypool");
 
     // check defaults
+    assertEquals(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT, pool.getSocketConnectTimeout());
     assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT, pool.getFreeConnectionTimeout());
     assertEquals(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE, pool.getSocketBufferSize());
     assertEquals(PoolFactory.DEFAULT_READ_TIMEOUT, pool.getReadTimeout());
@@ -131,14 +132,17 @@ public class ConnectionPoolImplJUnitTest {
   @Test
   public void testProperties() throws Exception {
     int readTimeout = 234234;
+    int socketTimeout = 123123;
 
     PoolFactory cpf = PoolManager.createFactory();
-    cpf.addServer("localhost", port).setReadTimeout(readTimeout).setThreadLocalConnections(true);
+    cpf.addServer("localhost", port).setSocketConnectTimeout(socketTimeout)
+        .setReadTimeout(readTimeout).setThreadLocalConnections(true);
 
     PoolImpl pool = (PoolImpl) cpf.create("myfriendlypool");
 
     // check non default
     assertEquals("myfriendlypool", pool.getName());
+    assertEquals(socketTimeout, pool.getSocketConnectTimeout());
     assertEquals(readTimeout, pool.getReadTimeout());
     assertEquals(true, pool.getThreadLocalConnections());
     assertEquals(1, pool.getServers().size());

@@ -150,6 +150,7 @@ org/apache/geode/internal/cache/operations/ContainsKeyOperationContext
 org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation
 org/apache/geode/security/ResourcePermission$Resource
+org/apache/geode/security/ResourcePermission$Target
 org/apache/geode/distributed/internal/tcpserver/LocatorCancelException
 org.apache.geode.internal.security.SecurableCommunicationChannel
 org/apache/geode/internal/security/shiro/GeodeAuthenticationToken

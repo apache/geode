@@ -22,7 +22,6 @@ import org.apache.geode.internal.logging.LogService;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Logger;
@@ -36,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  * 
  * <PRE>
  * 
- * msgType - int - 4 bytes type of message, types enumerated below
+ * messageType - int - 4 bytes type of message, types enumerated below
  * 
  * numberOfParts - int - 4 bytes number of elements (LEN-BYTE* pairs) contained
  * in the payload. Message can be a multi-part message
@@ -153,7 +152,8 @@ public class ChunkedMessage extends Message {
 
   public void setLastChunkAndNumParts(boolean lastChunk, int numParts) {
     setLastChunk(lastChunk);
-    if (this.sc != null && this.sc.getClientVersion().compareTo(Version.GFE_65) >= 0) {
+    if (this.serverConnection != null
+        && this.serverConnection.getClientVersion().compareTo(Version.GFE_65) >= 0) {
       // we us e three bits for number of parts in last chunk byte
       // we us e three bits for number of parts in last chunk byte
       byte localLastChunk = (byte) (numParts << 5);
@@ -162,7 +162,7 @@ public class ChunkedMessage extends Message {
   }
 
   public void setServerConnection(ServerConnection servConn) {
-    if (this.sc != servConn)
+    if (this.serverConnection != servConn)
       throw new IllegalStateException("this.sc was not correctly set");
   }
 
@@ -209,7 +209,7 @@ public class ChunkedMessage extends Message {
         // Set the header and payload fields only after receiving all the
         // socket data, providing better message consistency in the face
         // of exceptional conditions (e.g. IO problems, timeouts etc.)
-        this.msgType = type;
+        this.messageType = type;
         this.numberOfParts = numParts; // Already set in setPayloadFields via setNumberOfParts
         this.transactionId = txid;
       }
@@ -241,14 +241,15 @@ public class ChunkedMessage extends Message {
     int totalBytesRead = 0;
     do {
       int bytesRead = 0;
-      bytesRead = is.read(cb.array(), totalBytesRead, CHUNK_HEADER_LENGTH - totalBytesRead);
+      bytesRead =
+          inputStream.read(cb.array(), totalBytesRead, CHUNK_HEADER_LENGTH - totalBytesRead);
       if (bytesRead == -1) {
         throw new EOFException(
             LocalizedStrings.ChunkedMessage_CHUNK_READ_ERROR_CONNECTION_RESET.toLocalizedString());
       }
       totalBytesRead += bytesRead;
-      if (this.msgStats != null) {
-        this.msgStats.incReceivedBytes(bytesRead);
+      if (this.messageStats != null) {
+        this.messageStats.incReceivedBytes(bytesRead);
       }
     } while (totalBytesRead < CHUNK_HEADER_LENGTH);
 
@@ -315,7 +316,7 @@ public class ChunkedMessage extends Message {
    * Sends a chunk of this message.
    */
   public void sendChunk(ServerConnection servConn) throws IOException {
-    if (this.sc != servConn)
+    if (this.serverConnection != servConn)
       throw new IllegalStateException("this.sc was not correctly set");
     sendChunk();
   }
@@ -355,7 +356,7 @@ public class ChunkedMessage extends Message {
   protected void getHeaderBytesForWrite() {
     final ByteBuffer cb = getCommBuffer();
     cb.clear();
-    cb.putInt(this.msgType);
+    cb.putInt(this.messageType);
     cb.putInt(this.numberOfParts);
 
     cb.putInt(this.transactionId);

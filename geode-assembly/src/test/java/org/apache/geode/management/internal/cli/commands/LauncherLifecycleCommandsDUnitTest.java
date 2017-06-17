@@ -44,6 +44,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -151,7 +152,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     Integer pid;
 
     while ((pid = processIds.poll()) != null) {
-      if (launcherLifecycleCommands.isVmWithProcessIdRunning(pid)) {
+      if (ProcessUtils.isProcessAlive(pid)) {
         try {
           String killCommand = String.format("%1$s %2$d",
               SystemUtils.isWindows() ? "taskkill /F /PID" : "kill -9", pid);
@@ -258,7 +259,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
             @Override
             public boolean done() {
-              return !launcherLifecycleCommands.isVmWithProcessIdRunning(pid);
+              return !ProcessUtils.isProcessAlive(pid);
             }
 
             @Override
@@ -1010,7 +1011,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Status.ONLINE, serverState.getStatus());
 
     // Verify our GemFire Server JVM process is running!
-    assertTrue(new LauncherLifecycleCommands().isVmWithProcessIdRunning(serverState.getPid()));
+    assertTrue(serverState.isVmWithProcessIdRunning());
 
     ClientCache clientCache = setupClientCache(pathname + String.valueOf(serverPort), serverPort);
 
@@ -1035,7 +1036,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
         @Override
         public boolean done() {
-          return !launcherLifecycleCommands.isVmWithProcessIdRunning(serverPid);
+          return !ProcessUtils.isProcessAlive(serverPid);
         }
 
         @Override
@@ -1048,7 +1049,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
           true);
 
       // Verify our GemFire Server JVM process is was terminated!
-      assertFalse(new LauncherLifecycleCommands().isVmWithProcessIdRunning(serverState.getPid()));
+      assertFalse(serverState.isVmWithProcessIdRunning());
 
       serverState = serverLauncher.status();
 

@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.client.internal.TXSynchronizationOp.CompletionType;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -31,6 +30,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -54,7 +54,8 @@ public class TXSynchronizationCommand extends BaseCommand {
    * org.apache.geode.internal.cache.tier.sockets.ServerConnection)
    */
   @Override
-  protected boolean shouldMasqueradeForTx(Message msg, ServerConnection servConn) {
+  protected boolean shouldMasqueradeForTx(Message clientMessage,
+      ServerConnection serverConnection) {
     // masquerading is done in the waiting thread pool
     return false;
   }
@@ -68,26 +69,29 @@ public class TXSynchronizationCommand extends BaseCommand {
    * long)
    */
   @Override
-  public void cmdExecute(final Message msg, final ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
-    CompletionType type = CompletionType.values()[msg.getPart(0).getInt()];
-    /* int txIdInt = */ msg.getPart(1).getInt(); // [bruce] not sure if we need to transmit this
+    CompletionType type = CompletionType.values()[clientMessage.getPart(0).getInt()];
+    /* int txIdInt = */ clientMessage.getPart(1).getInt(); // [bruce] not sure if we need to
+                                                           // transmit this
     final Part statusPart;
     if (type == CompletionType.AFTER_COMPLETION) {
-      statusPart = msg.getPart(2);
+      statusPart = clientMessage.getPart(2);
     } else {
       statusPart = null;
     }
 
-    final TXManagerImpl txMgr = (TXManagerImpl) servConn.getCache().getCacheTransactionManager();
+    final TXManagerImpl txMgr =
+        (TXManagerImpl) serverConnection.getCache().getCacheTransactionManager();
     final InternalDistributedMember member =
-        (InternalDistributedMember) servConn.getProxyID().getDistributedMember();
+        (InternalDistributedMember) serverConnection.getProxyID().getDistributedMember();
 
     // get the tx state without associating it with this thread. That's done later
-    final TXStateProxy txProxy = txMgr.masqueradeAs(msg, member, true);
+    final TXStateProxy txProxy = txMgr.masqueradeAs(clientMessage, member, true);
 
     // we have to run beforeCompletion and afterCompletion in the same thread
     // because beforeCompletion obtains locks for the thread and afterCompletion
@@ -102,21 +106,21 @@ public class TXSynchronizationCommand extends BaseCommand {
               TXStateProxy txState = null;
               Throwable failureException = null;
               try {
-                txState = txMgr.masqueradeAs(msg, member, false);
+                txState = txMgr.masqueradeAs(clientMessage, member, false);
                 if (isDebugEnabled) {
                   logger.debug("Executing beforeCompletion() notification for transaction {}",
-                      msg.getTransactionId());
+                      clientMessage.getTransactionId());
                 }
                 txState.setIsJTA(true);
                 txState.beforeCompletion();
                 try {
-                  writeReply(msg, servConn);
+                  writeReply(clientMessage, serverConnection);
                 } catch (IOException e) {
                   if (isDebugEnabled) {
                     logger.debug("Problem writing reply to client", e);
                   }
                 }
-                servConn.setAsTrue(RESPONDED);
+                serverConnection.setAsTrue(RESPONDED);
               } catch (ReplyException e) {
                 failureException = e.getCause();
               } catch (InterruptedException e) {
@@ -128,13 +132,13 @@ public class TXSynchronizationCommand extends BaseCommand {
               }
               if (failureException != null) {
                 try {
-                  writeException(msg, failureException, false, servConn);
+                  writeException(clientMessage, failureException, false, serverConnection);
                 } catch (IOException ioe) {
                   if (isDebugEnabled) {
                     logger.debug("Problem writing reply to client", ioe);
                   }
                 }
-                servConn.setAsTrue(RESPONDED);
+                serverConnection.setAsTrue(RESPONDED);
               }
             }
           };
@@ -150,11 +154,11 @@ public class TXSynchronizationCommand extends BaseCommand {
             public void run() {
               TXStateProxy txState = null;
               try {
-                txState = txMgr.masqueradeAs(msg, member, false);
+                txState = txMgr.masqueradeAs(clientMessage, member, false);
                 int status = statusPart.getInt();
                 if (isDebugEnabled) {
                   logger.debug("Executing afterCompletion({}) notification for transaction {}",
-                      status, msg.getTransactionId());
+                      status, clientMessage.getTransactionId());
                 }
                 txState.setIsJTA(true);
                 txState.afterCompletion(status);
@@ -162,7 +166,7 @@ public class TXSynchronizationCommand extends BaseCommand {
                 // where it can be applied to the local cache
                 TXCommitMessage cmsg = txState.getCommitMessage();
                 try {
-                  CommitCommand.writeCommitResponse(cmsg, msg, servConn);
+                  CommitCommand.writeCommitResponse(cmsg, clientMessage, serverConnection);
                   txMgr.removeHostedTXState(txState.getTxId());
                 } catch (IOException e) {
                   // not much can be done here
@@ -170,16 +174,16 @@ public class TXSynchronizationCommand extends BaseCommand {
                     logger.warn("Problem writing reply to client", e);
                   }
                 }
-                servConn.setAsTrue(RESPONDED);
+                serverConnection.setAsTrue(RESPONDED);
               } catch (RuntimeException e) {
                 try {
-                  writeException(msg, e, false, servConn);
+                  writeException(clientMessage, e, false, serverConnection);
                 } catch (IOException ioe) {
                   if (isDebugEnabled) {
                     logger.debug("Problem writing reply to client", ioe);
                   }
                 }
-                servConn.setAsTrue(RESPONDED);
+                serverConnection.setAsTrue(RESPONDED);
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
               } finally {
@@ -195,12 +199,12 @@ public class TXSynchronizationCommand extends BaseCommand {
             sync.runSecondRunnable(afterCompletion);
           } else {
             if (statusPart.getInt() == Status.STATUS_COMMITTED) {
-              TXStateProxy txState = txMgr.masqueradeAs(msg, member, false);
+              TXStateProxy txState = txMgr.masqueradeAs(clientMessage, member, false);
               try {
                 if (isDebugEnabled) {
                   logger.debug(
                       "Executing beforeCompletion() notification for transaction {} after failover",
-                      msg.getTransactionId());
+                      clientMessage.getTransactionId());
                 }
                 txState.setIsJTA(true);
                 txState.beforeCompletion();
@@ -212,8 +216,8 @@ public class TXSynchronizationCommand extends BaseCommand {
           }
         }
       } catch (Exception e) {
-        writeException(msg, MessageType.EXCEPTION, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, MessageType.EXCEPTION, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
       }
       if (isDebugEnabled) {
         logger.debug("Sent tx synchronization response");

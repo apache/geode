@@ -30,19 +30,24 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.RegisterInterestTracker;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.internal.AvailablePort;
@@ -63,6 +68,7 @@ import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -72,6 +78,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests client server corner cases between Region and Pool
@@ -95,17 +102,17 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
 
   private static final String server_k2 = "server-k2";
 
-  private static final String REGION_NAME1 = "ClientServerMiscDUnitTest_region1";
+  static final String REGION_NAME1 = "ClientServerMiscDUnitTest_region1";
 
-  private static final String REGION_NAME2 = "ClientServerMiscDUnitTest_region2";
+  static final String REGION_NAME2 = "ClientServerMiscDUnitTest_region2";
 
   private static final String PR_REGION_NAME = "ClientServerMiscDUnitTest_PRregion";
 
   private static Host host;
 
-  private static VM server1;
+  protected static VM server1;
 
-  private static VM server2;
+  protected static VM server2;
 
   private static RegionAttributes attrs;
 
@@ -138,18 +145,25 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     server2 = host.getVM(3);
   }
 
-  private int initServerCache(boolean notifyBySub) {
-    Object[] args = new Object[] {notifyBySub, getMaxThreads()};
-    return ((Integer) server1.invoke(ClientServerMiscDUnitTest.class, "createServerCache", args))
-        .intValue();
+  int initServerCache(boolean notifyBySub) {
+    return initServerCache(notifyBySub, false);
   }
 
-  private int initServerCache2(boolean notifyBySub) {
-    Object[] args = new Object[] {notifyBySub, getMaxThreads()};
-    return ((Integer) server2.invoke(ClientServerMiscDUnitTest.class, "createServerCache", args))
-        .intValue();
+  int initServerCache2(boolean notifyBySub) {
+    return initServerCache2(notifyBySub, false);
   }
 
+  int initServerCache(boolean notifyBySub, boolean isHA) {
+    return initServerCache(notifyBySub, server1, isHA);
+  }
+
+  int initServerCache2(boolean notifyBySub, boolean isHA) {
+    return initServerCache(notifyBySub, server2, isHA);
+  }
+
+  int initServerCache(boolean notifyBySub, VM vm, boolean isHA) {
+    return vm.invoke(() -> createServerCache(notifyBySub, getMaxThreads(), isHA));
+  }
 
   @Test
   public void testConcurrentOperationsWithDRandPR() throws Exception {
@@ -373,19 +387,18 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   public void testForTwoRegionHavingDifferentInterestList() throws Exception {
     // start server first
     PORT1 = initServerCache(true);
-    createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1);
-    populateCache();
-    registerInterest();
-    server1.invoke(() -> ClientServerMiscDUnitTest.put());
+    int serverPort = PORT1;
+    VM client1 = Host.getHost(0).getVM(testVersion, 1);
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    client1.invoke("create client1 cache", () -> {
+      createClientCache(hostname, serverPort);
+      populateCache();
+      registerInterest();
+    });
 
-    // pause(5000 + 5000 + 10000);
-    /*
-     * final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue(); try {
-     * Thread.yield(); Thread.sleep(maxWaitTime); } catch (InterruptedException e) {
-     * fail("interrupted"); }
-     */
-    verifyUpdates();
+    server1.invoke("putting entries in server1", () -> put());
 
+    client1.invoke(() -> verifyUpdates());
   }
 
   /**
@@ -590,65 +603,27 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
 
     populateCache();
     server1.invoke(() -> ClientServerMiscDUnitTest.put());
-    // pause(5000);
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
 
-      public boolean done() {
-        Object val = region1.getEntry(k1).getValue();
-        return k1.equals(val);
-      }
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = region1.getEntry(k1).getValue();
+      return k1.equals(val);
+    });
 
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = region1.getEntry(k2).getValue();
+      return k2.equals(val);
+    });
 
-    // assertIndexDetailsEquals(region1.getEntry(k1).getValue(), k1);
-    wc = new WaitCriterion() {
-      String excuse;
 
-      public boolean done() {
-        Object val = region1.getEntry(k2).getValue();
-        return k2.equals(val);
-      }
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = region2.getEntry(k1).getValue();
+      return k1.equals(val);
+    });
 
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-
-    wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        Object val = region2.getEntry(k1).getValue();
-        return k1.equals(val);
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-
-    // assertIndexDetailsEquals(region1.getEntry(k2).getValue(), k2);
-    // assertIndexDetailsEquals(region2.getEntry(k1).getValue(), k1);
-    wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        Object val = region2.getEntry(k2).getValue();
-        return k2.equals(val);
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = region2.getEntry(k2).getValue();
+      return k2.equals(val);
+    });
 
     // assertIndexDetailsEquals(region2.getEntry(k2).getValue(), k2);
   }
@@ -788,30 +763,37 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void createClientCacheV(String h, int port) throws Exception {
-    _createClientCache(h, port, false);
+    _createClientCache(h, false, port);
   }
 
-  public static void createEmptyClientCache(String h, int port) throws Exception {
-    _createClientCache(h, port, true);
+  public static void createEmptyClientCache(String h, int... ports) throws Exception {
+    _createClientCache(h, false, ports);
   }
 
-  public static Pool createClientCache(String h, int port) throws Exception {
-    return _createClientCache(h, port, false);
+  public static Pool createClientCache(String h, int... ports) throws Exception {
+    return _createClientCache(h, false, ports);
   }
 
-  public static Pool _createClientCache(String h, int port, boolean empty) throws Exception {
+  private static PoolFactory addServers(PoolFactory factory, String h, int... ports) {
+    for (int port : ports) {
+      factory.addServer(h, port);
+    }
+    return factory;
+  }
+
+  public static Pool _createClientCache(String h, boolean empty, int... ports) throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     Cache cache = new ClientServerMiscDUnitTest().createCacheV(props);
     ClientServerMiscDUnitTest.static_cache = cache;
-    PoolImpl p =
-        (PoolImpl) PoolManager.createFactory().addServer(h, port).setSubscriptionEnabled(true)
-            .setThreadLocalConnections(true).setReadTimeout(1000).setSocketBufferSize(32768)
-            .setMinConnections(3).setSubscriptionRedundancy(-1).setPingInterval(2000)
-            // .setRetryAttempts(5)
-            // .setRetryInterval(2000)
-            .create("ClientServerMiscDUnitTestPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    PoolImpl p = (PoolImpl) addServers(poolFactory, h, ports).setSubscriptionEnabled(true)
+        .setThreadLocalConnections(true).setReadTimeout(1000).setSocketBufferSize(32768)
+        .setMinConnections(3).setSubscriptionRedundancy(-1).setPingInterval(2000)
+        // .setRetryAttempts(5)
+        // .setRetryInterval(2000)
+        .create("ClientServerMiscDUnitTestPool");
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -857,8 +839,34 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     return p;
   }
 
-  public static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads)
-      throws Exception {
+  static class MemberIDVerifier extends CacheListenerAdapter {
+    boolean memberIDNotReceived = true;
+    boolean eventReceived = false;
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      eventReceived(event);
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      eventReceived(event);
+    }
+
+    private void eventReceived(EntryEvent event) {
+      eventReceived = true;
+      DistributedMember memberID = event.getDistributedMember();
+      memberIDNotReceived = (memberID == null);
+    }
+
+    public void reset() {
+      memberIDNotReceived = true;
+      eventReceived = false;
+    }
+  }
+
+  public static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads,
+      boolean isHA) throws Exception {
     Cache cache = new ClientServerMiscDUnitTest().createCacheV(new Properties());
     unsetSlowDispatcherFlag();
     AttributesFactory factory = new AttributesFactory();
@@ -870,7 +878,12 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     Region r2 = cache.createRegion(REGION_NAME2, myAttrs);
     factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.PARTITION);
+    if (isHA) {
+      PartitionAttributesFactory paf = new PartitionAttributesFactory().setRedundantCopies(1);
+      factory.setPartitionAttributes(paf.create());
+    }
     RegionAttributes prAttrs = factory.create();
+
     Region pr = cache.createRegion(PR_REGION_NAME, prAttrs);
     assertNotNull(r1);
     assertNotNull(r2);
@@ -893,17 +906,12 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     return 0;
   }
 
-  public static void registerInterest() {
-    try {
-      Cache cache = new ClientServerMiscDUnitTest().getCache();
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
-      assertNotNull(r);
-      // r.registerInterestRegex(CacheClientProxy.ALL_KEYS);
-      r.registerInterest("ALL_KEYS");
-    } catch (CacheWriterException e) {
-      e.printStackTrace();
-      Assert.fail("Test failed due to CacheWriterException during registerInterest", e);
-    }
+  public static void registerInterest() throws Exception {
+    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+    assertNotNull(r);
+    r.registerInterest("ALL_KEYS");
+    r.getAttributesMutator().addCacheListener(new MemberIDVerifier());
   }
 
   public static void registerInterestForInvalidatesInBothTheRegions() {
@@ -1070,153 +1078,114 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void verifyCacheClientProxyOnServer() {
-    try {
-      Cache cache = new ClientServerMiscDUnitTest().getCache();
-      assertEquals("More than one BridgeServer", 1, cache.getCacheServers().size());
-      CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
-      assertNotNull(bs);
-      assertNotNull(bs.getAcceptor());
-      final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
+    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    assertEquals("More than one BridgeServer", 1, cache.getCacheServers().size());
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
+    assertNotNull(bs);
+    assertNotNull(bs.getAcceptor());
+    final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
 
-      assertNotNull(ccn);
-      WaitCriterion wc = new WaitCriterion() {
-        String excuse;
+    assertNotNull(ccn);
+    WaitCriterion wc = new WaitCriterion() {
+      String excuse;
 
-        public boolean done() {
-          return ccn.getClientProxies().size() == 1;
-        }
+      public boolean done() {
+        return ccn.getClientProxies().size() == 1;
+      }
 
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 40 * 1000, 1000, true);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      fail("while setting verifyNoCacheClientProxyOnServer  " + ex);
-    }
+      public String description() {
+        return excuse;
+      }
+    };
+    Wait.waitForCriterion(wc, 40 * 1000, 1000, true);
   }
 
   public static void populateCache() {
-    try {
-      Cache cache = new ClientServerMiscDUnitTest().getCache();
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
-      Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
-      assertNotNull(r1);
-      assertNotNull(r2);
+    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+    Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+    assertNotNull(r1);
+    assertNotNull(r2);
 
-      if (!r1.containsKey(k1))
-        r1.create(k1, k1);
-      if (!r1.containsKey(k2))
-        r1.create(k2, k2);
-      if (!r2.containsKey(k1))
-        r2.create(k1, k1);
-      if (!r2.containsKey(k2))
-        r2.create(k2, k2);
+    if (!r1.containsKey(k1))
+      r1.create(k1, k1);
+    if (!r1.containsKey(k2))
+      r1.create(k2, k2);
+    if (!r2.containsKey(k1))
+      r2.create(k1, k1);
+    if (!r2.containsKey(k2))
+      r2.create(k2, k2);
 
-      assertEquals(r1.getEntry(k1).getValue(), k1);
-      assertEquals(r1.getEntry(k2).getValue(), k2);
-      assertEquals(r2.getEntry(k1).getValue(), k1);
-      assertEquals(r2.getEntry(k2).getValue(), k2);
-    } catch (Exception ex) {
-      Assert.fail("failed while createEntries()", ex);
-    }
+    assertEquals(r1.getEntry(k1).getValue(), k1);
+    assertEquals(r1.getEntry(k2).getValue(), k2);
+    assertEquals(r2.getEntry(k1).getValue(), k1);
+    assertEquals(r2.getEntry(k2).getValue(), k2);
   }
 
   public static void put() {
-    try {
-      Cache cache = new ClientServerMiscDUnitTest().getCache();
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
-      Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
-      assertNotNull(r1);
-      assertNotNull(r2);
+    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+    Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+    assertNotNull(r1);
+    assertNotNull(r2);
 
-      r1.put(k1, server_k1);
-      r1.put(k2, server_k2);
+    r1.put(k1, server_k1);
+    r1.put(k2, server_k2);
 
-      r2.put(k1, server_k1);
-      r2.put(k2, server_k2);
+    r2.put(k1, server_k1);
+    r2.put(k2, server_k2);
 
-      assertEquals(r1.getEntry(k1).getValue(), server_k1);
-      assertEquals(r1.getEntry(k2).getValue(), server_k2);
-      assertEquals(r2.getEntry(k1).getValue(), server_k1);
-      assertEquals(r2.getEntry(k2).getValue(), server_k2);
-    } catch (Exception ex) {
-      Assert.fail("failed while put()", ex);
-    }
+    assertEquals(r1.getEntry(k1).getValue(), server_k1);
+    assertEquals(r1.getEntry(k2).getValue(), server_k2);
+    assertEquals(r2.getEntry(k1).getValue(), server_k1);
+    assertEquals(r2.getEntry(k2).getValue(), server_k2);
+  }
+
+  public static void putForClient() {
+    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+
+    r2.put(k1, "client2_k1");
+    r2.put(k2, "client2_k2");
   }
 
   public static void verifyUpdates() {
-    try {
-      Cache cache = new ClientServerMiscDUnitTest().getCache();
-      final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
-      final Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
-      assertNotNull(r1);
-      assertNotNull(r2);
-      // verify updates
-      WaitCriterion wc = new WaitCriterion() {
-        String excuse;
+    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+    final Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+    assertNotNull(r1);
+    assertNotNull(r2);
 
-        public boolean done() {
-          Object val = r1.getEntry(k1).getValue();
-          return k1.equals(val);
-        }
+    // no interest registered in region1 - it should hold client values, which are
+    // the same as the keys
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = r1.getEntry(k1).getValue();
+      return k1.equals(val);
+    });
 
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = r1.getEntry(k2).getValue();
+      return k2.equals(val);
+    });
 
-      // assertIndexDetailsEquals(k1, r1.getEntry(k1).getValue());
-      wc = new WaitCriterion() {
-        String excuse;
+    // interest was registered in region2 - it should contain server values
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = r2.getEntry(k1).getValue();
+      return server_k1.equals(val);
+    });
 
-        public boolean done() {
-          Object val = r1.getEntry(k2).getValue();
-          return k2.equals(val);
-        }
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Object val = r2.getEntry(k2).getValue();
+      return server_k2.equals(val);
+    });
 
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    // events should have contained a memberID
+    MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
+    assertTrue("client should have received a listener event", verifier.eventReceived);
+    assertFalse("client received an update but the event had no member id",
+        verifier.memberIDNotReceived);
+    verifier.reset();
 
-      // assertIndexDetailsEquals(k2, r1.getEntry(k2).getValue());
-      wc = new WaitCriterion() {
-        String excuse;
-
-        public boolean done() {
-          Object val = r2.getEntry(k1).getValue();
-          return server_k1.equals(val);
-        }
-
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-
-      // assertIndexDetailsEquals(server_k1, r2.getEntry(k1).getValue());
-      wc = new WaitCriterion() {
-        String excuse;
-
-        public boolean done() {
-          Object val = r2.getEntry(k2).getValue();
-          return server_k2.equals(val);
-        }
-
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-
-      // assertIndexDetailsEquals(server_k2, r2.getEntry(k2).getValue());
-    } catch (Exception ex) {
-      Assert.fail("failed while verifyUpdates()", ex);
-    }
   }
 
   public static void verifyInvalidatesOnBothRegions() {
@@ -1353,6 +1322,111 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
    */
   public static void unsetSlowDispatcherFlag() {
     CacheClientProxy.isSlowStartForTesting = false;
+  }
+
+  @Test
+  public void testOnSeverMethodsWithProxyClient() throws Exception {
+    testOnServerMothods(false, false);
+  }
+
+  @Test
+  public void testOnSeverMethodsWithCachingProxyClient() throws Exception {
+    testOnServerMothods(true, false);
+  }
+
+  @Test
+  public void testOnSeverMethodsWithProxyClientHA() throws Exception {
+    testOnServerMothods(false, true);
+  }
+
+  @Test
+  public void testOnSeverMethodsWithCachingProxyClientHA() throws Exception {
+    testOnServerMothods(true, true);
+  }
+
+  private void testOnServerMothods(boolean isCachingProxy, boolean isHA) throws Exception {
+    int port1 = initServerCache(true, isHA); // vm0
+    int port2 = initServerCache2(true, isHA); // vm1
+    String serverName = NetworkUtils.getServerHostName(Host.getHost(0));
+    if (isCachingProxy) {
+      createClientCache(serverName, port1, port2);
+    } else {
+      createEmptyClientCache(serverName, port1, port2);
+    }
+    if (isHA) {
+      // add another server for HA scenario
+      initServerCache(true, host.getVM(1), true);
+    }
+    String rName = "/" + REGION_NAME1;
+    String prName = "/" + PR_REGION_NAME;
+
+    verifyIsEmptyOnServer(rName, true);
+    verifyIsEmptyOnServer(prName, true);
+    int size = 10;
+    putIntoRegion(rName, size, isCachingProxy);
+    verifySizeOnServer(rName, size);
+
+    putIntoRegion(prName, size, isCachingProxy);
+    if (isHA) {
+      server1.invoke(() -> closeMyCache());
+    }
+    verifySizeOnServer(prName, size);
+
+    verifyIsEmptyOnServer(rName, false);
+    verifyIsEmptyOnServer(prName, false);
+
+    destroyEntries(rName, size);
+    destroyEntries(prName, size);
+
+    verifyIsEmptyOnServer(rName, true);
+    verifyIsEmptyOnServer(prName, true);
+    verifySizeOnServer(rName, 0);
+    verifySizeOnServer(prName, 0);
+  }
+
+  private void putIntoRegion(String regionName, int size, boolean isCachingProxy) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+    for (int i = 0; i < size; i++) {
+      region.put(i, i);
+    }
+
+    if (isCachingProxy) {
+      for (int i = 0; i < size; i++) {
+        region.localDestroy(i, i);
+      }
+    }
+  }
+
+  private void destroyEntries(String regionName, int size) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+
+    for (int i = 0; i < size; i++) {
+      region.destroy(i);
+    }
+  }
+
+  private void verifySizeOnServer(String regionName, int expectedSize) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+    int actualSize = region.sizeOnServer();
+    assertEquals(
+        "sizeOnServer returns unexpected " + actualSize + " instead of expected " + expectedSize,
+        expectedSize, actualSize);
+  }
+
+  private void verifyIsEmptyOnServer(String regionName, boolean expected) {
+    Cache cache = getCache();
+    final Region region = cache.getRegion(regionName);
+    boolean isEmptyOnServer = region.isEmptyOnServer();
+    assertEquals("isEmptyOnServer returns unexpected " + isEmptyOnServer + " instead of expected "
+        + expected, expected, isEmptyOnServer);
+  }
+
+  private void closeMyCache() {
+    Cache cache = getCache();
+    cache.close();
   }
 
 }

@@ -11,19 +11,15 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package org.apache.geode.tools.pulse.tests.rules;
 
-
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.awaitility.Awaitility;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.management.internal.JettyHelper;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.tests.Server;
-
+import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;

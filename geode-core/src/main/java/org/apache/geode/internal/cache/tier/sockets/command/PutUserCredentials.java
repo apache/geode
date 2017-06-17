@@ -21,6 +21,7 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class PutUserCredentials extends BaseCommand {
@@ -32,39 +33,41 @@ public class PutUserCredentials extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
-    boolean isSecureMode = msg.isSecureMode();
+    boolean isSecureMode = clientMessage.isSecureMode();
 
     // if (!isSecureMode)
     // client has not send secuirty header, need to send exception and log this in security (file)
 
     if (isSecureMode) {
 
-      int numberOfParts = msg.getNumberOfParts();
+      int numberOfParts = clientMessage.getNumberOfParts();
 
       if (numberOfParts == 1) {
         // need to get credentials
         try {
-          servConn.setAsTrue(REQUIRES_RESPONSE);
-          byte[] uniqueId = servConn.setCredentials(msg);
-          writeResponse(uniqueId, null, msg, false, servConn);
+          serverConnection.setAsTrue(REQUIRES_RESPONSE);
+          byte[] uniqueId = serverConnection.setCredentials(clientMessage);
+          writeResponse(uniqueId, null, clientMessage, false, serverConnection);
         } catch (GemFireSecurityException gfse) {
-          if (servConn.getSecurityLogWriter().warningEnabled()) {
-            servConn.getSecurityLogWriter().warning(LocalizedStrings.ONE_ARG, servConn.getName()
-                + ": Security exception: " + gfse.toString()
-                + (gfse.getCause() != null ? ", caused by: " + gfse.getCause().toString() : ""));
+          if (serverConnection.getSecurityLogWriter().warningEnabled()) {
+            serverConnection.getSecurityLogWriter().warning(LocalizedStrings.ONE_ARG,
+                serverConnection.getName() + ": Security exception: " + gfse.toString()
+                    + (gfse.getCause() != null ? ", caused by: " + gfse.getCause().toString()
+                        : ""));
           }
-          writeException(msg, gfse, false, servConn);
+          writeException(clientMessage, gfse, false, serverConnection);
         } catch (Exception ex) {
-          if (servConn.getLogWriter().warningEnabled()) {
-            servConn.getLogWriter().warning(
+          if (serverConnection.getLogWriter().warningEnabled()) {
+            serverConnection.getLogWriter().warning(
                 LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
-                new Object[] {servConn.getProxyID(), ""}, ex);
+                new Object[] {serverConnection.getProxyID(), ""}, ex);
           }
-          writeException(msg, ex, false, servConn);
+          writeException(clientMessage, ex, false, serverConnection);
         } finally {
-          servConn.setAsTrue(RESPONDED);
+          serverConnection.setAsTrue(RESPONDED);
         }
 
       } else {

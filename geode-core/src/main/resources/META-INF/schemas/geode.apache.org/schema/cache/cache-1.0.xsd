@@ -60,7 +60,7 @@ declarative caching XML file elements unless indicated otherwise.
 
 - In elements whose value is an "enumerated type", the value is case
   sensitive.
-  
+
   ]]></xsd:documentation>
   </xsd:annotation>
 
@@ -1191,6 +1191,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
         </xsd:complexType>
       </xsd:element>
     </xsd:choice>
+    <xsd:attribute name="socket-connect-timeout" type="xsd:string" use="optional" />
     <xsd:attribute name="free-connection-timeout" type="xsd:string" use="optional" />
     <xsd:attribute name="load-conditioning-interval" type="xsd:string" use="optional" />
     <xsd:attribute name="min-connections" type="xsd:string" use="optional" />

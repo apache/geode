@@ -22,12 +22,14 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -222,7 +224,9 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
       });
     }
 
-    assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetLoad());
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(30, TimeUnit.SECONDS)
+        .until(() -> assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetLoad()));
   }
 
   /**

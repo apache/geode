@@ -14,17 +14,19 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;
 
@@ -34,8 +36,6 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * 
- * 
  * @since GemFire 7.0
  */
 public class CommandProcessor {
@@ -49,16 +49,18 @@ public class CommandProcessor {
 
   private volatile boolean isStopped = false;
 
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private final SecurityService securityService;
 
   public CommandProcessor() throws ClassNotFoundException, IOException {
-    this(null);
+    this(null, SecurityServiceFactory.create());
   }
 
-  public CommandProcessor(Properties cacheProperties) throws ClassNotFoundException, IOException {
-    this.gfshParser = new GfshParser(cacheProperties);
+  public CommandProcessor(Properties cacheProperties, SecurityService securityService)
+      throws ClassNotFoundException, IOException {
+    this.gfshParser = new GfshParser(new CommandManager(cacheProperties));
     this.executionStrategy = new RemoteExecutionStrategy();
     this.logWrapper = LogWrapper.getInstance();
+    this.securityService = securityService;
   }
 
   protected RemoteExecutionStrategy getExecutionStrategy() {
@@ -108,7 +110,10 @@ public class CommandProcessor {
         // do general authorization check here
         Method method = parseResult.getMethod();
         ResourceOperation resourceOperation = method.getAnnotation(ResourceOperation.class);
-        this.securityService.authorize(resourceOperation);
+        if (resourceOperation != null) {
+          this.securityService.authorize(resourceOperation.resource(),
+              resourceOperation.operation(), resourceOperation.target(), ResourcePermission.ALL);
+        }
 
         result = executionStrategy.execute(parseResult);
         if (result instanceof Result) {

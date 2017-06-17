@@ -86,12 +86,6 @@ import joptsimple.OptionSet;
 @SuppressWarnings({"unused"})
 public class LocatorLauncher extends AbstractLauncher<String> {
 
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
-  public static final Integer DEFAULT_LOCATOR_PORT = getDefaultLocatorPort();
-
   private static final Boolean DEFAULT_LOAD_SHARED_CONFIG_FROM_DIR = Boolean.FALSE;
 
   private static final Map<String, String> helpMap = new HashMap<>();
@@ -136,12 +130,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         "stop [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
     usageMap.put(Command.VERSION, "version");
   }
-
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
-  public static final String DEFAULT_LOCATOR_PID_FILE = "vf.gf.locator.pid";
 
   private static final String DEFAULT_LOCATOR_LOG_EXT = ".log";
   private static final String DEFAULT_LOCATOR_LOG_NAME = "locator";
@@ -243,7 +231,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
     this.hostnameForClients = builder.getHostnameForClients();
     this.memberName = builder.getMemberName();
-    // TODO:KIRK: set ThreadLocal for LogService with getLogFile or getLogFileName
     this.pid = builder.getPid();
     this.portSpecified = builder.isPortSpecified();
     this.port = builder.getPort();
@@ -649,7 +636,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         // TODO : remove the extra param for loadFromSharedConfigDir
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
-              getBindAddress(), getDistributedSystemProperties(), getHostnameForClients());
+              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
         } finally {
           ProcessLauncherContext.remove();
         }
@@ -1080,20 +1067,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     } catch (UnableToControlProcessException e) {
       return createNoResponseState(e,
           "Failed to communicate with locator with process id " + getPid());
-    }
-  }
-
-  @Deprecated
-  private LocatorState stopWithPort() {
-    try {
-      new TcpClient().stop(getBindAddress(), getPort());
-      return new LocatorState(this, Status.STOPPED);
-    } catch (ConnectException e) {
-      if (getBindAddress() == null) {
-        return createNoResponseState(e, "Failed to connect to locator on port " + getPort());
-      } else {
-        return createNoResponseState(e, "Failed to connect to locator on " + getId());
-      }
     }
   }
 
@@ -2011,6 +1984,18 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         throw new IllegalArgumentException(
             "Unable to create LocatorStatus from JSON: ".concat(json), e);
       }
+    }
+
+    public static LocatorState fromDirectory(final String workingDirectory,
+        final String memberName) {
+      LocatorState locatorState =
+          new LocatorLauncher.Builder().setWorkingDirectory(workingDirectory).build().status();
+
+      if (ObjectUtils.equals(locatorState.getMemberName(), memberName)) {
+        return locatorState;
+      }
+
+      return new LocatorState(new LocatorLauncher.Builder().build(), Status.NOT_RESPONDING);
     }
 
     public LocatorState(final LocatorLauncher launcher, final Status status) {

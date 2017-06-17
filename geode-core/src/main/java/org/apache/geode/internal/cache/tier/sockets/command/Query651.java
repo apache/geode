@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 
 public class Query651 extends BaseCommandQuery {
 
@@ -44,40 +45,41 @@ public class Query651 extends BaseCommandQuery {
   protected Query651() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
 
     // Based on MessageType.DESTROY
     // Added by gregp 10/18/05
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
     // Retrieve the data from the message parts
-    String queryString = msg.getPart(0).getString();
+    String queryString = clientMessage.getPart(0).getString();
     long compiledQueryId = 0;
     Object[] queryParams = null;
     try {
-      if (msg.getMessageType() == MessageType.QUERY_WITH_PARAMETERS) {
+      if (clientMessage.getMessageType() == MessageType.QUERY_WITH_PARAMETERS) {
         // Query with parameters supported from 6.6 onwards.
-        int params = msg.getPart(1).getInt(); // Number of parameters.
+        int params = clientMessage.getPart(1).getInt(); // Number of parameters.
         // In case of native client there will be extra two parameters at 2 and 3 index.
         int paramStartIndex = 2;
-        if (msg.getNumberOfParts() > (1 /* type */ + 1 /* query string */ + 1 /* params length */
-            + params /* number of params */)) {
-          int timeout = msg.getPart(3).getInt();
-          servConn.setRequestSpecificTimeout(timeout);
+        if (clientMessage
+            .getNumberOfParts() > (1 /* type */ + 1 /* query string */ + 1 /* params length */
+                + params /* number of params */)) {
+          int timeout = clientMessage.getPart(3).getInt();
+          serverConnection.setRequestSpecificTimeout(timeout);
           paramStartIndex = 4;
         }
         // Get the query execution parameters.
         queryParams = new Object[params];
         for (int i = 0; i < queryParams.length; i++) {
-          queryParams[i] = msg.getPart(i + paramStartIndex).getObject();
+          queryParams[i] = clientMessage.getPart(i + paramStartIndex).getObject();
         }
       } else {
         // this is optional part for message specific timeout, which right now send by native client
         // need to take care while adding new message
-        if (msg.getNumberOfParts() == 3) {
-          int timeout = msg.getPart(2).getInt();
-          servConn.setRequestSpecificTimeout(timeout);
+        if (clientMessage.getNumberOfParts() == 3) {
+          int timeout = clientMessage.getPart(2).getInt();
+          serverConnection.setRequestSpecificTimeout(timeout);
         }
       }
     } catch (ClassNotFoundException cne) {
@@ -85,19 +87,19 @@ public class Query651 extends BaseCommandQuery {
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received query request from {} queryString: {}{}", servConn.getName(),
-          servConn.getSocketString(), queryString,
+      logger.debug("{}: Received query request from {} queryString: {}{}",
+          serverConnection.getName(), serverConnection.getSocketString(), queryString,
           (queryParams != null ? (" with num query parameters :" + queryParams.length) : ""));
     }
     try {
       // Create query
       QueryService queryService =
-          servConn.getCachedRegionHelper().getCache().getLocalQueryService();
+          serverConnection.getCachedRegionHelper().getCache().getLocalQueryService();
       org.apache.geode.cache.query.Query query = null;
 
       if (queryParams != null) {
         // Its a compiled query.
-        CacheClientNotifier ccn = servConn.getAcceptor().getCacheClientNotifier();
+        CacheClientNotifier ccn = serverConnection.getAcceptor().getCacheClientNotifier();
         query = ccn.getCompiledQuery(queryString);
         if (query == null) {
           // This is first time the query is seen by this server.
@@ -114,7 +116,7 @@ public class Query651 extends BaseCommandQuery {
 
       // Authorization check
       QueryOperationContext queryContext = null;
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         queryContext = authzRequest.queryAuthorize(queryString, regionNames, queryParams);
         String newQueryString = queryContext.getQuery();
@@ -128,8 +130,8 @@ public class Query651 extends BaseCommandQuery {
         }
       }
 
-      processQueryUsingParams(msg, query, queryString, regionNames, start, null, queryContext,
-          servConn, true, queryParams);
+      processQueryUsingParams(clientMessage, query, queryString, regionNames, start, null,
+          queryContext, serverConnection, true, queryParams, securityService);
     } catch (QueryInvalidException e) {
       throw new QueryInvalidException(e.getMessage() + queryString);
     }

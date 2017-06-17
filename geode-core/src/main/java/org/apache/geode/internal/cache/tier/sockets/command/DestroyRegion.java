@@ -23,7 +23,6 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -45,15 +44,15 @@ public class DestroyRegion extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null;
     Part eventPart = null;
-    StringBuffer errMessage = new StringBuffer();
-    CacheServerStats stats = servConn.getCacheServerStats();
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    StringBuilder errMessage = new StringBuilder();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
     {
       long oldStart = start;
@@ -61,11 +60,11 @@ public class DestroyRegion extends BaseCommand {
       stats.incReadDestroyRegionRequestTime(start - oldStart);
     }
     // Retrieve the data from the message parts
-    regionNamePart = msg.getPart(0);
-    eventPart = msg.getPart(1);
+    regionNamePart = clientMessage.getPart(0);
+    eventPart = clientMessage.getPart(1);
     // callbackArgPart = null; (redundant assignment)
-    if (msg.getNumberOfParts() > 2) {
-      callbackArgPart = msg.getPart(2);
+    if (clientMessage.getNumberOfParts() > 2) {
+      callbackArgPart = clientMessage.getPart(2);
       try {
         callbackArg = callbackArgPart.getObject();
       } catch (DistributedSystemDisconnectedException se) {
@@ -73,47 +72,48 @@ public class DestroyRegion extends BaseCommand {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{} ignoring message of type {} from client {} because shutdown occurred during message processing.",
-              servConn.getName(), MessageType.getString(msg.getMessageType()),
-              servConn.getProxyID());
+              serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
+              serverConnection.getProxyID());
         }
 
-        servConn.setFlagProcessMessagesAsFalse();
-        servConn.setClientDisconnectedException(se);
+        serverConnection.setFlagProcessMessagesAsFalse();
+        serverConnection.setClientDisconnectedException(se);
         return;
       } catch (Exception e) {
-        writeException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
     regionName = regionNamePart.getString();
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received destroy region request ({} bytes) from {} for region {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName);
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), regionName);
     }
 
     // Process the destroy region request
     if (regionName == null) {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.DestroyRegion_0_THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REGION_REQUEST_IS_NULL,
-          servConn.getName()));
+          serverConnection.getName()));
       errMessage.append(
           LocalizedStrings.DestroyRegion__THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REGION_REQUEST_IS_NULL
               .toLocalizedString());
 
-      writeErrorResponse(msg, MessageType.DESTROY_REGION_DATA_ERROR, errMessage.toString(),
-          servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.DESTROY_REGION_DATA_ERROR,
+          errMessage.toString(), serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason =
           LocalizedStrings.DestroyRegion_REGION_WAS_NOT_FOUND_DURING_DESTROY_REGION_REQUEST
               .toLocalizedString();
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -121,45 +121,46 @@ public class DestroyRegion extends BaseCommand {
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
     long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+    EventID eventId =
+        new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
 
     try {
       // user needs to have data:manage on all regions in order to destory a particular region
-      this.securityService.authorizeDataManage();
+      securityService.authorizeDataManage();
 
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         RegionDestroyOperationContext destroyContext =
             authzRequest.destroyRegionAuthorize(regionName, callbackArg);
         callbackArg = destroyContext.getCallbackArg();
       }
       // region.destroyRegion(callbackArg);
-      region.basicBridgeDestroyRegion(callbackArg, servConn.getProxyID(),
+      region.basicBridgeDestroyRegion(callbackArg, serverConnection.getProxyID(),
           true /* boolean from cache Client */, eventId);
     } catch (DistributedSystemDisconnectedException e) {
       // FIXME better exception hierarchy would avoid this check
-      if (servConn.getCachedRegionHelper().getCache().getCancelCriterion()
+      if (serverConnection.getCachedRegionHelper().getCache().getCancelCriterion()
           .cancelInProgress() != null) {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{} ignoring message of type {} from client {} because shutdown occurred during message processing.",
-              servConn.getName(), MessageType.getString(msg.getMessageType()),
-              servConn.getProxyID());
+              serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
+              serverConnection.getProxyID());
         }
-        servConn.setFlagProcessMessagesAsFalse();
-        servConn.setClientDisconnectedException(e);
+        serverConnection.setFlagProcessMessagesAsFalse();
+        serverConnection.setClientDisconnectedException(e);
       } else {
-        writeException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
       }
       return;
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, e);
+      checkForInterrupt(serverConnection, e);
 
       // Otherwise, write an exception message and continue
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -169,10 +170,10 @@ public class DestroyRegion extends BaseCommand {
       start = DistributionStats.getStatTime();
       stats.incProcessDestroyRegionTime(start - oldStart);
     }
-    writeReply(msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeReply(clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent destroy region response for region {}", servConn.getName(),
+      logger.debug("{}: Sent destroy region response for region {}", serverConnection.getName(),
           regionName);
     }
     stats.incWriteDestroyRegionResponseTime(DistributionStats.getStatTime() - start);

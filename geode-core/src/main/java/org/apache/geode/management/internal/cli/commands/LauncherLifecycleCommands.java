@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_S
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
@@ -39,103 +40,76 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_TERM_NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__PASSWORD;
+import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getDistributedSystemMXBean;
+import static org.apache.geode.management.internal.cli.util.HostUtils.getLocatorId;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
-import org.apache.geode.distributed.AbstractLauncher.ServiceState;
-import org.apache.geode.distributed.AbstractLauncher.Status;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.signal.SignalEvent;
 import org.apache.geode.internal.process.signal.SignalListener;
 import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
-import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.cli.util.CauseFinder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
-import org.apache.geode.management.internal.cli.util.JConsoleNotFoundException;
+import org.apache.geode.management.internal.cli.util.HostUtils;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
-import org.apache.geode.management.internal.cli.util.VisualVmNotFoundException;
-import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
-import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
-import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
@@ -147,14 +121,12 @@ import javax.net.ssl.SSLHandshakeException;
  *
  * @see org.apache.geode.distributed.LocatorLauncher
  * @see org.apache.geode.distributed.ServerLauncher
- * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ * @see GfshCommand
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public class LauncherLifecycleCommands extends AbstractCommandsSupport {
-
-  private static final String LOCATOR_TERM_NAME = "Locator";
+public class LauncherLifecycleCommands implements GfshCommand {
   private static final String SERVER_TERM_NAME = "Server";
 
   private static final long PROCESS_STREAM_READER_JOIN_TIMEOUT_MILLIS = 30 * 1000;
@@ -163,14 +135,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   private static final long WAITING_FOR_PID_FILE_TO_CONTAIN_PID_TIMEOUT_MILLIS = 2 * 1000;
 
   protected static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
-  protected static final int DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS = 5000;
   protected static final int INVALID_PID = -1;
   protected static final int MINIMUM_HEAP_FREE_RATIO = 10;
-  protected static final int NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS = 3;
 
   protected static final String GEODE_HOME = System.getenv("GEODE_HOME");
   protected static final String JAVA_HOME = System.getProperty("java.home");
-  protected static final String LOCALHOST = "localhost";
 
   // MUST CHANGE THIS TO REGEX SINCE VERSION CHANGES IN JAR NAME
   protected static final String GEODE_JAR_PATHNAME =
@@ -198,10 +167,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_LOCATOR__FORCE, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.START_LOCATOR__FORCE__HELP) final Boolean force,
-      @CliOption(key = CliStrings.START_LOCATOR__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = CliStrings.GROUP, optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.START_LOCATOR__GROUP__HELP) final String group,
       @CliOption(key = CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS,
           help = CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS__HELP) final String hostnameForClients,
+      @CliOption(key = ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
+          help = CliStrings.START_LOCATOR__JMX_MANAGER_HOSTNAME_FOR_CLIENTS__HELP) final String jmxManagerHostnameForClients,
       @CliOption(key = CliStrings.START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
           help = CliStrings.START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH__HELP) final Boolean includeSystemClasspath,
@@ -228,7 +199,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           help = CliStrings.START_LOCATOR__INITIALHEAP__HELP) final String initialHeap,
       @CliOption(key = CliStrings.START_LOCATOR__MAXHEAP,
           help = CliStrings.START_LOCATOR__MAXHEAP__HELP) final String maxHeap,
-      @CliOption(key = CliStrings.START_LOCATOR__J,
+      @CliOption(key = CliStrings.START_LOCATOR__J, optionContext = GfshParser.J_OPTION_CONTEXT,
           help = CliStrings.START_LOCATOR__J__HELP) final String[] jvmArgsOpts,
       @CliOption(key = CliStrings.START_LOCATOR__CONNECT, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
@@ -278,20 +249,20 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
       Properties gemfireProperties = new Properties();
 
-      gemfireProperties.setProperty(GROUPS, StringUtils.defaultString(group));
-      gemfireProperties.setProperty(LOCATORS, StringUtils.defaultString(locators));
-      gemfireProperties.setProperty(LOG_LEVEL, StringUtils.defaultString(logLevel));
-      gemfireProperties.setProperty(MCAST_ADDRESS, StringUtils.defaultString(mcastBindAddress));
-      gemfireProperties.setProperty(MCAST_PORT, StringUtils.defaultString(mcastPort));
-      gemfireProperties.setProperty(ENABLE_CLUSTER_CONFIGURATION,
-          StringUtils.defaultString(enableSharedConfiguration));
-      gemfireProperties.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
-          StringUtils.defaultString(loadSharedConfigurationFromDirectory));
-      gemfireProperties.setProperty(CLUSTER_CONFIGURATION_DIR,
-          StringUtils.defaultString(clusterConfigDir));
-      gemfireProperties.setProperty(HTTP_SERVICE_PORT, StringUtils.defaultString(httpServicePort));
-      gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS,
-          StringUtils.defaultString(httpServiceBindAddress));
+      setPropertyIfNotNull(gemfireProperties, GROUPS, group);
+      setPropertyIfNotNull(gemfireProperties, LOCATORS, locators);
+      setPropertyIfNotNull(gemfireProperties, LOG_LEVEL, logLevel);
+      setPropertyIfNotNull(gemfireProperties, MCAST_ADDRESS, mcastBindAddress);
+      setPropertyIfNotNull(gemfireProperties, MCAST_PORT, mcastPort);
+      setPropertyIfNotNull(gemfireProperties, ENABLE_CLUSTER_CONFIGURATION,
+          enableSharedConfiguration);
+      setPropertyIfNotNull(gemfireProperties, LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
+          loadSharedConfigurationFromDirectory);
+      setPropertyIfNotNull(gemfireProperties, CLUSTER_CONFIGURATION_DIR, clusterConfigDir);
+      setPropertyIfNotNull(gemfireProperties, HTTP_SERVICE_PORT, httpServicePort);
+      setPropertyIfNotNull(gemfireProperties, HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
+      setPropertyIfNotNull(gemfireProperties, JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
+          jmxManagerHostnameForClients);
 
 
       // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
@@ -353,7 +324,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                 new File(locatorLauncher.getWorkingDirectory()))),
             null);
 
-        locatorState = locatorStatus(workingDirectory, memberName);
+        locatorState = LocatorState.fromDirectory(workingDirectory, memberName);
         do {
           if (locatorProcess.isAlive()) {
             Gfsh.print(".");
@@ -362,11 +333,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            locatorState = locatorStatus(workingDirectory, memberName);
+            locatorState = LocatorState.fromDirectory(workingDirectory, memberName);
 
             String currentLocatorStatusMessage = locatorState.getStatusMessage();
 
-            if (isStartingOrNotResponding(locatorState.getStatus())
+            if (locatorState.isStartingOrNotResponding()
                 && !(StringUtils.isBlank(currentLocatorStatusMessage)
                     || currentLocatorStatusMessage.equalsIgnoreCase(previousLocatorStatusMessage)
                     || currentLocatorStatusMessage.trim().toLowerCase().equals("null"))) {
@@ -382,7 +353,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                     exitValue, locatorLauncher.getWorkingDirectory(), message.toString()));
           }
         } while (!(registeredLocatorSignalListener && locatorSignalListener.isSignaled())
-            && isStartingOrNotResponding(locatorState.getStatus()));
+            && locatorState.isStartingOrNotResponding());
       } finally {
         stderrReader.stopAsync(PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop will close
                                                                                  // ErrorStream
@@ -391,8 +362,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
       Gfsh.println();
 
-      final boolean asyncStart = (registeredLocatorSignalListener
-          && locatorSignalListener.isSignaled() && isStartingNotRespondingOrNull(locatorState));
+      final boolean asyncStart =
+          (registeredLocatorSignalListener && locatorSignalListener.isSignaled()
+              && ServerState.isStartingNotRespondingOrNull(locatorState));
 
       InfoResultData infoResultData = ResultBuilder.createInfoResultData();
 
@@ -407,8 +379,8 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         if (bindAddr != null) {
           locatorHostName = bindAddr.getCanonicalHostName();
         } else {
-          locatorHostName =
-              StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(), getLocalHost());
+          locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(),
+              HostUtils.getLocalHost());
         }
 
         int locatorPort = Integer.parseInt(locatorState.getPort());
@@ -423,8 +395,8 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
         // Report on the state of the Shared Configuration service if enabled...
         if (enableSharedConfiguration) {
-          infoResultData
-              .addLine(getSharedConfigurationStatusFromLocator(locatorHostName, locatorPort));
+          infoResultData.addLine(
+              ClusterConfigurationStatusRetriever.fromLocator(locatorHostName, locatorPort));
         }
       }
 
@@ -452,6 +424,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       return ResultBuilder.createShellClientErrorResult(errorMessage);
     } finally {
       Gfsh.redirectInternalJavaLoggers();
+    }
+  }
+
+  private void setPropertyIfNotNull(Properties properties, String key, Object value) {
+    if (key != null && value != null) {
+      properties.setProperty(key, value.toString());
     }
   }
 
@@ -656,226 +634,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return configurationProperties;
   }
 
-  private String getSharedConfigurationStatusFromLocatorState(LocatorState locatorState)
-      throws ClassNotFoundException, IOException {
-    return getSharedConfigurationStatusFromLocator(locatorState.getHost(),
-        Integer.parseInt(locatorState.getPort()));
-  }
-
-  private String getSharedConfigurationStatusFromLocator(String locatorHostName, int locatorPort)
-      throws ClassNotFoundException, IOException {
-    final StringBuilder buffer = new StringBuilder();
-
-    try {
-      final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
-      InetSocketAddress inetSockAddr = new InetSocketAddress(networkAddress, locatorPort);
-
-      TcpClient client = new TcpClient();
-      SharedConfigurationStatusResponse statusResponse = (SharedConfigurationStatusResponse) client
-          .requestToServer(inetSockAddr, new SharedConfigurationStatusRequest(), 10000, true);
-
-      for (int i = 0; i < NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS; i++) {
-        if (statusResponse.getStatus().equals(SharedConfigurationStatus.STARTED)
-            || statusResponse.getStatus().equals(SharedConfigurationStatus.NOT_STARTED)) {
-          statusResponse = (SharedConfigurationStatusResponse) client.requestToServer(inetSockAddr,
-              new SharedConfigurationStatusRequest(), 10000, true);
-          try {
-            Thread.sleep(5000);
-          } catch (InterruptedException e) {
-            // Swallow the exception
-          }
-        } else {
-          break;
-        }
-      }
-
-      switch (statusResponse.getStatus()) {
-        case RUNNING:
-          buffer.append("\nCluster configuration service is up and running.");
-          break;
-        case STOPPED:
-          buffer.append(
-              "\nCluster configuration service failed to start , please check the log file for errors.");
-          break;
-        case WAITING:
-          buffer.append(
-              "\nCluster configuration service is waiting for other locators with newer shared configuration data.");
-          Set<PersistentMemberPattern> pmpSet = statusResponse.getOtherLocatorInformation();
-          if (!pmpSet.isEmpty()) {
-            buffer.append("\nThis locator might have stale cluster configuration data.");
-            buffer.append(
-                "\nFollowing locators contain potentially newer cluster configuration data");
-
-            for (PersistentMemberPattern pmp : pmpSet) {
-              buffer.append("\nHost : ").append(pmp.getHost());
-              buffer.append("\nDirectory : ").append(pmp.getDirectory());
-            }
-          } else {
-            buffer.append("\nPlease check the log file for errors");
-          }
-          break;
-        case UNDETERMINED:
-          buffer.append(
-              "\nUnable to determine the status of shared configuration service, please check the log file");
-          break;
-        case NOT_STARTED:
-          buffer.append("\nCluster configuration service has not been started yet");
-          break;
-        case STARTED:
-          buffer
-              .append("\nCluster configuration service has been started, but its not running yet");
-          break;
-      }
-    } catch (Exception e) {
-      // TODO fix this once Trac Bug #50513 gets fixed
-      // NOTE this ClassCastException occurs if the a plain text TCP/IP connection is used to
-      // connect to a Locator
-      // configured with SSL.
-      getGfsh().logToFile(String.format(
-          "Failed to get the status of the Shared Configuration Service running on Locator (%1$s[%2$d])!",
-          locatorHostName, locatorPort), e);
-    }
-
-    return buffer.toString();
-  }
-
-  @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
-  @CliMetaData(shellOnly = true,
-      relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result statusLocator(
-      @CliOption(key = CliStrings.STATUS_LOCATOR__MEMBER,
-          optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
-          help = CliStrings.STATUS_LOCATOR__MEMBER__HELP) final String member,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__HOST,
-          help = CliStrings.STATUS_LOCATOR__HOST__HELP) final String locatorHost,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__PORT,
-          help = CliStrings.STATUS_LOCATOR__PORT__HELP) final Integer locatorPort,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__PID,
-          help = CliStrings.STATUS_LOCATOR__PID__HELP) final Integer pid,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__DIR,
-          help = CliStrings.STATUS_LOCATOR__DIR__HELP) final String workingDirectory) {
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (isConnectedAndReady()) {
-          final MemberMXBean locatorProxy = getMemberMXBean(member);
-
-          if (locatorProxy != null) {
-            LocatorState state = LocatorState.fromJson(locatorProxy.status());
-            return createStatusLocatorResult(state);
-          } else {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
-          }
-        } else {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
-              CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
-        }
-      } else {
-        final LocatorLauncher locatorLauncher =
-            new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
-                .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid)
-                .setPort(locatorPort).setWorkingDirectory(workingDirectory).build();
-
-        final LocatorState state = locatorLauncher.status();
-        return createStatusLocatorResult(state);
-      }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STATUS_LOCATOR__GENERAL_ERROR_MESSAGE, getLocatorId(locatorHost, locatorPort),
-          StringUtils.defaultIfBlank(workingDirectory, SystemUtils.CURRENT_DIRECTORY),
-          toString(t, getGfsh().getDebug())));
-    }
-  }
-
-  @CliCommand(value = CliStrings.STOP_LOCATOR, help = CliStrings.STOP_LOCATOR__HELP)
-  @CliMetaData(shellOnly = true,
-      relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result stopLocator(
-      @CliOption(key = CliStrings.STOP_LOCATOR__MEMBER,
-          optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
-          help = CliStrings.STOP_LOCATOR__MEMBER__HELP) final String member,
-      @CliOption(key = CliStrings.STOP_LOCATOR__PID,
-          help = CliStrings.STOP_LOCATOR__PID__HELP) final Integer pid,
-      @CliOption(key = CliStrings.STOP_LOCATOR__DIR,
-          help = CliStrings.STOP_LOCATOR__DIR__HELP) final String workingDirectory) {
-    LocatorState locatorState;
-
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (isConnectedAndReady()) {
-          final MemberMXBean locatorProxy = getMemberMXBean(member);
-
-          if (locatorProxy != null) {
-            if (!locatorProxy.isLocator()) {
-              throw new IllegalStateException(
-                  CliStrings.format(CliStrings.STOP_LOCATOR__NOT_LOCATOR_ERROR_MESSAGE, member));
-            }
-
-            if (locatorProxy.isServer()) {
-              throw new IllegalStateException(CliStrings
-                  .format(CliStrings.STOP_LOCATOR__LOCATOR_IS_CACHE_SERVER_ERROR_MESSAGE, member));
-            }
-
-            locatorState = LocatorState.fromJson(locatorProxy.status());
-            locatorProxy.shutDownMember();
-          } else {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.STOP_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
-          }
-        } else {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
-              CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
-        }
-      } else {
-        final LocatorLauncher locatorLauncher =
-            new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STOP)
-                .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
-
-        locatorState = locatorLauncher.status();
-        locatorLauncher.stop();
-      }
-
-      if (Status.ONLINE.equals(locatorState.getStatus())) {
-        getGfsh().logInfo(
-            String.format(CliStrings.STOP_LOCATOR__STOPPING_LOCATOR_MESSAGE,
-                locatorState.getWorkingDirectory(), locatorState.getServiceLocation(),
-                locatorState.getMemberName(), locatorState.getPid(), locatorState.getLogFile()),
-            null);
-
-        StopWatch stopWatch = new StopWatch(true);
-        while (isVmWithProcessIdRunning(locatorState.getPid())) {
-          Gfsh.print(".");
-          if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
-            break;
-          }
-          synchronized (this) {
-            TimeUnit.MILLISECONDS.timedWait(this, 500);
-          }
-        }
-
-        return ResultBuilder.createInfoResult(StringUtils.EMPTY);
-      } else {
-        return ResultBuilder.createUserErrorResult(locatorState.toString());
-      }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STOP_LOCATOR__GENERAL_ERROR_MESSAGE, toString(t, getGfsh().getDebug())));
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
-    }
-  }
 
   // TODO re-evaluate whether a MalformedObjectNameException should be thrown here; just because we
   // were not able to find
@@ -892,14 +650,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
             .concat(LOCATORS).concat("=").concat(currentLocators));
       }
     }
-  }
-
-  protected Result createStatusLocatorResult(final LocatorState state)
-      throws NumberFormatException, IOException, ClassNotFoundException {
-    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-    infoResultData.addLine(state.toString());
-    infoResultData.addLine(getSharedConfigurationStatusFromLocatorState(state));
-    return ResultBuilder.buildResult(infoResultData);
   }
 
   protected void addGemFirePropertyFile(final List<String> commandLine,
@@ -975,46 +725,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     }
   }
 
-  protected LocatorState locatorStatus(final File locatorPidFile, final int oldPid,
-      final String memberName) {
-    final int newPid = readPid(locatorPidFile);
-
-    if (newPid != INVALID_PID && newPid != oldPid) {
-      LocatorState locatorState = new LocatorLauncher.Builder().setPid(newPid).build().status();
-
-      if (ObjectUtils.equals(locatorState.getMemberName(), memberName)) {
-        return locatorState;
-      }
-    }
-
-    return new LocatorState(new LocatorLauncher.Builder().build(), Status.NOT_RESPONDING);
-  }
-
-  protected LocatorState locatorStatus(final String workingDirectory, final String memberName) {
-    LocatorState locatorState =
-        new LocatorLauncher.Builder().setWorkingDirectory(workingDirectory).build().status();
-
-    if (ObjectUtils.equals(locatorState.getMemberName(), memberName)) {
-      return locatorState;
-    }
-
-    return new LocatorState(new LocatorLauncher.Builder().build(), Status.NOT_RESPONDING);
-  }
-
-  protected String readErrorStream(final Process process) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-    StringBuilder message = new StringBuilder();
-
-    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-      message.append(line);
-      message.append(StringUtils.LINE_SEPARATOR);
-    }
-
-    IOUtils.close(reader);
-
-    return message.toString();
-  }
-
   protected int readPid(final File pidFile) {
     assert pidFile != null : "The file from which to read the process ID (pid) cannot be null!";
 
@@ -1030,33 +740,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     }
 
     return INVALID_PID;
-  }
-
-  protected ServerState serverStatus(final File serverPidFile, final int oldPid,
-      final String memberName) {
-    final int newPid = readPid(serverPidFile);
-
-    if (newPid != INVALID_PID && newPid != oldPid) {
-      ServerState serverState = new ServerLauncher.Builder().setPid(newPid)
-          .setDisableDefaultServer(true).build().status();
-
-      if (ObjectUtils.equals(serverState.getMemberName(), memberName)) {
-        return serverState;
-      }
-    }
-
-    return new ServerState(new ServerLauncher.Builder().build(), Status.NOT_RESPONDING);
-  }
-
-  protected ServerState serverStatus(final String workingDirectory, final String memberName) {
-    ServerState serverState = new ServerLauncher.Builder().setWorkingDirectory(workingDirectory)
-        .setDisableDefaultServer(true).build().status();
-
-    if (ObjectUtils.equals(serverState.getMemberName(), memberName)) {
-      return serverState;
-    }
-
-    return new ServerState(new ServerLauncher.Builder().build(), Status.NOT_RESPONDING);
   }
 
   @Deprecated
@@ -1151,107 +834,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return new File(new File(JAVA_HOME, "bin"), "java").getPath();
   }
 
-  // TODO refactor the following method into a common base class or utility class
-  protected String getLocalHost() {
-    try {
-      return SocketCreator.getLocalHost().getCanonicalHostName();
-    } catch (UnknownHostException ignore) {
-      return LOCALHOST;
-    }
-  }
-
-  protected String getLocatorId(final String host, final Integer port) {
-    final String locatorHost = (host != null ? host : getLocalHost());
-    final String locatorPort =
-        StringUtils.defaultString(port, String.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT));
-    return locatorHost.concat("[").concat(locatorPort).concat("]");
-  }
-
-  /**
-   * Gets a proxy to the DistributedSystemMXBean from the GemFire Manager's MBeanServer, or null if
-   * unable to find the DistributedSystemMXBean.
-   * </p>
-   *
-   * @return a proxy to the DistributedSystemMXBean from the GemFire Manager's MBeanServer, or null
-   *         if unable to find the DistributedSystemMXBean.
-   */
-  protected DistributedSystemMXBean getDistributedSystemMXBean()
-      throws IOException, MalformedObjectNameException {
-    assertState(isConnectedAndReady(),
-        "Gfsh must be connected in order to get proxy to a GemFire DistributedSystemMXBean.");
-    return getGfsh().getOperationInvoker().getDistributedSystemMXBean();
-  }
-
-  /**
-   * Gets a proxy to the MemberMXBean for the GemFire member specified by member name or ID from the
-   * GemFire Manager's MBeanServer.
-   * </p>
-   *
-   * @param member a String indicating the GemFire member's name or ID.
-   * @return a proxy to the MemberMXBean having the specified GemFire member's name or ID from the
-   *         GemFire Manager's MBeanServer, or null if no GemFire member could be found with the
-   *         specified member name or ID.
-   * @see #getMemberMXBean(String, String)
-   */
-  protected MemberMXBean getMemberMXBean(final String member) throws IOException {
-    return getMemberMXBean(null, member);
-  }
-
-  protected MemberMXBean getMemberMXBean(final String serviceName, final String member)
-      throws IOException {
-    assertState(isConnectedAndReady(),
-        "Gfsh must be connected in order to get proxy to a GemFire Member MBean.");
-
-    MemberMXBean memberBean = null;
-
-    try {
-      String objectNamePattern = ManagementConstants.OBJECTNAME__PREFIX;
-
-      objectNamePattern += (StringUtils.isBlank(serviceName) ? StringUtils.EMPTY
-          : "service=" + serviceName + StringUtils.COMMA_DELIMITER);
-      objectNamePattern += "type=Member,*";
-
-      // NOTE throws a MalformedObjectNameException, however, this should not happen since the
-      // ObjectName is constructed
-      // here in a conforming pattern
-      final ObjectName objectName = ObjectName.getInstance(objectNamePattern);
-
-      final QueryExp query = Query.or(Query.eq(Query.attr("Name"), Query.value(member)),
-          Query.eq(Query.attr("Id"), Query.value(member)));
-
-      final Set<ObjectName> memberObjectNames =
-          getGfsh().getOperationInvoker().queryNames(objectName, query);
-
-      if (!memberObjectNames.isEmpty()) {
-        memberBean = getGfsh().getOperationInvoker()
-            .getMBeanProxy(memberObjectNames.iterator().next(), MemberMXBean.class);
-      }
-    } catch (MalformedObjectNameException e) {
-      getGfsh().logSevere(e.getMessage(), e);
-    }
-
-    return memberBean;
-  }
-
-  protected String getServerId(final String host, final Integer port) {
-    String serverHost = (host != null ? host : getLocalHost());
-    String serverPort = StringUtils.defaultString(port, String.valueOf(CacheServer.DEFAULT_PORT));
-    return serverHost.concat("[").concat(serverPort).concat("]");
-  }
-
-  protected boolean isStartingNotRespondingOrNull(final ServiceState serviceState) {
-    return (serviceState == null || isStartingOrNotResponding(serviceState.getStatus()));
-  }
-
-  protected boolean isStartingOrNotResponding(final Status processStatus) {
-    return (Status.NOT_RESPONDING.equals(processStatus) || Status.STARTING.equals(processStatus));
-  }
-
-  protected boolean isVmWithProcessIdRunning(final Integer pid) {
-    // note: this will use JNA if available or return false
-    return ProcessUtils.isProcessAlive(pid);
-  }
-
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
@@ -1291,16 +873,18 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_SERVER__FORCE, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__FORCE__HELP) final Boolean force,
-      @CliOption(key = CliStrings.START_SERVER__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = CliStrings.GROUP, optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.START_SERVER__GROUP__HELP) final String group,
       @CliOption(key = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS,
           help = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS__HELP) final String hostNameForClients,
+      @CliOption(key = ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
+          help = CliStrings.START_SERVER__JMX_MANAGER_HOSTNAME_FOR_CLIENTS__HELP) final String jmxManagerHostnameForClients,
       @CliOption(key = CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
           help = CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH__HELP) final Boolean includeSystemClasspath,
       @CliOption(key = CliStrings.START_SERVER__INITIAL_HEAP,
           help = CliStrings.START_SERVER__INITIAL_HEAP__HELP) final String initialHeap,
-      @CliOption(key = CliStrings.START_SERVER__J,
+      @CliOption(key = CliStrings.START_SERVER__J, optionContext = GfshParser.J_OPTION_CONTEXT,
           help = CliStrings.START_SERVER__J__HELP) final String[] jvmArgsOpts,
       @CliOption(key = CliStrings.START_SERVER__LOCATORS,
           optionContext = ConverterHint.LOCATOR_DISCOVERY_CONFIG,
@@ -1428,36 +1012,31 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
       Properties gemfireProperties = new Properties();
 
-      gemfireProperties.setProperty(BIND_ADDRESS, StringUtils.defaultString(bindAddress));
-      gemfireProperties.setProperty(CACHE_XML_FILE, StringUtils.defaultString(cacheXmlPathname));
-      gemfireProperties.setProperty(ENABLE_TIME_STATISTICS,
-          StringUtils.defaultString(enableTimeStatistics));
-      gemfireProperties.setProperty(GROUPS, StringUtils.defaultString(group));
-      gemfireProperties.setProperty(LOCATORS, StringUtils.defaultString(locators));
-      gemfireProperties.setProperty(LOCATOR_WAIT_TIME, StringUtils.defaultString(locatorWaitTime));
-      gemfireProperties.setProperty(LOG_LEVEL, StringUtils.defaultString(logLevel));
-      gemfireProperties.setProperty(MCAST_ADDRESS, StringUtils.defaultString(mcastBindAddress));
-      gemfireProperties.setProperty(MCAST_PORT, StringUtils.defaultString(mcastPort));
-      gemfireProperties.setProperty(MEMCACHED_PORT, StringUtils.defaultString(memcachedPort));
-      gemfireProperties.setProperty(MEMCACHED_PROTOCOL,
-          StringUtils.defaultString(memcachedProtocol));
-      gemfireProperties.setProperty(MEMCACHED_BIND_ADDRESS,
-          StringUtils.defaultString(memcachedBindAddress));
-      gemfireProperties.setProperty(REDIS_PORT, StringUtils.defaultString(redisPort));
-      gemfireProperties.setProperty(REDIS_BIND_ADDRESS,
-          StringUtils.defaultString(redisBindAddress));
-      gemfireProperties.setProperty(REDIS_PASSWORD, StringUtils.defaultString(redisPassword));
-      gemfireProperties.setProperty(STATISTIC_ARCHIVE_FILE,
-          StringUtils.defaultString(statisticsArchivePathname));
-      gemfireProperties.setProperty(USE_CLUSTER_CONFIGURATION,
-          StringUtils.defaultString(requestSharedConfiguration, Boolean.TRUE.toString()));
-      gemfireProperties.setProperty(LOCK_MEMORY, StringUtils.defaultString(lockMemory));
-      gemfireProperties.setProperty(OFF_HEAP_MEMORY_SIZE,
-          StringUtils.defaultString(offHeapMemorySize));
-      gemfireProperties.setProperty(START_DEV_REST_API, StringUtils.defaultString(startRestApi));
-      gemfireProperties.setProperty(HTTP_SERVICE_PORT, StringUtils.defaultString(httpServicePort));
-      gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS,
-          StringUtils.defaultString(httpServiceBindAddress));
+      setPropertyIfNotNull(gemfireProperties, BIND_ADDRESS, bindAddress);
+      setPropertyIfNotNull(gemfireProperties, CACHE_XML_FILE, cacheXmlPathname);
+      setPropertyIfNotNull(gemfireProperties, ENABLE_TIME_STATISTICS, enableTimeStatistics);
+      setPropertyIfNotNull(gemfireProperties, GROUPS, group);
+      setPropertyIfNotNull(gemfireProperties, JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
+          jmxManagerHostnameForClients);
+      setPropertyIfNotNull(gemfireProperties, LOCATORS, locators);
+      setPropertyIfNotNull(gemfireProperties, LOCATOR_WAIT_TIME, locatorWaitTime);
+      setPropertyIfNotNull(gemfireProperties, LOG_LEVEL, logLevel);
+      setPropertyIfNotNull(gemfireProperties, MCAST_ADDRESS, mcastBindAddress);
+      setPropertyIfNotNull(gemfireProperties, MCAST_PORT, mcastPort);
+      setPropertyIfNotNull(gemfireProperties, MEMCACHED_PORT, memcachedPort);
+      setPropertyIfNotNull(gemfireProperties, MEMCACHED_PROTOCOL, memcachedProtocol);
+      setPropertyIfNotNull(gemfireProperties, MEMCACHED_BIND_ADDRESS, memcachedBindAddress);
+      setPropertyIfNotNull(gemfireProperties, REDIS_PORT, redisPort);
+      setPropertyIfNotNull(gemfireProperties, REDIS_BIND_ADDRESS, redisBindAddress);
+      setPropertyIfNotNull(gemfireProperties, REDIS_PASSWORD, redisPassword);
+      setPropertyIfNotNull(gemfireProperties, STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
+      setPropertyIfNotNull(gemfireProperties, USE_CLUSTER_CONFIGURATION,
+          requestSharedConfiguration);
+      setPropertyIfNotNull(gemfireProperties, LOCK_MEMORY, lockMemory);
+      setPropertyIfNotNull(gemfireProperties, OFF_HEAP_MEMORY_SIZE, offHeapMemorySize);
+      setPropertyIfNotNull(gemfireProperties, START_DEV_REST_API, startRestApi);
+      setPropertyIfNotNull(gemfireProperties, HTTP_SERVICE_PORT, httpServicePort);
+      setPropertyIfNotNull(gemfireProperties, HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
       // if username is specified in the command line, it will overwrite what's set in the
       // properties file
       if (StringUtils.isNotBlank(userName)) {
@@ -1539,7 +1118,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                 new File(serverLauncher.getWorkingDirectory()))),
             null);
 
-        serverState = serverStatus(workingDirectory, memberName);
+        serverState = ServerState.fromDirectory(workingDirectory, memberName);
         do {
           if (serverProcess.isAlive()) {
             Gfsh.print(".");
@@ -1548,11 +1127,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            serverState = serverStatus(workingDirectory, memberName);
+            serverState = ServerState.fromDirectory(workingDirectory, memberName);
 
             String currentServerStatusMessage = serverState.getStatusMessage();
 
-            if (isStartingOrNotResponding(serverState.getStatus())
+            if (serverState.isStartingOrNotResponding()
                 && !(StringUtils.isBlank(currentServerStatusMessage)
                     || currentServerStatusMessage.equalsIgnoreCase(previousServerStatusMessage)
                     || currentServerStatusMessage.trim().toLowerCase().equals("null"))) {
@@ -1569,7 +1148,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
           }
         } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())
-            && isStartingOrNotResponding(serverState.getStatus()));
+            && serverState.isStartingOrNotResponding());
       } finally {
         stderrReader.stopAsync(PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop will close
                                                                                  // ErrorStream
@@ -1578,7 +1157,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
       Gfsh.println();
 
-      final boolean asyncStart = isStartingNotRespondingOrNull(serverState);
+      final boolean asyncStart = ServerState.isStartingNotRespondingOrNull(serverState);
 
       if (asyncStart) { // async start
         Gfsh.print(String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, SERVER_TERM_NAME));
@@ -1767,466 +1346,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return delimitedLocators;
   }
 
-  @CliCommand(value = CliStrings.STATUS_SERVER, help = CliStrings.STATUS_SERVER__HELP)
-  @CliMetaData(shellOnly = true,
-      relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result statusServer(
-      @CliOption(key = CliStrings.STATUS_SERVER__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STATUS_SERVER__MEMBER__HELP) final String member,
-      @CliOption(key = CliStrings.STATUS_SERVER__PID,
-          help = CliStrings.STATUS_SERVER__PID__HELP) final Integer pid,
-      @CliOption(key = CliStrings.STATUS_SERVER__DIR,
-          help = CliStrings.STATUS_SERVER__DIR__HELP) final String workingDirectory) {
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (isConnectedAndReady()) {
-          final MemberMXBean serverProxy = getMemberMXBean(member);
-
-          if (serverProxy != null) {
-            return ResultBuilder
-                .createInfoResult(ServerState.fromJson(serverProxy.status()).toString());
-          } else {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.STATUS_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
-          }
-        } else {
-          return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
-        }
-      } else {
-        final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-            .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
-            // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
-            // server when it was started,
-            // set the disableDefaultServer property in the ServerLauncher.Builder to default status
-            // to the MemberMBean
-            // TODO fix this hack! (how, the 'start server' loop needs it)
-            .setDisableDefaultServer(true).setMemberName(member).setPid(pid)
-            .setWorkingDirectory(workingDirectory).build();
-
-        final ServerState status = serverLauncher.status();
-
-        return ResultBuilder.createInfoResult(status.toString());
-      }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STATUS_SERVER__GENERAL_ERROR_MESSAGE, toString(t, getGfsh().getDebug())));
-    }
-  }
-
-  @CliCommand(value = CliStrings.STOP_SERVER, help = CliStrings.STOP_SERVER__HELP)
-  @CliMetaData(shellOnly = true,
-      relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result stopServer(
-      @CliOption(key = CliStrings.STOP_SERVER__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STOP_SERVER__MEMBER__HELP) final String member,
-      @CliOption(key = CliStrings.STOP_SERVER__PID,
-          help = CliStrings.STOP_SERVER__PID__HELP) final Integer pid,
-      @CliOption(key = CliStrings.STOP_SERVER__DIR,
-          help = CliStrings.STOP_SERVER__DIR__HELP) final String workingDirectory) {
-    ServerState serverState;
-
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (isConnectedAndReady()) {
-          final MemberMXBean serverProxy = getMemberMXBean(member);
-
-          if (serverProxy != null) {
-            if (!serverProxy.isServer()) {
-              throw new IllegalStateException(CliStrings
-                  .format(CliStrings.STOP_SERVER__MEMBER_IS_NOT_SERVER_ERROR_MESSAGE, member));
-            }
-
-            serverState = ServerState.fromJson(serverProxy.status());
-            serverProxy.shutDownMember();
-          } else {
-            return ResultBuilder.createUserErrorResult(CliStrings
-                .format(CliStrings.STOP_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
-          }
-        } else {
-          return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
-        }
-      } else {
-        final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-            .setCommand(ServerLauncher.Command.STOP).setDebug(isDebugging()).setMemberName(member)
-            .setPid(pid).setWorkingDirectory(workingDirectory).build();
-
-        serverState = serverLauncher.status();
-        serverLauncher.stop();
-      }
-
-      if (Status.ONLINE.equals(serverState.getStatus())) {
-        getGfsh().logInfo(
-            String.format(CliStrings.STOP_SERVER__STOPPING_SERVER_MESSAGE,
-                serverState.getWorkingDirectory(), serverState.getServiceLocation(),
-                serverState.getMemberName(), serverState.getPid(), serverState.getLogFile()),
-            null);
-
-        StopWatch stopWatch = new StopWatch(true);
-        while (isVmWithProcessIdRunning(serverState.getPid())) {
-          Gfsh.print(".");
-          if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
-            break;
-          }
-          synchronized (this) {
-            TimeUnit.MILLISECONDS.timedWait(this, 500);
-          }
-        }
-
-        return ResultBuilder.createInfoResult(StringUtils.EMPTY);
-      } else {
-        return ResultBuilder.createUserErrorResult(serverState.toString());
-      }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STOP_SERVER__GENERAL_ERROR_MESSAGE, toString(t, getGfsh().getDebug())));
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
-    }
-  }
-
-  // @CliCommand(value=CliStrings.START_MANAGER, help=CliStrings.START_MANAGER__HELP)
-  // @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
-  // CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result startManager(
-      @CliOption(key = CliStrings.START_MANAGER__MEMBERNAME,
-          help = CliStrings.START_MANAGER__MEMBERNAME__HELP) String memberName,
-      @CliOption(key = CliStrings.START_MANAGER__DIR,
-          help = CliStrings.START_MANAGER__DIR__HELP) String dir,
-      @CliOption(key = CliStrings.START_MANAGER__PORT, unspecifiedDefaultValue = "1099",
-          help = CliStrings.START_MANAGER__PORT__HELP) int cacheServerPort,
-      @CliOption(key = CliStrings.START_MANAGER__BIND_ADDRESS,
-          unspecifiedDefaultValue = "localhost",
-          help = CliStrings.START_MANAGER__BIND_ADDRESS__HELP) String cacheServerHost,
-      @CliOption(key = CliStrings.START_MANAGER__CLASSPATH,
-          help = CliStrings.START_MANAGER__CLASSPATH__HELP) String classpath,
-      @CliOption(key = CliStrings.START_MANAGER__MAXHEAP,
-          help = CliStrings.START_MANAGER__MAXHEAP__HELP) String maxHeap,
-      @CliOption(key = CliStrings.START_MANAGER__INITIALHEAP,
-          help = CliStrings.START_MANAGER__INITIALHEAP__HELP) String initialHeap,
-      @CliOption(key = CliStrings.START_MANAGER__J,
-          help = CliStrings.START_MANAGER__J__HELP) Map<String, String> systepProps,
-      @CliOption(key = CliStrings.START_MANAGER__GEODEPROPS,
-          help = CliStrings.START_MANAGER__GEODEPROPS__HELP) Map<String, String> gemfireProps) {
-    return ResultBuilder.createInfoResult("Not-implemented");
-  }
-
-  @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
-      CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  public Result startJConsole(
-      @CliOption(key = CliStrings.START_JCONSOLE__INTERVAL, unspecifiedDefaultValue = "4",
-          help = CliStrings.START_JCONSOLE__INTERVAL__HELP) final int interval,
-      @CliOption(key = CliStrings.START_JCONSOLE__NOTILE, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
-          help = CliStrings.START_JCONSOLE__NOTILE__HELP) final boolean notile,
-      @CliOption(key = CliStrings.START_JCONSOLE__PLUGINPATH,
-          help = CliStrings.START_JCONSOLE__PLUGINPATH__HELP) final String pluginpath,
-      @CliOption(key = CliStrings.START_JCONSOLE__VERSION, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
-          help = CliStrings.START_JCONSOLE__VERSION__HELP) final boolean version,
-      @CliOption(key = CliStrings.START_JCONSOLE__J,
-          help = CliStrings.START_JCONSOLE__J__HELP) final List<String> jvmArgs) {
-    try {
-      String[] jconsoleCommandLine =
-          createJConsoleCommandLine(null, interval, notile, pluginpath, version, jvmArgs);
-
-      if (isDebugging()) {
-        getGfsh().printAsInfo(
-            String.format("JConsole command-line ($1%s)", Arrays.toString(jconsoleCommandLine)));
-      }
-
-      Process jconsoleProcess = Runtime.getRuntime().exec(jconsoleCommandLine);
-
-      StringBuilder message = new StringBuilder();
-
-      if (version) {
-        jconsoleProcess.waitFor();
-
-        BufferedReader reader =
-            new BufferedReader(new InputStreamReader(jconsoleProcess.getErrorStream()));
-
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-          message.append(line);
-          message.append(StringUtils.LINE_SEPARATOR);
-        }
-
-        IOUtils.close(reader);
-      } else {
-        getGfsh().printAsInfo(CliStrings.START_JCONSOLE__RUN);
-
-        String jconsoleProcessOutput = waitAndCaptureProcessStandardErrorStream(jconsoleProcess);
-
-        if (StringUtils.isNotBlank(jconsoleProcessOutput)) {
-          message.append(StringUtils.LINE_SEPARATOR);
-          message.append(jconsoleProcessOutput);
-        }
-      }
-
-      return ResultBuilder.createInfoResult(message.toString());
-    } catch (GemFireException | IllegalStateException | IllegalArgumentException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (IOException e) {
-      return ResultBuilder
-          .createShellClientErrorResult(CliStrings.START_JCONSOLE__IO_EXCEPTION_MESSAGE);
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_JCONSOLE__CATCH_ALL_ERROR_MESSAGE, toString(t, false)));
-    }
-  }
-
-  protected String[] createJConsoleCommandLine(final String member, final int interval,
-      final boolean notile, final String pluginpath, final boolean version,
-      final List<String> jvmArgs) {
-    List<String> commandLine = new ArrayList<>();
-
-    commandLine.add(getJConsolePathname());
-
-    if (version) {
-      commandLine.add("-version");
-    } else {
-      commandLine.add("-interval=" + interval);
-
-      if (notile) {
-        commandLine.add("-notile");
-      }
-
-      if (StringUtils.isNotBlank(pluginpath)) {
-        commandLine.add("-pluginpath " + pluginpath);
-      }
-
-      if (jvmArgs != null) {
-        for (final String arg : jvmArgs) {
-          commandLine.add("-J" + arg);
-        }
-      }
-
-      String jmxServiceUrl = getJmxServiceUrlAsString(member);
-
-      if (StringUtils.isNotBlank(jmxServiceUrl)) {
-        commandLine.add(jmxServiceUrl);
-      }
-    }
-
-    return commandLine.toArray(new String[commandLine.size()]);
-  }
-
-  protected String getJConsolePathname() {
-    return getJdkToolPathname("jconsole" + getExecutableSuffix(),
-        new JConsoleNotFoundException(CliStrings.START_JCONSOLE__NOT_FOUND_ERROR_MESSAGE));
-  }
-
-  protected String getJdkToolPathname(final String jdkToolExecutableName,
-      final GemFireException throwable) {
-    assertNotNull(jdkToolExecutableName, "The JDK tool executable name cannot be null!");
-    assertNotNull(throwable, "The GemFireException cannot be null!");
-
-    Stack<String> pathnames = new Stack<>();
-
-    pathnames.push(jdkToolExecutableName);
-    pathnames
-        .push(IOUtils.appendToPath(System.getenv("JAVA_HOME"), "..", "bin", jdkToolExecutableName));
-    pathnames.push(IOUtils.appendToPath(System.getenv("JAVA_HOME"), "bin", jdkToolExecutableName));
-    pathnames.push(IOUtils.appendToPath(JAVA_HOME, "..", "bin", jdkToolExecutableName));
-    pathnames.push(IOUtils.appendToPath(JAVA_HOME, "bin", jdkToolExecutableName));
-
-    return getJdkToolPathname(pathnames, throwable);
-  }
-
-  protected String getJdkToolPathname(final Stack<String> pathnames,
-      final GemFireException throwable) {
-    assertNotNull(pathnames, "The JDK tool executable pathnames cannot be null!");
-    assertNotNull(throwable, "The GemFireException cannot be null!");
-
-    try {
-      // assume 'java.home' JVM System property refers to the JDK installation directory. note,
-      // however, that the
-      // 'java.home' JVM System property usually refers to the JRE used to launch this application
-      return IOUtils.verifyPathnameExists(pathnames.pop());
-    } catch (EmptyStackException ignore) {
-      throw throwable;
-    } catch (FileNotFoundException ignore) {
-      return getJdkToolPathname(pathnames, throwable);
-    }
-  }
-
-  protected static String getExecutableSuffix() {
-    return SystemUtils.isWindows() ? ".exe" : StringUtils.EMPTY;
-  }
-
-  protected String getJmxServiceUrlAsString(final String member) {
-    if (StringUtils.isNotBlank(member)) {
-      ConnectionEndpointConverter converter = new ConnectionEndpointConverter();
-
-      try {
-        ConnectionEndpoint connectionEndpoint =
-            converter.convertFromText(member, ConnectionEndpoint.class, null);
-        String hostAndPort = connectionEndpoint.getHost() + ":" + connectionEndpoint.getPort();
-        return String.format("service:jmx:rmi://%s/jndi/rmi://%s/jmxrmi", hostAndPort, hostAndPort);
-      } catch (Exception e) {
-        throw new IllegalArgumentException(
-            CliStrings.START_JCONSOLE__CONNECT_BY_MEMBER_NAME_ID_ERROR_MESSAGE);
-      }
-    } else {
-      if (isConnectedAndReady()
-          && (getGfsh().getOperationInvoker() instanceof JmxOperationInvoker)) {
-        JmxOperationInvoker jmxOperationInvoker =
-            (JmxOperationInvoker) getGfsh().getOperationInvoker();
-
-        return ObjectUtils.toString(jmxOperationInvoker.getJmxServiceUrl());
-      }
-    }
-
-    return null;
-  }
-
-  @CliCommand(value = CliStrings.START_JVISUALVM, help = CliStrings.START_JVISUALVM__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
-      CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  public Result startJVisualVM(@CliOption(key = CliStrings.START_JCONSOLE__J,
-      help = CliStrings.START_JCONSOLE__J__HELP) final List<String> jvmArgs) {
-    try {
-      String[] jvisualvmCommandLine = createJVisualVMCommandLine(jvmArgs);
-
-      if (isDebugging()) {
-        getGfsh().printAsInfo(
-            String.format("JVisualVM command-line (%1$s)", Arrays.toString(jvisualvmCommandLine)));
-      }
-
-      Process jvisualvmProcess = Runtime.getRuntime().exec(jvisualvmCommandLine);
-
-      getGfsh().printAsInfo(CliStrings.START_JVISUALVM__RUN);
-
-      String jvisualvmProcessOutput = waitAndCaptureProcessStandardErrorStream(jvisualvmProcess);
-
-      InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-
-      if (StringUtils.isNotBlank(jvisualvmProcessOutput)) {
-        infoResultData.addLine(StringUtils.LINE_SEPARATOR);
-        infoResultData.addLine(jvisualvmProcessOutput);
-      }
-
-      return ResultBuilder.buildResult(infoResultData);
-    } catch (GemFireException | IllegalStateException | IllegalArgumentException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_JVISUALVM__ERROR_MESSAGE, toString(t, false)));
-    }
-  }
-
-  protected String[] createJVisualVMCommandLine(final List<String> jvmArgs) {
-    List<String> commandLine = new ArrayList<>();
-
-    commandLine.add(getJVisualVMPathname());
-
-    if (jvmArgs != null) {
-      for (final String arg : jvmArgs) {
-        commandLine.add("-J" + arg);
-      }
-    }
-
-    return commandLine.toArray(new String[commandLine.size()]);
-  }
-
-  protected String getJVisualVMPathname() {
-    if (SystemUtils.isMacOSX()) {
-      try {
-        return IOUtils.verifyPathnameExists(
-            "/System/Library/Java/Support/VisualVM.bundle/Contents/Home/bin/jvisualvm");
-      } catch (FileNotFoundException e) {
-        throw new VisualVmNotFoundException(CliStrings.START_JVISUALVM__NOT_FOUND_ERROR_MESSAGE, e);
-      }
-    } else { // Linux, Solaris, Windows, etc...
-      try {
-        return getJdkToolPathname("jvisualvm" + getExecutableSuffix(),
-            new VisualVmNotFoundException(CliStrings.START_JVISUALVM__NOT_FOUND_ERROR_MESSAGE));
-      } catch (VisualVmNotFoundException e) {
-        if (!SystemUtils.isJavaVersionAtLeast("1.6")) {
-          throw new VisualVmNotFoundException(
-              CliStrings.START_JVISUALVM__EXPECTED_JDK_VERSION_ERROR_MESSAGE);
-        }
-
-        throw e;
-      }
-    }
-  }
-
-  @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
-      CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  public Result startPulse(@CliOption(key = CliStrings.START_PULSE__URL,
-      unspecifiedDefaultValue = "http://localhost:7070/pulse",
-      help = CliStrings.START_PULSE__URL__HELP) final String url) {
-    try {
-      if (StringUtils.isNotBlank(url)) {
-        browse(URI.create(url));
-        return ResultBuilder.createInfoResult(CliStrings.START_PULSE__RUN);
-      } else {
-        if (isConnectedAndReady()) {
-          OperationInvoker operationInvoker = getGfsh().getOperationInvoker();
-
-          ObjectName managerObjectName = (ObjectName) operationInvoker.getAttribute(
-              ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "ManagerObjectName");
-
-          String pulseURL =
-              (String) operationInvoker.getAttribute(managerObjectName.toString(), "PulseURL");
-
-          if (StringUtils.isNotBlank(pulseURL)) {
-            browse(URI.create(pulseURL));
-            return ResultBuilder
-                .createInfoResult(CliStrings.START_PULSE__RUN + " with URL: " + pulseURL);
-          } else {
-            String pulseMessage = (String) operationInvoker
-                .getAttribute(managerObjectName.toString(), "StatusMessage");
-            return (StringUtils.isNotBlank(pulseMessage)
-                ? ResultBuilder.createGemFireErrorResult(pulseMessage)
-                : ResultBuilder.createGemFireErrorResult(CliStrings.START_PULSE__URL__NOTFOUND));
-          }
-        } else {
-          return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.GFSH_MUST_BE_CONNECTED_FOR_LAUNCHING_0, "GemFire Pulse"));
-        }
-      }
-    } catch (Exception e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_PULSE__ERROR, toString(t, false)));
-    }
-  }
-
-  private void browse(URI uri) throws IOException {
-    assertState(Desktop.isDesktopSupported(),
-        String.format(CliStrings.DESKSTOP_APP_RUN_ERROR_MESSAGE, System.getProperty("os.name")));
-    Desktop.getDesktop().browse(uri);
-  }
-
   @Deprecated
   protected File readIntoTempFile(final String classpathResourceLocation) throws IOException {
     String resourceName = classpathResourceLocation
@@ -2258,247 +1377,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return resourceFile;
   }
 
-  @CliCommand(value = CliStrings.START_VSD, help = CliStrings.START_VSD__HELP)
-  @CliMetaData(shellOnly = true,
-      relatedTopic = {CliStrings.TOPIC_GEODE_M_AND_M, CliStrings.TOPIC_GEODE_STATISTICS})
-  public Result startVsd(@CliOption(key = CliStrings.START_VSD__FILE,
-      help = CliStrings.START_VSD__FILE__HELP) final String[] statisticsArchiveFilePathnames) {
-    try {
-      String geodeHome = System.getenv("GEODE_HOME");
-
-      assertState(StringUtils.isNotBlank(geodeHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
-
-      assertState(IOUtils.isExistingPathname(getPathToVsd()),
-          String.format(CliStrings.START_VSD__NOT_FOUND_ERROR_MESSAGE, geodeHome));
-
-      String[] vsdCommandLine = createdVsdCommandLine(statisticsArchiveFilePathnames);
-
-      if (isDebugging()) {
-        getGfsh().printAsInfo(
-            String.format("GemFire VSD command-line (%1$s)", Arrays.toString(vsdCommandLine)));
-      }
-
-      Process vsdProcess = Runtime.getRuntime().exec(vsdCommandLine);
-
-      getGfsh().printAsInfo(CliStrings.START_VSD__RUN);
-
-      String vsdProcessOutput = waitAndCaptureProcessStandardErrorStream(vsdProcess);
-
-      InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-
-      if (StringUtils.isNotBlank(vsdProcessOutput)) {
-        infoResultData.addLine(StringUtils.LINE_SEPARATOR);
-        infoResultData.addLine(vsdProcessOutput);
-      }
-
-      return ResultBuilder.buildResult(infoResultData);
-    } catch (GemFireException | IllegalStateException | IllegalArgumentException
-        | FileNotFoundException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_VSD__ERROR_MESSAGE, toString(t, false)));
-    }
-  }
-
-  protected String[] createdVsdCommandLine(final String[] statisticsArchiveFilePathnames)
-      throws FileNotFoundException {
-    List<String> commandLine = new ArrayList<>();
-
-    commandLine.add(getPathToVsd());
-    commandLine.addAll(processStatisticsArchiveFiles(statisticsArchiveFilePathnames));
-
-    return commandLine.toArray(new String[commandLine.size()]);
-  }
-
-  protected String getPathToVsd() {
-    String vsdPathname =
-        IOUtils.appendToPath(System.getenv("GEODE_HOME"), "tools", "vsd", "bin", "vsd");
-
-    if (SystemUtils.isWindows()) {
-      vsdPathname += ".bat";
-    }
-
-    return vsdPathname;
-  }
-
-  protected Set<String> processStatisticsArchiveFiles(final String[] statisticsArchiveFilePathnames)
-      throws FileNotFoundException {
-    Set<String> statisticsArchiveFiles = new TreeSet<>();
-
-    if (statisticsArchiveFilePathnames != null) {
-      for (String pathname : statisticsArchiveFilePathnames) {
-        File path = new File(pathname);
-
-        if (path.exists()) {
-          if (path.isFile()) {
-            if (StatisticsArchiveFileFilter.INSTANCE.accept(path)) {
-              statisticsArchiveFiles.add(pathname);
-            } else {
-              throw new IllegalArgumentException(
-                  "A Statistics Archive File must end with a .gfs file extension.");
-            }
-          } else { // the File (path) is a directory
-            processStatisticsArchiveFiles(path, statisticsArchiveFiles);
-          }
-        } else {
-          throw new FileNotFoundException(String.format(
-              "The pathname (%1$s) does not exist.  Please check the path and try again.",
-              path.getAbsolutePath()));
-        }
-      }
-    }
-
-    return statisticsArchiveFiles;
-  }
-
-  @SuppressWarnings("null")
-  protected void processStatisticsArchiveFiles(final File path,
-      final Set<String> statisticsArchiveFiles) {
-    if (path != null && path.isDirectory()) {
-      for (File file : path.listFiles(StatisticsArchiveFileAndDirectoryFilter.INSTANCE)) {
-        if (file.isDirectory()) {
-          processStatisticsArchiveFiles(file, statisticsArchiveFiles);
-        } else if (StatisticsArchiveFileFilter.INSTANCE.accept(file)) {
-          statisticsArchiveFiles.add(file.getAbsolutePath());
-        }
-      }
-    }
-  }
-
-  // NOTE as of 8.0, this command is no more!
-  // @CliCommand(value=CliStrings.START_DATABROWSER, help=CliStrings.START_DATABROWSER__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_M_AND_M})
-  public Result startDataBrowser() {
-    try {
-      String geodeHome = System.getenv("GEODE_HOME");
-
-      assertState(StringUtils.isNotBlank(geodeHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
-
-      if (isConnectedAndReady()
-          && (getGfsh().getOperationInvoker() instanceof JmxOperationInvoker)) {
-        String dataBrowserPath = getPathToDataBrowser();
-
-        assertState(IOUtils.isExistingPathname(dataBrowserPath),
-            String.format(CliStrings.START_DATABROWSER__NOT_FOUND_ERROR_MESSAGE, geodeHome));
-
-        JmxOperationInvoker operationInvoker =
-            (JmxOperationInvoker) getGfsh().getOperationInvoker();
-
-        String dataBrowserCommandLine = String.format("%1$s %2$s %3$d", getPathToDataBrowser(),
-            operationInvoker.getManagerHost(), operationInvoker.getManagerPort());
-
-        if (isDebugging()) {
-          getGfsh().printAsInfo(
-              String.format("GemFire DataBrowser command-line (%1$s)", dataBrowserCommandLine));
-        }
-
-        Process dataBrowserProcess = Runtime.getRuntime().exec(dataBrowserCommandLine);
-
-        getGfsh().printAsInfo(CliStrings.START_DATABROWSER__RUN);
-
-        String dataBrowserProcessOutput =
-            waitAndCaptureProcessStandardOutputStream(dataBrowserProcess);
-
-        InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-
-        if (StringUtils.isNotBlank(dataBrowserProcessOutput)) {
-          infoResultData.addLine(StringUtils.LINE_SEPARATOR);
-          infoResultData.addLine(dataBrowserProcessOutput);
-        }
-
-        return ResultBuilder.buildResult(infoResultData);
-      } else {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
-            CliStrings.GFSH_MUST_BE_CONNECTED_VIA_JMX_FOR_LAUNCHING_0, "GemFire DataBrowser"));
-      }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(t.getMessage());
-    }
-  }
-
-  protected String getPathToDataBrowser() {
-    String dataBrowserPathName =
-        IOUtils.appendToPath(GEODE_HOME, "tools", "DataBrowser", "bin", "databrowser");
-
-    if (SystemUtils.isWindows()) {
-      dataBrowserPathName += ".bat";
-    }
-
-    return dataBrowserPathName;
-  }
-
-  protected String waitAndCaptureProcessStandardOutputStream(final Process process) {
-    return waitAndCaptureProcessStandardOutputStream(process,
-        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS);
-  }
-
-  protected String waitAndCaptureProcessStandardOutputStream(final Process process,
-      final long waitTimeMilliseconds) {
-    return waitAndCaptureProcessStream(process, process.getInputStream(), waitTimeMilliseconds);
-  }
-
-  protected String waitAndCaptureProcessStandardErrorStream(final Process process) {
-    return waitAndCaptureProcessStandardErrorStream(process,
-        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS);
-  }
-
-  protected String waitAndCaptureProcessStandardErrorStream(final Process process,
-      final long waitTimeMilliseconds) {
-    return waitAndCaptureProcessStream(process, process.getErrorStream(), waitTimeMilliseconds);
-  }
-
-  private String waitAndCaptureProcessStream(final Process process,
-      final InputStream processInputStream, long waitTimeMilliseconds) {
-    final StringBuffer buffer = new StringBuffer();
-
-    InputListener inputListener = new InputListener() {
-      @Override
-      public void notifyInputLine(final String line) {
-        buffer.append(line);
-        buffer.append(StringUtils.LINE_SEPARATOR);
-      }
-    };
-
-    ProcessStreamReader reader = new ProcessStreamReader.Builder(process)
-        .inputStream(processInputStream).inputListener(inputListener).build();
-
-    try {
-      reader.start();
-
-      final long endTime = (System.currentTimeMillis() + waitTimeMilliseconds);
-
-      while (System.currentTimeMillis() < endTime) {
-        try {
-          reader.join(waitTimeMilliseconds);
-        } catch (InterruptedException ignore) {
-        }
-      }
-    } finally {
-      reader.stop();
-    }
-
-    return buffer.toString();
-  }
-
-  @CliAvailabilityIndicator({CliStrings.START_LOCATOR, CliStrings.STOP_LOCATOR,
-      CliStrings.STATUS_LOCATOR, CliStrings.START_SERVER, CliStrings.STOP_SERVER,
-      CliStrings.STATUS_SERVER, CliStrings.START_MANAGER, CliStrings.START_PULSE,
-      CliStrings.START_VSD, CliStrings.START_DATABROWSER})
-  public boolean launcherCommandsAvailable() {
-    return true;
-  }
-
   protected static class LauncherSignalListener implements SignalListener {
 
     private volatile boolean signaled = false;
@@ -2511,27 +1389,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       // System.err.printf("Gfsh LauncherSignalListener Received Signal '%1$s' (%2$d)...%n",
       // event.getSignal().getName(), event.getSignal().getNumber());
       this.signaled = true;
-    }
-  }
-
-  protected static class StatisticsArchiveFileFilter implements FileFilter {
-
-    protected static final StatisticsArchiveFileFilter INSTANCE = new StatisticsArchiveFileFilter();
-
-    public boolean accept(final File pathname) {
-      return (pathname.isFile() && pathname.getAbsolutePath().endsWith(".gfs"));
-    }
-  }
-
-  protected static class StatisticsArchiveFileAndDirectoryFilter
-      extends StatisticsArchiveFileFilter {
-
-    protected static final StatisticsArchiveFileAndDirectoryFilter INSTANCE =
-        new StatisticsArchiveFileAndDirectoryFilter();
-
-    @Override
-    public boolean accept(final File pathname) {
-      return (pathname.isDirectory() || super.accept(pathname));
     }
   }
 

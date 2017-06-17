@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
@@ -51,28 +51,28 @@ public class ClusterConfigWithoutSecurityDUnitTest {
         .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
     IgnoredException
         .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
-    lsRule.startLocatorVM(0, new Properties());
+    this.lsRule.startLocatorVM(0, new Properties());
   }
 
   @After
-  public void after() {
+  public void after() throws Exception {
     IgnoredException.removeAllExpectedExceptions();
   }
 
-  // when locator is not secured, a secured server should be allowed to start with its own security
-  // manager
-  // if use-cluster-config is false
+  /**
+   * when locator is not secured, a secured server should be allowed to start with its own security
+   * manager if use-cluster-config is false
+   */
   @Test
   public void serverShouldBeAllowedToStartWithSecurityIfNotUsingClusterConfig() throws Exception {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-
-    props.setProperty("use-cluster-configuration", "false");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
 
     // initial security properties should only contain initial set of values
-    serverStarter.startServer(props, lsRule.getMember(0).getPort());
-    DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
+    this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort());
+    DistributedSystem ds = this.serverStarter.getCache().getDistributedSystem();
 
     // after cache is created, the configuration won't chagne
     Properties secProps = ds.getSecurityProperties();
@@ -82,18 +82,30 @@ public class ClusterConfigWithoutSecurityDUnitTest {
     assertEquals(PDXPostProcessor.class.getName(), secProps.getProperty("security-post-processor"));
   }
 
+  /**
+   * when locator is not secured, server should not be secured if use-cluster-config is true
+   */
+  @Test
+  public void serverShouldNotBeAllowedToStartWithSecurityIfUsingClusterConfig() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
+
+    assertThatThrownBy(
+        () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
+            .isInstanceOf(GemFireConfigException.class).hasMessage(
+                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
+  }
 
   @Test
-  // when locator is not secured, server should not be secured if use-cluster-config is true
-  public void serverShouldNotBeAllowedToStartWithSecurityIfUsingClusterConfig() {
+  public void nonExistentSecurityManagerThrowsGemFireSecurityException() throws Exception {
     Properties props = new Properties();
+    props.setProperty(SECURITY_MANAGER, "mySecurityManager");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
-    props.setProperty("security-manager", "mySecurityManager");
-    props.setProperty("use-cluster-configuration", "true");
-
-    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
-        .isInstanceOf(GemFireConfigException.class)
-        .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
+    assertThatThrownBy(() -> this.serverStarter.startServer(props, this.lsRule.getMember(0)
+        .getPort())).isInstanceOf(GemFireSecurityException.class).hasMessage(
+            "Instance could not be obtained, java.lang.ClassNotFoundException: mySecurityManager");
   }
 
 }

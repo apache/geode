@@ -22,6 +22,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -36,32 +37,34 @@ public class GetPDXEnumById extends BaseCommand {
   private GetPDXEnumById() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received get pdx enum by id request ({} parts) from {}", servConn.getName(),
-          msg.getNumberOfParts(), servConn.getSocketString());
+      logger.debug("{}: Received get pdx enum by id request ({} parts) from {}",
+          serverConnection.getName(), clientMessage.getNumberOfParts(),
+          serverConnection.getSocketString());
     }
-    int enumId = msg.getPart(0).getInt();
+    int enumId = clientMessage.getPart(0).getInt();
 
     EnumInfo result;
     try {
-      InternalCache cache = servConn.getCache();
+      InternalCache cache = serverConnection.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
       result = registry.getEnumInfoById(enumId);
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    Message responseMsg = servConn.getResponseMessage();
+    Message responseMsg = serverConnection.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setNumberOfParts(1);
-    responseMsg.setTransactionId(msg.getTransactionId());
+    responseMsg.setTransactionId(clientMessage.getTransactionId());
     responseMsg.addObjPart(result);
-    responseMsg.send(servConn);
-    servConn.setAsTrue(RESPONDED);
+    responseMsg.send(serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
   }
 }

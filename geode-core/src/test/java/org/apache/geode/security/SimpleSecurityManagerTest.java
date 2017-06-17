@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.security;
 
 import static org.apache.geode.internal.Assert.assertTrue;
@@ -25,6 +24,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 import java.util.Properties;
 
@@ -62,12 +64,12 @@ public class SimpleSecurityManagerTest {
 
   @Test
   public void testAuthorization() {
-    ResourcePermission permission = new ResourcePermission("CLUSTER", "READ");
+    ResourcePermission permission = new ResourcePermission(Resource.CLUSTER, Operation.READ);
     assertTrue(manager.authorize("clusterRead", permission));
     assertTrue(manager.authorize("cluster", permission));
     assertFalse(manager.authorize("data", permission));
 
-    permission = new ResourcePermission("DATA", "WRITE", "regionA", "key1");
+    permission = new ResourcePermission(Resource.DATA, Operation.WRITE, "regionA", "key1");
     assertTrue(manager.authorize("data", permission));
     assertTrue(manager.authorize("dataWrite", permission));
     assertTrue(manager.authorize("dataWriteRegionA", permission));
@@ -77,12 +79,12 @@ public class SimpleSecurityManagerTest {
 
   @Test
   public void testMultipleRoleAuthorization() {
-    ResourcePermission permission = new ResourcePermission("CLUSTER", "READ");
+    ResourcePermission permission = new ResourcePermission(Resource.CLUSTER, Operation.READ);
     assertTrue(manager.authorize("clusterRead,clusterWrite", permission));
     assertTrue(manager.authorize("cluster,data", permission));
     assertFalse(manager.authorize("clusterWrite,data", permission));
 
-    permission = new ResourcePermission("DATA", "WRITE", "regionA", "key1");
+    permission = new ResourcePermission(Resource.DATA, Operation.WRITE, "regionA", "key1");
     assertTrue(manager.authorize("data,cluster", permission));
     assertTrue(manager.authorize("dataWrite,clusterWrite", permission));
   }

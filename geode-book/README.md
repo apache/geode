@@ -65,17 +65,27 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 
 ## Publishing the User Guide to the Geode Website
 
-Once you have reviewed your local build of the User Guide, you can move it to the Apache Geode website by doing the following:
+Once you have reviewed your local build of the User Guide, you can publish it by copying it to the Apache Geode website. The target directory should contain a Geode version number. 
 
-1. Navigate to: `{geode-project-dir}/geode-book/final_app/public/docs/guide/NN`, where `NN` is the product version of your documentation (e.g., `{geode-project-dir}/geode-book/final_app/public/docs/guide/11` if you are building the documentation for Apache Geode 1.1).
+To copy the User Guide to the website repo:
 
-2. To move the directory, enter:
+1. Create the destination directory by navigating to the geode-site repo. Check out the *master* branch and create a destination directory for the User Guide. The naming convention is:
+
+    ```
+{geode-site}/website/content/docs/guide/XY
+    ```
+where `XY` is the product version of your documentation (e.g., `{geode-site}/website/content/docs/guide/12` if you are publishing the documentation for Apache Geode 1.2).
+
+2. Navigate to the User Guide you have built in the Geode repository: `{geode-project-dir}/geode-book/final_app/public/docs/guide/XY`.
+
+3. Use `tar` to copy the directory in order to preserve links and other filesystem niceties. Create the tarfile in your Desktop for easy access on the retrieval side.
+  
+  To copy the directory, enter:
 
     ```
     $ tar cvf ~/Desktop/new-guide-content.tar .
-    $ cd ../../../../../../geode-site/website/content/docs/guide/NN
+    $ cd {geode-site}/website/content/docs/guide/XY
     $ tar xvf ~/Desktop/new-guide-content.tar
     ```
-   **Note:** If the "`NN`" directory doesn't exist in the `{geode-project-dir}/geode-site/website/content/docs/guide/` directory, you will need to create it first.
 
-3. Follow the instructions at `{geode-project-dir}/geode-site/website/README.md` to build, review, and publish the Apache Geode website.
+4. Follow the instructions in the README.md file on the *master* branch of the geode-site repo (`{geode-site}/README.md`) to build, review, and publish the Apache Geode website. You can also view the geode-site README.md file on [github: https://github.com/apache/geode-site](https://github.com/apache/geode-site).

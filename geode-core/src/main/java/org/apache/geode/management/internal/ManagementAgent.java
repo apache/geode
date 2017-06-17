@@ -91,7 +91,7 @@ public class ManagementAgent {
   private JMXConnectorServer jmxConnectorServer;
   private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
-  private SecurityService securityService = SecurityService.getSecurityService();
+  private final SecurityService securityService;
   private boolean isHttpServiceRunning = false;
 
   /**
@@ -103,8 +103,9 @@ public class ManagementAgent {
   private static final String PULSE_USESSL_MANAGER = "pulse.useSSL.manager";
   private static final String PULSE_USESSL_LOCATOR = "pulse.useSSL.locator";
 
-  public ManagementAgent(DistributionConfig config) {
+  public ManagementAgent(DistributionConfig config, SecurityService securityService) {
     this.config = config;
+    this.securityService = securityService;
   }
 
   public synchronized boolean isRunning() {
@@ -465,14 +466,14 @@ public class ManagementAgent {
         };
 
     if (securityService.isIntegratedSecurity()) {
-      shiroAuthenticator = new JMXShiroAuthenticator();
+      shiroAuthenticator = new JMXShiroAuthenticator(this.securityService);
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
       jmxConnectorServer.addNotificationListener(shiroAuthenticator, null,
           jmxConnectorServer.getAttributes());
       // always going to assume authorization is needed as well, if no custom AccessControl, then
       // the CustomAuthRealm
       // should take care of that
-      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper();
+      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(this.securityService);
       jmxConnectorServer.setMBeanServerForwarder(mBeanServerWrapper);
       registerAccessControlMBean();
     } else {
@@ -501,7 +502,7 @@ public class ManagementAgent {
 
   private void registerAccessControlMBean() {
     try {
-      AccessControlMBean acc = new AccessControlMBean();
+      AccessControlMBean acc = new AccessControlMBean(this.securityService);
       ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
       MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
 

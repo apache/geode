@@ -19,6 +19,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
@@ -69,14 +70,17 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
       String[] fields = index.getFieldNames();
       LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
       StandardQueryParser parser = new StandardQueryParser(indexImpl.getAnalyzer());
+      parser.setAllowLeadingWildcard(true);
       try {
         luceneQuery = parser.parse(query, defaultField);
         if (logger.isDebugEnabled()) {
           logger.debug("User query " + query + " is parsed to be: " + luceneQuery);
         }
       } catch (QueryNodeException e) {
-        logger.debug("Query node exception:" + query, e);
-        throw new LuceneQueryException("Malformed lucene query: " + query, e);
+        logger.warn("Caught the following exception attempting parse query '" + query + "': ", e);
+        throw new LuceneQueryException(
+            LocalizedStrings.StringQueryProvider_PARSING_QUERY_0_FAILED_DUE_TO_1
+                .toLocalizedString("'" + query + "'", e.getMessage()));
       }
     }
     return luceneQuery;

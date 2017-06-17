@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class Destroy extends BaseCommand {
@@ -48,7 +49,8 @@ public class Destroy extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long startparam)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long startparam)
       throws IOException, InterruptedException {
     long start = startparam;
 
@@ -57,8 +59,8 @@ public class Destroy extends BaseCommand {
     Object callbackArg = null, key = null;
     Part eventPart = null;
     StringBuffer errMessage = new StringBuffer();
-    CacheServerStats stats = servConn.getCacheServerStats();
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    CacheServerStats stats = serverConnection.getCacheServerStats();
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
     {
       long oldStart = start;
@@ -66,17 +68,17 @@ public class Destroy extends BaseCommand {
       stats.incReadDestroyRequestTime(start - oldStart);
     }
     // Retrieve the data from the message parts
-    regionNamePart = msg.getPart(0);
-    keyPart = msg.getPart(1);
-    eventPart = msg.getPart(2);
+    regionNamePart = clientMessage.getPart(0);
+    keyPart = clientMessage.getPart(1);
+    eventPart = clientMessage.getPart(2);
     // callbackArgPart = null; (redundant assignment)
-    if (msg.getNumberOfParts() > 3) {
-      callbackArgPart = msg.getPart(3);
+    if (clientMessage.getNumberOfParts() > 3) {
+      callbackArgPart = clientMessage.getPart(3);
       try {
         callbackArg = callbackArgPart.getObject();
       } catch (Exception e) {
-        writeException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -84,13 +86,14 @@ public class Destroy extends BaseCommand {
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received destroy request ({} bytes) from {} for region {} key {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName, key);
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), regionName, key);
     }
 
     // Process the destroy request
@@ -98,29 +101,30 @@ public class Destroy extends BaseCommand {
       if (key == null) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.Destroy_0_THE_INPUT_KEY_FOR_THE_DESTROY_REQUEST_IS_NULL,
-            servConn.getName()));
+            serverConnection.getName()));
         errMessage.append(LocalizedStrings.Destroy__THE_INPUT_KEY_FOR_THE_DESTROY_REQUEST_IS_NULL
             .toLocalizedString());
       }
       if (regionName == null) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.Destroy_0_THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REQUEST_IS_NULL,
-            servConn.getName()));
+            serverConnection.getName()));
         errMessage
             .append(LocalizedStrings.Destroy__THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REQUEST_IS_NULL
                 .toLocalizedString());
       }
-      writeErrorResponse(msg, MessageType.DESTROY_DATA_ERROR, errMessage.toString(), servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.DESTROY_DATA_ERROR, errMessage.toString(),
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.Destroy__0_WAS_NOT_FOUND_DURING_DESTROY_REQUEST
           .toLocalizedString(regionName);
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -128,13 +132,14 @@ public class Destroy extends BaseCommand {
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
     long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+    EventID eventId =
+        new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
 
     try {
       // for integrated security
-      this.securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorizeRegionWrite(regionName, key.toString());
 
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           RegionDestroyOperationContext destroyContext =
@@ -146,35 +151,35 @@ public class Destroy extends BaseCommand {
           callbackArg = destroyContext.getCallbackArg();
         }
       }
-      region.basicBridgeDestroy(key, callbackArg, servConn.getProxyID(), true,
+      region.basicBridgeDestroy(key, callbackArg, serverConnection.getProxyID(), true,
           new EventIDHolder(eventId));
-      servConn.setModificationInfo(true, regionName, key);
+      serverConnection.setModificationInfo(true, regionName, key);
     } catch (EntryNotFoundException e) {
       // Don't send an exception back to the client if this
       // exception happens. Just log it and continue.
       logger.info(LocalizedMessage.create(
           LocalizedStrings.Destroy_0_DURING_ENTRY_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
-          new Object[] {servConn.getName(), key}));
+          new Object[] {serverConnection.getName(), key}));
     } catch (RegionDestroyedException rde) {
-      writeException(msg, rde, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, rde, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, e);
+      checkForInterrupt(serverConnection, e);
 
       // If an exception occurs during the destroy, preserve the connection
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       if (e instanceof GemFireSecurityException) {
         // Fine logging for security exceptions since these are already
         // logged by the security logger
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
+          logger.debug("{}: Unexpected Security exception", serverConnection.getName(), e);
         }
       } else {
         logger.warn(LocalizedMessage.create(LocalizedStrings.Destroy_0_UNEXPECTED_EXCEPTION,
-            servConn.getName()), e);
+            serverConnection.getName()), e);
       }
       return;
     }
@@ -188,18 +193,18 @@ public class Destroy extends BaseCommand {
     if (region instanceof PartitionedRegion) {
       PartitionedRegion pr = (PartitionedRegion) region;
       if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
-        writeReplyWithRefreshMetadata(msg, servConn, pr, pr.getNetworkHopType());
+        writeReplyWithRefreshMetadata(clientMessage, serverConnection, pr, pr.getNetworkHopType());
         pr.clearNetworkHopData();
       } else {
-        writeReply(msg, servConn);
+        writeReply(clientMessage, serverConnection);
       }
     } else {
-      writeReply(msg, servConn);
+      writeReply(clientMessage, serverConnection);
     }
-    servConn.setAsTrue(RESPONDED);
+    serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent destroy response for region {} key {}", servConn.getName(), regionName,
-          key);
+      logger.debug("{}: Sent destroy response for region {} key {}", serverConnection.getName(),
+          regionName, key);
     }
     stats.incWriteDestroyResponseTime(DistributionStats.getStatTime() - start);
   }

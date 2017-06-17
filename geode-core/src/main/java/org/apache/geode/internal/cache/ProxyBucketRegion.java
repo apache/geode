@@ -23,9 +23,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -472,6 +472,9 @@ public class ProxyBucketRegion implements Bucket {
       }
 
       persistenceAdvisor.initializeMembershipView();
+    } catch (DiskAccessException dae) {
+      this.partitionedRegion.handleDiskAccessException(dae);
+      throw dae;
     } catch (RuntimeException e) {
       exception = e;
       throw e;

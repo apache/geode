@@ -37,7 +37,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -54,11 +53,7 @@ import javax.management.ObjectName;
 /**
  * @since GemFire 8.0
  */
-public class ClientCommands implements CommandMarker {
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
+public class ClientCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
@@ -146,10 +141,6 @@ public class ClientCommands implements CommandMarker {
     LogWrapper.getInstance().info("list client result " + result);
 
     return result;
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
@@ -347,14 +338,5 @@ public class ClientCommands implements CommandMarker {
         }
       }
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_CLIENTS, CliStrings.DESCRIBE_CLIENT})
-  public boolean clientCommandsAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 }

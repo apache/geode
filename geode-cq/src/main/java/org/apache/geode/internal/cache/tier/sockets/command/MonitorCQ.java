@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import java.io.IOException;
-
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -24,54 +22,62 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.security.SecurityService;
+
+import java.io.IOException;
 
 public class MonitorCQ extends BaseCQCommand {
 
-  private final static MonitorCQ singleton = new MonitorCQ();
+  private static final MonitorCQ singleton = new MonitorCQ();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private MonitorCQ() {}
+  private MonitorCQ() {
+    // nothing
+  }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
-    int op = msg.getPart(0).getInt();
+    int op = clientMessage.getPart(0).getInt();
 
     if (op < 1) {
       // This should have been taken care at the client - remove?
       String err = LocalizedStrings.MonitorCQ__0_THE_MONITORCQ_OPERATION_IS_INVALID
-          .toLocalizedString(servConn.getName());
-      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg.getTransactionId(), null, servConn);
+          .toLocalizedString(serverConnection.getName());
+      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(), null,
+          serverConnection);
       return;
     }
 
     String regionName = null;
-    if (msg.getNumberOfParts() == 2) {
+    if (clientMessage.getNumberOfParts() == 2) {
       // This will be enable/disable on region.
-      regionName = msg.getPart(1).getString();
+      regionName = clientMessage.getPart(1).getString();
       if (regionName == null) {
         // This should have been taken care at the client - remove?
         String err =
             LocalizedStrings.MonitorCQ__0_A_NULL_REGION_NAME_WAS_PASSED_FOR_MONITORCQ_OPERATION
-                .toLocalizedString(servConn.getName());
-        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg.getTransactionId(), null,
-            servConn);
+                .toLocalizedString(serverConnection.getName());
+        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(),
+            null, serverConnection);
         return;
       }
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received MonitorCq request from {} op: {}{}", servConn.getName(),
-          servConn.getSocketString(), op, (regionName != null) ? " RegionName: " + regionName : "");
+      logger.debug("{}: Received MonitorCq request from {} op: {}{}", serverConnection.getName(),
+          serverConnection.getSocketString(), op,
+          regionName != null ? " RegionName: " + regionName : "");
     }
 
-    this.securityService.authorizeClusterRead();
+    securityService.authorizeClusterRead();
 
     try {
       CqService cqService = crHelper.getCache().getCqService();
@@ -85,13 +91,13 @@ public class MonitorCQ extends BaseCQCommand {
       throw new CqException(
           LocalizedStrings.CqService_INVALID_CQ_MONITOR_REQUEST_RECEIVED.toLocalizedString());
     } catch (CqException cqe) {
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(), cqe, servConn);
-      return;
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
+          serverConnection);
     } catch (Exception e) {
       String err = LocalizedStrings.MonitorCQ_EXCEPTION_WHILE_HANDLING_THE_MONITOR_REQUEST_OP_IS_0
-          .toLocalizedString(Integer.valueOf(op));
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, msg.getTransactionId(), e, servConn);
-      return;
+          .toLocalizedString(op);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, clientMessage.getTransactionId(), e,
+          serverConnection);
     }
   }
 

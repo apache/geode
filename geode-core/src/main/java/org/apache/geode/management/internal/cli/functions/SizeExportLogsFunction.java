@@ -16,9 +16,10 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.util.Arrays;
 
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.internal.cli.util.BytesToString;
+import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Function;
@@ -30,7 +31,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.util.LogFilter;
-import org.apache.geode.management.internal.cli.util.LogSizer;
 
 public class SizeExportLogsFunction extends ExportLogsFunction implements Function, InternalEntity {
   private static final Logger LOGGER = LogService.getLogger();
@@ -42,13 +42,20 @@ public class SizeExportLogsFunction extends ExportLogsFunction implements Functi
       InternalCache cache = GemFireCacheImpl.getInstance();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       Args args = (Args) context.getArguments();
-      long diskAvailable = config.getLogFile().getUsableSpace();
-      long diskSize = config.getLogFile().getTotalSpace();
+      long diskAvailable = getDiskAvailable(config);
       long estimatedSize = estimateLogFileSize(cache.getMyId(), config.getLogFile(),
           config.getStatisticArchiveFile(), args);
 
-      context.getResultSender().lastResult(
-          Arrays.asList(new ExportedLogsSizeInfo(estimatedSize, diskAvailable, diskSize)));
+      BytesToString bytesToString = new BytesToString();
+      if (estimatedSize == 0 || estimatedSize < diskAvailable) {
+        context.getResultSender().lastResult(estimatedSize);
+      } else {
+        StringBuilder sb = new StringBuilder().append("Estimated disk space required (")
+            .append(bytesToString.of(estimatedSize)).append(") to consolidate logs on member ")
+            .append(cache.getName()).append(" will exceed available disk space (")
+            .append(bytesToString.of(diskAvailable)).append(")");
+        context.getResultSender().sendException(new ManagementException(sb.toString())); // FileTooBigException
+      }
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -57,9 +64,15 @@ public class SizeExportLogsFunction extends ExportLogsFunction implements Functi
     }
   }
 
+  long getDiskAvailable(DistributionConfig config) {
+    return config.getLogFile().getUsableSpace();
+  }
+
   long estimateLogFileSize(final DistributedMember member, final File logFile,
-      final File statArchive, final Args args) throws ParseException, IOException {
-    LOGGER.info("SizeExportLogsFunction started for member {}", member);
+      final File statArchive, final Args args) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("SizeExportLogsFunction started for member {}", member);
+    }
 
     File baseLogFile = null;
     File baseStatsFile = null;
@@ -74,7 +87,8 @@ public class SizeExportLogsFunction extends ExportLogsFunction implements Functi
     LogFilter logFilter = new LogFilter(args.getLogLevel(), args.isThisLogLevelOnly(),
         args.getStartTime(), args.getEndTime());
 
-    long estimatedSize = new LogSizer(logFilter, baseLogFile, baseStatsFile).getFilteredSize();
+    long estimatedSize =
+        new LogExporter(logFilter, baseLogFile, baseStatsFile).estimateFilteredSize();
 
     LOGGER.info("Estimated log file size: " + estimatedSize);
 

@@ -81,6 +81,7 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexMaintenanceException;
@@ -229,8 +230,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   // package-private to avoid synthetic accessor
   static final Logger logger = LogService.getLogger();
-
-  private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
 
   /**
    * Internal interface used to simulate failures when performing entry operations
@@ -1138,6 +1137,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_DESTROY, aCallbackArgument,
         false, getMyId(), generateEventID());
     basicDestroyRegion(event, true);
+  }
+
+  protected void invokeBeforeRegionDestroyInServices() {
+    for (CacheService service : this.cache.getServices()) {
+      if (service instanceof RegionService) {
+        ((RegionService) service).beforeRegionDestroyed(this);
+      }
+    }
   }
 
   public InternalDataView getDataView() {
@@ -4063,6 +4070,28 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
+  @Override
+  public int sizeOnServer() {
+    ServerRegionProxy proxy = getServerProxy();
+    if (proxy != null) {
+      return proxy.size();
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_SERVER_SIZE_REQUIRES_A_POOL.toLocalizedString());
+    }
+  }
+
+  @Override
+  public boolean isEmptyOnServer() {
+    ServerRegionProxy proxy = getServerProxy();
+    if (proxy != null) {
+      return proxy.size() == 0;
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_SERVER_ISEMPTY_REQUIRES_A_POOL.toLocalizedString());
+    }
+  }
+
   /**
    * WARNING: this method is overridden in subclasses.
    */
@@ -6595,8 +6624,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @see InitialImageOperation#processChunk
    */
   public void handleDiskAccessException(DiskAccessException dae, boolean duringInitialization) {
-    // these will rethrow the originating exception
-    if (duringInitialization || causedByRDE(dae)) {
+
+    if (duringInitialization && !(dae instanceof ConflictingPersistentDataException)) {
+      return;
+    }
+
+    if (causedByRDE(dae)) {
       return;
     }
 
@@ -6798,7 +6831,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (notifyGateways) {
       notifyGatewaySender(eventType, event);
     }
-    if (callDispatchListenerEvent) {
+    if (callDispatchListenerEvent && !event.getIsRedestroyedEntry()) {
       dispatchListenerEvent(eventType, event);
     }
   }
@@ -7384,6 +7417,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           "Region names may not begin with a double-underscore: " + name);
     }
 
+    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
     // Ensure the region only contains valid characters
     Matcher matcher = NAME_PATTERN.matcher(name);
     if (!matcher.matches()) {

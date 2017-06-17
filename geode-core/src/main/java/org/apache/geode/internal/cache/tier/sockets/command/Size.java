@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -32,8 +29,8 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
-
 
 public class Size extends BaseCommand {
 
@@ -56,18 +53,18 @@ public class Size extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     StringBuilder errMessage = new StringBuilder();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    CacheServerStats stats = servConn.getCacheServerStats();
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
     long oldStart = start;
     start = DistributionStats.getStatTime();
     stats.incReadSizeRequestTime(start - oldStart);
     // Retrieve the data from the message parts
-    Part regionNamePart = msg.getPart(0);
+    Part regionNamePart = clientMessage.getPart(0);
     String regionName = regionNamePart.getString();
 
     if (regionName == null) {
@@ -76,8 +73,9 @@ public class Size extends BaseCommand {
       errMessage
           .append(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL
               .toLocalizedString("size"));
-      writeErrorResponse(msg, MessageType.SIZE_ERROR, errMessage.toString(), servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.SIZE_ERROR, errMessage.toString(),
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -85,38 +83,39 @@ public class Size extends BaseCommand {
     if (region == null) {
       String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST
           .toLocalizedString(regionName, "size");
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     // Size the entry
     try {
-      this.securityService.authorizeRegionRead(regionName);
-      writeSizeResponse(region.size(), msg, servConn);
+      securityService.authorizeRegionRead(regionName);
+      writeSizeResponse(region.size(), clientMessage, serverConnection);
     } catch (RegionDestroyedException rde) {
-      writeException(msg, rde, false, servConn);
+      writeException(clientMessage, rde, false, serverConnection);
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, e);
+      checkForInterrupt(serverConnection, e);
 
       // If an exception occurs during the destroy, preserve the connection
-      writeException(msg, e, false, servConn);
+      writeException(clientMessage, e, false, serverConnection);
       if (e instanceof GemFireSecurityException) {
         // Fine logging for security exceptions since these are already
         // logged by the security logger
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
+          logger.debug("{}: Unexpected Security exception", serverConnection.getName(), e);
         }
       } else {
         logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION,
-            servConn.getName()), e);
+            serverConnection.getName()), e);
       }
     } finally {
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Sent size response for region {}", servConn.getName(), regionName);
+        logger.debug("{}: Sent size response for region {}", serverConnection.getName(),
+            regionName);
       }
-      servConn.setAsTrue(RESPONDED);
+      serverConnection.setAsTrue(RESPONDED);
       stats.incWriteSizeResponseTime(DistributionStats.getStatTime() - start);
     }
   }

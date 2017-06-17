@@ -1995,8 +1995,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         throw new EntryNotFoundException(
             LocalizedStrings.PartitionedRegionDataStore_ENTRY_NOT_FOUND.toLocalizedString());
 
-        // TODO:KIRK:OK } else if ((ent.isTombstone() && allowTombstones) ||
-        // !Token.isRemoved(ent.getValueInVM(getPartitionedRegion()))) {
       } else if ((ent.isTombstone() && allowTombstones) || !ent.isDestroyedOrRemoved()) {
         res = new EntrySnapshot(ent, bucketRegion, partitionedRegion, allowTombstones);
       }

@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Used for bootstrapping txState/PeerTXStateStub on the server. This command is send when in client
@@ -49,23 +50,24 @@ public class TXFailoverCommand extends BaseCommand {
   private TXFailoverCommand() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     // Build the TXId for the transaction
     InternalDistributedMember client =
-        (InternalDistributedMember) servConn.getProxyID().getDistributedMember();
-    int uniqId = msg.getTransactionId();
+        (InternalDistributedMember) serverConnection.getProxyID().getDistributedMember();
+    int uniqId = clientMessage.getTransactionId();
     if (logger.isDebugEnabled()) {
       logger.debug("TX: Transaction {} from {} is failing over to this server", uniqId, client);
     }
     TXId txId = new TXId(client, uniqId);
-    TXManagerImpl mgr = (TXManagerImpl) servConn.getCache().getCacheTransactionManager();
+    TXManagerImpl mgr = (TXManagerImpl) serverConnection.getCache().getCacheTransactionManager();
     mgr.waitForCompletingTransaction(txId); // in case it's already completing here in another
                                             // thread
     if (mgr.isHostedTxRecentlyCompleted(txId)) {
-      writeReply(msg, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeReply(clientMessage, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       mgr.removeHostedTXState(txId);
       return;
     }
@@ -75,7 +77,7 @@ public class TXFailoverCommand extends BaseCommand {
     if (!tx.isRealDealLocal()) {
       // send message to all peers to find out who hosts the transaction
       FindRemoteTXMessageReplyProcessor processor =
-          FindRemoteTXMessage.send(servConn.getCache(), txId);
+          FindRemoteTXMessage.send(serverConnection.getCache(), txId);
       try {
         processor.waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
@@ -96,7 +98,7 @@ public class TXFailoverCommand extends BaseCommand {
         // bug #42228 and bug #43504 - this cannot return until the current view
         // has been installed by all members, so that dlocks are released and
         // the same keys can be used in a new transaction by the same client thread
-        InternalCache cache = servConn.getCache();
+        InternalCache cache = serverConnection.getCache();
         try {
           WaitForViewInstallation.send((DistributionManager) cache.getDistributionManager());
         } catch (InterruptedException e) {
@@ -110,9 +112,9 @@ public class TXFailoverCommand extends BaseCommand {
           }
           mgr.saveTXCommitMessageForClientFailover(txId, processor.getTxCommitMessage());
         } else {
-          writeException(msg, new TransactionDataNodeHasDepartedException(
-              "Could not find transaction host for " + txId), false, servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeException(clientMessage, new TransactionDataNodeHasDepartedException(
+              "Could not find transaction host for " + txId), false, serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           mgr.removeHostedTXState(txId);
           return;
         }
@@ -121,8 +123,8 @@ public class TXFailoverCommand extends BaseCommand {
     if (!wasInProgress) {
       mgr.setInProgress(false);
     }
-    writeReply(msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeReply(clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
   }
 
 }

@@ -1,5 +1,4 @@
 /*
- *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -12,9 +11,19 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package org.apache.geode.tools.pulse.tests;
+
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
+import org.apache.geode.management.internal.security.AccessControlMBean;
+import org.apache.geode.management.internal.security.MBeanServerWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -22,10 +31,10 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.rmi.registry.LocateRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -35,19 +44,6 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
-
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
-
-import org.apache.geode.internal.security.shiro.CustomAuthRealm;
-import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
-import org.apache.geode.management.internal.security.AccessControlMBean;
-import org.apache.geode.management.internal.security.MBeanServerWrapper;
-import org.apache.geode.management.internal.security.ResourceConstants;
 
 public class Server {
 
@@ -74,21 +70,21 @@ public class Server {
       // set up Shiro Security Manager
       Properties securityProperties = new Properties();
       securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonAuthFile);
-      Realm realm = new CustomAuthRealm(TestSecurityManager.class.getName(), securityProperties);
-      SecurityManager securityManager = new DefaultSecurityManager(realm);
-      SecurityUtils.setSecurityManager(securityManager);
+      securityProperties.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
+
+      SecurityService securityService = SecurityServiceFactory.create(securityProperties);
 
       // register the AccessControll bean
-      AccessControlMBean acc = new AccessControlMBean();
+      AccessControlMBean acc = new AccessControlMBean(securityService);
       ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
       MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
       platformMBeanServer.registerMBean(acc, accessControlMBeanON);
 
       // wire in the authenticator and authorizaton
-      JMXShiroAuthenticator interceptor = new JMXShiroAuthenticator();
+      JMXShiroAuthenticator interceptor = new JMXShiroAuthenticator(securityService);
       env.put(JMXConnectorServer.AUTHENTICATOR, interceptor);
       cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
-      cs.setMBeanServerForwarder(new MBeanServerWrapper());
+      cs.setMBeanServerForwarder(new MBeanServerWrapper(securityService));
 
       // set up the AccessControlMXBean
 
@@ -98,7 +94,7 @@ public class Server {
     }
 
     try {
-      java.rmi.registry.LocateRegistry.createRegistry(jmxPort);
+      LocateRegistry.createRegistry(jmxPort);
       System.out.println("RMI registry ready.");
     } catch (Exception e) {
       System.out.println("Exception starting RMI registry:");

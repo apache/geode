@@ -327,7 +327,7 @@ public class CacheClientProxy implements ClientSession {
   private int numDrainsInProgress = 0;
   private final Object drainsInProgressLock = new Object();
 
-  private SecurityService securityService = SecurityService.getSecurityService();
+  private final SecurityService securityService;
 
   /**
    * Constructor.
@@ -340,10 +340,13 @@ public class CacheClientProxy implements ClientSession {
    */
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
-      Version clientVersion, long acceptorId, boolean notifyBySubscription) throws CacheException {
+      Version clientVersion, long acceptorId, boolean notifyBySubscription,
+      SecurityService securityService) throws CacheException {
+
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
     this._cache = ccn.getCache();
+    this.securityService = securityService;
     this._maximumMessageCount = ccn.getMaximumMessageCount();
     this._messageTimeToLive = ccn.getMessageTimeToLive();
     this._acceptorId = acceptorId;
@@ -1951,7 +1954,7 @@ public class CacheClientProxy implements ClientSession {
 
         // Close the proxy
         terminateDispatching(false);
-        _cacheClientNotifier._statistics.incQueueDroppedCount();
+        _cacheClientNotifier.statistics.incQueueDroppedCount();
 
         /**
          * Setting the expiration task to null again and cancelling existing one, if any. See
@@ -2850,7 +2853,7 @@ public class CacheClientProxy implements ClientSession {
       try {
         this._messageQueue.put(clientMessage);
         if (this._proxy.isPaused() && this._proxy.isDurable()) {
-          this._proxy._cacheClientNotifier._statistics.incEventEnqueuedWhileClientAwayCount();
+          this._proxy._cacheClientNotifier.statistics.incEventEnqueuedWhileClientAwayCount();
           if (logger.isDebugEnabled()) {
             logger.debug("{}: Queued message while Durable Client is away {}", this, clientMessage);
           }

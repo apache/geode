@@ -22,6 +22,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 
@@ -36,12 +37,14 @@ public class Invalid extends BaseCommand {
   private Invalid() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     logger.error(
         LocalizedMessage.create(LocalizedStrings.Invalid_0_INVALID_MESSAGE_TYPE_WITH_TX_1_FROM_2,
-            new Object[] {servConn.getName(), Integer.valueOf(msg.getTransactionId()),
-                servConn.getSocketString()}));
-    writeErrorResponse(msg, MessageType.INVALID, servConn);
+            new Object[] {serverConnection.getName(),
+                Integer.valueOf(clientMessage.getTransactionId()),
+                serverConnection.getSocketString()}));
+    writeErrorResponse(clientMessage, MessageType.INVALID, serverConnection);
 
   }
 

@@ -15,6 +15,9 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.INDEX_NAME;
+import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -65,6 +68,8 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       LuceneService service = LuceneServiceProvider.get(cache);
 
+      INDEX_NAME.validateName(indexInfo.getIndexName());
+
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
 
@@ -81,6 +86,8 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
           indexFactory.addField(fields[i], analyzer);
         }
       }
+
+      REGION_PATH.validateName(indexInfo.getRegionPath());
       indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
 
       // TODO - update cluster configuration by returning a valid XmlEntity
@@ -96,8 +103,13 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
   private Analyzer toAnalyzer(String className) {
     if (className == null)
       className = StandardAnalyzer.class.getCanonicalName();
-    else if (StringUtils.trim(className).equals("") | StringUtils.trim(className).equals("null"))
-      className = StandardAnalyzer.class.getCanonicalName();
+    else {
+      String trimmedClassName = StringUtils.trim(className);
+      if (trimmedClassName.equals("") || trimmedClassName.equals("DEFAULT"))
+        className = StandardAnalyzer.class.getCanonicalName();
+      else
+        className = trimmedClassName;
+    }
 
     Class<? extends Analyzer> clazz =
         CliUtil.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);

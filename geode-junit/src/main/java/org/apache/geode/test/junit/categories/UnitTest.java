@@ -20,7 +20,7 @@ package org.apache.geode.test.junit.categories;
  *
  * <p>
  * <ul>
- * A {@code UnitTest} should <bold>not<bold> do any of the following:
+ * A {@code UnitTest} should <strong>not</strong> do any of the following:
  * <li>communicate with a database
  * <li>communicate across the network
  * <li>access the file system

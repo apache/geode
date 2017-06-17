@@ -43,6 +43,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class Get70 extends BaseCommand {
@@ -54,17 +55,17 @@ public class Get70 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long startparam)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long startparam) throws IOException {
     long start = startparam;
     Part regionNamePart = null, keyPart = null, valuePart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    CacheServerStats stats = servConn.getCacheServerStats();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
     StringId errMessage = null;
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     // requiresResponse = true;
     {
       long oldStart = start;
@@ -72,18 +73,18 @@ public class Get70 extends BaseCommand {
       stats.incReadGetRequestTime(start - oldStart);
     }
     // Retrieve the data from the message parts
-    int parts = msg.getNumberOfParts();
-    regionNamePart = msg.getPart(0);
-    keyPart = msg.getPart(1);
+    int parts = clientMessage.getNumberOfParts();
+    regionNamePart = clientMessage.getPart(0);
+    keyPart = clientMessage.getPart(1);
     // valuePart = null; (redundant assignment)
     if (parts > 2) {
-      valuePart = msg.getPart(2);
+      valuePart = clientMessage.getPart(2);
       try {
         callbackArg = valuePart.getObject();
       } catch (Exception e) {
-        writeException(msg, e, false, servConn);
+        writeException(clientMessage, e, false, serverConnection);
         // responded = true;
-        servConn.setAsTrue(RESPONDED);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -91,15 +92,15 @@ public class Get70 extends BaseCommand {
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
+      writeException(clientMessage, e, false, serverConnection);
       // responded = true;
-      servConn.setAsTrue(RESPONDED);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received 7.0 get request ({} bytes) from {} for region {} key {} txId {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName, key,
-          msg.getTransactionId());
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), regionName, key, clientMessage.getTransactionId());
     }
 
     // Process the get request
@@ -113,34 +114,34 @@ public class Get70 extends BaseCommand {
         errMessage = LocalizedStrings.Request_THE_INPUT_REGION_NAME_FOR_THE_GET_REQUEST_IS_NULL;
       }
       String s = errMessage.toLocalizedString();
-      logger.warn("{}: {}", servConn.getName(), s);
-      writeErrorResponse(msg, MessageType.REQUESTDATAERROR, s, servConn);
-      servConn.setAsTrue(RESPONDED);
+      logger.warn("{}: {}", serverConnection.getName(), s);
+      writeErrorResponse(clientMessage, MessageType.REQUESTDATAERROR, s, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    Region region = servConn.getCache().getRegion(regionName);
+    Region region = serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.Request__0_WAS_NOT_FOUND_DURING_GET_REQUEST
           .toLocalizedString(regionName);
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     GetOperationContext getContext = null;
     try {
       // for integrated security
-      this.securityService.authorizeRegionRead(regionName, key.toString());
+      securityService.authorizeRegionRead(regionName, key.toString());
 
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         getContext = authzRequest.getAuthorize(regionName, key, callbackArg);
         callbackArg = getContext.getCallbackArg();
       }
     } catch (NotAuthorizedException ex) {
-      writeException(msg, ex, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, ex, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -148,10 +149,10 @@ public class Get70 extends BaseCommand {
     // the value if it is a byte[].
     Entry entry;
     try {
-      entry = getEntry(region, key, callbackArg, servConn);
+      entry = getEntry(region, key, callbackArg, serverConnection);
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -164,7 +165,7 @@ public class Get70 extends BaseCommand {
       boolean keyNotPresent = entry.keyNotPresent;
 
       try {
-        AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
+        AuthorizeRequestPP postAuthzRequest = serverConnection.getPostAuthzRequest();
         if (postAuthzRequest != null) {
           try {
             getContext = postAuthzRequest.getAuthorize(regionName, key, data, isObject, getContext);
@@ -182,13 +183,13 @@ public class Get70 extends BaseCommand {
           }
         }
       } catch (NotAuthorizedException ex) {
-        writeException(msg, ex, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, ex, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
 
       // post process
-      data = this.securityService.postProcess(regionName, key, data, entry.isObject);
+      data = securityService.postProcess(regionName, key, data, entry.isObject);
 
       long oldStart = start;
       start = DistributionStats.getStatTime();
@@ -197,23 +198,25 @@ public class Get70 extends BaseCommand {
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) region;
         if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
-          writeResponseWithRefreshMetadata(data, callbackArg, msg, isObject, servConn, pr,
-              pr.getNetworkHopType(), versionTag, keyNotPresent);
+          writeResponseWithRefreshMetadata(data, callbackArg, clientMessage, isObject,
+              serverConnection, pr, pr.getNetworkHopType(), versionTag, keyNotPresent);
           pr.clearNetworkHopData();
         } else {
-          writeResponse(data, callbackArg, msg, isObject, versionTag, keyNotPresent, servConn);
+          writeResponse(data, callbackArg, clientMessage, isObject, versionTag, keyNotPresent,
+              serverConnection);
         }
       } else {
-        writeResponse(data, callbackArg, msg, isObject, versionTag, keyNotPresent, servConn);
+        writeResponse(data, callbackArg, clientMessage, isObject, versionTag, keyNotPresent,
+            serverConnection);
       }
     } finally {
       OffHeapHelper.release(originalData);
     }
 
-    servConn.setAsTrue(RESPONDED);
+    serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Wrote get response back to {} for region {} {}", servConn.getName(),
-          servConn.getSocketString(), regionName, entry);
+      logger.debug("{}: Wrote get response back to {} for region {} {}", serverConnection.getName(),
+          serverConnection.getSocketString(), regionName, entry);
     }
     stats.incWriteGetResponseTime(DistributionStats.getStatTime() - start);
 
@@ -379,12 +382,12 @@ public class Get70 extends BaseCommand {
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection servConn) throws IOException {
+  protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection servConn,
+  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection serverConnection,
       PartitionedRegion pr, byte nwHop) throws IOException {
     throw new UnsupportedOperationException();
   }

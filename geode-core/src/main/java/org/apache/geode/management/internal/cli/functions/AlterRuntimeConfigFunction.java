@@ -14,10 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -26,12 +22,20 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class AlterRuntimeConfigFunction extends FunctionAdapter implements InternalEntity {
 
   private static final long serialVersionUID = 1L;
+
+  private static Logger logger = LogService.getLogger();
 
   private InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
@@ -78,6 +82,7 @@ public class AlterRuntimeConfigFunction extends FunctionAdapter implements Inter
       context.getResultSender().lastResult(result);
 
     } catch (Exception e) {
+      logger.error("Exception happened on : " + memberId, e);
       CliFunctionResult cliFuncResult =
           new CliFunctionResult(memberId, e, CliUtil.stackTraceAsString(e));
       context.getResultSender().lastResult(cliFuncResult);

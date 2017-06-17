@@ -53,10 +53,8 @@ public class WanCommandsControllerJUnitTest {
     assertThat(this.wanCommandsController.testableCommand)
         .contains("--" + START_GATEWAYSENDER__ID + "=" + null);
     assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYSENDER);
-    assertThat(this.wanCommandsController.testableCommand)
-        .doesNotContain(START_GATEWAYRECEIVER__GROUP);
-    assertThat(this.wanCommandsController.testableCommand)
-        .doesNotContain(START_GATEWAYRECEIVER__MEMBER);
+    assertThat(this.wanCommandsController.testableCommand).doesNotContain(GROUP);
+    assertThat(this.wanCommandsController.testableCommand).doesNotContain(MEMBER);
   }
 
   @Test
@@ -69,17 +67,17 @@ public class WanCommandsControllerJUnitTest {
     assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYSENDER);
     assertThat(this.wanCommandsController.testableCommand)
         .contains("--" + START_GATEWAYSENDER__ID + "=" + gatewaySenderId);
-    assertThat(this.wanCommandsController.testableCommand.contains(START_GATEWAYRECEIVER__GROUP))
+    assertThat(this.wanCommandsController.testableCommand.contains(GROUP))
         .isEqualTo(containsGroups);
-    assertThat(this.wanCommandsController.testableCommand.contains(START_GATEWAYRECEIVER__MEMBER))
+    assertThat(this.wanCommandsController.testableCommand.contains(MEMBER))
         .isEqualTo(containsMembers);
     if (containsGroups) {
       assertThat(this.wanCommandsController.testableCommand)
-          .contains("--" + START_GATEWAYRECEIVER__GROUP + "=" + groups[0]);
+          .contains("--" + GROUP + "=" + groups[0]);
     }
     if (containsMembers) {
       assertThat(this.wanCommandsController.testableCommand)
-          .contains("--" + START_GATEWAYRECEIVER__MEMBER + "=" + members[0]);
+          .contains("--" + MEMBER + "=" + members[0]);
     }
   }
 

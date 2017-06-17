@@ -50,7 +50,7 @@ public class LogExporterTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private LogExporter logExporter;
-  LogFilter logFilter;
+  private LogFilter logFilter;
   private File workingDir;
 
   @Before
@@ -71,7 +71,7 @@ public class LogExporterTest {
   }
 
   @Test
-  public void exporterShouldStillReturnFilefNoAcceptableLogs() throws Exception {
+  public void exporterShouldStillReturnFileIfNoAcceptableLogs() throws Exception {
     File logFile1 = new File(workingDir, "server1.log");
     FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line");
     when(logFilter.acceptsLine(any())).thenReturn(LogFilter.LineFilterResult.LINE_REJECTED);
@@ -138,7 +138,7 @@ public class LogExporterTest {
     assertThat(logExporter.findStatFiles(workingDir.toPath())).doesNotContain(notALogFile.toPath());
   }
 
-  public static Set<String> getZipEntries(String zipFilePath) throws IOException {
+  static Set<String> getZipEntries(String zipFilePath) throws IOException {
     return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
   }
 

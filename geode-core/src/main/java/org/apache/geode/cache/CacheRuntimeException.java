@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache;
 
 import org.apache.geode.GemFireException;
@@ -22,20 +21,18 @@ import org.apache.geode.GemFireException;
  * cache exceptions are the subclass of this class. This class is abstract so only subclasses can be
  * instantiated
  *
- *
  * @since GemFire 3.0
  */
 public abstract class CacheRuntimeException extends GemFireException {
-  public static final long serialVersionUID = 6750107573015376688L;
+  private static final long serialVersionUID = 6750107573015376688L;
 
   /**
-   * Creates a new instance of <code>CacheRuntimeException</code> without detail message.
+   * Creates a new instance of {@code CacheRuntimeException} without detail message.
    */
   public CacheRuntimeException() {}
 
-
   /**
-   * Constructs an instance of <code>CacheRuntimeException</code> with the specified detail message.
+   * Constructs an instance of {@code CacheRuntimeException} with the specified detail message.
    * 
    * @param msg the detail message
    */
@@ -44,8 +41,8 @@ public abstract class CacheRuntimeException extends GemFireException {
   }
 
   /**
-   * Constructs an instance of <code>CacheRuntimeException</code> with the specified detail message
-   * and cause.
+   * Constructs an instance of {@code CacheRuntimeException} with the specified detail message and
+   * cause.
    * 
    * @param msg the detail message
    * @param cause the causal Throwable
@@ -55,7 +52,7 @@ public abstract class CacheRuntimeException extends GemFireException {
   }
 
   /**
-   * Constructs an instance of <code>CacheRuntimeException</code> with the specified cause.
+   * Constructs an instance of {@code CacheRuntimeException} with the specified cause.
    * 
    * @param cause the causal Throwable
    */
@@ -70,7 +67,7 @@ public abstract class CacheRuntimeException extends GemFireException {
     if (cause != null) {
       String causeStr = cause.toString();
       final String glue = ", caused by ";
-      StringBuffer sb = new StringBuffer(result.length() + causeStr.length() + glue.length());
+      StringBuilder sb = new StringBuilder(result.length() + causeStr.length() + glue.length());
       sb.append(result).append(glue).append(causeStr);
       result = sb.toString();
     }

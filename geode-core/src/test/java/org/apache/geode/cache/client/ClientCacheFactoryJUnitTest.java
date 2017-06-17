@@ -103,6 +103,7 @@ public class ClientCacheFactoryJUnitTest {
         Collections.singletonList(
             new InetSocketAddress(InetAddress.getLocalHost(), CacheServer.DEFAULT_PORT)),
         defPool.getServers());
+    assertEquals(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT, defPool.getSocketConnectTimeout());
 
     ClientCache cc2 = new ClientCacheFactory().create();
     if (cc2 != this.cc) {
@@ -141,6 +142,7 @@ public class ClientCacheFactoryJUnitTest {
     assertEquals(
         Collections.singletonList(new InetSocketAddress("localhost", CacheServer.DEFAULT_PORT)),
         defPool.getServers());
+    assertEquals(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT, defPool.getSocketConnectTimeout());
   }
 
   /**
@@ -152,12 +154,13 @@ public class ClientCacheFactoryJUnitTest {
     dsProps.setProperty(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(dsProps);
     Pool p = PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
-        .create("singlePool");
+        .setSocketConnectTimeout(1400).create("singlePool");
     this.cc = new ClientCacheFactory().create();
     GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
     assertEquals(true, gfc.isClient());
     Pool defPool = gfc.getDefaultPool();
     assertEquals(p, defPool);
+    assertEquals(1400, defPool.getSocketConnectTimeout());
 
     // make sure if we can not create a secure user cache when one pool
     // exists that is not multiuser enabled
@@ -175,7 +178,7 @@ public class ClientCacheFactoryJUnitTest {
 
       Pool pool = PoolManager.createFactory()
           .addServer(InetAddress.getLocalHost().getHostName(), CacheServer.DEFAULT_PORT)
-          .setMultiuserAuthentication(true).create("pool1");
+          .setMultiuserAuthentication(true).setSocketConnectTimeout(2345).create("pool1");
       RegionService cc = this.cc.createAuthenticatedView(suProps, pool.getName());
       ProxyCache pc = (ProxyCache) cc;
       UserAttributes ua = pc.getUserAttributes();
@@ -185,6 +188,7 @@ public class ClientCacheFactoryJUnitTest {
               new InetSocketAddress(InetAddress.getLocalHost(), CacheServer.DEFAULT_PORT)),
           proxyDefPool.getServers());
       assertEquals(true, proxyDefPool.getMultiuserAuthentication());
+      assertEquals(2345, proxyDefPool.getSocketConnectTimeout());
     }
   }
 
@@ -197,14 +201,16 @@ public class ClientCacheFactoryJUnitTest {
     dsProps.setProperty(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(dsProps);
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
-        .create("p7");
+        .setSocketConnectTimeout(2500).create("p7");
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666)
-        .create("p6");
+        .setSocketConnectTimeout(5200).create("p6");
     this.cc = new ClientCacheFactory().create();
     GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
     assertEquals(true, gfc.isClient());
     Pool defPool = gfc.getDefaultPool();
     assertEquals(null, defPool);
+    assertEquals(2500, PoolManager.find("p7").getSocketConnectTimeout());
+    assertEquals(5200, PoolManager.find("p6").getSocketConnectTimeout());
 
     // make sure if we can not create a secure user cache when more than one pool
     // exists that is not multiuser enabled
@@ -231,18 +237,28 @@ public class ClientCacheFactoryJUnitTest {
               new InetSocketAddress(InetAddress.getLocalHost(), CacheServer.DEFAULT_PORT)),
           proxyDefPool.getServers());
       assertEquals(true, proxyDefPool.getMultiuserAuthentication());
+      assertEquals(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT,
+          proxyDefPool.getSocketConnectTimeout());
     }
   }
 
   @Test
   public void test004SetMethod() throws Exception {
-    this.cc = new ClientCacheFactory().set(LOG_LEVEL, "severe").create();
+    this.cc =
+        new ClientCacheFactory().set(LOG_LEVEL, "severe").setPoolSocketConnectTimeout(0).create();
     GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
     assertEquals(true, gfc.isClient());
     Properties dsProps = this.cc.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
     assertEquals("severe", dsProps.getProperty(LOG_LEVEL));
+    assertEquals(0, this.cc.getDefaultPool().getSocketConnectTimeout());
+
+    try {
+      new ClientCacheFactory().setPoolSocketConnectTimeout(-1).create();
+      fail("expected IllegalArgumentException");
+    } catch (IllegalArgumentException ignore) {
+    }
   }
 
   @Test

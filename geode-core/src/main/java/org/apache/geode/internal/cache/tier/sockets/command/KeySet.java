@@ -26,7 +26,6 @@ import java.util.Set;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.KeySetOperationContext;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -38,6 +37,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class KeySet extends BaseCommand {
@@ -49,21 +49,22 @@ public class KeySet extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null;
     String regionName = null;
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
     // Retrieve the region name from the message parts
-    regionNamePart = msg.getPart(0);
+    regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getString();
-    ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
+    ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("{}: Received key set request ({} bytes) from {} for region {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName);
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), regionName);
     }
 
     // Process the key set request
@@ -72,41 +73,42 @@ public class KeySet extends BaseCommand {
       // if (regionName == null) (can only be null)
       {
         message = LocalizedStrings.KeySet_0_THE_INPUT_REGION_NAME_FOR_THE_KEY_SET_REQUEST_IS_NULL
-            .toLocalizedString(servConn.getName());
+            .toLocalizedString(serverConnection.getName());
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.KeySet_0_THE_INPUT_REGION_NAME_FOR_THE_KEY_SET_REQUEST_IS_NULL,
-            servConn.getName()));
+            serverConnection.getName()));
       }
-      writeKeySetErrorResponse(msg, MessageType.KEY_SET_DATA_ERROR, message, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeKeySetErrorResponse(clientMessage, MessageType.KEY_SET_DATA_ERROR, message,
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.KeySet__0_WAS_NOT_FOUND_DURING_KEY_SET_REQUEST
           .toLocalizedString(regionName);
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     try {
-      this.securityService.authorizeRegionRead(regionName);
+      securityService.authorizeRegionRead(regionName);
     } catch (NotAuthorizedException ex) {
-      writeChunkedException(msg, ex, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, ex, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     KeySetOperationContext keySetContext = null;
-    AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+    AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
     if (authzRequest != null) {
       try {
         keySetContext = authzRequest.keySetAuthorize(regionName);
       } catch (NotAuthorizedException ex) {
-        writeChunkedException(msg, ex, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeChunkedException(clientMessage, ex, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -117,20 +119,21 @@ public class KeySet extends BaseCommand {
 
     // Send header
     chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
-    chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+    chunkedResponseMsg.setTransactionId(clientMessage.getTransactionId());
     chunkedResponseMsg.sendHeader();
 
     // Send chunk response
     try {
-      fillAndSendKeySetResponseChunks(region, regionName, keySetContext, servConn);
-      servConn.setAsTrue(RESPONDED);
+      fillAndSendKeySetResponseChunks(region, regionName, keySetContext, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, e);
+      checkForInterrupt(serverConnection, e);
 
       // Otherwise, write an exception message and continue
-      writeChunkedException(msg, e, false, servConn, servConn.getChunkedResponseMessage());
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection,
+          serverConnection.getChunkedResponseMessage());
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -138,7 +141,8 @@ public class KeySet extends BaseCommand {
       // logger.fine(getName() + ": Sent chunk (1 of 1) of register interest
       // response (" + chunkedResponseMsg.getBufferLength() + " bytes) for
       // region " + regionName + " key " + key);
-      logger.debug("{}: Sent key set response for the region {}", servConn.getName(), regionName);
+      logger.debug("{}: Sent key set response for the region {}", serverConnection.getName(),
+          regionName);
     }
     // bserverStats.incLong(writeDestroyResponseTimeId,
     // DistributionStats.getStatTime() - start);
@@ -160,7 +164,7 @@ public class KeySet extends BaseCommand {
       keySet = keySetContext.getKeySet();
     }
 
-    List keyList = new ArrayList(maximumChunkSize);
+    List keyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
     final boolean isTraceEnabled = logger.isTraceEnabled();
     for (Iterator it = keySet.iterator(); it.hasNext();) {
       Object entryKey = it.next();
@@ -169,7 +173,7 @@ public class KeySet extends BaseCommand {
         logger.trace("{}: fillAndSendKeySetResponseKey <{}>; list size was {}; region: {}",
             servConn.getName(), entryKey, keyList.size(), region.getFullPath());
       }
-      if (keyList.size() == maximumChunkSize) {
+      if (keyList.size() == MAXIMUM_CHUNK_SIZE) {
         // Send the chunk and clear the list
         sendKeySetResponseChunk(region, keyList, false, servConn);
         keyList.clear();
@@ -185,7 +189,7 @@ public class KeySet extends BaseCommand {
 
     chunkedResponseMsg.setNumberOfParts(1);
     chunkedResponseMsg.setLastChunk(lastChunk);
-    chunkedResponseMsg.addObjPart(list, zipValues);
+    chunkedResponseMsg.addObjPart(list, false);
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Sending {} key set response chunk for region={}{}", servConn.getName(),

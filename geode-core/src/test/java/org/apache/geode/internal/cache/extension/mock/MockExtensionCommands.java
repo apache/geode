@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport;
+import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -44,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands extends AbstractCommandsSupport {
+public class MockExtensionCommands implements GfshCommand {
 
   public static final String OPTION_VALUE = "value";
 

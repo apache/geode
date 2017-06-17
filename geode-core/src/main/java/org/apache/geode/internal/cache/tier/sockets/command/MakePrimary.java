@@ -20,6 +20,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.security.SecurityService;
+
 import java.io.IOException;
 
 
@@ -34,30 +36,32 @@ public class MakePrimary extends BaseCommand {
   private MakePrimary() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    Part isClientReadyPart = msg.getPart(0);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    Part isClientReadyPart = clientMessage.getPart(0);
     byte[] isClientReadyPartBytes = (byte[]) isClientReadyPart.getObject();
     boolean isClientReady = isClientReadyPartBytes[0] == 0x01;
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("{}: Received make primary request ({} bytes) isClientReady={}: from {}",
-          servConn.getName(), msg.getPayloadLength(), isClientReady, servConn.getSocketString());
+          serverConnection.getName(), clientMessage.getPayloadLength(), isClientReady,
+          serverConnection.getSocketString());
     }
     try {
-      servConn.getAcceptor().getCacheClientNotifier().makePrimary(servConn.getProxyID(),
-          isClientReady);
-      writeReply(msg, servConn);
-      servConn.setAsTrue(RESPONDED);
+      serverConnection.getAcceptor().getCacheClientNotifier()
+          .makePrimary(serverConnection.getProxyID(), isClientReady);
+      writeReply(clientMessage, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
 
       if (isDebugEnabled) {
-        logger.debug("{}: Sent make primary response for {}", servConn.getName(),
-            servConn.getSocketString());
+        logger.debug("{}: Sent make primary response for {}", serverConnection.getName(),
+            serverConnection.getSocketString());
       }
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     }
   }
 

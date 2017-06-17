@@ -59,7 +59,7 @@ public class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 60;
+  public static final int HIGHEST_VERSION = 65;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
 
@@ -190,7 +190,7 @@ public class Version implements Comparable<Version> {
   public static final Version GEODE_111 =
       new Version("GEODE", "1.1.1", (byte) 1, (byte) 1, (byte) 1, (byte) 0, GEODE_111_ORDINAL);
 
-  private static final byte GEODE_120_ORDINAL = 60;
+  private static final byte GEODE_120_ORDINAL = 65;
 
   public static final Version GEODE_120 =
       new Version("GEODE", "1.2.0", (byte) 1, (byte) 2, (byte) 0, (byte) 0, GEODE_120_ORDINAL);

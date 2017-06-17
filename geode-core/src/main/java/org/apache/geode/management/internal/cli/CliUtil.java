@@ -73,16 +73,7 @@ import java.util.zip.Inflater;
  * @since GemFire 7.0
  */
 public class CliUtil {
-
-  public static final String GFSHVM_IDENTIFIER = "gfsh";
-
-  public static boolean isGfshVM = Boolean.getBoolean(GFSHVM_IDENTIFIER);
-
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
-
-  public static boolean isGfshVM() {
-    return isGfshVM;
-  }
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
     String jarProductName = null;
@@ -279,27 +270,6 @@ public class CliUtil {
       }
     }
     return sb.toString();
-  }
-
-  public static Set<DistributedMember> findMembersOrThrow(final String groups, final String members)
-      throws CommandResultException {
-
-    String[] groupsArray = (groups == null ? new String[] {} : groups.split(","));
-    String[] membersArray = (members == null ? new String[] {} : members.split(","));
-
-    return findMembersOrThrow(groupsArray, membersArray);
-  }
-
-  public static Set<DistributedMember> findMembersOrThrow(final String[] groups,
-      final String[] members) throws CommandResultException {
-
-    Set<DistributedMember> matchingMembers = findMembers(groups, members);
-    if (matchingMembers.isEmpty()) {
-      throw new CommandResultException(
-          ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE));
-    }
-
-    return matchingMembers;
   }
 
   /**

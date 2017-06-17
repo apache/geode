@@ -14,17 +14,20 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.junit.Assert.*;
-
-import org.apache.shiro.authz.permission.WildcardPermission;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Target;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.shiro.authz.permission.WildcardPermission;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class ResourcePermissionTest {
@@ -35,7 +38,7 @@ public class ResourcePermissionTest {
     context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL, context.getTarget());
   }
 
   @Test
@@ -49,32 +52,46 @@ public class ResourcePermissionTest {
     context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL, context.getTarget());
 
     context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL, context.getTarget());
 
-    context = new ResourcePermission("DATA", null, null);
+    context = new ResourcePermission(Resource.DATA, null);
     assertEquals(Resource.DATA, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL, context.getTarget());
 
-    context = new ResourcePermission("CLUSTER", null, null);
+    context = new ResourcePermission(Resource.CLUSTER, null);
     assertEquals(Resource.CLUSTER, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL, context.getTarget());
 
-    context = new ResourcePermission(null, "MANAGE", "REGIONA");
+    context = new ResourcePermission(null, Operation.MANAGE, "REGIONA");
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.MANAGE, context.getOperation());
-    assertEquals("REGIONA", context.getRegionName());
+    assertEquals("REGIONA", context.getTarget());
 
-    context = new ResourcePermission("DATA", "MANAGE", "REGIONA");
+    context = new ResourcePermission(Resource.DATA, Operation.MANAGE, "REGIONA");
     assertEquals(Resource.DATA, context.getResource());
     assertEquals(Operation.MANAGE, context.getOperation());
-    assertEquals("REGIONA", context.getRegionName());
+    assertEquals("REGIONA", context.getTarget());
+
+    context = new ResourcePermission(Resource.CLUSTER, Operation.MANAGE);
+    assertEquals(Resource.CLUSTER, context.getResource());
+    assertEquals(Operation.MANAGE, context.getOperation());
+    assertEquals(ResourcePermission.ALL, context.getTarget());
+
+    // make sure "ALL" in the resource "DATA" means regionName won't be converted to *
+    context = new ResourcePermission(Resource.DATA, Operation.READ, "ALL");
+    assertEquals(Resource.DATA, context.getResource());
+    assertEquals(Operation.READ, context.getOperation());
+    assertEquals("ALL", context.getTarget());
+
+    context = new ResourcePermission(Resource.CLUSTER, Operation.READ, Target.ALL);
+    assertEquals(context.getTarget(), ResourcePermission.ALL);
   }
 
   @Test
@@ -82,28 +99,28 @@ public class ResourcePermissionTest {
     context = new ResourcePermission();
     assertEquals("NULL:NULL", context.toString());
 
-    context = new ResourcePermission("DATA", "MANAGE");
+    context = new ResourcePermission(Resource.DATA, Operation.MANAGE);
     assertEquals("DATA:MANAGE", context.toString());
 
-    context = new ResourcePermission("DATA", "MANAGE", "REGIONA");
+    context = new ResourcePermission(Resource.DATA, Operation.MANAGE, "REGIONA");
     assertEquals("DATA:MANAGE:REGIONA", context.toString());
 
-    context = new ResourcePermission("data", "manage");
+    context = new ResourcePermission(Resource.DATA, Operation.MANAGE);
     assertEquals("DATA:MANAGE", context.toString());
   }
 
   @Test
   public void testImples() {
     WildcardPermission role = new WildcardPermission("*:read");
-    role.implies(new ResourcePermission("data", "read"));
-    role.implies(new ResourcePermission("cluster", "read"));
+    role.implies(new ResourcePermission(Resource.DATA, Operation.READ));
+    role.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ));
 
     role = new WildcardPermission("*:read:*");
-    role.implies(new ResourcePermission("data", "read", "testRegion"));
-    role.implies(new ResourcePermission("cluster", "read", "anotherRegion", "key1"));
+    role.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion"));
+    role.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ, "anotherRegion", "key1"));
 
     role = new WildcardPermission("data:*:testRegion");
-    role.implies(new ResourcePermission("data", "read", "testRegion"));
-    role.implies(new ResourcePermission("data", "write", "testRegion"));
+    role.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion"));
+    role.implies(new ResourcePermission(Resource.DATA, Operation.WRITE, "testRegion"));
   }
 }

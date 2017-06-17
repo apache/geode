@@ -21,7 +21,6 @@ import java.util.Set;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -34,6 +33,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class GetAll651 extends BaseCommand {
@@ -45,33 +45,34 @@ public class GetAll651 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keysPart = null;
     String regionName = null;
     Object[] keys = null;
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
     // Retrieve the region name from the message parts
-    regionNamePart = msg.getPart(0);
+    regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getString();
 
     // Retrieve the keys array from the message parts
-    keysPart = msg.getPart(1);
+    keysPart = clientMessage.getPart(1);
     try {
       keys = (Object[]) keysPart.getObject();
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     if (logger.isDebugEnabled()) {
-      StringBuffer buffer = new StringBuffer();
-      buffer.append(servConn.getName()).append(": Received getAll request (")
-          .append(msg.getPayloadLength()).append(" bytes) from ").append(servConn.getSocketString())
-          .append(" for region ").append(regionName).append(" keys ");
+      StringBuilder buffer = new StringBuilder();
+      buffer.append(serverConnection.getName()).append(": Received getAll request (")
+          .append(clientMessage.getPayloadLength()).append(" bytes) from ")
+          .append(serverConnection.getSocketString()).append(" for region ").append(regionName)
+          .append(" keys ");
       if (keys != null) {
         for (int i = 0; i < keys.length; i++) {
           buffer.append(keys[i]).append(" ");
@@ -90,43 +91,44 @@ public class GetAll651 extends BaseCommand {
         message = LocalizedStrings.GetAll_THE_INPUT_REGION_NAME_FOR_THE_GETALL_REQUEST_IS_NULL
             .toLocalizedString();
       }
-      logger.warn("{}: {}", servConn.getName(), message);
-      writeChunkedErrorResponse(msg, MessageType.GET_ALL_DATA_ERROR, message, servConn);
-      servConn.setAsTrue(RESPONDED);
+      logger.warn("{}: {}", serverConnection.getName(), message);
+      writeChunkedErrorResponse(clientMessage, MessageType.GET_ALL_DATA_ERROR, message,
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason = " was not found during getAll request";
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     // Send header
-    ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
+    ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();
     chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
-    chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+    chunkedResponseMsg.setTransactionId(clientMessage.getTransactionId());
     chunkedResponseMsg.sendHeader();
 
     // Send chunk response
     try {
-      fillAndSendGetAllResponseChunks(region, regionName, keys, servConn);
-      servConn.setAsTrue(RESPONDED);
+      fillAndSendGetAllResponseChunks(region, regionName, keys, serverConnection, securityService);
+      serverConnection.setAsTrue(RESPONDED);
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, e);
+      checkForInterrupt(serverConnection, e);
 
       // Otherwise, write an exception message and continue
-      writeChunkedException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
   }
 
   private void fillAndSendGetAllResponseChunks(Region region, String regionName, Object[] keys,
-      ServerConnection servConn) throws IOException {
+      ServerConnection servConn, SecurityService securityService) throws IOException {
 
     // Interpret null keys object as a request to get all key,value entry pairs
     // of the region; otherwise iterate each key and perform the get behavior.
@@ -148,7 +150,7 @@ public class GetAll651 extends BaseCommand {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     for (int i = 0; i < numKeys; i++) {
       // Send the intermediate chunk if necessary
-      if (values.size() == maximumChunkSize) {
+      if (values.size() == MAXIMUM_CHUNK_SIZE) {
         // Send the chunk and clear the list
         sendGetAllResponseChunk(region, values, false, servConn);
         values.clear();
@@ -182,7 +184,7 @@ public class GetAll651 extends BaseCommand {
       }
 
       try {
-        this.securityService.authorizeRegionRead(regionName, key.toString());
+        securityService.authorizeRegionRead(regionName, key.toString());
       } catch (NotAuthorizedException ex) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
@@ -198,7 +200,7 @@ public class GetAll651 extends BaseCommand {
       request.getValueAndIsObject(region, key, null, servConn, valueAndIsObject);
       Object value = valueAndIsObject[0];
       boolean isObject = ((Boolean) valueAndIsObject[1]).booleanValue();
-      keyNotPresent = ((Boolean) valueAndIsObject[2]).booleanValue();;
+      keyNotPresent = ((Boolean) valueAndIsObject[2]).booleanValue();
       if (isDebugEnabled) {
         logger.debug("{}: Retrieved value for key={}: {}", servConn.getName(), key, value);
       }
@@ -225,7 +227,7 @@ public class GetAll651 extends BaseCommand {
           continue;
         }
       }
-      value = this.securityService.postProcess(regionName, key, value, isObject);
+      value = securityService.postProcess(regionName, key, value, isObject);
 
       if (isDebugEnabled) {
         logger.debug("{}: Returning value for key={}: {}", servConn.getName(), key, value);
@@ -253,7 +255,7 @@ public class GetAll651 extends BaseCommand {
    * @param includeKeys if the part list should include the keys
    */
   protected ObjectPartList651 getObjectPartsList(boolean includeKeys) {
-    ObjectPartList651 values = new ObjectPartList651(maximumChunkSize, includeKeys);
+    ObjectPartList651 values = new ObjectPartList651(MAXIMUM_CHUNK_SIZE, includeKeys);
     return values;
   }
 
@@ -262,7 +264,7 @@ public class GetAll651 extends BaseCommand {
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     chunkedResponseMsg.setNumberOfParts(1);
     chunkedResponseMsg.setLastChunk(lastChunk);
-    chunkedResponseMsg.addObjPart(list, zipValues);
+    chunkedResponseMsg.addObjPart(list, false);
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Sending {} getAll response chunk for region={} values={} chunk=<{}>",

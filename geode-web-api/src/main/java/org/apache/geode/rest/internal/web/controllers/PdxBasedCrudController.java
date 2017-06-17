@@ -14,14 +14,16 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.RegionData;
+import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,18 +32,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
-import org.apache.geode.rest.internal.web.controllers.support.RegionData;
-import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on
@@ -51,7 +46,7 @@ import org.apache.geode.rest.internal.web.util.ArrayUtils;
  * @since GemFire 8.0
  */
 @Controller("pdxCrudController")
-@Api(value = "region", description = "region CRUD operations")
+@Api(value = "region", description = "region CRUD operations", tags = "region")
 @RequestMapping(PdxBasedCrudController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class PdxBasedCrudController extends CommonCrudController {

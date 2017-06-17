@@ -12,63 +12,43 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import org.apache.geode.internal.cache.tier.Command;
-import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 
-
 public class UpdateClientNotification extends BaseCommand {
 
-  private final static UpdateClientNotification singleton = new UpdateClientNotification();
+  private static final UpdateClientNotification singleton = new UpdateClientNotification();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private UpdateClientNotification() {}
+  private UpdateClientNotification() {
+    // nothing
+  }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    CacheServerStats stats = servConn.getCacheServerStats();
-    {
-      long oldStart = start;
-      start = DistributionStats.getStatTime();
-      stats.incReadUpdateClientNotificationRequestTime(start - oldStart);
-    }
-    try {
-      // this is no longer needed the client membership id is now used
-      // // Retrieve the data from the message parts
-      // Part clientPortPart = msg.getPart(0);
-      // int clientPort = clientPortPart.getInt();
-      // if (logger.fineEnabled()) {
-      // logger.fine(servConn.getName()
-      // + ": Received client notification update request ("
-      // + msg.getPayloadLength() + " bytes) for " + clientPort + " from "
-      // + servConn.getSocketHost() + ":" + servConn.getSocketPort());
-      // }
-      // // Update the client socket and remote ports
-      // servConn.getAcceptor().getCacheClientNotifier().registerClientPort(
-      // servConn.getSocketHost(), clientPort, servConn.getSocketPort(),
-      // servConn.getProxyID());
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
 
-      // if (logger.fineEnabled()) {
-      // logger.fine(servConn.getName()
-      // + ": Processed client notification update request for "
-      // + clientPort + " from " + servConn.getSocketHost() + ":"
-      // + servConn.getSocketPort());
-      // }
-    } finally {
-      long oldStart = start;
-      start = DistributionStats.getStatTime();
-      stats.incProcessUpdateClientNotificationTime(start - oldStart);
-    }
+    CacheServerStats stats = serverConnection.getCacheServerStats();
+
+    long oldStart = start;
+    start = DistributionStats.getStatTime();
+    stats.incReadUpdateClientNotificationRequestTime(start - oldStart);
+
+    oldStart = start;
+    start = DistributionStats.getStatTime();
+    stats.incProcessUpdateClientNotificationTime(start - oldStart);
   }
 
 }

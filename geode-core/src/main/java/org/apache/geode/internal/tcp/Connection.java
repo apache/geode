@@ -2149,7 +2149,7 @@ public class Connection implements Runnable {
                 logger.fatal(LocalizedMessage
                     .create(LocalizedStrings.Connection_FAILED_HANDLING_CHUNK_MESSAGE), ex);
               }
-            } else /* (msgType == END_CHUNKED_MSG_TYPE) */ {
+            } else /* (messageType == END_CHUNKED_MSG_TYPE) */ {
               MsgDestreamer md = obtainMsgDestreamer(msgId, remoteVersion);
               this.owner.getConduit().stats.incMessagesBeingReceived(md.size() == 0, len);
               try {

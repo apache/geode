@@ -122,8 +122,9 @@ To accomplish this, the application server container must use a JCA Resource Ada
 
 # How to Run JTA Transactions with Geode as a "Last Resource"
 
-1.  Locate the `$GEMFIRE/lib/gemfire-jca.rar` file in your Geode installation. 
-2.  Add your container-specific XML file to the `gemfire-jca.rar` file. 
+1.  Locate the version-specific `geode-jca` RAR file within 
+the `lib` directory of your Geode installation. 
+2.  Add your container-specific XML file to the `geode-jca` RAR file. 
 <ol>
 <li>Create a container-specific resource adapter XML file named &lt;container&gt;-ra.xml. For example, an XML file for a WebLogic resource adapter XML file might look something like this:
 
@@ -144,17 +145,21 @@ To accomplish this, the application server container must use a JCA Resource Ada
     META-INF/weblogic-ra.xml
     ```
 </li>
-<li>Navigate to the directory above the `META-INF` folder and execute the following command:
+<li>Navigate to the directory above the `META-INF` folder and execute the following command, with appropriate substitutions for 
+path and file names:
 
     ``` pre
-    $ jar -uf <GEMFIRE_INSTALL_DIR>/lib/gemfire-jca.rar META-INF/weblogic-ra.xml
+    $ jar -uf /path/to/lib/geode-jca-X-X-X.rar META-INF/weblogic-ra.xml
     ```
 </li>
 </ol>
-3.  Make sure that `$GEMFIRE/lib/gemfire.jar` is accessible in the CLASSPATH of the JTA transaction coordinator container.
-4.  Deploy `gemfire-jca.rar` file on the JTA transaction coordinator container . When deploying the file, you specify the JNDI name and so on. 
+3.  Make sure that the `geode-dependencies.jar` is accessible in 
+the CLASSPATH of the JTA transaction coordinator container.
+4.  Deploy the version-specific `geode-jca` RAR file on 
+the JTA transaction coordinator container.
+When deploying the file, you specify the JNDI name and so on. 
 5.  Configure Geode for any necessary transactional behavior. Enable `copy-on-read` and specify a transaction listener, if you need one. See [Setting Global Copy on Read](working_with_transactions.html#concept_vx2_gs4_5k) and [Configuring Transaction Plug-In Event Handlers](working_with_transactions.html#concept_ocw_vf1_wk) for details.
-6.  Get an initial context through `com.gemstone.cache.Cache.getJNDIContext`. For example:
+6.  Get an initial context through `org.apache.geode.cache.GemFireCache.getJNDIContext`. For example:
 
     ``` pre
     Context ctx = cache.getJNDIContext();
@@ -185,6 +190,7 @@ See [JCA Resource Adapter Example](jca_adapter_example.html#concept_swv_z2p_wk) 
 ## <a id="concept_8567sdkbigige" class="no-quick-link"></a>Using Geode as the JTA Transaction Manager
 
 You can also use Geode as the JTA transaction manager.
+As of Geode 1.2, Geode's JTA transaction manager is deprecated.
 
 Geode ships with its own implementation of a JTA transaction manager. However, note that this implementation is not XA-compliant; therefore, it does not persist any state, which could lead to an inconsistent state after recovering a crashed member.
 
@@ -215,7 +221,7 @@ To run a global transaction, perform the following steps:
 3.  Configure Geode for any necessary transactional behavior. Enable `copy-on-read` for your cache and specify a transaction listener, if you need one. See [Setting Global Copy on Read](working_with_transactions.html#concept_vx2_gs4_5k) and [Configuring Transaction Plug-In Event Handlers](working_with_transactions.html#concept_ocw_vf1_wk) for details. 
 4.  Make sure that JTA transactions are not disabled in the `cache.xml` file or the application code. 
 5.  Initialize the Geode cache. 
-6.  Get an initial context through `org.apache.geode.cache.Cache.getJNDIContext`. For example: 
+6.  Get an initial context through `org.apache.geode.cache.GemFireCache.getJNDIContext`. For example: 
 
     ``` pre
     Context ctx = cache.getJNDIContext();

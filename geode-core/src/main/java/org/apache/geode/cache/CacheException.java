@@ -16,36 +16,34 @@ package org.apache.geode.cache;
 
 import org.apache.geode.GemFireException;
 
-
 /**
  * A generic exception, which indicates a cache error has occurred. All the other cache exceptions
  * are subclasses of this class. This class is abstract and therefore only subclasses are
  * instantiated.
  *
- *
  * @since GemFire 2.0
  */
 public abstract class CacheException extends GemFireException {
-  public static final long serialVersionUID = 7699432887938858940L;
+  private static final long serialVersionUID = 7699432887938858940L;
 
-  /** Constructs a new <code>CacheException</code>. */
+  /** Constructs a new {@code CacheException}. */
   public CacheException() {
     super();
   }
 
-  /** Constructs a new <code>CacheException</code> with a message string. */
+  /** Constructs a new {@code CacheException} with a message string. */
   public CacheException(String s) {
     super(s);
   }
 
   /**
-   * Constructs a <code>CacheException</code> with a message string and a base exception
+   * Constructs a {@code CacheException} with a message string and a base exception
    */
   public CacheException(String s, Throwable cause) {
     super(s, cause);
   }
 
-  /** Constructs a <code>CacheException</code> with a cause */
+  /** Constructs a {@code CacheException} with a cause */
   public CacheException(Throwable cause) {
     super(cause);
   }
@@ -57,7 +55,7 @@ public abstract class CacheException extends GemFireException {
     if (cause != null) {
       String causeStr = cause.toString();
       final String glue = ", caused by ";
-      StringBuffer sb = new StringBuffer(result.length() + causeStr.length() + glue.length());
+      StringBuilder sb = new StringBuilder(result.length() + causeStr.length() + glue.length());
       sb.append(result).append(glue).append(causeStr);
       result = sb.toString();
     }

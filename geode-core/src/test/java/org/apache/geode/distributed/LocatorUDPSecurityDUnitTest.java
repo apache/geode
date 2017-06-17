@@ -45,12 +45,6 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
   }
 
-  @Override
-  @Test
-  public void testStartTwoLocators() throws Exception {
-    super.testStartTwoLocators();
-  }
-
   @Test
   public void testLocatorWithUDPSecurityButServer() throws Exception {
     disconnectAllFromDS();

@@ -231,11 +231,13 @@ public class InitialImageOperation {
       }
     }
     long giiStart = this.region.getCachePerfStats().startGetInitialImage();
+    InternalDistributedMember provider = null;
 
     for (Iterator itr = recipients.iterator(); !this.gotImage && itr.hasNext();) {
       // if we got a partial image from the previous recipient, then clear it
 
       InternalDistributedMember recipient = (InternalDistributedMember) itr.next();
+      provider = recipient;
 
       // In case of HARegion, before getting the region snapshot(image) get the filters
       // registered by the associated client and apply them.
@@ -546,6 +548,7 @@ public class InitialImageOperation {
     } // for
 
     if (this.gotImage) {
+      this.region.recordEventStateFromImageProvider(provider);
       this.region.getCachePerfStats().endGetInitialImage(giiStart);
       if (this.isDeltaGII) {
         this.region.getCachePerfStats().incDeltaGIICompleted();

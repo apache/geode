@@ -14,45 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.zip.DataFormatException;
-import java.util.zip.GZIPInputStream;
-
-import javax.management.ObjectName;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -106,29 +69,53 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
+import javax.management.ObjectName;
 
 /**
  * @since GemFire 7.0
  */
-public class MiscellaneousCommands implements CommandMarker {
+public class MiscellaneousCommands implements GfshCommand {
 
   public static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
   public final static String DEFAULT_TIME_OUT = "10";
   private final static Logger logger = LogService.getLogger();
 
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
 
   public void shutdownNode(final long timeout, final Set<DistributedMember> includeMembers)
       throws TimeoutException, InterruptedException, ExecutionException {
@@ -302,10 +289,10 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result gc(
-      @CliOption(key = CliStrings.GC__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.GC__MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.GC__MEMBER__HELP) String memberId) {
     InternalCache cache = getCache();
@@ -364,9 +351,9 @@ public class MiscellaneousCommands implements CommandMarker {
             return ResultBuilder.createUserErrorResult((String) object);
           } else {
             Map<String, String> resultMap = (Map<String, String>) object;
-            toTabularResultData(resultTable, (String) resultMap.get("MemberId"),
-                (String) resultMap.get("HeapSizeBeforeGC"),
-                (String) resultMap.get("HeapSizeAfterGC"), (String) resultMap.get("TimeSpentInGC"));
+            toTabularResultData(resultTable, resultMap.get("MemberId"),
+                resultMap.get("HeapSizeBeforeGC"), resultMap.get("HeapSizeAfterGC"),
+                resultMap.get("TimeSpentInGC"));
           }
         } else {
           LogWrapper.getInstance().fine("ResultMap was null ");
@@ -393,11 +380,11 @@ public class MiscellaneousCommands implements CommandMarker {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   // TODO : Verify the auto-completion for multiple values.
   public Result netstat(
-      @CliOption(key = CliStrings.NETSTAT__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.NETSTAT__MEMBER__HELP) String[] members,
-      @CliOption(key = CliStrings.NETSTAT__GROUP, mandatory = false,
+      @CliOption(key = CliStrings.GROUP, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.NETSTAT__GROUP__HELP) String group,
@@ -606,7 +593,7 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result showLog(
-      @CliOption(key = CliStrings.SHOW_LOG_MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.SHOW_LOG_MEMBER_HELP, mandatory = true) String memberNameOrId,
       @CliOption(key = CliStrings.SHOW_LOG_LINE_NUM, unspecifiedDefaultValue = "0",
@@ -670,13 +657,12 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
+  public Result exportStackTrace(@CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.EXPORT_STACKTRACE__HELP) String memberNameOrId,
+      help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__GROUP,
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_STACKTRACE__GROUP) String group,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.GROUP) String[] group,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
@@ -687,15 +673,17 @@ public class MiscellaneousCommands implements CommandMarker {
 
     Result result = null;
     StringBuffer filePrefix = new StringBuffer("stacktrace");
+
+    if (fileName == null) {
+      fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
+    }
+    final File outFile = new File(fileName);
     try {
-      if (fileName == null) {
-        fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
-      }
-      final File outFile = new File(fileName);
       if (outFile.exists() && failIfFilePresent) {
         return ResultBuilder.createShellClientErrorResult(CliStrings.format(
             CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
       }
+
 
       InternalCache cache = getCache();
       InternalDistributedSystem ads = cache.getInternalDistributedSystem();
@@ -703,13 +691,9 @@ public class MiscellaneousCommands implements CommandMarker {
       InfoResultData resultData = ResultBuilder.createInfoResultData();
 
       Map<String, byte[]> dumps = new HashMap<String, byte[]>();
-      Set<DistributedMember> targetMembers = null;
-
-      if ((group == null || group.isEmpty())
-          && (memberNameOrId == null || memberNameOrId.isEmpty())) {
-        targetMembers = CliUtil.getAllMembers(cache);
-      } else {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc =
@@ -728,9 +712,7 @@ public class MiscellaneousCommands implements CommandMarker {
       resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());
 
       result = ResultBuilder.buildResult(resultData);
-    } catch (CommandResultException crex) {
-      return crex.getResult();
-    } catch (Exception ex) {
+    } catch (IOException ex) {
       result = ResultBuilder
           .createGemFireErrorResult(CliStrings.EXPORT_STACKTRACE__ERROR + ex.getMessage());
     }
@@ -803,8 +785,7 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_STATISTICS})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result showMetrics(
-      @CliOption(key = {CliStrings.SHOW_METRICS__MEMBER},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @CliOption(key = {CliStrings.MEMBER}, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.SHOW_METRICS__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = {CliStrings.SHOW_METRICS__REGION}, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.SHOW_METRICS__REGION__HELP) String regionName,
@@ -1845,9 +1826,9 @@ public class MiscellaneousCommands implements CommandMarker {
       interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ChangeLogLevelInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__GROUPS, unspecifiedDefaultValue = "",
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, unspecifiedDefaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
           optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",
@@ -1875,8 +1856,8 @@ public class MiscellaneousCommands implements CommandMarker {
           Iterator<DistributedMember> it = ds.iterator();
           while (it.hasNext()) {
             DistributedMember mem = it.next();
-            if (mem.getName() == null ? false
-                : mem.getName().equals(member) || mem.getId().equals(member)) {
+            if (mem.getName() != null
+                && (mem.getName().equals(member) || mem.getId().equals(member))) {
               dsMembers.add(mem);
               break;
             }
@@ -1953,17 +1934,6 @@ public class MiscellaneousCommands implements CommandMarker {
 
       return ResultBuilder.createInfoResult("");
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.SHUTDOWN, CliStrings.GC, CliStrings.SHOW_DEADLOCK,
-      CliStrings.SHOW_METRICS, CliStrings.SHOW_LOG, CliStrings.EXPORT_STACKTRACE,
-      CliStrings.NETSTAT, CliStrings.EXPORT_LOGS, CliStrings.CHANGE_LOGLEVEL})
-  public boolean shutdownCommandAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 
   private Set<String> getSetDifference(Set<String> set1, Set<String> set2) {

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
@@ -48,6 +49,8 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import org.apache.geode.internal.cache.EventTracker.EventSeqnoHolder;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
@@ -96,6 +99,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       }
 
       CreateRegionReplyProcessor replyProc = new CreateRegionReplyProcessor(recps);
+      newRegion.registerCreateRegionReplyProcessor(replyProc);
 
       boolean useMcast = false; // multicast is disabled for this message for now
       CreateRegionMessage msg = getCreateRegionMessage(recps, replyProc, useMcast);
@@ -199,16 +203,15 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           .getDistributedSystem(), members);
     }
 
-    /**
-     * guards application of event state to the region so that we deserialize and apply event state
-     * only once
-     */
-    private Object eventStateLock = new Object();
-
-    /** whether event state has been recorded in the region */
-    private boolean eventStateRecorded = false;
+    private final Map<DistributedMember, Map<ThreadIdentifier, EventSeqnoHolder>> remoteEventStates =
+        new ConcurrentHashMap<>();
 
     private boolean allMembersSkippedChecks = true;
+
+    public Map<ThreadIdentifier, EventSeqnoHolder> getEventState(
+        InternalDistributedMember provider) {
+      return this.remoteEventStates.get(provider);
+    }
 
     /**
      * true if all members skipped CreateRegionMessage#checkCompatibility(), in which case
@@ -218,6 +221,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       return this.allMembersSkippedChecks;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void process(DistributionMessage msg) {
       Assert.assertTrue(msg instanceof CreateRegionReplyMessage,
@@ -246,17 +250,13 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             RegionAdvisor ra = (RegionAdvisor) cda;
             ra.putBucketRegionProfiles(reply.bucketProfiles);
           }
-          if (reply.eventState != null && lr.hasEventTracker()) {
-            synchronized (eventStateLock) {
-              if (!this.eventStateRecorded) {
-                this.eventStateRecorded = true;
-                Object eventState = null;
-                eventState = reply.eventState;
-                lr.recordEventState(reply.getSender(), (Map) eventState);
-              }
-            }
+
+          // Save all event states, need to initiate the event tracker from the GII provider
+          if (reply.eventState != null) {
+            remoteEventStates.put(reply.getSender(),
+                (Map<ThreadIdentifier, EventSeqnoHolder>) reply.eventState);
           }
-          reply.eventState = null;
+
           if (lr.isUsedForPartitionedRegionBucket()) {
             ((BucketRegion) lr).updateEventSeqNum(reply.seqKeyForWan);
           }

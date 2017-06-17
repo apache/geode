@@ -259,7 +259,7 @@ public class LuceneClusterConfigurationDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, indexName);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "'field1, field2, field3'");
     gfshConnector.executeAndVerifyCommand(csb.toString());
   }
 
@@ -293,14 +293,14 @@ public class LuceneClusterConfigurationDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
-    csb.addOptionWithValueCheck(CliStrings.CREATE_REGION__GROUP, group);
+    csb.addOptionWithValueCheck(CliStrings.GROUP, group);
     gfshConnector.executeAndVerifyCommand(csb.toString());
   }
 
   private CommandResult alterRegionUsingGfsh(String group) throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
     csb.addOption(CliStrings.ALTER_REGION__REGION, REGION_NAME);
-    csb.addOption(CliStrings.ALTER_REGION__GROUP, group);
+    csb.addOption(CliStrings.GROUP, group);
     csb.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "5764");
     return gfshConnector.executeAndVerifyCommand(csb.toString());
   }

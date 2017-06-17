@@ -14,13 +14,11 @@ org/apache/geode/InternalGemFireException,true,-6912843691545178619
 org/apache/geode/InvalidDeltaException,true,7846464807353214091
 org/apache/geode/InvalidValueException,true,6186767885369527709
 org/apache/geode/InvalidVersionException,true,6342040462194322698
-org/apache/geode/LicenseException,true,-1178557127300465801
 org/apache/geode/NoSystemException,true,-101890149467219630
 org/apache/geode/OutOfOffHeapMemoryException,true,4111959438738739010
 org/apache/geode/SerializationException,true,7783018024920098997
 org/apache/geode/SystemConnectException,true,-7378174428634468238
 org/apache/geode/SystemIsRunningException,true,3516268055878767189
-org/apache/geode/ThreadInterruptedException,true,6169940883541267514
 org/apache/geode/ToDataException,true,-2329606027453879918
 org/apache/geode/UncreatedSystemException,true,5424354567878425435
 org/apache/geode/UnmodifiableException,true,-1043243260052395455
@@ -69,7 +67,6 @@ org/apache/geode/cache/DuplicatePrimaryPartitionException,true,1
 org/apache/geode/cache/EntryDestroyedException,true,831865939772672542
 org/apache/geode/cache/EntryExistsException,true,2925082493103537925,oldValue:java/lang/Object
 org/apache/geode/cache/EntryNotFoundException,true,-2404101631744605659
-org/apache/geode/cache/EntryNotFoundInRegion,true,5572550909947420405
 org/apache/geode/cache/EvictionAction,true,-98840597493242980
 org/apache/geode/cache/EvictionAlgorithm,true,5778669432033106789
 org/apache/geode/cache/ExpirationAction,true,658925707882047900,ordinal:int
@@ -95,7 +92,6 @@ org/apache/geode/cache/RegionExistsException,true,-5643670216230359426
 org/apache/geode/cache/RegionReinitializedException,true,8532904304288670752
 org/apache/geode/cache/RegionRoleException,true,202660222740132890,regionFullPath:java/lang/String
 org/apache/geode/cache/RegionShortcut,false
-org/apache/geode/cache/RemoteTransactionException,true,-2217135580436381984
 org/apache/geode/cache/ResourceException,true,-5559328592343363268
 org/apache/geode/cache/ResumptionAction,true,6632254151314915610,ordinal:byte
 org/apache/geode/cache/RoleException,true,-7521056108445887394
@@ -235,6 +231,7 @@ org/apache/geode/distributed/internal/deadlock/MessageDependencyMonitor$MessageK
 org/apache/geode/distributed/internal/direct/ShunnedMemberException,true,-6455664684151074915
 org/apache/geode/distributed/internal/locks/DistributedMemberLock$LockReentryPolicy,false
 org/apache/geode/distributed/internal/locks/LockGrantorDestroyedException,true,-3540124531032570817
+org/apache/geode/distributed/internal/membership/gms/membership/GMSJoinLeave$ViewAbandonedException,false
 org/apache/geode/distributed/internal/membership/gms/messages/InstallViewMessage$messageType,false
 org/apache/geode/distributed/internal/membership/gms/messenger/JGAddress,true,-1818672332115113291,ip_addr:java/net/InetAddress,port:int,vmViewId:int
 org/apache/geode/distributed/internal/membership/gms/mgr/GMSMembershipManager$BoundedLinkedHashMap,true,-3419897166186852692
@@ -450,6 +447,7 @@ org/apache/geode/internal/process/PidUnavailableException,true,-1660269538268828
 org/apache/geode/internal/process/signal/Signal,false,description:java/lang/String,name:java/lang/String,number:int,type:org/apache/geode/internal/process/signal/SignalType
 org/apache/geode/internal/process/signal/SignalEvent,false,signal:org/apache/geode/internal/process/signal/Signal
 org/apache/geode/internal/process/signal/SignalType,false,description:java/lang/String
+org/apache/geode/internal/security/SecurityServiceType,false
 org/apache/geode/internal/sequencelog/GraphType,false
 org/apache/geode/internal/sequencelog/model/GraphID,false,graphName:java/lang/String,type:org/apache/geode/internal/sequencelog/GraphType
 org/apache/geode/internal/size/ReflectionObjectSizer,false
@@ -527,18 +525,6 @@ org/apache/geode/management/internal/cli/domain/RegionDescriptionPerMember,true,
 org/apache/geode/management/internal/cli/domain/RegionInformation,true,1,dataPolicy:org/apache/geode/cache/DataPolicy,isRoot:boolean,name:java/lang/String,parentRegion:java/lang/String,path:java/lang/String,scope:org/apache/geode/cache/Scope,subRegionInformationSet:java/util/Set
 org/apache/geode/management/internal/cli/domain/StackTracesPerMember,true,1,memberNameOrId:java/lang/String,stackTraces:byte[]
 org/apache/geode/management/internal/cli/domain/SubscriptionQueueSizeResult,true,1,subscriptionQueueSize:long
-org/apache/geode/management/internal/cli/exceptions/CliCommandException,true,968411094429216130,commandTarget:org/apache/geode/management/internal/cli/parser/CommandTarget,optionSet:org/apache/geode/management/internal/cli/parser/OptionSet
-org/apache/geode/management/internal/cli/exceptions/CliCommandInvalidException,true,-2195809850441234116
-org/apache/geode/management/internal/cli/exceptions/CliCommandMultiModeOptionException,true,-5658813370141696448,code:int,leadOptionString:java/lang/String
-org/apache/geode/management/internal/cli/exceptions/CliCommandNotAvailableException,true,-631339463163773007
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionException,true,-5443638512704442487,option:org/apache/geode/management/internal/cli/parser/Option
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionHasMultipleValuesException,true,-5277268341319591711
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionInvalidException,true,8773148664471110429
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionMissingException,true,7152881150151676813
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionNotApplicableException,true,4190478428338602501
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionValueConversionException,true,5144720637801591
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionValueException,true,-7339487978861146474,value:java/lang/String
-org/apache/geode/management/internal/cli/exceptions/CliCommandOptionValueMissingException,true,7842061609469545533
 org/apache/geode/management/internal/cli/exceptions/CliException,true,-7603040667204839200
 org/apache/geode/management/internal/cli/exceptions/CreateSubregionException,true,4387344870743824916
 org/apache/geode/management/internal/cli/exceptions/IndexNotFoundException,true,1,indexName:java/lang/String,message:java/lang/String
@@ -565,7 +551,6 @@ org/apache/geode/management/internal/cli/functions/ExportConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportDataFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportLogsFunction$Args,false,endTime:java/time/LocalDateTime,includeLogs:boolean,includeStats:boolean,logLevel:org/apache/logging/log4j/Level,startTime:java/time/LocalDateTime,thisLogLevelOnly:boolean
-org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction,true,4366812590788342070
 org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction$FetchRegionAttributesFunctionResult,true,-3970828263897978845,cacheListenerClasses:java/lang/String[],cacheLoaderClass:java/lang/String,cacheWriterClass:java/lang/String,regionAttributes:org/apache/geode/cache/RegionAttributes
 org/apache/geode/management/internal/cli/functions/FetchSharedConfigurationStatusFunction,true,1
@@ -589,7 +574,6 @@ org/apache/geode/management/internal/cli/functions/ListDiskStoresFunction,false
 org/apache/geode/management/internal/cli/functions/ListDurableCqNamesFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListFunctionFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListIndexFunction,false
-org/apache/geode/management/internal/cli/functions/LogFileFunction,true,1
 org/apache/geode/management/internal/cli/functions/MemberRegionFunction,true,1
 org/apache/geode/management/internal/cli/functions/MembersForRegionFunction,true,8746830191680509335
 org/apache/geode/management/internal/cli/functions/NetstatFunction,true,1
@@ -605,6 +589,7 @@ org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$Expiration
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,true,5907052187323280919,hasPartitionAttributes:boolean,isPartitionResolver:boolean,isSetPRLocalMaxMemory:boolean,isSetPRRecoveryDelay:boolean,isSetPRRedundantCopies:boolean,isSetPRStartupRecoveryDelay:boolean,isSetPRTotalMaxMemory:boolean,isSetPRTotalNumBuckets:boolean,partitionResolver:java/lang/String,prColocatedWith:java/lang/String,prLocalMaxMemory:int,prRecoveryDelay:long,prRedundantCopies:int,prStartupRecoveryDelay:long,prTotalMaxMemory:long,prTotalNumBuckets:int,userSpecifiedPartitionAttributes:java/util/Set
 org/apache/geode/management/internal/cli/functions/ShowMissingDiskStoresFunction,false
 org/apache/geode/management/internal/cli/functions/ShutDownFunction,true,1
+org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
@@ -629,8 +614,8 @@ org/apache/geode/management/internal/cli/util/MemberInformation,true,1,cacheXmlF
 org/apache/geode/management/internal/cli/util/MemberNotFoundException,true,5686788909239181174
 org/apache/geode/management/internal/cli/util/VisualVmNotFoundException,true,-8491645604829510102
 org/apache/geode/management/internal/configuration/domain/SharedConfigurationStatus,false
-org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
+org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
 org/apache/geode/management/internal/configuration/functions/UploadJarFunction,true,1
 org/apache/geode/management/internal/web/domain/Link,false,href:java/net/URI,method:org/apache/geode/management/internal/web/http/HttpMethod,relation:java/lang/String
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp

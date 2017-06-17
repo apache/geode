@@ -87,12 +87,12 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     if (regionAttributesID.startsWith("partition")) {
       // Execute the partitioned touch function on the primary server(s)
       Execution execution = FunctionService.onRegion(getSessionRegion()).withFilter(sessionIds);
-      collector = execution.execute(TouchPartitionedRegionEntriesFunction.ID, true, false, true);
+      collector = execution.execute(TouchPartitionedRegionEntriesFunction.ID);
     } else {
       // Execute the member touch function on all the server(s)
-      Execution execution = FunctionService.onMembers(getCache().getDistributedSystem())
+      Execution execution = FunctionService.onMembers()
           .setArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
-      collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID, true, false, false);
+      collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID);
     }
 
     // Get the result

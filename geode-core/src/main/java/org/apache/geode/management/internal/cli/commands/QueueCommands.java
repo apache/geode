@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -51,7 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 
  * @since GemFire 8.0
  */
-public class QueueCommands extends AbstractCommandsSupport {
+public class QueueCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE,
       help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
@@ -59,7 +58,7 @@ public class QueueCommands extends AbstractCommandsSupport {
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, mandatory = true,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP) String id,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] groups,
@@ -123,11 +122,10 @@ public class QueueCommands extends AbstractCommandsSupport {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(groups, null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel,
@@ -188,11 +186,10 @@ public class QueueCommands extends AbstractCommandsSupport {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow((String) null, (String) null);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(null, null);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       ResultCollector<?, ?> rc = CliUtil.executeFunction(new ListAsyncEventQueuesFunction(),
@@ -257,15 +254,5 @@ public class QueueCommands extends AbstractCommandsSupport {
           CliStrings.format(CliStrings.LIST_ASYNC_EVENT_QUEUES__ERROR_WHILE_LISTING_REASON_0,
               new Object[] {th.getMessage()}));
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.CREATE_ASYNC_EVENT_QUEUE,
-      CliStrings.LIST_ASYNC_EVENT_QUEUES})
-  public boolean queueCommandsAvailable() {
-    boolean isAvailable = true;
-    if (CliUtil.isGfshVM()) {
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 }

@@ -40,11 +40,11 @@ public class AbstractBaseControllerJUnitTest {
    * Method: convertErrorAsJson(String errorMessage)
    */
   @Test
-  public void testConvertErrorAsJsonErrorMessage() throws Exception {
+  public void testConvertErrorAsJsonErrorCause() throws Exception {
     String message = "This is an error message";
     String json = abstractBaseController.convertErrorAsJson(message);
-    ErrorMessage errorMessage = mapper.readValue(json, ErrorMessage.class);
-    assertEquals(message, errorMessage.message);
+    ErrorCause errorCause = mapper.readValue(json, ErrorCause.class);
+    assertEquals(message, errorCause.cause);
   }
 
   /**
@@ -62,18 +62,24 @@ public class AbstractBaseControllerJUnitTest {
   public static class ErrorMessage {
     private String message;
 
-    public ErrorMessage() {}
-
-    public ErrorMessage(String message) {
-      this.message = message;
-    }
-
     public String getMessage() {
       return message;
     }
 
     public void setMessage(final String message) {
       this.message = message;
+    }
+  }
+
+  public static class ErrorCause {
+    private String cause;
+
+    public String getCause() {
+      return cause;
+    }
+
+    public void setCause(final String cause) {
+      this.cause = cause;
     }
   }
 

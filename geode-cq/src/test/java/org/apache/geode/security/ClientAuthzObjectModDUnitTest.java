@@ -14,6 +14,9 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
@@ -37,9 +40,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import static org.apache.geode.security.SecurityTestUtils.closeCache;
-import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
-
 /**
  * Tests for authorization callback that modify objects and callbacks from client to server.
  * 
@@ -57,8 +57,10 @@ import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
 
-  private static final String preAccessor = FilterPreAuthorization.class.getName() + ".create";
-  private static final String postAccessor = FilterPostAuthorization.class.getName() + ".create";
+  private static final String PRE_ACCESSOR_CREATE =
+      FilterPreAuthorization.class.getName() + ".create";
+  private static final String POST_ACCESSOR_CREATE =
+      FilterPostAuthorization.class.getName() + ".create";
 
   @Override
   protected final void postSetUpClientAuthorizationTestBase() throws Exception {
@@ -88,13 +90,14 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
 
     System.out.println("testPutsGetsObjectModWithFailover: Using authinit: " + authInit);
     System.out.println("testPutsGetsObjectModWithFailover: Using authenticator: " + authenticator);
-    System.out
-        .println("testPutsGetsObjectModWithFailover: Using pre-operation accessor: " + preAccessor);
     System.out.println(
-        "testPutsGetsObjectModWithFailover: Using post-operation accessor: " + postAccessor);
+        "testPutsGetsObjectModWithFailover: Using pre-operation accessor: " + PRE_ACCESSOR_CREATE);
+    System.out.println("testPutsGetsObjectModWithFailover: Using post-operation accessor: "
+        + POST_ACCESSOR_CREATE);
 
     // Start servers with all required properties
-    Properties serverProps = buildProperties(authenticator, extraProps, preAccessor, postAccessor);
+    Properties serverProps =
+        buildProperties(authenticator, extraProps, PRE_ACCESSOR_CREATE, POST_ACCESSOR_CREATE);
 
     // Get ports for the servers
     int[] portsList = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -248,7 +251,6 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
 
         OperationWithAction.OPBLOCK_END};
   }
-
 
   private Properties buildProperties(final String authenticator, final Properties extraProps,
       final String preAccessor, final String postAccessor) {

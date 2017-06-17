@@ -14,11 +14,10 @@
  */
 package org.apache.geode.cache;
 
-import java.util.Properties;
-
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.SecurityConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -29,8 +28,11 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+
+import java.util.Properties;
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire
@@ -170,7 +172,7 @@ public class CacheFactory {
       CacheConfig cacheConfig) throws CacheExistsException, TimeoutException, CacheWriterException,
       GatewayException, RegionExistsException {
     // Moved code in this method to GemFireCacheImpl.create
-    return GemFireCacheImpl.create(system, existingOk, cacheConfig);
+    return GemFireCacheImpl.create((InternalDistributedSystem) system, existingOk, cacheConfig);
   }
 
   /**
@@ -205,11 +207,41 @@ public class CacheFactory {
       if (this.dsProps.isEmpty()) {
         // any ds will do
         ds = InternalDistributedSystem.getConnectedInstance();
+        validateUsabilityOfSecurityCallbacks(ds);
       }
       if (ds == null) {
-        ds = DistributedSystem.connect(this.dsProps);
+        // use ThreadLocal to avoid exposing new User API in DistributedSystem
+        SecurityConfig.set(this.cacheConfig.getSecurityManager(),
+            this.cacheConfig.getPostProcessor());
+        try {
+          ds = DistributedSystem.connect(this.dsProps);
+        } finally {
+          SecurityConfig.remove();
+        }
       }
-      return create(ds, true, cacheConfig);
+      return create(ds, true, this.cacheConfig);
+    }
+  }
+
+  /**
+   * Throws GemFireSecurityException if existing DistributedSystem connection cannot use specified
+   * SecurityManager or PostProcessor.
+   */
+  private void validateUsabilityOfSecurityCallbacks(DistributedSystem ds)
+      throws GemFireSecurityException {
+    if (ds == null) {
+      return;
+    }
+    // pre-existing DistributedSystem already has an incompatible SecurityService in use
+    if (this.cacheConfig.getSecurityManager() != null) {
+      // invalid configuration
+      throw new GemFireSecurityException(
+          "Existing DistributedSystem connection cannot use specified SecurityManager");
+    }
+    if (this.cacheConfig.getPostProcessor() != null) {
+      // invalid configuration
+      throw new GemFireSecurityException(
+          "Existing DistributedSystem connection cannot use specified PostProcessor");
     }
   }
 
@@ -321,7 +353,7 @@ public class CacheFactory {
   }
 
   /**
-   * sets the securityManager for the cache. If this securityManager is set. It will override the
+   * Sets the securityManager for the cache. If this securityManager is set, it will override the
    * security-manager property you set in your gemfire system properties.
    *
    * This is provided mostly for container to inject an already initialized securityManager. An
@@ -336,7 +368,7 @@ public class CacheFactory {
   }
 
   /**
-   * sets the postProcessor for the cache. If this postProcessor is set. It will override thie
+   * Sets the postProcessor for the cache. If this postProcessor is set, it will override the
    * security-post-processor setting in the gemfire system properties.
    *
    * This is provided mostly for container to inject an already initialized post processor. An

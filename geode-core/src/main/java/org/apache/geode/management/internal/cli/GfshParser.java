@@ -45,36 +45,26 @@ public class GfshParser extends SimpleParser {
   public static final String COMMAND_DELIMITER = ";";
   public static final String CONTINUATION_CHARACTER = "\\";
 
+  private static final char ASCII_UNIT_SEPARATOR = '\u001F';
+  public static final String J_ARGUMENT_DELIMITER = "" + ASCII_UNIT_SEPARATOR;
+  public static final String J_OPTION_CONTEXT = "splittingRegex=" + J_ARGUMENT_DELIMITER;
+
   // pattern used to split the user input with whitespaces except those in quotes (single or double)
   private static Pattern PATTERN =
       Pattern.compile("\\s*([^\\s']*)'([^']*)'\\s+|\\s*([^\\s\"]*)\"([^\"]*)\"\\s+|\\S+");
 
-
-  private CommandManager commandManager = null;
-
-  public GfshParser() {
-    this(null);
-  }
-
-  public GfshParser(Properties cacheProperties) {
-    this.commandManager = new CommandManager(cacheProperties);
-
+  public GfshParser(CommandManager commandManager) {
     for (CommandMarker command : commandManager.getCommandMarkers()) {
       add(command);
     }
 
-    List<Converter<?>> converters = commandManager.getConverters();
-    for (Converter<?> converter : converters) {
+    for (Converter<?> converter : commandManager.getConverters()) {
       if (converter.getClass().isAssignableFrom(ArrayConverter.class)) {
         ArrayConverter arrayConverter = (ArrayConverter) converter;
-        arrayConverter.setConverters(new HashSet<>(converters));
+        arrayConverter.setConverters(new HashSet<>(commandManager.getConverters()));
       }
       add(converter);
     }
-  }
-
-  public CommandManager getCommandManager() {
-    return commandManager;
   }
 
   static String convertToSimpleParserInput(String userInput) {
@@ -131,6 +121,7 @@ public class GfshParser extends SimpleParser {
 
         if (i < tokens.size()) {
           String jArg = tokens.get(i);
+          // remove the quotes around each --J arugments
           if (jArg.charAt(0) == '"' || jArg.charAt(0) == '\'') {
             jArg = jArg.substring(1, jArg.length() - 1);
           }
@@ -151,7 +142,12 @@ public class GfshParser extends SimpleParser {
       if (i == firstJIndex) {
         rawInput.append("--J ");
         if (jArguments.size() > 0) {
-          rawInput.append("\"").append(StringUtils.join(jArguments, ",")).append("\" ");
+          // quote the entire J argument with double quotes, and delimited with a special delimiter,
+          // and we
+          // need to tell the gfsh parser to use this delimiter when splitting the --J argument in
+          // each command
+          rawInput.append("\"").append(StringUtils.join(jArguments, J_ARGUMENT_DELIMITER))
+              .append("\" ");
         }
       }
       // then add the next inputToken
@@ -167,6 +163,8 @@ public class GfshParser extends SimpleParser {
   public GfshParseResult parse(String userInput) {
     String rawInput = convertToSimpleParserInput(userInput);
 
+    // this tells the simpleParser not to interpret backslash as escaping character
+    rawInput = rawInput.replace("\\", "\\\\");
     // User SimpleParser to parse the input
     ParseResult result = super.parse(rawInput);
 
@@ -176,7 +174,6 @@ public class GfshParser extends SimpleParser {
 
     return new GfshParseResult(result.getMethod(), result.getInstance(), result.getArguments(),
         userInput);
-
   }
 
   /**
@@ -237,17 +234,9 @@ public class GfshParser extends SimpleParser {
     // initially assume we are trying to complete the last token
     List<Completion> potentials = getCandidates(buffer);
 
-    if (potentials.size() > 0) {
-      if (lastTokenIsOption) {
-        candidateBeginAt = buffer.length() - lastToken.length();
-      } else {
-        // need to return the index before the "=" sign, since later on we are going to add the
-        // "=" sign to the completion candidates
-        candidateBeginAt = buffer.length() - lastToken.length() - 1;
-      }
-    }
-    // if the last token is already complete, add either space or " --" and try again
-    else {
+    // if the last token is already complete (or user deliberately ends with a space denoting the
+    // last token is complete, then add either space or " --" and try again
+    if (potentials.size() == 0 || userInput.endsWith(" ")) {
       candidateBeginAt = buffer.length();
       // last token is an option
       if (lastTokenIsOption) {
@@ -259,6 +248,14 @@ public class GfshParser extends SimpleParser {
       else {
         potentials = getCandidates(buffer + " --");
         lastTokenIsOption = true;
+      }
+    } else {
+      if (lastTokenIsOption) {
+        candidateBeginAt = buffer.length() - lastToken.length();
+      } else {
+        // need to return the index before the "=" sign, since later on we are going to add the
+        // "=" sign to the completion candidates
+        candidateBeginAt = buffer.length() - lastToken.length() - 1;
       }
     }
 
@@ -281,19 +278,6 @@ public class GfshParser extends SimpleParser {
     // between userInput and the converted input
     cursor = candidateBeginAt + (userInput.trim().length() - buffer.length());
     return cursor;
-  }
-
-  // convenience method for testing
-  int completeAdvanced(String userInput, final List<Completion> candidates) {
-    return completeAdvanced(userInput, userInput.length(), candidates);
-  }
-
-  /**
-   * test only used to demonstrate what's the super class's completeAdvanced behavior
-   *
-   */
-  int completeSuperAdvanced(String userInput, final List<Completion> candidates) {
-    return super.completeAdvanced(userInput, userInput.length(), candidates);
   }
 
   /**

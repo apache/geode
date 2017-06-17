@@ -19,8 +19,11 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -404,5 +407,80 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
 
   protected static int getCacheServerPort() {
     return cacheServerPort;
+  }
+
+  /**
+   * Tests event track is initialized after gii
+   */
+  @Test
+  public void testEventTrackerIsInitalized() throws CacheException {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+
+    createPRInVMs(vm0, vm1, vm2);
+
+    createPR();
+
+    doPutsInVMs(vm0, vm1, vm2);
+
+    doPuts();
+
+    verifyEventTrackerContent();
+
+    // close the region
+    getCache().getRegion(getName()).close();
+
+    // create the region again.
+    createPR();
+
+    for (int i = 0; i < 12; i++) {
+      waitEntryIsLocal(i);
+    }
+
+    // verify event track initialized after create region
+    verifyEventTrackerContent();
+
+  }
+
+  private void waitEntryIsLocal(int i) {
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(30, TimeUnit.SECONDS)
+        .until(() -> getCache().getRegion(getName()).getEntry(i) != null);
+  }
+
+  private void verifyEventTrackerContent() {
+    PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(getName());
+    BucketRegion br = pr.getDataStore().getLocalBucketById(0);
+    Map<?, ?> eventStates = br.getEventState();
+    assertTrue(eventStates.size() == 4);
+  }
+
+  public void createPRInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> createPR());
+    }
+  }
+
+  private void createPR() {
+    PartitionAttributesFactory paf =
+        new PartitionAttributesFactory().setRedundantCopies(3).setTotalNumBuckets(4);
+    RegionFactory fact = getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .setPartitionAttributes(paf.create());
+    fact.create(getName());
+  }
+
+  public void doPutsInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> doPuts());
+    }
+  }
+
+  private void doPuts() {
+    Region region = getCache().getRegion(getName());
+    for (int i = 0; i < 12; i++) {
+      region.put(i, i);
+    }
   }
 }

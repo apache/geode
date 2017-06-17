@@ -21,7 +21,6 @@ import java.util.Collection;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;

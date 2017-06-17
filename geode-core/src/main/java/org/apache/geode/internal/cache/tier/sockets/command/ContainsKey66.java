@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -33,6 +30,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class ContainsKey66 extends BaseCommand {
@@ -55,34 +53,36 @@ public class ContainsKey66 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     Part regionNamePart = null, keyPart = null;
     String regionName = null;
     Object key = null;
     ContainsKeyOp.MODE mode;
-    CacheServerStats stats = servConn.getCacheServerStats();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
       stats.incReadContainsKeyRequestTime(start - oldStart);
     }
     // Retrieve the data from the message parts
-    regionNamePart = msg.getPart(0);
-    keyPart = msg.getPart(1);
-    mode = ContainsKeyOp.MODE.values()[(msg.getPart(2).getInt())];
+    regionNamePart = clientMessage.getPart(0);
+    keyPart = clientMessage.getPart(1);
+    mode = ContainsKeyOp.MODE.values()[(clientMessage.getPart(2).getInt())];
     regionName = regionNamePart.getString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received containsKey request ({} bytes) from {} for region {} key {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName, key);
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), regionName, key);
     }
 
     // Process the containsKey request
@@ -91,46 +91,47 @@ public class ContainsKey66 extends BaseCommand {
       if (key == null) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.ContainsKey_0_THE_INPUT_KEY_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL,
-            servConn.getName()));
+            serverConnection.getName()));
         errMessage = LocalizedStrings.ContainsKey_THE_INPUT_KEY_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL
             .toLocalizedString();
       }
       if (regionName == null) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.ContainsKey_0_THE_INPUT_REGION_NAME_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL,
-            servConn.getName()));
+            serverConnection.getName()));
         errMessage =
             LocalizedStrings.ContainsKey_THE_INPUT_REGION_NAME_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL
                 .toLocalizedString();
       }
-      writeErrorResponse(msg, MessageType.CONTAINS_KEY_DATA_ERROR, errMessage, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.CONTAINS_KEY_DATA_ERROR, errMessage,
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason =
           LocalizedStrings.ContainsKey_WAS_NOT_FOUND_DURING_CONTAINSKEY_REQUEST.toLocalizedString();
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     try {
-      this.securityService.authorizeRegionRead(regionName, key.toString());
+      securityService.authorizeRegionRead(regionName, key.toString());
     } catch (NotAuthorizedException ex) {
-      writeException(msg, ex, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, ex, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+    AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
     if (authzRequest != null) {
       try {
         authzRequest.containsKeyAuthorize(regionName, key);
       } catch (NotAuthorizedException ex) {
-        writeException(msg, ex, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, ex, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -157,10 +158,10 @@ public class ContainsKey66 extends BaseCommand {
       start = DistributionStats.getStatTime();
       stats.incProcessContainsKeyTime(start - oldStart);
     }
-    writeContainsKeyResponse(containsKey, msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeContainsKeyResponse(containsKey, clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent containsKey response for region {} key {}", servConn.getName(),
+      logger.debug("{}: Sent containsKey response for region {} key {}", serverConnection.getName(),
           regionName, key);
     }
     stats.incWriteContainsKeyResponseTime(DistributionStats.getStatTime() - start);

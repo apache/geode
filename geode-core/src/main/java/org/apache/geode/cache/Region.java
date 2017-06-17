@@ -1477,7 +1477,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * 
    * @since GemFire 5.0
    * @see java.util.Map#size()
-   * @return int the number of entries present in this region
+   * @return the number of entries present in this region
    */
   int size();
 
@@ -2089,6 +2089,27 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @since GemFire 5.0.2
    */
   boolean containsKeyOnServer(Object key);
+
+  /**
+   * Returns the number of entries present in this region on the server. Entries stored in this
+   * client region are ignored.
+   *
+   * @return the number of entries present in this region on the server.
+   * @throws UnsupportedOperationException if the region is not configured with a pool name.
+   *
+   * @since Geode 1.2.0
+   */
+  public int sizeOnServer();
+
+  /**
+   * Returns true if this region contains no entries on the server.
+   *
+   * @return true if this region contains no entries on the server.
+   * @throws UnsupportedOperationException if the region is not configured with a pool name.
+   *
+   * @since Geode 1.2.0
+   */
+  public boolean isEmptyOnServer();
 
   /**
    * If the specified key is not already associated with a value, associate it with the given value.

@@ -104,6 +104,8 @@ public class Banner {
 
     GemFireVersion.print(out);
 
+    out.println("Communications version: " + Version.CURRENT_ORDINAL);
+
     out.println("Process ID: " + processId);
     out.println("User: " + sp.get("user.name"));
     sp.remove("user.name");

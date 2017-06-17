@@ -41,8 +41,7 @@ public class LoginHandlerInterceptorRequestHeaderJUnitTest {
   public void before() {
     LoginHandlerInterceptor.getEnvironment().clear();
     securityService = Mockito.mock(SecurityService.class);
-    interceptor = new LoginHandlerInterceptor();
-    interceptor.setSecurityService(securityService);
+    interceptor = new LoginHandlerInterceptor(securityService);
   }
 
   @After

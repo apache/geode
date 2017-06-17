@@ -14,17 +14,34 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.awaitility.Awaitility;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, ClientServerTest.class, BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
@@ -46,4 +63,73 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
     testVersion = version;
   }
 
+  @Test
+  public void testSubscriptionWithCurrentServerAndOldClients() throws Exception {
+    // start server first
+    int serverPort = initServerCache(true);
+    VM client1 = Host.getHost(0).getVM(testVersion, 1);
+    VM client2 = Host.getHost(0).getVM(testVersion, 3);
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    client1.invoke("create client1 cache", () -> {
+      createClientCache(hostname, serverPort);
+      populateCache();
+      registerInterest();
+    });
+    client2.invoke("create client2 cache", () -> {
+      Pool ignore = createClientCache(hostname, serverPort);
+    });
+
+    client2.invoke("putting data in client2", () -> putForClient());
+
+    // client1 will receive client2's updates asynchronously
+    client1.invoke(() -> {
+      Region r2 = getCache().getRegion(REGION_NAME2);
+      MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> verifier.eventReceived);
+    });
+
+    // client2's update should have included a memberID - GEODE-2954
+    client1.invoke(() -> {
+      Region r2 = getCache().getRegion(REGION_NAME2);
+      MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
+      assertFalse(verifier.memberIDNotReceived);
+    });
+  }
+
+  // @Test
+  @Ignore
+  public void testDistributedMemberBytesWithCurrentServerAndOldClient() throws Exception {
+    // Start current version server
+    int serverPort = initServerCache(true);
+
+    // Start old version client and do puts
+    VM client = Host.getHost(0).getVM(testVersion, 1);
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    client.invoke("create client cache", () -> {
+      createClientCache(hostname, serverPort);
+      populateCache();
+    });
+
+    // Get client member id byte array on client
+    byte[] clientMembershipIdBytesOnClient =
+        client.invoke(() -> getClientMembershipIdBytesOnClient());
+
+    // Get client member id byte array on server
+    byte[] clientMembershipIdBytesOnServer =
+        server1.invoke(() -> getClientMembershipIdBytesOnServer());
+
+    // Verify member id bytes on client and server are equal
+    assertTrue(Arrays.equals(clientMembershipIdBytesOnClient, clientMembershipIdBytesOnServer));
+  }
+
+  private byte[] getClientMembershipIdBytesOnClient() {
+    return EventID.getMembershipId(getCache().getDistributedSystem());
+  }
+
+  private byte[] getClientMembershipIdBytesOnServer() {
+    Set cpmIds = ClientHealthMonitor.getInstance().getClientHeartbeats().keySet();
+    assertEquals(1, cpmIds.size());
+    ClientProxyMembershipID cpmId = (ClientProxyMembershipID) cpmIds.iterator().next();
+    return EventID.getMembershipId(cpmId);
+  }
 }

@@ -24,6 +24,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Command for performing Rollback on the server
@@ -39,18 +40,19 @@ public class RollbackCommand extends BaseCommand {
   private RollbackCommand() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    TXManagerImpl txMgr = (TXManagerImpl) servConn.getCache().getCacheTransactionManager();
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    TXManagerImpl txMgr = (TXManagerImpl) serverConnection.getCache().getCacheTransactionManager();
     InternalDistributedMember client =
-        (InternalDistributedMember) servConn.getProxyID().getDistributedMember();
-    int uniqId = msg.getTransactionId();
+        (InternalDistributedMember) serverConnection.getProxyID().getDistributedMember();
+    int uniqId = clientMessage.getTransactionId();
     TXId txId = new TXId(client, uniqId);
     if (txMgr.isHostedTxRecentlyCompleted(txId)) {
       if (logger.isDebugEnabled()) {
         logger.debug("TX: found a recently rolled back tx: {}", txId);
-        sendRollbackReply(msg, servConn);
+        sendRollbackReply(clientMessage, serverConnection);
         txMgr.removeHostedTXState(txId);
         return;
       }
@@ -60,16 +62,16 @@ public class RollbackCommand extends BaseCommand {
       if (txState != null) {
         txId = txState.getTxId();
         txMgr.rollback();
-        sendRollbackReply(msg, servConn);
+        sendRollbackReply(clientMessage, serverConnection);
       } else {
         // could not find TxState in the host server.
         // Protect against a failover command received so late,
         // and it is removed from the failoverMap due to capacity.
-        sendRollbackReply(msg, servConn);
+        sendRollbackReply(clientMessage, serverConnection);
       }
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     } finally {
       if (logger.isDebugEnabled()) {
         logger.debug("TX: removing tx state for {}", txId);

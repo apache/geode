@@ -25,6 +25,4 @@ out/
 *.dat
 *.rej
 *.orig
-geode-spark-connector/**/target/
-geode-spark-connector/project/project/
 geode-pulse/screenshots/

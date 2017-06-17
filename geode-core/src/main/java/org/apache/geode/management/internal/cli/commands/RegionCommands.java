@@ -14,20 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -50,11 +36,21 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Class containing implementation of commands based on region:
@@ -65,12 +61,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * 
  * @since GemFire 7.0
  */
-public class RegionCommands implements CommandMarker {
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
-
+public class RegionCommands implements GfshCommand {
   private static final GetRegionsFunction getRegionsFunction = new GetRegionsFunction();
   private static final GetRegionDescriptionFunction getRegionDescription =
       new GetRegionDescriptionFunction();
@@ -79,20 +70,21 @@ public class RegionCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public Result listRegion(
-      @CliOption(key = {CliStrings.LIST_REGION__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_REGION__GROUP__HELP) String group,
-      @CliOption(key = {CliStrings.LIST_REGION__MEMBER}, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.LIST_REGION__MEMBER__HELP) String memberNameOrId) {
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CliStrings.LIST_REGION__GROUP__HELP) String[] group,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          optionContext = ConverterHint.MEMBERIDNAME,
+          help = CliStrings.LIST_REGION__MEMBER__HELP) String[] memberNameOrId) {
     Result result = null;
     try {
       Set<RegionInformation> regionInfoSet = new LinkedHashSet<RegionInformation>();
       ResultCollector<?, ?> rc = null;
 
-      Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
-      } catch (CommandResultException crex) {
-        return crex.getResult();
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
@@ -498,18 +490,5 @@ public class RegionCommands implements CommandMarker {
         section.addData(attribute, map.get(attribute));
       }
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.LIST_REGION, CliStrings.DESCRIBE_REGION})
-  public boolean isRegionCommandAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected //TODO : make this better
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
   }
 }

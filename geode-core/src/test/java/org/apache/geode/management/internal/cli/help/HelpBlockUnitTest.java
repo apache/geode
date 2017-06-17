@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.help;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +71,12 @@ public class HelpBlockUnitTest {
     firstBlock.addChild(secondBlock);
     secondBlock.addChild(thirdBlock);
 
+    StringBuilder expected = new StringBuilder();
+    expected.append("First Line").append(GfshParser.LINE_SEPARATOR);
+    expected.append("Second Line").append(GfshParser.LINE_SEPARATOR);
+    expected.append("Third Line").append(GfshParser.LINE_SEPARATOR);
+
     String result = firstBlock.toString(-1);
-    assertThat(result).isEqualTo("First Line\nSecond Line\nThird Line\n");
+    assertThat(result).isEqualTo(expected.toString());
   }
 }

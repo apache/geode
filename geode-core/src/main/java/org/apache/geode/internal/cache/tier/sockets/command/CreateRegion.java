@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -30,6 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class CreateRegion extends BaseCommand {
@@ -41,26 +39,27 @@ public class CreateRegion extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     Part regionNamePart = null;
     String regionName = null;
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     // bserverStats.incLong(readDestroyRequestTimeId,
     // DistributionStats.getStatTime() - start);
     // bserverStats.incInt(destroyRequestsId, 1);
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
-    Part parentRegionNamePart = msg.getPart(0);
+    Part parentRegionNamePart = clientMessage.getPart(0);
     String parentRegionName = parentRegionNamePart.getString();
 
-    regionNamePart = msg.getPart(1);
+    regionNamePart = clientMessage.getPart(1);
     regionName = regionNamePart.getString();
 
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Received create region request ({} bytes) from {} for parent region {} region {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), parentRegionName,
-          regionName);
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), parentRegionName, regionName);
     }
 
     // Process the create region request
@@ -69,7 +68,7 @@ public class CreateRegion extends BaseCommand {
       if (parentRegionName == null) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.CreateRegion_0_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL,
-            servConn.getName()));
+            serverConnection.getName()));
         errMessage =
             LocalizedStrings.CreateRegion_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL
                 .toLocalizedString();
@@ -77,41 +76,42 @@ public class CreateRegion extends BaseCommand {
       if (regionName == null) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.CreateRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL,
-            servConn.getName()));
+            serverConnection.getName()));
         errMessage =
             LocalizedStrings.CreateRegion_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL
                 .toLocalizedString();
       }
-      writeErrorResponse(msg, MessageType.CREATE_REGION_DATA_ERROR, errMessage, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.CREATE_REGION_DATA_ERROR, errMessage,
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    Region parentRegion = servConn.getCache().getRegion(parentRegionName);
+    Region parentRegion = serverConnection.getCache().getRegion(parentRegionName);
     if (parentRegion == null) {
       String reason =
           LocalizedStrings.CreateRegion__0_WAS_NOT_FOUND_DURING_SUBREGION_CREATION_REQUEST
               .toLocalizedString(parentRegionName);
-      writeRegionDestroyedEx(msg, parentRegionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, parentRegionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     try {
-      this.securityService.authorizeDataManage();
+      securityService.authorizeDataManage();
     } catch (NotAuthorizedException ex) {
-      writeException(msg, ex, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, ex, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+    AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
     if (authzRequest != null) {
       try {
         authzRequest.createRegionAuthorize(parentRegionName + '/' + regionName);
       } catch (NotAuthorizedException ex) {
-        writeException(msg, ex, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, ex, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -121,11 +121,11 @@ public class CreateRegion extends BaseCommand {
       AttributesFactory factory = new AttributesFactory(parentRegion.getAttributes());
       region = parentRegion.createSubregion(regionName, factory.create());
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Created region {}", servConn.getName(), region);
+        logger.debug("{}: Created region {}", serverConnection.getName(), region);
       }
     } else {
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Retrieved region {}", servConn.getName(), region);
+        logger.debug("{}: Retrieved region {}", serverConnection.getName(), region);
       }
     }
 
@@ -134,11 +134,11 @@ public class CreateRegion extends BaseCommand {
     // NOT USING IT
     // bserverStats.incLong(processDestroyTimeId,
     // DistributionStats.getStatTime() - start);
-    writeReply(msg, servConn);
-    servConn.setAsTrue(RESPONDED);
+    writeReply(clientMessage, serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Sent create region response for parent region {} region {}",
-          servConn.getName(), parentRegionName, regionName);
+          serverConnection.getName(), parentRegionName, regionName);
     }
   }
 

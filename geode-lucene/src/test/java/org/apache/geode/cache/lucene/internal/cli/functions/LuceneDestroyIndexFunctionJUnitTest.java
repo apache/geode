@@ -56,58 +56,66 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyIndex() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", false);
+    String indexName = "index1";
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
-    verify(this.service).destroyIndex(eq("index1"), eq("/region1"));
-    verify(function).getXmlEntity(eq("index1"), eq("/region1"));
-    verify(this.service, never()).destroyDefinedIndex(eq("index1"), eq("/region1"));
-    verify(this.service, never()).destroyIndexes(eq("/region1"));
+    verify(this.service).destroyIndex(eq(indexName), eq(regionPath));
+    verify(function).getXmlEntity(eq(indexName), eq(regionPath));
+    verify(this.service, never()).destroyDefinedIndex(eq(indexName), eq(regionPath));
+    verify(this.service, never()).destroyIndexes(eq(regionPath));
     verifyFunctionResult(true);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyIndexFailure() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", false);
+    String indexName = "index1";
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
-    doThrow(new IllegalStateException()).when(this.service).destroyIndex(eq("index1"),
-        eq("/region1"));
+    doThrow(new IllegalStateException()).when(this.service).destroyIndex(eq(indexName),
+        eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
   }
 
   @Test
   public void testDestroyDefinedIndex() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", true);
+    String indexName = "index1";
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
-    verify(this.service).destroyDefinedIndex(eq("index1"), eq("/region1"));
-    verify(this.service, never()).destroyIndex(eq("index1"), eq("/region1"));
-    verify(this.service, never()).destroyIndexes(eq("/region1"));
-    verify(function, never()).getXmlEntity(eq("index1"), eq("/region1"));
+    verify(this.service).destroyDefinedIndex(eq(indexName), eq(regionPath));
+    verify(this.service, never()).destroyIndex(eq(indexName), eq(regionPath));
+    verify(this.service, never()).destroyIndexes(eq(regionPath));
+    verify(function, never()).getXmlEntity(eq(indexName), eq(regionPath));
     verifyFunctionResult(true);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexFailure() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", true);
+    String indexName = "index1";
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
-    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndex(eq("index1"),
-        eq("/region1"));
+    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndex(eq(indexName),
+        eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
   }
@@ -115,28 +123,30 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyIndexes() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", false);
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
-    verify(this.service).destroyIndexes(eq("/region1"));
-    verify(function).getXmlEntity(eq(null), eq("/region1"));
-    verify(this.service, never()).destroyDefinedIndexes(eq("/region1"));
-    verify(this.service, never()).destroyIndex(any(), eq("/region1"));
+    verify(this.service).destroyIndexes(eq(regionPath));
+    verify(function).getXmlEntity(eq(null), eq(regionPath));
+    verify(this.service, never()).destroyDefinedIndexes(eq(regionPath));
+    verify(this.service, never()).destroyIndex(any(), eq(regionPath));
     verifyFunctionResult(true);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyIndexesFailure() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", false);
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
-    doThrow(new IllegalStateException()).when(this.service).destroyIndexes(eq("/region1"));
+    doThrow(new IllegalStateException()).when(this.service).destroyIndexes(eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
   }
@@ -144,28 +154,30 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexes() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", true);
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
-    verify(this.service).destroyDefinedIndexes(eq("/region1"));
-    verify(this.service, never()).destroyIndexes(eq("/region1"));
-    verify(this.service, never()).destroyIndex(any(), eq("/region1"));
-    verify(function, never()).getXmlEntity(eq("index1"), eq("/region1"));
+    verify(this.service).destroyDefinedIndexes(eq(regionPath));
+    verify(this.service, never()).destroyIndexes(eq(regionPath));
+    verify(this.service, never()).destroyIndex(any(), eq(regionPath));
+    verify(function, never()).getXmlEntity(eq("index1"), eq(regionPath));
     verifyFunctionResult(true);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexesFailure() throws Throwable {
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", true);
+    String regionPath = "/region1";
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
-    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq("/region1"));
+    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
   }

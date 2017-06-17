@@ -20,6 +20,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.security.SecurityService;
+
 import java.io.IOException;
 
 public class PeriodicAck extends BaseCommand {
@@ -33,43 +35,45 @@ public class PeriodicAck extends BaseCommand {
   private PeriodicAck() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received periodic ack request ({} bytes) from {}", servConn.getName(),
-          msg.getPayloadLength(), servConn.getSocketString());
+      logger.debug("{}: Received periodic ack request ({} bytes) from {}",
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString());
     }
     try {
-      int numEvents = msg.getNumberOfParts();
+      int numEvents = clientMessage.getNumberOfParts();
       boolean success = false;
-      CacheClientNotifier ccn = servConn.getAcceptor().getCacheClientNotifier();
-      CacheClientProxy proxy = ccn.getClientProxy(servConn.getProxyID());
+      CacheClientNotifier ccn = serverConnection.getAcceptor().getCacheClientNotifier();
+      CacheClientProxy proxy = ccn.getClientProxy(serverConnection.getProxyID());
       if (proxy != null) {
         proxy.getHARegionQueue().createAckedEventsMap();
         for (int i = 0; i < numEvents; i++) {
-          Part eventIdPart = msg.getPart(i);
-          eventIdPart.setVersion(servConn.getClientVersion());
+          Part eventIdPart = clientMessage.getPart(i);
+          eventIdPart.setVersion(serverConnection.getClientVersion());
           EventID eid = (EventID) eventIdPart.getObject();
-          success = ccn.processDispatchedMessage(servConn.getProxyID(), eid);
+          success = ccn.processDispatchedMessage(serverConnection.getProxyID(), eid);
           if (!success)
             break;
         }
       }
       if (success) {
         proxy.getHARegionQueue().setAckedEvents();
-        writeReply(msg, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeReply(clientMessage, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
       }
 
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent periodic ack response for {}", servConn.getName(),
-          servConn.getSocketString());
+      logger.debug("{}: Sent periodic ack response for {}", serverConnection.getName(),
+          serverConnection.getSocketString());
     }
 
   }

@@ -14,11 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import java.io.IOException;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.operations.ExecuteCQOperationContext;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.Query;
@@ -44,6 +39,11 @@ import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * @since GemFire 6.1
@@ -51,40 +51,42 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 public class ExecuteCQ61 extends BaseCQCommand {
   protected static final Logger logger = LogService.getLogger();
 
-  private final static ExecuteCQ61 singleton = new ExecuteCQ61();
+  private static final ExecuteCQ61 singleton = new ExecuteCQ61();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private ExecuteCQ61() {}
+  private ExecuteCQ61() {
+    // nothing
+  }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, InterruptedException {
-    AcceptorImpl acceptor = servConn.getAcceptor();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    ClientProxyMembershipID id = servConn.getProxyID();
-    CacheServerStats stats = servConn.getCacheServerStats();
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
+    AcceptorImpl acceptor = serverConnection.getAcceptor();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    ClientProxyMembershipID id = serverConnection.getProxyID();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
     // Retrieve the data from the message parts
-    String cqName = msg.getPart(0).getString();
-    String cqQueryString = msg.getPart(1).getString();
-    int cqState = msg.getPart(2).getInt();
+    String cqName = clientMessage.getPart(0).getString();
+    String cqQueryString = clientMessage.getPart(1).getString();
+    int cqState = clientMessage.getPart(2).getInt();
 
-    Part isDurablePart = msg.getPart(3);
+    Part isDurablePart = clientMessage.getPart(3);
     byte[] isDurableByte = isDurablePart.getSerializedForm();
-    boolean isDurable = (isDurableByte == null || isDurableByte[0] == 0) ? false : true;
+    boolean isDurable = !(isDurableByte == null || isDurableByte[0] == 0);
     // region data policy
-    Part regionDataPolicyPart = msg.getPart(msg.getNumberOfParts() - 1);
+    Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
     byte[] regionDataPolicyPartBytes = regionDataPolicyPart.getSerializedForm();
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received {} request from {} CqName: {} queryString: {}", servConn.getName(),
-          MessageType.getString(msg.getMessageType()), servConn.getSocketString(), cqName,
-          cqQueryString);
+      logger.debug("{}: Received {} request from {} CqName: {} queryString: {}",
+          serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
+          serverConnection.getSocketString(), cqName, cqQueryString);
     }
 
     // Check if the Server is running in NotifyBySubscription=true mode.
@@ -96,8 +98,8 @@ public class ExecuteCQ61 extends BaseCQCommand {
         String err =
             LocalizedStrings.ExecuteCQ_SERVER_NOTIFYBYSUBSCRIPTION_MODE_IS_SET_TO_FALSE_CQ_EXECUTION_IS_NOT_SUPPORTED_IN_THIS_MODE
                 .toLocalizedString();
-        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg.getTransactionId(), null,
-            servConn);
+        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(),
+            null, serverConnection);
         return;
       }
     }
@@ -113,7 +115,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
       qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();
 
       // Authorization check
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         query = qService.newQuery(cqQueryString);
         cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
@@ -141,31 +143,31 @@ public class ExecuteCQ61 extends BaseCQCommand {
       // registering cq with serverConnection so that when CCP will require auth info it can access
       // that
       // registering cq auth before as possibility that you may get event
-      servConn.setCq(cqName, isDurable);
+      serverConnection.setCq(cqName, isDurable);
       cqQuery = (ServerCQImpl) cqServiceForExec.executeCq(cqName, cqQueryString, cqState, id, ccn,
           isDurable, true, regionDataPolicyPartBytes[0], null);
     } catch (CqException cqe) {
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(), cqe, servConn);
-      servConn.removeCq(cqName, isDurable);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
+          serverConnection);
+      serverConnection.removeCq(cqName, isDurable);
       return;
     } catch (Exception e) {
-      writeChunkedException(msg, e, false, servConn);
-      servConn.removeCq(cqName, isDurable);
+      writeChunkedException(clientMessage, e, serverConnection);
+      serverConnection.removeCq(cqName, isDurable);
       return;
     }
 
-    long oldstart = start;
     boolean sendResults = false;
-    boolean successQuery = false;
 
-    if (msg.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE) {
+    if (clientMessage.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE) {
       sendResults = true;
     }
 
     // Execute the query only if it is execute with initial results or
     // if it is a non PR query with execute query and maintain keys flags set
-    if (sendResults || (CqServiceImpl.EXECUTE_QUERY_DURING_INIT && CqServiceProvider.MAINTAIN_KEYS
-        && !cqQuery.isPR())) {
+    boolean successQuery = false;
+    if (sendResults || CqServiceImpl.EXECUTE_QUERY_DURING_INIT && CqServiceProvider.MAINTAIN_KEYS
+        && !cqQuery.isPR()) {
       // Execute the query and send the result-set to client.
       try {
         if (query == null) {
@@ -173,13 +175,13 @@ public class ExecuteCQ61 extends BaseCQCommand {
           cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
         }
         ((DefaultQuery) query).setIsCqQuery(true);
-        successQuery = processQuery(msg, query, cqQueryString, cqRegionNames, start, cqQuery,
-            executeCQContext, servConn, sendResults);
+        successQuery = processQuery(clientMessage, query, cqQueryString, cqRegionNames, start,
+            cqQuery, executeCQContext, serverConnection, sendResults, securityService);
 
 
         // Update the CQ statistics.
-        cqQuery.getVsdStats().setCqInitialResultsTime((DistributionStats.getStatTime()) - oldstart);
-        stats.incProcessExecuteCqWithIRTime((DistributionStats.getStatTime()) - oldstart);
+        cqQuery.getVsdStats().setCqInitialResultsTime(DistributionStats.getStatTime() - start);
+        stats.incProcessExecuteCqWithIRTime(DistributionStats.getStatTime() - start);
         // logger.fine("Time spent in execute with initial results :" +
         // DistributionStats.getStatTime() + ", " + oldstart);
       } finally { // To handle any exception.
@@ -187,7 +189,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
         if (!successQuery) {
           try {
             cqServiceForExec.closeCq(cqName, id);
-          } catch (Exception ex) {
+          } catch (Exception ignored) {
             // Ignore.
           }
         }
@@ -203,13 +205,12 @@ public class ExecuteCQ61 extends BaseCQCommand {
       // Send OK to client
       sendCqResponse(MessageType.REPLY,
           LocalizedStrings.ExecuteCQ_CQ_CREATED_SUCCESSFULLY.toLocalizedString(),
-          msg.getTransactionId(), null, servConn);
+          clientMessage.getTransactionId(), null, serverConnection);
 
       long start2 = DistributionStats.getStatTime();
-      stats.incProcessCreateCqTime(start2 - oldstart);
+      stats.incProcessCreateCqTime(start2 - start);
     }
-    servConn.setAsTrue(RESPONDED);
-
+    serverConnection.setAsTrue(RESPONDED);
   }
 
 }

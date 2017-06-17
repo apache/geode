@@ -20,6 +20,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 
@@ -35,34 +36,36 @@ public class ClientReady extends BaseCommand {
   private ClientReady() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    CacheServerStats stats = servConn.getCacheServerStats();
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
+    CacheServerStats stats = serverConnection.getCacheServerStats();
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
       stats.incReadClientReadyRequestTime(start - oldStart);
     }
     try {
-      String clientHost = servConn.getSocketHost();
-      int clientPort = servConn.getSocketPort();
+      String clientHost = serverConnection.getSocketHost();
+      int clientPort = serverConnection.getSocketPort();
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Received client ready request ({} bytes) from {} on {}:{}",
-            servConn.getName(), msg.getPayloadLength(), servConn.getProxyID(), clientHost,
-            clientPort);
+            serverConnection.getName(), clientMessage.getPayloadLength(),
+            serverConnection.getProxyID(), clientHost, clientPort);
       }
 
-      servConn.getAcceptor().getCacheClientNotifier().readyForEvents(servConn.getProxyID());
+      serverConnection.getAcceptor().getCacheClientNotifier()
+          .readyForEvents(serverConnection.getProxyID());
 
       long oldStart = start;
       start = DistributionStats.getStatTime();
       stats.incProcessClientReadyTime(start - oldStart);
 
-      writeReply(msg, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeReply(clientMessage, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
 
       if (logger.isDebugEnabled()) {
-        logger.debug(servConn.getName() + ": Processed client ready request from "
-            + servConn.getProxyID() + " on " + clientHost + ":" + clientPort);
+        logger.debug(serverConnection.getName() + ": Processed client ready request from "
+            + serverConnection.getProxyID() + " on " + clientHost + ":" + clientPort);
       }
     } finally {
       stats.incWriteClientReadyResponseTime(DistributionStats.getStatTime() - start);

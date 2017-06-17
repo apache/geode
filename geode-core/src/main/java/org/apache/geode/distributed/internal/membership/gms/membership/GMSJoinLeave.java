@@ -205,12 +205,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /**
    * collects responses to new views
    */
-  private ViewReplyProcessor viewProcessor = new ViewReplyProcessor(false);
+  ViewReplyProcessor viewProcessor = new ViewReplyProcessor(false);
 
   /**
    * collects responses to view preparation messages
    */
-  private ViewReplyProcessor prepareProcessor = new ViewReplyProcessor(true);
+  ViewReplyProcessor prepareProcessor = new ViewReplyProcessor(true);
 
   /**
    * whether quorum checks can cause a forced-disconnect
@@ -971,7 +971,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     if (m.isPreparing()) {
       if (this.preparedView != null && this.preparedView.getViewId() >= view.getViewId()) {
-        services.getMessenger().send(new ViewAckMessage(m.getSender(), this.preparedView));
+        services.getMessenger()
+            .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
       } else {
         this.preparedView = view;
         if (viewContainsMyUnjoinedAddress) {
@@ -1152,7 +1153,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         FindCoordinatorRequest request, int connectTimeout)
         throws ClassNotFoundException, IOException {
       TcpClient client = new TcpClient();
-      return client.requestToServer(addr.getAddress(), addr.getPort(), request, connectTimeout);
+      return client.requestToServer(addr.getAddress(), addr.getPort(), request, connectTimeout,
+          true);
     }
   }
 
@@ -1942,6 +1944,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     volatile boolean shutdown = false;
     volatile boolean waiting = false;
     volatile boolean testFlagForRemovalRequest = false;
+    // count of number of views abandoned due to conflicts
+    volatile int abandonedViews = 0;
 
     /**
      * initial view to install. guarded by synch on ViewCreator
@@ -1980,6 +1984,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return waiting;
     }
 
+    int getAbandonedViewCount() {
+      return abandonedViews;
+    }
+
     /**
      * All views should be sent by the ViewCreator thread, so if this member becomes coordinator it
      * may have an initial view to transmit that announces the removal of the former coordinator to
@@ -1997,34 +2005,47 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     private void sendInitialView() {
-      try {
-        if (initialView == null) {
-          return;
-        }
-        NetView v = preparedView;
-        if (v != null) {
-          processPreparedView(v);
-        }
+      boolean retry;
+      do {
+        retry = false;
         try {
-          NetView iView;
-          List<InternalDistributedMember> iJoins;
-          Set<InternalDistributedMember> iLeaves;
-          Set<InternalDistributedMember> iRemoves;
-          synchronized (this) {
-            iView = initialView;
-            iJoins = initialJoins;
-            iLeaves = initialLeaving;
-            iRemoves = initialRemovals;
+          if (initialView == null) {
+            return;
           }
-          if (iView != null) {
-            prepareAndSendView(iView, iJoins, iLeaves, iRemoves);
+          NetView v = preparedView;
+          if (v != null) {
+            processPreparedView(v);
           }
-        } finally {
-          setInitialView(null, null, null, null);
+          try {
+            NetView iView;
+            List<InternalDistributedMember> iJoins;
+            Set<InternalDistributedMember> iLeaves;
+            Set<InternalDistributedMember> iRemoves;
+            synchronized (this) {
+              iView = initialView;
+              iJoins = initialJoins;
+              iLeaves = initialLeaving;
+              iRemoves = initialRemovals;
+            }
+            if (iView != null) {
+              prepareAndSendView(iView, iJoins, iLeaves, iRemoves);
+            }
+          } finally {
+            setInitialView(null, null, null, null);
+          }
+        } catch (ViewAbandonedException e) {
+          // another view creator is active - sleep a bit to let it finish or go away
+          retry = true;
+          try {
+            sleep(services.getConfig().getMemberTimeout());
+          } catch (InterruptedException e2) {
+            shutdown = true;
+            retry = false;
+          }
+        } catch (InterruptedException e) {
+          shutdown = true;
         }
-      } catch (InterruptedException e) {
-        shutdown = true;
-      }
+      } while (retry);
     }
 
     /**
@@ -2124,6 +2145,17 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               if (shutdown) {
                 return;
               }
+            } catch (ViewAbandonedException e) {
+              synchronized (viewRequests) {
+                viewRequests.addAll(requests);
+              }
+              // pause before reattempting so that another view creator can either finish
+              // or fail
+              try {
+                sleep(services.getConfig().getMemberTimeout());
+              } catch (InterruptedException e2) {
+                shutdown = true;
+              }
             } catch (DistributedSystemDisconnectedException e) {
               shutdown = true;
             } catch (InterruptedException e) {
@@ -2187,7 +2219,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * 
      * @throws InterruptedException
      */
-    void createAndSendView(List<DistributionMessage> requests) throws InterruptedException {
+    void createAndSendView(List<DistributionMessage> requests)
+        throws InterruptedException, ViewAbandonedException {
       List<InternalDistributedMember> joinReqs = new ArrayList<>(10);
       Map<InternalDistributedMember, Integer> joinPorts = new HashMap<>(10);
       Set<InternalDistributedMember> leaveReqs = new HashSet<>(10);
@@ -2331,7 +2364,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      */
     void prepareAndSendView(NetView newView, List<InternalDistributedMember> joinReqs,
         Set<InternalDistributedMember> leaveReqs, Set<InternalDistributedMember> removalReqs)
-        throws InterruptedException {
+        throws InterruptedException, ViewAbandonedException {
       boolean prepared;
       do {
         if (this.shutdown || Thread.currentThread().isInterrupted()) {
@@ -2353,6 +2386,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         logger.debug("view preparation phase completed.  prepared={}", prepared);
 
         NetView conflictingView = prepareProcessor.getConflictingView();
+        if (conflictingView == null) {
+          conflictingView = GMSJoinLeave.this.preparedView;
+        }
 
         if (prepared) {
           break;
@@ -2381,9 +2417,17 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               || conflictingView.getViewId() > lastConflictingView.getViewId());
           if (conflictingViewIsMostRecent) {
             lastConflictingView = conflictingView;
-            logger.info(
-                "adding these crashed members from a conflicting view to the crash-set for the next view: {}\nconflicting view: {}",
-                unresponsive, conflictingView);
+            // if I am not a locator and the conflicting view is from a locator I should
+            // let it take control and stop sending membership views
+            if (localAddress.getVmKind() != DistributionManager.LOCATOR_DM_TYPE && conflictingView
+                .getCreator().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+              logger.info("View preparation interrupted - a locator is taking over as "
+                  + "membership coordinator in this view: {}", conflictingView);
+              abandonedViews++;
+              throw new ViewAbandonedException();
+            }
+            logger.info("adding these crashed members from a conflicting view to the crash-set "
+                + "for the next view: {}\nconflicting view: {}", unresponsive, conflictingView);
             failures.addAll(conflictingView.getCrashedMembers());
             // this member may have been kicked out of the conflicting view
             if (failures.contains(localAddress)) {
@@ -2642,5 +2686,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     return ret;
+  }
+
+  static class ViewAbandonedException extends Exception {
   }
 }

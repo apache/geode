@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.InternalGemFireException;
 
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
@@ -405,6 +406,14 @@ public class GMSLocator implements Locator, NetLocator {
 
       Object o = DataSerializer.readObject(ois2);
       this.view = (NetView) o;
+      List<InternalDistributedMember> members = new ArrayList<>(view.getMembers());
+      // GEODE-3052 - remove locators from the view. Since we couldn't recover from an existing
+      // locator we know that all of the locators in the view are defunct
+      for (InternalDistributedMember member : members) {
+        if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+          view.remove(member);
+        }
+      }
 
       logger.info("Peer locator initial membership is " + view);
       return true;

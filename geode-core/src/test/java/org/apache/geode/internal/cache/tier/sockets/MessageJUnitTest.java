@@ -32,53 +32,49 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class MessageJUnitTest {
 
   private Message message;
-  private Socket mockSocket;
-  private MessageStats mockStats;
-  private ByteBuffer msgBuffer;
-  private ServerConnection mockServerConnection;
 
   @Before
   public void setUp() throws Exception {
-    mockSocket = mock(Socket.class);
-    message = new Message(2, Version.CURRENT);
-    assertEquals(2, message.getNumberOfParts());
-    mockStats = mock(MessageStats.class);
-    msgBuffer = ByteBuffer.allocate(1000);
-    mockServerConnection = mock(ServerConnection.class);
-    message.setComms(mockServerConnection, mockSocket, msgBuffer, mockStats);
+    Socket mockSocket = mock(Socket.class);
+    this.message = new Message(2, Version.CURRENT);
+    assertEquals(2, this.message.getNumberOfParts());
+    MessageStats mockStats = mock(MessageStats.class);
+    ByteBuffer msgBuffer = ByteBuffer.allocate(1000);
+    ServerConnection mockServerConnection = mock(ServerConnection.class);
+    this.message.setComms(mockServerConnection, mockSocket, msgBuffer, mockStats);
   }
 
   @Test
   public void clearDoesNotThrowNPE() throws Exception {
     // unsetComms clears the message's ByteBuffer, which was causing an NPE during shutdown
     // when clear() was invoked
-    message.unsetComms();
-    message.clear();
+    this.message.unsetComms();
+    this.message.clear();
   }
 
   @Test
   public void numberOfPartsIsAdjusted() {
-    int numParts = message.getNumberOfParts();
-    message.setNumberOfParts(2 * numParts + 1);
-    assertEquals(2 * numParts + 1, message.getNumberOfParts());
-    message.addBytesPart(new byte[1]);
-    message.addIntPart(2);
-    message.addLongPart(3);
-    message.addObjPart("4");
-    message.addStringPart("5");
-    assertEquals(5, message.getNextPartNumber());
+    int numParts = this.message.getNumberOfParts();
+    this.message.setNumberOfParts(2 * numParts + 1);
+    assertEquals(2 * numParts + 1, this.message.getNumberOfParts());
+    this.message.addBytesPart(new byte[1]);
+    this.message.addIntPart(2);
+    this.message.addLongPart(3);
+    this.message.addObjPart("4");
+    this.message.addStringPart("5");
+    assertEquals(5, this.message.getNextPartNumber());
   }
 
   @Test
   public void messageLongerThanMaxIntIsRejected() throws Exception {
-    Part[] parts = new Part[2];
     Part mockPart1 = mock(Part.class);
     when(mockPart1.getLength()).thenReturn(Integer.MAX_VALUE / 2);
+    Part[] parts = new Part[2];
     parts[0] = mockPart1;
     parts[1] = mockPart1;
-    message.setParts(parts);
+    this.message.setParts(parts);
     try {
-      message.send();
+      this.message.send();
       fail("expected an exception but none was thrown");
     } catch (MessageTooLargeException e) {
       assertTrue(e.getMessage().contains("exceeds maximum integer value"));
@@ -87,14 +83,14 @@ public class MessageJUnitTest {
 
   @Test
   public void maxMessageSizeIsRespected() throws Exception {
-    Part[] parts = new Part[2];
     Part mockPart1 = mock(Part.class);
-    when(mockPart1.getLength()).thenReturn(Message.MAX_MESSAGE_SIZE / 2);
+    when(mockPart1.getLength()).thenReturn(Message.DEFAULT_MAX_MESSAGE_SIZE / 2);
+    Part[] parts = new Part[2];
     parts[0] = mockPart1;
     parts[1] = mockPart1;
-    message.setParts(parts);
+    this.message.setParts(parts);
     try {
-      message.send();
+      this.message.send();
       fail("expected an exception but none was thrown");
     } catch (MessageTooLargeException e) {
       assertFalse(e.getMessage().contains("exceeds maximum integer value"));
@@ -103,21 +99,17 @@ public class MessageJUnitTest {
 
   /**
    * geode-1468: Message should clear the chunks in its Parts when performing cleanup.
-   * 
-   * @throws Exception
    */
   @Test
   public void streamBuffersAreClearedDuringCleanup() throws Exception {
-    Part[] parts = new Part[2];
     Part mockPart1 = mock(Part.class);
     when(mockPart1.getLength()).thenReturn(100);
+    Part[] parts = new Part[2];
     parts[0] = mockPart1;
     parts[1] = mockPart1;
-    message.setParts(parts);
-    message.clearParts();
+    this.message.setParts(parts);
+    this.message.clearParts();
     verify(mockPart1, times(2)).clear();
   }
-
-  // TODO many more tests are needed
 
 }

@@ -98,13 +98,6 @@ import joptsimple.OptionSet;
 @SuppressWarnings({"unused"})
 public class ServerLauncher extends AbstractLauncher<String> {
 
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
-  @Deprecated
-  protected static final Integer DEFAULT_SERVER_PORT = getDefaultServerPort();
-
   private static final Map<String, String> helpMap = new HashMap<>();
 
   static {
@@ -153,13 +146,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
         "stop [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
     usageMap.put(Command.VERSION, "version");
   }
-
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
-  @Deprecated
-  public static final String DEFAULT_SERVER_PID_FILE = "vf.gf.server.pid";
 
   private static final String DEFAULT_SERVER_LOG_EXT = ".log";
   private static final String DEFAULT_SERVER_LOG_NAME = "gemfire";
@@ -283,7 +269,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     this.help = Boolean.TRUE.equals(builder.getHelp());
     this.hostNameForClients = builder.getHostNameForClients();
     this.memberName = builder.getMemberName();
-    // TODO:KIRK: set ThreadLocal for LogService with getLogFile or getLogFileName
     this.pid = builder.getPid();
     this.rebalance = Boolean.TRUE.equals(builder.getRebalance());
     this.redirectOutput = Boolean.TRUE.equals(builder.getRedirectOutput());
@@ -2630,6 +2615,18 @@ public class ServerLauncher extends AbstractLauncher<String> {
         // TODO: or should we return OFFLINE?
         throw new IllegalArgumentException("Unable to create ServerStatus from JSON: " + json, e);
       }
+    }
+
+    public static ServerState fromDirectory(final String workingDirectory,
+        final String memberName) {
+      ServerState serverState = new ServerLauncher.Builder().setWorkingDirectory(workingDirectory)
+          .setDisableDefaultServer(true).build().status();
+
+      if (ObjectUtils.equals(serverState.getMemberName(), memberName)) {
+        return serverState;
+      }
+
+      return new ServerState(new ServerLauncher.Builder().build(), Status.NOT_RESPONDING);
     }
 
     public ServerState(final ServerLauncher launcher, final Status status) {

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * Author: Gester Zhou
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -49,11 +46,11 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 
 public class PutAll70 extends BaseCommand {
 
   private final static PutAll70 singleton = new PutAll70();
-
 
   public static Command getCommand() {
     return singleton;
@@ -62,8 +59,8 @@ public class PutAll70 extends BaseCommand {
   private PutAll70() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long startp)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long startp) throws IOException, InterruptedException {
     long start = startp; // copy this since we need to modify it
     Part regionNamePart = null, numberOfKeysPart = null, keyPart = null, valuePart = null;
     String regionName = null;
@@ -73,12 +70,12 @@ public class PutAll70 extends BaseCommand {
     boolean replyWithMetaData = false;
     VersionedObjectList response = null;
 
-    StringBuffer errMessage = new StringBuffer();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    CacheServerStats stats = servConn.getCacheServerStats();
+    StringBuilder errMessage = new StringBuilder();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
     // requiresResponse = true;
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
@@ -88,40 +85,42 @@ public class PutAll70 extends BaseCommand {
     try {
       // Retrieve the data from the message parts
       // part 0: region name
-      regionNamePart = msg.getPart(0);
+      regionNamePart = clientMessage.getPart(0);
       regionName = regionNamePart.getString();
 
       if (regionName == null) {
         String putAllMsg =
             LocalizedStrings.PutAll_THE_INPUT_REGION_NAME_FOR_THE_PUTALL_REQUEST_IS_NULL
                 .toLocalizedString();
-        logger.warn("{}: {}", servConn.getName(), putAllMsg);
+        logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
         errMessage.append(putAllMsg);
-        writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+            serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
       LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
       if (region == null) {
         String reason = " was not found during put request";
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
 
       // part 1: eventID
-      eventPart = msg.getPart(1);
+      eventPart = clientMessage.getPart(1);
       ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
       long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
       long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-      EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+      EventID eventId =
+          new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
 
       // part 2: invoke callbacks (used by import)
-      Part callbacksPart = msg.getPart(2);
+      Part callbacksPart = clientMessage.getPart(2);
       boolean skipCallbacks = callbacksPart.getInt() == 1 ? true : false;
 
       // part 3: number of keys
-      numberOfKeysPart = msg.getPart(3);
+      numberOfKeysPart = clientMessage.getPart(3);
       numberOfKeys = numberOfKeysPart.getInt();
 
       // building the map
@@ -129,28 +128,30 @@ public class PutAll70 extends BaseCommand {
       Map<Object, VersionTag> retryVersions = new LinkedHashMap<Object, VersionTag>();
       // Map isObjectMap = new LinkedHashMap();
       for (int i = 0; i < numberOfKeys; i++) {
-        keyPart = msg.getPart(4 + i * 2);
+        keyPart = clientMessage.getPart(4 + i * 2);
         key = keyPart.getStringOrObject();
         if (key == null) {
           String putAllMsg =
               LocalizedStrings.PutAll_ONE_OF_THE_INPUT_KEYS_FOR_THE_PUTALL_REQUEST_IS_NULL
                   .toLocalizedString();
-          logger.warn("{}: {}", servConn.getName(), putAllMsg);
+          logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
           errMessage.append(putAllMsg);
-          writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+              serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
 
-        valuePart = msg.getPart(4 + i * 2 + 1);
+        valuePart = clientMessage.getPart(4 + i * 2 + 1);
         if (valuePart.isNull()) {
           String putAllMsg =
               LocalizedStrings.PutAll_ONE_OF_THE_INPUT_VALUES_FOR_THE_PUTALL_REQUEST_IS_NULL
                   .toLocalizedString();
-          logger.warn("{}: {}", servConn.getName(), putAllMsg);
+          logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
           errMessage.append(putAllMsg);
-          writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+              serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
 
@@ -170,7 +171,7 @@ public class PutAll70 extends BaseCommand {
           value = valuePart.getSerializedForm();
         }
         // put serializedform for auth. It will be modified with auth callback
-        if (msg.isRetry()) {
+        if (clientMessage.isRetry()) {
           // Constuct the thread id/sequence id information for this element in the
           // put all map
 
@@ -198,15 +199,16 @@ public class PutAll70 extends BaseCommand {
         // isObjectMap.put(key, new Boolean(isObject));
       } // for
 
-      if (msg.getNumberOfParts() == (4 + 2 * numberOfKeys + 1)) {// it means optional timeout has
-                                                                 // been added
-        int timeout = msg.getPart(4 + 2 * numberOfKeys).getInt();
-        servConn.setRequestSpecificTimeout(timeout);
+      if (clientMessage.getNumberOfParts() == (4 + 2 * numberOfKeys + 1)) {// it means optional
+                                                                           // timeout has
+        // been added
+        int timeout = clientMessage.getPart(4 + 2 * numberOfKeys).getInt();
+        serverConnection.setRequestSpecificTimeout(timeout);
       }
 
-      this.securityService.authorizeRegionWrite(regionName);
+      securityService.authorizeRegionWrite(regionName);
 
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           authzRequest.createRegionAuthorize(regionName);
@@ -231,11 +233,12 @@ public class PutAll70 extends BaseCommand {
 
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Received putAll request ({} bytes) from {} for region {}",
-            servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName);
+            serverConnection.getName(), clientMessage.getPayloadLength(),
+            serverConnection.getSocketString(), regionName);
       }
 
-      response = region.basicBridgePutAll(map, retryVersions, servConn.getProxyID(), eventId,
-          skipCallbacks, null);
+      response = region.basicBridgePutAll(map, retryVersions, serverConnection.getProxyID(),
+          eventId, skipCallbacks, null);
       if (!region.getConcurrencyChecksEnabled()) {
         // the client only needs this if versioning is being used
         response = null;
@@ -244,33 +247,34 @@ public class PutAll70 extends BaseCommand {
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) region;
         if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
-          writeReplyWithRefreshMetadata(msg, response, servConn, pr, pr.getNetworkHopType());
+          writeReplyWithRefreshMetadata(clientMessage, response, serverConnection, pr,
+              pr.getNetworkHopType());
           pr.clearNetworkHopData();
           replyWithMetaData = true;
         }
       }
     } catch (RegionDestroyedException rde) {
-      writeException(msg, rde, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, rde, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (ResourceException re) {
-      writeException(msg, re, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, re, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (PutAllPartialResultException pre) {
-      writeException(msg, pre, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, pre, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (Exception ce) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, ce);
+      checkForInterrupt(serverConnection, ce);
 
       // If an exception occurs during the put, preserve the connection
-      writeException(msg, ce, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, ce, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       // if (logger.fineEnabled()) {
       logger.warn(LocalizedMessage.create(LocalizedStrings.Generic_0_UNEXPECTED_EXCEPTION,
-          servConn.getName()), ce);
+          serverConnection.getName()), ce);
       // }
       return;
     } finally {
@@ -279,11 +283,11 @@ public class PutAll70 extends BaseCommand {
       stats.incProcessPutAllTime(start - oldStart);
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sending putAll70 response back to {} for region {}: {}", servConn.getName(),
-          servConn.getSocketString(), regionName, response);
+      logger.debug("{}: Sending putAll70 response back to {} for region {}: {}",
+          serverConnection.getName(), serverConnection.getSocketString(), regionName, response);
     }
     // Starting in 7.0.1 we do not send the keys back
-    if (response != null && Version.GFE_70.compareTo(servConn.getClientVersion()) < 0) {
+    if (response != null && Version.GFE_70.compareTo(serverConnection.getClientVersion()) < 0) {
       if (logger.isDebugEnabled()) {
         logger.debug("setting putAll keys to null");
       }
@@ -292,14 +296,14 @@ public class PutAll70 extends BaseCommand {
 
     // Increment statistics and write the reply
     if (!replyWithMetaData) {
-      writeReply(msg, response, servConn);
+      writeReply(clientMessage, response, serverConnection);
     }
-    servConn.setAsTrue(RESPONDED);
+    serverConnection.setAsTrue(RESPONDED);
     stats.incWritePutAllResponseTime(DistributionStats.getStatTime() - start);
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection servConn) throws IOException {
+  protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -311,7 +315,7 @@ public class PutAll70 extends BaseCommand {
     replyMsg.setMessageType(MessageType.REPLY);
     replyMsg.setNumberOfParts(2);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(OK_BYTES);
+    replyMsg.addBytesPart(okBytes());
     if (response != null) {
       response.clearObjects();
       replyMsg.addObjPart(response);
@@ -323,7 +327,7 @@ public class PutAll70 extends BaseCommand {
   }
 
   @Override
-  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection servConn,
+  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection serverConnection,
       PartitionedRegion pr, byte nwHop) throws IOException {
     throw new UnsupportedOperationException();
   }
@@ -343,7 +347,7 @@ public class PutAll70 extends BaseCommand {
     replyMsg.send(servConn);
     pr.getPrStats().incPRMetaDataSentCount();
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADAT tx: {}", servConn.getName(),
+      logger.trace("{}: rpl with REFRESH_METADATA tx: {}", servConn.getName(),
           origMsg.getTransactionId());
     }
   }

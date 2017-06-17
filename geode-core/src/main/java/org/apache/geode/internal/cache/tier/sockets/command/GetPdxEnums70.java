@@ -23,6 +23,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.internal.EnumInfo;
 
 public class GetPdxEnums70 extends BaseCommand {
@@ -36,31 +37,32 @@ public class GetPdxEnums70 extends BaseCommand {
   private GetPdxEnums70() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received get pdx enums from {}", servConn.getName(),
-          servConn.getSocketString());
+      logger.debug("{}: Received get pdx enums from {}", serverConnection.getName(),
+          serverConnection.getSocketString());
     }
 
     Map<Integer, EnumInfo> enums;
     try {
-      InternalCache cache = servConn.getCache();
+      InternalCache cache = serverConnection.getCache();
       enums = cache.getPdxRegistry().enumMap();
 
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    Message responseMsg = servConn.getResponseMessage();
+    Message responseMsg = serverConnection.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setNumberOfParts(1);
-    responseMsg.setTransactionId(msg.getTransactionId());
+    responseMsg.setTransactionId(clientMessage.getTransactionId());
     responseMsg.addObjPart(enums);
-    responseMsg.send(servConn);
-    servConn.setAsTrue(RESPONDED);
+    responseMsg.send(serverConnection);
+    serverConnection.setAsTrue(RESPONDED);
   }
 }

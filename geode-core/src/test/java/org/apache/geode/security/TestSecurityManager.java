@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.shiro.authz.Permission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -238,8 +240,8 @@ public class TestSecurityManager implements SecurityManager {
         String regionPart = (regionNames != null) ? regionNames : "*";
         String keyPart = (keys != null) ? keys : "*";
 
-        role.permissions
-            .add(new ResourcePermission(resourcePart, operationPart, regionPart, keyPart));
+        role.permissions.add(new ResourcePermission(Resource.valueOf(resourcePart),
+            Operation.valueOf(operationPart), regionPart, keyPart));
       }
 
       roleMap.put(role.name, role);

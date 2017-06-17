@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 
 public class Query extends BaseCommandQuery {
 
@@ -43,38 +44,38 @@ public class Query extends BaseCommandQuery {
   protected Query() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
 
     // Based on MessageType.DESTROY
     // Added by gregp 10/18/05
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
     // Retrieve the data from the message parts
-    String queryString = msg.getPart(0).getString();
+    String queryString = clientMessage.getPart(0).getString();
 
     // this is optional part for message specific timeout, which right now send by native client
     // need to take care while adding new message
 
-    if (msg.getNumberOfParts() == 3) {
-      int timeout = msg.getPart(2).getInt();
-      servConn.setRequestSpecificTimeout(timeout);
+    if (clientMessage.getNumberOfParts() == 3) {
+      int timeout = clientMessage.getPart(2).getInt();
+      serverConnection.setRequestSpecificTimeout(timeout);
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received query request from {} queryString: {}", servConn.getName(),
-          servConn.getSocketString(), queryString);
+      logger.debug("{}: Received query request from {} queryString: {}", serverConnection.getName(),
+          serverConnection.getSocketString(), queryString);
     }
     try {
       // Create query
       QueryService queryService =
-          servConn.getCachedRegionHelper().getCache().getLocalQueryService();
+          serverConnection.getCachedRegionHelper().getCache().getLocalQueryService();
       org.apache.geode.cache.query.Query query = queryService.newQuery(queryString);
       Set regionNames = ((DefaultQuery) query).getRegionsInQuery(null);
 
       // Authorization check
       QueryOperationContext queryContext = null;
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         queryContext = authzRequest.queryAuthorize(queryString, regionNames);
         String newQueryString = queryContext.getQuery();
@@ -88,11 +89,12 @@ public class Query extends BaseCommandQuery {
         }
       }
 
-      processQuery(msg, query, queryString, regionNames, start, null, queryContext, servConn, true);
+      processQuery(clientMessage, query, queryString, regionNames, start, null, queryContext,
+          serverConnection, true, securityService);
     } catch (QueryInvalidException e) {
       throw new QueryInvalidException(e.getMessage() + queryString);
     } catch (QueryExecutionLowMemoryException e) {
-      writeQueryResponseException(msg, e, false, servConn);
+      writeQueryResponseException(clientMessage, e, serverConnection);
     }
   }
 

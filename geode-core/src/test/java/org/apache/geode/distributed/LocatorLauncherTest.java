@@ -29,6 +29,7 @@ import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -299,8 +300,7 @@ public class LocatorLauncherTest {
   @Test
   public void testSetAndGetPort() {
     Builder builder = new Builder();
-
-    assertEquals(LocatorLauncher.DEFAULT_LOCATOR_PORT, builder.getPort());
+    assertEquals(Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), builder.getPort());
     assertSame(builder, builder.setPort(65535));
     assertEquals(65535, builder.getPort().intValue());
     assertSame(builder, builder.setPort(1024));
@@ -312,7 +312,7 @@ public class LocatorLauncherTest {
     assertSame(builder, builder.setPort(0));
     assertEquals(0, builder.getPort().intValue());
     assertSame(builder, builder.setPort(null));
-    assertEquals(LocatorLauncher.DEFAULT_LOCATOR_PORT, builder.getPort());
+    assertEquals(Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), builder.getPort());
   }
 
   @Test(expected = IllegalArgumentException.class)

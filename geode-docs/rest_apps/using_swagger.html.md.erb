@@ -25,31 +25,26 @@ Swagger application JARs are included in the Geode REST application WAR; you do 
 
 The following example demonstrates how to access the Swagger UI to browse the APIs.
 
-1.  Start a Geode Developer REST API-enabled server and JMX Manager as described in [Setup and Configuration](setup_config.html#topic_e21_qc5_m4). For example:
+1.  Start a Geode Locator and a Developer REST API-enabled server as described in [Setup and Configuration](setup_config.html#topic_e21_qc5_m4). 
+Specify an `http-service-port` for the developer REST service, as the default port, 7070, is already taken by the locator. For example:
 
     ``` pre
+    gfsh>start locator --name=locator1
+    Starting a Geode Locator in /Users/admin/apache-geode-1.2.0/locator1...
+    ....
     gfsh>start server --name=server1  --J=-Dgemfire.start-dev-rest-api=true \
-    --J=-Dgemfire.http-service-bind-address=localhost \
-    --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true
+    --J=-Dgemfire.http-service-bind-address=localhost --J=-Dgemfire.http-service-port=8080
     ```
 
-    If desired, you can specify a different HTTP port for the developer REST service. For example, `-J=-Dgemfire.http-service-port=8080`. If you do not specify this property, the service is available at the default port 7070.
-
-2.  To access Swagger, open a browser and enter the following URL: For example:
+2.  To access Swagger, open a browser and enter the following URL. For example:
 
     ``` pre
-    http://localhost:7070/gemfire-api/docs/index.html
+    http://localhost:8080/geode/swagger-ui.html
     ```
 
     The following Web page appears: <img src="../images/swagger_home.png" id="concept_rlr_y3c_54__image_m15_qcm_x4" class="image" />
 
-3.  In gfsh, connect to the server running the JMX Manager.
-
-    ``` pre
-    gfsh>connect --jmx-manager=localhost[1099]
-    ```
-
-4.  Using gfsh, create one or more regions on the REST API server. For example:
+3.  Using gfsh, create one or more regions on the REST API server. For example:
 
     ``` pre
     gfsh>create region --name=region1 --type=REPLICATE --key-constraint=java.lang.String
@@ -58,14 +53,15 @@ The following example demonstrates how to access the Swagger UI to browse the AP
     server1 | Region "/region1" created on "server1"
     ```
 
-5.  In Swagger, click on **region : region** to list all the available endpoints for accessing regions.
-6.  In the list of **region** endpoints, click on the **GET /v1** endpoint link. The page displays additional request and response information about the API. <img src="../images/swagger_v1.png" id="concept_rlr_y3c_54__image_kx2_2dm_x4" class="image" />
-7.  Click the **Try it out!** button. Any regions you added in step 5 are returned in the response body. <img src="../images/swagger_v1_response.png" id="concept_rlr_y3c_54__image_y2p_tdm_x4" class="image" />
-8.  Add an entry to the region by expanding the **POST /v1/{region}** endpoint. <img src="../images/swagger_post_region.png" id="concept_rlr_y3c_54__image_sfk_c2m_x4" class="image" />
-9.  Click the **Try it out!** button to see the response body and response code. <img src="../images/swagger_post_region_response.png" id="concept_rlr_y3c_54__image_pmx_k2m_x4" class="image" />
+4.  In Swagger, click on **region : region CRUD operations** to list all the available endpoints for accessing regions.
+    <img src="../images/swagger_region_endpoints.png" class="image" />
+5.  In the list of **region** endpoints, click on the **GET /v1** endpoint link. The page displays additional request and response information about the API. <img src="../images/swagger_v1.png" id="concept_rlr_y3c_54__image_kx2_2dm_x4" class="image" />
+6.  Click the **Try it out!** button. Any regions you added in step 5 are returned in the response body. <img src="../images/swagger_v1_response.png" id="concept_rlr_y3c_54__image_y2p_tdm_x4" class="image" />
+7.  Add an entry to the region by expanding the **POST /v1/{region}** endpoint. <img src="../images/swagger_post_region.png" id="concept_rlr_y3c_54__image_sfk_c2m_x4" class="image" />
+8.  Click the **Try it out!** button to see the response body and response code. <img src="../images/swagger_post_region_response.png" id="concept_rlr_y3c_54__image_pmx_k2m_x4" class="image" />
 
 You can use the Swagger interface to try out additional Geode API endpoints and view sample responses.
 
-For more information on Swagger, see [https://helloreverb.com/developers/swagger](https://helloreverb.com/developers/swagger) and the Swagger Specification at [https://github.com/wordnik/swagger-spec/](https://github.com/wordnik/swagger-spec/).
+For more information on Swagger, see the [Swagger website](http://swagger.io/).
 
 

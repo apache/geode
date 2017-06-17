@@ -198,6 +198,83 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  public void createIndexShouldNotAcceptBadIndexOrRegionNames() {
+    final VM vm1 = Host.getHost(0).getVM(-1);
+    vm1.invoke(() -> {
+      getCache();
+    });
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "\'__\'");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(
+        "Region names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens, underscores, or forward slashes:"));
+
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "\' @@@*%\'");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(
+        "Region names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens, underscores, or forward slashes:"));
+
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\'__\'");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(
+        "Index names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens or underscores:"));
+
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\' @@@*%\'");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+
+    resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(
+        "Index names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens or underscores:"));
+  }
+
+  @Test
+  public void createIndexShouldTrimAnalyzerNames() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(-1);
+    vm1.invoke(() -> {
+      getCache();
+    });
+
+    List<String> analyzerNames = new ArrayList<>();
+    analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
+    analyzerNames.add(KeywordAnalyzer.class.getCanonicalName());
+    analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
+
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
+        "\"org.apache.lucene.analysis.standard.StandardAnalyzer, org.apache.lucene.analysis.core.KeywordAnalyzer, org.apache.lucene.analysis.standard.StandardAnalyzer\"");
+
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    vm1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      createRegion();
+      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+      final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
+      assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
+      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
+    });
+  }
+
+  @Test
   public void createIndexWithoutRegionShouldReturnCorrectResults() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
     vm1.invoke(() -> {
@@ -221,33 +298,81 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void createIndexWithNullAnalyzerShouldUseStandardAnalyzer() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
+  public void createIndexWithWhitespaceOrDefaultKeywordAnalyzerShouldUseStandardAnalyzer()
+      throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(-1);
     vm1.invoke(() -> {
       getCache();
     });
 
-    String analyzerList = StandardAnalyzer.class.getCanonicalName() + ",null,"
+    // Test whitespace analyzer name
+    String analyzerList = StandardAnalyzer.class.getCanonicalName() + ",     ,"
         + KeywordAnalyzer.class.getCanonicalName();
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "space");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, "'" + analyzerList + "'");
+
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    // Test empty analyzer name
+    analyzerList =
+        StandardAnalyzer.class.getCanonicalName() + ",," + KeywordAnalyzer.class.getCanonicalName();
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "empty");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, analyzerList);
 
-    String resultAsString = executeCommandAndLogResult(csb);
+    resultAsString = executeCommandAndLogResult(csb);
+
+    // Test keyword analyzer name
+    analyzerList = StandardAnalyzer.class.getCanonicalName() + ",DEFAULT,"
+        + KeywordAnalyzer.class.getCanonicalName();
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "keyword");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, analyzerList);
+
+    resultAsString = executeCommandAndLogResult(csb);
 
     vm1.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       createRegion();
-      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+      final LuceneIndex spaceIndex = luceneService.getIndex("space", REGION_NAME);
+      final Map<String, Analyzer> spaceFieldAnalyzers = spaceIndex.getFieldAnalyzers();
+
+      final LuceneIndex emptyIndex = luceneService.getIndex("empty", REGION_NAME);
+      final Map<String, Analyzer> emptyFieldAnalyzers2 = emptyIndex.getFieldAnalyzers();
+
+      final LuceneIndex keywordIndex = luceneService.getIndex("keyword", REGION_NAME);
+      final Map<String, Analyzer> keywordFieldAnalyzers = keywordIndex.getFieldAnalyzers();
+
+      // Test whitespace analyzers
       assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          fieldAnalyzers.get("field1").getClass().getCanonicalName());
+          spaceFieldAnalyzers.get("field1").getClass().getCanonicalName());
       assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          fieldAnalyzers.get("field2").getClass().getCanonicalName());
+          spaceFieldAnalyzers.get("field2").getClass().getCanonicalName());
       assertEquals(KeywordAnalyzer.class.getCanonicalName(),
-          fieldAnalyzers.get("field3").getClass().getCanonicalName());
+          spaceFieldAnalyzers.get("field3").getClass().getCanonicalName());
+
+      // Test empty analyzers
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          emptyFieldAnalyzers2.get("field1").getClass().getCanonicalName());
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          emptyFieldAnalyzers2.get("field2").getClass().getCanonicalName());
+      assertEquals(KeywordAnalyzer.class.getCanonicalName(),
+          emptyFieldAnalyzers2.get("field3").getClass().getCanonicalName());
+
+      // Test keyword analyzers
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          keywordFieldAnalyzers.get("field1").getClass().getCanonicalName());
+      assertEquals(StandardAnalyzer.class.getCanonicalName(),
+          keywordFieldAnalyzers.get("field2").getClass().getCanonicalName());
+      assertEquals(KeywordAnalyzer.class.getCanonicalName(),
+          keywordFieldAnalyzers.get("field3").getClass().getCanonicalName());
     });
   }
 
@@ -400,31 +525,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void searchWithInvalidQueryStringShouldReturnError() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
-    Map<String, TestObject> entries = new HashMap<>();
-    entries.put("A", new TestObject("value1 ", "value2", "value3"));
-    entries.put("B", new TestObject("ABC", "EFG", "HIJ"));;
-    putEntries(vm1, entries, 2);
-
-    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "WF~*");
-    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
-
-    String commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("Result String :\n ", resultAsString);
-    assertEquals(Status.ERROR, commandResult.getStatus());
-    assertTrue(resultAsString.contains("Leading wildcard is not allowed: field2:*"));
-  }
-
-  @Test
   public void searchOnIndexWithoutRegionShouldReturnError() throws Exception {
 
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -489,7 +589,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
     assertEquals(4, data.retrieveAllValues("key").size());
-
   }
 
   @Test

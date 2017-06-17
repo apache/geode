@@ -38,6 +38,16 @@ Do not try to create backup files from a running system by using your operating 
 **Preparing to Make a Backup**
 
 -   Consider compacting your disk store before making a backup. If auto-compaction is turned off, you may want to do a manual compaction to save on the quantity of data copied over the network by the backup. For more information on configuring a manual compaction, see [Manual Compaction](compacting_disk_stores.html#compacting_disk_stores__li_63CF8C35153D4173AADF7DC35FEC61F9).
+-   Take the backup when region operations are quiescent,
+to avoid the possibility of an inconsistency between region data and
+an asynchronous event queue (AEQ) or a WAN Gateway sender
+(which uses a persistent queue).
+A region operation that causes a persisted write to a region
+involves a disk operation.
+The associated queue operation also causes a disk operation.
+These two disk operations are not made atomically,
+so if a backup is made between the two disk operations,
+then the backup represents inconsistent data in the region and the queue.
 -   Run the backup during a period of low activity in your system. The backup does not block system activities, but it uses file system resources on all hosts in your distributed system, and it can affect performance.
 -   Configure each member with any additional files or directories to be backed up by modifying the member's `cache.xml` file. Additional items that ought to be included in the backup:
 

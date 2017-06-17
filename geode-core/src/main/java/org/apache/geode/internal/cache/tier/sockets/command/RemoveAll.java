@@ -12,11 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * Author: dschneider
- * 
- * @since GemFire 8.1
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -48,6 +43,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
 
 public class RemoveAll extends BaseCommand {
@@ -61,8 +57,8 @@ public class RemoveAll extends BaseCommand {
   protected RemoveAll() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long startp)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long startp) throws IOException, InterruptedException {
     long start = startp; // copy this since we need to modify it
     Part regionNamePart = null, numberOfKeysPart = null, keyPart = null;
     String regionName = null;
@@ -72,12 +68,12 @@ public class RemoveAll extends BaseCommand {
     boolean replyWithMetaData = false;
     VersionedObjectList response = null;
 
-    StringBuffer errMessage = new StringBuffer();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    CacheServerStats stats = servConn.getCacheServerStats();
+    StringBuilder errMessage = new StringBuilder();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
-    servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
@@ -87,7 +83,7 @@ public class RemoveAll extends BaseCommand {
     try {
       // Retrieve the data from the message parts
       // part 0: region name
-      regionNamePart = msg.getPart(0);
+      regionNamePart = clientMessage.getPart(0);
       regionName = regionNamePart.getString();
 
       if (regionName == null) {
@@ -95,45 +91,47 @@ public class RemoveAll extends BaseCommand {
             LocalizedStrings.RemoveAll_THE_INPUT_REGION_NAME_FOR_THE_REMOVEALL_REQUEST_IS_NULL
                 .toLocalizedString();
         logger.warn(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
-            new Object[] {servConn.getName(), txt}));
+            new Object[] {serverConnection.getName(), txt}));
         errMessage.append(txt);
-        writeChunkedErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeChunkedErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+            serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
-      LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+      LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
       if (region == null) {
         String reason = " was not found during removeAll request";
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
 
       // part 1: eventID
-      eventPart = msg.getPart(1);
+      eventPart = clientMessage.getPart(1);
       ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
       long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
       long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-      EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+      EventID eventId =
+          new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
 
       Breadcrumbs.setEventId(eventId);
 
       // part 2: flags
-      int flags = msg.getPart(2).getInt();
+      int flags = clientMessage.getPart(2).getInt();
       boolean clientIsEmpty = (flags & PutAllOp.FLAG_EMPTY) != 0;
       boolean clientHasCCEnabled = (flags & PutAllOp.FLAG_CONCURRENCY_CHECKS) != 0;
 
       // part 3: callbackArg
-      Object callbackArg = msg.getPart(3).getObject();
+      Object callbackArg = clientMessage.getPart(3).getObject();
 
       // part 4: number of keys
-      numberOfKeysPart = msg.getPart(4);
+      numberOfKeysPart = clientMessage.getPart(4);
       numberOfKeys = numberOfKeysPart.getInt();
 
       if (logger.isDebugEnabled()) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(servConn.getName()).append(": Received removeAll request from ")
-            .append(servConn.getSocketString()).append(" for region ").append(regionName)
+        buffer.append(serverConnection.getName()).append(": Received removeAll request from ")
+            .append(serverConnection.getSocketString()).append(" for region ").append(regionName)
             .append(callbackArg != null ? (" callbackArg " + callbackArg) : "").append(" with ")
             .append(numberOfKeys).append(" keys.");
         logger.debug(buffer);
@@ -141,21 +139,21 @@ public class RemoveAll extends BaseCommand {
       ArrayList<Object> keys = new ArrayList<Object>(numberOfKeys);
       ArrayList<VersionTag> retryVersions = new ArrayList<VersionTag>(numberOfKeys);
       for (int i = 0; i < numberOfKeys; i++) {
-        keyPart = msg.getPart(5 + i);
+        keyPart = clientMessage.getPart(5 + i);
         key = keyPart.getStringOrObject();
         if (key == null) {
           String txt =
               LocalizedStrings.RemoveAll_ONE_OF_THE_INPUT_KEYS_FOR_THE_REMOVEALL_REQUEST_IS_NULL
                   .toLocalizedString();
           logger.warn(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
-              new Object[] {servConn.getName(), txt}));
+              new Object[] {serverConnection.getName(), txt}));
           errMessage.append(txt);
-          writeChunkedErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(),
-              servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeChunkedErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR,
+              errMessage.toString(), serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
-        if (msg.isRetry()) {
+        if (clientMessage.isRetry()) {
           // Constuct the thread id/sequence id information for this element of the bulk op
 
           // The sequence id is constructed from the base sequence id and the offset
@@ -181,15 +179,16 @@ public class RemoveAll extends BaseCommand {
         keys.add(key);
       } // for
 
-      if (msg.getNumberOfParts() == (5 + numberOfKeys + 1)) {// it means optional timeout has been
-                                                             // added
-        int timeout = msg.getPart(5 + numberOfKeys).getInt();
-        servConn.setRequestSpecificTimeout(timeout);
+      if (clientMessage.getNumberOfParts() == (5 + numberOfKeys + 1)) {// it means optional timeout
+                                                                       // has been
+        // added
+        int timeout = clientMessage.getPart(5 + numberOfKeys).getInt();
+        serverConnection.setRequestSpecificTimeout(timeout);
       }
 
-      this.securityService.authorizeRegionWrite(regionName);
+      securityService.authorizeRegionWrite(regionName);
 
-      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           authzRequest.createRegionAuthorize(regionName);
@@ -200,8 +199,8 @@ public class RemoveAll extends BaseCommand {
         }
       }
 
-      response = region.basicBridgeRemoveAll(keys, retryVersions, servConn.getProxyID(), eventId,
-          callbackArg);
+      response = region.basicBridgeRemoveAll(keys, retryVersions, serverConnection.getProxyID(),
+          eventId, callbackArg);
       if (!region.getConcurrencyChecksEnabled() || clientIsEmpty || !clientHasCCEnabled) {
         // the client only needs this if versioning is being used and the client
         // has storage
@@ -216,33 +215,34 @@ public class RemoveAll extends BaseCommand {
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) region;
         if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
-          writeReplyWithRefreshMetadata(msg, response, servConn, pr, pr.getNetworkHopType());
+          writeReplyWithRefreshMetadata(clientMessage, response, serverConnection, pr,
+              pr.getNetworkHopType());
           pr.clearNetworkHopData();
           replyWithMetaData = true;
         }
       }
     } catch (RegionDestroyedException rde) {
-      writeChunkedException(msg, rde, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, rde, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (ResourceException re) {
-      writeChunkedException(msg, re, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, re, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (PutAllPartialResultException pre) {
-      writeChunkedException(msg, pre, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, pre, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (Exception ce) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, ce);
+      checkForInterrupt(serverConnection, ce);
 
       // If an exception occurs during the op, preserve the connection
-      writeChunkedException(msg, ce, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeChunkedException(clientMessage, ce, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       // if (logger.fineEnabled()) {
       logger.warn(LocalizedMessage.create(LocalizedStrings.Generic_0_UNEXPECTED_EXCEPTION,
-          servConn.getName()), ce);
+          serverConnection.getName()), ce);
       // }
       return;
     } finally {
@@ -251,20 +251,21 @@ public class RemoveAll extends BaseCommand {
       stats.incProcessRemoveAllTime(start - oldStart);
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sending removeAll response back to {} for region {}{}", servConn.getName(),
-          servConn.getSocketString(), regionName, (logger.isTraceEnabled() ? ": " + response : ""));
+      logger.debug("{}: Sending removeAll response back to {} for region {}{}",
+          serverConnection.getName(), serverConnection.getSocketString(), regionName,
+          (logger.isTraceEnabled() ? ": " + response : ""));
     }
 
     // Increment statistics and write the reply
     if (!replyWithMetaData) {
-      writeReply(msg, response, servConn);
+      writeReply(clientMessage, response, serverConnection);
     }
-    servConn.setAsTrue(RESPONDED);
+    serverConnection.setAsTrue(RESPONDED);
     stats.incWriteRemoveAllResponseTime(DistributionStats.getStatTime() - start);
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection servConn) throws IOException {
+  protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -285,7 +286,7 @@ public class RemoveAll extends BaseCommand {
     }
     replyMsg.sendHeader();
     if (listSize > 0) {
-      int chunkSize = 2 * maximumChunkSize;
+      int chunkSize = 2 * MAXIMUM_CHUNK_SIZE;
       // Chunker will stream over the list in its toData method
       VersionedObjectList.Chunker chunk =
           new VersionedObjectList.Chunker(response, chunkSize, false, false);
@@ -317,7 +318,7 @@ public class RemoveAll extends BaseCommand {
   }
 
   @Override
-  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection servConn,
+  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection serverConnection,
       PartitionedRegion pr, byte nwHop) throws IOException {
     throw new UnsupportedOperationException();
   }
@@ -345,7 +346,7 @@ public class RemoveAll extends BaseCommand {
       replyMsg.setLastChunk(false);
       replyMsg.sendChunk(servConn);
 
-      int chunkSize = 2 * maximumChunkSize; // maximumChunkSize
+      int chunkSize = 2 * MAXIMUM_CHUNK_SIZE; // MAXIMUM_CHUNK_SIZE
       // Chunker will stream over the list in its toData method
       VersionedObjectList.Chunker chunk =
           new VersionedObjectList.Chunker(response, chunkSize, false, false);
@@ -371,7 +372,7 @@ public class RemoveAll extends BaseCommand {
     }
     pr.getPrStats().incPRMetaDataSentCount();
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADAT tx: {}", servConn.getName(),
+      logger.trace("{}: rpl with REFRESH_METADATA tx: {}", servConn.getName(),
           origMsg.getTransactionId());
     }
   }

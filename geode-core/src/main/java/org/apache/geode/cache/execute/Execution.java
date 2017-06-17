@@ -51,7 +51,7 @@ public interface Execution<IN, OUT, AGG> {
    *         {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since GemFire 6.0
    */
-  Execution<IN, OUT, AGG> withFilter(Set<?> filter);
+  public Execution<IN, OUT, AGG> withFilter(Set<?> filter);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
@@ -63,20 +63,20 @@ public interface Execution<IN, OUT, AGG> {
    * @since Geode 1.2
    * 
    */
-  Execution<IN, OUT, AGG> setArguments(IN args);
+  public Execution<IN, OUT, AGG> setArguments(IN args);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
    * these arguments using {@link FunctionContext#getArguments()}
-   * 
+   *
    * @param args user data passed to the function execution
    * @return an Execution with args
    * @throws IllegalArgumentException if the input parameter is null
    * @since GemFire 6.0
    * @deprecated use {@link #setArguments(Object)} instead
-   * 
+   *
    */
-  Execution<IN, OUT, AGG> withArgs(IN args);
+  public Execution<IN, OUT, AGG> withArgs(IN args);
 
   /**
    * Specifies the {@link ResultCollector} that will receive the results after the function has been
@@ -88,7 +88,7 @@ public interface Execution<IN, OUT, AGG> {
    * @see ResultCollector
    * @since GemFire 6.0
    */
-  Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rc);
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rc);
 
   /**
    * Executes the function using its {@linkplain Function#getId() id}
@@ -104,7 +104,7 @@ public interface Execution<IN, OUT, AGG> {
    * 
    * @since GemFire 6.0
    */
-  ResultCollector<OUT, AGG> execute(String functionId) throws FunctionException;
+  public ResultCollector<OUT, AGG> execute(String functionId) throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -121,84 +121,5 @@ public interface Execution<IN, OUT, AGG> {
    * 
    * @since GemFire 6.0
    */
-  ResultCollector<OUT, AGG> execute(Function function) throws FunctionException;
-
-  /**
-   * Executes the function using its {@linkplain Function#getId() id}
-   * <p>
-   * {@link Function#execute(FunctionContext)} is called on the de-serialized instance on the
-   * executing member. Function should be registered on the executing member using
-   * {@link FunctionService#registerFunction(Function)} method before calling this method.
-   * 
-   * As of 6.6, this is deprecated, since users can pass different value for the hasResult parameter
-   * that than the boolean value returned from {@link Function#hasResult()}.
-   * 
-   * @param functionId the {@link Function#getId()} of the function
-   * @param hasResult Whether the function returns any result
-   * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
-   *         a low memory condition
-   * @return ResultCollector to retrieve the results received. This is different object than the
-   *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
-   *         to use this reference to retrieve results.
-   * 
-   * @since GemFire 6.5
-   * @deprecated as of 6.6, use {@link #execute(String)} instead
-   */
-  @Deprecated
-  ResultCollector<?, ?> execute(String functionId, boolean hasResult) throws FunctionException;
-
-  /**
-   * Executes the function using its {@linkplain Function#getId() id}
-   * <p>
-   * {@link Function#execute(FunctionContext)} is called on the de-serialized instance on the
-   * executing member.Function should be registered on the executing member using
-   * {@link FunctionService#registerFunction(Function)} method before calling this method.
-   * 
-   * As of 6.6, this is deprecated, since users can pass different value for the hasResult, isHA
-   * parameter that than the boolean values returned from {@link Function#hasResult()},
-   * {@link Function#isHA()}.
-   * 
-   * @param functionId the {@link Function#getId()} of the function
-   * @param hasResult Whether the function returns any result
-   * @param isHA Whether the given function is HA
-   * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
-   *         a low memory condition
-   * @return ResultCollector to retrieve the results received. This is different object than the
-   *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
-   *         to use this reference to retrieve results.
-   * 
-   * @since GemFire 6.5
-   * @deprecated as of 6.6, use {@link #execute(String)} instead
-   */
-  @Deprecated
-  ResultCollector<?, ?> execute(String functionId, boolean hasResult, boolean isHA)
-      throws FunctionException;
-
-  /**
-   * Executes the function using its {@linkplain Function#getId() id}
-   * <p>
-   * {@link Function#execute(FunctionContext)} is called on the de-serialized instance on the
-   * executing member.Function should be registered on the executing member using
-   * {@link FunctionService#registerFunction(Function)} method before calling this method.
-   * 
-   * As of 6.6, this is deprecated, since users can pass different value for the hasResult, isHA,
-   * optimizeForWrite parameters that than the boolean values returned from
-   * {@link Function#hasResult()}, {@link Function#isHA()}, {@link Function#optimizeForWrite()}.
-   * 
-   * @param functionId the {@link Function#getId()} of the function
-   * @param hasResult Whether the function returns any result
-   * @param isHA Whether the given function is HA
-   * @param optimizeForWrite Whether the function should be optmized for write operations
-   * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
-   *         a low memory condition
-   * @return ResultCollector to retrieve the results received. This is different object than the
-   *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
-   *         to use this reference to retrieve results.
-   * 
-   * @since GemFire 6.5
-   * @deprecated as of 6.6, use {@link #execute(String)} instead
-   */
-  @Deprecated
-  ResultCollector<?, ?> execute(String functionId, boolean hasResult, boolean isHA,
-      boolean optimizeForWrite) throws FunctionException;
+  public ResultCollector<OUT, AGG> execute(Function function) throws FunctionException;
 }

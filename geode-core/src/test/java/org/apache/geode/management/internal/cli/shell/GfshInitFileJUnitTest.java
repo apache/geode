@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
@@ -57,8 +58,6 @@ public class GfshInitFileJUnitTest {
   private static final int INIT_FILE_CITATION_LINES = 1;
 
   private static String saveLog4j2Config;
-  private static String saveUserDir;
-  private static String saveUserHome;
   private static java.util.logging.Logger julLogger;
   private static Handler[] saveHandlers;
 
@@ -73,6 +72,9 @@ public class GfshInitFileJUnitTest {
   @Rule
   public TemporaryFolder temporaryFolder_CurrentDirectory = new TemporaryFolder();
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   /*
    * Turn off console logging from JUL and Log4j2 for the duration of this class's tests, to reduce
    * noise level of output in automated build.
@@ -80,8 +82,6 @@ public class GfshInitFileJUnitTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     saveLog4j2Config = System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-    saveUserDir = System.getProperty("user.dir");
-    saveUserHome = System.getProperty("user.home");
 
     julLogger = java.util.logging.Logger.getLogger("");
     saveHandlers = julLogger.getHandlers();
@@ -110,38 +110,10 @@ public class GfshInitFileJUnitTest {
       System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, saveLog4j2Config);
       ((LoggerContext) LogManager.getContext(false)).reconfigure();
     }
-
-    if (saveUserDir == null) {
-      System.clearProperty("user.dir");
-    } else {
-      System.setProperty("user.dir", saveUserDir);
-    }
-    if (saveUserHome == null) {
-      System.clearProperty("user.home");
-    } else {
-      System.setProperty("user.home", saveUserHome);
-    }
   }
 
-  /*
-   * Reset $HOME and current directory for tests, and confirm this has been accepted.
-   */
   @Before
   public void setUp() throws Exception {
-    // Fake running from home directory
-    String userDir = temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath();
-    String userHome = userDir;
-
-    System.setProperty("user.dir", userDir);
-    System.setProperty("user.home", userHome);
-
-    // Abort all tests if system properties cannot be overridden
-    assertEquals("user.dir", System.getProperty("user.dir"), userDir);
-    assertEquals("user.home", System.getProperty("user.home"), userHome);
-  }
-
-  @Before
-  public void setUp2() throws Exception {
 
     // Null out static instance so can reinitialise
     Field gfsh_instance = Gfsh.class.getDeclaredField("instance");

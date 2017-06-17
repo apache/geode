@@ -372,7 +372,7 @@ import org.apache.geode.internal.cache.snapshot.FlowController.FlowControlAbortM
 import org.apache.geode.internal.cache.snapshot.FlowController.FlowControlAckMessage;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.ServerInterestRegistrationMessage;
+import org.apache.geode.internal.cache.tier.sockets.ServerInterestRegistrationMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientBlacklistProcessor.ClientBlacklistMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientInstantiatorMessage;

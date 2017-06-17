@@ -59,6 +59,7 @@ import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
@@ -301,7 +302,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     final DistributionConfig config = cache.getSystem().getConfig();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
-    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__MEMBER, controller);
+    csb.addOption(CliStrings.MEMBER, controller);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL, "info");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "50");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "32");
@@ -331,9 +332,10 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
   }
 
-  @Category(FlakyTest.class) // GEODE-1313
   @Test
   public void testAlterRuntimeConfigRandom() throws Exception {
+    IgnoredException.addIgnoredException(
+        "java.lang.IllegalArgumentException: Could not set \"log-disk-space-limit\"");
     final String member1 = "VM1";
     final String controller = "controller";
 
@@ -352,16 +354,13 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(NAME, member1);
         getSystem(localProps);
-        Cache cache = getCache();
+        getCache();
       }
     });
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     CommandResult cmdResult = executeCommand(csb.getCommandString());
     String resultAsString = commandResultToString(cmdResult);
-
-    getLogWriter().info("#SB Result\n");
-    getLogWriter().info(resultAsString);
 
     assertEquals(true, cmdResult.getStatus().equals(Status.ERROR));
     assertTrue(resultAsString.contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE));
@@ -371,10 +370,9 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     cmdResult = executeCommand(csb.getCommandString());
     resultAsString = commandResultToString(cmdResult);
 
-    getLogWriter().info("#SB Result\n");
-    getLogWriter().info(resultAsString);
-
     assertEquals(true, cmdResult.getStatus().equals(Status.ERROR));
+    assertTrue(
+        resultAsString.contains("Could not set \"log-disk-space-limit\" to \"2,000,000,000\""));
   }
 
   @Test
@@ -529,7 +527,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     // Test altering the runtime config
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL, "fine");
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
 

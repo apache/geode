@@ -76,12 +76,9 @@ public class MemberVM<T extends Member> implements Member {
     return member.getName();
   }
 
-  public void stopMemberAndCleanupVMIfNecessary() {
-    stopMember();
-    cleanupVMIfNecessary();
-  }
+  public void stopMember() {
 
-  private void cleanupVMIfNecessary() {
+    this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
     /**
      * The LocatorServerStarterRule may dynamically change the "user.dir" system property to point
      * to a temporary folder. The Path API caches the first value of "user.dir" that it sees, and
@@ -92,9 +89,5 @@ public class MemberVM<T extends Member> implements Member {
     if (!vmIsClean) {
       this.getVM().bounce();
     }
-  }
-
-  public void stopMember() {
-    this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
   }
 }

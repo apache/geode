@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -38,6 +35,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.i18n.StringId;
 
@@ -52,15 +50,16 @@ public class Request extends BaseCommand {
   Request() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     Part regionNamePart = null, keyPart = null, valuePart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    CacheServerStats stats = servConn.getCacheServerStats();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
     StringId errMessage = null;
 
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     // requiresResponse = true;
     {
       long oldStart = start;
@@ -68,18 +67,18 @@ public class Request extends BaseCommand {
       stats.incReadGetRequestTime(start - oldStart);
     }
     // Retrieve the data from the message parts
-    int parts = msg.getNumberOfParts();
-    regionNamePart = msg.getPart(0);
-    keyPart = msg.getPart(1);
+    int parts = clientMessage.getNumberOfParts();
+    regionNamePart = clientMessage.getPart(0);
+    keyPart = clientMessage.getPart(1);
     // valuePart = null; (redundant assignment)
     if (parts > 2) {
-      valuePart = msg.getPart(2);
+      valuePart = clientMessage.getPart(2);
       try {
         callbackArg = valuePart.getObject();
       } catch (Exception e) {
-        writeException(msg, e, false, servConn);
+        writeException(clientMessage, e, false, serverConnection);
         // responded = true;
-        servConn.setAsTrue(RESPONDED);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -87,15 +86,15 @@ public class Request extends BaseCommand {
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
+      writeException(clientMessage, e, false, serverConnection);
       // responded = true;
-      servConn.setAsTrue(RESPONDED);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received get request ({} bytes) from {} for region {} key {} txId {}",
-          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName, key,
-          msg.getTransactionId());
+          serverConnection.getName(), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), regionName, key, clientMessage.getTransactionId());
     }
 
     // Process the get request
@@ -109,31 +108,31 @@ public class Request extends BaseCommand {
         errMessage = LocalizedStrings.Request_THE_INPUT_REGION_NAME_FOR_THE_GET_REQUEST_IS_NULL;
       }
       String s = errMessage.toLocalizedString();
-      logger.warn("{}: {}", servConn.getName(), s);
-      writeErrorResponse(msg, MessageType.REQUESTDATAERROR, s, servConn);
+      logger.warn("{}: {}", serverConnection.getName(), s);
+      writeErrorResponse(clientMessage, MessageType.REQUESTDATAERROR, s, serverConnection);
       // responded = true;
-      servConn.setAsTrue(RESPONDED);
+      serverConnection.setAsTrue(RESPONDED);
     } else {
-      Region region = servConn.getCache().getRegion(regionName);
+      Region region = serverConnection.getCache().getRegion(regionName);
       if (region == null) {
         String reason = LocalizedStrings.Request__0_WAS_NOT_FOUND_DURING_GET_REQUEST
             .toLocalizedString(regionName);
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
       } else {
 
         GetOperationContext getContext = null;
 
         try {
-          this.securityService.authorizeRegionRead(regionName, key.toString());
-          AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+          securityService.authorizeRegionRead(regionName, key.toString());
+          AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
           if (authzRequest != null) {
             getContext = authzRequest.getAuthorize(regionName, key, callbackArg);
             callbackArg = getContext.getCallbackArg();
           }
         } catch (NotAuthorizedException ex) {
-          writeException(msg, ex, false, servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeException(clientMessage, ex, false, serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
 
@@ -141,10 +140,10 @@ public class Request extends BaseCommand {
         // the value if it is a byte[].
         Object[] valueAndIsObject = new Object[3];
         try {
-          getValueAndIsObject(region, key, callbackArg, servConn, valueAndIsObject);
+          getValueAndIsObject(region, key, callbackArg, serverConnection, valueAndIsObject);
         } catch (Exception e) {
-          writeException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeException(clientMessage, e, false, serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
 
@@ -154,7 +153,7 @@ public class Request extends BaseCommand {
 
 
         try {
-          AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
+          AuthorizeRequestPP postAuthzRequest = serverConnection.getPostAuthzRequest();
           if (postAuthzRequest != null) {
             getContext = postAuthzRequest.getAuthorize(regionName, key, data, isObject, getContext);
             byte[] serializedValue = getContext.getSerializedValue();
@@ -166,8 +165,8 @@ public class Request extends BaseCommand {
             isObject = getContext.isObject();
           }
         } catch (NotAuthorizedException ex) {
-          writeException(msg, ex, false, servConn);
-          servConn.setAsTrue(RESPONDED);
+          writeException(clientMessage, ex, false, serverConnection);
+          serverConnection.setAsTrue(RESPONDED);
           return;
         }
         {
@@ -179,20 +178,21 @@ public class Request extends BaseCommand {
         if (region instanceof PartitionedRegion) {
           PartitionedRegion pr = (PartitionedRegion) region;
           if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
-            writeResponseWithRefreshMetadata(data, callbackArg, msg, isObject, servConn, pr,
-                pr.getNetworkHopType());
+            writeResponseWithRefreshMetadata(data, callbackArg, clientMessage, isObject,
+                serverConnection, pr, pr.getNetworkHopType());
             pr.clearNetworkHopData();
           } else {
-            writeResponse(data, callbackArg, msg, isObject, servConn);
+            writeResponse(data, callbackArg, clientMessage, isObject, serverConnection);
           }
         } else {
-          writeResponse(data, callbackArg, msg, isObject, servConn);
+          writeResponse(data, callbackArg, clientMessage, isObject, serverConnection);
         }
 
-        servConn.setAsTrue(RESPONDED);
+        serverConnection.setAsTrue(RESPONDED);
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Wrote get response back to {} for region {} key {} value: {}",
-              servConn.getName(), servConn.getSocketString(), regionName, key, data);
+              serverConnection.getName(), serverConnection.getSocketString(), regionName, key,
+              data);
         }
         stats.incWriteGetResponseTime(DistributionStats.getStatTime() - start);
       }

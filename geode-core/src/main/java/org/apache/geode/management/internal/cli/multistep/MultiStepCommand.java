@@ -27,5 +27,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface MultiStepCommand {
+  public static String STEP_PARAMETER_NAME = "step-name";
 
+  String[] shellOnlyStep();
+
+  String stepParameterName() default STEP_PARAMETER_NAME;
 }

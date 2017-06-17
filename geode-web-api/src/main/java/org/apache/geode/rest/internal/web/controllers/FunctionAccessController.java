@@ -14,15 +14,17 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.internal.cache.execute.NoResult;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
+import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.http.HttpHeaders;
@@ -40,17 +42,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.internal.cache.execute.NoResult;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
-import org.apache.geode.rest.internal.web.util.JSONUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The FunctionsController class serving REST Requests related to the function execution
@@ -59,7 +54,8 @@ import org.apache.geode.rest.internal.web.util.JSONUtils;
  * @since GemFire 8.0
  */
 @Controller("functionController")
-@Api(value = "functions", description = "Rest api for gemfire function execution")
+@Api(value = "functions", description = "Rest api for gemfire function execution",
+    tags = "functions")
 @RequestMapping(FunctionAccessController.REST_API_VERSION + "/functions")
 @SuppressWarnings("unused")
 public class FunctionAccessController extends AbstractBaseController {

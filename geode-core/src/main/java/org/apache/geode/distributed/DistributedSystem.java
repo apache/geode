@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
@@ -225,16 +224,16 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   protected static boolean removeSystem(InternalDistributedSystem oldSystem) {
     synchronized (existingSystemsLock) {
-      ArrayList l = new ArrayList(existingSystems);
-      boolean result = l.remove(oldSystem);
+      List listOfSystems = new ArrayList(existingSystems);
+      boolean result = listOfSystems.remove(oldSystem);
       if (result) {
-        int size = l.size();
+        int size = listOfSystems.size();
         if (size == 0) {
           existingSystems = Collections.EMPTY_LIST;
         } else if (size == 1) {
-          existingSystems = Collections.singletonList(l.get(0));
+          existingSystems = Collections.singletonList(listOfSystems.get(0));
         } else {
-          existingSystems = Collections.unmodifiableList(l);
+          existingSystems = Collections.unmodifiableList(listOfSystems);
         }
       }
       return result;

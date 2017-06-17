@@ -17,6 +17,9 @@ package org.apache.geode.cache.lucene.internal;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
@@ -113,6 +116,17 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return InternalLuceneService.class;
   }
 
+  @Override
+  public void beforeRegionDestroyed(Region region) {
+    List<LuceneIndex> indexes = getIndexes(region.getFullPath());
+    if (!indexes.isEmpty()) {
+      String indexNames = indexes.stream().map(i -> i.getName()).collect(Collectors.joining(","));
+      throw new IllegalStateException(
+          LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
+              .toLocalizedString(region.getFullPath(), indexNames));
+    }
+  }
+
   public static String getUniqueIndexName(String indexName, String regionPath) {
     if (!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
@@ -124,6 +138,45 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public static String getUniqueIndexRegionName(String indexName, String regionPath,
       String regionSuffix) {
     return getUniqueIndexName(indexName, regionPath) + regionSuffix;
+  }
+
+  public enum validateCommandParameters {
+    REGION_PATH, INDEX_NAME;
+
+    public void validateName(String name) {
+      if (name == null) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
+      }
+      if (name.isEmpty()) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
+      }
+
+      boolean iae = false;
+      String msg =
+          " names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens";
+      Matcher matcher = null;
+      switch (this) {
+        case REGION_PATH:
+          matcher = Pattern.compile("[aA-zZ0-9-_./]+").matcher(name);
+          msg = "Region" + msg + ", underscores, or forward slashes: ";
+          iae = name.startsWith("__") || !matcher.matches();
+          break;
+        case INDEX_NAME:
+          matcher = Pattern.compile("[aA-zZ0-9-_.]+").matcher(name);
+          msg = "Index" + msg + " or underscores: ";
+          iae = name.startsWith("__") || !matcher.matches();
+          break;
+        default:
+          throw new IllegalArgumentException("Illegal option for validateName function");
+      }
+
+      // Ensure the region only contains valid characters
+      if (iae) {
+        throw new IllegalArgumentException(msg + name);
+      }
+    }
   }
 
   public void createIndex(String indexName, String regionPath,
@@ -211,6 +264,16 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return indexMap.values();
   }
 
+  public List<LuceneIndex> getIndexes(String regionPath) {
+    List<LuceneIndex> indexes = new ArrayList();
+    for (LuceneIndex index : getAllIndexes()) {
+      if (index.getRegionPath().equals(regionPath)) {
+        indexes.add(index);
+      }
+    }
+    return Collections.unmodifiableList(indexes);
+  }
+
   @Override
   public void destroyIndex(String indexName, String regionPath) {
     destroyIndex(indexName, regionPath, true);
@@ -232,6 +295,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public void destroyDefinedIndex(String indexName, String regionPath) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/" + regionPath;
+    }
     String uniqueIndexName = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     if (definedIndexMap.containsKey(uniqueIndexName)) {
       definedIndexMap.remove(uniqueIndexName);

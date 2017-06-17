@@ -16,9 +16,12 @@ package org.apache.geode.management.internal.cli;
 
 import static org.apache.geode.distributed.ConfigurationProperties.USER_COMMAND_PACKAGES;
 
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
@@ -29,7 +32,6 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -125,8 +127,8 @@ public class CommandManager {
     // Load commands found in all of the packages
     for (String userCommandPackage : userCommandPackages) {
       try {
-        Set<Class<?>> foundClasses =
-            ClasspathScanLoadHelper.loadAndGet(userCommandPackage, CommandMarker.class, true);
+        Set<Class<?>> foundClasses = ClasspathScanLoadHelper
+            .scanPackageForClassesImplementing(userCommandPackage, CommandMarker.class);
         for (Class<?> klass : foundClasses) {
           try {
             add((CommandMarker) klass.newInstance());
@@ -136,8 +138,6 @@ public class CommandManager {
           }
         }
         raiseExceptionIfEmpty(foundClasses, "User Command");
-      } catch (ClassNotFoundException | IOException e) {
-        logWrapper.warning("Could not load User Commands due to " + e.getLocalizedMessage());
       } catch (IllegalStateException e) {
         logWrapper.warning(e.getMessage(), e);
         throw e;
@@ -168,42 +168,21 @@ public class CommandManager {
     }
   }
 
+
   private void loadCommands() {
     loadUserCommands();
 
     loadPluginCommands();
+    loadGeodeCommands();
+    loadConverters();
+  }
 
-    // CommandMarkers
-    Set<Class<?>> foundClasses = null;
-    try {
-      // geode's commands
-      foundClasses = ClasspathScanLoadHelper.loadAndGet(
-          "org.apache.geode.management.internal.cli.commands", CommandMarker.class, true);
-      for (Class<?> klass : foundClasses) {
-        try {
-          add((CommandMarker) klass.newInstance());
-        } catch (Exception e) {
-          logWrapper.warning(
-              "Could not load Command from: " + klass + " due to " + e.getLocalizedMessage()); // continue
-        }
-      }
-      raiseExceptionIfEmpty(foundClasses, "Commands");
-
-      // do not add Spring shell's commands for now. When we add it, we need to tell the parser that
-      // these are offline commands.
-    } catch (ClassNotFoundException e) {
-      logWrapper.warning("Could not load Commands due to " + e.getLocalizedMessage());
-    } catch (IOException e) {
-      logWrapper.warning("Could not load Commands due to " + e.getLocalizedMessage());
-    } catch (IllegalStateException e) {
-      logWrapper.warning(e.getMessage(), e);
-      throw e;
-    }
-
+  private void loadConverters() {
+    Set<Class<?>> foundClasses;
     // Converters
     try {
-      foundClasses = ClasspathScanLoadHelper
-          .loadAndGet("org.apache.geode.management.internal.cli.converters", Converter.class, true);
+      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
+          "org.apache.geode.management.internal.cli.converters", Converter.class);
       for (Class<?> klass : foundClasses) {
         try {
           Converter<?> object = (Converter<?>) klass.newInstance();
@@ -217,8 +196,8 @@ public class CommandManager {
       raiseExceptionIfEmpty(foundClasses, "Converters");
 
       // Spring shell's converters
-      foundClasses = ClasspathScanLoadHelper.loadAndGet("org.springframework.shell.converters",
-          Converter.class, true);
+      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
+          "org.springframework.shell.converters", Converter.class);
       for (Class<?> klass : foundClasses) {
         if (!SHL_CONVERTERS_TOSKIP.contains(klass)) {
           try {
@@ -230,10 +209,32 @@ public class CommandManager {
         }
       }
       raiseExceptionIfEmpty(foundClasses, "Basic Converters");
-    } catch (ClassNotFoundException e) {
-      logWrapper.warning("Could not load Converters due to " + e.getLocalizedMessage());
-    } catch (IOException e) {
-      logWrapper.warning("Could not load Converters due to " + e.getLocalizedMessage());
+    } catch (IllegalStateException e) {
+      logWrapper.warning(e.getMessage(), e);
+      throw e;
+    }
+  }
+
+  private void loadGeodeCommands() {
+    // CommandMarkers
+    Set<Class<?>> foundClasses;
+    try {
+      // geode's commands
+      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
+          GfshCommand.class.getPackage().getName(), CommandMarker.class);
+
+      for (Class<?> klass : foundClasses) {
+        try {
+          add((CommandMarker) klass.newInstance());
+        } catch (Exception e) {
+          logWrapper.warning(
+              "Could not load Command from: " + klass + " due to " + e.getLocalizedMessage()); // continue
+        }
+      }
+      raiseExceptionIfEmpty(foundClasses, "Commands");
+
+      // do not add Spring shell's commands for now. When we add it, we need to tell the parser that
+      // these are offline commands.
     } catch (IllegalStateException e) {
       logWrapper.warning(e.getMessage(), e);
       throw e;

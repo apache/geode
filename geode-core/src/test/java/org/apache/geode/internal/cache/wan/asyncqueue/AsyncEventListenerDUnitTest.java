@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,11 +30,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
@@ -42,11 +50,14 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
@@ -1674,6 +1685,66 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).until(() -> getBucketMoved(vm2, "ln"));
   }
 
+  @Test
+  public void testCacheClosedBeforeAEQWrite() {
+    Integer lnPort =
+        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
+    vm3.invoke(createCacheRunnable(lnPort));
+    final DistributedMember member1 =
+        vm1.invoke(() -> cache.getDistributedSystem().getDistributedMember());
+
+    vm1.invoke(() -> addAEQWithCacheCloseFilter());
+    vm2.invoke(() -> addAEQWithCacheCloseFilter());
+
+    vm1.invoke(() -> createPersistentPartitionRegion());
+    vm2.invoke(() -> createPersistentPartitionRegion());
+    vm3.invoke(() -> {
+      AttributesFactory fact = new AttributesFactory();
+
+      PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+      pfact.setTotalNumBuckets(16);
+      pfact.setLocalMaxMemory(0);
+      fact.setPartitionAttributes(pfact.create());
+      fact.setOffHeap(isOffHeap());
+      Region r = cache.createRegionFactory(fact.create()).addAsyncEventQueueId("ln")
+          .create(getTestMethodName() + "_PR");
+
+    });
+
+    vm3.invoke(() -> {
+      Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_PR");
+      r.put(1, 1);
+      r.put(2, 2);
+      // This will trigger the gateway event filter to close the cache
+      try {
+        r.removeAll(Collections.singleton(1));
+        fail("Should have received a partition offline exception");
+      } catch (PartitionOfflineException expected) {
+
+      }
+    });
+  }
+
+  private void createPersistentPartitionRegion() {
+    AttributesFactory fact = new AttributesFactory();
+
+    PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+    pfact.setTotalNumBuckets(16);
+    fact.setPartitionAttributes(pfact.create());
+    fact.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+    fact.setOffHeap(isOffHeap());
+    Region r = cache.createRegionFactory(fact.create()).addAsyncEventQueueId("ln")
+        .create(getTestMethodName() + "_PR");
+  }
+
+  private void addAEQWithCacheCloseFilter() {
+    cache.createAsyncEventQueueFactory().addGatewayEventFilter(new CloseCacheGatewayFilter())
+        .setPersistent(true).setParallel(true).create("ln", new MyAsyncEventListener());
+  }
+
   private static Set<Object> getKeysSeen(VM vm, String asyncEventQueueId) {
     return vm.invoke(() -> {
       final BucketMovingAsyncEventListener listener =
@@ -1688,6 +1759,37 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
           (BucketMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
       return listener.moved;
     });
+  }
+
+  private final class CloseCacheGatewayFilter implements GatewayEventFilter {
+    @Override
+    public boolean beforeEnqueue(final GatewayQueueEvent event) {
+      if (event.getOperation().isRemoveAll()) {
+        new Thread(() -> cache.close()).start();
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          // ignore
+        }
+        throw new CacheClosedException();
+      }
+      return true;
+    }
+
+    @Override
+    public boolean beforeTransmit(final GatewayQueueEvent event) {
+      return false;
+    }
+
+    @Override
+    public void afterAcknowledgement(final GatewayQueueEvent event) {
+
+    }
+
+    @Override
+    public void close() {
+
+    }
   }
 
   private static class BucketMovingAsyncEventListener implements AsyncEventListener {

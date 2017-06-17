@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -63,20 +64,21 @@ public class Put65 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long p_start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long p_start)
       throws IOException, InterruptedException {
     long start = p_start;
     Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
     Part eventPart = null;
-    StringBuffer errMessage = new StringBuffer();
+    StringBuilder errMessage = new StringBuilder();
     boolean isDelta = false;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    CacheServerStats stats = servConn.getCacheServerStats();
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    CacheServerStats stats = serverConnection.getCacheServerStats();
 
     // requiresResponse = true;
-    servConn.setAsTrue(REQUIRES_RESPONSE);
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
@@ -84,50 +86,50 @@ public class Put65 extends BaseCommand {
     }
     // Retrieve the data from the message parts
     int idx = 0;
-    regionNamePart = msg.getPart(idx++);
+    regionNamePart = clientMessage.getPart(idx++);
     Operation operation;
     try {
-      operation = (Operation) msg.getPart(idx++).getObject();
+      operation = (Operation) clientMessage.getPart(idx++).getObject();
       if (operation == null) { // native clients send a null since the op is java-serialized
         operation = Operation.UPDATE;
       }
     } catch (ClassNotFoundException e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    int flags = msg.getPart(idx++).getInt();
+    int flags = clientMessage.getPart(idx++).getInt();
     boolean requireOldValue = ((flags & 0x01) == 0x01);
     boolean haveExpectedOldValue = ((flags & 0x02) == 0x02);
     Object expectedOldValue = null;
     if (haveExpectedOldValue) {
       try {
-        expectedOldValue = msg.getPart(idx++).getObject();
+        expectedOldValue = clientMessage.getPart(idx++).getObject();
       } catch (ClassNotFoundException e) {
-        writeException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
-    keyPart = msg.getPart(idx++);
+    keyPart = clientMessage.getPart(idx++);
     try {
-      isDelta = ((Boolean) msg.getPart(idx).getObject()).booleanValue();
+      isDelta = ((Boolean) clientMessage.getPart(idx).getObject()).booleanValue();
       idx += 1;
     } catch (Exception e) {
-      writeException(msg, MessageType.PUT_DELTA_ERROR, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, MessageType.PUT_DELTA_ERROR, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       // CachePerfStats not available here.
       return;
     }
-    valuePart = msg.getPart(idx++);
-    eventPart = msg.getPart(idx++);
-    if (msg.getNumberOfParts() > idx) {
-      callbackArgPart = msg.getPart(idx++);
+    valuePart = clientMessage.getPart(idx++);
+    eventPart = clientMessage.getPart(idx++);
+    if (clientMessage.getNumberOfParts() > idx) {
+      callbackArgPart = clientMessage.getPart(idx++);
       try {
         callbackArg = callbackArgPart.getObject();
       } catch (Exception e) {
-        writeException(msg, e, false, servConn);
-        servConn.setAsTrue(RESPONDED);
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
@@ -136,8 +138,8 @@ public class Put65 extends BaseCommand {
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
-      writeException(msg, e, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -145,8 +147,9 @@ public class Put65 extends BaseCommand {
     if (isDebugEnabled) {
       logger.debug(
           "{}: Received {}put request ({} bytes) from {} for region {} key {} txId {} posdup: {}",
-          servConn.getName(), (isDelta ? " delta " : " "), msg.getPayloadLength(),
-          servConn.getSocketString(), regionName, key, msg.getTransactionId(), msg.isRetry());
+          serverConnection.getName(), (isDelta ? " delta " : " "), clientMessage.getPayloadLength(),
+          serverConnection.getSocketString(), regionName, key, clientMessage.getTransactionId(),
+          clientMessage.isRetry());
     }
 
     // Process the put request
@@ -154,27 +157,28 @@ public class Put65 extends BaseCommand {
       if (key == null) {
         String putMsg = " The input key for the put request is null";
         if (isDebugEnabled) {
-          logger.debug("{}:{}", servConn.getName(), putMsg);
+          logger.debug("{}:{}", serverConnection.getName(), putMsg);
         }
         errMessage.append(putMsg);
       }
       if (regionName == null) {
         String putMsg = " The input region name for the put request is null";
         if (isDebugEnabled) {
-          logger.debug("{}:{}", servConn.getName(), putMsg);
+          logger.debug("{}:{}", serverConnection.getName(), putMsg);
         }
         errMessage.append(putMsg);
       }
-      writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason = " was not found during put request";
-      writeRegionDestroyedEx(msg, regionName, reason, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -182,11 +186,12 @@ public class Put65 extends BaseCommand {
       // Invalid to 'put' a null value in an existing key
       String putMsg = " Attempted to put a null value for existing key " + key;
       if (isDebugEnabled) {
-        logger.debug("{}:{}", servConn.getName(), putMsg);
+        logger.debug("{}:{}", serverConnection.getName(), putMsg);
       }
       errMessage.append(putMsg);
-      writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+          serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
@@ -194,13 +199,13 @@ public class Put65 extends BaseCommand {
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
     long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
 
-    EventIDHolder clientEvent =
-        new EventIDHolder(new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId));
+    EventIDHolder clientEvent = new EventIDHolder(
+        new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId));
 
     Breadcrumbs.setEventId(clientEvent.getEventId());
 
     // msg.isRetry might be set by v7.0 and later clients
-    if (msg.isRetry()) {
+    if (clientMessage.isRetry()) {
       // if (logger.isDebugEnabled()) {
       // logger.debug("DEBUG: encountered isRetry in Put65");
       // }
@@ -226,13 +231,13 @@ public class Put65 extends BaseCommand {
       }
       boolean isObject = valuePart.isObject();
       boolean isMetaRegion = region.isUsedForMetaRegion();
-      msg.setMetaRegion(isMetaRegion);
+      clientMessage.setMetaRegion(isMetaRegion);
 
-      this.securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorizeRegionWrite(regionName, key.toString());
 
       AuthorizeRequest authzRequest = null;
       if (!isMetaRegion) {
-        authzRequest = servConn.getAuthzRequest();
+        authzRequest = serverConnection.getAuthzRequest();
       }
       if (authzRequest != null) {
         if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
@@ -257,7 +262,7 @@ public class Put65 extends BaseCommand {
       // to be publicly accessible.
       if (operation == Operation.PUT_IF_ABSENT) {
         // try {
-        if (msg.isRetry() && clientEvent.getVersionTag() != null) {
+        if (clientMessage.isRetry() && clientEvent.getVersionTag() != null) {
           // bug #46590 the operation was successful the last time since it
           // was applied to the cache, so return success and the recovered
           // version tag
@@ -267,16 +272,16 @@ public class Put65 extends BaseCommand {
           }
           // invoke basicBridgePutIfAbsent anyway to ensure that the event is distributed to all
           // servers - bug #51664
-          region.basicBridgePutIfAbsent(key, value, isObject, callbackArg, servConn.getProxyID(),
-              true, clientEvent);
+          region.basicBridgePutIfAbsent(key, value, isObject, callbackArg,
+              serverConnection.getProxyID(), true, clientEvent);
           oldValue = null;
         } else {
           oldValue = region.basicBridgePutIfAbsent(key, value, isObject, callbackArg,
-              servConn.getProxyID(), true, clientEvent);
+              serverConnection.getProxyID(), true, clientEvent);
         }
         sendOldValue = true;
         oldValueIsObject = true;
-        Version clientVersion = servConn.getClientVersion();
+        Version clientVersion = serverConnection.getClientVersion();
         if (oldValue instanceof CachedDeserializable) {
           oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
         } else if (oldValue instanceof byte[]) {
@@ -299,7 +304,7 @@ public class Put65 extends BaseCommand {
       } else if (operation == Operation.REPLACE) {
         // try {
         if (requireOldValue) { // <V> replace(<K>, <V>)
-          if (msg.isRetry() && clientEvent.isConcurrencyConflict()
+          if (clientMessage.isRetry() && clientEvent.isConcurrencyConflict()
               && clientEvent.getVersionTag() != null) {
             if (isDebugEnabled) {
               logger.debug("replace(k,v) operation was successful last time with version {}",
@@ -307,10 +312,10 @@ public class Put65 extends BaseCommand {
             }
           }
           oldValue = region.basicBridgeReplace(key, value, isObject, callbackArg,
-              servConn.getProxyID(), true, clientEvent);
+              serverConnection.getProxyID(), true, clientEvent);
           sendOldValue = !clientEvent.isConcurrencyConflict();
           oldValueIsObject = true;
-          Version clientVersion = servConn.getClientVersion();
+          Version clientVersion = serverConnection.getClientVersion();
           if (oldValue instanceof CachedDeserializable) {
             oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
           } else if (oldValue instanceof byte[]) {
@@ -330,8 +335,8 @@ public class Put65 extends BaseCommand {
         } else { // boolean replace(<K>, <V>, <V>) {
           boolean didPut;
           didPut = region.basicBridgeReplace(key, expectedOldValue, value, isObject, callbackArg,
-              servConn.getProxyID(), true, clientEvent);
-          if (msg.isRetry() && clientEvent.getVersionTag() != null) {
+              serverConnection.getProxyID(), true, clientEvent);
+          if (clientMessage.isRetry() && clientEvent.getVersionTag() != null) {
             if (isDebugEnabled) {
               logger.debug("replace(k,v,v) operation was successful last time with version {}",
                   clientEvent.getVersionTag());
@@ -356,9 +361,9 @@ public class Put65 extends BaseCommand {
         // Create the null entry. Since the value is null, the value of the
         // isObject
         // the true after null doesn't matter and is not used.
-        result = region.basicBridgeCreate(key, null, true, callbackArg, servConn.getProxyID(), true,
-            clientEvent, false);
-        if (msg.isRetry() && clientEvent.isConcurrencyConflict()
+        result = region.basicBridgeCreate(key, null, true, callbackArg,
+            serverConnection.getProxyID(), true, clientEvent, false);
+        if (clientMessage.isRetry() && clientEvent.isConcurrencyConflict()
             && clientEvent.getVersionTag() != null) {
           result = true;
           if (isDebugEnabled) {
@@ -372,16 +377,17 @@ public class Put65 extends BaseCommand {
         if (isDelta) {
           delta = valuePart.getSerializedForm();
         }
-        TXManagerImpl txMgr = (TXManagerImpl) servConn.getCache().getCacheTransactionManager();
+        TXManagerImpl txMgr =
+            (TXManagerImpl) serverConnection.getCache().getCacheTransactionManager();
         // bug 43068 - use create() if in a transaction and op is CREATE
         if (txMgr.getTXState() != null && operation.isCreate()) {
           result = region.basicBridgeCreate(key, (byte[]) value, isObject, callbackArg,
-              servConn.getProxyID(), true, clientEvent, true);
+              serverConnection.getProxyID(), true, clientEvent, true);
         } else {
           result = region.basicBridgePut(key, value, delta, isObject, callbackArg,
-              servConn.getProxyID(), true, clientEvent);
+              serverConnection.getProxyID(), true, clientEvent);
         }
-        if (msg.isRetry() && clientEvent.isConcurrencyConflict()
+        if (clientMessage.isRetry() && clientEvent.isConcurrencyConflict()
             && clientEvent.getVersionTag() != null) {
           if (isDebugEnabled) {
             logger.debug("put(k,v) operation was successful last time with version {}",
@@ -391,46 +397,46 @@ public class Put65 extends BaseCommand {
         }
       }
       if (result) {
-        servConn.setModificationInfo(true, regionName, key);
+        serverConnection.setModificationInfo(true, regionName, key);
       } else {
-        String message = servConn.getName() + ": Failed to put entry for region " + regionName
-            + " key " + key + " value " + valuePart;
+        String message = serverConnection.getName() + ": Failed to put entry for region "
+            + regionName + " key " + key + " value " + valuePart;
         if (isDebugEnabled) {
           logger.debug(message);
         }
         throw new Exception(message);
       }
     } catch (RegionDestroyedException rde) {
-      writeException(msg, rde, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, rde, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (ResourceException re) {
-      writeException(msg, re, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, re, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (InvalidDeltaException ide) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1,
           new Object[] {key, regionName}));
-      writeException(msg, MessageType.PUT_DELTA_ERROR, ide, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, MessageType.PUT_DELTA_ERROR, ide, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       region.getCachePerfStats().incDeltaFullValuesRequested();
       return;
     } catch (Exception ce) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(servConn, ce);
+      checkForInterrupt(serverConnection, ce);
 
       // If an exception occurs during the put, preserve the connection
-      writeException(msg, ce, false, servConn);
-      servConn.setAsTrue(RESPONDED);
+      writeException(clientMessage, ce, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       if (ce instanceof GemFireSecurityException) {
         // Fine logging for security exceptions since these are already
         // logged by the security logger
         if (isDebugEnabled) {
-          logger.debug("{}: Unexpected Security exception", servConn.getName(), ce);
+          logger.debug("{}: Unexpected Security exception", serverConnection.getName(), ce);
         }
       } else if (isDebugEnabled) {
-        logger.debug("{}: Unexpected Exception", servConn.getName(), ce);
+        logger.debug("{}: Unexpected Exception", serverConnection.getName(), ce);
       }
       return;
     } finally {
@@ -443,21 +449,22 @@ public class Put65 extends BaseCommand {
     if (region instanceof PartitionedRegion) {
       PartitionedRegion pr = (PartitionedRegion) region;
       if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
-        writeReplyWithRefreshMetadata(msg, servConn, pr, sendOldValue, oldValueIsObject, oldValue,
-            pr.getNetworkHopType(), clientEvent.getVersionTag());
+        writeReplyWithRefreshMetadata(clientMessage, serverConnection, pr, sendOldValue,
+            oldValueIsObject, oldValue, pr.getNetworkHopType(), clientEvent.getVersionTag());
         pr.clearNetworkHopData();
       } else {
-        writeReply(msg, servConn, sendOldValue, oldValueIsObject, oldValue,
+        writeReply(clientMessage, serverConnection, sendOldValue, oldValueIsObject, oldValue,
             clientEvent.getVersionTag());
       }
     } else {
-      writeReply(msg, servConn, sendOldValue, oldValueIsObject, oldValue,
+      writeReply(clientMessage, serverConnection, sendOldValue, oldValueIsObject, oldValue,
           clientEvent.getVersionTag());
     }
-    servConn.setAsTrue(RESPONDED);
+    serverConnection.setAsTrue(RESPONDED);
     if (isDebugEnabled) {
       logger.debug("{}: Sent put response back to {} for region {} key {} value {}",
-          servConn.getName(), servConn.getSocketString(), regionName, key, valuePart);
+          serverConnection.getName(), serverConnection.getSocketString(), regionName, key,
+          valuePart);
     }
     stats.incWritePutResponseTime(DistributionStats.getStatTime() - start);
 
@@ -471,7 +478,7 @@ public class Put65 extends BaseCommand {
     replyMsg.setMessageType(MessageType.REPLY);
     replyMsg.setNumberOfParts(sendOldValue ? 3 : 1);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(OK_BYTES);
+    replyMsg.addBytesPart(okBytes());
     if (sendOldValue) {
       replyMsg.addIntPart(oldValueIsObject ? 1 : 0);
       replyMsg.addObjPart(oldValue);
@@ -499,7 +506,7 @@ public class Put65 extends BaseCommand {
     replyMsg.send(servConn);
     pr.getPrStats().incPRMetaDataSentCount();
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADAT tx: {} parts={}", servConn.getName(),
+      logger.trace("{}: rpl with REFRESH_METADATA tx: {} parts={}", servConn.getName(),
           origMsg.getTransactionId(), replyMsg.getNumberOfParts());
     }
   }

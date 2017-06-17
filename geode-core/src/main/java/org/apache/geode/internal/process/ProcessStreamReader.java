@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -29,6 +30,7 @@ import org.apache.geode.internal.logging.LogService;
  * @since GemFire 7.0
  */
 public abstract class ProcessStreamReader implements Runnable {
+  private static final int DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS = 5000;
   private static final Logger logger = LogService.getLogger();
 
   protected final Process process;
@@ -203,6 +205,56 @@ public abstract class ProcessStreamReader implements Runnable {
   /** Default ReadingMode is BLOCKING */
   public static enum ReadingMode {
     BLOCKING, NON_BLOCKING;
+  }
+
+  public static String waitAndCaptureProcessStandardOutputStream(final Process process) {
+    return waitAndCaptureProcessStandardOutputStream(process,
+        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS);
+  }
+
+  public static String waitAndCaptureProcessStandardOutputStream(final Process process,
+      final long waitTimeMilliseconds) {
+    return waitAndCaptureProcessStream(process, process.getInputStream(), waitTimeMilliseconds);
+  }
+
+  public static String waitAndCaptureProcessStandardErrorStream(final Process process) {
+    return waitAndCaptureProcessStandardErrorStream(process,
+        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS);
+  }
+
+  public static String waitAndCaptureProcessStandardErrorStream(final Process process,
+      final long waitTimeMilliseconds) {
+    return waitAndCaptureProcessStream(process, process.getErrorStream(), waitTimeMilliseconds);
+  }
+
+  private static String waitAndCaptureProcessStream(final Process process,
+      final InputStream processInputStream, long waitTimeMilliseconds) {
+    final StringBuffer buffer = new StringBuffer();
+
+    InputListener inputListener = line -> {
+      buffer.append(line);
+      buffer.append(SystemUtils.LINE_SEPARATOR);
+    };
+
+    ProcessStreamReader reader = new ProcessStreamReader.Builder(process)
+        .inputStream(processInputStream).inputListener(inputListener).build();
+
+    try {
+      reader.start();
+
+      final long endTime = (System.currentTimeMillis() + waitTimeMilliseconds);
+
+      while (System.currentTimeMillis() < endTime) {
+        try {
+          reader.join(waitTimeMilliseconds);
+        } catch (InterruptedException ignore) {
+        }
+      }
+    } finally {
+      reader.stop();
+    }
+
+    return buffer.toString();
   }
 
   /**

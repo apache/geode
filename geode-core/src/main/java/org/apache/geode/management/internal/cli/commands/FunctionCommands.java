@@ -14,22 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -60,26 +45,29 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public class FunctionCommands implements CommandMarker {
+public class FunctionCommands implements GfshCommand {
 
   private final ListFunctionFunction listFunctionFunction = new ListFunctionFunction();
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
 
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION})
@@ -88,11 +76,11 @@ public class FunctionCommands implements CommandMarker {
       // TODO: Add optioncontext for functionID
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, mandatory = true,
           help = CliStrings.EXECUTE_FUNCTION__ID__HELP) String functionId,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONGROUPS,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXECUTE_FUNCTION__ONGROUPS__HELP) String[] onGroups,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONMEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.EXECUTE_FUNCTION__ONMEMBER__HELP) String onMember,
@@ -312,7 +300,7 @@ public class FunctionCommands implements CommandMarker {
         }
       } else if (onMember != null && onMember.length() > 0) {
         DistributedMember member = CliUtil.getDistributedMemberByNameOrId(onMember); // fix for bug
-                                                                                     // 45658
+        // 45658
         if (member != null) {
           executeAndGetResults(functionId, filterString, resultCollector, arguments, cache, member,
               resultTable, onRegion);
@@ -350,20 +338,6 @@ public class FunctionCommands implements CommandMarker {
     }
 
     return result;
-  }
-
-  DistributedMember getMember(InternalCache cache, String memberNameOrId) {
-    DistributedMember member = null;
-    Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
-    Iterator<DistributedMember> it = dsMembers.iterator();
-    while (it.hasNext()) {
-      DistributedMember tempMember = (DistributedMember) it.next();
-      if (memberNameOrId.equals(tempMember.getId())
-          || memberNameOrId.equals(tempMember.getName())) {
-        return tempMember;
-      }
-    }
-    return member;
   }
 
   void executeAndGetResults(String functionId, String filterString, String resultCollector,
@@ -440,11 +414,11 @@ public class FunctionCommands implements CommandMarker {
   public Result destroyFunction(
       @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,
           help = CliStrings.DESTROY_FUNCTION__HELP) String functionId,
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ONGROUPS,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_FUNCTION__ONGROUPS__HELP) String[] groups,
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ONMEMBER,
+      @CliOption(key = CliStrings.MEMBER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_FUNCTION__ONMEMBER__HELP) String memberId) {
@@ -491,8 +465,8 @@ public class FunctionCommands implements CommandMarker {
     public Result preExecution(GfshParseResult parseResult) {
       Map<String, String> paramValueMap = parseResult.getParamValueStrings();
       Set<Entry<String, String>> setEnvMap = paramValueMap.entrySet();
-      String onGroup = paramValueMap.get(CliStrings.DESTROY_FUNCTION__ONGROUPS);
-      String onMember = paramValueMap.get(CliStrings.DESTROY_FUNCTION__ONMEMBER);
+      String onGroup = paramValueMap.get(CliStrings.GROUP);
+      String onMember = paramValueMap.get(CliStrings.MEMBER);
 
       if ((onGroup == null && onMember == null)) {
         Response response = readYesNo("Do you really want to destroy "
@@ -559,20 +533,21 @@ public class FunctionCommands implements CommandMarker {
   public Result listFunction(
       @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES,
           help = CliStrings.LIST_FUNCTION__MATCHES__HELP) String matches,
-      @CliOption(key = CliStrings.LIST_FUNCTION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_FUNCTION__GROUP__HELP) String groups,
-      @CliOption(key = CliStrings.LIST_FUNCTION__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String members) {
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CliStrings.LIST_FUNCTION__GROUP__HELP) String[] groups,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          optionContext = ConverterHint.MEMBERIDNAME,
+          help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String[] members) {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;
 
     InternalCache cache = getCache();
 
-    Set<DistributedMember> targetMembers;
-    try {
-      targetMembers = CliUtil.findMembersOrThrow(groups, members);
-    } catch (CommandResultException crex) {
-      return crex.getResult();
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, members);
+
+    if (targetMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     try {
@@ -610,15 +585,5 @@ public class FunctionCommands implements CommandMarker {
       return ResultBuilder.createGemFireErrorResult(
           "Exception while attempting to list functions: " + th.getMessage());
     }
-  }
-
-  @CliAvailabilityIndicator({CliStrings.EXECUTE_FUNCTION, CliStrings.DESTROY_FUNCTION,
-      CliStrings.LIST_FUNCTION})
-  public boolean functionCommandsAvailable() {
-    boolean isAvailable = true; // always available on server
-    if (CliUtil.isGfshVM()) { // in gfsh check if connected
-      isAvailable = getGfsh() != null && getGfsh().isConnectedAndReady();
-    }
-    return isAvailable;
   }
 }

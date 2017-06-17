@@ -17,9 +17,9 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.lucene.LuceneService;
-import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.cache.RegionService;
 import org.apache.geode.internal.cache.extension.Extension;
 
-public interface InternalLuceneService extends LuceneService, Extension<Cache>, CacheService {
+public interface InternalLuceneService extends LuceneService, Extension<Cache>, RegionService {
 
 }

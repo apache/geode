@@ -1,0 +1,116 @@
+---
+title: Hosting Pulse on a Web Application Server
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Host Pulse on a dedicated Web application server to make the Pulse application available at a consistent address, or to use SSL for accessing the Pulse application. When you host Pulse in this way, you also configure Pulse to connect to a specific locator or JMX Manager node for monitoring.
+
+To host Pulse on a Web application server:
+
+1.  Set the `http-service-port` property to zero (`-Dgemfire.http-service-port=0`) when you start your Geode JMX Manager nodes. Setting this property to zero disables the embedded Web server for hosting the Pulse application.
+
+2.  Deploy the Pulse Web application to your application server. Geode installs the
+`geode-pulse-n.n.n.war` file (where `n.n.n` is a version number) in the `tools/Pulse` subdirectory
+of your Geode installation directory. Depending on your application server, you may need to copy the
+`pulse.war` file to a deployment directory or use a configuration tool to deploy the file.
+
+3.  Stop the Web application server and locate the Pulse configuration in the `WEB-INF/classes` subdirectory.
+
+4.  Edit `pulse.properties`, defining or redefining any of the following configuration properties as needed for your application:
+
+    <table>
+    <colgroup>
+    <col width="50%" />
+    <col width="50%" />
+    </colgroup>
+    <thead>
+    <tr class="header">
+    <th>Property</th>
+    <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="odd">
+    <td><code class="ph codeph">pulse.useLocator</code></td>
+    <td>Specify &quot;true&quot; to configure Pulse to connect to a Geode Locator member, or &quot;false&quot; to connect directly to a JMX Manager.
+    <p>When Pulse connects to a Geode locator, the locator provides the address and port of an available JMX Manager to use for monitoring the distributed system. In most production deployments, you should connect Pulse to a locator instance; this allows Pulse to provide monitoring services using any available JMX Manager.</p>
+    <p>If you specify &quot;false,&quot; Pulse connects directly to a specific JMX Manager. If this manager is not available, the Pulse connection fails, even if another JMX Manager is available in the distributed system.</p></td>
+    </tr>
+    <tr class="even">
+    <td><code class="ph codeph">pulse.host</code></td>
+    <td>Specify the DNS name or IP address of the Geode locator or JMX Manager machine to which Pulse should connect. You specify either a locator or JMX Manager address depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.</td>
+    </tr>
+    <tr class="odd">
+    <td><code class="ph codeph">pulse.port</code></td>
+    <td>Specify the port number of the Geode locator or the HTTP port number of the JMX Manager to which Pulse should connect. You specify either a locator or JMX Manager port depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.
+    <p>If you configured <code class="ph codeph">pulse.useLocator=false</code>, then <code class="ph codeph">pulse.port</code> must correspond to the <code class="ph codeph">http-service-port</code> setting of the JMX Manager.</p></td>
+    </tr>
+    </tbody>
+    </table>
+
+    &nbsp;
+
+    For example, with the default `pulse.properties` configuration, Pulse connects to the locator at port 10334 and accesses any available JMX Manager:
+
+    ``` pre
+    pulse.useLocator=true
+    pulse.host=localhost
+    pulse.port=10334
+    ```
+
+    With this modified configuration, Pulse accesses only the JMX Manager instance at port 8080:
+
+    ``` pre
+    pulse.useLocator=false
+    pulse.host=jmxsrv.mycluster.com
+    pulse.port=8080
+    ```
+
+5.  If a JMX manager or locator is configured to use SSL, you can configure Pulse to connect to these
+    processes. Edit `pulsesecurity.properties` to un-comment the standard Java SSL properties:
+
+    ```
+    javax.net.ssl.keyStore={KeyStorePath}
+    javax.net.ssl.keyStorePassword={KeyStorePassword}
+    javax.net.ssl.trustStore={TrustStorePath}
+    javax.net.ssl.trustStorePassword={TrustStorePassword}
+    ```
+
+    Substitute the appropriate paths and passwords for the bracketed placeholders.
+
+6.  To change Pulse logging behavior, edit `log4j2.xml` in the same directory.
+    The default configuration sets the logging level to `INFO` and specifies a message pattern that
+    includes the date, name of the reporting logger, error level, name of the reporting thread, and the error message.
+    Refer to the [Apache Log4j documentation](https://logging.apache.org/log4j/2.x/manual/configuration.html#XML) for details on how to specify `log4j2.xml` content and syntax.
+
+7.  Restart the Web application server.
+
+8.  Access the Pulse application using the address, port, and application URL that you configured in
+your Web application server. For example, with Tomcat the default URL is
+`http://*address*:8080/pulse`. Your application server provides options for configuring the address,
+port, and application name; substitute the correct items to access the deployed Pulse application.
+
+    Pulse connects to the locator or JMX Manager that you configured in the `pulse.properties` file, authenticating using the credentials that you configured in the file.
+
+9.  If you have configured authentication for the Pulse application, enter the username and password of a valid Pulse account in the login screen. Otherwise, enter the default "admin" in both fields. Click **Sign In** to continue.
+
+    See [Configuring Pulse Authentication](pulse-auth.html).
+
+10.  After you log in, Pulse displays the main cluster view for the distributed system to which it has connected. See [Using Pulse Views](pulse-views.html).
+

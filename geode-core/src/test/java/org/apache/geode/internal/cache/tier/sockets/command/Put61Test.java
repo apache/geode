@@ -14,29 +14,22 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.operations.PutOperationContext;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -44,6 +37,13 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 @Category(UnitTest.class)
 public class Put61Test {
@@ -107,7 +107,7 @@ public class Put61Test {
 
     when(this.deltaPart.getObject()).thenReturn(true);
 
-    when(this.eventPart.getSerializedForm()).thenReturn(this.EVENT);
+    when(this.eventPart.getSerializedForm()).thenReturn(EVENT);
 
     when(this.valuePart.getSerializedForm()).thenReturn(VALUE);
     when(this.valuePart.isObject()).thenReturn(true);
@@ -132,14 +132,14 @@ public class Put61Test {
     when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
 
     when(this.localRegion.basicBridgePut(eq(KEY), eq(VALUE), eq(VALUE), eq(true), eq(CALLBACK_ARG),
-        any(ClientProxyMembershipID.class), eq(true), any(EntryEventImpl.class))).thenReturn(true);
+        any(), eq(true), any())).thenReturn(true);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.put61.cmdExecute(this.message, this.serverConnection, 0);
+    this.put61.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.replyMessage).send(this.serverConnection);
   }
@@ -149,7 +149,7 @@ public class Put61Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.put61.cmdExecute(this.message, this.serverConnection, 0);
+    this.put61.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
     verify(this.replyMessage).send(this.serverConnection);
@@ -162,7 +162,7 @@ public class Put61Test {
     doThrow(new NotAuthorizedException("")).when(this.securityService)
         .authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
 
-    this.put61.cmdExecute(this.message, this.serverConnection, 0);
+    this.put61.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
     verify(this.errorResponseMessage).send(this.serverConnection);
@@ -173,7 +173,7 @@ public class Put61Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.put61.cmdExecute(this.message, this.serverConnection, 0);
+    this.put61.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
     verify(this.replyMessage).addBytesPart(argument.capture());
@@ -192,7 +192,7 @@ public class Put61Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest).putAuthorize(eq(REGION_NAME),
         eq(KEY), eq(null), eq(true), eq(CALLBACK_ARG));
 
-    this.put61.cmdExecute(this.message, this.serverConnection, 0);
+    this.put61.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(null), eq(true),
         eq(CALLBACK_ARG));

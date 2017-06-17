@@ -12,18 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier;
 
-import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
-/**
- * 
- */
 public interface Command {
-  void execute(Message msg, ServerConnection servConn);
+  void execute(Message clientMessage, ServerConnection serverConnection,
+      SecurityService securityService);
 
   int RESPONDED = 1;
 

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -25,6 +24,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
  * @since GemFire 5.7
  */
 public class PingOp {
+
   /**
    * Ping the specified server to see if it is still alive
    * 
@@ -47,13 +47,13 @@ public class PingOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public PingOpImpl() {
+    PingOpImpl() {
       super(MessageType.PING, 0);
     }
 
     @Override
     protected void processSecureBytes(Connection cnx, Message message) throws Exception {
-      Message.messageType.set(null);
+      Message.MESSAGE_TYPE.set(null);
     }
 
     @Override
@@ -64,9 +64,9 @@ public class PingOp {
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
-      startTime = System.currentTimeMillis();
+      this.startTime = System.currentTimeMillis();
       getMessage().send(false);
-      Message.messageType.set(MessageType.PING);
+      Message.MESSAGE_TYPE.set(MessageType.PING);
     }
 
     @Override

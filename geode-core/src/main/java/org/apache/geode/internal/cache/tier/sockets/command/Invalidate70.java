@@ -60,7 +60,7 @@ public class Invalidate70 extends Invalidate {
     pr.getPrStats().incPRMetaDataSentCount();
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADAT tx: {}", servConn.getName(),
+      logger.trace("{}: rpl with REFRESH_METADATA tx: {}", servConn.getName(),
           origMsg.getTransactionId());
     }
   }
@@ -90,7 +90,7 @@ public class Invalidate70 extends Invalidate {
         logger.debug("response has no version tag");
       }
     }
-    replyMsg.addBytesPart(OK_BYTES); // make old single-hop code happy by putting byte[]{0} here
+    replyMsg.addBytesPart(okBytes()); // make old single-hop code happy by putting byte[]{0} here
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {
       logger.trace("{}: rpl tx: {} parts={}", servConn.getName(), origMsg.getTransactionId(),

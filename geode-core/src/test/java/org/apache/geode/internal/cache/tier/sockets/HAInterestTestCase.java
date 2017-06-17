@@ -919,7 +919,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     try {
       p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1).addServer(host, PORT2)
           .addServer(host, PORT3).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(1000).setPingInterval(1000)
+          .setReadTimeout(10000).setPingInterval(1000)
           // retryInterval should be more so that only registerInterste thread
           // will initiate failover
           // .setRetryInterval(20000)
@@ -948,7 +948,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     PoolImpl p;
     try {
       p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1).addServer(host, PORT2)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(1000)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(10000)
           .setSocketBufferSize(32768).setMinConnections(6).setPingInterval(200)
           // .setRetryInterval(200)
           // retryAttempts 3
@@ -975,7 +975,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "");
     new HAInterestTestCase().createCache(props);
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(hostName, PORT1)
-        .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(1000)
+        .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(10000)
         // .setRetryInterval(20)
         .create("HAInterestBaseTestPool");
     AttributesFactory factory = new AttributesFactory();
