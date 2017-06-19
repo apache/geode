@@ -612,14 +612,17 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     }
   }
 
-  private void validateRegionFunctionArgs(InternalCache cache,
-      RegionFunctionArgs regionFunctionArgs) {
+  DistributedSystemMXBean getDSMBean(InternalCache cache) {
+    ManagementService managementService = ManagementService.getExistingManagementService(cache);
+    return managementService.getDistributedSystemMXBean();
+  }
+
+  void validateRegionFunctionArgs(InternalCache cache, RegionFunctionArgs regionFunctionArgs) {
     if (regionFunctionArgs.getRegionPath() == null) {
       throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
     }
 
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
-    DistributedSystemMXBean dsMBean = managementService.getDistributedSystemMXBean();
+    DistributedSystemMXBean dsMBean = getDSMBean(cache);
 
     String useAttributesFrom = regionFunctionArgs.getUseAttributesFrom();
     if (useAttributesFrom != null && !useAttributesFrom.isEmpty()
@@ -840,7 +843,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
           throw new IllegalArgumentException(
               CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-                  new Object[] {regionFunctionArgs.getCompressor()}),
+                  new Object[] {regionFunctionArgs.getPartitionResolver()}),
               e);
         }
       }
