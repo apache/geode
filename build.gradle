@@ -74,6 +74,11 @@ if (name == 'geode') {
   ext.scriptDir = 'gradle'
 }
 
+if (project.hasProperty('parallelDunit')) {
+  def pwd = System.getenv('PWD')
+  ext.dunitDockerVolumes = ["${pwd}":pwd]
+}
+
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"

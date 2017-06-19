@@ -47,11 +47,11 @@ def dockerConfig = {
 
     // volumes mounted to the containers
     // in a form: host_dir : container_dir
-    def pwd = System.getenv('PWD')
     def gradleHome = System.getenv('GRADLE_USER_HOME') ?: "${System.getenv('HOME')}/.gradle"
     volumes = ["${gradleHome}":gradleHome]
 
-    volumes << ["${pwd}":pwd]
+    // Add volumes configured by top-level build script
+    volumes << project.dunitDockerVolumes
 
     // specify the user for starting Gradle test worker within the container.
     user = dunitDockerUser
