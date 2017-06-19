@@ -58,8 +58,8 @@ public class MemberCommands implements GfshCommand {
   @CliCommand(value = {CliStrings.LIST_MEMBER}, help = CliStrings.LIST_MEMBER__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listMember(@CliOption(key = {CliStrings.LIST_MEMBER__GROUP},
-      unspecifiedDefaultValue = "", optionContext = ConverterHint.MEMBERGROUP,
+  public Result listMember(@CliOption(key = {CliStrings.GROUP}, unspecifiedDefaultValue = "",
+      optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.LIST_MEMBER__GROUP__HELP) String group) {
     Result result = null;
 

@@ -136,10 +136,6 @@ dependencies {
   testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
   testCompile 'redis.clients:jedis:' + project.'jedis.version'
 
-  testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-  testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-  testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
-
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'

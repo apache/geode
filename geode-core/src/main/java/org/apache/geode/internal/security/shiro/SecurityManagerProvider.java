@@ -14,27 +14,48 @@
  */
 package org.apache.geode.internal.security.shiro;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.config.Ini;
+import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.session.mgt.DefaultSessionManager;
 import org.apache.shiro.session.mgt.SessionManager;
 
-public class RealmInitializer {
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.SecurityManager;
+
+public class SecurityManagerProvider {
   private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
-  public RealmInitializer() {
-    // nothing
+  private org.apache.shiro.mgt.SecurityManager shiroManager;
+  private SecurityManager securityManager;
+
+  public SecurityManagerProvider() {
+    shiroManager = SecurityUtils.getSecurityManager();
   }
 
-  public void initialize(final SecurityManager securityManager) {
+  public SecurityManagerProvider(String shiroConfig) {
+    this.securityManager = null;
+
+    IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
+    // we will need to make sure that shiro uses a case sensitive permission resolver
+    Ini.Section main = factory.getIni().addSection("main");
+    main.put("geodePermissionResolver", GeodePermissionResolver.class.getName());
+    if (!main.containsKey("iniRealm.permissionResolver")) {
+      main.put("iniRealm.permissionResolver", "$geodePermissionResolver");
+    }
+    shiroManager = factory.getInstance();
+  }
+
+
+  public SecurityManagerProvider(SecurityManager securityManager) {
+    this.securityManager = securityManager;
+
     Realm realm = new CustomAuthRealm(securityManager);
-    DefaultSecurityManager shiroManager = new DefaultSecurityManager(realm);
-    SecurityUtils.setSecurityManager(shiroManager);
-    increaseShiroGlobalSessionTimeout(shiroManager);
+    shiroManager = new DefaultSecurityManager(realm);
+    increaseShiroGlobalSessionTimeout((DefaultSecurityManager) shiroManager);
   }
 
   private void increaseShiroGlobalSessionTimeout(final DefaultSecurityManager shiroManager) {
@@ -50,5 +71,13 @@ public class RealmInitializer {
       logger.error("Unable to set Shiro Global Session Timeout. Current SessionManager is '{}'.",
           sessionManager == null ? "null" : sessionManager.getClass());
     }
+  }
+
+  public org.apache.shiro.mgt.SecurityManager getShiroSecurityManager() {
+    return shiroManager;
+  }
+
+  public SecurityManager getSecurityManager() {
+    return securityManager;
   }
 }

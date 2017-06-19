@@ -53,10 +53,8 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
   @RequestMapping(method = RequestMethod.POST, value = "/config")
   @ResponseBody
   public String alterRuntime(
-      @RequestParam(value = CliStrings.ALTER_RUNTIME_CONFIG__GROUP,
-          required = false) final String group,
-      @RequestParam(value = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String group,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT,
           required = false) final Integer archiveDiskSpaceLimit,
       @RequestParam(value = CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT,
@@ -86,11 +84,11 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.ALTER_RUNTIME_CONFIG__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(group)) {
-      command.addOption(CliStrings.ALTER_RUNTIME_CONFIG__GROUP, group);
+      command.addOption(CliStrings.GROUP, group);
     }
 
     if (hasValue(archiveDiskSpaceLimit)) {
@@ -166,7 +164,7 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
           defaultValue = "true") final Boolean hideDefaults) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.DESCRIBE_CONFIG);
 
-    command.addOption(CliStrings.DESCRIBE_CONFIG__MEMBER, decode(memberNameId));
+    command.addOption(CliStrings.MEMBER, decode(memberNameId));
     command.addOption(CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS, String.valueOf(hideDefaults));
 
     return processCommand(command.toString());
@@ -174,22 +172,18 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
 
   @RequestMapping(method = RequestMethod.GET, value = "/config")
   public Callable<ResponseEntity<String>> exportConfig(
-      @RequestParam(value = CliStrings.EXPORT_CONFIG__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.EXPORT_CONFIG__MEMBER,
-          required = false) final String[] members,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members,
       @RequestParam(value = CliStrings.EXPORT_CONFIG__DIR,
           required = false) final String directory) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_CONFIG);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.EXPORT_CONFIG__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.EXPORT_CONFIG__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(directory)) {

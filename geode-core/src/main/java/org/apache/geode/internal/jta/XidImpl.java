@@ -20,9 +20,13 @@ package org.apache.geode.internal.jta;
  * </p>
  * 
  * @since GemFire 4.0
+ * 
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
+ *             transactions.
  */
 import javax.transaction.xa.*;
 
+@Deprecated
 public class XidImpl implements Xid {
 
   /**

@@ -390,8 +390,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     return () -> {
       try {
         MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-        String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
-            new Object[] {regionPath, "*"});
+        String queryExp =
+            MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN, regionPath, "*");
         ObjectName queryExpON = new ObjectName(queryExp);
         return mbeanServer.queryNames(null, queryExpON).size() == mbeanCount;
       } catch (MalformedObjectNameException mone) {
@@ -517,7 +517,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   private void regionAlterGroupTest() {
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "5764");
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -541,7 +541,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group2");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group2");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "6963");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -630,7 +630,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   private void regionAlterNoChangeTest() {
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__CLONINGENABLED, "true");
 
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
@@ -671,7 +671,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   private void regionAlterSetDefaultsTest() {
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__EVICTIONMAX);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__CLONINGENABLED);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID);
@@ -716,7 +716,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     // Start out by putting 3 entries into each of the plug-in sets
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
         this.alterAsyncEventQueueId1);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
@@ -768,7 +768,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     // Now take 1 entry out of each of the sets
     commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
         this.alterAsyncEventQueueId1);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
@@ -811,7 +811,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     // Add 1 back to each of the sets
     commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
         this.alterAsyncEventQueueId1);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
@@ -934,7 +934,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     // Add 1 back to each of the sets
     commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__CACHELISTENER, "''");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -1025,7 +1025,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__STATISTICSENABLED, "true");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -1068,7 +1068,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     // Test altering the region
     commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, regionName);
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE, "45635");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION, "DESTROY");
     cmdResult = executeCommand(commandStringBuilder.toString());
@@ -1174,7 +1174,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__STATISTICSENABLED, "true");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 

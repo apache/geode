@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import org.apache.geode.test.junit.categories.UnitTest;

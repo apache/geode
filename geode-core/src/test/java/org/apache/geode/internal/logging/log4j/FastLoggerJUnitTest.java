@@ -16,7 +16,6 @@ package org.apache.geode.internal.logging.log4j;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 import org.apache.logging.log4j.Level;
@@ -97,7 +96,7 @@ public class FastLoggerJUnitTest {
 
     assertThat(fastLogger.isDebugEnabled(), is(true));
     assertThat(fastLogger.isDebugEnabled(this.mockedMarker), is(true));
-    verify(this.mockedLogger, times(1)).isEnabled(eq(Level.DEBUG), any(Marker.class),
+    verify(this.mockedLogger, times(1)).isEnabled(eq(Level.DEBUG), isNull(Marker.class),
         isNull(String.class));
     verify(this.mockedLogger, times(1)).isEnabled(eq(Level.DEBUG), eq(this.mockedMarker),
         isNull(Object.class), isNull(Throwable.class));

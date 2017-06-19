@@ -42,9 +42,8 @@ public class ExportLogController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/logs")
   public ResponseEntity<InputStreamResource> exportLogs(
       @RequestParam(value = CliStrings.EXPORT_LOGS__DIR, required = false) final String directory,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__GROUP, required = false) final String[] groups,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.EXPORT_LOGS__LOGLEVEL,
           required = false) final String logLevel,
       @RequestParam(value = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL,
@@ -65,12 +64,11 @@ public class ExportLogController extends AbstractCommandsController {
     command.addOption(CliStrings.EXPORT_LOGS__DIR, decode(directory));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.EXPORT_LOGS__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.EXPORT_LOGS__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(logLevel)) {

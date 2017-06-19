@@ -46,19 +46,16 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/gateways")
   @ResponseBody
   public String listGateways(
-      @RequestParam(value = CliStrings.LIST_GATEWAY__GROUP, required = false) final String[] groups,
-      @RequestParam(value = CliStrings.LIST_GATEWAY__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.LIST_GATEWAY);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.LIST_GATEWAY__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.LIST_GATEWAY__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -67,12 +64,10 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.POST, value = "/gateways/receivers")
   @ResponseBody
   public String createGatewayReceiver(
-      @RequestParam(value = CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
-          required = false) final String[] groups,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
       @RequestParam(value = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
           required = false) final Boolean manualStart,
-      @RequestParam(value = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER,
-          required = false) final String[] members,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members,
       @RequestParam(value = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT,
           required = false) final Integer startPort,
       @RequestParam(value = CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT,
@@ -88,8 +83,7 @@ public class WanCommandsController extends AbstractCommandsController {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYRECEIVER);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(manualStart)) {
@@ -98,8 +92,7 @@ public class WanCommandsController extends AbstractCommandsController {
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.CREATE_GATEWAYRECEIVER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(startPort)) {
@@ -137,10 +130,8 @@ public class WanCommandsController extends AbstractCommandsController {
   public String createGatewaySender(
       @RequestParam(CliStrings.CREATE_GATEWAYSENDER__ID) final String gatewaySenderId,
       @RequestParam(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID) final Integer remoteDistributedSystemId,
-      @RequestParam(value = CliStrings.CREATE_GATEWAYSENDER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.CREATE_GATEWAYSENDER__MEMBER,
-          required = false) final String[] members,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members,
       @RequestParam(value = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
           required = false) final Boolean parallel,
       @RequestParam(value = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
@@ -180,13 +171,11 @@ public class WanCommandsController extends AbstractCommandsController {
         String.valueOf(remoteDistributedSystemId));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CREATE_GATEWAYSENDER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.CREATE_GATEWAYSENDER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(parallel)) {
@@ -271,21 +260,17 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.DELETE, value = "/gateways/senders/{id}")
   @ResponseBody
   public String destroyGatewaySender(@PathVariable("id") final String gatewaySenderId,
-      @RequestParam(value = CliStrings.DESTROY_GATEWAYSENDER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.DESTROY_GATEWAYSENDER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.DESTROY_GATEWAYSENDER);
     command.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, gatewaySenderId);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CREATE_GATEWAYSENDER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.CREATE_GATEWAYSENDER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
     return processCommand(command.toString());
   }
@@ -307,22 +292,18 @@ public class WanCommandsController extends AbstractCommandsController {
       params = "op=pause")
   @ResponseBody
   public String pauseGatewaySender(@PathVariable("id") final String gatewaySenderId,
-      @RequestParam(value = CliStrings.PAUSE_GATEWAYSENDER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.PAUSE_GATEWAYSENDER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.PAUSE_GATEWAYSENDER);
 
     command.addOption(CliStrings.PAUSE_GATEWAYSENDER__ID, decode(gatewaySenderId));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.PAUSE_GATEWAYSENDER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.PAUSE_GATEWAYSENDER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -333,22 +314,18 @@ public class WanCommandsController extends AbstractCommandsController {
       params = "op=resume")
   @ResponseBody
   public String resumeGatewaySender(@PathVariable("id") final String gatewaySenderId,
-      @RequestParam(value = CliStrings.RESUME_GATEWAYSENDER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.RESUME_GATEWAYSENDER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER);
 
     command.addOption(CliStrings.RESUME_GATEWAYSENDER__ID, decode(gatewaySenderId));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.RESUME_GATEWAYSENDER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.RESUME_GATEWAYSENDER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -358,20 +335,16 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.POST, value = "/gateways/receivers", params = "op=start")
   @ResponseBody
   public String startGatewayReceiver(
-      @RequestParam(value = CliStrings.START_GATEWAYRECEIVER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.START_GATEWAYRECEIVER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_GATEWAYRECEIVER);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.START_GATEWAYRECEIVER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.START_GATEWAYRECEIVER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -382,22 +355,18 @@ public class WanCommandsController extends AbstractCommandsController {
   @ResponseBody
   public String startGatewaySender(
       @RequestParam(CliStrings.START_GATEWAYSENDER__ID) final String gatewaySenderId,
-      @RequestParam(value = CliStrings.START_GATEWAYSENDER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.START_GATEWAYSENDER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_GATEWAYSENDER);
 
     command.addOption(CliStrings.START_GATEWAYSENDER__ID, gatewaySenderId);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.START_GATEWAYSENDER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.START_GATEWAYSENDER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -406,20 +375,16 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/gateways/receivers")
   @ResponseBody
   public String statusGatewayReceivers(
-      @RequestParam(value = CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STATUS_GATEWAYRECEIVER);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.STATUS_GATEWAYRECEIVER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -428,22 +393,18 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/gateways/senders/{id}")
   @ResponseBody
   public String statusGatewaySenders(@PathVariable("id") final String gatewaySenderId,
-      @RequestParam(value = CliStrings.STATUS_GATEWAYSENDER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.STATUS_GATEWAYSENDER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STATUS_GATEWAYSENDER);
 
     command.addOption(CliStrings.STATUS_GATEWAYSENDER__ID, decode(gatewaySenderId));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.STATUS_GATEWAYSENDER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.STATUS_GATEWAYSENDER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -452,20 +413,16 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.POST, value = "/gateways/receivers", params = "op=stop")
   @ResponseBody
   public String stopGatewayReceiver(
-      @RequestParam(value = CliStrings.STOP_GATEWAYRECEIVER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_GATEWAYRECEIVER);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.STOP_GATEWAYRECEIVER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -474,22 +431,18 @@ public class WanCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.POST, value = "/gateways/senders/{id}", params = "op=stop")
   @ResponseBody
   public String stopGatewaySender(@PathVariable("id") final String gatewaySenderId,
-      @RequestParam(value = CliStrings.STOP_GATEWAYRECEIVER__GROUP,
-          required = false) final String[] groups,
-      @RequestParam(value = CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
-          required = false) final String[] members) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_GATEWAYSENDER);
 
     command.addOption(CliStrings.STOP_GATEWAYSENDER__ID, decode(gatewaySenderId));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.STOP_GATEWAYSENDER__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.STOP_GATEWAYSENDER__MEMBER,
-          StringUtils.join(members, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.MEMBER, StringUtils.join(members, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

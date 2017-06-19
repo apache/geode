@@ -14,10 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -28,13 +31,16 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.awaitility.Awaitility;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, ClientServerTest.class, BackwardCompatibilityTest.class})
@@ -90,4 +96,40 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
     });
   }
 
+  // @Test
+  @Ignore
+  public void testDistributedMemberBytesWithCurrentServerAndOldClient() throws Exception {
+    // Start current version server
+    int serverPort = initServerCache(true);
+
+    // Start old version client and do puts
+    VM client = Host.getHost(0).getVM(testVersion, 1);
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    client.invoke("create client cache", () -> {
+      createClientCache(hostname, serverPort);
+      populateCache();
+    });
+
+    // Get client member id byte array on client
+    byte[] clientMembershipIdBytesOnClient =
+        client.invoke(() -> getClientMembershipIdBytesOnClient());
+
+    // Get client member id byte array on server
+    byte[] clientMembershipIdBytesOnServer =
+        server1.invoke(() -> getClientMembershipIdBytesOnServer());
+
+    // Verify member id bytes on client and server are equal
+    assertTrue(Arrays.equals(clientMembershipIdBytesOnClient, clientMembershipIdBytesOnServer));
+  }
+
+  private byte[] getClientMembershipIdBytesOnClient() {
+    return EventID.getMembershipId(getCache().getDistributedSystem());
+  }
+
+  private byte[] getClientMembershipIdBytesOnServer() {
+    Set cpmIds = ClientHealthMonitor.getInstance().getClientHeartbeats().keySet();
+    assertEquals(1, cpmIds.size());
+    ClientProxyMembershipID cpmId = (ClientProxyMembershipID) cpmIds.iterator().next();
+    return EventID.getMembershipId(cpmId);
+  }
 }

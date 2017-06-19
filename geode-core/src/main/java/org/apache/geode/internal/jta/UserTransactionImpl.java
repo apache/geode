@@ -23,6 +23,9 @@ package org.apache.geode.internal.jta;
  * 
  * 
  * @since GemFire 4.0
+ * 
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
+ *             transactions.
  */
 import java.io.Serializable;
 import javax.transaction.*;
@@ -31,6 +34,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
+@Deprecated
 public class UserTransactionImpl implements UserTransaction, Serializable {
   private static final long serialVersionUID = 2994652455204901910L;
 

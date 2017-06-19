@@ -28,76 +28,97 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 public interface SecurityService {
+  default ThreadState bindSubject(Subject subject) {
+    return null;
+  }
 
-  void initSecurity(Properties securityProps);
+  default Subject getSubject() {
+    return null;
+  }
 
-  ThreadState bindSubject(Subject subject);
+  default Subject login(Properties credentials) {
+    return null;
+  }
 
-  Subject getSubject();
+  default void logout() {};
 
-  Subject login(Properties credentials);
+  default Callable associateWith(Callable callable) {
+    return callable;
+  }
 
-  void logout();
+  default void authorize(Resource resource, Operation operation, String target, String key) {};
 
-  Callable associateWith(Callable callable);
+  default void authorize(Resource resource, Operation operation, Target target, String key) {};
 
-  void authorize(Resource resource, Operation operation, String target, String key);
+  default void authorize(Resource resource, Operation operation, Target target) {};
 
-  void authorize(Resource resource, Operation operation, Target target, String key);
+  default void authorizeClusterManage() {};
 
-  void authorize(Resource resource, Operation operation, Target target);
+  default void authorizeClusterWrite() {};
 
-  void authorizeClusterManage();
+  default void authorizeClusterRead() {};
 
-  void authorizeClusterWrite();
+  default void authorizeDataManage() {};
 
-  void authorizeClusterRead();
+  default void authorizeDataWrite() {};
 
-  void authorizeDataManage();
+  default void authorizeDataRead() {};
 
-  void authorizeDataWrite();
+  default void authorizeDiskManage() {};
 
-  void authorizeDataRead();
+  default void authorizeGatewayManage() {};
 
-  void authorizeDiskManage();
+  default void authorizeJarManage() {};
 
-  void authorizeGatewayManage();
+  default void authorizeQueryManage() {};
 
-  void authorizeJarManage();
+  default void authorizeRegionManage(String regionName) {};
 
-  void authorizeQueryManage();
+  default void authorizeRegionManage(String regionName, String key) {};
 
-  void authorizeRegionManage(String regionName);
+  default void authorizeRegionWrite(String regionName) {};
 
-  void authorizeRegionManage(String regionName, String key);
+  default void authorizeRegionWrite(String regionName, String key) {};
 
-  void authorizeRegionWrite(String regionName);
+  default void authorizeRegionRead(String regionName) {};
 
-  void authorizeRegionWrite(String regionName, String key);
+  default void authorizeRegionRead(String regionName, String key) {};
 
-  void authorizeRegionRead(String regionName);
+  default void authorize(ResourcePermission context) {};
 
-  void authorizeRegionRead(String regionName, String key);
+  default void close() {};
 
-  void authorize(ResourcePermission context);
+  default boolean needPostProcess() {
+    return false;
+  };
 
-  void close();
+  default Object postProcess(String regionPath, Object key, Object value,
+      boolean valueIsSerialized) {
+    return value;
+  }
 
-  boolean needPostProcess();
+  default Object postProcess(Object principal, String regionPath, Object key, Object value,
+      boolean valueIsSerialized) {
+    return value;
+  }
 
-  Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized);
+  default boolean isClientSecurityRequired() {
+    return false;
+  }
 
-  Object postProcess(Object principal, String regionPath, Object key, Object value,
-      boolean valueIsSerialized);
+  default boolean isIntegratedSecurity() {
+    return false;
+  }
 
-  boolean isClientSecurityRequired();
+  default boolean isPeerSecurityRequired() {
+    return false;
+  }
 
-  boolean isIntegratedSecurity();
+  default SecurityManager getSecurityManager() {
+    return null;
+  }
 
-  boolean isPeerSecurityRequired();
-
-  SecurityManager getSecurityManager();
-
-  PostProcessor getPostProcessor();
-
+  default PostProcessor getPostProcessor() {
+    return null;
+  }
 }

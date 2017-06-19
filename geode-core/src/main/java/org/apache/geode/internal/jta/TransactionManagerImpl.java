@@ -20,6 +20,8 @@ package org.apache.geode.internal.jta;
  * </p>
  * 
  * @since GemFire 4.1.1
+ * 
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager instead.
  */
 import java.io.Serializable;
 import java.util.Collections;
@@ -31,6 +33,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -42,14 +45,19 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 
+@Deprecated
 public class TransactionManagerImpl implements TransactionManager, Serializable {
   private static final long serialVersionUID = 5033392316185449821L;
 
+  private static final Logger logger = LogService.getLogger();
   /**
    * A mapping of Thread - Transaction Objects
    */
@@ -99,6 +107,9 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    */
   private boolean isActive = true;
 
+  transient private final AtomicBoolean loggedJTATransactionManagerDeprecatedWarning =
+      new AtomicBoolean(false);
+
   /**
    * Constructs a new TransactionManagerImpl
    */
@@ -143,6 +154,10 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    * @see javax.transaction.TransactionManager#begin()
    */
   public void begin() throws NotSupportedException, SystemException {
+    if (loggedJTATransactionManagerDeprecatedWarning.compareAndSet(false, true)) {
+      logger.warn(
+          "Geode JTA transaction manager is deprecated since 1.2.0, please use a third party JTA transaction manager instead");
+    }
     if (!isActive) {
       throw new SystemException(
           LocalizedStrings.TransactionManagerImpl_TRANSACTIONMANAGER_INVALID.toLocalizedString());

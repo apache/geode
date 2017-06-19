@@ -65,7 +65,7 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
     final IndexRepository spy = Mockito.spy(indexRepo);
 
     Answer invokeBeforeWrite = invocation -> {
-      beforeWrite.accept(invocation.getArgumentAt(0, Object.class));
+      beforeWrite.accept(invocation.getArgument(0));
       return invocation.callRealMethod();
     };
 

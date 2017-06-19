@@ -110,9 +110,9 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
 
   private static Host host;
 
-  private static VM server1;
+  protected static VM server1;
 
-  private static VM server2;
+  protected static VM server2;
 
   private static RegionAttributes attrs;
 
