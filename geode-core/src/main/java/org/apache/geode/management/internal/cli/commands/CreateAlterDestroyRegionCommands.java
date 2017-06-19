@@ -14,7 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -58,26 +79,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 /**
  * @since GemFire 7.0
@@ -408,9 +409,9 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
       @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) String[] cacheListeners,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "null",
+      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__CACHELOADER__HELP) String cacheLoader,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "null",
+      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) String cacheWriter,
       @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
