@@ -14,11 +14,13 @@
  */
 package org.apache.geode.management.internal.security;
 
-import org.apache.geode.security.ResourcePermission;
-import org.apache.shiro.authz.Permission;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.shiro.authz.Permission;
+
+import org.apache.geode.security.ResourcePermission;
 
 public class TestCommand {
 
@@ -66,7 +68,8 @@ public class TestCommand {
   }
 
   public static List<TestCommand> getCommands() {
-    return testCommands;
+    // returns a copy of the list every time
+    return testCommands.stream().collect(Collectors.toList());
   }
 
   public static List<TestCommand> getPermittedCommands(Permission permission) {
