@@ -46,8 +46,6 @@ import org.apache.geode.modules.session.internal.filter.GemfireSessionManager;
 import org.apache.geode.modules.session.internal.filter.SessionManager;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionAttributes;
-import org.apache.geode.modules.session.internal.filter.attributes.ImmediateSessionAttributes;
-import org.apache.geode.modules.session.internal.filter.attributes.QueuedSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.util.ThreadLocalSession;
 
 /**
@@ -511,7 +509,7 @@ public class SessionCachingFilter implements Filter {
   @Override
   public void init(final FilterConfig config) {
     LOG.info("Starting Session Filter initialization");
-    registerInstatiators();
+    registerInstantiators();
     this.filterConfig = config;
 
     if (started.getAndDecrement() > 0) {
@@ -546,12 +544,10 @@ public class SessionCachingFilter implements Filter {
     LOG.debug("Filter class loader {}", this.getClass().getClassLoader());
   }
 
-  private void registerInstatiators() {
+  private void registerInstantiators() {
     GemfireHttpSession.registerInstantiator();
     DeltaQueuedSessionAttributes.registerInstantiator();
     DeltaSessionAttributes.registerInstantiator();
-    ImmediateSessionAttributes.registerInstantiator();
-    QueuedSessionAttributes.registerInstantiator();
   }
 
   /**
