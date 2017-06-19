@@ -78,12 +78,22 @@ where `XY` is the product version of your documentation (e.g., `{geode-site}/web
 
 2. Navigate to the User Guide you have built in the Geode repository: `{geode-project-dir}/geode-book/final_app/public/docs/guide/XY`.
 
-3. Use `tar` to copy the directory in order to preserve links and other filesystem niceties. Create the tarfile in your Desktop for easy access on the retrieval side.
-  
-  To copy the directory, enter:
+3. Use `tar` to copy the directory in order to preserve links and other filesystem niceties.
+
+  a. Create the tarfile in your Desktop for easy access on the retrieval side.
 
     ```
     $ tar cvf ~/Desktop/new-guide-content.tar .
+    ```
+  b. Create the destination directory in the `geode-site` repo:
+
+    ```
+    $ mkdir -p {geode-site}/website/content/docs/guide/XY
+    ```
+
+  c. Navigate to the target directory and un-tar the userguide archive:
+
+    ```
     $ cd {geode-site}/website/content/docs/guide/XY
     $ tar xvf ~/Desktop/new-guide-content.tar
     ```
