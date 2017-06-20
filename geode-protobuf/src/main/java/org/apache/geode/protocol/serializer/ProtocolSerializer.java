@@ -22,6 +22,7 @@ import java.io.OutputStream;
 
 /**
  * This interface is used to translate between binary data and protocol specific messages.
+ * 
  * @param <T> The message type of the protocol.
  */
 public interface ProtocolSerializer<T> {

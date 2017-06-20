@@ -17,8 +17,13 @@ package org.apache.geode.serialization;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
+/**
+ * This interface takes an protocol specific encodingTypeValue enum and converts between objects and
+ * bytes using the encodingTypeValue to decide what encoding type to use.
+ *
+ * @param <T> the enumeration of types known to a particular protocol
+ */
 public interface SerializationService<T> {
-
   Object decode(T encodingTypeValue, byte[] value)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException;
 

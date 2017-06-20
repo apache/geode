@@ -17,7 +17,7 @@ package org.apache.geode.serialization.exception;
 /**
  * This indicates an encoding type that we don't know how to handle.
  */
-public class UnsupportedEncodingTypeException extends Exception {
+public class UnsupportedEncodingTypeException extends TypeEncodingException {
   public UnsupportedEncodingTypeException(String message) {
     super(message);
   }

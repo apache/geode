@@ -20,6 +20,7 @@ import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerAlreadyRegisteredException;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
+import org.apache.geode.serialization.exception.TypeEncodingException;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -29,7 +30,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * This object handles an incoming stream containing protobuf messages. It parses the protobuf messages, hands the requests to an appropriate handler, wraps the response in a protobuf message, and then pushes it to the output stream.
+ * This object handles an incoming stream containing protobuf messages. It parses the protobuf
+ * messages, hands the requests to an appropriate handler, wraps the response in a protobuf message,
+ * and then pushes it to the output stream.
  */
 public class ProtobufStreamProcessor {
   ProtobufProtocolSerializer protobufProtocolSerializer;
@@ -47,7 +50,7 @@ public class ProtobufStreamProcessor {
 
   public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)
       throws InvalidProtocolMessageException, OperationHandlerNotRegisteredException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException, IOException {
+      TypeEncodingException, IOException {
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
 
     ClientProtocol.Request request = message.getRequest();

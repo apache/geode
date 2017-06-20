@@ -15,7 +15,8 @@
 package org.apache.geode.serialization.registry.exception;
 
 /**
- * This indicates that we're attempting to register a codec for a type which we already have a handler for.
+ * This indicates that we're attempting to register a codec for a type which we already have a
+ * handler for.
  */
 public class CodecAlreadyRegisteredForTypeException extends Exception {
   public CodecAlreadyRegisteredForTypeException(String message) {

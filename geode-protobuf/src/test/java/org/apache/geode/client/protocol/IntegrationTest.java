@@ -65,8 +65,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void testGetRequestProcessed()
-      throws Exception {
+  public void testGetRequestProcessed() throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     ProtobufStreamProcessor streamProcessor = new ProtobufStreamProcessor();

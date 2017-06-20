@@ -14,10 +14,12 @@
  */
 package org.apache.geode.serialization.registry.exception;
 
+import org.apache.geode.serialization.exception.TypeEncodingException;
+
 /**
  * This indicates we're attempting to handle a type for which we don't have a registered codec.
  */
-public class CodecNotRegisteredForTypeException extends Exception {
+public class CodecNotRegisteredForTypeException extends TypeEncodingException {
   public CodecNotRegisteredForTypeException(String message) {
     super(message);
   }
