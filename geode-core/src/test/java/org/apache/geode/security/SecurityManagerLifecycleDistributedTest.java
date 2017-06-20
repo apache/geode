@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheTestCase;
-import org.apache.geode.internal.security.EnabledSecurityService;
+import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.Host;
@@ -127,7 +127,7 @@ public class SecurityManagerLifecycleDistributedTest extends CacheTestCase {
 
   private void verifyInitAndCloseInvoked() {
     SecurityService securityService = getCache().getSecurityService();
-    assertThat(securityService).isNotNull().isInstanceOf(EnabledSecurityService.class);
+    assertThat(securityService).isNotNull().isInstanceOf(IntegratedSecurityService.class);
 
     SpySecurityManager ssm =
         (SpySecurityManager) getCache().getSecurityService().getSecurityManager();

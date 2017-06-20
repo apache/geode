@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.security.LegacySecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -37,17 +38,18 @@ import java.util.Properties;
 public class CacheFactoryWithSecurityObjectTest {
 
   private SecurityManager simpleSecurityManager;
-  private Properties properties = new Properties();
+  private Properties properties;
   private InternalCache cache;
 
   @Before
   public void before() throws Exception {
     this.simpleSecurityManager = new SimpleTestSecurityManager();
+    properties = new Properties();
     this.properties.setProperty("mcast-port", "0");
   }
 
   @Test
-  public void testCreateCacheWithSecurityManager() throws Exception {
+  public void testCreateCacheWithSecurityManagerOnly() throws Exception {
     this.cache = (InternalCache) new CacheFactory(this.properties)
         .setSecurityManager(this.simpleSecurityManager).setPostProcessor(null).create();
     SecurityService securityService = this.cache.getSecurityService();
@@ -56,17 +58,20 @@ public class CacheFactoryWithSecurityObjectTest {
     assertTrue(securityService.isPeerSecurityRequired());
     assertFalse(securityService.needPostProcess());
     assertNotNull(securityService.getSecurityManager());
+    assertNull(securityService.getPostProcessor());
   }
 
   @Test
-  public void testCreateCacheWithPostProcessor() throws Exception {
+  public void testCreateCacheWithPostProcessorOnly() throws Exception {
     this.cache = (InternalCache) new CacheFactory(this.properties)
         .setPostProcessor(new TestPostProcessor()).setSecurityManager(null).create();
     SecurityService securityService = this.cache.getSecurityService();
+    assertTrue(securityService instanceof LegacySecurityService);
     assertFalse(securityService.isIntegratedSecurity());
     assertFalse(securityService.isClientSecurityRequired());
     assertFalse(securityService.isPeerSecurityRequired());
     assertFalse(securityService.needPostProcess());
+    assertNull(securityService.getSecurityManager());
     assertNull(securityService.getPostProcessor());
   }
 
@@ -89,7 +94,7 @@ public class CacheFactoryWithSecurityObjectTest {
    * SECURITY_CLIENT_AUTHENTICATOR.
    */
   @Test
-  public void testOverride() throws Exception {
+  public void testSecurityManagerOverAuthenticator() throws Exception {
     this.properties.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR,
         DummyAuthenticator.class.getName());
 
@@ -106,6 +111,61 @@ public class CacheFactoryWithSecurityObjectTest {
     assertNotNull(securityService.getSecurityManager());
     assertNotNull(securityService.getPostProcessor());
   }
+
+
+  @Test
+  public void testCacheConfigOverProperties1() throws Exception {
+    this.properties.setProperty(ConfigurationProperties.SECURITY_SHIRO_INIT, "shiro.ini");
+
+    this.cache = (InternalCache) new CacheFactory(this.properties).setSecurityManager(null)
+        .setPostProcessor(null).create();
+
+    SecurityService securityService = this.cache.getSecurityService();
+
+    assertTrue(securityService.isIntegratedSecurity());
+    assertTrue(securityService.isClientSecurityRequired());
+    assertTrue(securityService.isPeerSecurityRequired());
+    assertFalse(securityService.needPostProcess());
+    assertNull(securityService.getSecurityManager());
+    assertNull(securityService.getPostProcessor());
+  }
+
+  @Test
+  public void testCacheConfigOverProperties() throws Exception {
+    this.properties.setProperty(ConfigurationProperties.SECURITY_SHIRO_INIT, "shiro.ini");
+
+    this.cache = (InternalCache) new CacheFactory(this.properties)
+        .setSecurityManager(this.simpleSecurityManager).setPostProcessor(new TestPostProcessor())
+        .create();
+
+    SecurityService securityService = this.cache.getSecurityService();
+
+    assertTrue(securityService.isIntegratedSecurity());
+    assertTrue(securityService.isClientSecurityRequired());
+    assertTrue(securityService.isPeerSecurityRequired());
+    assertTrue(securityService.needPostProcess());
+    assertNotNull(securityService.getSecurityManager());
+    assertNotNull(securityService.getPostProcessor());
+  }
+
+  @Test
+  public void testCacheConfigKeepsOldPostProcessor() throws Exception {
+    this.properties.setProperty(ConfigurationProperties.SECURITY_POST_PROCESSOR,
+        TestPostProcessor.class.getName());
+
+    this.cache = (InternalCache) new CacheFactory(this.properties)
+        .setSecurityManager(this.simpleSecurityManager).setPostProcessor(null).create();
+
+    SecurityService securityService = this.cache.getSecurityService();
+
+    assertTrue(securityService.isIntegratedSecurity());
+    assertTrue(securityService.isClientSecurityRequired());
+    assertTrue(securityService.isPeerSecurityRequired());
+    assertTrue(securityService.needPostProcess());
+    assertNotNull(securityService.getSecurityManager());
+    assertNotNull(securityService.getPostProcessor());
+  }
+
 
   @After
   public void after() {
