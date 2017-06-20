@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.mail.Folder;
+
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
@@ -48,7 +50,7 @@ public class GfshRule extends ExternalResource {
     return execute(GfshScript.of(commands));
   }
 
-  protected GfshExecution execute(GfshScript gfshScript) {
+  public GfshExecution execute(GfshScript gfshScript) {
     GfshExecution gfshExecution;
     try {
       File workingDir = temporaryFolder.newFolder(gfshScript.getName());

@@ -34,7 +34,8 @@ import java.nio.file.Path;
 public class ExportLogsIntegrationTest {
 
   @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
+  public static LocatorStarterRule locator =
+      new LocatorStarterRule().withJMXManager().withProperty("groups", "g1,g2").withAutoStart();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
