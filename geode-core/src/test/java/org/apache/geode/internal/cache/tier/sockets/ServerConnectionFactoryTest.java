@@ -39,16 +39,19 @@ public class ServerConnectionFactoryTest {
    */
   @Test(expected = IOException.class)
   public void newClientProtocolThrows() throws Exception {
-    serverConnectionMockedExceptForCommunicationMode(Acceptor.CLIENT_TO_SERVER_NEW_PROTOCOL);
+    serverConnectionMockedExceptForCommunicationMode(Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
   }
 
   @Test
   public void newClientProtocolSucceedsWithSystemPropertySet() throws Exception {
-    System.setProperty("geode.feature-protobuf-protocol", "true");
-    ServerConnection serverConnection =
-        serverConnectionMockedExceptForCommunicationMode(Acceptor.CLIENT_TO_SERVER_NEW_PROTOCOL);
-    assertTrue(serverConnection instanceof NewProtocolServerConnection);
-    System.clearProperty("geode.feature-protobuf-protocol");
+    try {
+      System.setProperty("geode.feature-protobuf-protocol", "true");
+      ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
+          Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
+      assertTrue(serverConnection instanceof GenericProtocolServerConnection);
+    } finally {
+      System.clearProperty("geode.feature-protobuf-protocol");
+    }
   }
 
   @Test
