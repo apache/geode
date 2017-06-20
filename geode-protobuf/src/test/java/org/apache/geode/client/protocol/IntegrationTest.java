@@ -18,15 +18,12 @@ import com.google.protobuf.ByteString;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.handler.ProtobufStreamProcessor;
-import org.apache.geode.protocol.operations.registry.exception.OperationHandlerAlreadyRegisteredException;
-import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
+import org.apache.geode.protocol.protobuf.ProtobufStreamProcessor;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.serialization.codec.StringCodec;
-import org.apache.geode.serialization.protobuf.translation.EncodingTypeTranslator;
+import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.SerializationCodecRegistry;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
@@ -37,7 +34,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -52,6 +52,7 @@ public class IntegrationTest {
   public static final String TEST_REGION = "test region";
   private StringCodec stringCodec;
   private Cache cacheStub;
+  private Region regionStub;
 
   @Before
   public void setup() throws CodecAlreadyRegisteredForTypeException,
@@ -59,15 +60,13 @@ public class IntegrationTest {
     SerializationCodecRegistry serializationCodecRegistry = new SerializationCodecRegistry();
     stringCodec = (StringCodec) serializationCodecRegistry.getCodecForType(
         EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.STRING));
-    cacheStub = getCacheStub();
+    regionStub = getRegionStub();
+    cacheStub = getCacheStub(regionStub);
   }
 
   @Test
-  public void testFullRequestToCache()
-      throws OperationHandlerAlreadyRegisteredException, CodecAlreadyRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException,
-      OperationHandlerNotRegisteredException, IOException, InvalidProtocolMessageException {
-
+  public void testGetRequestProcessed()
+      throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     ProtobufStreamProcessor streamProcessor = new ProtobufStreamProcessor();
@@ -80,14 +79,19 @@ public class IntegrationTest {
     Assert.assertEquals(BasicTypes.EncodingType.STRING, getResponse.getResult().getEncodingType());
     String actualValue = stringCodec.decode(getResponse.getResult().getValue().toByteArray());
     Assert.assertEquals(TEST_VALUE, actualValue);
+    verify(regionStub, times(1)).get(TEST_KEY);
+    verify(regionStub, times(1)).get(anyString());
   }
 
-  private Cache getCacheStub() {
-    Region regionStub = mock(Region.class);
+  private Region getRegionStub() {
+    regionStub = mock(Region.class);
     when(regionStub.get(TEST_KEY)).thenReturn(TEST_VALUE);
+    return regionStub;
+  }
 
+  private Cache getCacheStub(Region region) {
     Cache cacheStub = mock(Cache.class);
-    when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
+    when(cacheStub.getRegion(TEST_REGION)).thenReturn(region);
     return cacheStub;
   }
 

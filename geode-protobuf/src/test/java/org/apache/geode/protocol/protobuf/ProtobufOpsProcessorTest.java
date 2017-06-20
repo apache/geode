@@ -12,21 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.client.protocol;
+package org.apache.geode.protocol.protobuf;
 
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.RegionService;
-import org.apache.geode.protocol.OpsProcessor;
+import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.operations.OperationHandler;
-import org.apache.geode.protocol.operations.ProtobufRequestOperationParser;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -36,10 +32,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
-public class OpsProcessorTest {
+public class ProtobufOpsProcessorTest {
   @Test
   public void testOpsProcessor() throws CodecNotRegisteredForTypeException,
-      OperationHandlerNotRegisteredException, UnsupportedEncodingTypeException {
+    OperationHandlerNotRegisteredException, UnsupportedEncodingTypeException,
+    InvalidProtocolMessageException {
     OperationsHandlerRegistry opsHandlerRegistryStub = mock(OperationsHandlerRegistry.class);
     OperationHandler operationHandlerStub = mock(OperationHandler.class);
     SerializationService serializationServiceStub = mock(SerializationService.class);
@@ -54,10 +51,11 @@ public class OpsProcessorTest {
     when(opsHandlerRegistryStub.getOperationHandlerForOperationId(operationID))
         .thenReturn(operationHandlerStub);
     when(operationHandlerStub.process(serializationServiceStub,
-        ProtobufRequestOperationParser.getRequestForOperationTypeID(messageRequest), dummyCache))
+        ProtobufOpsProcessor.getRequestForOperationTypeID(messageRequest), dummyCache))
             .thenReturn(expectedResponse);
 
-    OpsProcessor processor = new OpsProcessor(opsHandlerRegistryStub, serializationServiceStub);
+    ProtobufOpsProcessor
+      processor = new ProtobufOpsProcessor(opsHandlerRegistryStub, serializationServiceStub);
     ClientProtocol.Response response = processor.process(messageRequest, dummyCache);
     Assert.assertEquals(expectedResponse, response.getGetResponse());
   }

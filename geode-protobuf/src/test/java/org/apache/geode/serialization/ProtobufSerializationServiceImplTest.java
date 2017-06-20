@@ -15,6 +15,7 @@
 package org.apache.geode.serialization;
 
 import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -51,7 +52,7 @@ public class ProtobufSerializationServiceImplTest {
       BasicTypes.EncodingType encodingType, Object data)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     byte[] encodedValue = service.encode(encodingType, data);
-    Object decdoedValue = service.decode(encodingType, encodedValue);
-    Assert.assertEquals(data, decdoedValue);
+    Object decodedValue = service.decode(encodingType, encodedValue);
+    Assert.assertEquals(data, decodedValue);
   }
 }

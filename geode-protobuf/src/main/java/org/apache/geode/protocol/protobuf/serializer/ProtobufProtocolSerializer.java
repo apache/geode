@@ -12,16 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.handler;
+package org.apache.geode.protocol.protobuf.serializer;
 
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.protocol.serializer.ProtocolSerializer;
+import org.apache.geode.protocol.protobuf.ClientProtocol;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public interface ProtocolHandler<T> {
-  T deserialize(InputStream inputStream) throws InvalidProtocolMessageException;
+public class ProtobufProtocolSerializer implements ProtocolSerializer<ClientProtocol.Message> {
+  @Override
+  public ClientProtocol.Message deserialize(InputStream inputStream)
+      throws InvalidProtocolMessageException {
+    try {
+      return ClientProtocol.Message.parseDelimitedFrom(inputStream);
+    } catch (IOException e) {
+      throw new InvalidProtocolMessageException("Failed to parse Protobuf Message", e);
+    }
+  }
 
-  void serialize(T inputMessage, OutputStream outputStream) throws IOException;
+  @Override
+  public void serialize(ClientProtocol.Message inputMessage, OutputStream outputStream)
+      throws IOException {
+    inputMessage.writeDelimitedTo(outputStream);
+  }
 }

@@ -12,18 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.operations.protobuf;
+package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.geode.ProtobufUtilities;
+import org.apache.geode.protocol.protobuf.ProtobufUtilities;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.protobuf.translation.EncodingTypeTranslator;
+import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 

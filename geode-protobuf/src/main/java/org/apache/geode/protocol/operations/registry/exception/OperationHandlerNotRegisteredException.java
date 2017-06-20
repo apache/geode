@@ -14,6 +14,9 @@
  */
 package org.apache.geode.protocol.operations.registry.exception;
 
+/**
+ * Indicates that we're trying to handle an operation for which no operation handler has registered.
+ */
 public class OperationHandlerNotRegisteredException extends Exception {
   public OperationHandlerNotRegisteredException(String message) {
     super(message);

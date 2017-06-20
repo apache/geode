@@ -12,22 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.operations;
+package org.apache.geode.protocol.serializer;
 
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 
-public class ProtobufRequestOperationParser {
-  public static Object getRequestForOperationTypeID(ClientProtocol.Request request) {
-    switch (request.getRequestAPICase()) {
-      case PUTREQUEST:
-        return request.getPutRequest();
-      case GETREQUEST:
-        return request.getGetRequest();
-      case PUTALLREQUEST:
-        return request.getPutAllRequest();
-      default:
-        throw new RuntimeException(
-            "Unknown request type: " + request.getRequestAPICase().getNumber());
-    }
-  }
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+/**
+ * This interface is used to translate between binary data and protocol specific messages.
+ * @param <T> The message type of the protocol.
+ */
+public interface ProtocolSerializer<T> {
+  T deserialize(InputStream inputStream) throws InvalidProtocolMessageException;
+
+  void serialize(T inputMessage, OutputStream outputStream) throws IOException;
 }

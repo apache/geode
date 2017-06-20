@@ -12,10 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.serialization.protobuf.translation.exception;
+package org.apache.geode.protocol.protobuf;
 
-public class UnsupportedEncodingTypeException extends Exception {
-  public UnsupportedEncodingTypeException(String message) {
-    super(message);
+import com.google.protobuf.ByteString;
+
+import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.ClientProtocol;
+
+public abstract class ProtobufUtilities {
+  public static BasicTypes.EncodedValue getEncodedValue(BasicTypes.EncodingType resultEncodingType,
+      byte[] resultEncodedValue) {
+    return BasicTypes.EncodedValue.newBuilder().setEncodingType(resultEncodingType)
+        .setValue(ByteString.copyFrom(resultEncodedValue)).build();
+  }
+
+  public static ClientProtocol.Message wrapResponseWithDefaultHeader(
+      ClientProtocol.Response response) {
+    return ClientProtocol.Message.newBuilder()
+        .setMessageHeader(ClientProtocol.MessageHeader.newBuilder()).setResponse(response).build();
   }
 }

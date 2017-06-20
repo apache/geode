@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.serialization.protobuf.translation;
+package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
@@ -20,6 +20,9 @@ import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 
+/**
+ * This class maps protobuf specific encoding types and the corresponding serialization types.
+ */
 public abstract class EncodingTypeTranslator {
   public static SerializationType getSerializationTypeForEncodingType(
       BasicTypes.EncodingType encodingType) throws UnsupportedEncodingTypeException {
