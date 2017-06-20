@@ -19,6 +19,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_C
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.management.internal.cli.shell.Gfsh.SSL_ENABLED_CIPHERS;
+import static org.apache.geode.management.internal.cli.shell.Gfsh.SSL_ENABLED_PROTOCOLS;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -538,14 +546,14 @@ public class ShellCommands implements GfshCommand {
   }
 
   private void configureHttpsURLConnection(Map<String, String> sslConfigProps) throws Exception {
-    String keystoreToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE);
-    String keystorePasswordToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE_PASSWORD);
-    String truststoreToUse = sslConfigProps.get(Gfsh.SSL_TRUSTSTORE);
-    String truststorePasswordToUse = sslConfigProps.get(Gfsh.SSL_TRUSTSTORE_PASSWORD);
+    String keystoreToUse = sslConfigProps.get(SSL_KEYSTORE);
+    String keystorePasswordToUse = sslConfigProps.get(SSL_KEYSTORE_PASSWORD);
+    String truststoreToUse = sslConfigProps.get(SSL_TRUSTSTORE);
+    String truststorePasswordToUse = sslConfigProps.get(SSL_TRUSTSTORE_PASSWORD);
     // Ciphers are not passed to HttpsURLConnection. Could not find a clean way
     // to pass this attribute to socket layer (see #51645)
-    String sslCiphersToUse = sslConfigProps.get(CLUSTER_SSL_CIPHERS);
-    String sslProtocolsToUse = sslConfigProps.get(CLUSTER_SSL_PROTOCOLS);
+    String sslCiphersToUse = sslConfigProps.get(SSL_CIPHERS);
+    String sslProtocolsToUse = sslConfigProps.get(SSL_PROTOCOLS);
 
     // Commenting the code to set cipher suites in GFSH rest connect (see #51645)
     /*
@@ -665,17 +673,17 @@ public class ShellCommands implements GfshCommand {
       if (keystoreToUse != null && keystoreToUse.length() > 0) {
         if (keystorePasswordToUse == null || keystorePasswordToUse.length() == 0) {
           // Check whether specified in gfsecurity props earlier
-          keystorePasswordToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE_PASSWORD);
+          keystorePasswordToUse = sslConfigProps.get(SSL_KEYSTORE_PASSWORD);
           if (keystorePasswordToUse == null || keystorePasswordToUse.length() == 0) {
             // not even in properties file, prompt user for it
             keystorePasswordToUse =
                 gfshInstance.readPassword(CliStrings.CONNECT__KEY_STORE_PASSWORD + ": ");
-            sslConfigProps.put(Gfsh.SSL_KEYSTORE_PASSWORD, keystorePasswordToUse);
+            sslConfigProps.put(SSL_KEYSTORE_PASSWORD, keystorePasswordToUse);
           }
         } else {// For cases where password is already part of command option
-          sslConfigProps.put(Gfsh.SSL_KEYSTORE_PASSWORD, keystorePasswordToUse);
+          sslConfigProps.put(SSL_KEYSTORE_PASSWORD, keystorePasswordToUse);
         }
-        sslConfigProps.put(Gfsh.SSL_KEYSTORE, keystoreToUse);
+        sslConfigProps.put(SSL_KEYSTORE, keystoreToUse);
       }
 
       if (numTimesPrompted > 0) {
@@ -684,17 +692,17 @@ public class ShellCommands implements GfshCommand {
       if (truststoreToUse != null && truststoreToUse.length() > 0) {
         if (truststorePasswordToUse == null || truststorePasswordToUse.length() == 0) {
           // Check whether specified in gfsecurity props earlier?
-          truststorePasswordToUse = sslConfigProps.get(Gfsh.SSL_TRUSTSTORE_PASSWORD);
+          truststorePasswordToUse = sslConfigProps.get(SSL_TRUSTSTORE_PASSWORD);
           if (truststorePasswordToUse == null || truststorePasswordToUse.length() == 0) {
             // not even in properties file, prompt user for it
             truststorePasswordToUse =
                 gfshInstance.readPassword(CliStrings.CONNECT__TRUST_STORE_PASSWORD + ": ");
-            sslConfigProps.put(Gfsh.SSL_TRUSTSTORE_PASSWORD, truststorePasswordToUse);
+            sslConfigProps.put(SSL_TRUSTSTORE_PASSWORD, truststorePasswordToUse);
           }
         } else {// For cases where password is already part of command option
-          sslConfigProps.put(Gfsh.SSL_TRUSTSTORE_PASSWORD, truststorePasswordToUse);
+          sslConfigProps.put(SSL_TRUSTSTORE_PASSWORD, truststorePasswordToUse);
         }
-        sslConfigProps.put(Gfsh.SSL_TRUSTSTORE, truststoreToUse);
+        sslConfigProps.put(SSL_TRUSTSTORE, truststoreToUse);
       }
 
       if (numTimesPrompted > 0) {
@@ -702,7 +710,7 @@ public class ShellCommands implements GfshCommand {
       }
       if (sslCiphersToUse != null && sslCiphersToUse.length() > 0) {
         // sslConfigProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslCiphersToUse);
-        sslConfigProps.put(Gfsh.SSL_ENABLED_CIPHERS, sslCiphersToUse);
+        sslConfigProps.put(SSL_ENABLED_CIPHERS, sslCiphersToUse);
       }
 
       if (numTimesPrompted > 0) {
@@ -710,7 +718,7 @@ public class ShellCommands implements GfshCommand {
       }
       if (sslProtocolsToUse != null && sslProtocolsToUse.length() > 0) {
         // sslConfigProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslProtocolsToUse);
-        sslConfigProps.put(Gfsh.SSL_ENABLED_PROTOCOLS, sslProtocolsToUse);
+        sslConfigProps.put(SSL_ENABLED_PROTOCOLS, sslProtocolsToUse);
       }
 
       // SSL is required to be used but no SSL config found
