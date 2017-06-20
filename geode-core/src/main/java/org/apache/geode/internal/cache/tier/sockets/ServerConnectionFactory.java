@@ -28,19 +28,20 @@ import java.net.Socket;
  */
 public class ServerConnectionFactory {
   // TODO: implement ClientProtocolMessageHandler.
-  private static final ClientProtocolMessageHandler newClientProtocol =
+  private static final ClientProtocolMessageHandler protobufProtocolHandler =
       new ClientProtocolMessageHandler();
 
   public static ServerConnection makeServerConnection(Socket s, InternalCache c,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
       SecurityService securityService) throws IOException {
-    if (communicationMode == Acceptor.CLIENT_TO_SERVER_NEW_PROTOCOL) {
+    if (communicationMode == Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Acceptor received unknown communication mode: " + communicationMode);
       } else {
-        return new NewProtocolServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,
-            communicationModeStr, communicationMode, acceptor, newClientProtocol, securityService);
+        return new GenericProtocolServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,
+            communicationModeStr, communicationMode, acceptor, protobufProtocolHandler,
+            securityService);
       }
     } else {
       return new LegacyServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,
