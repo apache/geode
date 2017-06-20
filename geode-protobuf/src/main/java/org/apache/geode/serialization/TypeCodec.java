@@ -14,10 +14,20 @@
  */
 package org.apache.geode.serialization;
 
+/**
+ * This interface converts a particular type to and from its binary representation.
+ *
+ * NOTE: it is expected that T will be one of the serialization types in @{@link SerializationType}.
+ *
+ * @param <T> the type this codec knows how to convert
+ */
 public interface TypeCodec<T> {
   T decode(byte[] incoming);
 
   byte[] encode(T incoming);
 
+  /**
+   * @return the SerializationType corresponding to T
+   */
   SerializationType getSerializationType();
 }

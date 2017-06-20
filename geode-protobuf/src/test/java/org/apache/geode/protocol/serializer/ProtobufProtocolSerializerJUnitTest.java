@@ -60,7 +60,7 @@ public class ProtobufProtocolSerializerJUnitTest {
 
   @Test(expected = InvalidProtocolMessageException.class)
   public void testDeserializeInvalidByteThrowsException()
-    throws IOException, InvalidProtocolMessageException {
+      throws IOException, InvalidProtocolMessageException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     byteArrayOutputStream.write("Some incorrect byte array".getBytes());
     InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());

@@ -20,37 +20,37 @@ import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.serialization.exception.TypeEncodingException;
 
 /**
- * This handles protobuf requests by determining the operation type of the request and dispatching it to the appropriate handler.
+ * This handles protobuf requests by determining the operation type of the request and dispatching
+ * it to the appropriate handler.
  */
 public class ProtobufOpsProcessor {
   private final OperationsHandlerRegistry opsHandlerRegistry;
   private final SerializationService serializationService;
 
   public ProtobufOpsProcessor(OperationsHandlerRegistry opsHandlerRegistry,
-                              SerializationService serializationService) {
+      SerializationService serializationService) {
     this.opsHandlerRegistry = opsHandlerRegistry;
     this.serializationService = serializationService;
   }
 
   public ClientProtocol.Response process(ClientProtocol.Request request, Cache cache)
-    throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException,
-    OperationHandlerNotRegisteredException, InvalidProtocolMessageException {
+      throws TypeEncodingException, OperationHandlerNotRegisteredException,
+      InvalidProtocolMessageException {
     OperationHandler opsHandler = opsHandlerRegistry
-      .getOperationHandlerForOperationId(request.getRequestAPICase().getNumber());
+        .getOperationHandlerForOperationId(request.getRequestAPICase().getNumber());
 
-    Object responseMessage = opsHandler.process(serializationService,
-        getRequestForOperationTypeID(request), cache);
+    Object responseMessage =
+        opsHandler.process(serializationService, getRequestForOperationTypeID(request), cache);
     return ClientProtocol.Response.newBuilder()
         .setGetResponse((RegionAPI.GetResponse) responseMessage).build();
   }
 
   // package visibility for testing
   static Object getRequestForOperationTypeID(ClientProtocol.Request request)
-    throws InvalidProtocolMessageException {
+      throws InvalidProtocolMessageException {
     switch (request.getRequestAPICase()) {
       case PUTREQUEST:
         return request.getPutRequest();
@@ -60,7 +60,7 @@ public class ProtobufOpsProcessor {
         return request.getPutAllRequest();
       default:
         throw new InvalidProtocolMessageException(
-          "Unknown request type: " + request.getRequestAPICase().getNumber());
+            "Unknown request type: " + request.getRequestAPICase().getNumber());
     }
   }
 }

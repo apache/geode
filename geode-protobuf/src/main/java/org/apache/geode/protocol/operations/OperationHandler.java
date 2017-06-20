@@ -15,23 +15,31 @@
 package org.apache.geode.protocol.operations;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.protocol.protobuf.ProtobufOpsProcessor;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
+import org.apache.geode.protocol.protobuf.ProtobufOpsProcessor;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.serialization.exception.TypeEncodingException;
 
 /**
- * This interface is implemented by a object capable of handling request types 'Req' and returning an a response of type 'Resp'
+ * This interface is implemented by a object capable of handling request types 'Req' and returning
+ * an a response of type 'Resp'
  *
  * See {@link ProtobufOpsProcessor}
  */
 public interface OperationHandler<Req, Resp> {
+  /**
+   * Decode the message, deserialize contained values using the serialization service, do the work
+   * indicated on the provided cache, and return a response.
+   * 
+   * @throws TypeEncodingException if a problem occurs decoding an encoded value contained in the
+   *         request.
+   */
   Resp process(SerializationService serializationService, Req request, Cache cache)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException;
+      throws TypeEncodingException;
 
   /**
-   * @return the magic number used for registering the operation type with the {@link OperationsHandlerRegistry}.
+   * @return the magic number used for registering the operation type with the
+   *         {@link OperationsHandlerRegistry}.
    */
   int getOperationCode();
 }

@@ -16,6 +16,9 @@ package org.apache.geode.serialization;
 
 import org.apache.geode.pdx.PdxInstance;
 
+/**
+ * Enumerates the serialization types currently available to wire protocols.
+ */
 public enum SerializationType {
   STRING(String.class),
   BINARY(byte[].class),

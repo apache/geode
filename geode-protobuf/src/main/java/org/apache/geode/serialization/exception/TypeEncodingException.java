@@ -12,14 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.operations.registry.exception;
+package org.apache.geode.serialization.exception;
 
-/**
- * Indicates that an operation handler is attempting to register for an already handled operation
- * type.
- */
-public class OperationHandlerAlreadyRegisteredException extends Exception {
-  public OperationHandlerAlreadyRegisteredException(String message) {
+public class TypeEncodingException extends Exception {
+  public TypeEncodingException(String message) {
     super(message);
   }
 }
