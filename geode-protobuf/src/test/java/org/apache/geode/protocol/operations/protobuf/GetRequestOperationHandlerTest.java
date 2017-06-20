@@ -18,12 +18,12 @@ import com.google.protobuf.ByteString;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.codec.StringCodec;
-import org.apache.geode.serialization.protobuf.translation.EncodingTypeTranslator;
+import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.SerializationCodecRegistry;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;

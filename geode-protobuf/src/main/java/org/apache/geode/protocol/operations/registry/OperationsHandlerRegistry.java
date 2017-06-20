@@ -21,6 +21,9 @@ import org.apache.geode.protocol.operations.registry.exception.OperationHandlerN
 import java.util.HashMap;
 import java.util.ServiceLoader;
 
+/**
+ * This class tracks which operation handlers are expected to handle which types of operations.
+ */
 public class OperationsHandlerRegistry {
   private HashMap<Integer, OperationHandler> registeredOperations = new HashMap<>();
 

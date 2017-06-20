@@ -81,17 +81,11 @@ public class CodecRegistryJUnitTest {
     Assert.assertSame(expectedCodec, codec);
   }
 
-  @Test
-  public void testGetCodecForUnregisteredType_throwsException() {
-    boolean caughtException = false;
-    try {
-      SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
-      codecRegistry.getCodecForType(mockSerializationType);
-    } catch (CodecNotRegisteredForTypeException e) {
-      caughtException = true;
-    }
-    Assert.assertTrue("This should have thrown a CodecNotRegisteredForTypeException",
-        caughtException);
+  @Test(expected = CodecNotRegisteredForTypeException.class)
+  public void testGetCodecForUnregisteredType_throwsException()
+      throws CodecNotRegisteredForTypeException {
+    SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
+    codecRegistry.getCodecForType(mockSerializationType);
   }
 
   class DummyTypeCodec implements TypeCodec {

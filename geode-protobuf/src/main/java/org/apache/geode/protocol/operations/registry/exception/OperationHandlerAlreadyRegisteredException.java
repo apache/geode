@@ -14,6 +14,9 @@
  */
 package org.apache.geode.protocol.operations.registry.exception;
 
+/**
+ * Indicates that an operation handler is attempting to register for an already handled operation type.
+ */
 public class OperationHandlerAlreadyRegisteredException extends Exception {
   public OperationHandlerAlreadyRegisteredException(String message) {
     super(message);

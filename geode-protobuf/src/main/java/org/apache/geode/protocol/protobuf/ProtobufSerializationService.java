@@ -12,10 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.serialization;
+package org.apache.geode.protocol.protobuf;
 
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.serialization.protobuf.translation.EncodingTypeTranslator;
+import org.apache.geode.serialization.SerializationService;
+import org.apache.geode.serialization.SerializationType;
+import org.apache.geode.serialization.TypeCodec;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.SerializationCodecRegistry;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;

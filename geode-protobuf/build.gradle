@@ -44,13 +44,11 @@ protobuf {
         // The artifact spec for the Protobuf Compiler
         artifact = 'com.google.protobuf:protoc:3.0.0'
     }
-    // this allows our spotless rule to skip this directory (hopefully rat too)
     generatedFilesBaseDir = "$buildDir/generated-src/proto"
 }
 
 sourceSets {
     main {
-
         java {
             srcDir 'build/generated-src/proto/main/java'
         }

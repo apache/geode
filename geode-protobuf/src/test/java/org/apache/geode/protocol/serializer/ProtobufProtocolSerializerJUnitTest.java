@@ -12,12 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.handler;
+package org.apache.geode.protocol.serializer;
 
 import org.apache.geode.client.protocol.MessageUtil;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.handler.ProtocolHandler;
-import org.apache.geode.protocol.handler.protobuf.ProtobufProtocolHandler;
+import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Assert;
@@ -32,15 +31,15 @@ import java.io.InputStream;
 import java.util.ServiceLoader;
 
 @Category(UnitTest.class)
-public class ProtobufProtocolHandlerJUnitTest {
-  private ProtocolHandler<ClientProtocol.Message> protocolHandler;
+public class ProtobufProtocolSerializerJUnitTest {
+  private ProtocolSerializer<ClientProtocol.Message> protocolSerializer;
 
   @Before
   public void startup() {
-    ServiceLoader<ProtocolHandler> serviceLoader = ServiceLoader.load(ProtocolHandler.class);
-    for (ProtocolHandler protocolHandler : serviceLoader) {
-      if (protocolHandler instanceof ProtobufProtocolHandler) {
-        this.protocolHandler = protocolHandler;
+    ServiceLoader<ProtocolSerializer> serviceLoader = ServiceLoader.load(ProtocolSerializer.class);
+    for (ProtocolSerializer protocolSerializer : serviceLoader) {
+      if (protocolSerializer instanceof ProtobufProtocolSerializer) {
+        this.protocolSerializer = protocolSerializer;
       }
     }
   }
@@ -55,23 +54,17 @@ public class ProtobufProtocolHandlerJUnitTest {
     expectedRequestMessage.writeDelimitedTo(byteArrayOutputStream);
     InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 
-    ClientProtocol.Message actualMessage = protocolHandler.deserialize(inputStream);
+    ClientProtocol.Message actualMessage = protocolSerializer.deserialize(inputStream);
     Assert.assertEquals(expectedRequestMessage, actualMessage);
   }
 
-  @Test
-  public void testDeserializeInvalidByteThrowsException() throws IOException {
+  @Test(expected = InvalidProtocolMessageException.class)
+  public void testDeserializeInvalidByteThrowsException()
+    throws IOException, InvalidProtocolMessageException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     byteArrayOutputStream.write("Some incorrect byte array".getBytes());
     InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-
-    boolean caughtException = false;
-    try {
-      protocolHandler.deserialize(inputStream);
-    } catch (InvalidProtocolMessageException e) {
-      caughtException = true;
-    }
-    Assert.assertTrue(caughtException);
+    protocolSerializer.deserialize(inputStream);
   }
 
   @Test
@@ -82,7 +75,7 @@ public class ProtobufProtocolHandlerJUnitTest {
     byte[] expectedByteArray = expectedByteArrayOutputStream.toByteArray();
 
     ByteArrayOutputStream actualByteArrayOutputStream = new ByteArrayOutputStream();
-    protocolHandler.serialize(message, actualByteArrayOutputStream);
+    protocolSerializer.serialize(message, actualByteArrayOutputStream);
     Assert.assertArrayEquals(expectedByteArray, actualByteArrayOutputStream.toByteArray());
   }
 }

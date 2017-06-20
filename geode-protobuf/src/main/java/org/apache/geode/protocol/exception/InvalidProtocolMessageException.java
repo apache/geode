@@ -14,6 +14,9 @@
  */
 package org.apache.geode.protocol.exception;
 
+/**
+ * Indicates that a message didn't properly follow it's protocol specification.
+ */
 public class InvalidProtocolMessageException extends Exception {
   public InvalidProtocolMessageException(String message) {
     super(message);
