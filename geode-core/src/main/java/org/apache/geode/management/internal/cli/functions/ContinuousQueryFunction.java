@@ -30,14 +30,12 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 
 /**
- * TODO: rename ContunuousQueryFunction
- * 
  * @since GemFire 8.0
  */
-public class ContunuousQueryFunction implements Function, InternalEntity {
+public class ContinuousQueryFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
 
-  public static final String ID = ContunuousQueryFunction.class.getName();
+  public static final String ID = ContinuousQueryFunction.class.getName();
 
   private InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
@@ -104,14 +102,14 @@ public class ContunuousQueryFunction implements Function, InternalEntity {
       }
     } catch (Exception e) {
       context.getResultSender()
-          .lastResult("Exception in ContunuousQueryFunction =" + e.getMessage());
+          .lastResult("Exception in ContinuousQueryFunction =" + e.getMessage());
     }
     context.getResultSender().lastResult(null);
   }
 
   @Override
   public String getId() {
-    return ContunuousQueryFunction.ID;
+    return ContinuousQueryFunction.ID;
   }
 
   @Override

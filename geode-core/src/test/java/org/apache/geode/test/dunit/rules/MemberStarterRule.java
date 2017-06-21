@@ -27,14 +27,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.security.SecurityManager;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.junit.rules.ExternalResource;
+import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.SecurityManager;
 
 /**
  * the abstract class that's used by LocatorStarterRule and ServerStarterRule to avoid code

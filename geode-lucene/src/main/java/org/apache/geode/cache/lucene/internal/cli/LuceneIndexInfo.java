@@ -14,16 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
-
-import org.apache.lucene.analysis.Analyzer;
-
 public class LuceneIndexInfo extends LuceneFunctionSerializable {
   private static final long serialVersionUID = 1L;
 

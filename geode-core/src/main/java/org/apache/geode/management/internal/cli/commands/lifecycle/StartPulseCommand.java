@@ -16,6 +16,15 @@ package org.apache.geode.management.internal.cli.commands.lifecycle;
 
 import static org.apache.geode.internal.Assert.assertState;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+
+import javax.management.ObjectName;
+
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
@@ -25,13 +34,6 @@ import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import javax.management.ObjectName;
 
 public class StartPulseCommand implements GfshCommand {
 
@@ -85,7 +87,7 @@ public class StartPulseCommand implements GfshCommand {
 
   private void browse(URI uri) throws IOException {
     assertState(Desktop.isDesktopSupported(),
-        String.format(CliStrings.DESKSTOP_APP_RUN_ERROR_MESSAGE, System.getProperty("os.name")));
+        String.format(CliStrings.DESKTOP_APP_RUN_ERROR_MESSAGE, System.getProperty("os.name")));
     Desktop.getDesktop().browse(uri);
   }
 
