@@ -44,11 +44,6 @@ public class FunctionContextImpl implements FunctionContext {
 
   private final boolean isPossDup;
 
-  public FunctionContextImpl(final String functionId, final Object args,
-      ResultSender resultSender) {
-    this(null, functionId, args, resultSender, false);
-  }
-
   public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
       ResultSender resultSender) {
     this(cache, functionId, args, resultSender, false);
