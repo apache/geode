@@ -89,7 +89,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
       List<TestCommand> allCommands = TestCommand.getCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-        if (command.getPermission() == null) {
+        if (command.getPermissions() == null) {
           continue;
         }
 
@@ -108,7 +108,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
             ResultBuilder.ERRORCODE_UNAUTHORIZED,
             ((ErrorResultData) result.getResultData()).getErrorCode());
         String resultMessage = result.getContent().toString();
-        String permString = command.getPermission().toString();
+        String permString = command.getPermissions().toString();
         assertTrue(resultMessage + " does not contain " + permString,
             resultMessage.contains(permString));
       }
@@ -132,7 +132,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
       List<TestCommand> allCommands = TestCommand.getCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-        if (command.getPermission() == null) {
+        if (command.getPermissions() == null) {
           continue;
         }
 

@@ -72,9 +72,9 @@ public class CacheServerMBeanWithShiroIniIntegrationTest {
     assertThatThrownBy(() -> bean.getActiveCQCount())
         .hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
     assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
     assertThatThrownBy(() -> bean.isRunning())
         .hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.showClientQueueDetails("bar"))

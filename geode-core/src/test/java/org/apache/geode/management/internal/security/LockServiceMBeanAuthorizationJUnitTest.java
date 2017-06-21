@@ -42,10 +42,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
@@ -69,7 +66,8 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "clusterRead,clusterManage",
+      password = "clusterRead,clusterManage")
   public void testAllAccess() throws Exception {
     lockServiceMBean.becomeLockGrantor();
     lockServiceMBean.fetchGrantorMember();
@@ -79,24 +77,50 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
-  public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor());
-    lockServiceMBean.getMemberCount();
+  @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
+  public void testClusterManage() throws Exception {
+    SoftAssertions softly = new SoftAssertions();
+    lockServiceMBean.becomeLockGrantor(); // c:m
+    softly.assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    softly.assertThatThrownBy(() -> lockServiceMBean.getMemberCount())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    softly.assertThatThrownBy(() -> lockServiceMBean.isDistributed())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    softly.assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    softly.assertAll();
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "clusterRead", password = "clusterRead")
+  public void testClusterRead() throws Exception {
+    SoftAssertions softly = new SoftAssertions();
+    softly.assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor())
+        .hasMessageContaining(TestCommand.clusterManage.toString());
+    lockServiceMBean.fetchGrantorMember();
+    lockServiceMBean.getMemberCount();
+    lockServiceMBean.isDistributed();
+    lockServiceMBean.listThreadsHoldingLock();
+    softly.assertAll();
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "user", password = "user")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor())
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember())
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor())
+        .hasMessageContaining(TestCommand.clusterManage.toString());
+    softly.assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> lockServiceMBean.getMemberCount())
+    softly.assertThatThrownBy(() -> lockServiceMBean.getMemberCount())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> lockServiceMBean.isDistributed())
+    softly.assertThatThrownBy(() -> lockServiceMBean.isDistributed())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock())
+    softly.assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock())
         .hasMessageContaining(TestCommand.clusterRead.toString());
+
+    softly.assertAll();
   }
 }

@@ -39,10 +39,7 @@ public class GfshCommandsPostProcessorTest {
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule().withJMXManager()
       .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName())
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty("security-json",
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
@@ -54,7 +51,7 @@ public class GfshCommandsPostProcessorTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "dataWrite,dataRead", password = "dataWrite,dataRead")
   public void testGetPostProcess() throws Exception {
     gfshConnection.executeCommand("put --region=region1 --key=key1 --value=value1");
     gfshConnection.executeCommand("put --region=region1 --key=key2 --value=value2");
@@ -62,12 +59,12 @@ public class GfshCommandsPostProcessorTest {
 
     // for get command, assert the return value is processed
     String result = gfshConnection.execute("get --region=region1 --key=key1");
-    assertThat(result).contains("data-user/region1/key1/value1");
+    assertThat(result).contains("dataWrite,dataRead/region1/key1/value1");
 
     // for query command, assert the return values are processed
     result = gfshConnection.execute("query --query=\"select * from /region1\"");
-    assertThat(result).contains("data-user/null/null/value1");
-    assertThat(result).contains("data-user/null/null/value2");
-    assertThat(result).contains("data-user/null/null/value3");
+    assertThat(result).contains("dataWrite,dataRead/null/null/value1");
+    assertThat(result).contains("dataWrite,dataRead/null/null/value2");
+    assertThat(result).contains("dataWrite,dataRead/null/null/value3");
   }
 }
