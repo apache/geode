@@ -15,21 +15,21 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.internal.cache.InternalCache;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.apache.geode.GemFireException;
 
 /**
- * This is an interface that other modules can implement to hook into
- * {@link GenericProtocolServerConnection} to handle messages sent to Geode.
- *
- * Currently, only one {@link ClientProtocolMessageHandler} at a time can be used in a Geode
- * instance. It gets wired into {@link ServerConnectionFactory} to create all instances of
- * {@link GenericProtocolServerConnection}.
+ * Indicates that an error has happened loading a necessary service.
  */
-public interface ClientProtocolMessageHandler {
-  void receiveMessage(InputStream inputStream, OutputStream outputStream, InternalCache cache)
-      throws IOException;
+public class ServiceLoadingFailureException extends GemFireException {
+  public ServiceLoadingFailureException(String message) {
+    super(message);
+  }
+
+  public ServiceLoadingFailureException(Exception cause) {
+    super(cause);
+  }
+
+  public ServiceLoadingFailureException(String message, Exception cause) {
+    super(message, cause);
+  }
 }

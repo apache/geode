@@ -15,6 +15,8 @@
 package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
@@ -34,7 +36,7 @@ import java.io.OutputStream;
  * messages, hands the requests to an appropriate handler, wraps the response in a protobuf message,
  * and then pushes it to the output stream.
  */
-public class ProtobufStreamProcessor {
+public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   ProtobufProtocolSerializer protobufProtocolSerializer;
   OperationsHandlerRegistry registry;
   ProtobufSerializationService protobufSerializationService;
@@ -59,5 +61,16 @@ public class ProtobufStreamProcessor {
     ClientProtocol.Message responseMessage =
         ProtobufUtilities.wrapResponseWithDefaultHeader(response);
     protobufProtocolSerializer.serialize(responseMessage, outputStream);
+  }
+
+  @Override
+  public void receiveMessage(InputStream inputStream, OutputStream outputStream,
+      InternalCache cache) throws IOException {
+    try {
+      processOneMessage(inputStream, outputStream, cache);
+    } catch (InvalidProtocolMessageException | OperationHandlerNotRegisteredException
+        | TypeEncodingException e) {
+      throw new IOException(e);
+    }
   }
 }

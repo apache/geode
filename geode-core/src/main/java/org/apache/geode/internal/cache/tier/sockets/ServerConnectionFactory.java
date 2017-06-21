@@ -22,14 +22,46 @@ import org.apache.geode.internal.security.SecurityService;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Iterator;
+import java.util.ServiceLoader;
+import javax.management.ServiceNotFoundException;
 
 /**
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
-  // TODO: implement ClientProtocolMessageHandler.
-  private static final ClientProtocolMessageHandler protobufProtocolHandler =
-      new ClientProtocolMessageHandler();
+  private static ClientProtocolMessageHandler protobufProtocolHandler;
+  private static final Object protocolLoadLock = new Object();
+
+  private static ClientProtocolMessageHandler findClientProtocolMessageHandler() {
+    if (protobufProtocolHandler != null) {
+      return protobufProtocolHandler;
+    }
+
+    synchronized (protocolLoadLock) {
+      if (protobufProtocolHandler != null) {
+        return protobufProtocolHandler;
+      }
+
+      ServiceLoader<ClientProtocolMessageHandler> loader =
+          ServiceLoader.load(ClientProtocolMessageHandler.class);
+      Iterator<ClientProtocolMessageHandler> iterator = loader.iterator();
+
+      if (!iterator.hasNext()) {
+        throw new ServiceLoadingFailureException(
+            "ClientProtocolMessageHandler implementation not found in JVM");
+      }
+
+      ClientProtocolMessageHandler returnValue = iterator.next();
+
+      if (iterator.hasNext()) {
+        throw new ServiceLoadingFailureException(
+            "Multiple service implementations found for ClientProtocolMessageHandler");
+      }
+
+      return returnValue;
+    }
+  }
 
   public static ServerConnection makeServerConnection(Socket s, InternalCache c,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
@@ -39,6 +71,7 @@ public class ServerConnectionFactory {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Acceptor received unknown communication mode: " + communicationMode);
       } else {
+        protobufProtocolHandler = findClientProtocolMessageHandler();
         return new GenericProtocolServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,
             communicationModeStr, communicationMode, acceptor, protobufProtocolHandler,
             securityService);
