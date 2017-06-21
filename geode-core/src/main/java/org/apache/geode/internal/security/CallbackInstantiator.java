@@ -14,12 +14,18 @@
  */
 package org.apache.geode.internal.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.internal.ClassLoadUtil.classFromName;
 import static org.apache.geode.internal.ClassLoadUtil.methodFromName;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SecurityManager;
 
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 /**
  * Utility methods for instantiating security callback objects by reflection.
@@ -48,6 +54,28 @@ public class CallbackInstantiator {
       throw new GemFireSecurityException(
           "Instance could not be obtained. Error instantiating " + actualClass.getName(), e);
     }
+  }
+
+  public static SecurityManager getSecurityManager(Properties properties) {
+    String securityManagerConfig = properties.getProperty(SECURITY_MANAGER);
+    if (StringUtils.isBlank(securityManagerConfig)) {
+      return null;
+    }
+    SecurityManager securityManager =
+        getObjectOfTypeFromClassName(securityManagerConfig, SecurityManager.class);
+    securityManager.init(properties);
+    return securityManager;
+  }
+
+  public static PostProcessor getPostProcessor(Properties properties) {
+    String postProcessorConfig = properties.getProperty(SECURITY_POST_PROCESSOR);
+    if (StringUtils.isBlank(postProcessorConfig)) {
+      return null;
+    }
+    PostProcessor postProcessor =
+        getObjectOfTypeFromClassName(postProcessorConfig, PostProcessor.class);
+    postProcessor.init(properties);
+    return postProcessor;
   }
 
   /**

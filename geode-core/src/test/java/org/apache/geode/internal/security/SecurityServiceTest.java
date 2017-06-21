@@ -19,10 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -39,21 +36,17 @@ import java.util.Properties;
 public class SecurityServiceTest {
 
   private Properties properties;
-  private DistributionConfig distributionConfig;
   private SecurityService securityService;
 
   @Before
   public void before() {
     this.properties = new Properties();
-    this.distributionConfig = mock(DistributionConfig.class);
-    when(this.distributionConfig.getSecurityProps()).thenReturn(this.properties);
-    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+    this.securityService = SecurityServiceFactory.create();
   }
 
   @After
   public void after() throws Exception {
     this.securityService.close();
-    SecurityUtils.setSecurityManager(null);
   }
 
   @Test
@@ -70,7 +63,7 @@ public class SecurityServiceTest {
     this.properties.setProperty(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/security/templates/security.json");
 
-    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isTrue();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -80,7 +73,7 @@ public class SecurityServiceTest {
   @Test
   public void testInitWithClientAuthenticator() {
     this.properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
-    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isFalse();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -90,7 +83,7 @@ public class SecurityServiceTest {
   @Test
   public void testInitWithPeerAuthenticator() {
     this.properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
-    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isFalse();
     assertThat(this.securityService.isClientSecurityRequired()).isFalse();
@@ -102,7 +95,7 @@ public class SecurityServiceTest {
     this.properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
     this.properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
 
-    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isFalse();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -113,7 +106,7 @@ public class SecurityServiceTest {
   public void testInitWithShiroAuthenticator() {
     this.properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
 
-    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isTrue();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -128,7 +121,7 @@ public class SecurityServiceTest {
   @Test
   public void testInitWithOutsideShiroSecurityManager() {
     SecurityUtils.setSecurityManager(new DefaultSecurityManager());
-    this.securityService = SecurityServiceFactory.create(null, this.distributionConfig);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isTrue();
   }

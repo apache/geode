@@ -43,7 +43,7 @@ public class SecurityServiceWithShiroIniIntegrationTest {
   @Before
   public void before() throws Exception {
     this.props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    this.securityService = SecurityServiceFactory.create(this.props, null, null);
+    this.securityService = SecurityServiceFactory.create(this.props);
   }
 
   @After

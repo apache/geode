@@ -39,6 +39,6 @@ public class SecurityServiceWithCustomRealmIntegrationTest
         "org/apache/geode/management/internal/security/shiro-ini.json");
     this.props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
     this.props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    this.securityService = SecurityServiceFactory.create(this.props, null, null);
+    this.securityService = SecurityServiceFactory.create(this.props);
   }
 }

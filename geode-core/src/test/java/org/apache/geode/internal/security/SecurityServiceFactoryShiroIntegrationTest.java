@@ -14,24 +14,15 @@
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.util.ThreadContext;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
 import java.util.Properties;
 
@@ -42,8 +33,8 @@ public class SecurityServiceFactoryShiroIntegrationTest {
 
   private String shiroIniInClasspath;
 
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private SecurityService service;
+
 
   @Before
   public void before() throws Exception {
@@ -53,8 +44,9 @@ public class SecurityServiceFactoryShiroIntegrationTest {
 
   @After
   public void after() throws Exception {
-    ThreadContext.remove();
-    SecurityUtils.setSecurityManager(null);
+    if (service != null) {
+      service.close();
+    }
   }
 
   @Test
@@ -67,24 +59,8 @@ public class SecurityServiceFactoryShiroIntegrationTest {
   public void create_shiro_createsCustomSecurityService() throws Exception {
     Properties securityConfig = new Properties();
     securityConfig.setProperty(SECURITY_SHIRO_INIT, this.shiroIniInClasspath);
-
-    assertThat(SecurityServiceFactory.create(securityConfig, null, null))
-        .isInstanceOf(CustomSecurityService.class);
-  }
-
-  @Test
-  public void create_all_createsCustomSecurityService() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_SHIRO_INIT, this.shiroIniInClasspath);
-    securityConfig.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "value");
-    securityConfig.setProperty(SECURITY_PEER_AUTHENTICATOR, "value");
-
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-    PostProcessor mockPostProcessor = mock(PostProcessor.class);
-
-    assertThat(
-        SecurityServiceFactory.create(securityConfig, mockSecurityManager, mockPostProcessor))
-            .isInstanceOf(CustomSecurityService.class);
+    service = SecurityServiceFactory.create(securityConfig);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
   }
 
   private String getResourcePackage(Class classInPackage) {
