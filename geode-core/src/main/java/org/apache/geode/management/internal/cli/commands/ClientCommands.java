@@ -206,11 +206,11 @@ public class ClientCommands implements GfshCommand {
       List<String> secondaryServers = new ArrayList<String>();
 
       if (dsMembers.size() > 0) {
-        ContunuousQueryFunction contunuousQueryFunction = new ContunuousQueryFunction();
-        FunctionService.registerFunction(contunuousQueryFunction);
+        ContinuousQueryFunction continuousQueryFunction = new ContinuousQueryFunction();
+        FunctionService.registerFunction(continuousQueryFunction);
         List<?> resultList = (List<?>) CliUtil
-            .executeFunction(contunuousQueryFunction, clientId, dsMembers).getResult();
-        for (int i = 0; i < resultList.size(); i++) {
+            .executeFunction(continuousQueryFunction, clientId, dsMembers).getResult();
+        for (Object aResultList : resultList) {
           try {
             Object object = resultList.get(i);
             if (object instanceof Throwable) {
