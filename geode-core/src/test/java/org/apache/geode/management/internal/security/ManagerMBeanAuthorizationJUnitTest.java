@@ -78,10 +78,14 @@ public class ManagerMBeanAuthorizationJUnitTest {
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> managerMXBean.start())
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> managerMXBean.start())
         .hasMessageContaining(TestCommand.clusterManage.toString());
-    assertThatThrownBy(() -> managerMXBean.getPulseURL())
+    softly.assertThatThrownBy(() -> managerMXBean.getPulseURL())
         .hasMessageContaining(TestCommand.clusterWrite.toString());
+
+    softly.assertAll();
     managerMXBean.isRunning();
   }
 }

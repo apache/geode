@@ -109,7 +109,7 @@ public class ResourcePermissionTest {
   }
 
   @Test
-  public void testImples() {
+  public void testImplies() {
     WildcardPermission role = new WildcardPermission("*:read");
     role.implies(new ResourcePermission(Resource.DATA, Operation.READ));
     role.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ));

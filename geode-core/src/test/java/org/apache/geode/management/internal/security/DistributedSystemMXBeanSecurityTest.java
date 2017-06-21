@@ -12,9 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -22,20 +24,25 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category(IntegrationTest.class)
-public class CacheServerMBeanAuthenticationJUnitTest {
-  private CacheServerMXBean bean;
+@Category({DistributedTest.class, SecurityTest.class})
+public class DistributedSystemMXBeanSecurityTest {
+
+  private DistributedSystemMXBean bean;
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+      .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
@@ -43,18 +50,28 @@ public class CacheServerMBeanAuthenticationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    bean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    bean = connectionRule.getProxyMBean(DistributedSystemMXBean.class);
   }
 
   @Test
-  @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
-  public void testAllAccess() throws Exception {
-    bean.removeIndex("foo");
-    bean.fetchLoadProbe();
-    bean.getActiveCQCount();
-    bean.stopContinuousQuery("bar");
-    bean.closeAllContinuousQuery("bar");
-    bean.isRunning();
-    bean.showClientQueueDetails("foo");
+  @ConnectionConfiguration(user = "dataRead", password = "dataRead")
+  public void testDataReadAccess() throws Exception {
+    assertThatThrownBy(() -> bean.backupAllMembers(null, null))
+        .isInstanceOf(NotAuthorizedException.class);
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "clusterManageDisk", password = "clusterManageDisk")
+  public void testDiskManageAccess() throws Exception {
+    assertThatThrownBy(() -> bean.backupAllMembers(null, null))
+        .isInstanceOf(NotAuthorizedException.class);
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "dataRead,clusterWriteDisk",
+      password = "dataRead,clusterWriteDisk")
+  public void testBothAccess() throws Exception {
+    assertThatThrownBy(() -> bean.backupAllMembers(null, null))
+        .isNotInstanceOf(NotAuthorizedException.class);
   }
 }

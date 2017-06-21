@@ -16,21 +16,16 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.test.dunit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -49,17 +44,7 @@ public class CreateAlterDestroyRegionCommandsTest {
     doReturn(cache).when(spy).getCache();
     doReturn(dsMBean).when(spy).getDSMBean(cache);
 
-    parser.executeLastCommandWithInstance(spy);
-
-    ArgumentCaptor<RegionFunctionArgs> argsCaptor =
-        ArgumentCaptor.forClass(RegionFunctionArgs.class);
-
-    verify(spy).validateRegionFunctionArgs(any(), argsCaptor.capture());
-
-    RegionFunctionArgs args = argsCaptor.getValue();
-    assertThat(args.getPartitionResolver()).isEqualTo("Foo");
-
-    assertThatThrownBy(() -> spy.validateRegionFunctionArgs(cache, args))
+    assertThatThrownBy(() -> parser.executeLastCommandWithInstance(spy))
         .hasMessageContaining("Foo is an invalid Partition Resolver");
   }
 }

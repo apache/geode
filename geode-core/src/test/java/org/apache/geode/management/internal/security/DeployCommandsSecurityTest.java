@@ -82,14 +82,7 @@ public class DeployCommandsSecurityTest {
         .isInstanceOf(NotAuthorizedException.class);
   }
 
-  @Test // only cluster access right is not enough to deploy
-  @ConnectionConfiguration(user = "cluster", password = "cluster")
-  public void testNoAccess3() {
-    assertThatThrownBy(() -> bean.processCommand(deployCommand))
-        .isInstanceOf(NotAuthorizedException.class);
-  }
-
-  @Test // not sufficient privalge
+  @Test // not sufficient privilege
   @ConnectionConfiguration(user = "clusterRead,clusterWrite,dataRead,dataWrite",
       password = "clusterRead,clusterWrite,dataRead,dataWrite")
   public void testNoAccess4() {

@@ -165,7 +165,7 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
 
     sample();
 
-    assertEquals(1, getInitialImagesInProgres());
+    assertEquals(1, getInitialImagesInProgress());
     cachePerfStats.endGetInitialImage(startGIITime);
     cachePerfStats.endCacheListenerCall(startCacheListenerTime);
     cachePerfStats.endCacheWriterCall(startCacheWriterTime);
@@ -389,8 +389,8 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
     return bridge.getInitialImageTime();
   }
 
-  private int getInitialImagesInProgres() {
-    return bridge.getInitialImagesInProgres();
+  private int getInitialImagesInProgress() {
+    return bridge.getInitialImagesInProgress();
   }
 
   private float getBytesReceivedRate() {

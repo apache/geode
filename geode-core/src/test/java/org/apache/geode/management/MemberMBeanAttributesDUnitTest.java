@@ -80,8 +80,8 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
   @Test
   public void testReplRegionAttributes() throws Exception {
     initManagement(false);
-    setupForReplicateRegonAttributes(managedNodeList.get(0), 1);
-    setupForReplicateRegonAttributes(managedNodeList.get(1), 201);
+    setupForReplicateRegionAttributes(managedNodeList.get(0), 1);
+    setupForReplicateRegionAttributes(managedNodeList.get(1), 201);
     sample(managedNodeList.get(1));// Sample now
     isReplicatedRegionAttrsOK(managedNodeList.get(1));
 
@@ -91,7 +91,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
   @Test
   public void testPRRegionAttributes() throws Exception {
     initManagement(false);
-    setupForPartitionedRegonAttributes(managedNodeList.get(0), 1);
+    setupForPartitionedRegionAttributes(managedNodeList.get(0), 1);
     sample(managedNodeList.get(0));// Sample now
     isPartitionedRegionAttrsOK(managedNodeList.get(0));
 
@@ -111,7 +111,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
   }
 
 
-  public void setupForReplicateRegonAttributes(VM vm1, final int offset) throws Exception {
+  public void setupForReplicateRegionAttributes(VM vm1, final int offset) {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -143,7 +143,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
 
   }
 
-  public void setupForPartitionedRegonAttributes(VM vm1, final int offset) throws Exception {
+  public void setupForPartitionedRegionAttributes(VM vm1, final int offset) {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -176,7 +176,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
   @SuppressWarnings("serial")
-  public void isPartitionedRegionAttrsOK(VM vm1) throws Exception {
+  public void isPartitionedRegionAttrsOK(VM vm1) {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
         MemberMXBean bean = managementService.getMemberMXBean();
@@ -196,7 +196,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
   @SuppressWarnings("serial")
-  public void isReplicatedRegionAttrsOK(VM vm1) throws Exception {
+  public void isReplicatedRegionAttrsOK(VM vm1) {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
         MemberMXBean bean = managementService.getMemberMXBean();
@@ -219,7 +219,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
   @SuppressWarnings("serial")
-  public void isOSRelatedAttrsOK(VM vm1) throws Exception {
+  public void isOSRelatedAttrsOK(VM vm1) {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
         MemberMXBean bean = managementService.getMemberMXBean();
@@ -258,7 +258,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
   }
 
   @SuppressWarnings("serial")
-  public void isConfigRelatedAttrsOK(VM vm1) throws Exception {
+  public void isConfigRelatedAttrsOK(VM vm1) {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
         MemberMXBean bean = managementService.getMemberMXBean();

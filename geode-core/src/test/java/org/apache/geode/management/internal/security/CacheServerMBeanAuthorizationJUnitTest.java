@@ -60,8 +60,10 @@ public class CacheServerMBeanAuthorizationJUnitTest {
         .hasMessageContaining(TestCommand.dataRead.toString());
     bean.fetchLoadProbe();
     bean.getActiveCQCount();
-    bean.stopContinuousQuery("bar");
-    bean.closeAllContinuousQuery("bar");
+    assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
+    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
     bean.isRunning();
     bean.showClientQueueDetails("foo");
   }
@@ -90,21 +92,25 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @Test
   @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo"))
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> bean.removeIndex("foo"))
         .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
+    softly.assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
         .hasMessageContaining(TestCommand.dataRead.toString());
-    assertThatThrownBy(() -> bean.fetchLoadProbe())
+    softly.assertThatThrownBy(() -> bean.fetchLoadProbe())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getActiveCQCount())
+    softly.assertThatThrownBy(() -> bean.getActiveCQCount())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.isRunning())
+    softly.assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
+    softly.assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
+    softly.assertThatThrownBy(() -> bean.isRunning())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.showClientQueueDetails("bar"))
+    softly.assertThatThrownBy(() -> bean.showClientQueueDetails("bar"))
         .hasMessageContaining(TestCommand.clusterRead.toString());
+
+    softly.assertAll();
   }
 }
