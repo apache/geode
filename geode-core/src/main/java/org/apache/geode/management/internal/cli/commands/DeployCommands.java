@@ -160,8 +160,8 @@ public class DeployCommands implements GfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.UNDEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, help = CliStrings.UNDEPLOY__JAR__HELP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String[] jars) {
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
+          help = CliStrings.UNDEPLOY__JAR__HELP) String[] jars) {
 
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
@@ -289,7 +289,7 @@ public class DeployCommands implements GfshCommand {
     public Result preExecution(GfshParseResult parseResult) {
       // 2nd argument is the jar
       String[] jars = (String[]) parseResult.getArguments()[1];
-      // 3rd arguemnt is the dir
+      // 3rd argument is the dir
       String dir = (String) parseResult.getArguments()[2];
 
       if (ArrayUtils.isEmpty(jars) && StringUtils.isBlank(dir)) {

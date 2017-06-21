@@ -78,7 +78,6 @@ public class WanCommands implements GfshCommand {
 
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID, mandatory = true,
@@ -135,7 +134,7 @@ public class WanCommands implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
           help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilter) {
 
-    Result result = null;
+    Result result;
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
@@ -200,7 +199,7 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result = null;
+    Result result;
     final String id = senderId.trim();
 
     try {
@@ -227,45 +226,41 @@ public class WanCommands implements GfshCommand {
         }
       });
 
-      List<Callable<List>> callables = new ArrayList<Callable<List>>();
+      List<Callable<List>> callables = new ArrayList<>();
 
       for (final DistributedMember member : dsMembers) {
 
-        callables.add(new Callable<List>() {
+        callables.add(() -> {
 
-          public List call() throws Exception {
-
-            GatewaySenderMXBean bean = null;
-            ArrayList<String> statusList = new ArrayList<String>();
-            if (cache.getDistributedSystem().getDistributedMember().getId()
-                .equals(member.getId())) {
-              bean = service.getLocalGatewaySenderMXBean(id);
-            } else {
-              ObjectName objectName = service.getGatewaySenderMBeanName(member, id);
-              bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
-            }
-            if (bean != null) {
-              if (bean.isRunning()) {
-                statusList.add(member.getId());
-                statusList.add(CliStrings.GATEWAY_ERROR);
-                statusList.add(
-                    CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1,
-                        id, member.getId()));
-              } else {
-                bean.start();
-                statusList.add(member.getId());
-                statusList.add(CliStrings.GATEWAY_OK);
-                statusList.add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STARTED_ON_MEMBER_1,
-                    id, member.getId()));
-              }
-            } else {
+          GatewaySenderMXBean bean;
+          ArrayList<String> statusList = new ArrayList<>();
+          if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
+            bean = service.getLocalGatewaySenderMXBean(id);
+          } else {
+            ObjectName objectName = service.getGatewaySenderMBeanName(member, id);
+            bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+          }
+          if (bean != null) {
+            if (bean.isRunning()) {
               statusList.add(member.getId());
               statusList.add(CliStrings.GATEWAY_ERROR);
               statusList.add(CliStrings.format(
-                  CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, id, member.getId()));
+                  CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1, id, member.getId()));
+            } else {
+              bean.start();
+              statusList.add(member.getId());
+              statusList.add(CliStrings.GATEWAY_OK);
+              statusList.add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STARTED_ON_MEMBER_1,
+                  id, member.getId()));
             }
-            return statusList;
+          } else {
+            statusList.add(member.getId());
+            statusList.add(CliStrings.GATEWAY_ERROR);
+            statusList.add(CliStrings.format(
+                CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, id, member.getId()));
           }
+          return statusList;
+
         });
       }
 
@@ -281,21 +276,15 @@ public class WanCommands implements GfshCommand {
 
       for (Future<List> future : futures) {
         DistributedMember member = memberIterator.next();
-        List<String> memberStatus = null;
+        List<String> memberStatus;
         try {
           memberStatus = future.get();
           accumulateStartResult(resultData, memberStatus.get(0), memberStatus.get(1),
               memberStatus.get(2));
-        } catch (InterruptedException ite) {
+        } catch (InterruptedException | ExecutionException ite) {
           accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
               CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1,
                   id, ite.getMessage()));
-          continue;
-        } catch (ExecutionException ee) {
-          accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
-              CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1,
-                  id, ee.getMessage()));
-          continue;
         }
       }
       execService.shutdown();
@@ -324,7 +313,7 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result = null;
+    Result result;
     if (senderId != null) {
       senderId = senderId.trim();
     }
@@ -334,7 +323,7 @@ public class WanCommands implements GfshCommand {
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      GatewaySenderMXBean bean = null;
+      GatewaySenderMXBean bean;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
 
@@ -397,7 +386,7 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result = null;
+    Result result;
     if (senderId != null) {
       senderId = senderId.trim();
     }
@@ -407,7 +396,7 @@ public class WanCommands implements GfshCommand {
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      GatewaySenderMXBean bean = null;
+      GatewaySenderMXBean bean;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
 
@@ -471,7 +460,7 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result = null;
+    Result result;
     if (senderId != null)
       senderId = senderId.trim();
 
@@ -480,7 +469,7 @@ public class WanCommands implements GfshCommand {
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      GatewaySenderMXBean bean = null;
+      GatewaySenderMXBean bean;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
 
@@ -534,7 +523,6 @@ public class WanCommands implements GfshCommand {
 
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
@@ -558,7 +546,7 @@ public class WanCommands implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER,
           help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilters) {
 
-    Result result = null;
+    Result result;
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
@@ -616,7 +604,7 @@ public class WanCommands implements GfshCommand {
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID__HELP) String senderId) {
 
-    Result result = null;
+    Result result;
     if (senderId != null) {
       senderId = senderId.trim();
     }
@@ -633,7 +621,7 @@ public class WanCommands implements GfshCommand {
       } else {
         boolean gatewaySenderExists = false;
         for (DistributedMember member : dsMembers) {
-          GatewaySenderMXBean bean = null;
+          GatewaySenderMXBean bean;
           if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
             bean = service.getLocalGatewaySenderMXBean(senderId);
           } else {
@@ -679,14 +667,14 @@ public class WanCommands implements GfshCommand {
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
-    Result result = null;
+    Result result;
 
     try {
       InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      GatewayReceiverMXBean receieverBean = null;
+      GatewayReceiverMXBean receiverBean;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
 
@@ -700,15 +688,15 @@ public class WanCommands implements GfshCommand {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
 
         if (gatewayReceiverObjectName != null) {
-          receieverBean =
+          receiverBean =
               service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
-          if (receieverBean != null) {
-            if (receieverBean.isRunning()) {
+          if (receiverBean != null) {
+            if (receiverBean.isRunning()) {
               accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_ERROR,
                   CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_ALREADY_STARTED_ON_MEMBER_0,
                       new Object[] {member.getId()}));
             } else {
-              receieverBean.start();
+              receiverBean.start();
               accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_OK,
                   CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_STARTED_ON_MEMBER_0,
                       new Object[] {member.getId()}));
@@ -748,14 +736,14 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
-    Result result = null;
+    Result result;
 
     try {
       InternalCache cache = getCache();
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      GatewayReceiverMXBean receieverBean = null;
+      GatewayReceiverMXBean receiverBean;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
 
@@ -769,11 +757,11 @@ public class WanCommands implements GfshCommand {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
 
         if (gatewayReceiverObjectName != null) {
-          receieverBean =
+          receiverBean =
               service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
-          if (receieverBean != null) {
-            if (receieverBean.isRunning()) {
-              receieverBean.stop();
+          if (receiverBean != null) {
+            if (receiverBean.isRunning()) {
+              receiverBean.stop();
               accumulateStartResult(resultData, member.getId(), CliStrings.GATEWAY_OK,
                   CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_STOPPED_ON_MEMBER_0,
                       new Object[] {member.getId()}));
@@ -814,7 +802,7 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup) {
 
-    Result result = null;
+    Result result;
     InternalCache cache = getCache();
     try {
       SystemManagementService service =
@@ -826,10 +814,8 @@ public class WanCommands implements GfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans =
-          new TreeMap<String, Map<String, GatewaySenderMXBean>>();
-      Map<String, GatewayReceiverMXBean> gatewayReceiverBeans =
-          new TreeMap<String, GatewayReceiverMXBean>();
+      Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans = new TreeMap<>();
+      Map<String, GatewayReceiverMXBean> gatewayReceiverBeans = new TreeMap<>();
 
       DistributedSystemMXBean dsMXBean = service.getDistributedSystemMXBean();
       for (DistributedMember member : dsMembers) {
@@ -849,8 +835,7 @@ public class WanCommands implements GfshCommand {
                     gatewaySenderBeans.get(senderBean.getSenderId());
                 memberToBeanMap.put(member.getId(), senderBean);
               } else {
-                Map<String, GatewaySenderMXBean> memberToBeanMap =
-                    new TreeMap<String, GatewaySenderMXBean>();
+                Map<String, GatewaySenderMXBean> memberToBeanMap = new TreeMap<>();
                 memberToBeanMap.put(member.getId(), senderBean);
                 gatewaySenderBeans.put(senderBean.getSenderId(), memberToBeanMap);
               }
@@ -860,11 +845,11 @@ public class WanCommands implements GfshCommand {
         // gateway receivers : a member can have only one gateway receiver
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
         if (gatewayReceiverObjectName != null) {
-          GatewayReceiverMXBean receieverBean = null;
-          receieverBean =
+          GatewayReceiverMXBean receiverBean;
+          receiverBean =
               service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
-          if (receieverBean != null) {
-            gatewayReceiverBeans.put(member.getId(), receieverBean);
+          if (receiverBean != null) {
+            gatewayReceiverBeans.put(member.getId(), receiverBean);
           }
         }
       }
@@ -898,7 +883,7 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result = null;
+    Result result;
     if (senderId != null)
       senderId = senderId.trim();
     try {
@@ -906,7 +891,7 @@ public class WanCommands implements GfshCommand {
       SystemManagementService service =
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      GatewaySenderMXBean bean = null;
+      GatewaySenderMXBean bean;
 
       CompositeResultData crd = ResultBuilder.createCompositeResultData();
       TabularResultData availableSenderData =
@@ -956,7 +941,7 @@ public class WanCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
-    Result result = null;
+    Result result;
 
     try {
       InternalCache cache = getCache();
@@ -981,10 +966,10 @@ public class WanCommands implements GfshCommand {
       for (DistributedMember member : dsMembers) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
         if (gatewayReceiverObjectName != null) {
-          GatewayReceiverMXBean receieverBean =
+          GatewayReceiverMXBean receiverBean =
               service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
-          if (receieverBean != null) {
-            buildReceiverStatus(member.getId(), receieverBean, availableReceiverData);
+          if (receiverBean != null) {
+            buildReceiverStatus(member.getId(), receiverBean, availableReceiverData);
             continue;
           }
         }
@@ -1009,12 +994,11 @@ public class WanCommands implements GfshCommand {
           help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
           optionContext = ConverterHint.GATEWAY_SENDER_ID,
           help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id) {
-    Result result = null;
+    Result result;
     try {
       GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
           new GatewaySenderDestroyFunctionArgs(id);
@@ -1141,7 +1125,7 @@ public class WanCommands implements GfshCommand {
 
 
   private Result handleCommandResultException(CommandResultException crex) {
-    Result result = null;
+    Result result;
     if (crex.getResult() != null) {
       result = crex.getResult();
     } else {

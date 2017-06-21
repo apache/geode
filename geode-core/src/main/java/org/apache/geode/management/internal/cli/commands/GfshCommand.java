@@ -135,7 +135,7 @@ public interface GfshCommand extends CommandMarker {
    */
   @Deprecated
   default Set<DistributedMember> getMembers(final InternalCache cache) {
-    Set<DistributedMember> members = new HashSet<DistributedMember>(cache.getMembers());
+    Set<DistributedMember> members = new HashSet<>(cache.getMembers());
     members.add(cache.getDistributedSystem().getDistributedMember());
     return members;
   }

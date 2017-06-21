@@ -64,7 +64,7 @@ public class DurableClientCommands implements GfshCommand {
       new GetSubscriptionQueueSizeFunction();
 
   @CliCommand(value = CliStrings.LIST_DURABLE_CQS, help = CliStrings.LIST_DURABLE_CQS__HELP)
-  @CliMetaData(shellOnly = false)
+  @CliMetaData()
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listDurableClientCqs(
       @CliOption(key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, mandatory = true,
@@ -77,7 +77,7 @@ public class DurableClientCommands implements GfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.LIST_DURABLE_CQS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
-    Result result = null;
+    Result result;
     try {
 
       boolean noResults = true;
@@ -90,9 +90,9 @@ public class DurableClientCommands implements GfshCommand {
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
       final List<DurableCqNamesResult> results = (List<DurableCqNamesResult>) rc.getResult();
-      Map<String, List<String>> memberCqNamesMap = new TreeMap<String, List<String>>();
-      Map<String, List<String>> errorMessageNodes = new HashMap<String, List<String>>();
-      Map<String, List<String>> exceptionMessageNodes = new HashMap<String, List<String>>();
+      Map<String, List<String>> memberCqNamesMap = new TreeMap<>();
+      Map<String, List<String>> errorMessageNodes = new HashMap<>();
+      Map<String, List<String>> exceptionMessageNodes = new HashMap<>();
 
       for (DurableCqNamesResult memberResult : results) {
         if (memberResult != null) {
@@ -143,21 +143,21 @@ public class DurableClientCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.COUNT_DURABLE_CQ_EVENTS,
       help = CliStrings.COUNT_DURABLE_CQ_EVENTS__HELP)
-  @CliMetaData(shellOnly = false)
+  @CliMetaData()
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result countDurableCqEvents(
       @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID, mandatory = true,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID__HELP) final String durableClientId,
-      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME, mandatory = false,
+      @CliOption(key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME,
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME__HELP) final String cqName,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
-    Result result = null;
+    Result result;
     try {
       Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
 
@@ -198,14 +198,14 @@ public class DurableClientCommands implements GfshCommand {
   public Result closeDurableClient(
       @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP) final String durableClientId,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
-    Result result = null;
+    Result result;
     try {
 
       Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
@@ -240,14 +240,14 @@ public class DurableClientCommands implements GfshCommand {
       @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__NAME, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CQS__NAME__HELP) final String cqName,
 
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS}, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CLOSE_DURABLE_CQS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CLOSE_DURABLE_CQS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
-    Result result = null;
+    Result result;
     try {
       Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
 
@@ -276,14 +276,14 @@ public class DurableClientCommands implements GfshCommand {
 
   private Result buildResult(List<MemberResult> results, String successHeader,
       String failureHeader) {
-    Result result = null;
+    Result result;
     boolean failure = true;
     boolean partialFailure = false;
-    Map<String, List<String>> errorMap = new HashMap<String, List<String>>();
-    Map<String, List<String>> successMap = new HashMap<String, List<String>>();
-    Map<String, List<String>> exceptionMap = new HashMap<String, List<String>>();
+    Map<String, List<String>> errorMap = new HashMap<>();
+    Map<String, List<String>> successMap = new HashMap<>();
+    Map<String, List<String>> exceptionMap = new HashMap<>();
 
-    /***
+    /*
      * Aggregate the results from the members
      */
     for (MemberResult memberResult : results) {
@@ -317,20 +317,19 @@ public class DurableClientCommands implements GfshCommand {
 
   private Result buildTableResultForQueueSize(List<SubscriptionQueueSizeResult> results,
       String queueSizeColumnName) {
-    Result result = null;
+    Result result;
     boolean failure = true;
 
-    Map<String, List<String>> failureMap = new HashMap<String, List<String>>();
-    Map<String, Long> memberQueueSizeTable = new TreeMap<String, Long>();
+    Map<String, List<String>> failureMap = new HashMap<>();
+    Map<String, Long> memberQueueSizeTable = new TreeMap<>();
 
-    /***
+    /*
      * Aggregate the results from the members
      */
     for (SubscriptionQueueSizeResult memberResult : results) {
 
       if (memberResult.isSuccessful()) {
         failure = false;
-        memberResult.getSubscriptionQueueSize();
         memberQueueSizeTable.put(memberResult.getMemberNameOrId(),
             memberResult.getSubscriptionQueueSize());
       } else {
@@ -364,7 +363,7 @@ public class DurableClientCommands implements GfshCommand {
     List<String> members = map.get(message);
 
     if (members == null) {
-      members = new LinkedList<String>();
+      members = new LinkedList<>();
     }
     members.add(memberNameOrId);
     map.put(message, members);
@@ -376,11 +375,11 @@ public class DurableClientCommands implements GfshCommand {
     Set<String> successMessages = successMap.keySet();
 
     for (String successMessage : successMessages) {
-      ird.addLine(CliStrings.format(CliStrings.ACTION_SUCCCEEDED_ON_MEMBER, successMessage));
+      ird.addLine(CliStrings.format(CliStrings.ACTION_SUCCEEDED_ON_MEMBER, successMessage));
 
-      List<String> successfullMembers = successMap.get(successMessage);
+      List<String> successfulMembers = successMap.get(successMessage);
       int num = 0;
-      for (String member : successfullMembers) {
+      for (String member : successfulMembers) {
         ird.addLine("" + ++num + "." + member);
       }
       ird.addLine("\n");

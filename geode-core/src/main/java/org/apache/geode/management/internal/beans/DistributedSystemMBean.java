@@ -56,7 +56,6 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
     SecurityServiceFactory.findSecurityService().authorize(Resource.CLUSTER, Operation.WRITE,
         Target.DISK);
     return bridge.backupAllMembers(targetDirPath, baselineDirPath);
-
   }
 
   @Override
@@ -67,7 +66,6 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   @Override
   public String[] listCacheServers() {
     return bridge.listCacheServers();
-
   }
 
 
@@ -250,7 +248,7 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   }
 
   @Override
-  public boolean revokeMissingDiskStores(final String diskStoreId) throws Exception {
+  public boolean revokeMissingDiskStores(final String diskStoreId) {
     return bridge.revokeMissingDiskStores(diskStoreId);
   }
 
@@ -440,6 +438,6 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
 
   @Override
   public void setQueryCollectionsDepth(int queryCollectionsDepth) {
-    bridge.setQueryCollectionsDepth(queryCollectionsDepth);;
+    bridge.setQueryCollectionsDepth(queryCollectionsDepth);
   }
 }

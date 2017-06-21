@@ -219,15 +219,13 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     ResourcePermission ctx = getOperationContext(name, operationName, true);
     this.securityService.authorize(ctx);
 
-    Object result = mbs.invoke(name, operationName, params, signature);
-
-    return result;
+    return mbs.invoke(name, operationName, params, signature);
   }
 
   // TODO: cache this
   private ResourcePermission getOperationContext(ObjectName objectName, String featureName,
       boolean isOp) throws InstanceNotFoundException, ReflectionException {
-    MBeanInfo beanInfo = null;
+    MBeanInfo beanInfo;
     try {
       beanInfo = mbs.getMBeanInfo(objectName);
     } catch (IntrospectionException e) {
@@ -240,7 +238,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     // find the context in the beanInfo if defined in the class level
     result = getOperationContext(beanInfo.getDescriptor(), result);
 
-    MBeanFeatureInfo[] featureInfos = null;
+    MBeanFeatureInfo[] featureInfos;
     if (isOp) {
       featureInfos = beanInfo.getOperations();
     } else {
@@ -359,21 +357,20 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
 
   @SuppressWarnings("deprecation")
   @Override
-  public ObjectInputStream deserialize(ObjectName name, byte[] data)
-      throws InstanceNotFoundException, OperationsException {
+  public ObjectInputStream deserialize(ObjectName name, byte[] data) throws OperationsException {
     return mbs.deserialize(name, data);
   }
 
   @Override
   public ObjectInputStream deserialize(String className, byte[] data)
       throws OperationsException, ReflectionException {
-    return deserialize(className, data);
+    return mbs.deserialize(className, data);
   }
 
   @SuppressWarnings("deprecation")
   @Override
   public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data)
-      throws InstanceNotFoundException, OperationsException, ReflectionException {
+      throws OperationsException, ReflectionException {
     return mbs.deserialize(className, loaderName, data);
   }
 

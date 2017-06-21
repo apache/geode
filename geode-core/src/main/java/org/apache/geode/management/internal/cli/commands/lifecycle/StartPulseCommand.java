@@ -87,7 +87,7 @@ public class StartPulseCommand implements GfshCommand {
 
   private void browse(URI uri) throws IOException {
     assertState(Desktop.isDesktopSupported(),
-        String.format(CliStrings.DESKSTOP_APP_RUN_ERROR_MESSAGE, System.getProperty("os.name")));
+        String.format(CliStrings.DESKTOP_APP_RUN_ERROR_MESSAGE, System.getProperty("os.name")));
     Desktop.getDesktop().browse(uri);
   }
 

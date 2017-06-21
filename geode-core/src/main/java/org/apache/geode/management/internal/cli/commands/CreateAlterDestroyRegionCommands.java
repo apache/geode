@@ -103,7 +103,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
   }
 
   /**
-   * TODO: method createRegion is too complex to analyze
+   * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
+   * is persistent
    */
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
@@ -295,6 +296,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
         }
       }
 
+      // Do we prefer to validate or authorize first?
       validateRegionFunctionArgs(cache, regionFunctionArgs);
       if (isPersistentShortcut(regionFunctionArgs.getRegionShortcut())
           || isAttributePersistent(regionFunctionArgs.getRegionAttributes())) {
@@ -305,13 +307,9 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       if (groups != null && groups.length != 0) {
         membersToCreateRegionOn = CliUtil.getDistributedMembersByGroup(cache, groups);
         // have only normal members from the group
-        for (Iterator<DistributedMember> it = membersToCreateRegionOn.iterator(); it.hasNext();) {
-          DistributedMember distributedMember = it.next();
-          if (((InternalDistributedMember) distributedMember)
-              .getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
-            it.remove();
-          }
-        }
+        membersToCreateRegionOn
+            .removeIf(distributedMember -> ((InternalDistributedMember) distributedMember)
+                .getVmKind() == DistributionManager.LOCATOR_DM_TYPE);
       } else {
         membersToCreateRegionOn = CliUtil.getAllNormalMembers(cache);
       }
@@ -344,9 +342,6 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     } catch (IllegalArgumentException | IllegalStateException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (RuntimeException e) {
-      LogWrapper.getInstance().info(e.getMessage(), e);
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
@@ -428,7 +423,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
+    getSecurityService().authorizeRegionManage(regionPath);
 
     try {
       InternalCache cache = getCache();
@@ -918,7 +913,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
               } // attributes null check
             } // not IllegalArgumentException or other throwable
           } // iterate over list - there should be only one result in the list
-        } // result list is not null or mpty
+        } // result list is not null or empty
       } // regionAssociatedMembers is not-empty
     } // attributes are null because do not exist on local member
 

@@ -52,23 +52,16 @@ public class PDXCommands implements GfshCommand {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result configurePDX(
       @CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) Boolean readSerialized,
       @CliOption(key = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP) Boolean ignoreUnreadFields,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE, specifiedDefaultValue = "",
           help = CliStrings.CONFIGURE_PDX__DISKSTORE__HELP) String diskStore,
       @CliOption(key = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP) String[] patterns,
       @CliOption(key = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP) String[] portablePatterns) {
-    Result result = null;
+    Result result;
 
     try {
       InfoResultData ird = ResultBuilder.createInfoResultData();
@@ -106,7 +99,7 @@ public class PDXCommands implements GfshCommand {
           CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + cache.getPdxReadSerialized());
 
 
-      // Set ingoreUnreadFields
+      // Set ignoreUnreadFields
       if (ignoreUnreadFields != null) {
         cache.setPdxIgnoreUnreadFields(ignoreUnreadFields);
       } else {
@@ -191,7 +184,7 @@ public class PDXCommands implements GfshCommand {
       }
       String resultString =
           CliStrings.format(CliStrings.PDX_RENAME__SUCCESS, outputStream.toString());
-      return ResultBuilder.createInfoResult(resultString.toString());
+      return ResultBuilder.createInfoResult(resultString);
 
     } catch (Exception e) {
       return ResultBuilder.createGemFireErrorResult(
