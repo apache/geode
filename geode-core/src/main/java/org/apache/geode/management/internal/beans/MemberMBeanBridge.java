@@ -1341,7 +1341,7 @@ public class MemberMBeanBridge {
     return getMemberLevelStatistic(StatsKey.GET_INITIAL_IMAGE_TIME).longValue();
   }
 
-  public int getInitialImagesInProgres() {
+  public int getInitialImagesInProgress() {
     return getMemberLevelStatistic(StatsKey.GET_INITIAL_IMAGES_INPROGRESS).intValue();
   }
 
