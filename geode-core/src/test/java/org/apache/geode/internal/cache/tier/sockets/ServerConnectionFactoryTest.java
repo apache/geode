@@ -31,6 +31,14 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * We don't test the path where the service providing protobufProtocolHandler is actually present,
+ * because it lives outside this module, and all the integration tests from that module will test
+ * the newclient protocol happy path.
+ *
+ * What we are concerned with is making sure that everything stays the same when the feature flag
+ * isn't set, and that we at least try to load the service when the feature flag is true.
+ */
 @Category(UnitTest.class)
 public class ServerConnectionFactoryTest {
   /**
@@ -38,17 +46,22 @@ public class ServerConnectionFactoryTest {
    * enabled.
    */
   @Test(expected = IOException.class)
-  public void newClientProtocolThrows() throws Exception {
-    serverConnectionMockedExceptForCommunicationMode(Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
+  public void newClientProtocolFailsWithoutSystemPropertySet() throws Exception {
+    ServerConnection serverConnection =
+        serverConnectionMockedExceptForCommunicationMode(Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
+
   }
 
-  @Test
-  public void newClientProtocolSucceedsWithSystemPropertySet() throws Exception {
+  /**
+   * @throws ServiceLoadingFailureException because the service is implemented in a different
+   *         module, and when this unit test is run, that module won't be present.
+   */
+  @Test(expected = ServiceLoadingFailureException.class)
+  public void newClientProtocolFailsWithSystemPropertySet() throws Exception {
     try {
       System.setProperty("geode.feature-protobuf-protocol", "true");
       ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
           Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
-      assertTrue(serverConnection instanceof GenericProtocolServerConnection);
     } finally {
       System.clearProperty("geode.feature-protobuf-protocol");
     }
@@ -66,6 +79,26 @@ public class ServerConnectionFactoryTest {
       ServerConnection serverConnection =
           serverConnectionMockedExceptForCommunicationMode(communicationMode);
       assertTrue(serverConnection instanceof LegacyServerConnection);
+    }
+  }
+
+  @Test
+  public void makeServerConnectionForOldProtocolWithFeatureFlagEnabled() throws IOException {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+    try {
+      byte[] communicationModes =
+          new byte[] {Acceptor.CLIENT_TO_SERVER, Acceptor.PRIMARY_SERVER_TO_CLIENT,
+              Acceptor.SECONDARY_SERVER_TO_CLIENT, Acceptor.GATEWAY_TO_GATEWAY,
+              Acceptor.MONITOR_TO_SERVER, Acceptor.SUCCESSFUL_SERVER_TO_CLIENT,
+              Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, Acceptor.CLIENT_TO_SERVER_FOR_QUEUE,};
+
+      for (byte communicationMode : communicationModes) {
+        ServerConnection serverConnection =
+            serverConnectionMockedExceptForCommunicationMode(communicationMode);
+        assertTrue(serverConnection instanceof LegacyServerConnection);
+      }
+    } finally {
+      System.clearProperty("geode.feature-protobuf-protocol");
     }
   }
 
