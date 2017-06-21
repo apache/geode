@@ -86,7 +86,7 @@ public class CommandProcessor {
   }
 
   public Result executeCommand(CommandStatement cmdStmt) {
-    Object result = null;
+    Object result;
     Result commandResult = null;
 
     CommentSkipHelper commentSkipper = new CommentSkipHelper();

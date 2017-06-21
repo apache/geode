@@ -106,10 +106,8 @@ public class DataCommands implements GfshCommand {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result rebalance(
       @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
       @CliOption(key = CliStrings.REBALANCE__EXCLUDEREGION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.REBALANCE__EXCLUDEREGION__HELP) String[] excludeRegions,
       @CliOption(key = CliStrings.REBALANCE__TIMEOUT, unspecifiedDefaultValue = "-1",
           help = CliStrings.REBALANCE__TIMEOUT__HELP) long timeout,
@@ -136,7 +134,7 @@ public class DataCommands implements GfshCommand {
 
     } catch (Exception ex) {
       result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.REBALANCE__MSG__EXCEPTION_OCCRED_WHILE_REBALANCING_0, ex.getMessage()));
+          CliStrings.REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0, ex.getMessage()));
     }
     LogWrapper.getInstance().info("Rebalance returning result >>>" + result);
     return result;
@@ -474,12 +472,12 @@ public class DataCommands implements GfshCommand {
     return listMembersId.toString();
   }
 
-  private CompositeResultData toCompositeResultData(CompositeResultData rebalanceResulteData,
+  private CompositeResultData toCompositeResultData(CompositeResultData rebalanceResultData,
       ArrayList<String> rstlist, int index, boolean simulate, InternalCache cache) {
 
     // add only if there are any valid regions in results
     if (rstlist.size() > resultItemCount && StringUtils.isNotEmpty(rstlist.get(resultItemCount))) {
-      TabularResultData table1 = rebalanceResulteData.addSection().addTable("Table" + index);
+      TabularResultData table1 = rebalanceResultData.addSection().addTable("Table" + index);
       String newLine = System.getProperty("line.separator");
       StringBuilder resultStr = new StringBuilder();
       resultStr.append(newLine);
@@ -542,7 +540,7 @@ public class DataCommands implements GfshCommand {
       table1.setHeader(headerText);
       cache.getLogger().info(headerText + resultStr);
     }
-    return rebalanceResulteData;
+    return rebalanceResultData;
   }
 
   private CompositeResultData buildResultForRebalance(CompositeResultData rebalanceResultData,
@@ -740,13 +738,10 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
-      @CliOption(key = CliStrings.EXPORT_DATA__FILE,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true,
+      @CliOption(key = CliStrings.EXPORT_DATA__FILE, mandatory = true,
           help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
-      @CliOption(key = CliStrings.MEMBER,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          optionContext = ConverterHint.MEMBERIDNAME, mandatory = true,
-          help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+          mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
     getSecurityService().authorizeRegionRead(regionName);
     final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
@@ -797,10 +792,8 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
       @CliOption(key = CliStrings.MEMBER, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",

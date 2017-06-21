@@ -116,19 +116,17 @@ public class DiskStoreCommands implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public Result backupDiskStore(
-
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__DISKDIRS,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.BACKUP_DISK_STORE__DISKDIRS__HELP, mandatory = true) String targetDir,
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__BASELINEDIR,
           help = CliStrings.BACKUP_DISK_STORE__BASELINEDIR__HELP) String baselineDir) {
 
-    Result result = null;
     getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE, Target.DISK);
+    Result result;
     try {
       InternalCache cache = getCache();
       DM dm = cache.getDistributionManager();
-      BackupStatus backupStatus = null;
+      BackupStatus backupStatus;
 
       if (baselineDir != null && !baselineDir.isEmpty()) {
         backupStatus = AdminDistributedSystemImpl.backupAllMembers(dm, new File(targetDir),
@@ -164,11 +162,11 @@ public class DiskStoreCommands implements GfshCommand {
               String directory = persistentId.getDirectory();
 
               if (printMember) {
-                writeToBackupDisktoreTable(backedupDiskStoresTable, memberName, UUID, hostName,
+                writeToBackupDiskStoreTable(backedupDiskStoresTable, memberName, UUID, hostName,
                     directory);
                 printMember = false;
               } else {
-                writeToBackupDisktoreTable(backedupDiskStoresTable, "", UUID, hostName, directory);
+                writeToBackupDiskStoreTable(backedupDiskStoresTable, "", UUID, hostName, directory);
               }
             }
           }
@@ -202,8 +200,8 @@ public class DiskStoreCommands implements GfshCommand {
     return result;
   }
 
-  private void writeToBackupDisktoreTable(TabularResultData backedupDiskStoreTable, String memberId,
-      String UUID, String host, String directory) {
+  private void writeToBackupDiskStoreTable(TabularResultData backedupDiskStoreTable,
+      String memberId, String UUID, String host, String directory) {
     backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_MEMBER, memberId);
     backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_UUID, UUID);
     backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_DIRECTORY, directory);
@@ -211,7 +209,7 @@ public class DiskStoreCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.LIST_DISK_STORE, help = CliStrings.LIST_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listDiskStore() {
     try {
@@ -247,7 +245,7 @@ public class DiskStoreCommands implements GfshCommand {
 
     final List<?> results = (List<?>) resultCollector.getResult();
     final List<DiskStoreDetails> distributedSystemMemberDiskStores =
-        new ArrayList<DiskStoreDetails>(results.size());
+        new ArrayList<>(results.size());
 
     for (final Object result : results) {
       if (result instanceof Set) { // ignore FunctionInvocationTargetExceptions and other
@@ -404,7 +402,7 @@ public class DiskStoreCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.COMPACT_DISK_STORE, help = CliStrings.COMPACT_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
       target = Target.DISK)
   public Result compactDiskStore(
@@ -412,9 +410,8 @@ public class DiskStoreCommands implements GfshCommand {
           optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.COMPACT_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.COMPACT_DISK_STORE__GROUP__HELP) String[] groups) {
-    Result result = null;
+    Result result;
 
     try {
       // disk store exists validation
@@ -425,29 +422,24 @@ public class DiskStoreCommands implements GfshCommand {
       } else {
         InternalDistributedSystem ds = getCache().getInternalDistributedSystem();
 
-        Map<DistributedMember, PersistentID> overallCompactInfo =
-            new HashMap<DistributedMember, PersistentID>();
+        Map<DistributedMember, PersistentID> overallCompactInfo = new HashMap<>();
 
         Set<?> otherMembers = ds.getDistributionManager().getOtherNormalDistributionManagerIds();
-        Set<InternalDistributedMember> allMembers = new HashSet<InternalDistributedMember>();
+        Set<InternalDistributedMember> allMembers = new HashSet<>();
 
         for (Object member : otherMembers) {
           allMembers.add((InternalDistributedMember) member);
         }
         allMembers.add(ds.getDistributedMember());
-        otherMembers = null;
 
         String groupInfo = "";
         // if groups are specified, find members in the specified group
         if (groups != null && groups.length > 0) {
           groupInfo = CliStrings.format(CliStrings.COMPACT_DISK_STORE__MSG__FOR_GROUP,
               new Object[] {Arrays.toString(groups) + "."});
-          final Set<InternalDistributedMember> selectedMembers =
-              new HashSet<InternalDistributedMember>();
+          final Set<InternalDistributedMember> selectedMembers = new HashSet<>();
           List<String> targetedGroups = Arrays.asList(groups);
-          for (Iterator<InternalDistributedMember> iterator = allMembers.iterator(); iterator
-              .hasNext();) {
-            InternalDistributedMember member = iterator.next();
+          for (InternalDistributedMember member : allMembers) {
             List<String> memberGroups = member.getGroups();
             if (!Collections.disjoint(targetedGroups, memberGroups)) {
               selectedMembers.add(member);
@@ -492,7 +484,7 @@ public class DiskStoreCommands implements GfshCommand {
           // If compaction happened at all, then prepare the summary
           if (overallCompactInfo != null && !overallCompactInfo.isEmpty()) {
             CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-            SectionResultData section = null;
+            SectionResultData section;
 
             Set<Entry<DistributedMember, PersistentID>> entries = overallCompactInfo.entrySet();
 
@@ -552,20 +544,18 @@ public class DiskStoreCommands implements GfshCommand {
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE,
           unspecifiedDefaultValue = "-1",
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE__HELP) long maxOplogSize,
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__J,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
-    Result result = null;
+    Result result;
     LogWrapper logWrapper = LogWrapper.getInstance();
 
     StringBuilder output = new StringBuilder();
     StringBuilder error = new StringBuilder();
-    String errorMessage = "";
+    StringBuilder errorMessage = new StringBuilder();
     Process compacterProcess = null;
 
     try {
@@ -576,16 +566,14 @@ public class DiskStoreCommands implements GfshCommand {
                 + validatedDirectories + "\"");
       }
 
-      List<String> commandList = new ArrayList<String>();
+      List<String> commandList = new ArrayList<>();
       commandList.add(System.getProperty("java.home") + File.separatorChar + "bin"
           + File.separatorChar + "java");
 
       configureLogging(commandList);
 
       if (jvmProps != null && jvmProps.length != 0) {
-        for (int i = 0; i < jvmProps.length; i++) {
-          commandList.add(jvmProps[i]);
-        }
+        commandList.addAll(Arrays.asList(jvmProps));
       }
       commandList.add("-classpath");
       commandList.add(System.getProperty("java.class.path", "."));
@@ -618,12 +606,11 @@ public class DiskStoreCommands implements GfshCommand {
       BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream));
       BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
 
-      String line = null;
+      String line;
       while ((line = inputReader.readLine()) != null) {
         output.append(line).append(GfshParser.LINE_SEPARATOR);
       }
 
-      line = null;
       boolean switchToStackTrace = false;
       while ((line = errorReader.readLine()) != null) {
         if (!switchToStackTrace && DiskStoreCompacter.STACKTRACE_START.equals(line)) {
@@ -631,12 +618,12 @@ public class DiskStoreCommands implements GfshCommand {
         } else if (switchToStackTrace) {
           error.append(line).append(GfshParser.LINE_SEPARATOR);
         } else {
-          errorMessage = errorMessage + line;
+          errorMessage.append(line);
         }
       }
 
-      if (!errorMessage.isEmpty()) {
-        throw new GemFireIOException(errorMessage);
+      if (errorMessage.length() > 0) {
+        throw new GemFireIOException(errorMessage.toString());
       }
 
       // do we have to waitFor??
@@ -660,7 +647,7 @@ public class DiskStoreCommands implements GfshCommand {
       if (output.length() != 0) {
         Gfsh.println(output.toString());
       }
-      result = ResultBuilder.createUserErrorResult(errorMessage);
+      result = ResultBuilder.createUserErrorResult(errorMessage.toString());
       if (logWrapper.fineEnabled()) {
         logWrapper.fine(error.toString());
       }
@@ -692,22 +679,20 @@ public class DiskStoreCommands implements GfshCommand {
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE,
           unspecifiedDefaultValue = "-1",
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE__HELP) long maxOplogSize,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps)
       throws InterruptedException {
 
-    Result result = null;
+    Result result;
     LogWrapper logWrapper = LogWrapper.getInstance();
 
     StringBuilder output = new StringBuilder();
     StringBuilder error = new StringBuilder();
-    String errorMessage = "";
+    StringBuilder errorMessage = new StringBuilder();
     Process upgraderProcess = null;
 
     try {
@@ -718,16 +703,14 @@ public class DiskStoreCommands implements GfshCommand {
                 + validatedDirectories + "\"");
       }
 
-      List<String> commandList = new ArrayList<String>();
+      List<String> commandList = new ArrayList<>();
       commandList.add(System.getProperty("java.home") + File.separatorChar + "bin"
           + File.separatorChar + "java");
 
       configureLogging(commandList);
 
       if (jvmProps != null && jvmProps.length != 0) {
-        for (int i = 0; i < jvmProps.length; i++) {
-          commandList.add(jvmProps[i]);
-        }
+        commandList.addAll(Arrays.asList(jvmProps));
       }
       commandList.add("-classpath");
       commandList.add(System.getProperty("java.class.path", "."));
@@ -761,12 +744,11 @@ public class DiskStoreCommands implements GfshCommand {
       BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream));
       BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
 
-      String line = null;
+      String line;
       while ((line = inputReader.readLine()) != null) {
         output.append(line).append(GfshParser.LINE_SEPARATOR);
       }
 
-      line = null;
       boolean switchToStackTrace = false;
       while ((line = errorReader.readLine()) != null) {
         if (!switchToStackTrace && DiskStoreUpgrader.STACKTRACE_START.equals(line)) {
@@ -774,12 +756,12 @@ public class DiskStoreCommands implements GfshCommand {
         } else if (switchToStackTrace) {
           error.append(line).append(GfshParser.LINE_SEPARATOR);
         } else {
-          errorMessage = errorMessage + line;
+          errorMessage.append(line);
         }
       }
 
-      if (!errorMessage.isEmpty()) {
-        throw new GemFireIOException(errorMessage);
+      if (errorMessage.length() > 0) {
+        throw new GemFireIOException(errorMessage.toString());
       }
 
       upgraderProcess.destroy();
@@ -802,7 +784,7 @@ public class DiskStoreCommands implements GfshCommand {
       if (output.length() != 0) {
         Gfsh.println(output.toString());
       }
-      result = ResultBuilder.createUserErrorResult(errorMessage);
+      result = ResultBuilder.createUserErrorResult(errorMessage.toString());
       if (logWrapper.fineEnabled()) {
         logWrapper.fine(error.toString());
       }
@@ -829,7 +811,7 @@ public class DiskStoreCommands implements GfshCommand {
   private String validatedDirectories(String[] diskDirs) {
     String invalidDirectories = null;
     StringBuilder builder = null;
-    File diskDir = null;
+    File diskDir;
     for (String diskDirPath : diskDirs) {
       diskDir = new File(diskDirPath);
       if (!diskDir.exists()) {
@@ -849,7 +831,7 @@ public class DiskStoreCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.DESCRIBE_DISK_STORE, help = CliStrings.DESCRIBE_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeDiskStore(
       @CliOption(key = CliStrings.MEMBER, mandatory = true,
@@ -860,9 +842,7 @@ public class DiskStoreCommands implements GfshCommand {
           help = CliStrings.DESCRIBE_DISK_STORE__NAME__HELP) final String diskStoreName) {
     try {
       return toCompositeResult(getDiskStoreDescription(memberName, diskStoreName));
-    } catch (DiskStoreNotFoundException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (MemberNotFoundException e) {
+    } catch (DiskStoreNotFoundException | MemberNotFoundException e) {
       return ResultBuilder.createShellClientErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException ignore) {
       return ResultBuilder.createGemFireErrorResult(CliStrings
@@ -1056,7 +1036,7 @@ public class DiskStoreCommands implements GfshCommand {
         membersFunctionExecutor.execute(new ShowMissingDiskStoresFunction());
 
     final List<?> results = (List<?>) resultCollector.getResult();
-    final List<Object> distributedPersistentRecoveryDetails = new ArrayList<Object>(results.size());
+    final List<Object> distributedPersistentRecoveryDetails = new ArrayList<>(results.size());
     for (final Object result : results) {
       if (result instanceof Set) { // ignore FunctionInvocationTargetExceptions and other
                                    // Exceptions...
@@ -1069,8 +1049,8 @@ public class DiskStoreCommands implements GfshCommand {
   protected Result toMissingDiskStoresTabularResult(final List<Object> resultDetails)
       throws ResultDataException {
     CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    List<PersistentMemberPattern> missingDiskStores = new ArrayList<PersistentMemberPattern>();
-    List<ColocatedRegionDetails> missingColocatedRegions = new ArrayList<ColocatedRegionDetails>();
+    List<PersistentMemberPattern> missingDiskStores = new ArrayList<>();
+    List<ColocatedRegionDetails> missingColocatedRegions = new ArrayList<>();
 
     for (Object detail : resultDetails) {
       if (detail instanceof PersistentMemberPattern) {
@@ -1089,10 +1069,10 @@ public class DiskStoreCommands implements GfshCommand {
       missingDiskStoresSection.setHeader("Missing Disk Stores");
       TabularResultData missingDiskStoreData = missingDiskStoresSection.addTable();
 
-      for (PersistentMemberPattern peristentMemberDetails : missingDiskStores) {
-        missingDiskStoreData.accumulate("Disk Store ID", peristentMemberDetails.getUUID());
-        missingDiskStoreData.accumulate("Host", peristentMemberDetails.getHost());
-        missingDiskStoreData.accumulate("Directory", peristentMemberDetails.getDirectory());
+      for (PersistentMemberPattern persistentMemberDetails : missingDiskStores) {
+        missingDiskStoreData.accumulate("Disk Store ID", persistentMemberDetails.getUUID());
+        missingDiskStoreData.accumulate("Host", persistentMemberDetails.getHost());
+        missingDiskStoreData.accumulate("Directory", persistentMemberDetails.getDirectory());
       }
     } else {
       SectionResultData noMissingDiskStores = crd.addSection();
@@ -1131,11 +1111,9 @@ public class DiskStoreCommands implements GfshCommand {
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES__HELP) Boolean listPdxTypes,
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME,
-          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME__HELP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String regionName) {
+          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME__HELP) String regionName) {
 
     try {
       final File[] dirs = new File[diskDirs.length];
@@ -1191,7 +1169,7 @@ public class DiskStoreCommands implements GfshCommand {
       DiskStoreImpl.exportOfflineSnapshot(diskStoreName, dirs, output);
       String resultString =
           CliStrings.format(CliStrings.EXPORT_OFFLINE_DISK_STORE__SUCCESS, diskStoreName, dir);
-      return ResultBuilder.createInfoResult(resultString.toString());
+      return ResultBuilder.createInfoResult(resultString);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -1216,31 +1194,25 @@ public class DiskStoreCommands implements GfshCommand {
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.VALIDATE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__DISKDIRS, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__J,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.VALIDATE_DISK_STORE__J__HELP) String[] jvmProps) {
     try {
-      String resultString = new String();
-
       // create a new process ...bug 46075
       StringBuilder dirList = new StringBuilder();
-      for (int i = 0; i < diskDirs.length; i++) {
-        dirList.append(diskDirs[i]);
+      for (String diskDir : diskDirs) {
+        dirList.append(diskDir);
         dirList.append(";");
       }
 
-      List<String> commandList = new ArrayList<String>();
+      List<String> commandList = new ArrayList<>();
       commandList.add(System.getProperty("java.home") + File.separatorChar + "bin"
           + File.separatorChar + "java");
 
       configureLogging(commandList);
 
       if (jvmProps != null && jvmProps.length != 0) {
-        for (int i = 0; i < jvmProps.length; i++) {
-          commandList.add(jvmProps[i]);
-        }
+        commandList.addAll(Arrays.asList(jvmProps));
       }
 
       // Pass any java options on to the command
@@ -1256,23 +1228,22 @@ public class DiskStoreCommands implements GfshCommand {
 
       ProcessBuilder procBuilder = new ProcessBuilder(commandList);
       StringBuilder output = new StringBuilder();
-      String errorString = new String();
+      String errorString = "";
 
       Process validateDiskStoreProcess = procBuilder.redirectErrorStream(true).start();
       InputStream inputStream = validateDiskStoreProcess.getInputStream();
       BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-      String line = null;
+      String line;
 
       while ((line = br.readLine()) != null) {
         output.append(line).append(GfshParser.LINE_SEPARATOR);
       }
       validateDiskStoreProcess.destroy();
 
-      if (errorString != null) {
-        output.append(errorString).append(GfshParser.LINE_SEPARATOR);
-      }
-      resultString = "Validating " + diskStoreName + GfshParser.LINE_SEPARATOR + output.toString();
-      return ResultBuilder.createInfoResult(resultString.toString());
+      output.append(errorString).append(GfshParser.LINE_SEPARATOR);
+      String resultString =
+          "Validating " + diskStoreName + GfshParser.LINE_SEPARATOR + output.toString();
+      return ResultBuilder.createInfoResult(resultString);
     } catch (IOException ex) {
       return ResultBuilder.createGemFireErrorResult(CliStrings
           .format(CliStrings.VALIDATE_DISK_STORE__MSG__IO_ERROR, diskStoreName, ex.getMessage()));
@@ -1292,39 +1263,30 @@ public class DiskStoreCommands implements GfshCommand {
       @CliOption(key = CliStrings.ALTER_DISK_STORE__REGIONNAME, mandatory = true,
           help = CliStrings.ALTER_DISK_STORE__REGIONNAME__HELP) String regionName,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__DISKDIRS,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_DISK_STORE__DISKDIRS__HELP, mandatory = true) String[] diskDirs,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__COMPRESSOR,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = "none",
+      @CliOption(key = CliStrings.ALTER_DISK_STORE__COMPRESSOR, specifiedDefaultValue = "none",
           help = CliStrings.ALTER_DISK_STORE__COMPRESSOR__HELP) String compressorClassName,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL__HELP) Integer concurrencyLevel,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED__HELP) Boolean statisticsEnabled,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__INITIAL__CAPACITY,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_DISK_STORE__INITIAL__CAPACITY__HELP) Integer initialCapacity,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__LOAD__FACTOR,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_DISK_STORE__LOAD__FACTOR__HELP) Float loadFactor,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION,
           help = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION__HELP) String lruEvictionAction,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM,
           help = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM__HELP) String lruEvictionAlgo,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT__HELP) Integer lruEvictionLimit,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__OFF_HEAP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.ALTER_DISK_STORE__OFF_HEAP__HELP) Boolean offHeap,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__REMOVE,
-          help = CliStrings.ALTER_DISK_STORE__REMOVE__HELP, mandatory = false,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean remove) {
+          help = CliStrings.ALTER_DISK_STORE__REMOVE__HELP, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false") boolean remove) {
 
-    Result result = null;
+    Result result;
 
     try {
       File[] dirs = null;
