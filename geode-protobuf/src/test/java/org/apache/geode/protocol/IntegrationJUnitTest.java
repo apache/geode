@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.client.protocol;
+package org.apache.geode.protocol;
 
 import com.google.protobuf.ByteString;
 
@@ -45,7 +45,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 @Category(UnitTest.class)
-public class IntegrationTest {
+public class IntegrationJUnitTest {
 
   public static final String TEST_KEY = "my key";
   public static final String TEST_VALUE = "my value";

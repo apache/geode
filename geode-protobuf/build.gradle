@@ -23,7 +23,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.1'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:' + project.'protobuf-gradle-plugin.version'
     }
 }
 
@@ -36,13 +36,13 @@ dependencies {
     testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
     testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
 
-    compile 'com.google.protobuf:protobuf-java:3.3.1'
+    compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
 }
 
 protobuf {
     protoc {
         // The artifact spec for the Protobuf Compiler
-        artifact = 'com.google.protobuf:protoc:3.0.0'
+        artifact = 'com.google.protobuf:protoc:' + project.'protoc.version'
     }
     generatedFilesBaseDir = "$buildDir/generated-src/proto"
 }
