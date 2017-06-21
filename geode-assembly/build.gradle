@@ -72,6 +72,7 @@ dependencies {
 
   testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
   testRuntime files("$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar")
