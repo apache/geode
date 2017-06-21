@@ -159,8 +159,9 @@ public interface MemberMXBean {
    * 
    * @return A list of names of the disk stores that were compacted.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public String[] compactAllDiskStores();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  String[] compactAllDiskStores();
 
   /**
    * Creates a Manager MBean on this member.

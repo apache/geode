@@ -306,8 +306,9 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void stopContinuousQuery(String queryName) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  void stopContinuousQuery(String queryName) throws Exception;
 
   /**
    * Unregister all CQs from a region
@@ -318,8 +319,9 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void closeAllContinuousQuery(String regionName) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  void closeAllContinuousQuery(String regionName) throws Exception;
 
 
   /**
@@ -331,8 +333,9 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void closeContinuousQuery(String queryName) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  void closeContinuousQuery(String queryName) throws Exception;
 
 
   /**

@@ -86,7 +86,7 @@ public class LuceneIndexCommands implements GfshCommand {
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX,
       help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ, target = Target.QUERY)
   public Result listIndex(@CliOption(key = LuceneCliStrings.LUCENE_LIST_INDEX__STATS,
       specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = LuceneCliStrings.LUCENE_LIST_INDEX__STATS__HELP) final boolean stats) {
@@ -163,10 +163,15 @@ public class LuceneIndexCommands implements GfshCommand {
     }
   }
 
+  /**
+   * On the server, we also verify the resource operation permissions CLUSTER:WRITE:DISK
+   */
   @CliCommand(value = LuceneCliStrings.LUCENE_CREATE_INDEX,
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result createIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__NAME__HELP) final String indexName,
 
@@ -183,7 +188,6 @@ public class LuceneIndexCommands implements GfshCommand {
     Result result;
     XmlEntity xmlEntity = null;
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
     try {
       final InternalCache cache = getCache();
       // trim fields for any leading trailing spaces.
@@ -229,7 +233,7 @@ public class LuceneIndexCommands implements GfshCommand {
   @CliCommand(value = LuceneCliStrings.LUCENE_DESCRIBE_INDEX,
       help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ, target = Target.QUERY)
   public Result describeIndex(
       @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
           help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__NAME__HELP) final String indexName,
@@ -265,10 +269,12 @@ public class LuceneIndexCommands implements GfshCommand {
         .collect(Collectors.toList());
   }
 
+  /**
+   * Internally, we verify the resource operation permissions DATA:READ:[RegionName]
+   */
   @CliCommand(value = LuceneCliStrings.LUCENE_SEARCH_INDEX,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.WRITE)
   public Result searchIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
 
@@ -289,6 +295,7 @@ public class LuceneIndexCommands implements GfshCommand {
           unspecifiedDefaultValue = "false",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly) {
     try {
+      getSecurityService().authorizeRegionRead(regionPath);
       LuceneQueryInfo queryInfo =
           new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
       int pageSize = Integer.MAX_VALUE;
@@ -313,6 +320,8 @@ public class LuceneIndexCommands implements GfshCommand {
   @CliCommand(value = LuceneCliStrings.LUCENE_DESTROY_INDEX,
       help = LuceneCliStrings.LUCENE_DESTROY_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result destroyIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME,
       help = LuceneCliStrings.LUCENE_DESTROY_INDEX__NAME__HELP) final String indexName,
 
@@ -328,8 +337,6 @@ public class LuceneIndexCommands implements GfshCommand {
       return ResultBuilder.createInfoResult(
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
     }
-
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
 
     Result result;
     try {

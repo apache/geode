@@ -748,7 +748,7 @@ public class DataCommands implements GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME, mandatory = true,
           help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
-    getCache().getSecurityService().authorizeRegionRead(regionName);
+    getSecurityService().authorizeRegionRead(regionName);
     final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
     Result result;
 
@@ -806,7 +806,7 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",
           help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks) {
 
-    getCache().getSecurityService().authorizeRegionWrite(regionName);
+    getSecurityService().authorizeRegionWrite(regionName);
 
     Result result;
 
@@ -1004,7 +1004,7 @@ public class DataCommands implements GfshCommand {
           help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP,
           unspecifiedDefaultValue = "false") boolean recursive) {
 
-    getCache().getSecurityService().authorizeRegionRead(regionPath, key);
+    getSecurityService().authorizeRegionRead(regionPath, key);
 
     DataCommandResult dataResult;
 

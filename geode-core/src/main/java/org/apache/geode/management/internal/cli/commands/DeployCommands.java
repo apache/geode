@@ -79,6 +79,7 @@ public class DeployCommands implements GfshCommand {
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE, target = Target.JAR)
   public Result deploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
@@ -89,11 +90,7 @@ public class DeployCommands implements GfshCommand {
 
       // since deploy function can potentially do a lot of damage to security, this action should
       // require these following privileges
-      SecurityService securityService = getCache().getSecurityService();
-      securityService.authorizeClusterManage();
-      securityService.authorizeClusterWrite();
-      securityService.authorizeDataManage();
-      securityService.authorizeDataWrite();
+      SecurityService securityService = getSecurityService();
 
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
@@ -158,7 +155,7 @@ public class DeployCommands implements GfshCommand {
    */
   @CliCommand(value = {CliStrings.UNDEPLOY}, help = CliStrings.UNDEPLOY__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE, target = Target.JAR)
   public Result undeploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.UNDEPLOY__GROUP__HELP,

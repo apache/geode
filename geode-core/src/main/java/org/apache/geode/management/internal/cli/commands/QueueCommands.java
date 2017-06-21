@@ -54,7 +54,7 @@ public class QueueCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE,
       help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE, target = Target.JAR)
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, mandatory = true,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP) String id,
@@ -104,6 +104,9 @@ public class QueueCommands implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP) String[] listenerParamsAndValues) {
 
+    if (persistent) {
+      getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE, Target.DISK);
+    }
     Properties listenerProperties = new Properties();
 
     try {

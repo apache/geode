@@ -102,11 +102,16 @@ import org.apache.geode.security.ResourcePermission.Target;
  */
 @SuppressWarnings("unused")
 public class DiskStoreCommands implements GfshCommand {
+
   protected Set<DistributedMember> getNormalMembers(final InternalCache cache) {
     // TODO determine what this does (as it is untested and unmockable!)
     return CliUtil.getAllNormalMembers(cache);
   }
 
+  /**
+   * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
+   * is persistent
+   */
   @CliCommand(value = CliStrings.BACKUP_DISK_STORE, help = CliStrings.BACKUP_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
@@ -119,6 +124,7 @@ public class DiskStoreCommands implements GfshCommand {
           help = CliStrings.BACKUP_DISK_STORE__BASELINEDIR__HELP) String baselineDir) {
 
     Result result = null;
+    getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE, Target.DISK);
     try {
       InternalCache cache = getCache();
       DM dm = cache.getDistributionManager();
@@ -275,8 +281,9 @@ public class DiskStoreCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.CREATE_DISK_STORE, help = CliStrings.CREATE_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
   public Result createDiskStore(
       @CliOption(key = CliStrings.CREATE_DISK_STORE__NAME, mandatory = true,
           optionContext = ConverterHint.DISKSTORE,
@@ -981,7 +988,8 @@ public class DiskStoreCommands implements GfshCommand {
   @CliCommand(value = CliStrings.REVOKE_MISSING_DISK_STORE,
       help = CliStrings.REVOKE_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
   public Result revokeMissingDiskStore(@CliOption(key = CliStrings.REVOKE_MISSING_DISK_STORE__ID,
       mandatory = true, help = CliStrings.REVOKE_MISSING_DISK_STORE__ID__HELP) String id) {
 
@@ -1389,8 +1397,9 @@ public class DiskStoreCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.DESTROY_DISK_STORE, help = CliStrings.DESTROY_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
   public Result destroyDiskStore(
       @CliOption(key = CliStrings.DESTROY_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.DESTROY_DISK_STORE__NAME__HELP) String name,

@@ -49,7 +49,7 @@ public class PDXCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result configurePDX(
       @CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -154,7 +154,6 @@ public class PDXCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result pdxRename(@CliOption(key = CliStrings.PDX_RENAME_OLD, mandatory = true,
       help = CliStrings.PDX_RENAME_OLD__HELP) String oldClassName,
 

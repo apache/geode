@@ -322,8 +322,9 @@ public interface DistributedSystemMXBean {
    * @param diskStoreId UUID of the disk store to remove
    * @return True if the request is successful, false otherwise.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public boolean revokeMissingDiskStores(String diskStoreId) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  boolean revokeMissingDiskStores(String diskStoreId);
 
   /**
    * Returns a list of details for disk stores which have been determined to be unavailable during
@@ -600,8 +601,8 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryResultSetLimit();
 
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void setQueryResultSetLimit(int queryResultSetLimit);
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
 
   /**
    * Number of elements in a collection to be shown in queryData operation if query results contain
@@ -610,6 +611,7 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryCollectionsDepth();
 
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void setQueryCollectionsDepth(int queryCollectionsDepth);
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  void setQueryCollectionsDepth(int queryCollectionsDepth);
 }

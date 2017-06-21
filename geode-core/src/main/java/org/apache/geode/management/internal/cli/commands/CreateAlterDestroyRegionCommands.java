@@ -296,6 +296,10 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       }
 
       validateRegionFunctionArgs(cache, regionFunctionArgs);
+      if (isPersistentShortcut(regionFunctionArgs.getRegionShortcut())
+          || isAttributePersistent(regionFunctionArgs.getRegionAttributes())) {
+        getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE, Target.DISK);
+      }
 
       Set<DistributedMember> membersToCreateRegionOn;
       if (groups != null && groups.length != 0) {
@@ -1127,5 +1131,21 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       }
     }
     return foundMembers;
+  }
+
+  private boolean isPersistentShortcut(RegionShortcut shortcut) {
+    return shortcut == RegionShortcut.LOCAL_PERSISTENT
+        || shortcut == RegionShortcut.LOCAL_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.PARTITION_PERSISTENT
+        || shortcut == RegionShortcut.PARTITION_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT
+        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.REPLICATE_PERSISTENT
+        || shortcut == RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
+  }
+
+  private boolean isAttributePersistent(RegionAttributes attributes) {
+    return attributes != null && attributes.getDataPolicy() != null
+        && attributes.getDataPolicy().toString().contains("PERSISTENT");
   }
 }

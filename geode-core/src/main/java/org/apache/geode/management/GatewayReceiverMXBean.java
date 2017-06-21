@@ -90,14 +90,16 @@ public interface GatewayReceiverMXBean {
   /**
    * Starts the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void start() throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void start() throws Exception;
 
   /**
    * Stops the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void stop() throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void stop() throws Exception;
 
   /**
    * Returns the configured start port.

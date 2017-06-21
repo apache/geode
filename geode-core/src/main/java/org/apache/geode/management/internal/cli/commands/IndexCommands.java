@@ -81,10 +81,9 @@ public class IndexCommands implements GfshCommand {
       Collections.synchronizedSet(new HashSet<IndexInfo>());
 
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS, mandatory = false,
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ, target = Target.QUERY)
+  public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
       specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats) {
     try {
@@ -165,6 +164,8 @@ public class IndexCommands implements GfshCommand {
   @CliMetaData(shellOnly = false,
       relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
 
@@ -315,11 +316,12 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  public Result destroyIndex(@CliOption(key = CliStrings.DESTROY_INDEX__NAME, mandatory = false,
-      unspecifiedDefaultValue = "",
-      help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  public Result destroyIndex(
+      @CliOption(key = CliStrings.DESTROY_INDEX__NAME, unspecifiedDefaultValue = "",
+          help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = CliStrings.DESTROY_INDEX__REGION, mandatory = false,
           optionContext = ConverterHint.REGION_PATH,
@@ -341,18 +343,11 @@ public class IndexCommands implements GfshCommand {
           CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
     }
 
-    String regionName = null;
     final Cache cache = CacheFactory.getAnyInstance();
-
-    // If a regionName is specified, then authorize data manage on the regionName, otherwise, it
-    // requires data manage permission on all regions
-    if (StringUtils.isNotBlank(regionPath)) {
+    String regionName = null;
+    if (regionPath != null) {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
-      getCache().getSecurityService().authorizeRegionManage(regionName);
-    } else {
-      getCache().getSecurityService().authorizeDataManage();
     }
-
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
     Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
 
@@ -455,6 +450,8 @@ public class IndexCommands implements GfshCommand {
   @CliMetaData(shellOnly = false,
       relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result defineIndex(@CliOption(key = CliStrings.DEFINE_INDEX_NAME, mandatory = true,
       help = CliStrings.DEFINE_INDEX__HELP) final String indexName,
 
@@ -471,8 +468,6 @@ public class IndexCommands implements GfshCommand {
 
     Result result = null;
     XmlEntity xmlEntity = null;
-
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
 
     int idxType = IndexInfo.RANGE_INDEX;
 
@@ -519,9 +514,9 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.CREATE_DEFINED_INDEXES, help = CliStrings.CREATE_DEFINED__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   // TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
@@ -625,9 +620,9 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.CLEAR_DEFINED_INDEXES, help = CliStrings.CLEAR_DEFINED__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   // TODO : Add optionContext for indexName
   public Result clearDefinedIndexes() {
     indexDefinitions.clear();
