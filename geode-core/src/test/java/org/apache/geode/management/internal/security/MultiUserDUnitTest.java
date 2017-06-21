@@ -18,12 +18,21 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.json.JSONException;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.HeadlessGfsh;
-import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -32,67 +41,62 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule.PortType;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.Member;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.awaitility.Awaitility;
-import org.json.JSONException;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class MultiUserDUnitTest extends CliCommandTestBase {
+public class MultiUserDUnitTest {
+
+  @Rule
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+
+  private Member server;
+
+  @Before
+  public void setup() throws Exception {
+    Properties properties = new Properties();
+    properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
+    properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    properties.put("security-json",
+        "org/apache/geode/management/internal/security/cacheServer.json");
+    server = lsRule.startServerAsJmxManager(0, properties);
+  }
 
   @Category(FlakyTest.class) // GEODE-1579
   @Test
   public void testMultiUser() throws IOException, JSONException, InterruptedException {
+
     IgnoredException.addIgnoredException("java.util.zip.ZipException: zip file is empty");
-
-    Properties properties = new Properties();
-    properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
-    properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
-
-    // set up vm_0 the secure jmx manager
-    Object[] results = setUpJMXManagerOnVM(0, properties,
-        "org/apache/geode/management/internal/security/cacheServer.json");
-    String gfshDir = this.gfshDir;
+    int jmxPort = server.getJmxPort();
 
     // set up vm_1 as a gfsh vm, data-reader will login and log out constantly in this vm until the
     // test is done.
     VM vm1 = Host.getHost(0).getVM(1);
     AsyncInvocation vm1Invoke = vm1.invokeAsync("run as data-reader", () -> {
-      String shellId = getClass().getSimpleName() + "_vm1";
-      HeadlessGfsh shell = new HeadlessGfsh(shellId, 30, gfshDir);
-      while (true) {
-        connect((String) results[0], (Integer) results[1], (Integer) results[2], shell,
-            "data-reader", "1234567");
-        Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
-        shell.executeCommand("disconnect");
-      }
+      GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "data-reader", "1234567");
+
+      Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
+      gfsh.close();
     });
 
     VM vm2 = Host.getHost(0).getVM(2);
     // set up vm_2 as a gfsh vm, and then connect as "stranger" and try to execute the commands and
     // assert errors comes back are NotAuthorized
     AsyncInvocation vm2Invoke = vm2.invokeAsync("run as guest", () -> {
-      String shellId = getClass().getSimpleName() + "_vm2";
-      HeadlessGfsh shell = new HeadlessGfsh(shellId, 30, gfshDir);
-      connect((String) results[0], (Integer) results[1], (Integer) results[2], shell, "stranger",
-          "1234567");
+      GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "stranger", "1234567");
 
-      List<TestCommand> allCommands = TestCommand.getCommands();
+      List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-        if (command.getPermission() == null) {
-          continue;
-        }
 
-        CommandResult result = executeCommand(shell, command.getCommand());
+        CommandResult result = gfsh.executeCommand(command.getCommand());
 
         int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
 
@@ -106,11 +110,9 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
         assertEquals("Not an expected result: " + result.toString(),
             ResultBuilder.ERRORCODE_UNAUTHORIZED,
             ((ErrorResultData) result.getResultData()).getErrorCode());
-        String resultMessage = result.getContent().toString();
-        String permString = command.getPermission().toString();
-        assertTrue(resultMessage + " does not contain " + permString,
-            resultMessage.contains(permString));
+
       }
+      gfsh.close();
       LogService.getLogger().info("vm 2 done!");
     });
 
@@ -123,28 +125,22 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
     // set up vm_3 as another gfsh vm, and then connect as "super-user" and try to execute the
     // commands and assert we don't get a NotAuthorized Exception
     AsyncInvocation vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
-      String shellId = getClass().getSimpleName() + "_vm3";
-      HeadlessGfsh shell = new HeadlessGfsh(shellId, 30, gfshDir);
-      connect((String) results[0], (Integer) results[1], (Integer) results[2], shell, "super-user",
-          "1234567");
+      GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "super-user", "1234567");
 
-      List<TestCommand> allCommands = TestCommand.getCommands();
+      List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-        if (command.getPermission() == null) {
-          continue;
-        }
 
-        CommandResult result = executeCommand(shell, command.getCommand());
+        CommandResult result = gfsh.executeCommand(command.getCommand());
         if (result.getResultData().getStatus() == Status.OK) {
           continue;
         }
-
         assertNotEquals("Did not expect an Unauthorized exception: " + result.toString(),
             ResultBuilder.ERRORCODE_UNAUTHORIZED,
             ((ErrorResultData) result.getResultData()).getErrorCode());
       }
-
+      gfsh.close();
       LogService.getLogger().info("vm 3 done!");
     });
 

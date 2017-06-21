@@ -14,17 +14,9 @@
  */
 package org.apache.geode.management.internal.security;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Target;
-
 import java.io.ObjectInputStream;
 import java.util.Set;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -50,6 +42,16 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
@@ -217,15 +219,13 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     ResourcePermission ctx = getOperationContext(name, operationName, true);
     this.securityService.authorize(ctx);
 
-    Object result = mbs.invoke(name, operationName, params, signature);
-
-    return result;
+    return mbs.invoke(name, operationName, params, signature);
   }
 
   // TODO: cache this
   private ResourcePermission getOperationContext(ObjectName objectName, String featureName,
       boolean isOp) throws InstanceNotFoundException, ReflectionException {
-    MBeanInfo beanInfo = null;
+    MBeanInfo beanInfo;
     try {
       beanInfo = mbs.getMBeanInfo(objectName);
     } catch (IntrospectionException e) {
@@ -238,7 +238,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     // find the context in the beanInfo if defined in the class level
     result = getOperationContext(beanInfo.getDescriptor(), result);
 
-    MBeanFeatureInfo[] featureInfos = null;
+    MBeanFeatureInfo[] featureInfos;
     if (isOp) {
       featureInfos = beanInfo.getOperations();
     } else {
@@ -262,8 +262,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     String targetCode = (String) descriptor.getFieldValue("target");
     if (resource != null && operationCode != null) {
       if (StringUtils.isBlank(targetCode)) {
-        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
-            targetCode);
+        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode));
       } else {
         return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
             Target.valueOf(targetCode).getName());
@@ -358,21 +357,20 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
 
   @SuppressWarnings("deprecation")
   @Override
-  public ObjectInputStream deserialize(ObjectName name, byte[] data)
-      throws InstanceNotFoundException, OperationsException {
+  public ObjectInputStream deserialize(ObjectName name, byte[] data) throws OperationsException {
     return mbs.deserialize(name, data);
   }
 
   @Override
   public ObjectInputStream deserialize(String className, byte[] data)
       throws OperationsException, ReflectionException {
-    return deserialize(className, data);
+    return mbs.deserialize(className, data);
   }
 
   @SuppressWarnings("deprecation")
   @Override
   public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data)
-      throws InstanceNotFoundException, OperationsException, ReflectionException {
+      throws OperationsException, ReflectionException {
     return mbs.deserialize(className, loaderName, data);
   }
 

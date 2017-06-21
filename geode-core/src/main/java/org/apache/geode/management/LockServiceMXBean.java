@@ -35,53 +35,53 @@ public interface LockServiceMXBean {
   /**
    * Returns the name of the lock service.
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns whether this is a distributed LockService.
    *
    * @return True is this is a distributed LockService, false otherwise.
    */
-  public boolean isDistributed();
+  boolean isDistributed();
 
   /**
    * Returns the number of members using this LockService.
    */
-  public int getMemberCount();
+  int getMemberCount();
 
   /**
    * Returns of the name of the member which grants the lock.
    */
-  public String fetchGrantorMember();
+  String fetchGrantorMember();
 
   /**
    * Returns a list of names of the members using this LockService.
    */
-  public String[] getMemberNames();
+  String[] getMemberNames();
 
   /**
    * Returns whether this member is the granter.
    * 
    * @return True if this member is the granter, false otherwise.
    */
-  public boolean isLockGrantor();
+  boolean isLockGrantor();
 
 
   /**
    * Requests that this member become the granter.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void becomeLockGrantor();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
+  void becomeLockGrantor();
 
   /**
    * Returns a map of the names of the objects being locked on and the names of the threads holding
    * the locks.
    */
-  public Map<String, String> listThreadsHoldingLock();
+  Map<String, String> listThreadsHoldingLock();
 
   /**
    * Returns a list of names of the locks held by this member's threads.
    */
-  public String[] listHeldLocks();
+  String[] listHeldLocks();
 
 }

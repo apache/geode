@@ -20,19 +20,20 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
+
+import org.junit.rules.ExternalResource;
+import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 
 /**
@@ -118,6 +119,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   public MemberVM startServerAsJmxManager(int index) throws IOException {
     Properties properties = new Properties();
+    return startServerAsJmxManager(index, properties);
+  }
+
+  public MemberVM startServerAsJmxManager(int index, Properties properties) throws IOException {
     properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
     return startServerVM(index, properties, -1);
   }
