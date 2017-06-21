@@ -15,9 +15,11 @@
 package org.apache.geode.management.internal.security;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.shiro.authz.Permission;
 
 import org.apache.geode.security.ResourcePermission;
