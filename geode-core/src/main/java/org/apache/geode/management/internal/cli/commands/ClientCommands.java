@@ -14,7 +14,19 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.CacheFactory;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.management.ObjectName;
+
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -25,30 +37,16 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.functions.ContunuousQueryFunction;
-import org.apache.geode.management.internal.cli.functions.ContunuousQueryFunction.ClientInfo;
+import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction;
+import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction.ClientInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import javax.management.ObjectName;
 
 /**
  * @since GemFire 8.0
@@ -59,7 +57,7 @@ public class ClientCommands implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listClient() {
-    Result result = null;
+    Result result;
 
     try {
       CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
@@ -78,7 +76,7 @@ public class ClientCommands implements GfshCommand {
             CliStrings.format(CliStrings.LIST_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
       }
 
-      Map<String, List<String>> clientServerMap = new HashMap<String, List<String>>();
+      Map<String, List<String>> clientServerMap = new HashMap<>();
 
       for (ObjectName objName : cacheServers) {
         CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
@@ -89,16 +87,16 @@ public class ClientCommands implements GfshCommand {
         }
 
 
-        for (String clietName : listOfClient) {
+        for (String clientName : listOfClient) {
           String serverDetails = "member=" + objName.getKeyProperty("member") + ",port="
               + objName.getKeyProperty("port");
-          if (clientServerMap.containsKey(clietName)) {
-            List<String> listServers = clientServerMap.get(clietName);
+          if (clientServerMap.containsKey(clientName)) {
+            List<String> listServers = clientServerMap.get(clientName);
             listServers.add(serverDetails);
           } else {
-            List<String> listServer = new ArrayList<String>();
+            List<String> listServer = new ArrayList<>();
             listServer.add(serverDetails);
-            clientServerMap.put(clietName, listServer);
+            clientServerMap.put(clientName, listServer);
           }
         }
       }
@@ -109,12 +107,10 @@ public class ClientCommands implements GfshCommand {
       }
 
       String memberSeparator = ";  ";
-      Iterator<Entry<String, List<String>>> it = clientServerMap.entrySet().iterator();
 
-      while (it.hasNext()) {
-        Map.Entry<String, List<String>> pairs = (Map.Entry<String, List<String>>) it.next();
-        String client = (String) pairs.getKey();
-        List<String> servers = (List<String>) pairs.getValue();
+      for (Entry<String, List<String>> pairs : clientServerMap.entrySet()) {
+        String client = pairs.getKey();
+        List<String> servers = pairs.getValue();
         StringBuilder serverListForClient = new StringBuilder();
         int serversSize = servers.size();
         int i = 0;
@@ -148,7 +144,7 @@ public class ClientCommands implements GfshCommand {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeClient(@CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true,
       help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) {
-    Result result = null;
+    Result result;
 
     if (clientId.startsWith("\"")) {
       clientId = clientId.substring(1);
@@ -179,7 +175,7 @@ public class ClientCommands implements GfshCommand {
       for (ObjectName objName : cacheServers) {
         CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
         List<String> listOfClient =
-            new ArrayList<String>(Arrays.asList((String[]) serverMbean.getClientIds()));
+            new ArrayList<>(Arrays.asList((String[]) serverMbean.getClientIds()));
         if (listOfClient.contains(clientId)) {
           if (clientHealthStatus == null) {
             try {
@@ -204,17 +200,17 @@ public class ClientCommands implements GfshCommand {
 
       Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
       String isDurable = null;
-      List<String> primaryServers = new ArrayList<String>();
-      List<String> secondaryServers = new ArrayList<String>();
+      List<String> primaryServers = new ArrayList<>();
+      List<String> secondaryServers = new ArrayList<>();
 
       if (dsMembers.size() > 0) {
-        ContunuousQueryFunction contunuousQueryFunction = new ContunuousQueryFunction();
-        FunctionService.registerFunction(contunuousQueryFunction);
+        ContinuousQueryFunction continuousQueryFunction = new ContinuousQueryFunction();
+        FunctionService.registerFunction(continuousQueryFunction);
         List<?> resultList = (List<?>) CliUtil
-            .executeFunction(contunuousQueryFunction, clientId, dsMembers).getResult();
-        for (int i = 0; i < resultList.size(); i++) {
+            .executeFunction(continuousQueryFunction, clientId, dsMembers).getResult();
+        for (Object aResultList : resultList) {
           try {
-            Object object = resultList.get(i);
+            Object object = aResultList;
             if (object instanceof Throwable) {
               LogWrapper.getInstance().warning(
                   "Exception in Describe Client " + ((Throwable) object).getMessage(),
@@ -261,11 +257,11 @@ public class ClientCommands implements GfshCommand {
       }
     } catch (Exception e) {
       LogWrapper.getInstance()
-          .info("Error in decribe clients. stack trace" + CliUtil.stackTraceAsString(e));
+          .info("Error in describe clients. stack trace" + CliUtil.stackTraceAsString(e));
       result = ResultBuilder.createGemFireErrorResult(CliStrings
           .format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0, e.getMessage()));
     }
-    LogWrapper.getInstance().info("decribe client result " + result);
+    LogWrapper.getInstance().info("describe client result " + result);
     return result;
   }
 
@@ -309,29 +305,27 @@ public class ClientCommands implements GfshCommand {
       Map<String, String> poolStats = clientHealthStatus.getPoolStats();
 
       if (poolStats.size() > 0) {
-        Iterator<Entry<String, String>> it = poolStats.entrySet().iterator();
-        while (it.hasNext()) {
-          Entry<String, String> entry = it.next();
+        for (Entry<String, String> entry : poolStats.entrySet()) {
           TabularResultData poolStatsResultTable =
               sectionResult.addTable("Pool Stats For Pool Name = " + entry.getKey());
           poolStatsResultTable.setHeader("Pool Stats For Pool Name = " + entry.getKey());
           String poolStatsStr = entry.getValue();
           String str[] = poolStatsStr.split(";");
 
-          LogWrapper.getInstance().info("decribe client clientHealthStatus min conn="
+          LogWrapper.getInstance().info("describe client clientHealthStatus min conn="
               + str[0].substring(str[0].indexOf("=") + 1));
-          LogWrapper.getInstance().info("decribe client clientHealthStatus max conn ="
+          LogWrapper.getInstance().info("describe client clientHealthStatus max conn ="
               + str[1].substring(str[1].indexOf("=") + 1));
-          LogWrapper.getInstance().info("decribe client clientHealthStatus redundancy ="
+          LogWrapper.getInstance().info("describe client clientHealthStatus redundancy ="
               + str[2].substring(str[2].indexOf("=") + 1));
-          LogWrapper.getInstance().info("decribe client clientHealthStatus CQs ="
+          LogWrapper.getInstance().info("describe client clientHealthStatus CQs ="
               + str[3].substring(str[3].indexOf("=") + 1));
 
           poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_MIN_CONN,
               str[0].substring(str[0].indexOf("=") + 1));
           poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_MAX_CONN,
               str[1].substring(str[1].indexOf("=") + 1));
-          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_REDUDANCY,
+          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_REDUNDANCY,
               str[2].substring(str[2].indexOf("=") + 1));
           poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_CQs,
               str[3].substring(str[3].indexOf("=") + 1));

@@ -15,8 +15,17 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.commons.io.FileUtils.ONE_MB;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -42,15 +51,9 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.apache.geode.security.ResourcePermission.Target;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
 
 /**
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
@@ -76,6 +79,7 @@ public class DeployCommands implements GfshCommand {
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE, target = Target.JAR)
   public Result deploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
@@ -86,11 +90,7 @@ public class DeployCommands implements GfshCommand {
 
       // since deploy function can potentially do a lot of damage to security, this action should
       // require these following privileges
-      SecurityService securityService = getCache().getSecurityService();
-      securityService.authorizeClusterManage();
-      securityService.authorizeClusterWrite();
-      securityService.authorizeDataManage();
-      securityService.authorizeDataWrite();
+      SecurityService securityService = getSecurityService();
 
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
@@ -155,13 +155,13 @@ public class DeployCommands implements GfshCommand {
    */
   @CliCommand(value = {CliStrings.UNDEPLOY}, help = CliStrings.UNDEPLOY__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE, target = Target.JAR)
   public Result undeploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.UNDEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, help = CliStrings.UNDEPLOY__JAR__HELP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String[] jars) {
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
+          help = CliStrings.UNDEPLOY__JAR__HELP) String[] jars) {
 
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
@@ -289,7 +289,7 @@ public class DeployCommands implements GfshCommand {
     public Result preExecution(GfshParseResult parseResult) {
       // 2nd argument is the jar
       String[] jars = (String[]) parseResult.getArguments()[1];
-      // 3rd arguemnt is the dir
+      // 3rd argument is the dir
       String dir = (String) parseResult.getArguments()[2];
 
       if (ArrayUtils.isEmpty(jars) && StringUtils.isBlank(dir)) {

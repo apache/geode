@@ -20,6 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.json.JSONException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
@@ -35,15 +45,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.awaitility.Awaitility;
-import org.json.JSONException;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class MultiUserDUnitTest extends CliCommandTestBase {
@@ -88,7 +89,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
       List<TestCommand> allCommands = TestCommand.getCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-        if (command.getPermission() == null) {
+        if (command.getPermissions() == null) {
           continue;
         }
 
@@ -107,7 +108,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
             ResultBuilder.ERRORCODE_UNAUTHORIZED,
             ((ErrorResultData) result.getResultData()).getErrorCode());
         String resultMessage = result.getContent().toString();
-        String permString = command.getPermission().toString();
+        String permString = command.getPermissions().toString();
         assertTrue(resultMessage + " does not contain " + permString,
             resultMessage.contains(permString));
       }
@@ -131,7 +132,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
       List<TestCommand> allCommands = TestCommand.getCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-        if (command.getPermission() == null) {
+        if (command.getPermissions() == null) {
           continue;
         }
 

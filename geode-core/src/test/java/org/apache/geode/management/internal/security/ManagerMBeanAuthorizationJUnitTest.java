@@ -15,8 +15,19 @@
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+
+import java.lang.management.ManagementFactory;
+
+import javax.management.ObjectName;
+
+import org.assertj.core.api.SoftAssertions;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.ManagerMXBean;
 import org.apache.geode.management.internal.beans.ManagerMBean;
@@ -26,15 +37,6 @@ import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.lang.management.ManagementFactory;
-import javax.management.ObjectName;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class ManagerMBeanAuthorizationJUnitTest {
@@ -76,10 +78,14 @@ public class ManagerMBeanAuthorizationJUnitTest {
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> managerMXBean.start())
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> managerMXBean.start())
         .hasMessageContaining(TestCommand.clusterManage.toString());
-    assertThatThrownBy(() -> managerMXBean.getPulseURL())
+    softly.assertThatThrownBy(() -> managerMXBean.getPulseURL())
         .hasMessageContaining(TestCommand.clusterWrite.toString());
+
+    softly.assertAll();
     managerMXBean.isRunning();
   }
 }
