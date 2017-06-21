@@ -49,7 +49,13 @@ public class CreateAlterDestroyRegionCommandsTest {
     doReturn(cache).when(spy).getCache();
     doReturn(dsMBean).when(spy).getDSMBean(cache);
 
-    parser.executeLastCommandWithInstance(spy);
+    // ignore the exception when using the spy to execute because we only want to catch the
+    // parameter
+    // and re-execute the validateRegionFunctionArgs method again.
+    try {
+      parser.executeLastCommandWithInstance(spy);
+    } catch (Exception ignore) {
+    }
 
     ArgumentCaptor<RegionFunctionArgs> argsCaptor =
         ArgumentCaptor.forClass(RegionFunctionArgs.class);
