@@ -2357,7 +2357,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (this.queryMonitor != null) {
           this.queryMonitor.stopMonitoring();
         }
-        stopDiskStoreTaskPool();
 
       } finally {
         // NO DISTRIBUTED MESSAGING CAN BE DONE HERE!
@@ -2475,16 +2474,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Used to guard access to compactorPool and set to true when cache is shutdown.
-   */
-  private final AtomicBoolean diskStoreTaskSync = new AtomicBoolean(false);
-
-  /**
-   * Lazily initialized. TODO: this is always null
-   */
-  private ThreadPoolExecutor diskStoreTaskPool = null;
-
   private final ConcurrentMap<String, DiskStoreImpl> diskStores = new ConcurrentHashMap<>();
 
   private final ConcurrentMap<String, DiskStoreImpl> regionOwnedDiskStores =
@@ -2591,23 +2580,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     allDiskStores.addAll(this.diskStores.values());
     allDiskStores.addAll(this.regionOwnedDiskStores.values());
     return allDiskStores;
-  }
-
-  private void stopDiskStoreTaskPool() {
-    synchronized (this.diskStoreTaskSync) {
-      this.diskStoreTaskSync.set(true);
-      // All the regions have already been closed
-      // so this pool shouldn't be doing anything.
-      if (this.diskStoreTaskPool != null) {
-        List<Runnable> listOfRunnables = this.diskStoreTaskPool.shutdownNow();
-        for (Runnable runnable : listOfRunnables) {
-          // TODO: fix this for-loop and the one in DiskStoreImpl
-          if (listOfRunnables instanceof DiskStoreTask) {
-            ((DiskStoreTask) listOfRunnables).taskCancelled();
-          }
-        }
-      }
-    }
   }
 
   private void stopServers() {
