@@ -66,8 +66,8 @@ public class RegionCommands implements GfshCommand {
       new GetRegionDescriptionFunction();
 
   @CliCommand(value = {CliStrings.LIST_REGION}, help = CliStrings.LIST_REGION__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listRegion(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,

@@ -192,8 +192,9 @@ public class DurableClientCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.CLOSE_DURABLE_CLIENTS,
       help = CliStrings.CLOSE_DURABLE_CLIENTS__HELP)
-  @CliMetaData(shellOnly = false)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData()
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result closeDurableClient(
       @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP) final String durableClientId,
@@ -229,8 +230,9 @@ public class DurableClientCommands implements GfshCommand {
 
 
   @CliCommand(value = CliStrings.CLOSE_DURABLE_CQS, help = CliStrings.CLOSE_DURABLE_CQS__HELP)
-  @CliMetaData(shellOnly = false)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData()
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result closeDurableCqs(@CliOption(key = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID,
       mandatory = true,
       help = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID__HELP) final String durableClientId,

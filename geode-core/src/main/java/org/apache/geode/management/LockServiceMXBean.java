@@ -70,8 +70,8 @@ public interface LockServiceMXBean {
   /**
    * Requests that this member become the granter.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void becomeLockGrantor();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
+  void becomeLockGrantor();
 
   /**
    * Returns a map of the names of the objects being locked on and the names of the threads holding

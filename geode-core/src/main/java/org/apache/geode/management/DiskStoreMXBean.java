@@ -150,8 +150,9 @@ public interface DiskStoreMXBean {
    * compaction is true then the application will wait for the other op-logs to be compacted and
    * additional space is available.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void forceRoll();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  void forceRoll();
 
   /**
    * Requests the DiskStore to start compacting. The compaction is done even if automatic compaction
@@ -162,15 +163,17 @@ public interface DiskStoreMXBean {
    * @return True if one or more op-logs were compacted or false to indicate that no op-logs were
    *         ready to be compacted or that a compaction was already in progress.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public boolean forceCompaction();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  boolean forceCompaction();
 
   /**
    * Causes any data that is currently in the asynchronous queue to be written to disk. Does not
    * return until the flush is complete.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void flush();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  void flush();
 
   /**
    * Returns the warning threshold for disk usage as a percentage of the total disk volume.
@@ -193,14 +196,16 @@ public interface DiskStoreMXBean {
    * 
    * @param warningPercent the warning percent
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void setDiskUsageWarningPercentage(float warningPercent);
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  void setDiskUsageWarningPercentage(float warningPercent);
 
   /**
    * Sets the value of the disk usage critical percentage.
    * 
    * @param criticalPercent the critical percent
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void setDiskUsageCriticalPercentage(float criticalPercent);
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  void setDiskUsageCriticalPercentage(float criticalPercent);
 }

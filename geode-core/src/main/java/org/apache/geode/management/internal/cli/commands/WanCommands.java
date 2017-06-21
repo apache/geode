@@ -70,7 +70,8 @@ public class WanCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result createGatewaySender(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
@@ -185,7 +186,8 @@ public class WanCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result startGatewaySender(@CliOption(key = CliStrings.START_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.START_GATEWAYSENDER__ID__HELP) String senderId,
@@ -308,7 +310,8 @@ public class WanCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.PAUSE_GATEWAYSENDER, help = CliStrings.PAUSE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result pauseGatewaySender(@CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.PAUSE_GATEWAYSENDER__ID__HELP) String senderId,
@@ -381,7 +384,8 @@ public class WanCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.RESUME_GATEWAYSENDER, help = CliStrings.RESUME_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result resumeGatewaySender(@CliOption(key = CliStrings.RESUME_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.RESUME_GATEWAYSENDER__ID__HELP) String senderId,
@@ -453,7 +457,8 @@ public class WanCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result stopGatewaySender(@CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.STOP_GATEWAYSENDER__ID__HELP) String senderId,
@@ -521,7 +526,8 @@ public class WanCommands implements GfshCommand {
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER,
       help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result createGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
@@ -604,7 +610,8 @@ public class WanCommands implements GfshCommand {
   @CliCommand(value = CliStrings.LOAD_BALANCE_GATEWAYSENDER,
       help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result loadBalanceGatewaySender(@CliOption(key = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID__HELP) String senderId) {
@@ -663,7 +670,8 @@ public class WanCommands implements GfshCommand {
   @CliCommand(value = CliStrings.START_GATEWAYRECEIVER,
       help = CliStrings.START_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result startGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
@@ -728,7 +736,8 @@ public class WanCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYRECEIVER, help = CliStrings.STOP_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result stopGatewayReceiver(
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
@@ -992,7 +1001,8 @@ public class WanCommands implements GfshCommand {
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
       help = CliStrings.DESTROY_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   public Result destroyGatewaySender(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,

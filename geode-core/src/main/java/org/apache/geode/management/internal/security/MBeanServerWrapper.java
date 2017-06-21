@@ -264,8 +264,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     String targetCode = (String) descriptor.getFieldValue("target");
     if (resource != null && operationCode != null) {
       if (StringUtils.isBlank(targetCode)) {
-        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
-            targetCode);
+        return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode));
       } else {
         return new ResourcePermission(Resource.valueOf(resource), Operation.valueOf(operationCode),
             Target.valueOf(targetCode).getName());

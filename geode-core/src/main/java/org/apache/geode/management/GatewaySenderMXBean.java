@@ -166,32 +166,37 @@ public interface GatewaySenderMXBean {
    * changed.
    * 
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void start();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void start();
 
   /**
    * Stops this GatewaySender.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void stop();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void stop();
 
   /**
    * Pauses this GatewaySender.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void pause();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void pause();
 
   /**
    * Resumes this paused GatewaySender.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void resume();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void resume();
 
   /**
    * Rebalances this GatewaySender.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void rebalance();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void rebalance();
 
   /**
    * Returns whether this GatewaySender is primary or secondary.

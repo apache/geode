@@ -104,6 +104,10 @@ public interface GfshCommand extends CommandMarker {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
 
+  default SecurityService getSecurityService() {
+    return getCache().getSecurityService();
+  }
+
   default Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
   }

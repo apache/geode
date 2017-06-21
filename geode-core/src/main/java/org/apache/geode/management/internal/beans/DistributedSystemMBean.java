@@ -53,6 +53,8 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   @Override
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception {
+    SecurityServiceFactory.findSecurityService().authorize(Resource.CLUSTER, Operation.WRITE,
+        Target.DISK);
     return bridge.backupAllMembers(targetDirPath, baselineDirPath);
 
   }

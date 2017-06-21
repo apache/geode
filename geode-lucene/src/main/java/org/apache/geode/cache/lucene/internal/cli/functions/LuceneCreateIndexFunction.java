@@ -93,6 +93,11 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       }
 
       REGION_PATH.validateName(indexInfo.getRegionPath());
+
+      // Every lucene index potentially writes to disk.
+      ((InternalCache) cache).getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE,
+          Target.DISK);
+
       indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
 
       // TODO - update cluster configuration by returning a valid XmlEntity
