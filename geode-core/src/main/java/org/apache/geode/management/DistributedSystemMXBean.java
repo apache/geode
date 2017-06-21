@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import java.util.Map;
+
 import javax.management.ObjectName;
 
 import org.apache.geode.cache.DiskStore;
@@ -24,6 +25,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management operations for a
