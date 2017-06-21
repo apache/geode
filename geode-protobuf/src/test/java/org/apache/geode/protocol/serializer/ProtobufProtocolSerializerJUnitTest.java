@@ -14,7 +14,7 @@
  */
 package org.apache.geode.protocol.serializer;
 
-import org.apache.geode.client.protocol.MessageUtil;
+import org.apache.geode.protocol.MessageUtil;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.ClientProtocol;

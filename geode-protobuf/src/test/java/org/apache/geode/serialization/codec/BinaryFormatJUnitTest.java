@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 import java.nio.charset.Charset;
 
 @Category(UnitTest.class)
-public class StringCodecJUnitTest {
+public class BinaryFormatJUnitTest {
   private static final Charset UTF8 = Charset.forName("UTF-8");
   private static final Charset UTF16 = Charset.forName("UTF-16");
   private String testString = "Test String";
@@ -39,25 +39,25 @@ public class StringCodecJUnitTest {
   }
 
   @Test
-  public void testStringEncoding() {
+  public void testStringsUseUTF8Encoding() {
     assertArrayEquals(testString.getBytes(UTF8), stringCodec.encode(testString));
   }
 
   @Test
-  public void testStringIncompatibleEncoding() {
+  public void testStringDontUseUTF16Encoding() {
     byte[] expectedEncodedString = stringCodec.encode(testString);
     byte[] incorrectEncodedString = testString.getBytes(UTF16);
     assertNotEquals(expectedEncodedString.length, incorrectEncodedString.length);
   }
 
   @Test
-  public void testStringDecodingWithIncorrectEncodedString() {
+  public void testImproperlyEncodedStringDecodingFails() {
     byte[] encodedString = testString.getBytes(UTF16);
     assertNotEquals(testString, stringCodec.decode(encodedString));
   }
 
   @Test
-  public void testStringDecoding() {
+  public void testProperlyEncodedStringDecoding() {
     byte[] encodedString = testString.getBytes(UTF8);
     assertEquals(testString, stringCodec.decode(encodedString));
   }

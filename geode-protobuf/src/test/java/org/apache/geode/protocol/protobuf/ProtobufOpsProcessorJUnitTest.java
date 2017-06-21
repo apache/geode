@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
-public class ProtobufOpsProcessorTest {
+public class ProtobufOpsProcessorJUnitTest {
   @Test
   public void testOpsProcessor() throws TypeEncodingException,
       OperationHandlerNotRegisteredException, InvalidProtocolMessageException {

@@ -21,31 +21,84 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
-public class ProtobufSerializationServiceImplTest {
+public class ProtobufSerializationServiceJUnitTest {
 
   public static final String PAYLOAD = "my value";
+  private ProtobufSerializationService protobufSerializationService;
+
+  @Before
+  public void setup() throws CodecAlreadyRegisteredForTypeException {
+    protobufSerializationService = new ProtobufSerializationService();
+  }
 
   @Test
-  public void valuesPreservedByEncodingThenDecoding() throws CodecAlreadyRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    ProtobufSerializationService protobufSerializationService = new ProtobufSerializationService();
-
+  public void stringValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.STRING, "testString");
+  }
+
+  @Test
+  public void floatValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.FLOAT, (float) 34.23);
+  }
+
+  @Test
+  public void doubleValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.DOUBLE, 34.23);
+  }
+
+  @Test
+  public void intValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.INT, 45);
+  }
+
+  @Test
+  public void shortValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.SHORT, (short) 45);
+  }
+
+  @Test
+  public void byteValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.BYTE, (byte) 45);
+  }
+
+  @Test
+  public void longValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.LONG, (long) 45);
+  }
+
+  @Test
+  public void booleanValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.BOOLEAN, false);
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.BOOLEAN, true);
+  }
+
+  @Test
+  public void binaryValuesPreservedByEncodingThenDecoding()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException {
     testEncodeDecode(protobufSerializationService, BasicTypes.EncodingType.BINARY,
         "testString".getBytes());
-    // TODO: Test JSON conversion
   }
 
   private void testEncodeDecode(ProtobufSerializationService service,

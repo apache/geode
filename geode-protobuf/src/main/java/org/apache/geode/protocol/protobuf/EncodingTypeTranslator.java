@@ -20,10 +20,28 @@ import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 
+import java.util.HashMap;
+
 /**
  * This class maps protobuf specific encoding types and the corresponding serialization types.
  */
 public abstract class EncodingTypeTranslator {
+  static final HashMap<Class, BasicTypes.EncodingType> typeToEncodingMap = intializeTypeMap();
+
+  private static HashMap<Class, BasicTypes.EncodingType> intializeTypeMap() {
+    HashMap<Class, BasicTypes.EncodingType> result = new HashMap<>();
+    result.put(Integer.class, BasicTypes.EncodingType.INT);
+    result.put(Byte.class, BasicTypes.EncodingType.BYTE);
+    result.put(Long.class, BasicTypes.EncodingType.LONG);
+    result.put(Float.class, BasicTypes.EncodingType.FLOAT);
+    result.put(Short.class, BasicTypes.EncodingType.SHORT);
+    result.put(byte[].class, BasicTypes.EncodingType.BINARY);
+    result.put(Double.class, BasicTypes.EncodingType.DOUBLE);
+    result.put(String.class, BasicTypes.EncodingType.STRING);
+    result.put(Boolean.class, BasicTypes.EncodingType.BOOLEAN);
+    return result;
+  }
+
   public static SerializationType getSerializationTypeForEncodingType(
       BasicTypes.EncodingType encodingType) throws UnsupportedEncodingTypeException {
     switch (encodingType) {
@@ -55,32 +73,19 @@ public abstract class EncodingTypeTranslator {
 
   public static BasicTypes.EncodingType getEncodingTypeForObject(Object resultValue)
       throws UnsupportedEncodingTypeException {
-    if (resultValue instanceof Integer) {
-      return BasicTypes.EncodingType.INT;
-    } else if (resultValue instanceof Byte) {
-      return BasicTypes.EncodingType.BYTE;
-    } else if (resultValue instanceof PdxInstance) {
+    if (resultValue instanceof PdxInstance) {
       String pdxClassName = ((PdxInstance) resultValue).getClassName();
       if (pdxClassName.equals(JSONFormatter.JSON_CLASSNAME)) {
         return BasicTypes.EncodingType.JSON;
       }
-    } else if (resultValue instanceof Long) {
-      return BasicTypes.EncodingType.LONG;
-    } else if (resultValue instanceof Float) {
-      return BasicTypes.EncodingType.FLOAT;
-    } else if (resultValue instanceof Short) {
-      return BasicTypes.EncodingType.SHORT;
-    } else if (resultValue instanceof byte[]) {
-      return BasicTypes.EncodingType.BINARY;
-    } else if (resultValue instanceof Double) {
-      return BasicTypes.EncodingType.DOUBLE;
-    } else if (resultValue instanceof String) {
-      return BasicTypes.EncodingType.STRING;
-    } else if (resultValue instanceof Boolean) {
-      return BasicTypes.EncodingType.BOOLEAN;
     }
 
-    throw new UnsupportedEncodingTypeException(
-        "We cannot translate: " + resultValue.getClass() + " into a specific Protobuf Encoding");
+    BasicTypes.EncodingType encodingType = typeToEncodingMap.get(resultValue.getClass());
+    if (encodingType == null) {
+      throw new UnsupportedEncodingTypeException(
+          "We cannot translate: " + resultValue.getClass() + " into a specific Protobuf Encoding");
+    } else {
+      return encodingType;
+    }
   }
 }

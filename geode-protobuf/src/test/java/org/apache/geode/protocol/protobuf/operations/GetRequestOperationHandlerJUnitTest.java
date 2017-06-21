@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.operations.protobuf;
+package org.apache.geode.protocol.protobuf.operations;
 
 import com.google.protobuf.ByteString;
 
@@ -24,6 +24,7 @@ import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.codec.StringCodec;
 import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
+import org.apache.geode.serialization.exception.TypeEncodingException;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.SerializationCodecRegistry;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
@@ -40,7 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
-public class GetRequestOperationHandlerTest {
+public class GetRequestOperationHandlerJUnitTest {
   public static final String TEST_KEY = "my key";
   public static final String TEST_VALUE = "my value";
   public static final String TEST_REGION = "test region";
@@ -63,8 +64,8 @@ public class GetRequestOperationHandlerTest {
   }
 
   @Test
-  public void processReturnsTheEncodedValueFromTheRegion() throws UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, CodecAlreadyRegisteredForTypeException {
+  public void processReturnsTheEncodedValueFromTheRegion()
+      throws TypeEncodingException, CodecAlreadyRegisteredForTypeException {
     GetRequestOperationHandler operationHandler = new GetRequestOperationHandler();
 
     RegionAPI.GetResponse response =

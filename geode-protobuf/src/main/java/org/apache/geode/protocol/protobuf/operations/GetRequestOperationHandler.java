@@ -23,6 +23,7 @@ import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
+import org.apache.geode.serialization.exception.TypeEncodingException;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
@@ -31,8 +32,7 @@ public class GetRequestOperationHandler
 
   @Override
   public RegionAPI.GetResponse process(SerializationService serializationService,
-      RegionAPI.GetRequest request, Cache cache)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+      RegionAPI.GetRequest request, Cache cache) throws TypeEncodingException {
     String regionName = request.getRegionName();
     BasicTypes.EncodedValue key = request.getKey();
     BasicTypes.EncodingType encodingType = key.getEncodingType();
@@ -42,6 +42,16 @@ public class GetRequestOperationHandler
     Region region = cache.getRegion(regionName);
     Object resultValue = region.get(decodedValue);
 
+    return buildGetResponse(serializationService, resultValue);
+  }
+
+  @Override
+  public int getOperationCode() {
+    return ClientProtocol.Request.RequestAPICase.GETREQUEST.getNumber();
+  }
+
+  private RegionAPI.GetResponse buildGetResponse(SerializationService serializationService,
+      Object resultValue) throws TypeEncodingException {
     BasicTypes.EncodingType resultEncodingType =
         EncodingTypeTranslator.getEncodingTypeForObject(resultValue);
     byte[] resultEncodedValue = serializationService.encode(resultEncodingType, resultValue);
@@ -49,10 +59,5 @@ public class GetRequestOperationHandler
     return RegionAPI.GetResponse.newBuilder()
         .setResult(ProtobufUtilities.getEncodedValue(resultEncodingType, resultEncodedValue))
         .build();
-  }
-
-  @Override
-  public int getOperationCode() {
-    return ClientProtocol.Request.RequestAPICase.GETREQUEST.getNumber();
   }
 }
