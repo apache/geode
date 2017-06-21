@@ -46,7 +46,9 @@ public class ServerConnectionFactoryIntegrationTest {
   @Test
   public void testNewProtocolHeaderLeadsToNewProtocolServerConnection() throws IOException {
     System.setProperty("geode.feature-protobuf-protocol", "true");
+
     CacheFactory cacheFactory = new CacheFactory();
+    cacheFactory.set("mcast-port","0"); //sometimes it isn't due to other tests.
     Cache cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
