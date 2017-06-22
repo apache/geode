@@ -1413,7 +1413,7 @@ public class JGroupsMessenger implements Messenger {
   public void initClusterKey() {
     if (encrypt != null) {
       try {
-        logger.debug("Initializing cluster key");
+        logger.info("Initializing cluster key");
         encrypt.initClusterSecretKey();
       } catch (Exception e) {
         throw new RuntimeException("unable to create cluster key ", e);
