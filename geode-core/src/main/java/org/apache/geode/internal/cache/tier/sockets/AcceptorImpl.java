@@ -1247,19 +1247,6 @@ public class AcceptorImpl extends Acceptor implements Runnable {
           }
         }
       } catch (IOException e) {
-        if (isRunning()) {
-          if (e instanceof SSLException) {
-            try {
-              // Try to send a proper rejection message
-              ServerHandShakeProcessor.refuse(s.getOutputStream(), e.toString(),
-                  HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
-            } catch (IOException ex) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("Bridge server: Unable to write SSL error");
-              }
-            }
-          }
-        }
         closeSocket(s);
         if (isRunning()) {
           if (!this.loggedAcceptError) {
@@ -1267,8 +1254,6 @@ public class AcceptorImpl extends Acceptor implements Runnable {
             logger.error(LocalizedMessage.create(
                 LocalizedStrings.AcceptorImpl_CACHE_SERVER_UNEXPECTED_IOEXCEPTION_FROM_ACCEPT, e));
           }
-          // Why sleep?
-          // try {Thread.sleep(3000);} catch (InterruptedException ie) {}
         }
       } catch (CancelException e) {
         closeSocket(s);
@@ -1315,6 +1300,17 @@ public class AcceptorImpl extends Acceptor implements Runnable {
                   logger.warn(LocalizedMessage.create(
                       LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION_DUE_TO_SOCKET_TIMEOUT));
                 } else {
+                  if (ex instanceof SSLException) {
+                    try {
+                      // Try to send a proper rejection message
+                      ServerHandShakeProcessor.refuse(s.getOutputStream(), ex.toString(),
+                          HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
+                    } catch (IOException e) {
+                      if (logger.isDebugEnabled()) {
+                        logger.debug("Bridge server: Unable to write SSL error");
+                      }
+                    }
+                  }
                   logger.warn(LocalizedMessage.create(
                       LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION__0,
                       ex), ex);
