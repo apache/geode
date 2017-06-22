@@ -771,12 +771,11 @@ public abstract class AbstractRegionMap implements RegionMap {
 
     if (owner instanceof HARegion && newValue instanceof CachedDeserializable) {
       Object actualVal = null;
+      CachedDeserializable newValueCd = (CachedDeserializable) newValue;
       try {
-        actualVal =
-            BlobHelper.deserializeBlob(((CachedDeserializable) newValue).getSerializedValue(),
-                sender.getVersionObject(), null);
-        newValue = CachedDeserializableFactory.create(actualVal,
-            ((CachedDeserializable) newValue).getValueSizeInBytes());
+        actualVal = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
+            sender.getVersionObject(), null);
+        newValue = new VMCachedDeserializable(actualVal, newValueCd.getSizeInBytes());
       } catch (IOException | ClassNotFoundException e) {
         throw new RuntimeException("Unable to deserialize HA event for region " + owner);
       }
@@ -809,8 +808,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 HARegionQueue.addClientCQsAndInterestList(oldMsg, haEventWrapper, haContainer,
                     owner.getName());
                 haEventWrapper.setClientUpdateMessage(null);
-                newValue = CachedDeserializableFactory.create(original,
-                    ((CachedDeserializable) newValue).getSizeInBytes());
+                newValue = new VMCachedDeserializable(original, newValueCd.getSizeInBytes());
               } else {
                 original = null;
               }
