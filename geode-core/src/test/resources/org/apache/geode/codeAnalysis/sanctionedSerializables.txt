@@ -250,7 +250,6 @@ org/apache/geode/internal/admin/CompoundRegionSnapshot,true,6295026394298398004,
 org/apache/geode/internal/admin/StatAlert,true,5725457607122449170,definitionId:int,time:java/util/Date,values:java/lang/Number[]
 org/apache/geode/internal/admin/remote/DistributionLocatorId,true,6587390186971937865,bindAddress:java/lang/String,host:java/net/InetAddress,hostnameForClients:java/lang/String,peerLocator:boolean,port:int,serverLocator:boolean
 org/apache/geode/internal/admin/remote/EntryValueNodeImpl,false,fields:org/apache/geode/internal/admin/remote/EntryValueNodeImpl[],name:java/lang/String,primitive:boolean,primitiveVal:java/lang/Object,type:java/lang/String
-org/apache/geode/internal/cache/BackupLock,false,backupDone:java/util/concurrent/locks/Condition,backupThread:java/lang/Thread,isBackingUp:boolean
 org/apache/geode/internal/cache/BucketAdvisor$SetFromMap,true,2454657854757543876,m:java/util/Map
 org/apache/geode/internal/cache/BucketNotFoundException,true,2898657229184289911
 org/apache/geode/internal/cache/BucketRegion$SizeOp,false
