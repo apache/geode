@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
@@ -111,16 +112,7 @@ public class ClientCommands implements GfshCommand {
       for (Entry<String, List<String>> pairs : clientServerMap.entrySet()) {
         String client = pairs.getKey();
         List<String> servers = pairs.getValue();
-        StringBuilder serverListForClient = new StringBuilder();
-        int serversSize = servers.size();
-        int i = 0;
-        for (String server : servers) {
-          serverListForClient.append(server);
-          if (i < serversSize - 1) {
-            serverListForClient.append(memberSeparator);
-          }
-          i++;
-        }
+        String serverListForClient = servers.stream().collect(Collectors.joining(memberSeparator));
         resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_Clients, client);
         resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_SERVERS,
             serverListForClient.toString());

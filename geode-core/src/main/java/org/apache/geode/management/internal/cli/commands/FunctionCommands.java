@@ -21,10 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -125,7 +125,7 @@ public class FunctionCommands implements GfshCommand {
         return result;
       }
 
-      if (isMoreThanOneIsTrue(onRegion != null, onMember != null, onGroups != null)) {
+      if (isMoreThanOneNonNull(onRegion, onMember, onGroups)) {
         // Provide Only one of region/member/groups
         ErrorResultData errorResultData =
             ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
@@ -292,8 +292,8 @@ public class FunctionCommands implements GfshCommand {
     return result;
   }
 
-  private boolean isMoreThanOneIsTrue(Boolean... values) {
-    return Stream.of(values).mapToInt(BooleanUtils::toInteger).sum() > 1;
+  private boolean isMoreThanOneNonNull(Object... values) {
+    return Stream.of(values).filter(Objects::nonNull).count() > 1;
   }
 
   void executeAndGetResults(String functionId, String filterString, String resultCollector,
