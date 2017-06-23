@@ -58,11 +58,12 @@ public class MultiUserDUnitTest {
   private Member server;
 
   @Before
-  public void setup() throws Exception{
+  public void setup() throws Exception {
     Properties properties = new Properties();
     properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
     properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
-    properties.put("security-json", "org/apache/geode/management/internal/security/cacheServer.json");
+    properties.put("security-json",
+        "org/apache/geode/management/internal/security/cacheServer.json");
     server = lsRule.startServerAsJmxManager(0, properties);
   }
 
