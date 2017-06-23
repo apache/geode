@@ -93,11 +93,11 @@ public class MemberMBeanSecurityJUnitTest {
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testDataAdmin() throws Exception {
-    assertThatThrownBy(() -> bean.compactAllDiskStores())
+    assertThatThrownBy(bean::compactAllDiskStores)
         .hasMessageContaining(TestCommand.clusterManageDisk.toString());
-    assertThatThrownBy(() -> bean.shutDownMember())
+    assertThatThrownBy(bean::shutDownMember)
         .hasMessageContaining(TestCommand.clusterManage.toString());
-    assertThatThrownBy(() -> bean.createManager())
+    assertThatThrownBy(bean::createManager)
         .hasMessageContaining(TestCommand.clusterManage.toString());
     bean.showJVMMetrics();
     bean.status();
@@ -108,31 +108,31 @@ public class MemberMBeanSecurityJUnitTest {
   public void testDataUser() throws Exception {
     SoftAssertions softly = new SoftAssertions();
 
-    softly.assertThatThrownBy(() -> bean.shutDownMember())
+    softly.assertThatThrownBy(bean::shutDownMember)
         .hasMessageContaining(TestCommand.clusterManage.toString());
-    softly.assertThatThrownBy(() -> bean.createManager())
+    softly.assertThatThrownBy(bean::createManager)
         .hasMessageContaining(TestCommand.clusterManage.toString());
-    softly.assertThatThrownBy(() -> bean.compactAllDiskStores())
+    softly.assertThatThrownBy(bean::compactAllDiskStores)
         .hasMessageContaining(TestCommand.clusterManageDisk.toString());
-    softly.assertThatThrownBy(() -> bean.fetchJvmThreads())
+    softly.assertThatThrownBy(bean::fetchJvmThreads)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.getName())
+    softly.assertThatThrownBy(bean::getName)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.getDiskStores())
+    softly.assertThatThrownBy(bean::getDiskStores)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.hasGatewayReceiver())
+    softly.assertThatThrownBy(bean::hasGatewayReceiver)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.isCacheServer())
+    softly.assertThatThrownBy(bean::isCacheServer)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.isServer())
+    softly.assertThatThrownBy(bean::isServer)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.listConnectedGatewayReceivers())
+    softly.assertThatThrownBy(bean::listConnectedGatewayReceivers)
         .hasMessageContaining(TestCommand.clusterRead.toString());
     softly.assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A"))
         .hasMessageContaining(TestCommand.dataManage.toString());
-    softly.assertThatThrownBy(() -> bean.showJVMMetrics())
+    softly.assertThatThrownBy(bean::showJVMMetrics)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.status())
+    softly.assertThatThrownBy(bean::status)
         .hasMessageContaining(TestCommand.clusterRead.toString());
 
     softly.assertAll();

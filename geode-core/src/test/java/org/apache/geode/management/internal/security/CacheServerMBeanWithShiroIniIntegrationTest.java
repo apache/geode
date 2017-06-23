@@ -67,16 +67,15 @@ public class CacheServerMBeanWithShiroIniIntegrationTest {
         .hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
         .hasMessageContaining(TestCommand.dataRead.toString());
-    assertThatThrownBy(() -> bean.fetchLoadProbe())
+    assertThatThrownBy(bean::fetchLoadProbe)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getActiveCQCount())
+    assertThatThrownBy(bean::getActiveCQCount)
         .hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
         .hasMessageContaining(TestCommand.clusterManageQuery.toString());
     assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
         .hasMessageContaining(TestCommand.clusterManageQuery.toString());
-    assertThatThrownBy(() -> bean.isRunning())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(bean::isRunning).hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.showClientQueueDetails("bar"))
         .hasMessageContaining(TestCommand.clusterRead.toString());
   }
@@ -86,9 +85,9 @@ public class CacheServerMBeanWithShiroIniIntegrationTest {
   public void testRegionAccess() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
         .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.fetchLoadProbe())
+    assertThatThrownBy(bean::fetchLoadProbe)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getActiveCQCount())
+    assertThatThrownBy(bean::getActiveCQCount)
         .hasMessageContaining(TestCommand.clusterRead.toString());
 
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
@@ -100,9 +99,9 @@ public class CacheServerMBeanWithShiroIniIntegrationTest {
   public void testDataRead() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
         .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.fetchLoadProbe())
+    assertThatThrownBy(bean::fetchLoadProbe)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getActiveCQCount())
+    assertThatThrownBy(bean::getActiveCQCount)
         .hasMessageContaining(TestCommand.clusterRead.toString());
 
     bean.executeContinuousQuery("bar");

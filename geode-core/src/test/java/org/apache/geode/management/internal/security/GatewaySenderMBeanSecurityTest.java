@@ -95,29 +95,29 @@ public class GatewaySenderMBeanSecurityTest {
   public void testNoAccess() throws Exception {
     SoftAssertions softly = new SoftAssertions();
 
-    softly.assertThatThrownBy(() -> bean.getAlertThreshold())
+    softly.assertThatThrownBy(bean::getAlertThreshold)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch())
+    softly.assertThatThrownBy(bean::getAverageDistributionTimePerBatch)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.getBatchSize())
+    softly.assertThatThrownBy(bean::getBatchSize)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.getMaximumQueueMemory())
+    softly.assertThatThrownBy(bean::getMaximumQueueMemory)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.getOrderPolicy())
+    softly.assertThatThrownBy(bean::getOrderPolicy)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.isBatchConflationEnabled())
+    softly.assertThatThrownBy(bean::isBatchConflationEnabled)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.isManualStart())
+    softly.assertThatThrownBy(bean::isManualStart)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.pause())
+    softly.assertThatThrownBy(bean::pause)
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
-    softly.assertThatThrownBy(() -> bean.rebalance())
+    softly.assertThatThrownBy(bean::rebalance)
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
-    softly.assertThatThrownBy(() -> bean.resume())
+    softly.assertThatThrownBy(bean::resume)
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
-    softly.assertThatThrownBy(() -> bean.start())
+    softly.assertThatThrownBy(bean::start)
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
-    softly.assertThatThrownBy(() -> bean.stop())
+    softly.assertThatThrownBy(bean::stop)
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
 
     softly.assertAll();

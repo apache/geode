@@ -88,11 +88,11 @@ public class GatewayReceiverMBeanSecurityTest {
   @ConnectionConfiguration(user = "user", password = "user")
   public void testNoAccess() throws Exception {
     SoftAssertions softly = new SoftAssertions();
-    softly.assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut())
+    softly.assertThatThrownBy(bean::getTotalConnectionsTimedOut)
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    softly.assertThatThrownBy(() -> bean.start())
+    softly.assertThatThrownBy(bean::start)
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
-    softly.assertThatThrownBy(() -> bean.stop())
+    softly.assertThatThrownBy(bean::stop)
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
     softly.assertAll();
   }
