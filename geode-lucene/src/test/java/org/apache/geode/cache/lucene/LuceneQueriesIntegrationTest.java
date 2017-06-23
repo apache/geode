@@ -331,6 +331,24 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
+  public void testWaitUntilFlushedForException() throws Exception {
+    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    fields.put("name", null);
+    fields.put("lastName", null);
+    fields.put("address", null);
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    // This is to send IllegalStateException from WaitUntilFlushedFunction
+    String nonCreatedIndex = "index2";
+
+    boolean b =
+        luceneService.waitUntilFlushed(nonCreatedIndex, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
+    assertFalse(b);
+  }
+
+  @Test()
   public void shouldAllowQueryOnRegionWithStringValue() throws Exception {
     luceneService.createIndexFactory().setFields(LuceneService.REGION_VALUE_FIELD)
         .create(INDEX_NAME, REGION_NAME);
