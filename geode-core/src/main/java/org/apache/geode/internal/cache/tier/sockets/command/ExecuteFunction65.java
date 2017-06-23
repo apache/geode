@@ -165,10 +165,10 @@ public class ExecuteFunction65 extends BaseCommand {
       ResultSender resultSender = new ServerToClientFunctionResultSender65(m,
           MessageType.EXECUTE_FUNCTION_RESULT, serverConnection, functionObject, executeContext);
 
-      InternalDistributedMember localVM = (InternalDistributedMember) serverConnection.getCache()
-          .getDistributedSystem().getDistributedMember();
       FunctionContext context = null;
       InternalCache cache = serverConnection.getCache();
+      InternalDistributedMember localVM =
+          (InternalDistributedMember) cache.getDistributedSystem().getDistributedMember();
 
       if (memberMappedArg != null) {
         context = new FunctionContextImpl(cache, functionObject.getId(),
