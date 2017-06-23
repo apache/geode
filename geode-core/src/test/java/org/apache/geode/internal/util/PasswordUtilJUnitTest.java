@@ -12,31 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.util;
 
-import static org.junit.Assert.*;
+package org.apache.geode.internal.util;
+
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class PasswordUtilJUnitTest {
 
+  /**
+   * Tests PasswordUtil's decrypt method (which is now deprecated) and verifies that backwards
+   * compatibility has not been broken with the removal of PasswordUtil's encryption methods.
+   * Previously encrypted passwords may still be used and decrypted.
+   */
   @Test
   public void testPasswordUtil() {
-    String x = "password";
-    String z = null;
-
-    // System.out.println(x);
-    String y = PasswordUtil.encrypt(x);
-    // System.out.println(y);
-    y = "encrypted(" + y + ")";
-    z = PasswordUtil.decrypt(y);
-    // System.out.println(z);
-    assertEquals(x, z);
+    String password = "password";
+    String encrypted = "encrypted(C3CDC3485F7FF64381841CD344CBDF8A)";
+    String decrypted = PasswordUtil.decrypt(encrypted);
+    assertEquals(password, decrypted);
   }
 }

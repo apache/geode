@@ -26,6 +26,7 @@ buildscript {
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.0.1'
     classpath "com.diffplug.gradle.spotless:spotless:2.2.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.3.1"
+    classpath "com.pedjak.gradle.plugins:dockerized-test:0.4.2"
   }
 }
 
@@ -73,6 +74,11 @@ if (name == 'geode') {
   ext.scriptDir = 'gradle'
 }
 
+if (project.hasProperty('parallelDunit')) {
+  def pwd = System.getenv('PWD')
+  ext.dunitDockerVolumes = ["${pwd}":pwd]
+}
+
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"
@@ -82,6 +88,7 @@ apply from: "${scriptDir}/code-analysis.gradle"
 apply from: "${scriptDir}/sonar.gradle"
 apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/rat.gradle"
+apply from: "${scriptDir}/docker.gradle"
 
 subprojects {
   // Make sure clean task for rootProject runs last

@@ -34,12 +34,13 @@ public class GMSJoinLeaveTestHelper {
   public static boolean isViewCreator() {
     GMSJoinLeave gmsJoinLeave = getGmsJoinLeave();
     if (gmsJoinLeave != null) {
-      GMSJoinLeave.ViewCreator viewCreator = gmsJoinLeave.getViewCreator();
-      if (viewCreator != null && !viewCreator.isShutdown()) {
-        return true;
-      } else {
-        return false;
-      }
+      return gmsJoinLeave.getView().getCreator().equals(gmsJoinLeave.getMemberID());
+      // GMSJoinLeave.ViewCreator viewCreator = gmsJoinLeave.getViewCreator();
+      // if (viewCreator != null && !viewCreator.isShutdown()) {
+      // return true;
+      // } else {
+      // return false;
+      // }
     }
     throw new RuntimeException(
         "This should not have happened. There should be a JoinLeave for every DS");
@@ -88,6 +89,9 @@ public class GMSJoinLeaveTestHelper {
     InternalDistributedSystem distributedSystem = InternalDistributedSystem.getAnyInstance();
     if (distributedSystem == null) {
       Locator locator = Locator.getLocator();
+      if (locator == null) {
+        return null;
+      }
       return (InternalDistributedSystem) locator.getDistributedSystem();
     } else {
       return distributedSystem;

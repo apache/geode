@@ -14,14 +14,16 @@
  */
 package org.apache.geode.management.internal.security;
 
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Target;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.shiro.authz.Permission;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.shiro.authz.Permission;
+
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 public class TestCommand {
 
@@ -77,7 +79,8 @@ public class TestCommand {
   }
 
   public static List<TestCommand> getCommands() {
-    return testCommands;
+    // returns a copy of the list every time
+    return testCommands.stream().collect(Collectors.toList());
   }
 
   public static List<TestCommand> getPermittedCommands(Permission permission) {
@@ -221,7 +224,6 @@ public class TestCommand {
     createTestCommand("debug --state=on", null);
     createTestCommand("describe connection", null);
     createTestCommand("echo --string=\"Hello World!\"", null);
-    createTestCommand("encrypt password --password=value", null);
     createTestCommand("version", null);
     createTestCommand("sleep", null);
     createTestCommand("sh ls", null);
@@ -246,5 +248,5 @@ public class TestCommand {
 
     // Misc commands
     // createTestCommand("shutdown", clusterManage);
-  };
+  }
 }

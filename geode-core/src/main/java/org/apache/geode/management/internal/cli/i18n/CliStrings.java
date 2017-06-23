@@ -36,6 +36,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 
+import java.text.MessageFormat;
+
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -43,8 +45,6 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-
-import java.text.MessageFormat;
 
 /**
  * - * Contains 'String' constants used as key to the Localized strings to be used in classes under
@@ -1265,13 +1265,6 @@ public class CliStrings {
       "String to be echoed. For example, \"SYS_USER variable is set to ${SYS_USER}\".";
   public static final String ECHO__MSG__NO_GFSH_INSTANCE = "Could not get GFSH Instance";
 
-  /* 'encrypt password' command */
-  public static final String ENCRYPT = "encrypt password";
-  public static final String ENCRYPT__HELP =
-      "Encrypt a password for use in data source configuration.";
-  public static final String ENCRYPT_STRING = "password";
-  public static final String ENCRYPT_STRING__HELP = "Password to be encrypted.";
-
   /* 'execute function' command */
   public static final String EXECUTE_FUNCTION = "execute function";
   public static final String EXECUTE_FUNCTION__HELP =
@@ -2063,7 +2056,7 @@ public class CliStrings {
   public static final String SHUTDOWN__MSG__CAN_NOT_SHUTDOWN_WITHIN_TIMEOUT =
       "Could not shutdown within timeout. Shutdown will continue in background";
   public static final String SHUTDOWN__MSG__NO_DATA_NODE_FOUND =
-      "No data node found for stopping. Please specify --shutdown-locators option if you want locators to be stopped";
+      "No data node found for stopping. Please specify --include-locators option if you want locators to be stopped";
 
   public static final String SHUTDOWN_TIMEDOUT =
       "Shutdown command timedout. Please manually check node status";
