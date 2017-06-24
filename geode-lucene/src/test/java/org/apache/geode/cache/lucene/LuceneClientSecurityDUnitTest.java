@@ -14,8 +14,22 @@
  */
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Properties;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -26,22 +40,8 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.util.Properties;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(JUnitParamsRunner.class)
@@ -50,7 +50,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
   @Test
   @Parameters(method = "getSearchIndexUserNameAndExpectedResponses")
   public void verifySearchIndexPermissions(
-      LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse user) {
+      LuceneCommandsSecurityTest.UserNameAndExpectedResponse user) {
     // Start server
     int serverPort = dataStore1.invoke(() -> startCacheServer());
 
@@ -58,8 +58,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
     accessor.invoke(() -> startClient(user.getUserName(), serverPort));
 
     // Attempt query
-    accessor.invoke(
-        () -> executeTextSearch(user.getExpectAuthorizationError(), user.getExpectedResponse()));
+    accessor.invoke(() -> executeTextSearch(user.getExpectAuthorizationError()));
   }
 
   private int startCacheServer() throws IOException {
@@ -86,8 +85,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
     clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(REGION_NAME);
   }
 
-  private void executeTextSearch(boolean expectAuthorizationError, String expectedResponse)
-      throws LuceneQueryException {
+  private void executeTextSearch(boolean expectAuthorizationError) throws LuceneQueryException {
     LuceneService service = LuceneServiceProvider.get(getCache());
     LuceneQuery<Integer, TestObject> query =
         service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "test", "text");
@@ -97,14 +95,12 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
     } catch (ServerOperationException e) {
       assertTrue(e.getCause() != null && e.getCause() instanceof NotAuthorizedException);
       assertTrue(expectAuthorizationError);
-      assertTrue(e.getLocalizedMessage().contains(expectedResponse));
     }
   }
 
-  protected LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse[] getSearchIndexUserNameAndExpectedResponses() {
-    return new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse[] {
-        new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse("nopermissions", true,
-            "nopermissions not authorized for DATA:WRITE"),
-        new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse("datawrite", false, null)};
+  protected LuceneCommandsSecurityTest.UserNameAndExpectedResponse[] getSearchIndexUserNameAndExpectedResponses() {
+    return new LuceneCommandsSecurityTest.UserNameAndExpectedResponse[] {
+        new LuceneCommandsSecurityTest.UserNameAndExpectedResponse("nopermissions", true),
+        new LuceneCommandsSecurityTest.UserNameAndExpectedResponse("datawrite", false)};
   }
 }
