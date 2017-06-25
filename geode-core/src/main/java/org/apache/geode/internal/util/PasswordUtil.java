@@ -49,20 +49,23 @@ public class PasswordUtil {
    */
   @Deprecated
   public static String decrypt(String password) {
+    String toDecrypt;
     if (password.startsWith("encrypted(") && password.endsWith(")")) {
-      byte[] decrypted = null;
-      try {
-        String toDecrypt = password.substring(10, password.length() - 1);
-        SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
-        Cipher cipher = Cipher.getInstance("Blowfish");
-        cipher.init(Cipher.DECRYPT_MODE, key);
-        decrypted = cipher.doFinal(hexStringToByteArray(toDecrypt));
-        return new String(decrypted);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      toDecrypt = password.substring(10, password.length() - 1);
+    } else {
+      toDecrypt = password;
     }
-    return password;
+    byte[] decrypted;
+    try {
+      SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
+      Cipher cipher = Cipher.getInstance("Blowfish");
+      cipher.init(Cipher.DECRYPT_MODE, key);
+      decrypted = cipher.doFinal(hexStringToByteArray(toDecrypt));
+      return new String(decrypted);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return toDecrypt;
   }
 
   private static byte[] hexStringToByteArray(String s) {
