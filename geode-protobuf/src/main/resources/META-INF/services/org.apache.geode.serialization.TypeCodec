@@ -1,0 +1,10 @@
+org.apache.geode.serialization.codec.BinaryCodec
+org.apache.geode.serialization.codec.BooleanCodec
+org.apache.geode.serialization.codec.ByteCodec
+org.apache.geode.serialization.codec.DoubleCodec
+org.apache.geode.serialization.codec.FloatCodec
+org.apache.geode.serialization.codec.IntCodec
+org.apache.geode.serialization.codec.JSONCodec
+org.apache.geode.serialization.codec.LongCodec
+org.apache.geode.serialization.codec.ShortCodec
+org.apache.geode.serialization.codec.StringCodec
