@@ -14,21 +14,19 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.cache.AttributesFactory;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -39,12 +37,8 @@ import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.net.BindException;
-import java.net.Socket;
 import java.util.Collections;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class AcceptorImplJUnitTest {
