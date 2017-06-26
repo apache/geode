@@ -45,11 +45,11 @@ class BucketRedundancyTracker {
    * Adjust statistics based on closing a bucket
    */
   synchronized void closeBucket() {
-    if (!redundancySatisfied) {
+    if (redundancyEverSatisfied && !redundancySatisfied) {
       regionRedundancyTracker.decrementLowRedundancyBucketCount();
       redundancySatisfied = true;
     }
-    if (!hasAnyCopies) {
+    if (hasEverHadCopies && !hasAnyCopies) {
       regionRedundancyTracker.decrementNoCopiesBucketCount();
       hasAnyCopies = true;
     }
