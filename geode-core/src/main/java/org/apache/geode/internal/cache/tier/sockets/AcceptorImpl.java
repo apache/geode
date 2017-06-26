@@ -1449,42 +1449,16 @@ public class AcceptorImpl extends Acceptor implements Runnable {
     socket.setTcpNoDelay(this.tcpNoDelay);
 
     String communicationModeStr;
-    switch (communicationMode) {
-      default:
-        throw new IOException("Acceptor received unknown communication mode: " + communicationMode);
-
-      case PRIMARY_SERVER_TO_CLIENT:
-        logger.debug(
-            ":Bridge server: Initializing primary server-to-client communication socket: {}",
-            socket);
-        AcceptorImpl.this.clientNotifier.registerClient(socket, true, this.acceptorId,
-            this.notifyBySubscription);
-        return;
-
-      case SECONDARY_SERVER_TO_CLIENT:
-        logger.debug(
-            ":Bridge server: Initializing secondary server-to-client communication socket: {}",
-            socket);
-        AcceptorImpl.this.clientNotifier.registerClient(socket, false, this.acceptorId,
-            this.notifyBySubscription);
-        return;
-
-      case CLIENT_TO_SERVER:
-        communicationModeStr = "client";
-        break;
-      case GATEWAY_TO_GATEWAY:
-        communicationModeStr = "gateway";
-        break;
-      case MONITOR_TO_SERVER:
-        communicationModeStr = "monitor";
-        break;
-      case CLIENT_TO_SERVER_FOR_QUEUE:
-        communicationModeStr = "clientToServerForQueue";
-        break;
-      case PROTOBUF_CLIENT_SERVER_PROTOCOL:
-        communicationModeStr = "Protobuf client";
-        break;
+    if (communicationMode == PRIMARY_SERVER_TO_CLIENT
+        || communicationMode == SECONDARY_SERVER_TO_CLIENT) {
+      boolean primary = communicationMode == PRIMARY_SERVER_TO_CLIENT;
+      logger.debug(":Bridge server: Initializing {} server-to-client communication socket: {}",
+          primary ? "primary" : "secondary", socket);
+      AcceptorImpl.this.clientNotifier.registerClient(socket, primary, this.acceptorId,
+          this.notifyBySubscription);
+      return;
     }
+    communicationModeStr = getCommunicationMode(communicationMode);
 
     logger.debug("Bridge server: Initializing {} communication socket: {}", communicationModeStr,
         socket);
@@ -1541,6 +1515,23 @@ public class AcceptorImpl extends Acceptor implements Runnable {
         }
         serverConn.cleanup();
       }
+    }
+  }
+
+  private String getCommunicationMode(byte communicationMode) throws IOException {
+    switch (communicationMode) {
+      default:
+        throw new IOException("Acceptor received unknown communication mode: " + communicationMode);
+      case CLIENT_TO_SERVER:
+        return "client";
+      case GATEWAY_TO_GATEWAY:
+        return "gateway";
+      case MONITOR_TO_SERVER:
+        return "monitor";
+      case CLIENT_TO_SERVER_FOR_QUEUE:
+        return "clientToServerForQueue";
+      case PROTOBUF_CLIENT_SERVER_PROTOCOL:
+        return "Protobuf client";
     }
   }
 
