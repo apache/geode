@@ -18,24 +18,8 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Generates an encrypted password, used by the gemfire encrypt-password command. Makes use of
- * Blowfish algorithm to encrypt/decrypt password string
- * 
- * <p>
- * This shows a sample command invocation and output (assuming password is the actual password for
- * the datasource): <br>
- * <br>
- * bash-2.05$ $GEMFIRE/bin/gemfire encrypt-password password<br>
- * Using system directory "/home/users/jpearson/gemfire/defaultSystem".<br>
- * Encrypted to 83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a <br>
- * <br>
- * Copy the output from the gemfire command to the cache.xml file as the value of the password
- * attribute of the jndi-binding tag embedded in encrypted(), just like a method parameter.<br>
- * Enter it as encrypted, in this format:
- * password="encrypted(83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a)"<br>
- * To use a non-encrypted password, put the actual password as the value of the password attribute
- * of the jndi-binding tag, like this: password="password" <br>
- * 
+ * Makes use of Blowfish algorithm to decrypt a pre-encrypted password string. As of June 2017, no
+ * longer supports encrypting a password. However, decrypting still works.
  */
 public class PasswordUtil {
 
@@ -44,28 +28,25 @@ public class PasswordUtil {
   /**
    * Decrypts an encrypted password string.
    *
-   * @param password String to be decrypted
+   * @param password String to be decrypted (format: `encrypted(password_to_decrypt)`)
    * @return String decrypted String
    */
   @Deprecated
   public static String decrypt(String password) {
-    String toDecrypt;
     if (password.startsWith("encrypted(") && password.endsWith(")")) {
-      toDecrypt = password.substring(10, password.length() - 1);
-    } else {
-      toDecrypt = password;
+      byte[] decrypted;
+      try {
+        String toDecrypt = password.substring(10, password.length() - 1);
+        SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
+        Cipher cipher = Cipher.getInstance("Blowfish");
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        decrypted = cipher.doFinal(hexStringToByteArray(toDecrypt));
+        return new String(decrypted);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
-    byte[] decrypted;
-    try {
-      SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
-      Cipher cipher = Cipher.getInstance("Blowfish");
-      cipher.init(Cipher.DECRYPT_MODE, key);
-      decrypted = cipher.doFinal(hexStringToByteArray(toDecrypt));
-      return new String(decrypted);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return toDecrypt;
+    return password;
   }
 
   private static byte[] hexStringToByteArray(String s) {
