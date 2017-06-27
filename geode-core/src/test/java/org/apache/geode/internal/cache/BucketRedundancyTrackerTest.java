@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -72,12 +73,26 @@ public class BucketRedundancyTrackerTest {
   }
 
   @Test
+  public void bucketCountNotDecrementedOnClosingBucketThatNeverHadRedundancy() {
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
+    bucketRedundancyTracker.closeBucket();
+    verify(regionRedundancyTracker, never()).decrementLowRedundancyBucketCount();
+    assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
+  }
+
+  @Test
   public void decrementsBucketCountOnClosingABucketWithNoCopies() {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
     bucketRedundancyTracker.updateStatistics(0);
     bucketRedundancyTracker.closeBucket();
     verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
+    assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
+  }
+
+  @Test
+  public void bucketCountNotDecrementedOnClosingBucketThatNeverHadCopies() {
+    verify(regionRedundancyTracker, never()).decrementLowRedundancyBucketCount();
     assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
