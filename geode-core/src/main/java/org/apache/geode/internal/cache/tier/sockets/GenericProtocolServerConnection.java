@@ -67,6 +67,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
       // TODO serialization types?
       messageHandler.receiveMessage(inputStream, outputStream, this.getCache());
     } catch (IOException e) {
+      logger.warn(e);
       // TODO?
     }
     return;

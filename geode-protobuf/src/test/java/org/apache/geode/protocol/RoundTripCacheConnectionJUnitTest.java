@@ -107,6 +107,33 @@ public class RoundTripCacheConnectionJUnitTest {
     validateGetResponse(socket, protobufProtocolSerializer);
   }
 
+  @Test
+  public void testNewProtocolGetRegionCallSucceeds() throws Exception {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+
+    Socket socket = new Socket("localhost", cacheServerPort);
+    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    OutputStream outputStream = socket.getOutputStream();
+    outputStream.write(110);
+
+
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+    ClientProtocol.Message getRegionsMessage =
+        MessageUtil.makeGetRegionsRequestMessage(ClientProtocol.MessageHeader.newBuilder().build());
+    protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
+
+    ClientProtocol.Message message =
+        protobufProtocolSerializer.deserialize(socket.getInputStream());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
+    ClientProtocol.Response response = message.getResponse();
+    assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONSRESPONSE,
+        response.getResponseAPICase());
+    RegionAPI.GetRegionsResponse getRegionsResponse = response.getGetRegionsResponse();
+    assertEquals(true, getRegionsResponse.getSuccess());
+    assertEquals(1, getRegionsResponse.getRegionsCount());
+    assertEquals(TEST_REGION, getRegionsResponse.getRegions(0).getName());
+  }
+
   private void validatePutResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
     ClientProtocol.Message message =
