@@ -3486,10 +3486,10 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   public void dumpMap() {
-    logger.debug("dump of concurrent map of size {} for region {}", this._getMap().size(),
+    logger.info("dump of concurrent map of size {} for region {}", this._getMap().size(),
         this._getOwner());
     for (Iterator it = this._getMap().values().iterator(); it.hasNext();) {
-      logger.trace("dumpMap:" + it.next().toString());
+      logger.info("dumpMap:" + it.next().toString());
     }
   }
 
