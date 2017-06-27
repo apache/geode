@@ -675,7 +675,6 @@ public class InternalLocator extends Locator implements ConnectListener {
             System.setProperty(propName, locatorsProp);
           }
         }
-
         // No longer default mcast-port to zero. See 46277.
       }
 
@@ -686,11 +685,6 @@ public class InternalLocator extends Locator implements ConnectListener {
 
       logger.info(
           LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_DISTRIBUTED_SYSTEM));
-      // LOG:CONFIG: changed from config to info
-      logger.info(LogMarker.CONFIG,
-          LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
-              this.config.toLoggerString()));
 
       this.myDs = (InternalDistributedSystem) DistributedSystem.connect(connectEnv);
 

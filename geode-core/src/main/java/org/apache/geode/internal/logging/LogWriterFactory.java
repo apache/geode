@@ -95,7 +95,7 @@ public class LogWriterFactory {
       // LOG:CONFIG: changed from config to info
       logger.info(LogMarker.CONFIG,
           LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
+              LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATION_0,
               config.toLoggerString()));
     }
     return logger;
