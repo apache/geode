@@ -103,4 +103,15 @@ public class MessageUtil {
   private static ClientProtocol.MessageHeader.Builder getMessageHeaderBuilder() {
     return ClientProtocol.MessageHeader.newBuilder();
   }
+
+  public static RegionAPI.GetRegionsRequest makeGetRegionsRequest() {
+    return RegionAPI.GetRegionsRequest.newBuilder().build();
+  }
+
+  public static ClientProtocol.Message makeGetRegionsRequestMessage(
+      ClientProtocol.MessageHeader header) {
+    ClientProtocol.Request request =
+        ClientProtocol.Request.newBuilder().setGetRegionsRequest(makeGetRegionsRequest()).build();
+    return ClientProtocol.Message.newBuilder().setMessageHeader(header).setRequest(request).build();
+  }
 }
