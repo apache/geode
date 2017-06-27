@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import org.apache.geode.management.internal.OpenTypeConverter.CompositeBuilderViaProxy;

@@ -21,14 +21,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.SecurityManager;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.mgt.SecurityManager;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -37,244 +41,152 @@ import java.util.Properties;
 @Category({UnitTest.class, SecurityTest.class})
 public class SecurityServiceFactoryTest {
 
+  private SecurityService service;
+  private Properties properties;
+  private org.apache.geode.security.SecurityManager securityManager;
+  private PostProcessor postProcessor;
+  private CacheConfig cacheConfig;
+
+  @Before
+  public void before() throws Exception {
+    securityManager = mock(org.apache.geode.security.SecurityManager.class);
+    postProcessor = mock(PostProcessor.class);
+    cacheConfig = mock(CacheConfig.class);
+    properties = new Properties();
+  }
+
   @After
   public void after() throws Exception {
-    ThreadContext.remove();
+    if (service != null) {
+      service.close();
+    }
+
+    // some test manually set the shiro security manager
     SecurityUtils.setSecurityManager(null);
   }
 
   @Test
-  public void getPostProcessor_null_returnsNull() throws Exception {
-    assertThat(SecurityServiceFactory.getPostProcessor(null, null)).isNull();
+  public void createWithNoArgument() throws Exception {
+    service = SecurityServiceFactory.create();
+    assertThat(service).isInstanceOf(LegacySecurityService.class);
   }
 
   @Test
-  public void getPostProcessor_returnsPostProcessor() throws Exception {
-    PostProcessor mockPostProcessor = mock(PostProcessor.class);
+  public void createWithPropsWithNothingOrAuthenticators() throws Exception {
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(LegacySecurityService.class);
+    assertThat(service.isClientSecurityRequired()).isFalse();
+    assertThat(service.isPeerSecurityRequired()).isFalse();
 
-    assertThat(SecurityServiceFactory.getPostProcessor(mockPostProcessor, null))
-        .isSameAs(mockPostProcessor);
+    // add client auth
+    properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "com.abc.Auth");
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(LegacySecurityService.class);
+    assertThat(service.isClientSecurityRequired()).isTrue();
+    assertThat(service.isPeerSecurityRequired()).isFalse();
+
+    // add peer auth
+    properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "com.abc.PeerAuth");
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(LegacySecurityService.class);
+    assertThat(service.isClientSecurityRequired()).isTrue();
+    assertThat(service.isPeerSecurityRequired()).isTrue();
   }
 
   @Test
-  public void getPostProcessor_SecurityConfig_createsPostProcessor() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_POST_PROCESSOR, FakePostProcessor.class.getName());
+  public void createWithPropsWithSecurityManager() throws Exception {
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isNotNull();
+    assertThat(service.getPostProcessor()).isNull();
 
-    PostProcessor postProcessor = SecurityServiceFactory.getPostProcessor(null, securityConfig);
-
-    assertThat(postProcessor).isInstanceOf(FakePostProcessor.class);
-
-    FakePostProcessor fakePostProcessor = (FakePostProcessor) postProcessor;
-
-    assertThat(fakePostProcessor.getInitInvocations()).isEqualTo(0);
-    assertThat(fakePostProcessor.getSecurityProps()).isNull();
+    // add the post processor
+    properties.setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isNotNull();
+    assertThat(service.getPostProcessor()).isNotNull();
   }
 
   @Test
-  public void getPostProcessor_prefersPostProcessorOverSecurityConfig() throws Exception {
-    PostProcessor mockPostProcessor = mock(PostProcessor.class);
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_POST_PROCESSOR, FakePostProcessor.class.getName());
-
-    assertThat(SecurityServiceFactory.getPostProcessor(mockPostProcessor, securityConfig))
-        .isSameAs(mockPostProcessor);
+  public void createWithPropsWithShiro() throws Exception {
+    properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isNull();
+    assertThat(service.getPostProcessor()).isNull();
   }
 
   @Test
-  public void getSecurityManager_null_returnsNull() throws Exception {
-    assertThat(SecurityServiceFactory.getSecurityManager(null, null)).isNull();
+  public void shiroOverwritesSecurityManager() throws Exception {
+    properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isNull();
+    assertThat(service.getPostProcessor()).isNull();
   }
 
   @Test
-  public void getSecurityManager_returnsSecurityManager() throws Exception {
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-
-    assertThat(SecurityServiceFactory.getSecurityManager(mockSecurityManager, null))
-        .isSameAs(mockSecurityManager);
+  public void createWithOutsideShiro() throws Exception {
+    SecurityUtils.setSecurityManager(mock(SecurityManager.class));
+    // create the service with empty properties, but we would still end up with
+    // an IntegratedSecurityService
+    service = SecurityServiceFactory.create(properties);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isNull();
+    assertThat(service.getPostProcessor()).isNull();
   }
 
   @Test
-  public void getSecurityManager_SecurityConfig_createsSecurityManager() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_MANAGER, FakeSecurityManager.class.getName());
-
-    SecurityManager securityManager =
-        SecurityServiceFactory.getSecurityManager(null, securityConfig);
-
-    assertThat(securityManager).isInstanceOf(FakeSecurityManager.class);
-
-    FakeSecurityManager fakeSecurityManager = (FakeSecurityManager) securityManager;
-
-    assertThat(fakeSecurityManager.getInitInvocations()).isEqualTo(0);
-    assertThat(fakeSecurityManager.getSecurityProps()).isNull();
+  public void cacheConfigSecurityManagerOverideShiro() throws Exception {
+    properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+    when(cacheConfig.getSecurityManager()).thenReturn(securityManager);
+    service = SecurityServiceFactory.create(properties, cacheConfig);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isNotNull();
+    assertThat(service.getPostProcessor()).isNull();
   }
 
   @Test
-  public void getSecurityManager_prefersSecurityManagerOverSecurityConfig() throws Exception {
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_MANAGER, FakePostProcessor.class.getName());
-
-    assertThat(SecurityServiceFactory.getSecurityManager(mockSecurityManager, securityConfig))
-        .isSameAs(mockSecurityManager);
+  public void cacheConfigOverideProperties_securityManager() throws Exception {
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    when(cacheConfig.getSecurityManager()).thenReturn(securityManager);
+    service = SecurityServiceFactory.create(properties, cacheConfig);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isEqualTo(securityManager);
+    assertThat(service.getPostProcessor()).isNull();
   }
 
   @Test
-  public void determineType_null_returnsDISABLED() throws Exception {
-    assertThat(SecurityServiceFactory.determineType(null, null, null))
-        .isSameAs(SecurityServiceType.DISABLED);
+  public void cacheConfigOverideProperties_postProcessor() throws Exception {
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
+    when(cacheConfig.getPostProcessor()).thenReturn(postProcessor);
+    service = SecurityServiceFactory.create(properties, cacheConfig);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isInstanceOf(SimpleTestSecurityManager.class);
+    assertThat(service.getPostProcessor()).isEqualTo(postProcessor);
   }
 
   @Test
-  public void determineType_shiro_returnsCUSTOM() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_SHIRO_INIT, "value");
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, null, null))
-        .isSameAs(SecurityServiceType.CUSTOM);
+  public void cacheConfigSecurityManagerWithPropertyPostProcessor() throws Exception {
+    properties.setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
+    when(cacheConfig.getSecurityManager()).thenReturn(securityManager);
+    service = SecurityServiceFactory.create(properties, cacheConfig);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isEqualTo(securityManager);
+    assertThat(service.getPostProcessor()).isInstanceOf(TestPostProcessor.class);
   }
 
   @Test
-  public void determineType_securityManager_returnsENABLED() throws Exception {
-    Properties securityConfig = new Properties();
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, mockSecurityManager, null))
-        .isSameAs(SecurityServiceType.ENABLED);
+  public void cacheConfigPostProcessorWithPropertySecurityManager() throws Exception {
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    when(cacheConfig.getPostProcessor()).thenReturn(postProcessor);
+    service = SecurityServiceFactory.create(properties, cacheConfig);
+    assertThat(service).isInstanceOf(IntegratedSecurityService.class);
+    assertThat(service.getSecurityManager()).isInstanceOf(SimpleTestSecurityManager.class);
+    assertThat(service.getPostProcessor()).isEqualTo(postProcessor);
   }
-
-  @Test
-  public void determineType_postProcessor_returnsDISABLED() throws Exception {
-    Properties securityConfig = new Properties();
-    PostProcessor mockPostProcessor = mock(PostProcessor.class);
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, null, mockPostProcessor))
-        .isSameAs(SecurityServiceType.DISABLED);
-  }
-
-  @Test
-  public void determineType_both_returnsENABLED() throws Exception {
-    Properties securityConfig = new Properties();
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-    PostProcessor mockPostProcessor = mock(PostProcessor.class);
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, mockSecurityManager,
-        mockPostProcessor)).isSameAs(SecurityServiceType.ENABLED);
-  }
-
-  @Test
-  public void determineType_prefersCUSTOM() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_SHIRO_INIT, "value");
-    securityConfig.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "value");
-    securityConfig.setProperty(SECURITY_PEER_AUTHENTICATOR, "value");
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, mockSecurityManager, null))
-        .isSameAs(SecurityServiceType.CUSTOM);
-  }
-
-  @Test
-  public void determineType_clientAuthenticator_returnsLEGACY() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "value");
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, null, null))
-        .isSameAs(SecurityServiceType.LEGACY);
-  }
-
-  @Test
-  public void determineType_peerAuthenticator_returnsLEGACY() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_PEER_AUTHENTICATOR, "value");
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, null, null))
-        .isSameAs(SecurityServiceType.LEGACY);
-  }
-
-  @Test
-  public void determineType_authenticators_returnsLEGACY() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "value");
-    securityConfig.setProperty(SECURITY_PEER_AUTHENTICATOR, "value");
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, null, null))
-        .isSameAs(SecurityServiceType.LEGACY);
-  }
-
-  @Test
-  public void determineType_empty_returnsDISABLED() throws Exception {
-    Properties securityConfig = new Properties();
-
-    assertThat(SecurityServiceFactory.determineType(securityConfig, null, null))
-        .isSameAs(SecurityServiceType.DISABLED);
-  }
-
-  @Test
-  public void create_clientAuthenticator_createsLegacySecurityService() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "value");
-
-    assertThat(SecurityServiceFactory.create(securityConfig, null, null))
-        .isInstanceOf(LegacySecurityService.class);
-  }
-
-  @Test
-  public void create_peerAuthenticator_createsLegacySecurityService() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_PEER_AUTHENTICATOR, "value");
-
-    assertThat(SecurityServiceFactory.create(securityConfig, null, null))
-        .isInstanceOf(LegacySecurityService.class);
-  }
-
-  @Test
-  public void create_authenticators_createsLegacySecurityService() throws Exception {
-    Properties securityConfig = new Properties();
-    securityConfig.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "value");
-    securityConfig.setProperty(SECURITY_PEER_AUTHENTICATOR, "value");
-
-    assertThat(SecurityServiceFactory.create(securityConfig, null, null))
-        .isInstanceOf(LegacySecurityService.class);
-  }
-
-  @Test
-  public void create_none_createsDisabledSecurityService() throws Exception {
-    Properties securityConfig = new Properties();
-
-    assertThat(SecurityServiceFactory.create(securityConfig, null, null))
-        .isInstanceOf(DisabledSecurityService.class);
-  }
-
-  @Test
-  public void create_postProcessor_createsDisabledSecurityService() throws Exception {
-    Properties securityConfig = new Properties();
-    PostProcessor mockPostProcessor = mock(PostProcessor.class);
-
-    assertThat(SecurityServiceFactory.create(securityConfig, null, mockPostProcessor))
-        .isInstanceOf(DisabledSecurityService.class);
-  }
-
-  @Test
-  public void create_securityManager_createsEnabledSecurityService() throws Exception {
-    Properties securityConfig = new Properties();
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-
-    assertThat(SecurityServiceFactory.create(securityConfig, mockSecurityManager, null))
-        .isInstanceOf(EnabledSecurityService.class);
-  }
-
-  @Test
-  public void create_securityManagerAndPostProcessor_createsEnabledSecurityService()
-      throws Exception {
-    Properties securityConfig = new Properties();
-    SecurityManager mockSecurityManager = mock(SecurityManager.class);
-    PostProcessor mockPostProcessor = mock(PostProcessor.class);
-
-    assertThat(
-        SecurityServiceFactory.create(securityConfig, mockSecurityManager, mockPostProcessor))
-            .isInstanceOf(EnabledSecurityService.class);
-  }
-
 }

@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import org.apache.geode.internal.cache.DistributedRegion;

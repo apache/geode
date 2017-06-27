@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.util;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -44,72 +42,30 @@ public class PasswordUtil {
   private static byte[] init = "string".getBytes();
 
   /**
-   * Encrypts a password string
-   * 
-   * @param password String to be encrypted.
-   * @return String encrypted String
-   */
-  public static String encrypt(String password) {
-    return encrypt(password, true);
-  }
-
-  /**
-   * 
-   * @param password String to be encrypted
-   * @param echo if true prints result to system.out
-   * @return String encrypted String
-   */
-  public static String encrypt(String password, boolean echo) {
-    String encryptedString = null;
-    try {
-      SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
-      Cipher cipher = Cipher.getInstance("Blowfish");
-      cipher.init(Cipher.ENCRYPT_MODE, key);
-      byte[] encrypted = cipher.doFinal(password.getBytes());
-      encryptedString = byteArrayToHexString(encrypted);
-      if (echo) {
-        System.out.println(
-            LocalizedStrings.PasswordUtil_ENCRYPTED_TO_0.toLocalizedString(encryptedString));
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return encryptedString;
-  }
-
-  /**
    * Decrypts an encrypted password string.
-   * 
+   *
    * @param password String to be decrypted
    * @return String decrypted String
    */
+  @Deprecated
   public static String decrypt(String password) {
+    String toDecrypt;
     if (password.startsWith("encrypted(") && password.endsWith(")")) {
-      byte[] decrypted = null;
-      try {
-        String toDecrypt = password.substring(10, password.length() - 1);
-        SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
-        Cipher cipher = Cipher.getInstance("Blowfish");
-        cipher.init(Cipher.DECRYPT_MODE, key);
-        decrypted = cipher.doFinal(hexStringToByteArray(toDecrypt));
-        return new String(decrypted);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      toDecrypt = password.substring(10, password.length() - 1);
+    } else {
+      toDecrypt = password;
     }
-    return password;
-  }
-
-  private static String byteArrayToHexString(byte[] b) {
-    StringBuilder sb = new StringBuilder(b.length * 2);
-    for (int i = 0; i < b.length; i++) {
-      int v = b[i] & 0xff;
-      if (v < 16) {
-        sb.append('0');
-      }
-      sb.append(Integer.toHexString(v));
+    byte[] decrypted;
+    try {
+      SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
+      Cipher cipher = Cipher.getInstance("Blowfish");
+      cipher.init(Cipher.DECRYPT_MODE, key);
+      decrypted = cipher.doFinal(hexStringToByteArray(toDecrypt));
+      return new String(decrypted);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-    return sb.toString().toUpperCase();
+    return toDecrypt;
   }
 
   private static byte[] hexStringToByteArray(String s) {

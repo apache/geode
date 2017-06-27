@@ -83,7 +83,11 @@ public class GMSLocator implements Locator, NetLocator {
    */
   private transient NetView view;
 
+  private transient NetView recoveredView;
+
   private File viewFile;
+
+  private volatile boolean isCoordinator;
 
   /**
    * @param bindAddress network address that TcpServer will bind to
@@ -122,6 +126,10 @@ public class GMSLocator implements Locator, NetLocator {
       NetView newView = services.getJoinLeave().getView();
       if (newView != null) {
         this.view = newView;
+      } else if (localAddress != null) {
+        synchronized (this.registrants) {
+          this.registrants.add(localAddress);
+        }
       }
       this.notifyAll();
       return true;
@@ -158,9 +166,14 @@ public class GMSLocator implements Locator, NetLocator {
     }
     logger.info("Peer locator received new membership view: " + view);
     this.view = view;
+    this.recoveredView = null;
     saveView(view);
   }
 
+  @Override
+  public void setIsCoordinator(boolean isCoordinator) {
+    this.isCoordinator = isCoordinator;
+  }
 
   @Override
   public Object processRequest(Object request) throws IOException {
@@ -218,6 +231,13 @@ public class GMSLocator implements Locator, NetLocator {
 
         boolean fromView = false;
         NetView v = this.view;
+        if (v == null) {
+          v = this.recoveredView;
+        }
+
+        synchronized (registrants) {
+          registrants.add(findRequest.getMemberID());
+        }
 
         if (v != null) {
           // if the ID of the requester matches an entry in the membership view then remove
@@ -231,8 +251,8 @@ public class GMSLocator implements Locator, NetLocator {
               break;
             }
           }
-          int viewId = v.getViewId();
-          if (viewId > findRequest.getLastViewId()) {
+
+          if (v.getViewId() > findRequest.getLastViewId()) {
             // ignore the requests rejectedCoordinators if the view has changed
             coord = v.getCoordinator(Collections.emptyList());
           } else {
@@ -249,7 +269,6 @@ public class GMSLocator implements Locator, NetLocator {
             rejections = Collections.emptyList();
           }
           synchronized (registrants) {
-            registrants.add(findRequest.getMemberID());
             coord = services.getJoinLeave().getMemberID();
             for (InternalDistributedMember mbr : registrants) {
               if (mbr != coord && (coord == null || mbr.compareTo(coord) < 0)) {
@@ -264,14 +283,26 @@ public class GMSLocator implements Locator, NetLocator {
         }
 
         synchronized (registrants) {
+          if (isCoordinator) {
+            coord = localAddress;
+            InternalDistributedMember viewCoordinator = null;
+            if (v != null) {
+              viewCoordinator = v.getCoordinator();
+            }
+            fromView = viewCoordinator != null && !viewCoordinator.equals(localAddress);
+            if (!fromView) {
+              logger.info("This member is becoming coordinator");
+              v = null;
+            }
+          }
           byte[] coordPk = null;
-          if (view != null) {
-            coordPk = (byte[]) view.getPublicKey(coord);
+          if (v != null) {
+            coordPk = (byte[]) v.getPublicKey(coord);
           }
           if (coordPk == null) {
             coordPk = services.getMessenger().getPublicKey(coord);
           }
-          response = new FindCoordinatorResponse(coord, localAddress, fromView, view,
+          response = new FindCoordinatorResponse(coord, localAddress, fromView, v,
               new HashSet<InternalDistributedMember>(registrants),
               this.networkPartitionDetectionEnabled, this.usePreferredCoordinators, coordPk);
         }
@@ -405,17 +436,18 @@ public class GMSLocator implements Locator, NetLocator {
       }
 
       Object o = DataSerializer.readObject(ois2);
-      this.view = (NetView) o;
-      List<InternalDistributedMember> members = new ArrayList<>(view.getMembers());
+      recoveredView = (NetView) o;
+      recoveredView.setViewId(-1); // this is not a valid view so it shouldn't have a usable Id
+      List<InternalDistributedMember> members = new ArrayList<>(recoveredView.getMembers());
       // GEODE-3052 - remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
       for (InternalDistributedMember member : members) {
         if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
-          view.remove(member);
+          recoveredView.remove(member);
         }
       }
 
-      logger.info("Peer locator initial membership is " + view);
+      logger.info("Peer locator recovered membership is " + recoveredView);
       return true;
 
     } catch (Exception e) {

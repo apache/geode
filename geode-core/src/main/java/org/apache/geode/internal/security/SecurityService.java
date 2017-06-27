@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.security;
 
-import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -29,75 +28,97 @@ import java.util.concurrent.Callable;
 
 public interface SecurityService {
 
-  void initSecurity(Properties securityProps);
+  default ThreadState bindSubject(Subject subject) {
+    return null;
+  }
 
-  ThreadState bindSubject(Subject subject);
+  default Subject getSubject() {
+    return null;
+  }
 
-  Subject getSubject();
+  default Subject login(Properties credentials) {
+    return null;
+  }
 
-  Subject login(Properties credentials);
+  default void logout() {}
 
-  void logout();
+  default Callable associateWith(Callable callable) {
+    return callable;
+  }
 
-  Callable associateWith(Callable callable);
+  default void authorize(Resource resource, Operation operation, String target, String key) {}
 
-  void authorize(Resource resource, Operation operation, String target, String key);
+  default void authorize(Resource resource, Operation operation, Target target, String key) {}
 
-  void authorize(Resource resource, Operation operation, Target target, String key);
+  default void authorize(Resource resource, Operation operation, Target target) {}
 
-  void authorize(Resource resource, Operation operation, Target target);
+  default void authorizeClusterManage() {}
 
-  void authorizeClusterManage();
+  default void authorizeClusterWrite() {}
 
-  void authorizeClusterWrite();
+  default void authorizeClusterRead() {}
 
-  void authorizeClusterRead();
+  default void authorizeDataManage() {}
 
-  void authorizeDataManage();
+  default void authorizeDataWrite() {}
 
-  void authorizeDataWrite();
+  default void authorizeDataRead() {}
 
-  void authorizeDataRead();
+  default void authorizeDiskManage() {}
 
-  void authorizeDiskManage();
+  default void authorizeGatewayManage() {}
 
-  void authorizeGatewayManage();
+  default void authorizeJarManage() {}
 
-  void authorizeJarManage();
+  default void authorizeQueryManage() {}
 
-  void authorizeQueryManage();
+  default void authorizeRegionManage(String regionName) {}
 
-  void authorizeRegionManage(String regionName);
+  default void authorizeRegionManage(String regionName, String key) {}
 
-  void authorizeRegionManage(String regionName, String key);
+  default void authorizeRegionWrite(String regionName) {}
 
-  void authorizeRegionWrite(String regionName);
+  default void authorizeRegionWrite(String regionName, String key) {}
 
-  void authorizeRegionWrite(String regionName, String key);
+  default void authorizeRegionRead(String regionName) {}
 
-  void authorizeRegionRead(String regionName);
+  default void authorizeRegionRead(String regionName, String key) {}
 
-  void authorizeRegionRead(String regionName, String key);
+  default void authorize(ResourcePermission context) {}
 
-  void authorize(ResourcePermission context);
+  default void close() {}
 
-  void close();
+  default boolean needPostProcess() {
+    return false;
+  }
 
-  boolean needPostProcess();
+  default Object postProcess(String regionPath, Object key, Object value,
+      boolean valueIsSerialized) {
+    return value;
+  }
 
-  Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized);
+  default Object postProcess(Object principal, String regionPath, Object key, Object value,
+      boolean valueIsSerialized) {
+    return value;
+  }
 
-  Object postProcess(Object principal, String regionPath, Object key, Object value,
-      boolean valueIsSerialized);
+  default boolean isClientSecurityRequired() {
+    return false;
+  }
 
-  boolean isClientSecurityRequired();
+  default boolean isIntegratedSecurity() {
+    return false;
+  }
 
-  boolean isIntegratedSecurity();
+  default boolean isPeerSecurityRequired() {
+    return false;
+  }
 
-  boolean isPeerSecurityRequired();
+  default SecurityManager getSecurityManager() {
+    return null;
+  }
 
-  SecurityManager getSecurityManager();
-
-  PostProcessor getPostProcessor();
-
+  default PostProcessor getPostProcessor() {
+    return null;
+  }
 }

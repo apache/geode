@@ -77,7 +77,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
     lsRule.stopMember(1);
-    lsRule.startServerVM(1, lsRule.getMember(0).getPort());;
+    lsRule.startServerVM(1, lsRule.getMember(0).getPort());
     verifyIndexRecreated(INDEX_NAME);
   }
 
@@ -114,7 +114,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
-    csb.addOptionWithValueCheck(CliStrings.CREATE_REGION__GROUP, group);
+    csb.addOptionWithValueCheck(CliStrings.GROUP, group);
     gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
   }
 }

@@ -935,7 +935,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   public void invalidate(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException {
     validateKey(key);
-    validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForLimitedOrNoAccess();
     Lock dlock = this.getDistributedLockIfGlobal(key);

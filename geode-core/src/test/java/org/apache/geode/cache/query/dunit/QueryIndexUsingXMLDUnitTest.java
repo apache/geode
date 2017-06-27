@@ -21,6 +21,7 @@ import static org.apache.geode.test.dunit.Invoke.*;
 import static org.apache.geode.test.dunit.LogWriterUtils.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.net.URL;
@@ -28,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -473,11 +476,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates async indexes and compares the results between index and non-index results.
-   * <p>
-   * DISABLED. This test is disabled due to a high rate of throw new AssertionError. See ticket
-   * #52167
    */
-  @Ignore("TODO: test is disabled because of #52167")
   @Test
   public void testCreateAsyncIndexWhileDoingGIIAndCompareQueryResults() throws Exception {
     Host host = Host.getHost(0);
@@ -510,9 +509,32 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, "secIndex", 50));
     vm1.invoke(indexCreationCheck(REP_REG_NAME, "secIndex"));
 
+    vm0.invoke(() -> validateIndexSize());
+    vm1.invoke(() -> validateIndexSize());
+
+
     // Execute query and verify index usage
     vm0.invoke(executeQueryAndCompareResult(false));
     vm1.invoke(executeQueryAndCompareResult(false));
+  }
+
+  public void validateIndexSize() {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      boolean indexSizeCheck_NAME = validateIndexSizeForRegion(NAME);
+      boolean indexSizeCheck_REP_REG_NAME = validateIndexSizeForRegion(REP_REG_NAME);
+      boolean indexSizeCheck_PERSISTENT_REG_NAME = validateIndexSizeForRegion(PERSISTENT_REG_NAME);
+      assertEquals("Index does not contain all the entries after 60 seconds have elapsed ", true,
+          (indexSizeCheck_NAME && indexSizeCheck_REP_REG_NAME
+              && indexSizeCheck_PERSISTENT_REG_NAME));
+    });
+  }
+
+  private boolean validateIndexSizeForRegion(final String regionName) {
+    Region region = getCache().getRegion(regionName);
+    QueryService queryService = getCache().getQueryService();
+    return queryService.getIndex(region, "statusIndex").getStatistics().getNumberOfValues() == 500
+        && queryService.getIndex(region, "idIndex").getStatistics().getNumberOfValues() == 500
+        && queryService.getIndex(region, "statusIndex").getStatistics().getNumberOfValues() == 500;
   }
 
   @Test

@@ -30,6 +30,7 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
 import org.apache.geode.distributed.internal.membership.NetView;
@@ -106,7 +107,6 @@ public class GMSEncrypt implements Cloneable {
   protected synchronized void initClusterSecretKey() throws Exception {
     if (this.clusterEncryptor == null) {
       this.clusterEncryptor = new ClusterEncryptor(this);
-
     }
   }
 
@@ -579,16 +579,12 @@ public class GMSEncrypt implements Cloneable {
     }
 
     private Cipher getEncryptCipher(String dhSKAlgo) throws Exception {
-      try {
-        if (encrypt == null) {
-          synchronized (this) {
-            if (encrypt == null) {
-              encrypt = GMSEncrypt.getEncryptCipher(dhSKAlgo, secretBytes);
-            }
+      if (encrypt == null) {
+        synchronized (this) {
+          if (encrypt == null) {
+            encrypt = GMSEncrypt.getEncryptCipher(dhSKAlgo, secretBytes);
           }
         }
-      } catch (Exception ex) {
-        throw ex;
       }
       return encrypt;
     }

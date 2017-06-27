@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
@@ -22,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_RES
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
 
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
@@ -51,6 +50,7 @@ import java.util.Properties;
  * use {@link LocatorServerStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
+
   private transient InternalCache cache;
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;
@@ -62,7 +62,9 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
    * Default constructor, if used, the rule will create a temporary folder as the server's working
    * dir, and will delete it when the test is done.
    */
-  public ServerStarterRule() {}
+  public ServerStarterRule() {
+    // nothing
+  }
 
   /**
    * if constructed this way, the rule won't be deleting the workingDir after the test is done. It's
@@ -106,16 +108,26 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   @Override
   public void stopMember() {
+    // stop CacheServer and then close cache -- cache.close() will stop any running CacheServers
+    if (server != null) {
+      try {
+        server.stop();
+      } catch (Exception e) {
+      } finally {
+        server = null;
+      }
+    }
+
     // make sure this cache is the one currently open. A server cache can be recreated due to
     // importing a new set of cluster configuration.
     cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
-      cache.close();
-      cache = null;
-    }
-    if (server != null) {
-      server.stop();
-      server = null;
+      try {
+        cache.close();
+      } catch (Exception e) {
+      } finally {
+        cache = null;
+      }
     }
   }
 
@@ -123,7 +135,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     pdxPersistent = true;
     return this;
   }
-
 
 
   public ServerStarterRule withEmbeddedLocator() {

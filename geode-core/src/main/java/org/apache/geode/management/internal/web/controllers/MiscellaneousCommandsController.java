@@ -48,10 +48,8 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @ResponseBody
   public String exportStackTraces(
       @RequestParam(value = CliStrings.EXPORT_STACKTRACE__FILE, required = false) final String file,
-      @RequestParam(value = CliStrings.EXPORT_STACKTRACE__GROUP,
-          required = false) final String groupName,
-      @RequestParam(value = CliStrings.EXPORT_STACKTRACE__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
           required = false) final boolean failIfFilePresent) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
@@ -61,11 +59,11 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
     }
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.EXPORT_STACKTRACE__GROUP, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(failIfFilePresent)) {
@@ -80,12 +78,11 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @RequestMapping(method = RequestMethod.POST, value = "/gc")
   @ResponseBody
   public String gc(
-      @RequestParam(value = CliStrings.GC__GROUP, required = false) final String[] groups) {
+      @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.GC);
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.GC__GROUP,
-          StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
@@ -96,7 +93,7 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @ResponseBody
   public String gc(@PathVariable("member") final String memberNameId) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.GC);
-    command.addOption(CliStrings.GC__MEMBER, decode(memberNameId));
+    command.addOption(CliStrings.MEMBER, decode(memberNameId));
     return processCommand(command.toString());
   }
 
@@ -104,15 +101,15 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @RequestMapping(method = RequestMethod.GET, value = "/netstat")
   @ResponseBody
   public String netstat(
-      @RequestParam(value = CliStrings.NETSTAT__MEMBER, required = false) final String[] members,
-      @RequestParam(value = CliStrings.NETSTAT__GROUP, required = false) final String group,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String[] members,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String group,
       @RequestParam(value = CliStrings.NETSTAT__FILE, required = false) final String file,
       @RequestParam(value = CliStrings.NETSTAT__WITHLSOF,
           defaultValue = "false") final Boolean withLsof) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.NETSTAT);
 
-    addCommandOption(null, command, CliStrings.NETSTAT__MEMBER, members);
-    addCommandOption(null, command, CliStrings.NETSTAT__GROUP, group);
+    addCommandOption(null, command, CliStrings.MEMBER, members);
+    addCommandOption(null, command, CliStrings.GROUP, group);
     addCommandOption(null, command, CliStrings.NETSTAT__FILE, file);
     addCommandOption(null, command, CliStrings.NETSTAT__WITHLSOF, withLsof);
 
@@ -136,7 +133,7 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
       @RequestParam(value = CliStrings.SHOW_LOG_LINE_NUM, defaultValue = "0") final Integer lines) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.SHOW_LOG);
 
-    command.addOption(CliStrings.SHOW_LOG_MEMBER, decode(memberNameId));
+    command.addOption(CliStrings.MEMBER, decode(memberNameId));
     command.addOption(CliStrings.SHOW_LOG_LINE_NUM, String.valueOf(lines));
 
     return processCommand(command.toString());
@@ -146,8 +143,7 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @RequestMapping(method = RequestMethod.GET, value = "/metrics")
   @ResponseBody
   public String showMetrics(
-      @RequestParam(value = CliStrings.SHOW_METRICS__MEMBER,
-          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.SHOW_METRICS__REGION,
           required = false) final String regionNamePath,
       @RequestParam(value = CliStrings.SHOW_METRICS__FILE, required = false) final String file,
@@ -158,7 +154,7 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.SHOW_METRICS);
 
     if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.SHOW_METRICS__MEMBER, memberNameId);
+      command.addOption(CliStrings.MEMBER, memberNameId);
     }
 
     if (hasValue(regionNamePath)) {
@@ -234,11 +230,11 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
     command.addOption(CliStrings.CHANGE_LOGLEVEL__LOGLEVEL, decode(logLevel));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CHANGE_LOGLEVEL__GROUPS, decode(groups));
+      command.addOption(CliStrings.GROUP, decode(groups));
     }
 
     if (hasValue(members)) {
-      command.addOption(CliStrings.CHANGE_LOGLEVEL__MEMBER, decode(members));
+      command.addOption(CliStrings.MEMBER, decode(members));
     }
 
     return processCommand(command.toString());

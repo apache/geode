@@ -4615,32 +4615,6 @@ public class DiskStoreImpl implements DiskStore {
     return false;
   }
 
-  private void stopDiskStoreTaskPool() {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Stopping DiskStoreTaskPool");
-    }
-    shutdownPool(diskStoreTaskPool);
-
-    // Allow the delayed writes to complete
-    delayedWritePool.shutdown();
-    try {
-      delayedWritePool.awaitTermination(1, TimeUnit.SECONDS);
-    } catch (InterruptedException ignore) {
-      Thread.currentThread().interrupt();
-    }
-  }
-
-  private void shutdownPool(ThreadPoolExecutor pool) {
-    // All the regions have already been closed
-    // so this pool shouldn't be doing anything.
-    List<Runnable> l = pool.shutdownNow();
-    for (Runnable runnable : l) {
-      if (l instanceof DiskStoreTask) {
-        ((DiskStoreTask) l).taskCancelled();
-      }
-    }
-  }
-
   public void writeRVVGC(DiskRegion dr, LocalRegion region) {
     acquireReadLock(dr);
     try {

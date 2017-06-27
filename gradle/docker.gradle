@@ -1,0 +1,100 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Configuration for running (dunit) tests in parallel in Docker containers.
+ * The container used must hava JAVA_HOME set in it's environment and must
+ * have 'java' defined on the path. For example, the relevant Dockerfile
+ * content could be:
+ * 
+ *   ENV JAVA_HOME=/opt/jdk1.8.0_u101
+ *   ENV PATH=$PATH:$JAVA_HOME/bin
+ *
+ * In addition, the container must have docker installed.
+ *
+ * The plugin can be activated with the Gradle property 'parallelDunit'.
+ * Additional properties that can be set are:
+ *
+ *  dunitDockerImage   - The docker image used for running parallel dunits. The
+ *                       default image is 'openjdk:8'. The image is required to
+ *                       have 'JAVA_HOME' set as an environment variable.
+ *  dunitParallelForks - The number of parallel containers that will be
+ *                       launched. The default is 8.
+ *  dunitDockerUser    - The user used within the docker container to run tests.
+ *                       The default is 'root'.
+ */
+
+def dockerConfig = {
+  maxParallelForks = dunitParallelForks.toInteger()
+
+  docker {
+    // base image for creating docker containers that execute the tests
+    image = dunitDockerImage
+
+    // volumes mounted to the containers
+    // in a form: host_dir : container_dir
+    def gradleHome = System.getenv('GRADLE_USER_HOME') ?: "${System.getenv('HOME')}/.gradle"
+    volumes = ["${gradleHome}":gradleHome]
+
+    // Add volumes configured by top-level build script
+    volumes << project.dunitDockerVolumes
+
+    // specify the user for starting Gradle test worker within the container.
+    user = dunitDockerUser
+
+    argsInspect = { List args ->
+      def javaHomeIdx = 0
+      def i = args.iterator()
+      def j = 0
+      while (i.hasNext()) {
+        if (i.next() == '-e') {
+          def x = i.next()
+          j++
+          if (x.startsWith('JAVA_HOME')) {
+            javaHomeIdx = j
+          }
+        }
+        j++
+      }
+
+      // Remove JAVA_HOME env variable - it might not be the same as the container needs
+      if (javaHomeIdx > 0) {
+        args.removeAt(javaHomeIdx-1)
+        args.removeAt(javaHomeIdx-1)
+      }
+
+      // Infer the index of this invocation
+      def matcher = (args[args.size - 1] =~ /.*Executor (\d*).*/)
+
+      args[3] = args[3] + matcher[0][1]
+      def workdir = new File(args[3])
+      // println "dockerize: making ${workdir}"
+      workdir.mkdirs()
+      // println args
+
+      args
+    }
+  }
+}
+
+subprojects {
+  apply plugin: 'com.github.pedjak.dockerized-test'
+
+  if (project.hasProperty('parallelDunit')) {
+    distributedTest.configure(dockerConfig)
+  }
+}

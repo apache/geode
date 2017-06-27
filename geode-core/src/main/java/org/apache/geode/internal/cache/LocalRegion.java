@@ -1120,7 +1120,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Retained
   EntryEventImpl newDestroyEntryEvent(Object key, Object aCallbackArgument) {
     validateKey(key);
-    validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForLimitedOrNoAccess();
 
@@ -1349,7 +1348,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       boolean retainResult) throws TimeoutException, CacheLoaderException {
     assert !retainResult || preferCD;
     validateKey(key);
-    validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForNoAccess();
     discoverJTA();
@@ -1563,7 +1561,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void invalidateRegion(Object aCallbackArgument) throws TimeoutException {
     getDataView().checkSupportsRegionInvalidate();
-    validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForLimitedOrNoAccess();
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_INVALIDATE,
@@ -3118,8 +3115,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   protected void validateArguments(Object key, Object value, Object aCallbackArgument) {
     validateKey(key);
     validateValue(value);
-    validateCallbackArg(aCallbackArgument);
-
   }
 
   void validateKey(Object key) {
@@ -3139,15 +3134,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // We don't need to check that the key is Serializable. Instead,
     // we let the lower-level (data) serialization mechanism take care
     // of this for us. See bug 32394.
-  }
-
-  /**
-   * Starting in 3.5, we don't check to see if the callback argument is {@code Serializable}. We
-   * instead rely on the actual serialization (which happens in-thread with the put) to tell us if
-   * there are any problems. TODO: delete method validateCallbackArg
-   */
-  void validateCallbackArg(Object aCallbackArgument) {
-    // do nothing
   }
 
   /**
@@ -11633,7 +11619,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public boolean remove(Object key, Object value, Object callbackArg) {
     checkIfConcurrentMapOpsAllowed();
     validateKey(key);
-    validateCallbackArg(callbackArg);
     checkReadiness();
     checkForLimitedOrNoAccess();
 

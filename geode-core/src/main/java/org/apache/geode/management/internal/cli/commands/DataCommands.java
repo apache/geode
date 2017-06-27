@@ -14,9 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.subject.Subject;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -60,24 +79,6 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @since GemFire 7.0
@@ -105,10 +106,8 @@ public class DataCommands implements GfshCommand {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result rebalance(
       @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
       @CliOption(key = CliStrings.REBALANCE__EXCLUDEREGION,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.REBALANCE__EXCLUDEREGION__HELP) String[] excludeRegions,
       @CliOption(key = CliStrings.REBALANCE__TIMEOUT, unspecifiedDefaultValue = "-1",
           help = CliStrings.REBALANCE__TIMEOUT__HELP) long timeout,
@@ -135,7 +134,7 @@ public class DataCommands implements GfshCommand {
 
     } catch (Exception ex) {
       result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.REBALANCE__MSG__EXCEPTION_OCCRED_WHILE_REBALANCING_0, ex.getMessage()));
+          CliStrings.REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0, ex.getMessage()));
     }
     LogWrapper.getInstance().info("Rebalance returning result >>>" + result);
     return result;
@@ -473,12 +472,12 @@ public class DataCommands implements GfshCommand {
     return listMembersId.toString();
   }
 
-  private CompositeResultData toCompositeResultData(CompositeResultData rebalanceResulteData,
+  private CompositeResultData toCompositeResultData(CompositeResultData rebalanceResultData,
       ArrayList<String> rstlist, int index, boolean simulate, InternalCache cache) {
 
     // add only if there are any valid regions in results
     if (rstlist.size() > resultItemCount && StringUtils.isNotEmpty(rstlist.get(resultItemCount))) {
-      TabularResultData table1 = rebalanceResulteData.addSection().addTable("Table" + index);
+      TabularResultData table1 = rebalanceResultData.addSection().addTable("Table" + index);
       String newLine = System.getProperty("line.separator");
       StringBuilder resultStr = new StringBuilder();
       resultStr.append(newLine);
@@ -541,7 +540,7 @@ public class DataCommands implements GfshCommand {
       table1.setHeader(headerText);
       cache.getLogger().info(headerText + resultStr);
     }
-    return rebalanceResulteData;
+    return rebalanceResultData;
   }
 
   private CompositeResultData buildResultForRebalance(CompositeResultData rebalanceResultData,
@@ -739,15 +738,12 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
-      @CliOption(key = CliStrings.EXPORT_DATA__FILE,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true,
+      @CliOption(key = CliStrings.EXPORT_DATA__FILE, mandatory = true,
           help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
-      @CliOption(key = CliStrings.EXPORT_DATA__MEMBER,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          optionContext = ConverterHint.MEMBERIDNAME, mandatory = true,
-          help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+          mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
-    getCache().getSecurityService().authorizeRegionRead(regionName);
+    getSecurityService().authorizeRegionRead(regionName);
     final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
     Result result;
 
@@ -796,16 +792,14 @@ public class DataCommands implements GfshCommand {
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
-      @CliOption(key = CliStrings.IMPORT_DATA__MEMBER, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+      @CliOption(key = CliStrings.MEMBER, mandatory = true,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",
           help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks) {
 
-    getCache().getSecurityService().authorizeRegionWrite(regionName);
+    getSecurityService().authorizeRegionWrite(regionName);
 
     Result result;
 
@@ -1003,7 +997,7 @@ public class DataCommands implements GfshCommand {
           help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP,
           unspecifiedDefaultValue = "false") boolean recursive) {
 
-    getCache().getSecurityService().authorizeRegionRead(regionPath, key);
+    getSecurityService().authorizeRegionRead(regionPath, key);
 
     DataCommandResult dataResult;
 

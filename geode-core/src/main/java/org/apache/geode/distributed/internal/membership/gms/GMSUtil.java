@@ -28,6 +28,13 @@ import org.apache.geode.internal.net.SocketCreator;
 
 public class GMSUtil {
 
+  /**
+   * parse locators & check that the resulting address is compatible with the given address
+   * 
+   * @param locatorsString a DistributionConfig "locators" string
+   * @param bindAddress optional address to check for loopback compatibility
+   * @return addresses of locators
+   */
   public static List<InetSocketAddress> parseLocators(String locatorsString, String bindAddress) {
     InetAddress addr = null;
 
@@ -43,7 +50,13 @@ public class GMSUtil {
     return parseLocators(locatorsString, addr);
   }
 
-
+  /**
+   * parse locators & check that the resulting address is compatible with the given address
+   * 
+   * @param locatorsString a DistributionConfig "locators" string
+   * @param bindAddress optional address to check for loopback compatibility
+   * @return addresses of locators
+   */
   public static List<InetSocketAddress> parseLocators(String locatorsString,
       InetAddress bindAddress) {
     List<InetSocketAddress> result = new ArrayList<>(2);

@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms.messenger;
 import static org.mockito.Mockito.*;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

@@ -14,7 +14,27 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -58,26 +78,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * @since GemFire 7.0
@@ -102,7 +103,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
   }
 
   /**
-   * TODO: method createRegion is too complex to analyze
+   * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
+   * is persistent
    */
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
@@ -115,7 +117,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String useAttributesFrom,
-      @CliOption(key = CliStrings.CREATE_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
@@ -293,19 +296,20 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
         }
       }
 
+      // Do we prefer to validate or authorize first?
       validateRegionFunctionArgs(cache, regionFunctionArgs);
+      if (isPersistentShortcut(regionFunctionArgs.getRegionShortcut())
+          || isAttributePersistent(regionFunctionArgs.getRegionAttributes())) {
+        getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE, Target.DISK);
+      }
 
       Set<DistributedMember> membersToCreateRegionOn;
       if (groups != null && groups.length != 0) {
         membersToCreateRegionOn = CliUtil.getDistributedMembersByGroup(cache, groups);
         // have only normal members from the group
-        for (Iterator<DistributedMember> it = membersToCreateRegionOn.iterator(); it.hasNext();) {
-          DistributedMember distributedMember = it.next();
-          if (((InternalDistributedMember) distributedMember)
-              .getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
-            it.remove();
-          }
-        }
+        membersToCreateRegionOn
+            .removeIf(distributedMember -> ((InternalDistributedMember) distributedMember)
+                .getVmKind() == DistributionManager.LOCATOR_DM_TYPE);
       } else {
         membersToCreateRegionOn = CliUtil.getAllNormalMembers(cache);
       }
@@ -338,9 +342,6 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     } catch (IllegalArgumentException | IllegalStateException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (RuntimeException e) {
-      LogWrapper.getInstance().info(e.getMessage(), e);
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
@@ -379,7 +380,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
   public Result alterRegion(
       @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
-      @CliOption(key = CliStrings.ALTER_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.ALTER_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
           specifiedDefaultValue = "-1",
@@ -406,9 +408,9 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
       @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) String[] cacheListeners,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "null",
+      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__CACHELOADER__HELP) String cacheLoader,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "null",
+      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) String cacheWriter,
       @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
@@ -421,7 +423,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
+    getSecurityService().authorizeRegionManage(regionPath);
 
     try {
       InternalCache cache = getCache();
@@ -609,14 +611,17 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     }
   }
 
-  private void validateRegionFunctionArgs(InternalCache cache,
-      RegionFunctionArgs regionFunctionArgs) {
+  DistributedSystemMXBean getDSMBean(InternalCache cache) {
+    ManagementService managementService = ManagementService.getExistingManagementService(cache);
+    return managementService.getDistributedSystemMXBean();
+  }
+
+  void validateRegionFunctionArgs(InternalCache cache, RegionFunctionArgs regionFunctionArgs) {
     if (regionFunctionArgs.getRegionPath() == null) {
       throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
     }
 
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
-    DistributedSystemMXBean dsMBean = managementService.getDistributedSystemMXBean();
+    DistributedSystemMXBean dsMBean = getDSMBean(cache);
 
     String useAttributesFrom = regionFunctionArgs.getUseAttributesFrom();
     if (useAttributesFrom != null && !useAttributesFrom.isEmpty()
@@ -837,7 +842,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
           throw new IllegalArgumentException(
               CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-                  new Object[] {regionFunctionArgs.getCompressor()}),
+                  new Object[] {regionFunctionArgs.getPartitionResolver()}),
               e);
         }
       }
@@ -908,7 +913,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
               } // attributes null check
             } // not IllegalArgumentException or other throwable
           } // iterate over list - there should be only one result in the list
-        } // result list is not null or mpty
+        } // result list is not null or empty
       } // regionAssociatedMembers is not-empty
     } // attributes are null because do not exist on local member
 
@@ -991,7 +996,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       if (regionMembersList.size() == 0) {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE,
-                new Object[] {regionPath, "jmx-manager-update-rate milliseconds"}));
+                regionPath, "jmx-manager-update-rate milliseconds"));
       }
 
       CliFunctionResult destroyRegionResult;
@@ -999,8 +1004,8 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
       List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
-      String message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED,
-          new Object[] {regionPath, ""});
+      String message =
+          CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED, regionPath, "");
 
       // Only if there is an error is this set to false
       boolean isRegionDestroyed = true;
@@ -1013,12 +1018,12 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
           LogWrapper.getInstance().info(t.getMessage(), t);
           message = CliStrings.format(
               CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1,
-              new Object[] {regionPath, t.getMessage()});
+              regionPath, t.getMessage());
           isRegionDestroyed = false;
         } else {
           message = CliStrings.format(
               CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
-              new Object[] {regionPath, destroyRegionResult.getMessage()});
+              regionPath, destroyRegionResult.getMessage());
           isRegionDestroyed = false;
         }
       }
@@ -1029,12 +1034,12 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       }
     } catch (IllegalStateException e) {
       result = ResultBuilder.createUserErrorResult(CliStrings.format(
-          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
-          new Object[] {regionPath, e.getMessage()}));
+          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1, regionPath,
+          e.getMessage()));
     } catch (Exception e) {
       result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
-          new Object[] {regionPath, e.getMessage()}));
+          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1, regionPath,
+          e.getMessage()));
     }
 
     if (xmlEntity.get() != null) {
@@ -1121,5 +1126,21 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
       }
     }
     return foundMembers;
+  }
+
+  private boolean isPersistentShortcut(RegionShortcut shortcut) {
+    return shortcut == RegionShortcut.LOCAL_PERSISTENT
+        || shortcut == RegionShortcut.LOCAL_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.PARTITION_PERSISTENT
+        || shortcut == RegionShortcut.PARTITION_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT
+        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW
+        || shortcut == RegionShortcut.REPLICATE_PERSISTENT
+        || shortcut == RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
+  }
+
+  private boolean isAttributePersistent(RegionAttributes attributes) {
+    return attributes != null && attributes.getDataPolicy() != null
+        && attributes.getDataPolicy().toString().contains("PERSISTENT");
   }
 }

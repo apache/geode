@@ -14,7 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.lang.ArrayUtils;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -23,7 +36,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
@@ -47,18 +59,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * The IndexCommands class encapsulates all GemFire shell (Gfsh) commands related to indexes defined
@@ -80,10 +81,9 @@ public class IndexCommands implements GfshCommand {
       Collections.synchronizedSet(new HashSet<IndexInfo>());
 
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS, mandatory = false,
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ, target = Target.QUERY)
+  public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
       specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats) {
     try {
@@ -114,7 +114,7 @@ public class IndexCommands implements GfshCommand {
         functionExecutor.execute(new ListIndexFunction());
 
     final List<?> results = (List<?>) resultsCollector.getResult();
-    final List<IndexDetails> indexDetailsList = new ArrayList<IndexDetails>(results.size());
+    final List<IndexDetails> indexDetailsList = new ArrayList<>(results.size());
 
     for (Object result : results) {
       if (result instanceof Set) { // ignore FunctionInvocationTargetExceptions and other Exceptions
@@ -161,9 +161,10 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.CREATE_INDEX, help = CliStrings.CREATE_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
 
@@ -174,26 +175,25 @@ public class IndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_INDEX__REGION__HELP) String regionPath,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__TYPE, mandatory = false,
-          unspecifiedDefaultValue = "range", optionContext = ConverterHint.INDEX_TYPE,
+      @CliOption(key = CliStrings.CREATE_INDEX__TYPE, unspecifiedDefaultValue = "range",
+          optionContext = ConverterHint.INDEX_TYPE,
           help = CliStrings.CREATE_INDEX__TYPE__HELP) final String indexType,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] group) {
 
-    Result result = null;
+    Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
     try {
       final Cache cache = CacheFactory.getAnyInstance();
 
-      int idxType = IndexInfo.RANGE_INDEX;
+      int idxType;
 
       // Index type check
       if ("range".equalsIgnoreCase(indexType)) {
@@ -235,8 +235,8 @@ public class IndexCommands implements GfshCommand {
           CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
 
       final List<Object> funcResults = (List<Object>) rc.getResult();
-      final Set<String> successfulMembers = new TreeSet<String>();
-      final Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
+      final Set<String> successfulMembers = new TreeSet<>();
+      final Map<String, Set<String>> indexOpFailMap = new HashMap<>();
 
       for (final Object funcResult : funcResults) {
         if (funcResult instanceof CliFunctionResult) {
@@ -253,7 +253,7 @@ public class IndexCommands implements GfshCommand {
             Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
 
             if (failedMembers == null) {
-              failedMembers = new TreeSet<String>();
+              failedMembers = new TreeSet<>();
             }
             failedMembers.add(cliFunctionResult.getMemberIdOrName());
             indexOpFailMap.put(exceptionMessage, failedMembers);
@@ -314,25 +314,25 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  public Result destroyIndex(@CliOption(key = CliStrings.DESTROY_INDEX__NAME, mandatory = false,
-      unspecifiedDefaultValue = "",
-      help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  public Result destroyIndex(
+      @CliOption(key = CliStrings.DESTROY_INDEX__NAME, unspecifiedDefaultValue = "",
+          help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__REGION, mandatory = false,
-          optionContext = ConverterHint.REGION_PATH,
+      @CliOption(key = CliStrings.DESTROY_INDEX__REGION, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESTROY_INDEX__REGION__HELP) final String regionPath,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.DESTROY_INDEX__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group) {
 
-    Result result = null;
+    Result result;
 
     if (StringUtils.isBlank(indexName) && StringUtils.isBlank(regionPath)
         && ArrayUtils.isEmpty(group) && ArrayUtils.isEmpty(memberNameOrID)) {
@@ -340,18 +340,11 @@ public class IndexCommands implements GfshCommand {
           CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
     }
 
-    String regionName = null;
     final Cache cache = CacheFactory.getAnyInstance();
-
-    // If a regionName is specified, then authorize data manage on the regionName, otherwise, it
-    // requires data manage permission on all regions
-    if (StringUtils.isNotBlank(regionPath)) {
+    String regionName = null;
+    if (regionPath != null) {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
-      getCache().getSecurityService().authorizeRegionManage(regionName);
-    } else {
-      getCache().getSecurityService().authorizeDataManage();
     }
-
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
     Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
 
@@ -362,8 +355,8 @@ public class IndexCommands implements GfshCommand {
     ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
     List<Object> funcResults = (List<Object>) rc.getResult();
 
-    Set<String> successfulMembers = new TreeSet<String>();
-    Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
+    Set<String> successfulMembers = new TreeSet<>();
+    Map<String, Set<String>> indexOpFailMap = new HashMap<>();
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     for (Object funcResult : funcResults) {
@@ -383,7 +376,7 @@ public class IndexCommands implements GfshCommand {
         Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
 
         if (failedMembers == null) {
-          failedMembers = new TreeSet<String>();
+          failedMembers = new TreeSet<>();
         }
         failedMembers.add(cliFunctionResult.getMemberIdOrName());
         indexOpFailMap.put(exceptionMessage, failedMembers);
@@ -412,7 +405,7 @@ public class IndexCommands implements GfshCommand {
       int num = 0;
       for (String memberId : successfulMembers) {
         infoResult.addLine(CliStrings.format(
-            CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));;
+            CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
       }
       result = ResultBuilder.buildResult(infoResult);
 
@@ -451,9 +444,10 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.DEFINE_INDEX, help = CliStrings.DEFINE_INDEX__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   public Result defineIndex(@CliOption(key = CliStrings.DEFINE_INDEX_NAME, mandatory = true,
       help = CliStrings.DEFINE_INDEX__HELP) final String indexName,
 
@@ -464,16 +458,14 @@ public class IndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DEFINE_INDEX__REGION__HELP) String regionPath,
 
-      @CliOption(key = CliStrings.DEFINE_INDEX__TYPE, mandatory = false,
-          unspecifiedDefaultValue = "range", optionContext = ConverterHint.INDEX_TYPE,
+      @CliOption(key = CliStrings.DEFINE_INDEX__TYPE, unspecifiedDefaultValue = "range",
+          optionContext = ConverterHint.INDEX_TYPE,
           help = CliStrings.DEFINE_INDEX__TYPE__HELP) final String indexType) {
 
-    Result result = null;
+    Result result;
     XmlEntity xmlEntity = null;
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
-
-    int idxType = IndexInfo.RANGE_INDEX;
+    int idxType;
 
     // Index type check
     if ("range".equalsIgnoreCase(indexType)) {
@@ -518,21 +510,21 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.CREATE_DEFINED_INDEXES, help = CliStrings.CREATE_DEFINED__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   // TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__MEMBER, mandatory = false,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_DEFINED_INDEXES__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.CREATE_DEFINED_INDEXES__GROUP, mandatory = false,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
-    Result result = null;
+    Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     if (indexDefinitions.isEmpty()) {
@@ -553,8 +545,8 @@ public class IndexCommands implements GfshCommand {
           CliUtil.executeFunction(createDefinedIndexesFunction, indexDefinitions, targetMembers);
 
       final List<Object> funcResults = (List<Object>) rc.getResult();
-      final Set<String> successfulMembers = new TreeSet<String>();
-      final Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
+      final Set<String> successfulMembers = new TreeSet<>();
+      final Map<String, Set<String>> indexOpFailMap = new HashMap<>();
 
       for (final Object funcResult : funcResults) {
         if (funcResult instanceof CliFunctionResult) {
@@ -571,7 +563,7 @@ public class IndexCommands implements GfshCommand {
             Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
 
             if (failedMembers == null) {
-              failedMembers = new TreeSet<String>();
+              failedMembers = new TreeSet<>();
             }
             failedMembers.add(cliFunctionResult.getMemberIdOrName());
             indexOpFailMap.put(exceptionMessage, failedMembers);
@@ -624,9 +616,9 @@ public class IndexCommands implements GfshCommand {
   }
 
   @CliCommand(value = CliStrings.CLEAR_DEFINED_INDEXES, help = CliStrings.CLEAR_DEFINED__HELP)
-  @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   // TODO : Add optionContext for indexName
   public Result clearDefinedIndexes() {
     indexDefinitions.clear();

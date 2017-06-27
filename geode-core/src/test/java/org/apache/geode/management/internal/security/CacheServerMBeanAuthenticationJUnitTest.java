@@ -16,17 +16,18 @@ package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
-import org.apache.geode.management.CacheServerMXBean;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class CacheServerMBeanAuthenticationJUnitTest {
@@ -34,10 +35,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
@@ -49,7 +47,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");
     bean.fetchLoadProbe();

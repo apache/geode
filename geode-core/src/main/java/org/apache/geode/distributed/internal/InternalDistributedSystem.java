@@ -15,7 +15,8 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,10 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.security.PostProcessor;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -60,6 +57,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
@@ -100,6 +98,8 @@ import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.statistics.DummyStatisticsImpl;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
@@ -111,7 +111,31 @@ import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Array;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -516,6 +540,10 @@ public class InternalDistributedSystem extends DistributedSystem
     return this.securityService;
   }
 
+  public void setSecurityService(SecurityService securityService) {
+    this.securityService = securityService;
+  }
+
   /**
    * Registers a listener to the system
    * 
@@ -586,8 +614,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
     this.config = new RuntimeDistributionConfigImpl(this);
 
-    this.securityService =
-        SecurityServiceFactory.create(this.config, securityManager, postProcessor);
+    this.securityService = SecurityServiceFactory.create(this.config.getSecurityProps(),
+        securityManager, postProcessor);
 
     if (!this.isLoner) {
       this.attemptingToReconnect = (reconnectAttemptCounter > 0);
@@ -1797,7 +1825,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[]) statsList.toArray(new Statistics[0]);
+    return statsList.toArray(new Statistics[0]);
   }
 
   // StatisticsFactory methods
@@ -1829,7 +1857,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   public FunctionStats getFunctionStats(String textId) {
-    FunctionStats stats = (FunctionStats) functionExecutionStatsMap.get(textId);
+    FunctionStats stats = functionExecutionStatsMap.get(textId);
     if (stats == null) {
       stats = new FunctionStats(this, textId);
       FunctionStats oldStats = functionExecutionStatsMap.putIfAbsent(textId, stats);
@@ -1870,7 +1898,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public interface StatisticsVisitor {
 
-    public void visit(Statistics stat);
+    void visit(Statistics stat);
   }
 
   public Set<String> getAllFunctionExecutionIds() {
@@ -2165,9 +2193,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * @param resource the actual resource object.
    */
   private void notifyResourceEventListeners(ResourceEvent event, Object resource) {
-    for (Iterator<ResourceEventsListener> iter = resourceListeners.iterator(); iter.hasNext();) {
+    for (ResourceEventsListener listener : resourceListeners) {
       try {
-        ResourceEventsListener listener = (ResourceEventsListener) iter.next();
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
         // ignore
@@ -2302,7 +2329,7 @@ public class InternalDistributedSystem extends DistributedSystem
               boolean isDurableClient = false;
 
               if (dca != null) {
-                isDurableClient = ((dca.getId() == null || dca.getId().isEmpty()) ? false : true);
+                isDurableClient = (!(dca.getId() == null || dca.getId().isEmpty()));
               }
 
               ((InternalDistributedSystem) ds).disconnect(false,
@@ -2337,7 +2364,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * 
      * @param sys the the system we are disconnecting from process should take before returning.
      */
-    public void onDisconnect(InternalDistributedSystem sys);
+    void onDisconnect(InternalDistributedSystem sys);
 
   }
 
@@ -2352,7 +2379,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS, which is in a partially disconnected state and cannot be used
      *        for messaging
      */
-    public void reconnecting(InternalDistributedSystem oldSystem);
+    void reconnecting(InternalDistributedSystem oldSystem);
 
     /**
      * Invoked after a reconnect to the distributed system
@@ -2360,8 +2387,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS
      * @param newSystem the new DS
      */
-    public void onReconnect(InternalDistributedSystem oldSystem,
-        InternalDistributedSystem newSystem);
+    void onReconnect(InternalDistributedSystem oldSystem, InternalDistributedSystem newSystem);
   }
 
   /**
@@ -2374,7 +2400,7 @@ public class InternalDistributedSystem extends DistributedSystem
      * 
      * @param sys
      */
-    public void onShutdown(InternalDistributedSystem sys);
+    void onShutdown(InternalDistributedSystem sys);
   }
 
   /**
@@ -2427,10 +2453,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return false;
     }
     boolean newDsConnected = (rds == null || !rds.isConnected());
-    if (!newDsConnected) {
-      return false;
-    }
-    return true;
+    return newDsConnected;
   }
 
 
@@ -2754,7 +2777,7 @@ public class InternalDistributedSystem extends DistributedSystem
         if (newDM instanceof DistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
-          if (((DistributionManager) newDM).getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
+          if (newDM.getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
             try {
               CacheConfig config = new CacheConfig();
               if (cacheXML != null) {
@@ -2962,7 +2985,7 @@ public class InternalDistributedSystem extends DistributedSystem
     /**
      * Invoked after a connection to the distributed system is created
      */
-    public void onConnect(InternalDistributedSystem sys);
+    void onConnect(InternalDistributedSystem sys);
   }
 
   public String forceStop() {
@@ -3064,8 +3087,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * Privacy Violations that Fortify will complain about.
    * </p>
    */
-  public static interface CreationStackGenerator {
+  public interface CreationStackGenerator {
 
-    public Throwable generateCreationStack(final DistributionConfig config);
+    Throwable generateCreationStack(final DistributionConfig config);
   }
 }

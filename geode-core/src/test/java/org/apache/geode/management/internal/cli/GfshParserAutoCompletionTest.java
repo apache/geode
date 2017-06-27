@@ -53,7 +53,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompletionDeploy() throws Exception {
     buffer = "deploy";
     candidate = parser.complete(buffer);
-    assertThat(candidate.size()).isEqualTo(3);
+    assertThat(candidate.size()).isEqualTo(5);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --dir");
   }
 
@@ -61,7 +61,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompletionDeployWithSpace() throws Exception {
     buffer = "deploy ";
     candidate = parser.complete(buffer);
-    assertThat(candidate.size()).isEqualTo(3);
+    assertThat(candidate.size()).isEqualTo(5);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--dir");
   }
 
@@ -244,7 +244,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompletWithRegionTypeWithSpace() throws Exception {
     buffer = "create region --name=test --type=REPLICATE ";
     candidate = parser.complete(buffer);
-    assertThat(candidate.size()).isEqualTo(37);
+    assertThat(candidate.size()).isEqualTo(38);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--async-event-queue-id");
   }
 
