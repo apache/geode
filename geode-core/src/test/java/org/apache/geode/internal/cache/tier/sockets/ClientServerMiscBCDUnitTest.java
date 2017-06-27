@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
@@ -96,8 +97,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
     });
   }
 
-  // @Test
-  @Ignore
+  @Test
   public void testDistributedMemberBytesWithCurrentServerAndOldClient() throws Exception {
     // Start current version server
     int serverPort = initServerCache(true);
@@ -119,7 +119,10 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
         server1.invoke(() -> getClientMembershipIdBytesOnServer());
 
     // Verify member id bytes on client and server are equal
-    assertTrue(Arrays.equals(clientMembershipIdBytesOnClient, clientMembershipIdBytesOnServer));
+    String complaint = "size on client=" + clientMembershipIdBytesOnClient.length
+        + "; size on server=" + clientMembershipIdBytesOnServer.length;
+    assertTrue(complaint,
+        Arrays.equals(clientMembershipIdBytesOnClient, clientMembershipIdBytesOnServer));
   }
 
   private byte[] getClientMembershipIdBytesOnClient() {
