@@ -14,8 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.junit.BeforeClass;
+
+import org.apache.geode.test.dunit.DUnitEnv;
 
 /**
  * Tomcat 8 Peer to Peer tests
@@ -28,7 +29,8 @@ public class Tomcat8Test extends CargoTestBase {
 
   @BeforeClass
   public static void setupTomcatInstall() throws Exception {
-    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8);
+    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat8Test");
     install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 

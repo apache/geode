@@ -178,7 +178,7 @@ public class TomcatInstall extends ContainerInstall {
     this(version, config, DEFAULT_INSTALL_DIR);
   }
 
-  private TomcatInstall(TomcatVersion version, TomcatConfig config, String installDir)
+  public TomcatInstall(TomcatVersion version, TomcatConfig config, String installDir)
       throws Exception {
     // Does download and install from URL
     super(installDir, version.downloadURL());
@@ -189,7 +189,6 @@ public class TomcatInstall extends ContainerInstall {
     // Get tomcat module path
     tomcatModulePath = findAndExtractModule(GEODE_BUILD_HOME, "tomcat");
     // Default properties
-    setSystemProperty("cache-xml-file", tomcatModulePath + "/conf/" + config.getXMLFile());
     setCacheProperty("enableLocalCache", "false");
 
     // Install geode sessions into tomcat install
@@ -199,6 +198,17 @@ public class TomcatInstall extends ContainerInstall {
     if (version.jarSkipPropertyName() != null) {
       updateProperties();
     }
+  }
+
+  /**
+   * Sets the XML file to use for cache settings
+   *
+   * Calls {@link ContainerInstall#setCacheXMLFile(String, String)} with the default original cache
+   * file located in the conf folder of the {@link #tomcatModulePath} and the given newXMLFilePath.
+   */
+  @Override
+  public void setupCacheXMLFile(String newXMLFilePath) throws IOException {
+    super.setCacheXMLFile(tomcatModulePath + "/conf/" + config.getXMLFile(), newXMLFilePath);
   }
 
   /**

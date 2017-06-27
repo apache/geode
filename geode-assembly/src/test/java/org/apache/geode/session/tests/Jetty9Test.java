@@ -14,8 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.junit.BeforeClass;
+
+import org.apache.geode.test.dunit.DUnitEnv;
 
 /**
  * Jetty 9 Peer to Peer tests
@@ -28,7 +29,8 @@ public class Jetty9Test extends CargoTestBase {
 
   @BeforeClass
   public static void setupJettyInstall() throws Exception {
-    install = new GenericAppServerInstall(GenericAppServerInstall.Server.JETTY9);
+    install = new GenericAppServerInstall(GenericAppServerInstall.Server.JETTY9,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Jetty9Test");
     install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 

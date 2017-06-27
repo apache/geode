@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
@@ -110,6 +111,33 @@ public abstract class ContainerInstall {
    * locator.
    */
   public abstract void setLocator(String address, int port) throws Exception;
+
+  /**
+   * Sets up the cache XML files
+   */
+  public abstract void setupCacheXMLFile(String newXMLFilePath) throws IOException;
+
+  /**
+   * Sets the XML file which contains cache properties.
+   *
+   * Normally this XML file would be set to the cache-client.xml or cache-peer.xml files located in
+   * the module's conf directory (located in build/install/apache-geode/tools/Modules/... for
+   * geode-assembly). However, this allows containers to have different XML files so that locators
+   * will not accidentally overwrite each other's when tests are run concurrently.
+   *
+   * The originalXMLFilePath is used to copy the original XML file to the newXMLFilePath so that all
+   * settings previously there are saved and copied over.
+   */
+  public void setCacheXMLFile(String originalXMLFilePath, String newXMLFilePath)
+      throws IOException {
+    File moduleXMLFile = new File(originalXMLFilePath);
+    File installXMLFile = new File(newXMLFilePath);
+
+    installXMLFile.getParentFile().mkdirs();
+    FileUtils.copyFile(moduleXMLFile, installXMLFile);
+
+    setSystemProperty("cache-xml-file", installXMLFile.getAbsolutePath());
+  }
 
   /**
    * Set a geode session replication property. For example enableLocalCache.

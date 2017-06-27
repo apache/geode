@@ -14,8 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.junit.BeforeClass;
+
+import org.apache.geode.test.dunit.DUnitEnv;
 
 /**
  * Jetty 9 Client Server tests
@@ -29,7 +30,8 @@ public class Jetty9ClientServerTest extends GenericAppServerClientServerTest {
   @BeforeClass
   public static void setupJettyInstall() throws Exception {
     install = new GenericAppServerInstall(GenericAppServerInstall.Server.JETTY9,
-        GenericAppServerInstall.CacheType.CLIENT_SERVER);
+        GenericAppServerInstall.CacheType.CLIENT_SERVER,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Jetty9ClientServerTest");
     install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 

@@ -14,8 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.junit.BeforeClass;
+
+import org.apache.geode.test.dunit.DUnitEnv;
 
 /**
  * Tomcat 7 Peer to Peer tests
@@ -28,7 +29,8 @@ public class Tomcat7Test extends CargoTestBase {
 
   @BeforeClass
   public static void setupTomcatInstall() throws Exception {
-    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7);
+    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7Test");
     install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 
