@@ -27,13 +27,6 @@ import java.util.ServiceLoader;
 public class OperationsHandlerRegistry {
   private HashMap<Integer, OperationHandler> registeredOperations = new HashMap<>();
 
-  public OperationsHandlerRegistry() throws OperationHandlerAlreadyRegisteredException {
-    ServiceLoader<OperationHandler> operationHandlers = ServiceLoader.load(OperationHandler.class);
-    for (OperationHandler operationHandler : operationHandlers) {
-      registerOperationHandlerForOperationId(operationHandler.getOperationCode(), operationHandler);
-    }
-  }
-
   public OperationHandler getOperationHandlerForOperationId(int operationCode)
       throws OperationHandlerNotRegisteredException {
     OperationHandler operationHandler = registeredOperations.get(operationCode);
