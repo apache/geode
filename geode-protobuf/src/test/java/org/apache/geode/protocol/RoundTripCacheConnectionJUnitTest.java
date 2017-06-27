@@ -26,12 +26,16 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.sockets.GenericProtocolServerConnection;
+import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.serialization.codec.StringCodec;
+import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
+import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.awaitility.Awaitility;
 import org.junit.After;
@@ -75,7 +79,6 @@ public class RoundTripCacheConnectionJUnitTest {
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     Region<Object, Object> testRegion = regionFactory.create(TEST_REGION);
-    testRegion.put(TEST_KEY, TEST_VALUE);
   }
 
   @After
@@ -93,8 +96,33 @@ public class RoundTripCacheConnectionJUnitTest {
     outputStream.write(110);
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    protobufProtocolSerializer.serialize(makeTestGetRequest(new StringCodec()), outputStream);
+    ClientProtocol.Message putMessage = MessageUtil.makePutRequestMessage(TEST_KEY, TEST_VALUE,
+        TEST_REGION, ClientProtocol.MessageHeader.newBuilder().build());
+    protobufProtocolSerializer.serialize(putMessage, outputStream);
+    validatePutResponse(socket, protobufProtocolSerializer);
 
+    ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(TEST_KEY, TEST_REGION,
+        ClientProtocol.MessageHeader.newBuilder().build());
+    protobufProtocolSerializer.serialize(getMessage, outputStream);
+    validateGetResponse(socket, protobufProtocolSerializer);
+  }
+
+  private void validatePutResponse(Socket socket,
+      ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
+    ClientProtocol.Message message =
+        protobufProtocolSerializer.deserialize(socket.getInputStream());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
+    ClientProtocol.Response response = message.getResponse();
+    assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
+        response.getResponseAPICase());
+    RegionAPI.PutResponse putResponse = response.getPutResponse();
+    assertEquals(true, putResponse.getSuccess());
+  }
+
+  private void validateGetResponse(Socket socket,
+      ProtobufProtocolSerializer protobufProtocolSerializer)
+      throws InvalidProtocolMessageException, IOException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException, CodecAlreadyRegisteredForTypeException {
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
@@ -106,18 +134,5 @@ public class RoundTripCacheConnectionJUnitTest {
     assertEquals(BasicTypes.EncodingType.STRING, result.getEncodingType());
     assertEquals(TEST_VALUE, new ProtobufSerializationService().decode(result.getEncodingType(),
         result.getValue().toByteArray()));
-  }
-
-  private ClientProtocol.Message makeTestGetRequest(StringCodec stringCodec) {
-    RegionAPI.GetRequest.Builder getRequestBuilder = RegionAPI.GetRequest.newBuilder();
-    getRequestBuilder.setRegionName(TEST_REGION)
-        .setKey(BasicTypes.EncodedValue.newBuilder().setEncodingType(BasicTypes.EncodingType.STRING)
-            .setValue(ByteString.copyFrom(stringCodec.encode(TEST_KEY))));
-    ClientProtocol.Request request =
-        ClientProtocol.Request.newBuilder().setGetRequest(getRequestBuilder).build();
-    ClientProtocol.Message requestMessage = ClientProtocol.Message.newBuilder()
-        .setMessageHeader(ClientProtocol.MessageHeader.newBuilder()).setRequest(request).build();
-
-    return requestMessage;
   }
 }

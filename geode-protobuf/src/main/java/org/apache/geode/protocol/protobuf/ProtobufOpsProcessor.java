@@ -20,7 +20,6 @@ import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.TypeEncodingException;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -37,15 +36,14 @@ public class ProtobufOpsProcessor {
   }
 
   public ClientProtocol.Response process(ClientProtocol.Request request, Cache cache)
-      throws TypeEncodingException, OperationHandlerNotRegisteredException,
-      InvalidProtocolMessageException {
-    OperationHandler opsHandler = opsHandlerRegistry
-        .getOperationHandlerForOperationId(request.getRequestAPICase().getNumber());
+      throws OperationHandlerNotRegisteredException, InvalidProtocolMessageException {
+    ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
+    OperationHandler opsHandler =
+        opsHandlerRegistry.getOperationHandlerForOperationId(requestType.getNumber());
 
     Object responseMessage =
         opsHandler.process(serializationService, getRequestForOperationTypeID(request), cache);
-    return ClientProtocol.Response.newBuilder()
-        .setGetResponse((RegionAPI.GetResponse) responseMessage).build();
+    return wrapResponseForOperationTypeID(requestType, responseMessage);
   }
 
   // package visibility for testing
@@ -61,6 +59,23 @@ public class ProtobufOpsProcessor {
       default:
         throw new InvalidProtocolMessageException(
             "Unknown request type: " + request.getRequestAPICase().getNumber());
+    }
+  }
+
+  static ClientProtocol.Response wrapResponseForOperationTypeID(
+      ClientProtocol.Request.RequestAPICase requestType, Object response)
+      throws InvalidProtocolMessageException {
+    ClientProtocol.Response.Builder builder = ClientProtocol.Response.newBuilder();
+    switch (requestType) {
+      case PUTREQUEST:
+        return builder.setPutResponse((RegionAPI.PutResponse) response).build();
+      case GETREQUEST:
+        return builder.setGetResponse((RegionAPI.GetResponse) response).build();
+      case PUTALLREQUEST:
+        return builder.setPutAllResponse((RegionAPI.PutAllResponse) response).build();
+      default:
+        throw new InvalidProtocolMessageException(
+            "Unknown request type: " + requestType.getNumber());
     }
   }
 }

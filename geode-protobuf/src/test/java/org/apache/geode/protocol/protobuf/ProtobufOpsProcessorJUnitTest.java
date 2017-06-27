@@ -24,9 +24,6 @@ import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.TypeEncodingException;
-import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,8 +32,8 @@ import org.junit.experimental.categories.Category;
 @Category(UnitTest.class)
 public class ProtobufOpsProcessorJUnitTest {
   @Test
-  public void testOpsProcessor() throws TypeEncodingException,
-      OperationHandlerNotRegisteredException, InvalidProtocolMessageException {
+  public void testOpsProcessor()
+      throws OperationHandlerNotRegisteredException, InvalidProtocolMessageException {
     OperationsHandlerRegistry opsHandlerRegistryStub = mock(OperationsHandlerRegistry.class);
     OperationHandler operationHandlerStub = mock(OperationHandler.class);
     SerializationService serializationServiceStub = mock(SerializationService.class);
