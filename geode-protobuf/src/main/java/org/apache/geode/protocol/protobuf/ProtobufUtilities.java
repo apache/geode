@@ -18,6 +18,9 @@ import com.google.protobuf.ByteString;
 
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.serialization.SerializationService;
+import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 public abstract class ProtobufUtilities {
   public static BasicTypes.EncodedValue getEncodedValue(BasicTypes.EncodingType resultEncodingType,
@@ -30,5 +33,13 @@ public abstract class ProtobufUtilities {
       ClientProtocol.Response response) {
     return ClientProtocol.Message.newBuilder()
         .setMessageHeader(ClientProtocol.MessageHeader.newBuilder()).setResponse(response).build();
+  }
+
+  public static Object decodeValue(SerializationService serializationService,
+      BasicTypes.EncodedValue encodedValue)
+      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    BasicTypes.EncodingType encoding = encodedValue.getEncodingType();
+    byte[] bytes = encodedValue.getValue().toByteArray();
+    return serializationService.decode(encoding, bytes);
   }
 }

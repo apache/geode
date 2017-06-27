@@ -18,14 +18,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerAlreadyRegisteredException;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
-import org.apache.geode.serialization.exception.TypeEncodingException;
-import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,13 +45,23 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
       throws OperationHandlerAlreadyRegisteredException, CodecAlreadyRegisteredForTypeException {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
     registry = new OperationsHandlerRegistry();
+    addOperationHandlers(registry);
     protobufSerializationService = new ProtobufSerializationService();
     protobufOpsProcessor = new ProtobufOpsProcessor(registry, protobufSerializationService);
   }
 
+  private void addOperationHandlers(OperationsHandlerRegistry registry)
+      throws OperationHandlerAlreadyRegisteredException {
+    registry.registerOperationHandlerForOperationId(
+        ClientProtocol.Request.RequestAPICase.GETREQUEST.getNumber(),
+        new GetRequestOperationHandler());
+    registry.registerOperationHandlerForOperationId(
+        ClientProtocol.Request.RequestAPICase.PUTREQUEST.getNumber(),
+        new PutRequestOperationHandler());
+  }
+
   public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)
-      throws InvalidProtocolMessageException, OperationHandlerNotRegisteredException,
-      TypeEncodingException, IOException {
+      throws InvalidProtocolMessageException, OperationHandlerNotRegisteredException, IOException {
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
 
     ClientProtocol.Request request = message.getRequest();
@@ -68,8 +77,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
       InternalCache cache) throws IOException {
     try {
       processOneMessage(inputStream, outputStream, cache);
-    } catch (InvalidProtocolMessageException | OperationHandlerNotRegisteredException
-        | TypeEncodingException e) {
+    } catch (InvalidProtocolMessageException | OperationHandlerNotRegisteredException e) {
       throw new IOException(e);
     }
   }

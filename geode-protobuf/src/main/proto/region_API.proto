@@ -33,7 +33,9 @@ message GetRequest {
 }
 
 message GetResponse {
-    EncodedValue result = 1;
+    bool success = 1;
+    bool keyExists = 2;
+    EncodedValue result = 3;
 }
 
 message PutAllRequest {
