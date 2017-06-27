@@ -267,9 +267,11 @@ public class TomcatInstall extends ContainerInstall {
     for (File file : requiredFiles) {
       Files.copy(file.toPath(), tomcatLib.toPath().resolve(file.toPath().getFileName()),
           StandardCopyOption.REPLACE_EXISTING);
-      System.out.println("Copied required jar from " + file.toPath() + " to "
+      logger.debug("Copied required jar from " + file.toPath() + " to "
           + (new File(tomcatLibPath)).toPath().resolve(file.toPath().getFileName()));
     }
+
+    logger.info("Copied required jars into the Tomcat installation");
   }
 
   /**
@@ -352,9 +354,12 @@ public class TomcatInstall extends ContainerInstall {
 
       editXMLFile(tomcatModulePath + "/conf/" + config.getXMLFile(), "locator", "pool", attributes,
           true);
+
     } else {
       setSystemProperty("locators", address + "[" + port + "]");
     }
+
+    logger.info("Set locator for Tomcat install to " + address + "[" + port + "]");
   }
 
   public TomcatVersion getVersion() {

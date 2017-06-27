@@ -31,6 +31,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.deployable.WAR;
 import org.codehaus.cargo.container.installer.Installer;
@@ -42,6 +43,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 
 /**
@@ -53,6 +55,8 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
  * Subclasses provide installation of specific containers.
  */
 public abstract class ContainerInstall {
+  public static final Logger logger = LogService.getLogger();
+
   private final String INSTALL_PATH;
   public static final String DEFAULT_INSTALL_DIR = "/tmp/cargo_containers/";
   public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
@@ -61,12 +65,13 @@ public abstract class ContainerInstall {
   public HashMap<String, String> systemProperties;
 
   public ContainerInstall(String installDir, String downloadURL) throws MalformedURLException {
-    System.out.println("Installing container from URL " + downloadURL);
+    logger.info("Installing container from URL " + downloadURL);
+
     // Optional step to install the container from a URL pointing to its distribution
     Installer installer = new ZipURLInstaller(new URL(downloadURL), "/tmp/downloads", installDir);
     installer.install();
     INSTALL_PATH = installer.getHome();
-    System.out.println("Installed container into " + getInstallPath());
+    logger.info("Installed container into " + getInstallPath());
 
     cacheProperties = new HashMap<>();
     systemProperties = new HashMap<>();
@@ -184,7 +189,8 @@ public abstract class ContainerInstall {
     String modulesDir = geodeBuildHome + "/tools/Modules/";
 
     boolean archive = false;
-    System.out.println("Trying to access build dir " + modulesDir);
+    logger.info("Trying to access build dir " + modulesDir);
+
     // Search directory for tomcat module folder/zip
     for (File file : (new File(modulesDir)).listFiles()) {
 
@@ -199,12 +205,11 @@ public abstract class ContainerInstall {
 
     // Unzip if it is a zip file
     if (archive) {
-      if (!FilenameUtils.getExtension(modulePath).equals("zip"))
+      if (!FilenameUtils.getExtension(modulePath).equals("zip")) {
         throw new IOException("Bad module archive " + modulePath);
+      }
 
       ZipUtils.unzip(modulePath, modulePath.substring(0, modulePath.length() - 4));
-      System.out.println(
-          "Unzipped " + modulePath + " into " + modulePath.substring(0, modulePath.length() - 4));
 
       modulePath = modulePath.substring(0, modulePath.length() - 4);
     }
@@ -240,7 +245,7 @@ public abstract class ContainerInstall {
     properties.setProperty(propertyName, val);
     properties.store(new FileOutputStream(filePath), null);
 
-    System.out.println("Modified container Property file " + filePath);
+    logger.info("Modified container Property file " + filePath);
   }
 
   protected void editXMLFile(String XMLPath, String tagId, String tagName, String parentTagName,
@@ -360,7 +365,7 @@ public abstract class ContainerInstall {
       StreamResult result = new StreamResult(new File(XMLPath));
       transformer.transform(source, result);
 
-      System.out.println("Modified container XML file " + XMLPath);
+      logger.info("Modified container XML file " + XMLPath);
     } catch (Exception e) {
       throw new RuntimeException("Unable to edit XML file", e);
     }

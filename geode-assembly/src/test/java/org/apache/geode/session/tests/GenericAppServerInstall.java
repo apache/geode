@@ -175,7 +175,7 @@ public class GenericAppServerInstall extends ContainerInstall {
     builder.inheritIO();
 
     builder.command(buildCommand());
-    System.out.println("Running command: " + String.join(" ", builder.command()));
+    logger.info("Running command: " + String.join(" ", builder.command()));
 
     Process process = builder.start();
 
@@ -231,6 +231,8 @@ public class GenericAppServerInstall extends ContainerInstall {
       editXMLFile(appServerModulePath + "/conf/" + cacheType.getXMLTypeFile(), "locator", "pool",
           attributes, true);
     }
+
+    logger.info("Set locator for AppServer install to " + address + "[" + port + "]");
   }
 
   /**

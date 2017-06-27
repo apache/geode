@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
@@ -32,6 +33,7 @@ import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Manages multiple J2EE containers using cargo.
@@ -40,6 +42,8 @@ import org.apache.geode.internal.AvailablePortHelper;
  * listening on.
  */
 public class ContainerManager {
+  private static final Logger logger = LogService.getLogger();
+
   private ArrayList<InstalledLocalContainer> containers;
   private ArrayList<ContainerInstall> installs;
 
@@ -191,10 +195,10 @@ public class ContainerManager {
         "cargo_logs/containers/" + install.getContainerDescription() + "_" + testName + "_" + index)
             .getAbsolutePath();
     container.setOutput(logFilePath + "." + guid);
-    System.out.println("Sending log file output to " + logFilePath);
+    logger.info("Sending log file output to " + logFilePath);
 
     if (!container.getState().isStarted()) {
-      System.out.println("Starting container " + containerDescription);
+      logger.info("Starting container " + containerDescription);
       int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
       container.getConfiguration().setProperty(ServletPropertySet.PORT, Integer.toString(ports[0]));
       container.getConfiguration().setProperty(GeneralPropertySet.RMI_PORT,
@@ -211,10 +215,10 @@ public class ContainerManager {
             "Something very bad happened to this container when starting. Check the cargo_logs folder for container logs.",
             e);
       }
-      System.out.println("Started container " + containerDescription);
+      logger.info("Started container " + containerDescription);
     } else {
       throw new IllegalArgumentException("Cannot start container " + containerDescription
-          + " it has currently " + container.getState());
+          + " its current state is " + container.getState());
     }
   }
 
@@ -224,9 +228,9 @@ public class ContainerManager {
   public void stopContainer(int index) {
     InstalledLocalContainer container = getContainer(index);
     if (container.getState().isStarted()) {
-      System.out.println("Stopping container" + index + " " + getContainerDescription(index));
+      logger.info("Stopping container" + index + " " + getContainerDescription(index));
       container.stop();
-      System.out.println("Stopped container" + index + " " + getContainerDescription(index));
+      logger.info("Stopped container" + index + " " + getContainerDescription(index));
     } else
       throw new IllegalArgumentException("Cannot stop container " + getContainerDescription(index)
           + " it is currently " + container.getState());
@@ -286,10 +290,9 @@ public class ContainerManager {
     if (configDir.exists()) {
       configLogDir.mkdirs();
 
-      System.out.println("Copying configuration in " + configDir.getAbsolutePath() + " to "
-          + configLogDir.getAbsolutePath());
-      FileUtils.copyDirectory(configDir, configLogDir);
-      System.out.println("Deleting configuration folder located at " + configDir.getAbsolutePath());
+      logger.info("Configuration in " + configDir.getAbsolutePath());
+      logger.info("Copied configuration to " + configLogDir.getAbsolutePath());
+      logger.info("Deleting configuration folder " + configDir.getAbsolutePath());
       FileUtils.deleteDirectory(configDir);
     }
 
@@ -297,8 +300,8 @@ public class ContainerManager {
     File cacheXMLLogFile = new File(baseLogFilePath + "/XMLs/" + configLogDir.getName() + ".xml");
     cacheXMLLogFile.getParentFile().mkdirs();
 
-    System.out.println("Copying cache XML file " + cacheXMLFile.getAbsolutePath() + " to "
-        + cacheXMLLogFile.getAbsolutePath());
+    logger.info("Cache XML file: " + cacheXMLFile.getAbsolutePath());
+    logger.info("Copied cache XML file to " + cacheXMLLogFile.getAbsolutePath());
     FileUtils.copyFile(cacheXMLFile, cacheXMLLogFile);
   }
 
@@ -314,10 +317,10 @@ public class ContainerManager {
     configuration.setProperty(GeneralPropertySet.LOGGING, install.getLoggingLevel());
 
     File gemfireLogFile = new File("cargo_logs/gemfire_modules/" + install.getContainerDescription()
-        + "_" + testName + "_" + index + "." + System.nanoTime());
+        + "_" + index + "_" + testName + "." + System.nanoTime());
     gemfireLogFile.getParentFile().mkdirs();
     install.setSystemProperty("log-file", gemfireLogFile.getAbsolutePath());
-    System.out.println("Gemfire log file set to " + gemfireLogFile.getAbsolutePath());
+    logger.info("Gemfire logs in " + gemfireLogFile.getAbsolutePath());
 
     install.modifyConfiguration(configuration);
 
@@ -329,7 +332,7 @@ public class ContainerManager {
     WAR war = install.getDeployableWAR();
     war.setContext("");
     configuration.addDeployable(war);
-    System.out.println("Deployed WAR file found at " + war.getFile());
+    logger.info("Deployed WAR file at " + war.getFile());
 
     // Create the container, set it's home dir to where it was installed, and set the its output log
     InstalledLocalContainer container = (InstalledLocalContainer) (new DefaultContainerFactory())
@@ -340,8 +343,7 @@ public class ContainerManager {
     containers.add(index, container);
     installs.add(index, install);
 
-    System.out.println("Setup container " + getContainerDescription(index)
-        + "\n-----------------------------------------");
+    logger.info("Setup container " + getContainerDescription(index));
     return container;
   }
 }
