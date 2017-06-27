@@ -50,7 +50,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
   @Test
   @Parameters(method = "getSearchIndexUserNameAndExpectedResponses")
   public void verifySearchIndexPermissions(
-      LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse user) {
+      LuceneCommandsSecurityTest.UserNameAndExpectedResponse user) {
     // Start server
     int serverPort = dataStore1.invoke(() -> startCacheServer());
 
@@ -97,14 +97,15 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
     } catch (ServerOperationException e) {
       assertTrue(e.getCause() != null && e.getCause() instanceof NotAuthorizedException);
       assertTrue(expectAuthorizationError);
-      assertTrue(e.getLocalizedMessage().contains(expectedResponse));
+      if (expectedResponse != null) {
+        assertTrue(e.getLocalizedMessage().contains(expectedResponse));
+      }
     }
   }
 
-  protected LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse[] getSearchIndexUserNameAndExpectedResponses() {
-    return new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse[] {
-        new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse("nopermissions", true,
-            "nopermissions not authorized for DATA:WRITE"),
-        new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse("datawrite", false, null)};
+  protected LuceneCommandsSecurityTest.UserNameAndExpectedResponse[] getSearchIndexUserNameAndExpectedResponses() {
+    return new LuceneCommandsSecurityTest.UserNameAndExpectedResponse[] {
+        new LuceneCommandsSecurityTest.UserNameAndExpectedResponse("nopermissions", true),
+        new LuceneCommandsSecurityTest.UserNameAndExpectedResponse("datawrite", false)};
   }
 }
