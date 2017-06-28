@@ -18,14 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import java.io.File;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -34,7 +28,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class DeployCommandsSecurityTest {
@@ -81,14 +82,7 @@ public class DeployCommandsSecurityTest {
         .isInstanceOf(NotAuthorizedException.class);
   }
 
-  @Test // only cluster access right is not enough to deploy
-  @ConnectionConfiguration(user = "cluster", password = "cluster")
-  public void testNoAccess3() {
-    assertThatThrownBy(() -> bean.processCommand(deployCommand))
-        .isInstanceOf(NotAuthorizedException.class);
-  }
-
-  @Test // not sufficient privalge
+  @Test // not sufficient privilege
   @ConnectionConfiguration(user = "clusterRead,clusterWrite,dataRead,dataWrite",
       password = "clusterRead,clusterWrite,dataRead,dataWrite")
   public void testNoAccess4() {

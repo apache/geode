@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.security;
 
-import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -28,6 +27,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 public interface SecurityService {
+
   default ThreadState bindSubject(Subject subject) {
     return null;
   }
@@ -40,57 +40,57 @@ public interface SecurityService {
     return null;
   }
 
-  default void logout() {};
+  default void logout() {}
 
   default Callable associateWith(Callable callable) {
     return callable;
   }
 
-  default void authorize(Resource resource, Operation operation, String target, String key) {};
+  default void authorize(Resource resource, Operation operation, String target, String key) {}
 
-  default void authorize(Resource resource, Operation operation, Target target, String key) {};
+  default void authorize(Resource resource, Operation operation, Target target, String key) {}
 
-  default void authorize(Resource resource, Operation operation, Target target) {};
+  default void authorize(Resource resource, Operation operation, Target target) {}
 
-  default void authorizeClusterManage() {};
+  default void authorizeClusterManage() {}
 
-  default void authorizeClusterWrite() {};
+  default void authorizeClusterWrite() {}
 
-  default void authorizeClusterRead() {};
+  default void authorizeClusterRead() {}
 
-  default void authorizeDataManage() {};
+  default void authorizeDataManage() {}
 
-  default void authorizeDataWrite() {};
+  default void authorizeDataWrite() {}
 
-  default void authorizeDataRead() {};
+  default void authorizeDataRead() {}
 
-  default void authorizeDiskManage() {};
+  default void authorizeDiskManage() {}
 
-  default void authorizeGatewayManage() {};
+  default void authorizeGatewayManage() {}
 
-  default void authorizeJarManage() {};
+  default void authorizeJarManage() {}
 
-  default void authorizeQueryManage() {};
+  default void authorizeQueryManage() {}
 
-  default void authorizeRegionManage(String regionName) {};
+  default void authorizeRegionManage(String regionName) {}
 
-  default void authorizeRegionManage(String regionName, String key) {};
+  default void authorizeRegionManage(String regionName, String key) {}
 
-  default void authorizeRegionWrite(String regionName) {};
+  default void authorizeRegionWrite(String regionName) {}
 
-  default void authorizeRegionWrite(String regionName, String key) {};
+  default void authorizeRegionWrite(String regionName, String key) {}
 
-  default void authorizeRegionRead(String regionName) {};
+  default void authorizeRegionRead(String regionName) {}
 
-  default void authorizeRegionRead(String regionName, String key) {};
+  default void authorizeRegionRead(String regionName, String key) {}
 
-  default void authorize(ResourcePermission context) {};
+  default void authorize(ResourcePermission context) {}
 
-  default void close() {};
+  default void close() {}
 
   default boolean needPostProcess() {
     return false;
-  };
+  }
 
   default Object postProcess(String regionPath, Object key, Object value,
       boolean valueIsSerialized) {

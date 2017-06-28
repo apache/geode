@@ -14,22 +14,8 @@
  */
 package org.apache.geode.internal.security;
 
-import java.io.IOException;
-import java.security.AccessController;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.ShiroException;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.subject.support.SubjectThreadState;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.util.ThreadState;
-
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -46,6 +32,20 @@ import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.SecurityManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.ShiroException;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.support.SubjectThreadState;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.util.ThreadState;
+
+import java.io.IOException;
+import java.security.AccessController;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Security service with SecurityManager and an optional PostProcessor.
@@ -54,7 +54,7 @@ public class IntegratedSecurityService implements SecurityService {
   private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
   private final PostProcessor postProcessor;
-  private final org.apache.geode.security.SecurityManager securityManager;
+  private final SecurityManager securityManager;
 
   /**
    * this creates a security service using a SecurityManager
@@ -72,11 +72,13 @@ public class IntegratedSecurityService implements SecurityService {
     this.postProcessor = postProcessor;
   }
 
+  @Override
   public PostProcessor getPostProcessor() {
     return this.postProcessor;
   }
 
-  public org.apache.geode.security.SecurityManager getSecurityManager() {
+  @Override
+  public SecurityManager getSecurityManager() {
     return this.securityManager;
   }
 
@@ -187,6 +189,7 @@ public class IntegratedSecurityService implements SecurityService {
     return threadState;
   }
 
+  @Override
   public void authorizeClusterManage() {
     authorize(Resource.CLUSTER, Operation.MANAGE, Target.ALL, ResourcePermission.ALL);
   }
@@ -266,14 +269,17 @@ public class IntegratedSecurityService implements SecurityService {
     authorize(Resource.DATA, Operation.READ, regionName, key);
   }
 
+  @Override
   public void authorize(Resource resource, Operation operation, Target target, String key) {
     authorize(resource, operation, target.getName(), key);
   }
 
+  @Override
   public void authorize(Resource resource, Operation operation, Target target) {
     authorize(resource, operation, target, ResourcePermission.ALL);
   }
 
+  @Override
   public void authorize(Resource resource, Operation operation, String target, String key) {
     authorize(new ResourcePermission(resource, operation, target, key));
   }
@@ -300,7 +306,7 @@ public class IntegratedSecurityService implements SecurityService {
   @Override
   public void close() {
     if (this.securityManager != null) {
-      securityManager.close();
+      this.securityManager.close();
     }
     if (this.postProcessor != null) {
       this.postProcessor.close();

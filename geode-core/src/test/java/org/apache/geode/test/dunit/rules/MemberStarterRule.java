@@ -27,6 +27,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.SecurityManager;
 import org.junit.rules.ExternalResource;
@@ -35,6 +37,12 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.junit.rules.ExternalResource;
+import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.SecurityManager;
 
 /**
  * the abstract class that's used by LocatorStarterRule and ServerStarterRule to avoid code
@@ -79,12 +87,20 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
 
   @Override
   public void after() {
+    // invoke stopMember() first and then ds.disconnect
     stopMember();
+
+    DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+    if (ds != null) {
+      ds.disconnect();
+    }
+
     if (oldUserDir == null) {
       System.clearProperty("user.dir");
     } else {
       System.setProperty("user.dir", oldUserDir);
     }
+
     if (temporaryFolder != null) {
       temporaryFolder.delete();
     }
@@ -116,7 +132,7 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
     this.name = name;
     properties.setProperty(NAME, name);
     // if log-file is not already set
-    properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath().toString());
+    properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath());
     return (T) this;
   }
 

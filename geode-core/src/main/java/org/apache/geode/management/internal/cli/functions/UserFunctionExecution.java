@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -25,7 +24,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -61,7 +59,7 @@ public class UserFunctionExecution implements Function, InternalEntity {
           if (argumentsString != null && argumentsString.length() > 0) {
             functionArgs = argumentsString.split(",");
           }
-          Set<String> filters = new HashSet<String>();
+          Set<String> filters = new HashSet<>();
           ResultCollector resultCollectorInstance = null;
           if (resultCollectorName != null && resultCollectorName.length() > 0) {
             resultCollectorInstance = (ResultCollector) ClassPathLoader.getLatest()
@@ -94,29 +92,29 @@ public class UserFunctionExecution implements Function, InternalEntity {
               if (functionArgs != null && functionArgs.length > 0) {
                 execution = execution.setArguments(functionArgs);
               }
-              if (filters != null && filters.size() > 0) {
+              if (filters.size() > 0) {
                 execution = execution.withFilter(filters);
               }
 
               List<Object> results = (List<Object>) execution.execute(function).getResult();
 
-              StringBuilder resultMessege = new StringBuilder();
+              StringBuilder resultMessage = new StringBuilder();
               if (results != null) {
                 for (Object resultObj : results) {
                   if (resultObj != null) {
                     if (resultObj instanceof String) {
-                      resultMessege.append(((String) resultObj));
-                      resultMessege.append(GfshParser.LINE_SEPARATOR);
+                      resultMessage.append(((String) resultObj));
+                      resultMessage.append(GfshParser.LINE_SEPARATOR);
                     } else if (resultObj instanceof Exception) {
-                      resultMessege.append(((IllegalArgumentException) resultObj).getMessage());
+                      resultMessage.append(((IllegalArgumentException) resultObj).getMessage());
                     } else {
-                      resultMessege.append(resultObj);
-                      resultMessege.append(GfshParser.LINE_SEPARATOR);
+                      resultMessage.append(resultObj);
+                      resultMessage.append(GfshParser.LINE_SEPARATOR);
                     }
                   }
                 }
               }
-              context.getResultSender().lastResult(resultMessege);
+              context.getResultSender().lastResult(resultMessage);
             } else {
               context.getResultSender()
                   .lastResult(CliStrings.format(
@@ -126,27 +124,7 @@ public class UserFunctionExecution implements Function, InternalEntity {
             }
           }
 
-        } catch (ClassNotFoundException e) {
-          context.getResultSender()
-              .lastResult(CliStrings.format(
-                  CliStrings.EXECUTE_FUNCTION__MSG__RESULT_COLLECTOR_0_NOT_FOUND_ERROR_1,
-                  resultCollectorName, e.getMessage()));
-        } catch (FunctionException e) {
-          context.getResultSender()
-              .lastResult(CliStrings.format(
-                  CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_ON_MEMBER_1_DETAILS_2,
-                  functionId, member.getId(), e.getMessage()));
-        } catch (CancellationException e) {
-          context.getResultSender()
-              .lastResult(CliStrings.format(
-                  CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_ON_MEMBER_1_DETAILS_2,
-                  functionId, member.getId(), e.getMessage()));
-        } catch (InstantiationException e) {
-          context.getResultSender()
-              .lastResult(CliStrings.format(
-                  CliStrings.EXECUTE_FUNCTION__MSG__RESULT_COLLECTOR_0_NOT_FOUND_ERROR_1,
-                  resultCollectorName, e.getMessage()));
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
           context.getResultSender()
               .lastResult(CliStrings.format(
                   CliStrings.EXECUTE_FUNCTION__MSG__RESULT_COLLECTOR_0_NOT_FOUND_ERROR_1,

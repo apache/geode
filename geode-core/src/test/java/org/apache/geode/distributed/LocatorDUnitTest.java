@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
@@ -81,6 +82,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
@@ -412,18 +414,18 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       getBlackboard().initBlackboard();
       AsyncInvocation<Boolean> async1 = loc1.invokeAsync("startLocator1", () -> {
         getBlackboard().signalGate("locator1");
-        getBlackboard().waitForGate("go", 10, TimeUnit.SECONDS);
+        getBlackboard().waitForGate("go", 60, TimeUnit.SECONDS);
         return startLocatorWithPortAndProperties(port1, properties);
       });
 
       AsyncInvocation<Boolean> async2 = loc2.invokeAsync("startLocator2", () -> {
         getBlackboard().signalGate("locator2");
-        getBlackboard().waitForGate("go", 10, TimeUnit.SECONDS);
+        getBlackboard().waitForGate("go", 60, TimeUnit.SECONDS);
         return startLocatorWithPortAndProperties(port2, properties);
       });
 
-      getBlackboard().waitForGate("locator1", 10, TimeUnit.SECONDS);
-      getBlackboard().waitForGate("locator2", 10, TimeUnit.SECONDS);
+      getBlackboard().waitForGate("locator1", 60, TimeUnit.SECONDS);
+      getBlackboard().waitForGate("locator2", 60, TimeUnit.SECONDS);
       getBlackboard().signalGate("go");
 
       async1.await();
@@ -1644,120 +1646,225 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
 
     try {
-      try {
-        vm3.invoke(() -> {
-          DistributedSystem.connect(dsProps);
-          return true;
-        });
-        vm4.invoke(() -> {
-          DistributedSystem.connect(dsProps);
-          return true;
-        });
+      vm3.invoke(() -> {
+        DistributedSystem.connect(dsProps);
+        return true;
+      });
+      vm4.invoke(() -> {
+        DistributedSystem.connect(dsProps);
+        return true;
+      });
 
-        system = (InternalDistributedSystem) DistributedSystem.connect(dsProps);
+      system = (InternalDistributedSystem) DistributedSystem.connect(dsProps);
 
-        Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
-            .until(() -> {
-              try {
-                return system.getDM().getViewMembers().size() == 6;
-              } catch (Exception e) {
-                e.printStackTrace();
-                org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
+      Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+          .until(() -> {
+            try {
+              return system.getDM().getViewMembers().size() == 6;
+            } catch (Exception e) {
+              e.printStackTrace();
+              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
+            }
+            return false; // NOTREACHED
+          });
+
+      // three applications plus
+      assertEquals(6, system.getDM().getViewMembers().size());
+
+      vm0.invoke(() -> stopLocator());
+      vm1.invoke(() -> stopLocator());
+      vm2.invoke(() -> stopLocator());
+
+      Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+          .until(() -> {
+            try {
+              return system.getDM().getMembershipManager().getView().size() <= 3;
+            } catch (Exception e) {
+              e.printStackTrace();
+              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
+            }
+            return false; // NOTREACHED
+          });
+
+      final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
+      dsProps.setProperty(LOCATORS, newLocators);
+
+      final InternalDistributedMember currentCoordinator =
+          GMSJoinLeaveTestHelper.getCurrentCoordinator();
+      DistributedMember vm3ID = vm3.invoke(() -> GMSJoinLeaveTestHelper
+          .getInternalDistributedSystem().getDM().getDistributionManagerId());
+      assertTrue("View is " + system.getDM().getMembershipManager().getView() + " and vm3's ID is "
+          + vm3ID, vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+
+      vm1.invoke(() -> startLocatorAsync(new Object[] {port2, dsProps}));
+      vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
+
+      Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+          .until(() -> {
+            try {
+              InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
+              if (c.equals(currentCoordinator)) {
+                // now locator should be new coordinator
+                return false;
               }
-              return false; // NOTREACHED
-            });
+              return system.getDM().getAllHostedLocators().size() == 2;
+            } catch (Exception e) {
+              e.printStackTrace();
+              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
+            }
+            return false; // NOTREACHED
+          });
 
-        // three applications plus
-        assertEquals(6, system.getDM().getViewMembers().size());
+      vm1.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
+      vm2.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
+      vm3.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
+      vm4.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
 
-        vm0.invoke(() -> stopLocator());
-        vm1.invoke(() -> stopLocator());
-        vm2.invoke(() -> stopLocator());
-
-        Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
-            .until(() -> {
-              try {
-                return system.getDM().getMembershipManager().getView().size() <= 3;
-              } catch (Exception e) {
-                e.printStackTrace();
-                org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-              }
-              return false; // NOTREACHED
-            });
-
-        final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
-        dsProps.setProperty(LOCATORS, newLocators);
-
-        final InternalDistributedMember currentCoordinator =
-            GMSJoinLeaveTestHelper.getCurrentCoordinator();
-        DistributedMember vm3ID = vm3.invoke(() -> GMSJoinLeaveTestHelper
-            .getInternalDistributedSystem().getDM().getDistributionManagerId());
-        assertTrue("View is " + system.getDM().getMembershipManager().getView()
-            + " and vm3's ID is " + vm3ID,
-            vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
-
-        vm1.invoke(() -> startLocatorAsync(new Object[] {port2, dsProps}));
-        vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
-
-        Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
-            .until(() -> {
-              try {
-                InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
-                if (c.equals(currentCoordinator)) {
-                  // now locator should be new coordinator
-                  return false;
-                }
-                return system.getDM().getAllHostedLocators().size() == 2;
-              } catch (Exception e) {
-                e.printStackTrace();
-                org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-              }
-              return false; // NOTREACHED
-            });
-
-        vm1.invoke("waitUntilLocatorBecomesCoordinator",
-            () -> waitUntilLocatorBecomesCoordinator());
-        vm2.invoke("waitUntilLocatorBecomesCoordinator",
-            () -> waitUntilLocatorBecomesCoordinator());
-        vm3.invoke("waitUntilLocatorBecomesCoordinator",
-            () -> waitUntilLocatorBecomesCoordinator());
-        vm4.invoke("waitUntilLocatorBecomesCoordinator",
-            () -> waitUntilLocatorBecomesCoordinator());
-
-        int netviewId =
-            vm1.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.getViewId());
-        assertEquals(netviewId,
-            (int) vm2.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
-        assertEquals(netviewId,
-            (int) vm3.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
-        assertEquals(netviewId,
-            (int) vm4.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
+      int netviewId = vm1.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.getViewId());
+      assertEquals(netviewId,
+          (int) vm2.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
+      assertEquals(netviewId,
+          (int) vm3.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
+      assertEquals(netviewId,
+          (int) vm4.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
+      assertFalse(vm4.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
+      // Given the start up order of servers, this server is the elder server
+      assertFalse(vm3.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
+      if (vm1.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator())) {
         assertFalse(
-            vm4.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
-        // Given the start up order of servers, this server is the elder server
-        assertFalse(
-            vm3.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
-        if (vm1.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator())) {
-          assertFalse(
-              vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
-        } else {
-          assertTrue(
-              vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
-        }
-
-      } finally {
-        system.disconnect();
-        vm3.invoke(() -> disconnectDistributedSystem());
-        vm4.invoke(() -> disconnectDistributedSystem());
-        vm2.invoke(() -> stopLocator());
-        vm1.invoke(() -> stopLocator());
+            vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
+      } else {
+        assertTrue(
+            vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
       }
+
     } finally {
+      system.disconnect();
+      vm3.invoke(() -> disconnectDistributedSystem());
+      vm4.invoke(() -> disconnectDistributedSystem());
+      vm2.invoke(() -> stopLocator());
+      vm1.invoke(() -> stopLocator());
+    }
+  }
+
+  @Test
+  public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
+    disconnectAllFromDS();
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("Possible loss of quorum");
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+    VM vm3 = host.getVM(3);
+    VM vm4 = host.getVM(4);
+
+    int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    this.port1 = freeTCPPorts[0];
+    this.port2 = freeTCPPorts[1];
+    int port3 = freeTCPPorts[2];
+    DistributedTestUtils.deleteLocatorStateFile(port1, port2, port3);
+    final String host0 = NetworkUtils.getServerHostName(host);
+    final String locators =
+        host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
+
+    final Properties dsProps = new Properties();
+    dsProps.setProperty(LOCATORS, locators);
+    dsProps.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    dsProps.setProperty(DISABLE_AUTO_RECONNECT, "true");
+    dsProps.setProperty(MCAST_PORT, "0");
+
+    addDSProps(dsProps);
+    vm0.invoke(() -> startLocatorAsync(new Object[] {port1, dsProps}));
+    vm1.invoke(() -> startLocatorAsync(new Object[] {port2, dsProps}));
+    vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
+
+    try {
+      vm3.invoke(() -> {
+        DistributedSystem.connect(dsProps);
+        return true;
+      });
+      vm4.invoke(() -> {
+        DistributedSystem.connect(dsProps);
+
+        Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+            .until(() -> {
+              try {
+                return InternalDistributedSystem.getConnectedInstance().getDM().getViewMembers()
+                    .size() == 5;
+              } catch (Exception e) {
+                e.printStackTrace();
+                org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
+              }
+              return false; // NOTREACHED
+            });
+        return true;
+      });
+
+      vm0.invoke(() -> forceDisconnect());
+      vm1.invoke(() -> forceDisconnect());
+      vm2.invoke(() -> forceDisconnect());
+
+      SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
+        public void run() {
+          Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS)
+              .pollInterval(200, TimeUnit.MILLISECONDS).until(() -> {
+                try {
+                  return InternalDistributedSystem.getConnectedInstance() == null;
+                } catch (Exception e) {
+                  org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
+                }
+                return false; // NOTREACHED
+              });
+        }
+      };
+      vm0.invoke(() -> waitForDisconnect);
+      vm1.invoke(() -> waitForDisconnect);
+      vm2.invoke(() -> waitForDisconnect);
+      disconnectAllFromDS();
+
+
+      final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
+      dsProps.setProperty(LOCATORS, newLocators);
+
+      getBlackboard().initBlackboard();
+      AsyncInvocation async1 = vm1.invokeAsync(() -> {
+        getBlackboard().signalGate("vm1ready");
+        getBlackboard().waitForGate("readyToConnect", 30, TimeUnit.SECONDS);
+        System.out.println("vm1 is ready to connect");
+        startLocatorAsync(new Object[] {port2, dsProps});
+      });
+      AsyncInvocation async2 = vm2.invokeAsync(() -> {
+        getBlackboard().signalGate("vm2ready");
+        getBlackboard().waitForGate("readyToConnect", 30, TimeUnit.SECONDS);
+        System.out.println("vm2 is ready to connect");
+        startLocatorAsync(new Object[] {port3, dsProps});
+      });
+      getBlackboard().waitForGate("vm1ready", 30, TimeUnit.SECONDS);
+      getBlackboard().waitForGate("vm2ready", 30, TimeUnit.SECONDS);
+      getBlackboard().signalGate("readyToConnect");
+      async1.join();
+      async2.join();
+
+      vm1.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
+      vm2.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
+
+      if (vm1.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator())) {
+        assertFalse(
+            vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
+      } else {
+        assertTrue(
+            vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
+      }
+
+    } finally {
+      vm2.invoke(() -> stopLocator());
+      vm1.invoke(() -> stopLocator());
     }
   }
 
   private void waitUntilLocatorBecomesCoordinator() {
-    Awaitility.waitAtMost(15000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+    Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(1000, TimeUnit.MILLISECONDS)
         .until(() -> {
           try {
             InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
@@ -1781,8 +1888,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   private void startLocatorAsync(Object[] args) {
     File logFile = new File("");
+    Properties properties = (Properties) args[1];
+    properties.put(NAME, "vm" + VM.getCurrentVMNum());
     try {
-      Locator.startLocatorAndDS((int) args[0], logFile, (Properties) args[1]);
+      Locator.startLocatorAndDS((int) args[0], logFile, properties);
     } catch (IOException ex) {
       org.apache.geode.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
     }
@@ -1879,6 +1988,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     p.setProperty(LOCATORS, Host.getHost(0).getHostName() + "[" + port1 + "]");
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     addDSProps(p);
     if (stateFile.exists()) {
       stateFile.delete();
@@ -1946,6 +2056,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       loc.stop();
       assertFalse(Locator.hasLocator());
     }
+  }
+
+  protected void forceDisconnect() {
+    DistributedTestUtils.crashDistributedSystem(InternalDistributedSystem.getConnectedInstance());
   }
 
   private void startSBLocator(final int port) {

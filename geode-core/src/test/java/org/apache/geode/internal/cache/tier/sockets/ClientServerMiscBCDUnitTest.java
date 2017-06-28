@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
@@ -31,6 +32,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.awaitility.Awaitility;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -117,7 +119,10 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
         server1.invoke(() -> getClientMembershipIdBytesOnServer());
 
     // Verify member id bytes on client and server are equal
-    assertTrue(Arrays.equals(clientMembershipIdBytesOnClient, clientMembershipIdBytesOnServer));
+    String complaint = "size on client=" + clientMembershipIdBytesOnClient.length
+        + "; size on server=" + clientMembershipIdBytesOnServer.length;
+    assertTrue(complaint,
+        Arrays.equals(clientMembershipIdBytesOnClient, clientMembershipIdBytesOnServer));
   }
 
   private byte[] getClientMembershipIdBytesOnClient() {

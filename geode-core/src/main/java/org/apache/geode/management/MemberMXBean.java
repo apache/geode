@@ -20,6 +20,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -143,7 +144,7 @@ public interface MemberMXBean {
    * 
    * @param numberOfLines Number of lines to return, up to a maximum of 100.
    */
-  public String showLog(int numberOfLines);
+  String showLog(int numberOfLines);
 
   /**
    * Returns the license string for this member.
@@ -151,15 +152,16 @@ public interface MemberMXBean {
    * @deprecated Removed licensing in 8.0.
    */
   @Deprecated
-  public String viewLicense();
+  String viewLicense();
 
   /**
    * Performs compaction on all of the member's disk stores.
    * 
    * @return A list of names of the disk stores that were compacted.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public String[] compactAllDiskStores();
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  String[] compactAllDiskStores();
 
   /**
    * Creates a Manager MBean on this member.
@@ -167,24 +169,24 @@ public interface MemberMXBean {
    * @return True if the Manager MBean was successfully created, false otherwise.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
-  public boolean createManager();
+  boolean createManager();
 
   /**
    * Shuts down the member. This is an asynchronous call and it will return immediately without
    * waiting for a result.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
-  public void shutDownMember();
+  void shutDownMember();
 
   /**
    * Returns JVM metrics.
    */
-  public JVMMetrics showJVMMetrics();
+  JVMMetrics showJVMMetrics();
 
   /**
    * Returns operating system metrics.
    */
-  public OSMetrics showOSMetrics();
+  OSMetrics showOSMetrics();
 
   /**
    * Executes a command on the member.
@@ -222,89 +224,89 @@ public interface MemberMXBean {
    * 
    * @param includeRegionOwned Whether to include disk stores owned by a region.
    */
-  public String[] listDiskStores(boolean includeRegionOwned);
+  String[] listDiskStores(boolean includeRegionOwned);
 
   /**
    * Returns the GemFire specific properties for this member.
    */
-  public GemFireProperties listGemFireProperties();
+  GemFireProperties listGemFireProperties();
 
   /**
    * Returns the name or IP address of the host on which this member is running.
    */
-  public String getHost();
+  String getHost();
 
   /**
    * Returns the name of this member.
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the ID of this member.
    */
-  public String getId();
+  String getId();
 
   /**
    * Returns the name of the member if it's been set, otherwise the ID.
    */
-  public String getMember();
+  String getMember();
 
   /**
    * Returns the names of the groups this member belongs to.
    */
-  public String[] getGroups();
+  String[] getGroups();
 
   /**
    * Returns the operating system process ID.
    */
-  public int getProcessId();
+  int getProcessId();
 
   /**
    * Returns the status.
    */
-  public String status();
+  String status();
 
   /**
    * Returns the GemFire version.
    */
-  public String getVersion();
+  String getVersion();
 
   /**
    * Returns whether this member is attached to at least one Locator.
    * 
    * @return True if this member is attached to a Locator, false otherwise.
    */
-  public boolean isLocator();
+  boolean isLocator();
 
   /**
    * Returns the number of seconds that this member will wait for a distributed lock.
    */
-  public long getLockTimeout();
+  long getLockTimeout();
 
   /**
    * Returns the number of second that this member will lease a distributed lock.
    */
-  public long getLockLease();
+  long getLockLease();
 
   /**
    * Any long-running GemFire process that was started with "start server" command from GFSH. It
    * returns true even if that process has --disable-default-server=true.
    */
-  public boolean isServer();
+  boolean isServer();
 
   /**
    * Returns whether this member has at least one GatewaySender.
    * 
-   * @return True if this member has at least one GatwaySender, false otherwise.
+   * @return True if this member has at least one GatewaySender, false otherwise.
    */
-  public boolean hasGatewaySender();
+  boolean hasGatewaySender();
 
   /**
    * Returns whether this member is running the Manager service.
    * 
    * @return True if this member is running the Manager service, false otherwise.
    */
-  public boolean isManager();
+  boolean isManager();
 
   /**
    * Returns whether this member has created the Manager service (it may be created, but not
@@ -312,29 +314,29 @@ public interface MemberMXBean {
    * 
    * @return True if this member has created the Manager service, false otherwise.
    */
-  public boolean isManagerCreated();
+  boolean isManagerCreated();
 
   /**
    * Returns whether this member has at least one GatewayReceiver.
    * 
-   * @return True if this member has at least one GatwayReceiver, false otherwise.
+   * @return True if this member has at least one GatewayReceiver, false otherwise.
    */
-  public boolean hasGatewayReceiver();
+  boolean hasGatewayReceiver();
 
   /**
    * Returns the ClassPath.
    */
-  public String getClassPath();
+  String getClassPath();
 
   /**
    * Returns the current time on the member's host.
    */
-  public long getCurrentTime();
+  long getCurrentTime();
 
   /**
    * Returns the number of seconds that this member has been running.
    */
-  public long getMemberUpTime();
+  long getMemberUpTime();
 
   /**
    * Returns the time (as a percentage) that this member's process time with respect to Statistics
@@ -345,393 +347,402 @@ public interface MemberMXBean {
    * the platform it will be shown as -1
    * 
    */
-  public float getCpuUsage();
+  float getCpuUsage();
 
   /**
    * Returns the current size of the heap in megabytes.
    * 
    * @deprecated Please use {@link #getUsedMemory()} instead.
    */
-  public long getCurrentHeapSize();
+  long getCurrentHeapSize();
 
   /**
    * Returns the maximum size of the heap in megabytes.
    * 
    * @deprecated Please use {@link #getMaxMemory()} instead.
    */
-  public long getMaximumHeapSize();
+  long getMaximumHeapSize();
 
   /**
    * Returns the free heap size in megabytes.
    * 
    * @deprecated Please use {@link #getFreeMemory()} instead.
    */
-  public long getFreeHeapSize();
+  long getFreeHeapSize();
 
   /**
    * Returns the maximum size of the heap in megabytes.
    * 
    */
-  public long getMaxMemory();
+  long getMaxMemory();
 
   /**
    * Returns the free heap size in megabytes.
    */
-  public long getFreeMemory();
+  long getFreeMemory();
 
   /**
    * Returns the current size of the heap in megabytes.
    */
-  public long getUsedMemory();
+  long getUsedMemory();
 
   /**
    * Returns the current threads.
    */
-  public String[] fetchJvmThreads();
+  String[] fetchJvmThreads();
 
   /**
    * Returns the maximum number of open file descriptors allowed for the member's host operating
    * system.
    */
-  public long getFileDescriptorLimit();
+  long getFileDescriptorLimit();
 
   /**
    * Returns the current number of open file descriptors.
    */
-  public long getTotalFileDescriptorOpen();
+  long getTotalFileDescriptorOpen();
 
   /**
    * Returns the number of Regions present in the Cache.
    */
-  public int getTotalRegionCount();
+  int getTotalRegionCount();
 
   /**
    * Returns the number of Partition Regions present in the Cache.
    */
-  public int getPartitionRegionCount();
+  int getPartitionRegionCount();
 
   /**
    * Returns a list of all Region names.
    */
-  public String[] listRegions();
+  String[] listRegions();
 
 
   /**
    * Returns a list of all disk stores, including those owned by a Region.
    */
-  public String[] getDiskStores();
+  String[] getDiskStores();
 
   /**
    * Returns a list of all root Region names.
    */
-  public String[] getRootRegionNames();
+  String[] getRootRegionNames();
 
   /**
    * Returns the total number of entries in all regions.
    */
-  public int getTotalRegionEntryCount();
+  int getTotalRegionEntryCount();
 
   /**
    * Returns the total number of buckets.
    */
-  public int getTotalBucketCount();
+  int getTotalBucketCount();
 
   /**
    * Returns the number of buckets for which this member is the primary holder.
    */
-  public int getTotalPrimaryBucketCount();
+  int getTotalPrimaryBucketCount();
 
   /**
    * Returns the cache get average latency.
    */
-  public long getGetsAvgLatency();
+  long getGetsAvgLatency();
 
   /**
    * Returns the cache put average latency.
    */
-  public long getPutsAvgLatency();
+  long getPutsAvgLatency();
 
   /**
    * Returns the cache putAll average latency.
    */
-  public long getPutAllAvgLatency();
+  long getPutAllAvgLatency();
 
   /**
    * Returns the number of times that a cache miss occurred for all regions.
    */
-  public int getTotalMissCount();
+  int getTotalMissCount();
 
   /**
    * Returns the number of times that a hit occurred for all regions.
    */
-  public int getTotalHitCount();
+  int getTotalHitCount();
 
   /**
    * Returns the number of gets per second.
    */
-  public float getGetsRate();
+  float getGetsRate();
 
   /**
    * Returns the number of puts per second. Only includes puts done explicitly on this member's
    * cache, not those pushed from another member.
    */
-  public float getPutsRate();
+  float getPutsRate();
 
   /**
    * Returns the number of putAlls per second.
    */
-  public float getPutAllRate();
+  float getPutAllRate();
 
   /**
    * Returns the number of creates per second.
    */
-  public float getCreatesRate();
+  float getCreatesRate();
 
   /**
    * Returns the number of destroys per second.
    */
-  public float getDestroysRate();
+  float getDestroysRate();
 
   /**
    * Returns the average latency of a call to a CacheWriter.
    */
-  public long getCacheWriterCallsAvgLatency();
+  long getCacheWriterCallsAvgLatency();
 
   /**
    * Returns the average latency of a call to a CacheListener.
    */
-  public long getCacheListenerCallsAvgLatency();
+  long getCacheListenerCallsAvgLatency();
 
   /**
    * Returns the total number of times that a load on this cache has completed, as a result of
    * either a local get or a remote net load.
    */
-  public int getTotalLoadsCompleted();
+  int getTotalLoadsCompleted();
 
   /**
    * Returns the average latency of a load.
    */
-  public long getLoadsAverageLatency();
+  long getLoadsAverageLatency();
 
   /**
    * Returns the total number of times the a network load initiated by this cache has completed.
    */
-  public int getTotalNetLoadsCompleted();
+  int getTotalNetLoadsCompleted();
 
   /**
    * Returns the net load average latency.
    */
-  public long getNetLoadsAverageLatency();
+  long getNetLoadsAverageLatency();
 
   /**
    * Returns the total number of times that a network search initiated by this cache has completed.
    */
-  public int getTotalNetSearchCompleted();
+  int getTotalNetSearchCompleted();
 
   /**
    * Returns the net search average latency.
    */
-  public long getNetSearchAverageLatency();
+  long getNetSearchAverageLatency();
 
   /**
    * Returns the current number of disk tasks (op-log compaction, asynchronous recovery, etc.) that
    * are waiting for a thread to run.
    */
-  public int getTotalDiskTasksWaiting();
+  int getTotalDiskTasksWaiting();
 
   /**
    * Returns the average number of bytes per second sent.
    */
-  public float getBytesSentRate();
+  float getBytesSentRate();
 
   /**
    * Returns the average number of bytes per second received.
    */
-  public float getBytesReceivedRate();
+  float getBytesReceivedRate();
 
   /**
    * Returns a list of IDs for all connected gateway receivers.
    */
-  public String[] listConnectedGatewayReceivers();
+  String[] listConnectedGatewayReceivers();
 
   /**
    * Returns a list of IDs for all gateway senders.
    */
-  public String[] listConnectedGatewaySenders();
+  String[] listConnectedGatewaySenders();
 
   /**
    * Returns the number of currently executing functions.
    */
-  public int getNumRunningFunctions();
+  int getNumRunningFunctions();
 
   /**
    * Returns the average function execution rate.
    */
-  public float getFunctionExecutionRate();
+  float getFunctionExecutionRate();
 
   /**
-   * Returns the number of currently executing functions that will return resutls.
+   * Returns the number of currently executing functions that will return results.
    */
-  public int getNumRunningFunctionsHavingResults();
+  int getNumRunningFunctionsHavingResults();
 
   /**
    * Returns the number of current transactions.
    */
-  public int getTotalTransactionsCount();
+  int getTotalTransactionsCount();
 
   /**
    * Returns the average commit latency in nanoseconds .
    */
-  public long getTransactionCommitsAvgLatency();
+  long getTransactionCommitsAvgLatency();
 
   /**
    * Returns the number of committed transactions.
    */
-  public int getTransactionCommittedTotalCount();
+  int getTransactionCommittedTotalCount();
 
   /**
    * Returns the number of transactions that were rolled back.
    */
-  public int getTransactionRolledBackTotalCount();
+  int getTransactionRolledBackTotalCount();
 
   /**
    * Returns the average number of transactions committed per second.
    */
-  public float getTransactionCommitsRate();
+  float getTransactionCommitsRate();
 
 
   /**
    * Returns the number of bytes reads per second from all the disks of the member.
    */
-  public float getDiskReadsRate();
+  float getDiskReadsRate();
 
   /**
    * Returns the number of bytes written per second to disk to all the disks of the member.
    */
-  public float getDiskWritesRate();
+  float getDiskWritesRate();
 
   /**
    * Returns the average disk flush latency time in nanoseconds.
    */
-  public long getDiskFlushAvgLatency();
+  long getDiskFlushAvgLatency();
 
   /**
    * Returns the number of backups currently in progress for all disk stores.
    */
-  public int getTotalBackupInProgress();
+  int getTotalBackupInProgress();
 
   /**
    * Returns the number of backups that have been completed.
    */
-  public int getTotalBackupCompleted();
+  int getTotalBackupCompleted();
 
   /**
    * Returns the number of threads waiting for a lock.
    */
-  public int getLockWaitsInProgress();
+  int getLockWaitsInProgress();
 
   /**
    * Returns the amount of time (in milliseconds) spent waiting for a lock.
    */
-  public long getTotalLockWaitTime();
+  long getTotalLockWaitTime();
 
   /**
    * Returns the number of lock services in use.
    */
-  public int getTotalNumberOfLockService();
+  int getTotalNumberOfLockService();
 
   /**
    * Returns the number of locks for which this member is a granter.
    */
-  public int getTotalNumberOfGrantors();
+  int getTotalNumberOfGrantors();
 
   /**
    * Returns the number of lock request queues in use by this member.
    */
-  public int getLockRequestQueues();
+  int getLockRequestQueues();
 
   /**
    * Returns the entry eviction rate as triggered by the LRU policy.
    */
-  public float getLruEvictionRate();
+  float getLruEvictionRate();
 
   /**
    * Returns the rate of entries destroyed either by destroy cache operations or eviction.
    */
-  public float getLruDestroyRate();
+  float getLruDestroyRate();
+
+  /**
+   * Returns the number of initial images in progress.
+   * 
+   * @deprecated as typo in name has been corrected: use
+   *             {@link MemberMXBean#getInitialImagesInProgress} instead.
+   */
+  @Deprecated
+  int getInitialImagesInProgres();
 
   /**
    * Returns the number of initial images in progress.
    */
-  public int getInitialImagesInProgres();
+  int getInitialImagesInProgress();
 
   /**
    * Returns the total amount of time spent performing a "get initial image" operation when creating
    * a region.
    */
-  public long getInitialImageTime();
+  long getInitialImageTime();
 
   /**
    * Return the number of keys received while performing a "get initial image" operation when
    * creating a region.
    */
-  public int getInitialImageKeysReceived();
+  int getInitialImageKeysReceived();
 
   /**
    * Returns the average time (in nanoseconds) spent deserializing objects. Includes
    * deserializations that result in a PdxInstance.
    */
-  public long getDeserializationAvgLatency();
+  long getDeserializationAvgLatency();
 
   /**
    * Returns the average latency (in nanoseconds) spent deserializing objects. Includes
    * deserializations that result in a PdxInstance.
    */
-  public long getDeserializationLatency();
+  long getDeserializationLatency();
 
   /**
    * Returns the instantaneous rate of deserializing objects. Includes deserializations that result
    * in a PdxInstance.
    */
-  public float getDeserializationRate();
+  float getDeserializationRate();
 
   /**
    * Returns the average time (in nanoseconds) spent serializing objects. Includes serializations
    * that result in a PdxInstance.
    */
-  public long getSerializationAvgLatency();
+  long getSerializationAvgLatency();
 
   /**
    * Returns the average latency (in nanoseconds) spent serializing objects. Includes serializations
    * that result in a PdxInstance.
    */
-  public long getSerializationLatency();
+  long getSerializationLatency();
 
   /**
    * Returns the instantaneous rate of serializing objects. Includes serializations that result in a
    * PdxInstance.
    */
-  public float getSerializationRate();
+  float getSerializationRate();
 
   /**
    * Returns the instantaneous rate of PDX instance deserialization.
    */
-  public float getPDXDeserializationRate();
+  float getPDXDeserializationRate();
 
   /**
    * Returns the average time, in seconds, spent deserializing PDX instanced.
    */
-  public long getPDXDeserializationAvgLatency();
+  long getPDXDeserializationAvgLatency();
 
   /**
    * Returns the total number of bytes used on all disks.
    */
-  public long getTotalDiskUsage();
+  long getTotalDiskUsage();
 
   /**
    * Returns the number of threads in use.
    */
-  public int getNumThreads();
+  int getNumThreads();
 
   /**
    * Returns the system load average for the last minute. The system load average is the sum of the
@@ -742,99 +753,99 @@ public interface MemberMXBean {
    * 
    * @return The load average or a negative value if one is not available.
    */
-  public double getLoadAverage();
+  double getLoadAverage();
 
   /**
    * Returns the number of times garbage collection has occurred.
    */
-  public long getGarbageCollectionCount();
+  long getGarbageCollectionCount();
 
   /**
    * Returns the amount of time (in milliseconds) spent on garbage collection.
    */
-  public long getGarbageCollectionTime();
+  long getGarbageCollectionTime();
 
   /**
    * Returns the average number of reads per second.
    */
-  public float getAverageReads();
+  float getAverageReads();
 
   /**
    * Returns the average writes per second, including both put and putAll operations.
    */
-  public float getAverageWrites();
+  float getAverageWrites();
 
   /**
    * Returns the number JVM pauses (which may or may not include full garbage collection pauses)
    * detected by GemFire.
    */
-  public long getJVMPauses();
+  long getJVMPauses();
 
 
   /**
    * Returns the underlying host's current cpuActive percentage
    */
-  public int getHostCpuUsage();
+  int getHostCpuUsage();
 
   /**
    * 
    * Returns true if a cache server is running on this member and able server requests from GemFire
    * clients
    */
-  public boolean isCacheServer();
+  boolean isCacheServer();
 
   /**
    * Returns the redundancy-zone of the member;
    */
-  public String getRedundancyZone();
+  String getRedundancyZone();
 
   /**
    * Returns current number of cache rebalance operations being directed by this process.
    */
-  public int getRebalancesInProgress();
+  int getRebalancesInProgress();
 
   /**
    * Returns current number of threads waiting for a reply.
    */
-  public int getReplyWaitsInProgress();
+  int getReplyWaitsInProgress();
 
   /**
    * Returns total number of times waits for a reply have completed.
    */
-  public int getReplyWaitsCompleted();
+  int getReplyWaitsCompleted();
 
   /**
    * The current number of nodes in this distributed system visible to this member.
    */
-  public int getVisibleNodes();
+  int getVisibleNodes();
 
   /**
    * Returns the number of off heap objects.
    */
-  public int getOffHeapObjects();
+  int getOffHeapObjects();
 
   /**
    * Returns the size of the maximum configured off-heap memory in bytes.
    */
-  public long getOffHeapMaxMemory();
+  long getOffHeapMaxMemory();
 
   /**
    * Returns the size of available (or unallocated) off-heap memory in bytes.
    */
-  public long getOffHeapFreeMemory();
+  long getOffHeapFreeMemory();
 
   /**
    * Returns the size of utilized off-heap memory in bytes.
    */
-  public long getOffHeapUsedMemory();
+  long getOffHeapUsedMemory();
 
   /**
    * Returns the percentage of off-heap memory fragmentation.
    */
-  public int getOffHeapFragmentation();
+  int getOffHeapFragmentation();
 
   /**
-   * Returns the total time spent compacting in millseconds.
+   * Returns the total time spent compacting in milliseconds.
    */
-  public long getOffHeapCompactionTime();
+  long getOffHeapCompactionTime();
 }

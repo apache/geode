@@ -30,12 +30,12 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
+import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.MemberMBeanBridge;
@@ -165,7 +165,7 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
 
     sample();
 
-    assertEquals(1, getInitialImagesInProgres());
+    assertEquals(1, getInitialImagesInProgress());
     cachePerfStats.endGetInitialImage(startGIITime);
     cachePerfStats.endCacheListenerCall(startCacheListenerTime);
     cachePerfStats.endCacheWriterCall(startCacheWriterTime);
@@ -389,8 +389,8 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
     return bridge.getInitialImageTime();
   }
 
-  private int getInitialImagesInProgres() {
-    return bridge.getInitialImagesInProgres();
+  private int getInitialImagesInProgress() {
+    return bridge.getInitialImagesInProgress();
   }
 
   private float getBytesReceivedRate() {

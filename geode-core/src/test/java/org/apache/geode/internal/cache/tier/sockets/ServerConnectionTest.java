@@ -39,6 +39,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -57,7 +58,7 @@ public class ServerConnectionTest {
   private ServerConnection serverConnection;
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     AcceptorImpl acceptor = mock(AcceptorImpl.class);
 
     InetAddress inetAddress = mock(InetAddress.class);
@@ -69,8 +70,8 @@ public class ServerConnectionTest {
     InternalCache cache = mock(InternalCache.class);
     SecurityService securityService = mock(SecurityService.class);
 
-    serverConnection = new ServerConnection(socket, cache, null, null, 0, 0, null,
-        Acceptor.PRIMARY_SERVER_TO_CLIENT, acceptor, securityService);
+    serverConnection = ServerConnectionFactory.makeServerConnection(socket, cache, null, null, 0, 0,
+        null, Acceptor.PRIMARY_SERVER_TO_CLIENT, acceptor, securityService);
     MockitoAnnotations.initMocks(this);
   }
 

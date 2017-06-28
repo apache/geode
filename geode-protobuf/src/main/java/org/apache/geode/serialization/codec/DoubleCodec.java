@@ -12,31 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.util;
+package org.apache.geode.serialization.codec;
 
-import static org.junit.Assert.*;
+import org.apache.geode.serialization.SerializationType;
+import org.apache.geode.serialization.TypeCodec;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import java.nio.ByteBuffer;
 
-import org.apache.geode.internal.util.PasswordUtil;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+public class DoubleCodec implements TypeCodec<Double> {
+  @Override
+  public Double decode(byte[] incoming) {
+    return ByteBuffer.wrap(incoming).getDouble();
+  }
 
-@Category({UnitTest.class, SecurityTest.class})
-public class PasswordUtilJUnitTest {
+  @Override
+  public byte[] encode(Double incoming) {
+    return ByteBuffer.allocate(Double.BYTES).putDouble(incoming).array();
+  }
 
-  @Test
-  public void testPasswordUtil() {
-    String x = "password";
-    String z = null;
-
-    // System.out.println(x);
-    String y = PasswordUtil.encrypt(x);
-    // System.out.println(y);
-    y = "encrypted(" + y + ")";
-    z = PasswordUtil.decrypt(y);
-    // System.out.println(z);
-    assertEquals(x, z);
+  @Override
+  public SerializationType getSerializationType() {
+    return SerializationType.DOUBLE;
   }
 }

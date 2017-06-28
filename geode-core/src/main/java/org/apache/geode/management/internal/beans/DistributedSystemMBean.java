@@ -14,6 +14,12 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import java.util.Map;
+
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.DiskBackupStatus;
 import org.apache.geode.management.DiskMetrics;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -22,10 +28,9 @@ import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.NetworkMetrics;
 import org.apache.geode.management.OSMetrics;
 import org.apache.geode.management.PersistentMemberDetails;
-
-import java.util.Map;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * Distributed System MBean
@@ -48,8 +53,9 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   @Override
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception {
+    SecurityServiceFactory.findSecurityService().authorize(Resource.CLUSTER, Operation.WRITE,
+        Target.DISK);
     return bridge.backupAllMembers(targetDirPath, baselineDirPath);
-
   }
 
   @Override
@@ -60,7 +66,6 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   @Override
   public String[] listCacheServers() {
     return bridge.listCacheServers();
-
   }
 
 
@@ -243,7 +248,7 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   }
 
   @Override
-  public boolean revokeMissingDiskStores(final String diskStoreId) throws Exception {
+  public boolean revokeMissingDiskStores(final String diskStoreId) {
     return bridge.revokeMissingDiskStores(diskStoreId);
   }
 
@@ -433,6 +438,6 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
 
   @Override
   public void setQueryCollectionsDepth(int queryCollectionsDepth) {
-    bridge.setQueryCollectionsDepth(queryCollectionsDepth);;
+    bridge.setQueryCollectionsDepth(queryCollectionsDepth);
   }
 }

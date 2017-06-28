@@ -14,7 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import java.io.File;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 
@@ -22,15 +25,15 @@ import org.apache.geode.management.internal.cli.GfshParser;
 /**
  * - Helper class to build command strings, used in the Dunits for testing gfsh commands
  * 
- * 
  * @since GemFire 7.0
  */
 public class CommandStringBuilder {
-  private final String OPTION_MARKER = GfshParser.LONG_OPTION_SPECIFIER;
-  private final String EQUAL_TO = GfshParser.OPTION_VALUE_SPECIFIER;
-  private final String ARG_SEPARATOR = GfshParser.OPTION_SEPARATOR;
-  private final String OPTION_SEPARATOR = GfshParser.OPTION_SEPARATOR;
-  private final String SINGLE_SPACE = " ";
+  private static final String OPTION_MARKER = GfshParser.LONG_OPTION_SPECIFIER;
+  private static final String EQUAL_TO = GfshParser.OPTION_VALUE_SPECIFIER;
+  private static final String ARG_SEPARATOR = GfshParser.OPTION_SEPARATOR;
+  private static final String OPTION_SEPARATOR = GfshParser.OPTION_SEPARATOR;
+  private static final String SINGLE_SPACE = " ";
+  private static final String SINGLE_QUOTE = "\"";
 
   private final StringBuffer buffer;
   private volatile boolean hasOptions;
@@ -56,6 +59,10 @@ public class CommandStringBuilder {
     buffer.append(value);
     hasOptions = true;
     return this;
+  }
+
+  public CommandStringBuilder addOption(String option, File value) {
+    return addOption(option, quoteArgument(value.getAbsolutePath()));
   }
 
   public CommandStringBuilder addOptionWithValueCheck(String option, String value) {
@@ -86,5 +93,17 @@ public class CommandStringBuilder {
   @Override
   public String toString() {
     return getCommandString();
+  }
+
+  private String quoteArgument(String argument) {
+    if (!argument.startsWith(SINGLE_QUOTE)) {
+      argument = SINGLE_QUOTE + argument;
+    }
+
+    if (!argument.endsWith(SINGLE_QUOTE)) {
+      argument = argument + SINGLE_QUOTE;
+    }
+
+    return argument;
   }
 }

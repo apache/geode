@@ -65,8 +65,6 @@ Note that you can only have one gateway receiver on each member, and unlike a ga
 start gateway-receiver [--group=value(,value)*] [--member=value]
 ```
 
-<a id="topic_67738A5B68E84DEE95D1C92DAB2E26E5__table_eyh_3vg_2w"></a>
-
 | Name                                           | Description                                                      |
 |------------------------------------------------|------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-member</span> | Name or ID of the member on which to start the Gateway Receiver. |
@@ -116,8 +114,6 @@ For information on how to configure a gateway sender, see [Configure Gateway Sen
 ``` pre
 start gateway-sender --id=value [--group=value(,value)*] [--member=value]
 ```
-
-<a id="topic_AB8BA3F42B9645A8BE9BD97CE2F839A8__table_gxc_lvg_2w"></a>
 
 | Name                                           | Description                                               |
 |------------------------------------------------|-----------------------------------------------------------|
@@ -174,8 +170,6 @@ See [Browsing Geode MBeans through JConsole](../../../managing/management/mbeans
 start jconsole [--interval=<seconds>] [--notile] [--version]
 [--J<jconsole JVM options>]
 ```
-
-<a id="topic_D00507416F3944DFAB48D2FA2B9E4A31__table_uck_4vg_2w"></a>
 
 | Name                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                | Default Value |
 |----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
@@ -238,10 +232,8 @@ Start the JDK's Java VisualVM monitoring application in a separate process.
 start jvisualvm [--J=value(,value)*]
 ```
 
-<a id="topic_5B5BF8BEE905463D8B7762B89E2D65E7__table_ssp_svg_2w"></a>
-
-| Name                                      | Description                                                                                                    |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| Name                                      | Description |
+|-------------------------------------------|------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-J</span> | VM-option passed to the spawned CacheServer VM. For example: `-J-Dfoo.bar=true` for setting foo.bar to 'true'. |
 
 <span class="tablecap">Table 4. Start JVisalVM Parameters</span>
@@ -280,10 +272,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
  [--J=value(,value)*]
 ```
 
-<a id="topic_591260CF25D64562A0EDD7260D2AC6D4__table_hly_vvg_2w"></a>
-
 <table>
-<caption><span class="tablecap">Table 5. Parameters</span></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -468,8 +457,6 @@ For more information on Geode Pulse, see [Geode Pulse](../../pulse/pulse-overvie
 start pulse [--url=value]
 ```
 
-<a id="topic_E906BA7D9E7F4C5890FEFA7ECD40DD77__table_cv3_w54_k4eee"></a>
-
 | Name                                        | Description                      | Default                       |
 |---------------------------------------------|----------------------------------|-------------------------------|
 | <span class="keyword parmname">\\-\\-url</span> | URL of the Pulse Web application | `http://localhost:7070/pulse` |
@@ -520,7 +507,6 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <a id="topic_3764EE2DB18B4AE4A625E0354471738A__table_at5_bwg_2w"></a>
 
 <table>
-<caption><span class="tablecap">Table 7. Parameters</span></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -794,6 +780,9 @@ the cluster.
 </tr>
 </tbody>
 </table>
+
+<span class="tablecap">Table 7. Start Server Parameters</span>
+
 
 ### <a id="topic_3764EE2DB18B4AE4A625E0354471738A__section_A50120613D3C4A848463236C4EFF18C7" class="no-quick-link"></a>Examples
 

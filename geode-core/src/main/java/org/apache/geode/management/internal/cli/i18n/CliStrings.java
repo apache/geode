@@ -140,7 +140,7 @@ public class CliStrings {
   public static final String TOPIC_GFSH__DESC = "The Geode Shell";
   public static final String TOPIC_SHARED_CONFIGURATION = "Cluster Configuration";
   public static final String TOPIC_SHARED_CONFIGURATION_HELP =
-      "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfshs command are persisted to the locator hosting the cluster configuration service.";
+      "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfsh command are persisted to the locator hosting the cluster configuration service.";
   public static final String TOPIC_LOGS = "Logs";
   public static final String TOPIC_LOGS__DESC = "Generate log contents as per the need";
   public static final String TOPIC_CLIENT = "Client";
@@ -216,7 +216,7 @@ public class CliStrings {
   public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
   public static final String GFSHPARSER__MSG__VALUE_REQUIRED_FOR_OPTION_0 =
       "Value is required for parameter \"{0}\"";
-  public static final String GFSHPARSER__MSG__AMBIGIOUS_COMMAND_0_FOR_ASSISTANCE_USE_1_OR_HINT_HELP =
+  public static final String GFSHPARSER__MSG__AMBIGUOUS_COMMAND_0_FOR_ASSISTANCE_USE_1_OR_HINT_HELP =
       "Ambiguous command \"{0}\" (for assistance press \"{1}\" or type \"hint\" or \"help <command name>\" & then hit ENTER)";
   public static final String GFSHPARSER__MSG__COMMAND_ARGUMENT_0_IS_REQUIRED_USE_HELP =
       "Command parameter \"{0}\" is required. Use \"help <command name>\" for assistance.";
@@ -1266,13 +1266,6 @@ public class CliStrings {
       "String to be echoed. For example, \"SYS_USER variable is set to ${SYS_USER}\".";
   public static final String ECHO__MSG__NO_GFSH_INSTANCE = "Could not get GFSH Instance";
 
-  /* 'encrypt password' command */
-  public static final String ENCRYPT = "encrypt password";
-  public static final String ENCRYPT__HELP =
-      "Encrypt a password for use in data source configuration.";
-  public static final String ENCRYPT_STRING = "password";
-  public static final String ENCRYPT_STRING__HELP = "Password to be encrypted.";
-
   /* 'execute function' command */
   public static final String EXECUTE_FUNCTION = "execute function";
   public static final String EXECUTE_FUNCTION__HELP =
@@ -1857,9 +1850,9 @@ public class CliStrings {
   public static final String REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS =
       "Distributed system has no regions that can be rebalanced";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception =
-      "Excpetion occurred while rebalancing on member : {0} . Exception is ";
+      "Exception occurred while rebalancing on member : {0} . Exception is ";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1 =
-      "Excpetion occurred while rebalancing on member : {0} . Exception is : {1}";
+      "Exception occurred while rebalancing on member : {0} . Exception is : {1}";
   public static final String REBALANCE__MSG__ERROR_IN_RETRIEVING_MBEAN =
       "Could not retrieve MBean for region : {0}";
   public static final String REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1 =
@@ -2065,7 +2058,7 @@ public class CliStrings {
   public static final String SHUTDOWN__MSG__CAN_NOT_SHUTDOWN_WITHIN_TIMEOUT =
       "Could not shutdown within timeout. Shutdown will continue in background";
   public static final String SHUTDOWN__MSG__NO_DATA_NODE_FOUND =
-      "No data node found for stopping. Please specify --shutdown-locators option if you want locators to be stopped";
+      "No data node found for stopping. Please specify --include-locators option if you want locators to be stopped";
 
   public static final String SHUTDOWN_TIMEDOUT =
       "Shutdown command timedout. Please manually check node status";

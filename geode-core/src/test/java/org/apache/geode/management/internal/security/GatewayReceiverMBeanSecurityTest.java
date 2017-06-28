@@ -15,17 +15,11 @@
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import org.apache.geode.management.GatewayReceiverMXBean;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import javax.management.ObjectName;
+
+import org.assertj.core.api.SoftAssertions;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -34,7 +28,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.management.ObjectName;
+import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GatewayReceiverMBeanSecurityTest {
@@ -47,10 +48,7 @@ public class GatewayReceiverMBeanSecurityTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
@@ -58,7 +56,7 @@ public class GatewayReceiverMBeanSecurityTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    // the server does not have a GAtewayReceiverMXBean registered initially, has to register a mock
+    // the server does not have a GatewayReceiverMXBean registered initially, has to register a mock
     // one.
     service = ManagementService.getManagementService(server.getCache());
     mockBeanName = ObjectName.getInstance("GemFire", "key", "value");
@@ -76,7 +74,7 @@ public class GatewayReceiverMBeanSecurityTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
   public void testAllAccess() throws Exception {
     bean.getAverageBatchProcessingTime();
     bean.getBindAddress();
@@ -87,12 +85,16 @@ public class GatewayReceiverMBeanSecurityTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "user", password = "user")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut())
+    SoftAssertions softly = new SoftAssertions();
+    softly.assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.start()).hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.stop()).hasMessageContaining(TestCommand.dataManage.toString());
+    softly.assertThatThrownBy(() -> bean.start())
+        .hasMessageContaining(TestCommand.clusterManageGateway.toString());
+    softly.assertThatThrownBy(() -> bean.stop())
+        .hasMessageContaining(TestCommand.clusterManageGateway.toString());
+    softly.assertAll();
   }
 
 }

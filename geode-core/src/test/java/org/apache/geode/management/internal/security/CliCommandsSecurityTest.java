@@ -15,8 +15,15 @@
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import java.util.List;
+
+import org.assertj.core.api.SoftAssertions;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.MemberMXBean;
@@ -27,13 +34,6 @@ import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.List;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class CliCommandsSecurityTest {
@@ -60,22 +60,22 @@ public class CliCommandsSecurityTest {
   @Test
   @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() {
+    SoftAssertions softly = new SoftAssertions();
     for (TestCommand command : commands) {
       // skip query commands since query commands are only available in client shell
       if (command.getCommand().startsWith("query"))
         continue;
       LogService.getLogger().info("processing: " + command.getCommand());
       // for those commands that requires a permission, we expect an exception to be thrown
-      if (command.getPermission() != null) {
-        try {
-          String result = bean.processCommand(command.getCommand());
-          fail(command.getCommand() + " has result: " + result);
-        } catch (NotAuthorizedException e) {
-          assertTrue(e.getMessage() + " should contain " + command.getPermission(),
-              e.getMessage().contains(command.getPermission().toString()));
-        }
+      // This has the potential to become flaky for commands with more than one permission.
+      if (command.getPermissions() != null && command.getPermissions().length > 0) {
+        softly.assertThatThrownBy(() -> bean.processCommand(command.getCommand()))
+            .describedAs(command.getCommand()).isInstanceOf(NotAuthorizedException.class)
+            .hasMessageContaining(command.getPermissions()[0].toString());
+        // }
       }
     }
+    softly.assertAll();
   }
 
   @Test

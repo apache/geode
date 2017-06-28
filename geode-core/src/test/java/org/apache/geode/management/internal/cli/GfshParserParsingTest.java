@@ -17,15 +17,16 @@ package org.apache.geode.management.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.util.Map;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
 
-import java.util.Map;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.test.dunit.rules.GfshParserRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class GfshParserParsingTest {
@@ -289,5 +290,15 @@ public class GfshParserParsingTest {
     String command = "start locator --name=\\u0005Name";
     GfshParseResult result = parser.parse(command);
     assertThat(result.getParamValue("name")).isEqualTo("\\u0005Name");
+  }
+
+  @Test
+  public void testAlterRegion() throws Exception {
+    String command =
+        "alter region --name=/Person --cache-writer='' --cache-listener='' --cache-loader=''";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("cache-writer")).isNotNull().isEmpty();
+    assertThat(result.getParamValue("cache-listener")).isNotNull().isEmpty();
+    assertThat(result.getParamValue("cache-loader")).isNotNull().isEmpty();
   }
 }

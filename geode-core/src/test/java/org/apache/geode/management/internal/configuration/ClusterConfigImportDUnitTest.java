@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
@@ -43,12 +42,13 @@ import java.util.zip.ZipFile;
 
 @Category(DistributedTest.class)
 public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
-  @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
-  public static final ClusterConfig INITIAL_CONFIG = new ClusterConfig(new ConfigGroup("cluster"));
+  private static final ClusterConfig INITIAL_CONFIG = new ClusterConfig(new ConfigGroup("cluster"));
 
   private MemberVM locatorVM;
+
+  @Rule
+  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
   @Before
   public void before() throws Exception {
@@ -155,7 +155,6 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
 
   public void testExportClusterConfig(String zipFilePath) throws Exception {
     MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
-
 
     gfshConnector.executeAndVerifyCommand("create region --name=myRegion --type=REPLICATE");
 

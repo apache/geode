@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -79,29 +79,25 @@ public class LogWriterFactory {
     }
 
     // log the banner
-    if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
-      if (InternalDistributedSystem.getReconnectAttemptCounter() == 0 // avoid filling up logs
-                                                                      // during auto-reconnect
-          && !isSecure // && !isLoner /* do this on a loner to fix bug 35602 */
-      ) {
-        // LOG:CONFIG:
-        logger.info(LogMarker.CONFIG, Banner.getString(null));
-      }
+    if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)
+        && InternalDistributedSystem.getReconnectAttemptCounter() == 0 // avoid filling up logs
+                                                                       // during auto-reconnect
+        && !isSecure // && !isLoner /* do this on a loner to fix bug 35602 */
+        && logConfig) {
+      // LOG:CONFIG:
+      logger.info(LogMarker.CONFIG, Banner.getString(null));
     } else {
       logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
     }
 
     // log the config
-    if (logConfig) {
-      if (!isLoner) {
-        // LOG:CONFIG: changed from config to info
-        logger.info(LogMarker.CONFIG,
-            LocalizedMessage.create(
-                LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
-                config.toLoggerString()));
-      }
+    if (logConfig && !isLoner) {
+      // LOG:CONFIG: changed from config to info
+      logger.info(LogMarker.CONFIG,
+          LocalizedMessage.create(
+              LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
+              config.toLoggerString()));
     }
-
     return logger;
   }
 }
