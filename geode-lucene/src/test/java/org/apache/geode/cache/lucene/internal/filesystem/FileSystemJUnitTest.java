@@ -58,7 +58,7 @@ public class FileSystemJUnitTest {
   private Random rand = new Random();
   private ConcurrentHashMap fileAndChunkRegion;
   @Rule
-  public TemporaryFolder tempFolderRule = new TemporaryFolder(new java.io.File("."));
+  public TemporaryFolder tempFolderRule = new TemporaryFolder();
   private FileSystemStats fileSystemStats;
 
   @Before

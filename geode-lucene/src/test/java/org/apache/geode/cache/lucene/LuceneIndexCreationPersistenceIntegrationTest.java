@@ -66,7 +66,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegrationTest {
 
   @Rule
-  public TemporaryFolder tempFolderRule = new TemporaryFolder(new File("."));
+  public TemporaryFolder tempFolderRule = new TemporaryFolder();
 
   @Override
   public void createCache() {
