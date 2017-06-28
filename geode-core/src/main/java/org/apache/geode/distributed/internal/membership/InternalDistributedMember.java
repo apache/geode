@@ -644,82 +644,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   public String toString() {
     String result = cachedToString;
     if (result == null) {
-      String host;
-
-      InetAddress add = getInetAddress();
-      if (add.isMulticastAddress())
-        host = add.getHostAddress();
-      else {
-        // host = shortName(add.getHostName());
-        host = SocketCreator.resolve_dns ? shortName(this.hostName) : this.hostName;
-      }
       final StringBuilder sb = new StringBuilder();
-
-      sb.append(host);
-
-      String myName = getName();
-      int vmPid = netMbr.getProcessId();
-      int vmKind = netMbr.getVmKind();
-      if (vmPid > 0 || vmKind != DistributionManager.NORMAL_DM_TYPE || !"".equals(myName)) {
-        sb.append("(");
-
-        if (!"".equals(myName)) {
-          sb.append(myName);
-          if (vmPid > 0) {
-            sb.append(':');
-          }
-        }
-
-        if (vmPid > 0)
-          sb.append(Integer.toString(vmPid));
-
-        String vmStr = "";
-        switch (vmKind) {
-          case DistributionManager.NORMAL_DM_TYPE:
-            // vmStr = ":local"; // let this be silent
-            break;
-          case DistributionManager.LOCATOR_DM_TYPE:
-            vmStr = ":locator";
-            break;
-          case DistributionManager.ADMIN_ONLY_DM_TYPE:
-            vmStr = ":admin";
-            break;
-          case DistributionManager.LONER_DM_TYPE:
-            vmStr = ":loner";
-            break;
-          default:
-            vmStr = ":<unknown:" + vmKind + ">";
-            break;
-        }
-        sb.append(vmStr);
-        sb.append(")");
-      }
-      if (vmKind != DistributionManager.LONER_DM_TYPE && netMbr.preferredForCoordinator()) {
-        sb.append("<ec>");
-      }
-      int vmViewId = getVmViewId();
-      if (vmViewId >= 0) {
-        sb.append("<v" + vmViewId + ">");
-      }
-      sb.append(":");
-      sb.append(getPort());
-
-      // if (dcPort > 0 && vmKind != DistributionManager.LONER_DM_TYPE) {
-      // sb.append("/");
-      // sb.append(Integer.toString(dcPort));
-      // }
-
-      if (vmKind == DistributionManager.LONER_DM_TYPE) {
-        // add some more info that was added in 4.2.1 for loner bridge clients
-        // impact on non-bridge loners is ok
-        if (this.uniqueTag != null && this.uniqueTag.length() != 0) {
-          sb.append(":").append(this.uniqueTag);
-        }
-        String name = getName();
-        if (name.length() != 0) {
-          sb.append(":").append(name);
-        }
-      }
+      addFixedToString(sb);
 
       // add version if not current
       short version = netMbr.getVersionOrdinal();
@@ -741,6 +667,86 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       cachedToString = result;
     }
     return result;
+  }
+
+  public void addFixedToString(StringBuilder sb) {
+    // Note: This method is used to generate the HARegion name. If it is changed, memory and GII
+    // issues will occur in the case of clients with subscriptions during rolling upgrade.
+    String host;
+
+    InetAddress add = getInetAddress();
+    if (add.isMulticastAddress())
+      host = add.getHostAddress();
+    else {
+      // host = shortName(add.getHostName());
+      host = SocketCreator.resolve_dns ? shortName(this.hostName) : this.hostName;
+    }
+
+    sb.append(host);
+
+    String myName = getName();
+    int vmPid = netMbr.getProcessId();
+    int vmKind = netMbr.getVmKind();
+    if (vmPid > 0 || vmKind != DistributionManager.NORMAL_DM_TYPE || !"".equals(myName)) {
+      sb.append("(");
+
+      if (!"".equals(myName)) {
+        sb.append(myName);
+        if (vmPid > 0) {
+          sb.append(':');
+        }
+      }
+
+      if (vmPid > 0)
+        sb.append(Integer.toString(vmPid));
+
+      String vmStr = "";
+      switch (vmKind) {
+        case DistributionManager.NORMAL_DM_TYPE:
+          // vmStr = ":local"; // let this be silent
+          break;
+        case DistributionManager.LOCATOR_DM_TYPE:
+          vmStr = ":locator";
+          break;
+        case DistributionManager.ADMIN_ONLY_DM_TYPE:
+          vmStr = ":admin";
+          break;
+        case DistributionManager.LONER_DM_TYPE:
+          vmStr = ":loner";
+          break;
+        default:
+          vmStr = ":<unknown:" + vmKind + ">";
+          break;
+      }
+      sb.append(vmStr);
+      sb.append(")");
+    }
+    if (vmKind != DistributionManager.LONER_DM_TYPE && netMbr.preferredForCoordinator()) {
+      sb.append("<ec>");
+    }
+    int vmViewId = getVmViewId();
+    if (vmViewId >= 0) {
+      sb.append("<v" + vmViewId + ">");
+    }
+    sb.append(":");
+    sb.append(getPort());
+
+    // if (dcPort > 0 && vmKind != DistributionManager.LONER_DM_TYPE) {
+    // sb.append("/");
+    // sb.append(Integer.toString(dcPort));
+    // }
+
+    if (vmKind == DistributionManager.LONER_DM_TYPE) {
+      // add some more info that was added in 4.2.1 for loner bridge clients
+      // impact on non-bridge loners is ok
+      if (this.uniqueTag != null && this.uniqueTag.length() != 0) {
+        sb.append(":").append(this.uniqueTag);
+      }
+      String name = getName();
+      if (name.length() != 0) {
+        sb.append(":").append(name);
+      }
+    }
   }
 
   private short readVersion(int flags, DataInput in) throws IOException {
