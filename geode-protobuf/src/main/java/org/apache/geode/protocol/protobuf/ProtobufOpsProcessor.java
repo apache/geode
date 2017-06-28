@@ -56,6 +56,8 @@ public class ProtobufOpsProcessor {
         return request.getGetRequest();
       case PUTALLREQUEST:
         return request.getPutAllRequest();
+      case GETREGIONSREQUEST:
+        return request.getGetRegionsRequest();
       default:
         throw new InvalidProtocolMessageException(
             "Unknown request type: " + request.getRequestAPICase().getNumber());
@@ -73,6 +75,8 @@ public class ProtobufOpsProcessor {
         return builder.setGetResponse((RegionAPI.GetResponse) response).build();
       case PUTALLREQUEST:
         return builder.setPutAllResponse((RegionAPI.PutAllResponse) response).build();
+      case GETREGIONSREQUEST:
+        return builder.setGetRegionsResponse((RegionAPI.GetRegionsResponse) response).build();
       default:
         throw new InvalidProtocolMessageException(
             "Unknown request type: " + requestType.getNumber());

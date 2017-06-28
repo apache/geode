@@ -18,6 +18,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.protocol.protobuf.operations.GetRegionsRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
@@ -58,6 +59,9 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
     registry.registerOperationHandlerForOperationId(
         ClientProtocol.Request.RequestAPICase.PUTREQUEST.getNumber(),
         new PutRequestOperationHandler());
+    registry.registerOperationHandlerForOperationId(
+        ClientProtocol.Request.RequestAPICase.GETREGIONSREQUEST.getNumber(),
+        new GetRegionsRequestOperationHandler());
   }
 
   public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)

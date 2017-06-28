@@ -104,5 +104,6 @@ message GetRegionsRequest {
 }
 
 message GetRegionsResponse {
-    repeated Region regions = 1;
+    bool success = 1;
+    repeated Region regions = 2;
 }
