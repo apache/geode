@@ -14,8 +14,15 @@
  */
 package org.apache.geode.cache.lucene.internal.filesystem;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,10 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +39,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -42,7 +47,6 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.rules.DiskDirRule;
 
 @Category(UnitTest.class)
 public class FileSystemJUnitTest {
@@ -53,9 +57,8 @@ public class FileSystemJUnitTest {
   private FileSystem system;
   private Random rand = new Random();
   private ConcurrentHashMap fileAndChunkRegion;
-
   @Rule
-  public DiskDirRule dirRule = new DiskDirRule();
+  public TemporaryFolder tempFolderRule = new TemporaryFolder();
   private FileSystemStats fileSystemStats;
 
   @Before
@@ -417,8 +420,8 @@ public class FileSystemJUnitTest {
     File file2 = system.createFile(name2);
     byte[] file2Data = writeRandomBytes(file2);
 
-    java.io.File parentDir = dirRule.get();
-    system.export(dirRule.get());
+    java.io.File parentDir = tempFolderRule.getRoot();
+    system.export(parentDir);
     String[] foundFiles = parentDir.list();
     Arrays.sort(foundFiles);
     assertArrayEquals(new String[] {"testFile1", "testFile2"}, foundFiles);
