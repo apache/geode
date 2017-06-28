@@ -1199,8 +1199,8 @@ public class GMSJoinLeaveJUnitTest {
     initMocks(false);
     HashSet<InternalDistributedMember> registrants = new HashSet<>();
     registrants.add(mockMembers[0]);
-    FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0],
-        false, null, registrants, false, true, null);
+    FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false,
+        null, registrants, false, true, null);
     NetView view = createView();
     JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
 
@@ -1214,8 +1214,8 @@ public class GMSJoinLeaveJUnitTest {
     callAsnyc(() -> {
       gmsJoinLeave.installView(view);
     });
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until (() ->
-        assertTrue("Should be able to join ", gmsJoinLeave.join()));
+    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+        .until(() -> assertTrue("Should be able to join ", gmsJoinLeave.join()));
   }
 
   private void callAsnyc(Runnable run) {
