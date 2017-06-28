@@ -2117,7 +2117,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     closePR(vm1);
   }
 
-  @Test
+  @Test(timeout = 60000)
   public void testDiskConflictWithCoLocation() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
