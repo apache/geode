@@ -326,7 +326,6 @@ public class ContainerManager {
             ConfigurationType.STANDALONE, "/tmp/cargo_configs/" + uniqueName);
     configuration.setProperty(GeneralPropertySet.LOGGING, install.getLoggingLevel());
 
-    install.setupCacheXMLFile("cargo_logs/XMLs/" + uniqueName + ".xml");
     install.modifyConfiguration(configuration);
 
     File gemfireLogFile = new File("cargo_logs/gemfire_modules/" + uniqueName);

@@ -129,24 +129,15 @@ public class GenericAppServerInstall extends ContainerInstall {
     this.cacheType = cacheType;
 
     appServerModulePath = findAndExtractModule(GEODE_BUILD_HOME, "appserver");
+    // Set the cache XML file by copying the XML file in the build dir
+    setCacheXMLFile(appServerModulePath + "/conf/" + cacheType.getXMLTypeFile(),
+        "cargo_logs/XMLs/" + getContainerDescription() + ".xml");
+
     // Default properties
     setCacheProperty("enable_local_cache", "false");
 
     warFile = File.createTempFile("session-testing", ".war", new File("/tmp"));
     warFile.deleteOnExit();
-  }
-
-  /**
-   * Sets the XML file to use for cache settings
-   *
-   * Calls {@link ContainerInstall#setCacheXMLFile(String, String)} with the default original cache
-   * file located in the conf folder of the {@link #appServerModulePath} and the given
-   * newXMLFilePath.
-   */
-  @Override
-  public void setupCacheXMLFile(String newXMLFilePath) throws IOException {
-    super.setCacheXMLFile(appServerModulePath + "/conf/" + cacheType.getXMLTypeFile(),
-        newXMLFilePath);
   }
 
   /**
@@ -240,8 +231,7 @@ public class GenericAppServerInstall extends ContainerInstall {
       attributes.put("host", address);
       attributes.put("port", Integer.toString(port));
 
-      editXMLFile(appServerModulePath + "/conf/" + cacheType.getXMLTypeFile(), "locator", "pool",
-          attributes, true);
+      editXMLFile(getSystemProperty("cache-xml-file"), "locator", "pool", attributes, true);
     }
 
     logger.info("Set locator for AppServer install to " + address + "[" + port + "]");

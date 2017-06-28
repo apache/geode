@@ -188,6 +188,10 @@ public class TomcatInstall extends ContainerInstall {
 
     // Get tomcat module path
     tomcatModulePath = findAndExtractModule(GEODE_BUILD_HOME, "tomcat");
+    // Set the cache XML file by copying the XML file in the build dir
+    setCacheXMLFile(tomcatModulePath + "/conf/" + config.getXMLFile(),
+        "cargo_logs/XMLs/" + getContainerDescription() + "_" + System.nanoTime() + ".xml");
+
     // Default properties
     setCacheProperty("enableLocalCache", "false");
 
@@ -198,17 +202,6 @@ public class TomcatInstall extends ContainerInstall {
     if (version.jarSkipPropertyName() != null) {
       updateProperties();
     }
-  }
-
-  /**
-   * Sets the XML file to use for cache settings
-   *
-   * Calls {@link ContainerInstall#setCacheXMLFile(String, String)} with the default original cache
-   * file located in the conf folder of the {@link #tomcatModulePath} and the given newXMLFilePath.
-   */
-  @Override
-  public void setupCacheXMLFile(String newXMLFilePath) throws IOException {
-    super.setCacheXMLFile(tomcatModulePath + "/conf/" + config.getXMLFile(), newXMLFilePath);
   }
 
   /**
@@ -353,7 +346,7 @@ public class TomcatInstall extends ContainerInstall {
    *
    * For Client Server installations the cache-client.xml file is updated within the installations
    * conf folder. For Peer to Peer installations the server.xml file is updated using
-   * {@link #updateXMLFiles()}.
+   * {@link #updateXMLFiles()} when the container is started.
    */
   @Override
   public void setLocator(String address, int port) throws Exception {
@@ -362,8 +355,7 @@ public class TomcatInstall extends ContainerInstall {
       attributes.put("host", address);
       attributes.put("port", Integer.toString(port));
 
-      editXMLFile(tomcatModulePath + "/conf/" + config.getXMLFile(), "locator", "pool", attributes,
-          true);
+      editXMLFile(getSystemProperty("cache-xml-file"), "locator", "pool", attributes, true);
 
     } else {
       setSystemProperty("locators", address + "[" + port + "]");

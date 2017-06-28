@@ -113,11 +113,6 @@ public abstract class ContainerInstall {
   public abstract void setLocator(String address, int port) throws Exception;
 
   /**
-   * Sets up the cache XML files
-   */
-  public abstract void setupCacheXMLFile(String newXMLFilePath) throws IOException;
-
-  /**
    * Sets the XML file which contains cache properties.
    *
    * Normally this XML file would be set to the cache-client.xml or cache-peer.xml files located in
