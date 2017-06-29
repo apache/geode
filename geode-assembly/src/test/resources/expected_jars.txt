@@ -87,3 +87,4 @@ springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
 swagger-models
+commons-validator

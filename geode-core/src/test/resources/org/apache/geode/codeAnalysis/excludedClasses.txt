@@ -156,3 +156,4 @@ org.apache.geode.internal.security.SecurableCommunicationChannel
 org/apache/geode/internal/security/shiro/GeodeAuthenticationToken
 org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
 org/apache/geode/internal/AvailablePort$Keeper
+org/apache/geode/internal/admin/remote/DistributionLocatorId
