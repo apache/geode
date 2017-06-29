@@ -1534,18 +1534,17 @@ public interface ConfigurationProperties {
    * <U>Default</U>: ""
    */
   String SERVER_BIND_ADDRESS = "server-bind-address";
-  
+
   /**
    * The static String definition of the <i>"jmx-bean-input-names"</i> property <a
    * name="jmx-bean-input-names"/a>
    * <p>
-   * <U>Description</U>: Names of the internal region
-   * which are going to be register over the jmx.
+   * <U>Description</U>: Names of the internal region which are going to be register over the jmx.
    * <p>
    * <U>Default</U>: ""
    */
   String JMX_BEAN_INPUT_NAMES = "jmx-bean-input-names";
-  
+
   /**
    * The static String definition of the <i>"ssl-server-alias"</i> property <a
    * name="ssl-server-alias"/a>
