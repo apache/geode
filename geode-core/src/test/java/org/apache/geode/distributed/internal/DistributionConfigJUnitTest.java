@@ -393,13 +393,13 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void TestGetJmxBeanInputList() {
-    Properties props = new Properties();
-    props.put(JMX_BEAN_INPUT_NAMES, "REGION_1");
-    DistributionConfig config = new DistributionConfigImpl(props);
-    assertEquals(config.getBeanInputList(), "REGION_1");
+  public void TestGetJmxBeanInputList(){
+	  Properties props = new Properties();
+	  props.put(JMX_BEAN_INPUT_NAMES, "REGION_1");
+	  DistributionConfig config = new DistributionConfigImpl(props);
+	  assertEquals(config.getBeanInputList(),"REGION_1");
   }
-
+  
   @Test
   public void testSSLEnabledComponents() {
     Properties props = new Properties();

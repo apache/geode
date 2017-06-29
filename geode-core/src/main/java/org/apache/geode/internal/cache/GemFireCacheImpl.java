@@ -3124,11 +3124,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     invokeRegionAfter(region);
-
+    
     Boolean isRegionFoundInExceptionList = false;
     isRegionFoundInExceptionList = this.system.isFoundInJmxBeanInputList(region);
-
-
+ 
+    
     // Added for M&M . Putting the callback here to avoid creating RegionMBean in case of Exception
     if (!region.isInternalRegion() || isRegionFoundInExceptionList) {
       this.system.handleResourceEvent(ResourceEvent.REGION_CREATE, region);

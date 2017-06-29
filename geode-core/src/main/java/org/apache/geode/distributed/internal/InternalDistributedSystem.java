@@ -3081,16 +3081,16 @@ public class InternalDistributedSystem extends DistributedSystem
     disconnect(false, "stopReconnecting was invoked", false);
     this.attemptingToReconnect = false;
   }
-
-  public Boolean isFoundInJmxBeanInputList(LocalRegion localRegion) {
-    Boolean isRegionFoundInExceptionList = false;
-    if (this.getConfig().getBeanInputList() != "") {
-      isRegionFoundInExceptionList =
-          this.getConfig().getBeanInputList().contains(localRegion.getName());
-    }
-    return isRegionFoundInExceptionList;
+  
+  public Boolean isFoundInJmxBeanInputList(LocalRegion localRegion)
+  {
+	  Boolean isRegionFoundInExceptionList = false;
+	   if(this.getConfig().getBeanInputList() != "")
+	    {
+	    	isRegionFoundInExceptionList = this.getConfig().getBeanInputList().contains(localRegion.getName());
+	    }
+	   return isRegionFoundInExceptionList;
   }
-
   /**
    * Provides hook for dunit to generate and store a detailed creation stack trace that includes the
    * keys/values of DistributionConfig including security related attributes without introducing

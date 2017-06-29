@@ -26,6 +26,3 @@ out/
 *.rej
 *.orig
 geode-pulse/screenshots/
-*.class
-*.txt
-geode-assembly/bin/ssl/trusted.keystore

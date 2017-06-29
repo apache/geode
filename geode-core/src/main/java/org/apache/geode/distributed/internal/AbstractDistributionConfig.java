@@ -848,9 +848,10 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SERVER_BIND_ADDRESS,
         LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0
             .toLocalizedString(DEFAULT_BIND_ADDRESS));
-
+    
     m.put(JMX_BEAN_INPUT_NAMES,
-        LocalizedStrings.AbstractDistributionConfig_JMX_INPUT_BEAN_NAMES_0.toLocalizedString(""));
+            LocalizedStrings.AbstractDistributionConfig_JMX_INPUT_BEAN_NAMES_0
+                .toLocalizedString(""));
     m.put(NAME,
         "A name that uniquely identifies a member in its distributed system."
             + " Multiple members in the same distributed system can not have the same name."

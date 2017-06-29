@@ -7696,10 +7696,11 @@ public class LocalizedStrings {
 
   public static final StringId LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED = new StringId(6660,
       "Region {0} cannot be destroyed because it defines Lucene index(es) [{1}]. Destroy all Lucene indexes before destroying the region.");
-
-  public static final StringId AbstractDistributionConfig_JMX_INPUT_BEAN_NAMES_0 =
-      new StringId(6651, "Names of the Beans or  internal region names. Defaults to \"{0}\".");
-
+  
+  public static final StringId AbstractDistributionConfig_JMX_INPUT_BEAN_NAMES_0 = new StringId(
+	      6651,
+	      "Names of the Beans or  internal region names. Defaults to \"{0}\".");
+	 
   /** Testing strings, messageId 90000-99999 **/
 
   /**

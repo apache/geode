@@ -290,11 +290,11 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   String DEFAULT_JMX_BEAN_INPUT_NAMES = "";
 
-
+  
   /**
    * get the value of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property
    */
-
+  
   @ConfigAttributeGetter(name = JMX_BEAN_INPUT_NAMES)
   String getBeanInputList();
 
@@ -310,7 +310,7 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = String.class)
   String JMX_BEAN__INPUT_NAME = JMX_BEAN_INPUT_NAMES;
 
-
+  
   /**
    * Returns the value of the {@link ConfigurationProperties#LOCATORS} property
    */
