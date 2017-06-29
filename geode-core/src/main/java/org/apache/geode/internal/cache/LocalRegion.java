@@ -2624,13 +2624,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
         try {
           region.recursiveDestroyRegion(eventSet, regionEvent, cacheWrite);
-       
+
           Boolean isRegionFoundInExceptionList = false;
           InternalDistributedSystem system = region.cache.getInternalDistributedSystem();
           isRegionFoundInExceptionList = system.isFoundInJmxBeanInputList(region);
-       
+
           if (!region.isInternalRegion() || isRegionFoundInExceptionList) {
-             system.handleResourceEvent(ResourceEvent.REGION_REMOVE, region);
+            system.handleResourceEvent(ResourceEvent.REGION_REMOVE, region);
           }
         } catch (CancelException e) {
           // I don't think this should ever happen: bulletproofing for bug 39454
@@ -6306,11 +6306,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
           // Added for M&M : At this point we can safely call ResourceEvent to remove the region
           // artifacts From Management Layer
-          Boolean isRegionFoundInExceptionList =false;
+          Boolean isRegionFoundInExceptionList = false;
           InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-          isRegionFoundInExceptionList = system.isFoundInJmxBeanInputList(this); 
+          isRegionFoundInExceptionList = system.isFoundInJmxBeanInputList(this);
           if (!isInternalRegion() || isRegionFoundInExceptionList) {
-             system.handleResourceEvent(ResourceEvent.REGION_REMOVE, this);
+            system.handleResourceEvent(ResourceEvent.REGION_REMOVE, this);
           }
 
           try {
