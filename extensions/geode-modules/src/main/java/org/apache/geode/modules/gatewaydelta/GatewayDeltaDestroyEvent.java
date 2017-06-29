@@ -58,14 +58,6 @@ public class GatewayDeltaDestroyEvent extends AbstractGatewayDeltaEvent {
     super.toData(out);
   }
 
-  public static void registerInstantiator(int id) {
-    Instantiator.register(new Instantiator(GatewayDeltaDestroyEvent.class, id) {
-      public DataSerializable newInstance() {
-        return new GatewayDeltaDestroyEvent();
-      }
-    });
-  }
-
   public String toString() {
     return new StringBuilder().append("GatewayDeltaDestroyEvent[").append("regionName=")
         .append(this.regionName).append("; key=").append(this.key).append("]").toString();

@@ -32,7 +32,6 @@ import org.apache.geode.modules.session.internal.common.SessionCache;
 import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionAttributes;
-import org.apache.geode.modules.session.internal.filter.attributes.ImmediateSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.util.TypeAwareMap;
 import org.apache.geode.modules.session.internal.jmx.SessionStatistics;
 import org.apache.geode.modules.util.RegionHelper;
@@ -219,15 +218,14 @@ public class GemfireSessionManager implements SessionManager {
     /**
      * Set up the attribute container depending on how things are configured
      */
+    Object sessionPolicy = properties.get(CacheProperty.SESSION_DELTA_POLICY);
     AbstractSessionAttributes attributes;
-    if ("delta_queued".equals(properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
+    if ("delta_queued".equals(sessionPolicy) || "queued".equals(sessionPolicy)) {
       attributes = new DeltaQueuedSessionAttributes();
       ((DeltaQueuedSessionAttributes) attributes)
           .setReplicationTrigger((String) properties.get(CacheProperty.REPLICATION_TRIGGER));
-    } else if ("delta_immediate".equals(properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
+    } else if ("delta_immediate".equals(sessionPolicy) || "immediate".equals(sessionPolicy)) {
       attributes = new DeltaSessionAttributes();
-    } else if ("immediate".equals(properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
-      attributes = new ImmediateSessionAttributes();
     } else {
       attributes = new DeltaSessionAttributes();
       LOG.warn("No session delta policy specified - using default of 'delta_immediate'");
