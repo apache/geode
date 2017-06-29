@@ -157,12 +157,13 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     FunctionStats stats =
         FunctionStats.getFunctionStats(this.functionObject.getId(), dm.getSystem());
     TXStateProxy tx = null;
+    InternalCache cache = GemFireCacheImpl.getInstance();
+
     try {
       tx = prepForTransaction();
       ResultSender resultSender = new MemberFunctionResultSender(dm, this, this.functionObject);
       Set<Region> regions = new HashSet<Region>();
       if (this.regionPathSet != null) {
-        InternalCache cache = GemFireCacheImpl.getInstance();
         for (String regionPath : this.regionPathSet) {
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
             thr =
@@ -173,8 +174,8 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
           regions.add(cache.getRegion(regionPath));
         }
       }
-      FunctionContextImpl context = new MultiRegionFunctionContextImpl(this.functionObject.getId(),
-          this.args, resultSender, regions, isReExecute);
+      FunctionContextImpl context = new MultiRegionFunctionContextImpl(cache,
+          this.functionObject.getId(), this.args, resultSender, regions, isReExecute);
 
       long start = stats.startTime();
       stats.startFunctionExecution(this.functionObject.hasResult());

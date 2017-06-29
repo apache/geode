@@ -113,7 +113,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(LOG_FILE, logsFile.toString());
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
+    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
@@ -124,7 +124,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
+    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
@@ -134,7 +134,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString());
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
+    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test

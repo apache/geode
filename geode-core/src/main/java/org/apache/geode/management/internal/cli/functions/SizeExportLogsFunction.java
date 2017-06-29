@@ -39,7 +39,7 @@ public class SizeExportLogsFunction extends ExportLogsFunction implements Functi
   @Override
   public void execute(final FunctionContext context) {
     try {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = (InternalCache) context.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       Args args = (Args) context.getArguments();
       long diskAvailable = getDiskAvailable(config);
