@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,7 +49,9 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.cache.*;
 /**
  * Tests the functionality of the {@link InternalDistributedSystem} class. Mostly checks
  * configuration error checking.
@@ -62,6 +65,8 @@ public class InternalDistributedSystemJUnitTest {
    * A connection to a distributed system created by this test
    */
   private InternalDistributedSystem system;
+  private Cache cache;
+  private Region region;
 
   /**
    * Creates a <code>DistributedSystem</code> with the given configuration properties.
@@ -72,6 +77,19 @@ public class InternalDistributedSystemJUnitTest {
     return this.system;
   }
 
+  
+  public void initCache() {
+   
+    try {
+      cache = CacheFactory.getAnyInstance();
+    } catch (Exception e) {
+      // ignore
+    }
+    if (null == cache) {
+      cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+    }
+    
+  }
   /**
    * Disconnects any distributed system that was created by this test
    * 
@@ -81,6 +99,10 @@ public class InternalDistributedSystemJUnitTest {
   public void tearDown() throws Exception {
     if (this.system != null) {
       this.system.disconnect();
+    }
+    if (cache != null && !cache.isClosed()) {
+        cache.close();
+        cache = null;
     }
   }
 
@@ -159,6 +181,9 @@ public class InternalDistributedSystemJUnitTest {
 
     assertEquals(DistributionConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION,
         config.getEnableNetworkPartitionDetection());
+    
+    assertEquals(DistributionConfig.DEFAULT_JMX_BEAN_INPUT_NAMES,
+            config.getBeanInputList());
   }
 
   @Test
@@ -638,7 +663,44 @@ public class InternalDistributedSystemJUnitTest {
       sys.disconnect();
     }
   }
+  
+	@Test
+	public void testWhenisFoundInJmxBeanInputListReturnTrue() {
+		try {
 
+		    initCache();
+			InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+			region = createRegion("REGION_1");
+			system.getConfig().setBeanInputList("REGION_1,REGION_2");
+			assertEquals(true, system.isFoundInJmxBeanInputList((LocalRegion) region));
+		} catch (IllegalArgumentException ex) {
+			// pass...
+		}
+
+	}
+ 
+ private  Region createRegion(String name)
+ {
+	 RegionFactory rf;
+	 rf = cache.createRegionFactory(RegionShortcut.PARTITION);
+	 return rf.create(name);
+ }
+ 
+	@Test
+	public void testWhenisFoundInJmxBeanInputListReturnFalse() {
+		try {
+
+			initCache();
+			InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+			system.getConfig().setBeanInputList("REGION_1,REGION_2");
+			region = createRegion("REGION_3");
+			assertEquals(false, system.isFoundInJmxBeanInputList((LocalRegion) region));
+		} catch (IllegalArgumentException ex) {
+			// pass...
+		}
+
+	}
+ 
   @Test
   public void testDeprecatedSSLProps() {
     Properties props = getCommonProperties();

@@ -82,6 +82,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
@@ -3080,7 +3081,16 @@ public class InternalDistributedSystem extends DistributedSystem
     disconnect(false, "stopReconnecting was invoked", false);
     this.attemptingToReconnect = false;
   }
-
+  
+  public Boolean isFoundInJmxBeanInputList(LocalRegion localRegion)
+  {
+	  Boolean isRegionFoundInExceptionList = false;
+	   if(this.getConfig().getBeanInputList() != "")
+	    {
+	    	isRegionFoundInExceptionList = this.getConfig().getBeanInputList().contains(localRegion.getName());
+	    }
+	   return isRegionFoundInExceptionList;
+  }
   /**
    * Provides hook for dunit to generate and store a detailed creation stack trace that includes the
    * keys/values of DistributionConfig including security related attributes without introducing

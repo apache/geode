@@ -35,6 +35,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_BEAN_INPUT_NAMES;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -99,7 +101,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 156);
+    assertEquals(attNames.length, 157);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -135,7 +137,7 @@ public class DistributionConfigJUnitTest {
     // are.
     assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(85, stringList.size());
+    assertEquals(86, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }
@@ -390,6 +392,14 @@ public class DistributionConfigJUnitTest {
     assertEquals(config.getSecurityProps().size(), 4);
   }
 
+  @Test
+  public void TestGetJmxBeanInputList(){
+	  Properties props = new Properties();
+	  props.put(JMX_BEAN_INPUT_NAMES, "REGION_1");
+	  DistributionConfig config = new DistributionConfigImpl(props);
+	  assertEquals(config.getBeanInputList(),"REGION_1");
+  }
+  
   @Test
   public void testSSLEnabledComponents() {
     Properties props = new Properties();

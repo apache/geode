@@ -110,6 +110,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   private String serverBindAddress = DEFAULT_SERVER_BIND_ADDRESS;
 
+
+  /**
+   * names of the internal region, which are going to be register over the jmx
+   */
+  
+  private String jmxBeanInputParameters = DEFAULT_JMX_BEAN_INPUT_NAMES;
+  
   /**
    * The locations of the distribution locators
    */
@@ -610,6 +617,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.mcastAddress = other.getMcastAddress();
     this.bindAddress = other.getBindAddress();
     this.serverBindAddress = other.getServerBindAddress();
+    this.jmxBeanInputParameters=other.getBeanInputList();
     this.locators = ((DistributionConfigImpl) other).locators;
     this.locatorWaitTime = other.getLocatorWaitTime();
     this.remoteLocators = other.getRemoteLocators();
@@ -1657,11 +1665,20 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       return null;
     }
   }
-
+  
+  public String getBeanInputList() {
+	    return this.jmxBeanInputParameters;
+}
   public String getBindAddress() {
     return this.bindAddress;
   }
-
+  
+  public void setBeanInputList(String value)
+  {  if (value == null) {
+      value = "";
+    }
+  	this.jmxBeanInputParameters = (String)value;
+  }
   public String getServerBindAddress() {
     return this.serverBindAddress;
   }

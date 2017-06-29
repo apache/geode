@@ -285,6 +285,33 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_SERVER_BIND_ADDRESS = "";
 
   /**
+   * The default value of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property. Current
+   * value is an empty string <code>""</code>
+   */
+  String DEFAULT_JMX_BEAN_INPUT_NAMES = "";
+
+  
+  /**
+   * get the value of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property
+   */
+  
+  @ConfigAttributeGetter(name = JMX_BEAN_INPUT_NAMES)
+  String getBeanInputList();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property
+   */
+  @ConfigAttributeSetter(name = JMX_BEAN_INPUT_NAMES)
+  void setBeanInputList(String value);
+
+  /**
+   * The name of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_BEAN__INPUT_NAME = JMX_BEAN_INPUT_NAMES;
+
+  
+  /**
    * Returns the value of the {@link ConfigurationProperties#LOCATORS} property
    */
   @ConfigAttributeGetter(name = LOCATORS)
