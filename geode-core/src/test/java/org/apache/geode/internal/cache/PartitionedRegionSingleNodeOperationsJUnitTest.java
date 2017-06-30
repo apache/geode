@@ -581,11 +581,12 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
    * 
    * Region distRegion = null;
    * 
-   * AttributesFactory af = new AttributesFactory(); RegionAttributes ra; // setting property
-   * af.setScope(Scope.DISTRIBUTED_ACK); // creating region attributes ra = af.create(); try {
-   * distRegion = PartitionedRegionTestHelper.createCache().createRegion( diRegion, ra); } catch
-   * (RegionExistsException rex) { distRegion = PartitionedRegionTestHelper.createCache()
-   * .getRegion(diRegion); } // Closing the regions distRegion.close(); pr.close();
+   * AttributesFactory af = new AttributesFactory(); RegionAttributes regionAttributes; // setting
+   * property af.setScope(Scope.DISTRIBUTED_ACK); // creating region attributes regionAttributes =
+   * af.create(); try { distRegion = PartitionedRegionTestHelper.createCache().createRegion(
+   * diRegion, regionAttributes); } catch (RegionExistsException rex) { distRegion =
+   * PartitionedRegionTestHelper.createCache() .getRegion(diRegion); } // Closing the regions
+   * distRegion.close(); pr.close();
    * 
    * if (!pr.getCache().equals(distRegion.getCache())) {
    * fail("testValidateCloseFunction: getCache is not matching. "); } else { if

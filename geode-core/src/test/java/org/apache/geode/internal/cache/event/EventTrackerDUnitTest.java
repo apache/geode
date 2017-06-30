@@ -12,14 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.event;
 
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +38,11 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.EventTracker.BulkOpHolder;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -77,7 +80,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
   public void testEventTrackerCreateDestroy() throws CacheException {
     // Verify the Cache's ExpiryTask contains no EventTrackers
     GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-    EventTracker.ExpiryTask expiryTask = cache.getEventTrackerTask();
+    EventTrackerExpiryTask expiryTask = cache.getEventTrackerTask();
     assertNotNull(expiryTask);
 
     // We start with 3 event trackers:
@@ -389,13 +392,13 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
 
   private void checkEventTracker(LocalRegion region, int numberOfEvents) {
     EventTracker tracker = region.getEventTracker();
-    ConcurrentMap<ThreadIdentifier, BulkOpHolder> memberToTags =
+    ConcurrentMap<ThreadIdentifier, BulkOperationHolder> memberToTags =
         tracker.getRecordedBulkOpVersionTags();
     assertEquals("memberToTags=" + memberToTags, 1, memberToTags.size());
-    BulkOpHolder holder = memberToTags.values().iterator().next();
+    BulkOperationHolder holder = memberToTags.values().iterator().next();
     // We expect the holder to retain only the last putAll that was performed.
-    assertEquals("entryToVersionTags=" + holder.entryVersionTags, numberOfEvents,
-        holder.entryVersionTags.size());
+    assertEquals("entryToVersionTags=" + holder.getEntryVersionTags(), numberOfEvents,
+        holder.getEntryVersionTags().size());
   }
 
   protected void startCacheServer() throws IOException {
