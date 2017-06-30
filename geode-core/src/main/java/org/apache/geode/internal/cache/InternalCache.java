@@ -53,6 +53,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
+import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
@@ -237,7 +238,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   TXEntryStateFactory getTXEntryStateFactory();
 
-  EventTracker.ExpiryTask getEventTrackerTask();
+  EventTrackerExpiryTask getEventTrackerTask();
 
   void removeDiskStore(DiskStoreImpl diskStore);
 

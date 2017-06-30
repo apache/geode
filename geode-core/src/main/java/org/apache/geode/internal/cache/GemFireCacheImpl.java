@@ -77,6 +77,9 @@ import javax.transaction.TransactionManager;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.internal.cache.event.EventTracker;
+import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.logging.log4j.Logger;
 
@@ -474,7 +477,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * a system timer task for cleaning up old bridge thread event entries
    */
-  private final EventTracker.ExpiryTask recordedEventSweeper;
+  private final EventTrackerExpiryTask recordedEventSweeper;
 
   private final TombstoneService tombstoneService;
 
@@ -898,7 +901,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             getOffHeapEvictor());
       }
 
-      this.recordedEventSweeper = EventTracker.startTrackerServices(this);
+      this.recordedEventSweeper = createEventTrackerExpiryTask();
       this.tombstoneService = TombstoneService.initialize(this);
 
       TypeRegistry.init();
@@ -939,6 +942,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       this.diskMonitor = new DiskStoreMonitor();
     } // synchronized
+  }
+
+  /**
+   * Initialize the EventTracker's timer task. This is stored for tracking and shutdown purposes
+   */
+  private EventTrackerExpiryTask createEventTrackerExpiryTask() {
+    long lifetimeInMillis =
+        Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "messageTrackingTimeout",
+            PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT / 3);
+    EventTrackerExpiryTask task = new EventTrackerExpiryTask(lifetimeInMillis);
+    getCCPTimer().scheduleAtFixedRate(task, lifetimeInMillis, lifetimeInMillis);
+    return task;
   }
 
   @Override
@@ -2347,8 +2362,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
         this.cachePerfStats.close();
         TXLockService.destroyServices();
-
-        EventTracker.stopTrackerServices(this);
+        getEventTrackerTask().cancel();
 
         synchronized (this.ccpTimerMutex) {
           if (this.ccpTimer != null) {
@@ -2744,7 +2758,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @return the sweeper task
    */
   @Override
-  public EventTracker.ExpiryTask getEventTrackerTask() {
+  public EventTrackerExpiryTask getEventTrackerTask() {
     return this.recordedEventSweeper;
   }
 

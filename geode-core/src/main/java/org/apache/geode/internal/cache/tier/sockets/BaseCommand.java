@@ -211,9 +211,9 @@ public abstract class BaseCommand implements Command {
     LocalRegion r = clientEvent.getRegion();
     VersionTag tag;
     if (clientEvent.getVersionTag() != null && clientEvent.getVersionTag().isGatewayTag()) {
-      tag = r.findVersionTagForGatewayEvent(clientEvent.getEventId());
+      tag = r.findVersionTagForEvent(clientEvent.getEventId());
     } else {
-      tag = r.findVersionTagForClientEvent(clientEvent.getEventId());
+      tag = r.findVersionTagForEvent(clientEvent.getEventId());
     }
     if (tag == null) {
       if (r instanceof DistributedRegion || r instanceof PartitionedRegion) {

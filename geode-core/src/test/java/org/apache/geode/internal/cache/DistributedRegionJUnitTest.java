@@ -27,7 +27,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.EventTracker.BulkOpHolder;
+import org.apache.geode.internal.cache.event.BulkOperationHolder;
+import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -112,7 +113,6 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     DistributedRegion region = prepare(true, true);
     DistributedMember member = mock(DistributedMember.class);
     ClientProxyMembershipID memberId = mock(ClientProxyMembershipID.class);
-    doReturn(false).when(region).isUsedForPartitionedRegionBucket();
 
     byte[] memId = {1, 2, 3};
     long threadId = 1;
@@ -124,8 +124,9 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     recordPutAllEvents(region, memId, threadId, skipCallbacks, member, memberId, size);
     EventTracker eventTracker = region.getEventTracker();
 
-    ConcurrentMap<ThreadIdentifier, BulkOpHolder> map = eventTracker.getRecordedBulkOpVersionTags();
-    BulkOpHolder holder = map.get(tid);
+    ConcurrentMap<ThreadIdentifier, BulkOperationHolder> map =
+        eventTracker.getRecordedBulkOpVersionTags();
+    BulkOperationHolder holder = map.get(tid);
 
     EntryEventImpl retryEvent = EntryEventImpl.create(region, Operation.PUTALL_CREATE, "key1",
         "value1", null, false, member, !skipCallbacks, retryEventID);
@@ -133,7 +134,7 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     retryEvent.setPutAllOperation(mock(DistributedPutAllOperation.class));
 
     region.hasSeenEvent(retryEvent);
-    assertTrue(retryEvent.getVersionTag().equals(holder.entryVersionTags.get(retryEventID)));
+    assertTrue(retryEvent.getVersionTag().equals(holder.getEntryVersionTags().get(retryEventID)));
   }
 
   protected void recordPutAllEvents(DistributedRegion region, byte[] memId, long threadId,

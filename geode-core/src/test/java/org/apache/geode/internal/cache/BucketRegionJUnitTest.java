@@ -20,6 +20,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -49,6 +50,9 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
       RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
     BucketRegion br = new BucketRegion("testRegion", ra, null, cache, ira);
+    // it is necessary to set the event tracker to initialized, since initialize() in not being
+    // called on the instantiated region
+    br.getEventTracker().setInitialized();
 
     // since br is a real bucket region object, we need to tell mockito to monitor it
     br = spy(br);
