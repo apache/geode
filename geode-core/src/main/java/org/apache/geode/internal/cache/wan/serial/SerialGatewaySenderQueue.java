@@ -52,11 +52,13 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -1188,7 +1190,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     // @override event tracker not needed for this type of region
     @Override
-    public void createEventTracker() {}
+    public EventTracker createEventTracker() {
+      return NonDistributedEventTracker.getInstance();
+    }
 
     @Override
     protected boolean shouldNotifyBridgeClients() {

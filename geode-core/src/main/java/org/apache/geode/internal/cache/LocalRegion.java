@@ -131,6 +131,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.control.ResourceListener;
+import org.apache.geode.internal.cache.event.EventTracker;
+import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
@@ -326,9 +328,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private final boolean supportsTX;
 
-  /** tracks threadID->seqno information for this region */
-  EventTracker eventTracker;
-
   /**
    * tracks region-level version information for members
    */
@@ -439,6 +438,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private final boolean hasOwnStats;
 
   private final ImageState imageState;
+
+  private final EventTracker eventTracker;
 
   /**
    * Register interest count to track if any register interest is in progress for this region. This
@@ -646,13 +647,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         getDataPolicy().withReplication() || getDataPolicy().isPreloaded(),
         getAttributes().getDataPolicy().withPersistence(), this.stopper);
 
-    createEventTracker();
-
     // prevent internal regions from participating in a TX, bug 38709
     this.supportsTX = !isSecret() && !isUsedForPartitionedRegionAdmin() && !isUsedForMetaRegion()
         || isMetaRegionWithTransactions();
 
     this.testCallable = internalRegionArgs.getTestCallable();
+    eventTracker = createEventTracker();
+  }
+
+  protected EventTracker createEventTracker() {
+    return NonDistributedEventTracker.getInstance();
   }
 
   private RegionMap createRegionMap(InternalRegionArguments internalRegionArgs) {
@@ -676,27 +680,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * initialize the event tracker. Not all region implementations want or need one of these. Regions
-   * that require one should reimplement this method and create one like so:
-   *
-   * <pre>
-   * {@code
-   * this.eventTracker = new EventTracker(this.cache);
-   * this.eventTracker.start();
-   * }
-   * </pre>
+   * Other region classes may track events using different mechanisms than EventTrackers or may not
+   * track events at all
    */
-  void createEventTracker() {
-    // if LocalRegion is changed to have an event tracker, then the initialize()
-    // method should be changed to set it to "initialized" state when the
-    // region finishes initialization
-  }
-
-  /**
-   * Other region classes may track events using different mechanisms than EventTrackers
-   */
-  EventTracker getEventTracker() {
-    return this.eventTracker;
+  public EventTracker getEventTracker() {
+    return eventTracker;
   }
 
   /** returns the regions version-vector */
@@ -2559,9 +2547,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
     }
 
-    if (this.eventTracker != null) {
-      this.eventTracker.stop();
-    }
+    getEventTracker().stop();
     if (logger.isTraceEnabled(LogMarker.RVV) && getVersionVector() != null) {
       logger.trace(LogMarker.RVV, "version vector for {} is {}", getName(),
           getVersionVector().fullToString());
@@ -2666,9 +2652,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       this.cache.setRegionByPath(getFullPath(), null);
 
-      if (this.eventTracker != null) {
-        this.eventTracker.stop();
-      }
+      getEventTracker().stop();
 
       if (this.diskRegion != null) {
         this.diskRegion.prepareForClose(this);
@@ -5923,11 +5907,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * is installed in the receiver of the image.
    */
   public Map<? extends DataSerializable, ? extends DataSerializable> getEventState() {
-    if (this.eventTracker != null) {
-      return this.eventTracker.getState();
-    } else {
-      return null;
-    }
+    return getEventTracker().getState();
   }
 
   /**
@@ -5939,9 +5919,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param state a Map obtained from getEventState()
    */
   protected void recordEventState(InternalDistributedMember provider, Map state) {
-    if (this.eventTracker != null) {
-      this.eventTracker.recordState(provider, state);
-    }
+    getEventTracker().recordState(provider, state);
   }
 
   /**
@@ -5965,9 +5943,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * record the event's sequenceId in Region's event state to prevent replay.
    */
   public void recordEvent(InternalCacheEvent event) {
-    if (this.eventTracker != null) {
-      this.eventTracker.recordEvent(event);
-    }
+    getEventTracker().recordEvent(event);
   }
 
   /**
@@ -5976,64 +5952,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return true if the Region's event state has seen the event
    */
   public boolean hasSeenEvent(EntryEventImpl event) {
-    boolean isDuplicate = false;
-
-    if (this.eventTracker != null) {
-      // bug 41289 - wait for event tracker to be initialized before checkin
-      // so that an operation intended for a previous version of a bucket
-      // is not prematurely applied to a new version of the bucket
-      if (this.isUsedForPartitionedRegionBucket()) {
-        try {
-          this.eventTracker.waitOnInitialization();
-        } catch (InterruptedException ie) {
-          this.stopper.checkCancelInProgress(ie);
-          Thread.currentThread().interrupt();
-        }
-      }
-
-      isDuplicate = this.eventTracker.hasSeenEvent(event);
-      if (isDuplicate) {
-        event.setPossibleDuplicate(true);
-        if (getConcurrencyChecksEnabled() && event.getVersionTag() == null) {
-          if (event.isBulkOpInProgress()) {
-            event.setVersionTag(findVersionTagForClientBulkOp(event.getEventId()));
-          } else {
-            event.setVersionTag(findVersionTagForClientEvent(event.getEventId()));
-          }
-        }
-      } else {
-        // bug #48205 - a retried PR operation may already have a version assigned to it
-        // in another VM
-        if (event.isPossibleDuplicate() && event.getRegion().concurrencyChecksEnabled
-            && event.getVersionTag() == null && event.getEventId() != null) {
-          boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
-          VersionTag tag = FindVersionTagOperation.findVersionTag(event.getRegion(),
-              event.getEventId(), isBulkOp);
-          event.setVersionTag(tag);
-        }
-      }
-    }
-
-    return isDuplicate;
+    return getEventTracker().hasSeenEvent(event);
   }
 
   /**
-   * tries to find the version tag for a replayed client event
+   * tries to find the version tag for a event
    * 
    * @return the version tag, if known. Null if not
    */
-  public VersionTag findVersionTagForClientEvent(EventID eventId) {
-    if (this.eventTracker != null) {
-      return this.eventTracker.findVersionTag(eventId);
-    }
-    return null;
-  }
-
-  public VersionTag findVersionTagForGatewayEvent(EventID eventId) {
-    if (this.eventTracker != null) {
-      return this.eventTracker.findVersionTagForGateway(eventId);
-    }
-    return null;
+  public VersionTag findVersionTagForEvent(EventID eventId) {
+    return getEventTracker().findVersionTagForSequence(eventId);
   }
 
   /**
@@ -6042,13 +5970,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return the version tag, if known. Null if not
    */
   public VersionTag findVersionTagForClientBulkOp(EventID eventId) {
-    if (eventId == null) {
-      return null;
-    }
-    if (this.eventTracker != null) {
-      return this.eventTracker.findVersionTagForBulkOp(eventId);
-    }
-    return null;
+    return getEventTracker().findVersionTagForBulkOp(eventId);
   }
 
   /**
@@ -6061,25 +5983,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return true if the Region's event state has seen the event
    */
   public boolean hasSeenEvent(EventID eventID) {
-    if (eventID == null) {
-      return false;
-    }
-    boolean isDuplicate = false;
-    if (this.eventTracker != null) {
-      // bug 41289 - wait for event tracker to be initialized before checkin
-      // so that an operation intended for a previous version of a bucket
-      // is not prematurely applied to a new version of the bucket
-      if (this.isUsedForPartitionedRegionBucket()) {
-        try {
-          this.eventTracker.waitOnInitialization();
-        } catch (InterruptedException ie) {
-          this.stopper.checkCancelInProgress(ie);
-          Thread.currentThread().interrupt();
-        }
-      }
-      isDuplicate = this.eventTracker.hasSeenEvent(eventID, null);
-    }
-    return isDuplicate;
+    return getEventTracker().hasSeenEvent(eventID);
   }
 
   /**
@@ -6092,16 +5996,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 5.7
    */
   void syncBulkOp(Runnable task, EventID eventId) {
-    if (this.eventTracker != null && !isTX()) {
-      this.eventTracker.syncBulkOp(task, eventId);
-    } else {
-      task.run();
-    }
+    getEventTracker().syncBulkOp(task, eventId, isTX());
   }
 
   public void recordBulkOpStart(ThreadIdentifier membershipID, EventID eventID) {
-    if (this.eventTracker != null && !isTX()) {
-      this.eventTracker.recordBulkOpStart(membershipID, eventID);
+    if (!isTX()) {
+      getEventTracker().recordBulkOpStart(eventID, membershipID);
     }
   }
 
@@ -7058,14 +6958,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return true if event state has been transfered to this region from another cache
    */
   boolean isEventTrackerInitialized() {
-    return this.eventTracker != null && this.eventTracker.isInitialized();
-  }
-
-  /**
-   * @return true if this region has an event tracker
-   */
-  boolean hasEventTracker() {
-    return this.eventTracker != null;
+    return getEventTracker().isInitialized();
   }
 
   public void acquireDestroyLock() {
@@ -7115,9 +7008,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     this.destroyedSubregionSerialNumbers = collectSubregionSerialNumbers();
 
     try {
-      if (this.eventTracker != null) {
-        this.eventTracker.stop();
-      }
+      getEventTracker().stop();
 
       if (this.diskRegion != null) {
         // This was needed to fix bug 30937

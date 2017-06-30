@@ -132,7 +132,7 @@ public class FindVersionTagOperation {
           result = r.findVersionTagForClientBulkOp(eventId);
 
         } else {
-          result = r.findVersionTagForClientEvent(eventId);
+          result = r.findVersionTagForEvent(eventId);
         }
         if (result != null) {
           result.replaceNullIDs(r.getVersionMember());

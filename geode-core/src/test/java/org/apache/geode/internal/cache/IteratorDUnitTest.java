@@ -58,7 +58,7 @@ public class IteratorDUnitTest extends JUnit4CacheTestCase {
     r.put("key3", "value3");
     LocalRegion lr = (LocalRegion) r;
     // simulate a removed key
-    // lr.getRegionMap().getEntry("key")._setValue(Token.REMOVED_PHASE1);
+    // region.getRegionMap().getEntry("key")._setValue(Token.REMOVED_PHASE1);
     lr.getRegionMap().getEntry("key").setValue(lr, Token.REMOVED_PHASE1);
     Iterator it = r.keySet().iterator();
     int numKeys = 0;
