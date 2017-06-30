@@ -101,7 +101,7 @@ public abstract class JUnit3CacheTestCase extends JUnit3DistributedTestCase
    *
    * @since GemFire 6.5
    */
-  public final InternalClientCache getClientCache(final ClientCacheFactory factory) {
+  public final ClientCache getClientCache(final ClientCacheFactory factory) {
     return delegate.getClientCache(factory);
   }
 
