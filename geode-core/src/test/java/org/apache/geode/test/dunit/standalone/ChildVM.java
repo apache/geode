@@ -17,7 +17,6 @@ package org.apache.geode.test.dunit.standalone;
 import java.rmi.Naming;
 
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -49,8 +48,7 @@ public class ChildVM {
       int pid = OSProcess.getId();
       logger.info("VM" + vmNum + " is launching" + (pid > 0 ? " with PID " + pid : ""));
       if (!VersionManager.isCurrentVersion(geodeVersion)) {
-        logger.info("This VM is using Geode version {}. Version.CURRENT is {}", geodeVersion,
-            Version.CURRENT);
+        logger.info("This VM is using Geode version {}", geodeVersion);
       }
       MasterRemote holder = (MasterRemote) Naming
           .lookup("//localhost:" + namingPort + "/" + DUnitLauncher.MASTER_PARAM);
