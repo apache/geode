@@ -29,10 +29,10 @@ public class Jetty9ClientServerTest extends GenericAppServerClientServerTest {
 
   @BeforeClass
   public static void setupJettyInstall() throws Exception {
-    install = new GenericAppServerInstall(GenericAppServerInstall.Server.JETTY9,
-        GenericAppServerInstall.CacheType.CLIENT_SERVER,
+    install = new GenericAppServerInstall(GenericAppServerInstall.GenericAppServerVersion.JETTY9,
+        ContainerInstall.ConnectionType.CLIENT_SERVER,
         ContainerInstall.DEFAULT_INSTALL_DIR + "Jetty9ClientServerTest");
-    install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
+    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 
   @Override

@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
@@ -30,14 +29,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.cargo.container.configuration.LocalConfiguration;
-import org.codehaus.cargo.container.deployable.WAR;
 import org.codehaus.cargo.container.installer.Installer;
 import org.codehaus.cargo.container.installer.ZipURLInstaller;
-import org.codehaus.cargo.container.property.LoggingLevel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -58,116 +53,223 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 public abstract class ContainerInstall {
   public static final Logger logger = LogService.getLogger();
 
+  private String defaultLocatorAddress;
+  private int defaultLocatorPort;
+
+  private final ConnectionType connType;
+
   private final String INSTALL_PATH;
-  public static final String DEFAULT_INSTALL_DIR = "/tmp/cargo_containers/";
+  private final String MODULE_PATH;
+  private final String WAR_FILE_PATH;
+
   public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
+  public static final String DEFAULT_INSTALL_DIR = "/tmp/cargo_containers/";
+  public static final String DEFAULT_MODULE_DIR = GEODE_BUILD_HOME + "/tools/Modules/";
 
-  public HashMap<String, String> cacheProperties;
-  public HashMap<String, String> systemProperties;
+  /**
+   * Represents the type of connection used in this installation
+   *
+   * Supports either PEER_TO_PEER or CLIENT_SERVER. Also containers several useful strings needed to
+   * identify XML files or connection types when setting up containers.
+   */
+  public enum ConnectionType {
+    PEER_TO_PEER("peer-to-peer", "cache-peer.xml"),
+    CLIENT_SERVER("client-server", "cache-client.xml");
 
-  public ContainerInstall(String installDir, String downloadURL) throws MalformedURLException {
+    private final String name;
+    private final String cacheXMLFileName;
+
+    ConnectionType(String name, String cacheXMLFileName) {
+      this.name = name;
+      this.cacheXMLFileName = cacheXMLFileName;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getCacheXMLFileName() {
+      return cacheXMLFileName;
+    }
+  }
+
+  /**
+   * Base class for handling downloading and configuring J2EE installations
+   *
+   * This class contains common logic for downloading and configuring J2EE installations with cargo,
+   * and some common methods for applying geode session replication configuration to those
+   * installations.
+   *
+   * Subclasses provide installation of specific containers.
+   *
+   * @param connType Enum representing the connection type of this installation (either client
+   *        server or peer to peer)
+   * @param moduleName The module name of the installation being setup (i.e. tomcat, appserver,
+   *        etc.)
+   */
+  public ContainerInstall(String installDir, String downloadURL, ConnectionType connType,
+      String moduleName) throws IOException {
+    this.connType = connType;
+
     logger.info("Installing container from URL " + downloadURL);
 
     // Optional step to install the container from a URL pointing to its distribution
     Installer installer = new ZipURLInstaller(new URL(downloadURL), "/tmp/downloads", installDir);
     installer.install();
-    INSTALL_PATH = installer.getHome();
-    logger.info("Installed container into " + getInstallPath());
 
-    cacheProperties = new HashMap<>();
-    systemProperties = new HashMap<>();
+    // Set install home
+    INSTALL_PATH = installer.getHome();
+    // Find and extract the module path
+    MODULE_PATH = findAndExtractModule(moduleName);
+    // Find the session testing war path
+    WAR_FILE_PATH = findSessionTestingWar();
+
+    // Default locator
+    defaultLocatorPort = 8080;
+    defaultLocatorAddress = "localhost";
+
+    logger.info("Installed container into " + getHome());
+  }
+
+  public ServerContainer generateContainer(File containerConfigHome) throws IOException {
+    return generateContainer(containerConfigHome, "");
+  }
+
+  public ServerContainer generateContainer(String containerDescriptors) throws IOException {
+    return generateContainer(null, containerDescriptors);
   }
 
   /**
-   * The directory in which this container is installed.
+   * Sets the default locator address and port
    */
-  public String getInstallPath() {
+  public void setDefaultLocator(String address, int port) {
+    defaultLocatorAddress = address;
+    defaultLocatorPort = port;
+  }
+
+  /**
+   * Whether the installation is client server
+   *
+   * Since an installation can only be client server or peer to peer there is no need for a function
+   * which checks for a peer to peer installation (just check if not client server).
+   */
+  public boolean isClientServer() {
+    return connType == ConnectionType.CLIENT_SERVER;
+  }
+
+  /**
+   * Where the installation is located
+   */
+  public String getHome() {
     return INSTALL_PATH;
   }
 
   /**
-   * Called by the installation before container startup
+   * Where the module is located
    *
-   * This is mainly used to write properties to whatever format they need to be in for a given
-   * container before the container is started. The reason for doing this is to make sure that
-   * expensive property updates (such as writing to file or building files from the command line)
-   * only happen as often as they are needed. These kinds of updates usually only need to happen on
-   * container startup or addition.
+   * The module contains jars needed for geode session setup as well as default templates for some
+   * needed XML files.
    */
-  public abstract void writeProperties() throws Exception;
+  public String getModulePath() {
+    return MODULE_PATH;
+  }
 
   /**
-   * Cargo's specific string to identify the container
+   * The path to the session testing WAR file
    */
-  public abstract String getContainerId();
+  public String getWarFilePath() {
+    return WAR_FILE_PATH;
+  }
 
   /**
-   * A human readable description of the container
+   * @return The enum {@link #connType} which represents the type of connection for this
+   *         installation
    */
-  public abstract String getContainerDescription();
+  public ConnectionType getConnectionType() {
+    return connType;
+  }
 
   /**
-   * Configure the geode session replication install in this container to connect to the given
-   * locator.
-   */
-  public abstract void setLocator(String address, int port) throws Exception;
-
-  /**
-   * Sets the XML file which contains cache properties.
+   * Gets the {@link #defaultLocatorAddress}
    *
-   * Normally this XML file would be set to the cache-client.xml or cache-peer.xml files located in
-   * the module's conf directory (located in build/install/apache-geode/tools/Modules/... for
-   * geode-assembly). However, this allows containers to have different XML files so that locators
-   * will not accidentally overwrite each other's when tests are run concurrently.
+   * This is the address that a container uses by default. Containers themselves can have their own
+   * personal locator address, but will default to this address unless specifically set.
+   */
+  public String getDefaultLocatorAddress() {
+    return defaultLocatorAddress;
+  }
+
+  /**
+   * Gets the {@link #defaultLocatorPort}
    *
-   * The originalXMLFilePath is used to copy the original XML file to the newXMLFilePath so that all
-   * settings previously there are saved and copied over.
+   * This is the port that a container uses by default. Containers themselves can have their own
+   * personal locator port, but will default to this port unless specifically set.
    */
-  public void setCacheXMLFile(String originalXMLFilePath, String newXMLFilePath)
-      throws IOException {
-    File moduleXMLFile = new File(originalXMLFilePath);
-    File installXMLFile = new File(newXMLFilePath);
-
-    installXMLFile.getParentFile().mkdirs();
-    FileUtils.copyFile(moduleXMLFile, installXMLFile);
-
-    setSystemProperty("cache-xml-file", installXMLFile.getAbsolutePath());
+  public int getDefaultLocatorPort() {
+    return defaultLocatorPort;
   }
 
   /**
-   * Set a geode session replication property. For example enableLocalCache.
+   * Gets the cache XML file to use by default for this installation
    */
-  public String setCacheProperty(String name, String value) throws IOException {
-    return cacheProperties.put(name, value);
+  public File getCacheXMLFile() {
+    return new File(MODULE_PATH + "/conf/" + getConnectionType().getCacheXMLFileName());
   }
 
   /**
-   * Set geode distributed system property.
+   * Get the server life cycle class that should be used
+   *
+   * Generates the class based on whether the installation's connection type (@link #connType) is
+   * client server or peer to peer.
    */
-  public String setSystemProperty(String name, String value) throws IOException {
-    return systemProperties.put(name, value);
+  public String getServerLifeCycleListenerClass() {
+    String className = "org.apache.geode.modules.session.catalina.";
+    switch (connType) {
+      case PEER_TO_PEER:
+        className += "PeerToPeer";
+        break;
+      case CLIENT_SERVER:
+        className += "ClientServer";
+        break;
+      default:
+        throw new IllegalArgumentException(
+            "Bad connection type. Must be either PEER_TO_PEER or CLIENT_SERVER");
+    }
+
+    className += "CacheLifecycleListener";
+    return className;
   }
 
   /**
-   * Get the specified cache property for an install
+   * Cargo specific string to identify the container with
    */
-  public String getCacheProperty(String name) {
-    return cacheProperties.get(name);
-  }
+  public abstract String getInstallId();
 
   /**
-   * Get the specified system property for an install
+   * A human readable description of the installation
    */
-  public String getSystemProperty(String name) {
-    return systemProperties.get(name);
-  }
+  public abstract String getInstallDescription();
 
   /**
-   * Callback to allow this install to update the configuration before it is launched
+   * Get the session manager class to use
    */
-  public void modifyConfiguration(LocalConfiguration configuration) {}
+  public abstract String getContextSessionManagerClass();
 
-  protected String findSessionTestingWar() {
+  /**
+   * Generates a {@link ServerContainer} from the given {@link ContainerInstall}
+   *
+   * @param containerDescriptors Additional descriptors used to identify a container
+   */
+  public abstract ServerContainer generateContainer(File containerConfigHome,
+      String containerDescriptors) throws IOException;
+
+  /**
+   * Get the path to the session testing war by walking up directories to the correct folder.
+   *
+   * NOTE::This walks into the extensions folder and then uses a hardcoded path from there making it
+   * very unreliable if things are moved.
+   */
+  protected static String findSessionTestingWar() {
     // Start out searching directory above current
     String curPath = "../";
 
@@ -196,20 +298,16 @@ public abstract class ContainerInstall {
   }
 
   /**
-   * Return the session testing war file to use for this container.
+   * Finds and extracts the geode module associated with the specified module.
    *
-   * This should be the war generated by the extensions/session-testing-war. For
-   * {@link GenericAppServerInstall} this war is modified to include the geode session replication
-   * components.
+   * @param moduleName The module name (i.e. tomcat, appserver, etc.) of the module that should be
+   *        extract. Used as a search parameter to find the module archive.
+   * @return The path to the non-archive (extracted) version of the module files
+   * @throws IOException
    */
-  public WAR getDeployableWAR() {
-    return new WAR(findSessionTestingWar());
-  }
-
-  protected static String findAndExtractModule(String geodeBuildHome, String moduleName)
-      throws IOException {
+  protected static String findAndExtractModule(String moduleName) throws IOException {
     String modulePath = null;
-    String modulesDir = geodeBuildHome + "/tools/Modules/";
+    String modulesDir = DEFAULT_MODULE_DIR;
 
     boolean archive = false;
     logger.info("Trying to access build dir " + modulesDir);
@@ -253,7 +351,7 @@ public abstract class ContainerInstall {
    *        property value the current value. If false, replaces the current property value with the
    *        given property value
    */
-  public void editPropertyFile(String filePath, String propertyName, String propertyValue,
+  protected static void editPropertyFile(String filePath, String propertyName, String propertyValue,
       boolean append) throws Exception {
     FileInputStream input = new FileInputStream(filePath);
     Properties properties = new Properties();
@@ -271,24 +369,29 @@ public abstract class ContainerInstall {
     logger.info("Modified container Property file " + filePath);
   }
 
-  protected void editXMLFile(String XMLPath, String tagId, String tagName, String parentTagName,
-      HashMap<String, String> attributes) {
+  protected static void editXMLFile(String XMLPath, String tagId, String tagName,
+      String parentTagName, HashMap<String, String> attributes) {
     editXMLFile(XMLPath, tagId, tagName, parentTagName, attributes, false);
   }
 
-  protected void editXMLFile(String XMLPath, String tagName, String parentTagName,
+  protected static void editXMLFile(String XMLPath, String tagName, String parentTagName,
       HashMap<String, String> attributes) {
     editXMLFile(XMLPath, null, tagName, parentTagName, attributes, false);
   }
 
-  protected void editXMLFile(String XMLPath, String tagName, String parentTagName,
+  protected static void editXMLFile(String XMLPath, String tagName, String parentTagName,
       HashMap<String, String> attributes, boolean writeOnSimilarAttributeNames) {
     editXMLFile(XMLPath, null, tagName, parentTagName, attributes, writeOnSimilarAttributeNames);
   }
 
   /**
    * Edit the given xml file
-   * 
+   *
+   * Uses {@link #findNodeWithAttribute(Document, String, String, String)},
+   * {@link #rewriteNodeAttributes(Node, HashMap)},
+   * {@link #nodeHasExactAttributes(Node, HashMap, boolean)} to edit the required parts of the XML
+   * file.
+   *
    * @param XMLPath The path to the xml file to edit
    * @param tagId The id of tag to edit. If null, then this method will add a new xml element,
    *        unless writeOnSimilarAttributeNames is set to true.
@@ -300,75 +403,24 @@ public abstract class ContainerInstall {
    *        rather than adding a new element. If false, create a new XML element (unless tagId is
    *        not null).
    */
-  protected void editXMLFile(String XMLPath, String tagId, String tagName, String parentTagName,
-      HashMap<String, String> attributes, boolean writeOnSimilarAttributeNames) {
-    // Get XML file to edit
+  protected static void editXMLFile(String XMLPath, String tagId, String tagName,
+      String parentTagName, HashMap<String, String> attributes,
+      boolean writeOnSimilarAttributeNames) {
+
     try {
+      // Get XML file to edit
       DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
       Document doc = docBuilder.parse(XMLPath);
 
-      boolean hasTag = false;
-      NodeList nodes = doc.getElementsByTagName(tagName);
-
-      // If tags with name were found search to find tag with proper tagId and update its fields
-      if (nodes != null) {
-        for (int i = 0; i < nodes.getLength(); i++) {
-          Node node = nodes.item(i);
-          if (tagId != null) {
-            Node idAttr = node.getAttributes().getNamedItem("id");
-            // Check node for id attribute
-            if (idAttr != null && idAttr.getTextContent().equals(tagId)) {
-              NamedNodeMap nodeAttrs = node.getAttributes();
-
-              // Remove previous attributes
-              while (nodeAttrs.getLength() > 0) {
-                nodeAttrs.removeNamedItem(nodeAttrs.item(0).getNodeName());
-              }
-
-              ((Element) node).setAttribute("id", tagId);
-              // Set to new attributes
-              for (String key : attributes.keySet()) {
-                ((Element) node).setAttribute(key, attributes.get(key));
-                // node.getAttributes().getNamedItem(key).setTextContent(attributes.get(key));
-              }
-
-              hasTag = true;
-              break;
-            }
-          } else if (writeOnSimilarAttributeNames) {
-            NamedNodeMap nodeAttrs = node.getAttributes();
-            boolean updateNode = true;
-
-            // Check to make sure has all attribute fields
-            for (String key : attributes.keySet()) {
-              if (nodeAttrs.getNamedItem(key) == null) {
-                updateNode = false;
-                break;
-              }
-            }
-            // Check to make sure does not have more than attribute fields
-            for (int j = 0; j < nodeAttrs.getLength(); j++) {
-              if (attributes.get(nodeAttrs.item(j).getNodeName()) == null) {
-                updateNode = false;
-                break;
-              }
-            }
-
-            // Update node attributes
-            if (updateNode) {
-              for (String key : attributes.keySet())
-                node.getAttributes().getNamedItem(key).setTextContent(attributes.get(key));
-
-              hasTag = true;
-              break;
-            }
-          }
-
-        }
-      }
-
-      if (!hasTag) {
+      // Get node with specified tagId
+      Node node = findNodeWithAttribute(doc, tagName, "id", tagId);
+      // If no node is found
+      if (node != null
+          || (writeOnSimilarAttributeNames && nodeHasExactAttributes(node, attributes, false))) {
+        rewriteNodeAttributes(node, attributes);
+        ((Element) node).setAttribute("id", tagId);
+      } else {
         Element e = doc.createElement(tagName);
         // Set id attribute
         if (tagId != null)
@@ -395,16 +447,84 @@ public abstract class ContainerInstall {
   }
 
   /**
-   * Get the location of this installations configuration home
+   * Finds the node in the given document with the given name and attribute
+   *
+   * @param doc XML document to search for the node
+   * @param nodeName The name of the node to search for
+   * @param name The name of the attribute that the node should contain
+   * @param value The value of the node's given attribute
+   * @return Node with the given name, attribute, and attribute value
    */
-  public String getContainerConfigHome() {
-    return "/tmp/cargo_configs/" + getContainerDescription();
+  private static Node findNodeWithAttribute(Document doc, String nodeName, String name,
+      String value) {
+    NodeList nodes = doc.getElementsByTagName(nodeName);
+    if (nodes == null)
+      return null;
+
+    for (int i = 0; i < nodes.getLength(); i++) {
+      Node node = nodes.item(i);
+      Node nodeAttr = node.getAttributes().getNamedItem(name);
+
+      if (nodeAttr != null && nodeAttr.getTextContent().equals(value))
+        return node;
+    }
+
+    return null;
   }
 
   /**
-   * Get the logging level of this install
+   * Replaces the node's attributes with the attributes in the given hashmap
+   *
+   * @param node XML node that should be edited
+   * @param attributes HashMap of strings representing the attributes of a node (key = value)
+   * @return The given node with ONLY the given attributes
    */
-  public String getLoggingLevel() {
-    return LoggingLevel.HIGH.getLevel();
+  private static Node rewriteNodeAttributes(Node node, HashMap<String, String> attributes) {
+    NamedNodeMap nodeAttrs = node.getAttributes();
+
+    // Remove all previous attributes
+    while (nodeAttrs.getLength() > 0)
+      nodeAttrs.removeNamedItem(nodeAttrs.item(0).getNodeName());
+
+    // Set to new attributes
+    for (String key : attributes.keySet())
+      ((Element) node).setAttribute(key, attributes.get(key));
+
+    return node;
+  }
+
+  /**
+   * Checks to see whether the given XML node has the exact attributes given in the attributes
+   * hashmap
+   *
+   * @param checkSimilarValues If true, will also check to make sure that the given node's
+   *        attributes also have the exact same values as the ones given in the attributes HashMap.
+   * @return True if the node has only the attributes the are given by the HashMap (no more and no
+   *         less attributes). If {@param checkSimilarValues} is true then only returns true if the
+   *         node shares attributes with the given attribute list exactly.
+   */
+  private static boolean nodeHasExactAttributes(Node node, HashMap<String, String> attributes,
+      boolean checkSimilarValues) {
+    NamedNodeMap nodeAttrs = node.getAttributes();
+
+    // Check to make sure the node has all attribute fields
+    for (String key : attributes.keySet()) {
+      Node attr = nodeAttrs.getNamedItem(key);
+      if (attr == null
+          || (checkSimilarValues && !attr.getTextContent().equals(attributes.get(key)))) {
+        return false;
+      }
+    }
+
+    // Check to make sure the node does not have more than the attribute fields
+    for (int i = 0; i < nodeAttrs.getLength(); i++) {
+      String attr = nodeAttrs.item(i).getNodeName();
+      if (attributes.get(attr) == null || (checkSimilarValues
+          && !attributes.get(attr).equals(nodeAttrs.item(i).getTextContent()))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

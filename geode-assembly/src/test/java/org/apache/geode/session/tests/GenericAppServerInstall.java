@@ -14,47 +14,48 @@
  */
 package org.apache.geode.session.tests;
 
+import java.awt.Container;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.codehaus.cargo.container.deployable.WAR;
-import org.junit.Assume;
 
 /**
  * Container install for a generic app server
  *
- * Extends {@link ContainerInstall} to form a basic installer which downloads and sets up a
- * container installation. Currently being used solely for Jetty 9 installation.
+ * Extends {@link ContainerInstall} to form a basic installer which downloads and sets up an
+ * installation to build a container off of. Currently being used solely for Jetty 9 installation.
  *
- * This install modifies the session testing war using the modify_war_file script, so that it uses
- * the geode session replication for generic application servers. That also means that tests using
- * this install will only run on linux.
+ * This install is used to setup many different generic app server containers using
+ * {@link GenericAppServerContainer}.
  *
- * In theory, adding support for additional containers should just be a matter of adding new
- * elements to the {@link Server} enumeration, since this install does not modify the container in
- * any way.
+ * In theory, adding support for additional appserver installations should just be a matter of
+ * adding new elements to the {@link GenericAppServerVersion} enumeration, since this install does
+ * not do much modification of the installation itself. There is very little (maybe no) Jetty 9
+ * specific code outside of the {@link GenericAppServerVersion}.
  */
 public class GenericAppServerInstall extends ContainerInstall {
 
   /**
-   * Get the download URL of a generic app server using hardcoded keywords
+   * Get the download URL and container name of a generic app server using hardcoded keywords
    *
-   * Currently the only supported keyword instance is JETTY9
+   * Currently the only supported keyword instance is JETTY9.
    */
-  public enum Server {
-    JETTY9(
+  public enum GenericAppServerVersion {
+    JETTY9(9,
         "http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.4.5.v20170502/jetty-distribution-9.4.5.v20170502.zip",
-        "jetty9x");
+        "jetty");
 
-    private String downloadURL;
-    private String containerId;
+    private final int version;
+    private final String downloadURL;
+    private final String containerName;
 
-    Server(String downloadURL, String containerId) {
+    GenericAppServerVersion(int version, String downloadURL, String containerName) {
+      this.version = version;
       this.downloadURL = downloadURL;
-      this.containerId = containerId;
+      this.containerName = containerName;
+    }
+
+    public int getVersion() {
+      return version;
     }
 
     public String getDownloadURL() {
@@ -62,186 +63,79 @@ public class GenericAppServerInstall extends ContainerInstall {
     }
 
     public String getContainerId() {
-      return containerId;
+      return containerName + getVersion() + "x";
     }
   }
 
-  /**
-   * Represent the type of cache being used in this install
-   *
-   * Supports PEER_TO_PEER or CLIENT_SERVER. Also contains several useful helper functions
-   * containing hardcoded values needed for the two different types of caches.
-   */
-  public enum CacheType {
-    PEER_TO_PEER("peer-to-peer", "cache-peer.xml"),
-    CLIENT_SERVER("client-server", "cache-client.xml");
+  private GenericAppServerVersion version;
 
-    private final String commandLineTypeString;
-    private final String XMLTypeFile;
-
-    CacheType(String commandLineTypeString, String XMLTypeFile) {
-      this.commandLineTypeString = commandLineTypeString;
-      this.XMLTypeFile = XMLTypeFile;
-    }
-
-    public String getCommandLineTypeString() {
-      return commandLineTypeString;
-    }
-
-    public String getXMLTypeFile() {
-      return XMLTypeFile;
-    }
-  }
-
-  private File warFile;
-  private CacheType cacheType;
-  private Server server;
-
-  private final String appServerModulePath;
-
-  public GenericAppServerInstall(Server server) throws IOException, InterruptedException {
-    this(server, CacheType.PEER_TO_PEER, DEFAULT_INSTALL_DIR);
-  }
-
-  public GenericAppServerInstall(Server server, String installDir)
+  public GenericAppServerInstall(GenericAppServerVersion version)
       throws IOException, InterruptedException {
-    this(server, CacheType.PEER_TO_PEER, installDir);
+    this(version, ConnectionType.PEER_TO_PEER, DEFAULT_INSTALL_DIR);
   }
 
-  public GenericAppServerInstall(Server server, CacheType cacheType)
+  public GenericAppServerInstall(GenericAppServerVersion version, String installDir)
       throws IOException, InterruptedException {
-    this(server, cacheType, DEFAULT_INSTALL_DIR);
+    this(version, ConnectionType.PEER_TO_PEER, installDir);
   }
 
-  /**
-   * Download and setup container installation
-   *
-   * Finds the path to (and extracts) the appserver module located within GEODE_BUILD_HOME
-   * directory. If cache is Client Server then also builds WAR file.
-   */
-  public GenericAppServerInstall(Server server, CacheType cacheType, String installDir)
+  public GenericAppServerInstall(GenericAppServerVersion version, ConnectionType cacheType)
       throws IOException, InterruptedException {
-    super(installDir, server.getDownloadURL());
-
-    // Ignore tests that are running on windows, since they can't run the modify war script
-    Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"));
-    this.server = server;
-    this.cacheType = cacheType;
-
-    appServerModulePath = findAndExtractModule(GEODE_BUILD_HOME, "appserver");
-    // Set the cache XML file by copying the XML file in the build dir
-    setCacheXMLFile(appServerModulePath + "/conf/" + cacheType.getXMLTypeFile(),
-        "cargo_logs/XMLs/" + getContainerDescription() + ".xml");
-
-    // Default properties
-    setCacheProperty("enable_local_cache", "false");
-
-    warFile = File.createTempFile("session-testing", ".war", new File("/tmp"));
-    warFile.deleteOnExit();
+    this(version, cacheType, DEFAULT_INSTALL_DIR);
   }
 
   /**
-   * Build the command list used to modify/build the WAR file
+   * Download and setup container installation of a generic appserver using the
+   * {@link ContainerInstall} constructor and some hardcoded module values
    */
-  private List<String> buildCommand() throws IOException {
-    String unmodifiedWar = findSessionTestingWar();
-    String modifyWarScript = appServerModulePath + "/bin/modify_war";
-    new File(modifyWarScript).setExecutable(true);
+  public GenericAppServerInstall(GenericAppServerVersion version, ConnectionType connType,
+      String installDir) throws IOException, InterruptedException {
+    super(installDir, version.getDownloadURL(), connType, "appserver");
 
-    List<String> command = new ArrayList<>();
-    command.add(modifyWarScript);
-    command.add("-w");
-    command.add(unmodifiedWar);
-    command.add("-t");
-    command.add(cacheType.getCommandLineTypeString());
-    command.add("-o");
-    command.add(warFile.getAbsolutePath());
-    for (String property : cacheProperties.keySet()) {
-      command.add("-p");
-      command.add("gemfire.cache." + property + "=" + getCacheProperty(property));
-    }
-    for (String property : systemProperties.keySet()) {
-      command.add("-p");
-      command.add("gemfire.property." + property + "=" + getSystemProperty(property));
-    }
-
-    return command;
+    this.version = version;
   }
 
   /**
-   * Modifies the WAR file for container use, by simulating a command line execution of the
-   * modify_war_file script using the commands built from {@link #buildCommand()}
-   */
-  private void modifyWarFile() throws IOException, InterruptedException {
-    ProcessBuilder builder = new ProcessBuilder();
-    builder.environment().put("GEODE", GEODE_BUILD_HOME);
-    builder.inheritIO();
-
-    builder.command(buildCommand());
-    logger.info("Running command: " + String.join(" ", builder.command()));
-
-    Process process = builder.start();
-
-    int exitCode = process.waitFor();
-    if (exitCode != 0) {
-      throw new IOException("Unable to run modify_war script: " + builder.command());
-    }
-  }
-
-  /**
-   * AppServer specific property updater
+   * Implementation of {@link ContainerInstall#generateContainer(File, String)}, which generates a
+   * generic appserver specific container
    *
-   * Overrides {@link ContainerInstall#writeProperties}. Since most properties for an app server can
-   * be specified through flags when running the modify_war script this runs
-   * {@link #modifyWarFile()}.
-   */
-  @Override
-  public void writeProperties() throws Exception {
-    modifyWarFile();
-  }
-
-  /**
-   * @see ContainerInstall#getContainerId()
-   */
-  @Override
-  public String getContainerId() {
-    return server.getContainerId();
-  }
-
-  /**
-   * @see ContainerInstall#getContainerDescription()
-   */
-  @Override
-  public String getContainerDescription() {
-    return server.name() + "_" + cacheType.name();
-  }
-
-  /**
-   * Sets the locator for this container
+   * Creates a {@link GenericAppServerContainer} instance off of this installation.
    *
-   * If the cache is P2P the WAR file must be regenerated to take a new locator. Otherwise (if
-   * Client Server) the cache xml file will be edited.
+   * @param containerDescriptors Additional descriptors used to identify a container
    */
   @Override
-  public void setLocator(String address, int port) throws Exception {
-    if (cacheType == CacheType.PEER_TO_PEER) {
-      setSystemProperty("locators", address + "[" + port + "]");
-    } else {
-      HashMap<String, String> attributes = new HashMap<>();
-      attributes.put("host", address);
-      attributes.put("port", Integer.toString(port));
-
-      editXMLFile(getSystemProperty("cache-xml-file"), "locator", "pool", attributes, true);
-    }
-
-    logger.info("Set locator for AppServer install to " + address + "[" + port + "]");
+  public GenericAppServerContainer generateContainer(File containerConfigHome,
+      String containerDescriptors) throws IOException {
+    return new GenericAppServerContainer(this, containerConfigHome, containerDescriptors);
   }
 
   /**
-   * @see ContainerInstall#getDeployableWAR()
+   * The cargo specific installation id needed to setup a cargo container
+   *
+   * Based on the installation's {@link #version}.
    */
   @Override
-  public WAR getDeployableWAR() {
-    return new WAR(warFile.getAbsolutePath());
+  public String getInstallId() {
+    return version.getContainerId();
+  }
+
+  /**
+   * @see ContainerInstall#getInstallDescription()
+   */
+  @Override
+  public String getInstallDescription() {
+    return version.name() + "_" + getConnectionType().getName();
+  }
+
+  /**
+   * Implements {@link ContainerInstall#getContextSessionManagerClass()}
+   *
+   * @throws IllegalArgumentException Always throws an illegal argument exception because app
+   *         servers should not need the session manager class
+   */
+  @Override
+  public String getContextSessionManagerClass() {
+    throw new IllegalArgumentException(
+        "Bad method call. Generic app servers do not use TomcatDeltaSessionManagers.");
   }
 }
