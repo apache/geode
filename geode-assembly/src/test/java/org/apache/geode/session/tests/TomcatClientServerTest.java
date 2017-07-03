@@ -14,17 +14,18 @@
  */
 package org.apache.geode.session.tests;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import java.io.File;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.DUnitEnv;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 
 /**
  * Setup class for Tomcat Client Server tests
@@ -53,8 +54,8 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   @Before
   public void startServer() throws Exception {
     TomcatInstall install = (TomcatInstall) getInstall();
-    String libDirJars = install.getInstallPath() + "/lib/*";
-    String binDirJars = install.getInstallPath() + "/bin/*";
+    String libDirJars = install.getHome() + "/lib/*";
+    String binDirJars = install.getHome() + "/bin/*";
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
     serverName = getClass().getSimpleName().concat("_").concat(getTestMethodName());

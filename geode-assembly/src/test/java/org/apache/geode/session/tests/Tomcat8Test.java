@@ -31,7 +31,7 @@ public class Tomcat8Test extends CargoTestBase {
   public static void setupTomcatInstall() throws Exception {
     install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8,
         ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat8Test");
-    install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
+    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 
   @Override

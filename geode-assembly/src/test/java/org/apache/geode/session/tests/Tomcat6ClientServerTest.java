@@ -30,9 +30,9 @@ public class Tomcat6ClientServerTest extends TomcatClientServerTest {
   @BeforeClass
   public static void setupTomcatInstall() throws Exception {
     install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT6,
-        TomcatInstall.TomcatConfig.CLIENT_SERVER,
+        ContainerInstall.ConnectionType.CLIENT_SERVER,
         ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat6ClientServerTest");
-    install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
+    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 
   @Override

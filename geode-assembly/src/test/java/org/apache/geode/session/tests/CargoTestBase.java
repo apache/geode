@@ -45,6 +45,13 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
   public abstract ContainerInstall getInstall();
 
+  /**
+   * Sets up the {@link #client} and {@link #manager} variables by creating new instances of each.
+   *
+   * Adds two new containers to the {@link #manager} based on the super class' {@link #getInstall()}
+   * method. Also sets {@link ContainerManager#testName} for {@link #manager} to the name of the
+   * current test.
+   */
   @Before
   public void setup() throws IOException {
     client = new Client();
@@ -54,6 +61,9 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     manager.addContainers(2, getInstall());
   }
 
+  /**
+   * Stops all containers that were previously started and cleans up their configurations
+   */
   @After
   public void stop() throws IOException {
     manager.stopAllActiveContainers();
@@ -100,7 +110,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       resp = client.get(key);
 
       assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
+      assertEquals("Session data is not replicating properly", value, resp.getResponse());
     }
   }
 
@@ -127,7 +137,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       resp = client.get(key);
 
       assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
+      assertEquals("Container failure caused inaccessible data.", value, resp.getResponse());
     }
   }
 
@@ -152,7 +162,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       resp = client.get(key);
 
-      assertEquals("", resp.getResponse());
+      assertEquals("Data removal is not being replicated properly.", "", resp.getResponse());
     }
   }
 
@@ -188,7 +198,8 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       resp = client.get(key);
 
-      assertEquals("", resp.getResponse());
+      assertEquals("Session replication is not doing session expiration correctly.", "",
+          resp.getResponse());
     }
   }
 
@@ -226,7 +237,8 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       resp = client.get(key);
 
       assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
+      assertEquals("Containers are not replicating session expiration reset", value,
+          resp.getResponse());
     }
   }
 
@@ -266,6 +278,10 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     }
   }
 
+  /**
+   * Test that a container added to the system after puts still can access the correct sessions and
+   * data.
+   */
   @Test
   public void newContainersShouldShareDataAccess() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
@@ -296,7 +312,8 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       resp = client.get(key);
 
       assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
+      assertEquals("Containers are not properly sharing data with new arrival", value,
+          resp.getResponse());
     }
   }
 }
