@@ -114,29 +114,6 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -145,7 +122,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since GemFire 3.0
  */
 public class InternalDistributedSystem extends DistributedSystem
-    implements OsStatisticsFactory, StatisticsManager {
+implements OsStatisticsFactory, StatisticsManager {
 
   /**
    * True if the user is allowed lock when memory resources appear to be overcommitted.
@@ -164,11 +141,11 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public static final CreationStackGenerator DEFAULT_CREATION_STACK_GENERATOR =
       new CreationStackGenerator() {
-        @Override
-        public Throwable generateCreationStack(final DistributionConfig config) {
-          return null;
-        }
-      };
+    @Override
+    public Throwable generateCreationStack(final DistributionConfig config) {
+      return null;
+    }
+  };
 
   // the following is overridden from DistributedTestCase to fix #51058
   public static final AtomicReference<CreationStackGenerator> TEST_CREATION_STACK_GENERATOR =
@@ -526,7 +503,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws
-                                                                                 // IllegalStateEx
+    // IllegalStateEx
     this.shareSockets = this.originalConfig.getConserveSockets();
     this.startTime = System.currentTimeMillis();
     this.grc = new GrantorRequestProcessor.GrantorRequestContext(stopper);
@@ -691,7 +668,7 @@ public class InternalDistributedSystem extends DistributedSystem
       } catch (Exception ex) {
         throw new GemFireSecurityException(
             LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION
-                .toLocalizedString(),
+            .toLocalizedString(),
             ex);
       }
 
@@ -714,7 +691,7 @@ public class InternalDistributedSystem extends DistributedSystem
           } else {
             throw new IllegalStateException(
                 LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT
-                    .toLocalizedString(avail, size));
+                .toLocalizedString(avail, size));
           }
         }
 
@@ -765,7 +742,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // but during startup we should instead throw a SystemConnectException
         throw new SystemConnectException(
             LocalizedStrings.InternalDistributedSystem_DISTRIBUTED_SYSTEM_HAS_DISCONNECTED
-                .toLocalizedString(),
+            .toLocalizedString(),
             e);
       }
 
@@ -839,13 +816,13 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       this.startedLocator =
           InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is
-                                                                                     // after IDS
-                                                                                     // has created
-                                                                                     // LogWriterLoggers
-                                                                                     // and
-                                                                                     // Appenders
+              // after IDS
+              // has created
+              // LogWriterLoggers
+              // and
+              // Appenders
               this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and
-                                      // Appenders
+              // Appenders
               locId.getHost(), locId.getHostnameForClients(), this.originalConfig.toProperties(),
               false);
 
@@ -864,7 +841,7 @@ public class InternalDistributedSystem extends DistributedSystem
     } catch (IOException e) {
       throw new GemFireIOException(
           LocalizedStrings.InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE
-              .toLocalizedString(),
+          .toLocalizedString(),
           e);
     }
   }
@@ -912,7 +889,7 @@ public class InternalDistributedSystem extends DistributedSystem
     if (!isConnected()) {
       throw new DistributedSystemDisconnectedException(
           LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
-              .toLocalizedString(),
+          .toLocalizedString(),
           dm.getRootCause());
     }
   }
@@ -1319,7 +1296,7 @@ public class InternalDistributedSystem extends DistributedSystem
         } catch (InterruptedException e) {
           interrupted = true;
           getLogWriter().convertToLogWriterI18n()
-              .warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
+          .warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
         } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
@@ -1363,7 +1340,7 @@ public class InternalDistributedSystem extends DistributedSystem
           InternalCache currentCache = GemFireCacheImpl.getInstance();
           if (currentCache != null && !currentCache.isClosed()) {
             disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
-                                                        // closing the cache
+            // closing the cache
             try {
               currentCache.close(reason, dm.getRootCause(), keepAlive, true); // fix for 42150
             } catch (VirtualMachineError e) {
@@ -1475,7 +1452,7 @@ public class InternalDistributedSystem extends DistributedSystem
       // NOTE: no logging after this point :-)
 
       LoggingThreadGroup.cleanUpThreadGroups(); // bug35388 - logwriters accumulate, causing mem
-                                                // leak
+      // leak
       EventID.unsetDS();
 
     } finally {
@@ -2132,7 +2109,7 @@ public class InternalDistributedSystem extends DistributedSystem
           // is still usable:
           SystemFailure.checkFailure();
           sys.getLogWriter().convertToLogWriterI18n()
-              .severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
+          .severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
         }
       }
     }
@@ -2238,7 +2215,7 @@ public class InternalDistributedSystem extends DistributedSystem
           this.listeners.remove(listener); // don't leave in the list!
           throw new DistributedSystemDisconnectedException(
               LocalizedStrings.InternalDistributedSystem_NO_LISTENERS_PERMITTED_AFTER_SHUTDOWN_0
-                  .toLocalizedString(reason),
+              .toLocalizedString(reason),
               dm.getRootCause());
         }
       }
@@ -2531,7 +2508,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return false;
     }
     synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a
-                                        // cache
+      // cache
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
         synchronized (this.reconnectLock) {
@@ -2662,7 +2639,7 @@ public class InternalDistributedSystem extends DistributedSystem
             }
             throw new CacheClosedException(
                 LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                    .toLocalizedString());
+                .toLocalizedString());
           }
         }
 
@@ -2942,11 +2919,11 @@ public class InternalDistributedSystem extends DistributedSystem
       if (this.creationStack == null) {
         throw new IllegalStateException(
             LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-                .toLocalizedString(sb.toString()));
+            .toLocalizedString(sb.toString()));
       } else {
         throw new IllegalStateException(
             LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-                .toLocalizedString(sb.toString()),
+            .toLocalizedString(sb.toString()),
             this.creationStack);
       }
     }

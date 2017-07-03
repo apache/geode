@@ -17,16 +17,6 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.Config;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.memcached.GemFireMemcachedServer;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -37,6 +27,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
@@ -1640,3270 +1640,3270 @@ public interface DistributionConfig extends Config, LogConfig {
   int[] DEFAULT_MEMBERSHIP_PORT_RANGE = Boolean.getBoolean(RESTRICT_MEMBERSHIP_PORT_RANGE)
       ? new int[] {32769, 61000} : new int[] {1024, 65535};
 
-  @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
-  int[] getMembershipPortRange();
-
-  @ConfigAttributeSetter(name = MEMBERSHIP_PORT_RANGE)
-  void setMembershipPortRange(int[] range);
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
-   */
-  @ConfigAttributeGetter(name = CONSERVE_SOCKETS)
-  boolean getConserveSockets();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property.
-   */
-  @ConfigAttributeSetter(name = CONSERVE_SOCKETS)
-  void setConserveSockets(boolean newValue);
-
-  /**
-   * The name of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String CONSERVE_SOCKETS_NAME = CONSERVE_SOCKETS;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
-   */
-  boolean DEFAULT_CONSERVE_SOCKETS = true;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#ROLES} property
-   */
-  @ConfigAttributeGetter(name = ROLES)
-  String getRoles();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#ROLES} property.
-   */
-  @ConfigAttributeSetter(name = ROLES)
-  void setRoles(String roles);
-
-  /**
-   * The name of the {@link ConfigurationProperties#ROLES} property
-   */
-  @ConfigAttribute(type = String.class)
-  String ROLES_NAME = ROLES;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#ROLES} property
-   */
-  String DEFAULT_ROLES = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT} property
-   */
-  @ConfigAttribute(type = Integer.class)
-  String MAX_WAIT_TIME_FOR_RECONNECT_NAME = MAX_WAIT_TIME_RECONNECT;
-
-  /**
-   * Default value for {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, 60,000 milliseconds.
-   */
-  int DEFAULT_MAX_WAIT_TIME_FOR_RECONNECT = 60000;
-
-  /**
-   * Sets the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, in milliseconds, for
-   * reconnect.
-   */
-  @ConfigAttributeSetter(name = MAX_WAIT_TIME_RECONNECT)
-  void setMaxWaitTimeForReconnect(int timeOut);
-
-  /**
-   * Returns the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, in milliseconds, for
-   * reconnect.
-   */
-  @ConfigAttributeGetter(name = MAX_WAIT_TIME_RECONNECT)
-  int getMaxWaitTimeForReconnect();
-
-  /**
-   * The name of the {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES} property.
-   */
-  @ConfigAttribute(type = Integer.class)
-  String MAX_NUM_RECONNECT_TRIES_NAME = MAX_NUM_RECONNECT_TRIES;
-
-  /**
-   * Default value for {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
-   */
-  int DEFAULT_MAX_NUM_RECONNECT_TRIES = 3;
-
-  /**
-   * Sets the {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
-   */
-  @ConfigAttributeSetter(name = MAX_NUM_RECONNECT_TRIES)
-  void setMaxNumReconnectTries(int tries);
-
-  /**
-   * Returns the value for {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
-   */
-  @ConfigAttributeGetter(name = MAX_NUM_RECONNECT_TRIES)
-  int getMaxNumReconnectTries();
-
-  // ------------------- Asynchronous Messaging Properties -------------------
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} property.
-   */
-  @ConfigAttributeGetter(name = ASYNC_DISTRIBUTION_TIMEOUT)
-  int getAsyncDistributionTimeout();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} property.
-   */
-  @ConfigAttributeSetter(name = ASYNC_DISTRIBUTION_TIMEOUT)
-  void setAsyncDistributionTimeout(int newValue);
-
-  /**
-   * The default value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} is
-   * <code>0</code>.
-   */
-  int DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT = 0;
-  /**
-   * The minimum value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} is
-   * <code>0</code>.
-   */
-  int MIN_ASYNC_DISTRIBUTION_TIMEOUT = 0;
-  /**
-   * The maximum value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} is
-   * <code>60000</code>.
-   */
-  int MAX_ASYNC_DISTRIBUTION_TIMEOUT = 60000;
-
-  /**
-   * The name of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} property
-   */
-  @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_DISTRIBUTION_TIMEOUT,
-      max = MAX_ASYNC_DISTRIBUTION_TIMEOUT)
-  String ASYNC_DISTRIBUTION_TIMEOUT_NAME = ASYNC_DISTRIBUTION_TIMEOUT;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property.
-   */
-  @ConfigAttributeGetter(name = ASYNC_QUEUE_TIMEOUT)
-  int getAsyncQueueTimeout();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property.
-   */
-  @ConfigAttributeSetter(name = ASYNC_QUEUE_TIMEOUT)
-  void setAsyncQueueTimeout(int newValue);
-
-  /**
-   * The default value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is <code>60000</code>.
-   */
-  int DEFAULT_ASYNC_QUEUE_TIMEOUT = 60000;
-  /**
-   * The minimum value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is <code>0</code>.
-   */
-  int MIN_ASYNC_QUEUE_TIMEOUT = 0;
-  /**
-   * The maximum value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is
-   * <code>86400000</code>.
-   */
-  int MAX_ASYNC_QUEUE_TIMEOUT = 86400000;
-  /**
-   * The name of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property
-   */
-  @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_QUEUE_TIMEOUT,
-      max = MAX_ASYNC_QUEUE_TIMEOUT)
-  String ASYNC_QUEUE_TIMEOUT_NAME = ASYNC_QUEUE_TIMEOUT;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.
-   */
-  @ConfigAttributeGetter(name = ASYNC_MAX_QUEUE_SIZE)
-  int getAsyncMaxQueueSize();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.
-   */
-  @ConfigAttributeSetter(name = ASYNC_MAX_QUEUE_SIZE)
-  void setAsyncMaxQueueSize(int newValue);
-
-  /**
-   * The default value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>8</code>.
-   */
-  int DEFAULT_ASYNC_MAX_QUEUE_SIZE = 8;
-  /**
-   * The minimum value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>0</code>.
-   */
-  int MIN_ASYNC_MAX_QUEUE_SIZE = 0;
-  /**
-   * The maximum value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>1024</code>.
-   */
-  int MAX_ASYNC_MAX_QUEUE_SIZE = 1024;
-
-  /**
-   * The name of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property
-   */
-  @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_MAX_QUEUE_SIZE,
-      max = MAX_ASYNC_MAX_QUEUE_SIZE)
-  String ASYNC_MAX_QUEUE_SIZE_NAME = ASYNC_MAX_QUEUE_SIZE;
-  /**
-   * @since GemFire 5.7
-   */
-  @ConfigAttribute(type = String.class)
-  String CLIENT_CONFLATION_PROP_NAME = CONFLATE_EVENTS;
-  /**
-   * @since GemFire 5.7
-   */
-  String CLIENT_CONFLATION_PROP_VALUE_DEFAULT = "server";
-  /**
-   * @since GemFire 5.7
-   */
-  String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
-  /**
-   * @since GemFire 5.7
-   */
-  String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
-
-  /**
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String DISTRIBUTED_TRANSACTIONS_NAME = DISTRIBUTED_TRANSACTIONS;
-  boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
-
-  @ConfigAttributeGetter(name = DISTRIBUTED_TRANSACTIONS)
-  boolean getDistributedTransactions();
-
-  @ConfigAttributeSetter(name = DISTRIBUTED_TRANSACTIONS)
-  void setDistributedTransactions(boolean value);
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#CONFLATE_EVENTS} property.
-   * 
-   * @since GemFire 5.7
-   */
-  @ConfigAttributeGetter(name = CONFLATE_EVENTS)
-  String getClientConflation();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#CONFLATE_EVENTS} property.
-   * 
-   * @since GemFire 5.7
-   */
-  @ConfigAttributeSetter(name = CONFLATE_EVENTS)
-  void setClientConflation(String clientConflation);
-  // -------------------------------------------------------------------------
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_ID} property.
-   */
-  @ConfigAttributeGetter(name = DURABLE_CLIENT_ID)
-  String getDurableClientId();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#DURABLE_CLIENT_ID} property.
-   */
-  @ConfigAttributeSetter(name = DURABLE_CLIENT_ID)
-  void setDurableClientId(String durableClientId);
-
-  /**
-   * The name of the {@link ConfigurationProperties#DURABLE_CLIENT_ID} property
-   */
-  @ConfigAttribute(type = String.class)
-  String DURABLE_CLIENT_ID_NAME = DURABLE_CLIENT_ID;
-
-  /**
-   * The default {@link ConfigurationProperties#DURABLE_CLIENT_ID}.
-   * <p>
-   * Actual value of this constant is <code>""</code>.
-   */
-  String DEFAULT_DURABLE_CLIENT_ID = "";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property.
-   */
-  @ConfigAttributeGetter(name = DURABLE_CLIENT_TIMEOUT)
-  int getDurableClientTimeout();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property.
-   */
-  @ConfigAttributeSetter(name = DURABLE_CLIENT_TIMEOUT)
-  void setDurableClientTimeout(int durableClientTimeout);
-
-  /**
-   * The name of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property
-   */
-  @ConfigAttribute(type = Integer.class)
-  String DURABLE_CLIENT_TIMEOUT_NAME = DURABLE_CLIENT_TIMEOUT;
-
-  /**
-   * The default {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} in seconds.
-   * <p>
-   * Actual value of this constant is <code>"300"</code>.
-   */
-  int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
-
-  /**
-   * Returns user module name for client authentication initializer in
-   * {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT}
-   */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTH_INIT)
-  String getSecurityClientAuthInit();
-
-  /**
-   * Sets the user module name in {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT}
-   * property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTH_INIT)
-  void setSecurityClientAuthInit(String attValue);
-
-  /**
-   * The name of user defined method name for
-   * {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_CLIENT_AUTH_INIT_NAME = SECURITY_CLIENT_AUTH_INIT;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT} method name.
-   * <p>
-   * Actual value of this is in format <code>"jar file:module name"</code>.
-   */
-  String DEFAULT_SECURITY_CLIENT_AUTH_INIT = "";
-
-  /**
-   * Returns user module name authenticating client credentials in
-   * {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR}
-   */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTHENTICATOR)
-  String getSecurityClientAuthenticator();
-
-  /**
-   * Sets the user defined method name in
-   * {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR} property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTHENTICATOR)
-  void setSecurityClientAuthenticator(String attValue);
-
-  /**
-   * The name of factory method for {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR}
-   * property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_CLIENT_AUTHENTICATOR_NAME = SECURITY_CLIENT_AUTHENTICATOR;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR} method name.
-   * <p>
-   * Actual value of this is fully qualified <code>"method name"</code>.
-   */
-  String DEFAULT_SECURITY_CLIENT_AUTHENTICATOR = "";
-
-  /**
-   * Returns user defined class name authenticating client credentials in
-   * {@link ConfigurationProperties#SECURITY_MANAGER}
-   */
-  @ConfigAttributeGetter(name = SECURITY_MANAGER)
-  String getSecurityManager();
-
-  /**
-   * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_MANAGER} property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_MANAGER)
-  void setSecurityManager(String attValue);
-
-  /**
-   * The name of class for {@link ConfigurationProperties#SECURITY_MANAGER} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_MANAGER_NAME = SECURITY_MANAGER;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_MANAGER} class name.
-   * <p>
-   * Actual value of this is fully qualified <code>"class name"</code>.
-   */
-  String DEFAULT_SECURITY_MANAGER = "";
-
-  /**
-   * Returns user defined post processor name in
-   * {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
-   */
-  @ConfigAttributeGetter(name = SECURITY_POST_PROCESSOR)
-  String getPostProcessor();
-
-  /**
-   * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
-   * property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_POST_PROCESSOR)
-  void setPostProcessor(String attValue);
-
-  /**
-   * The name of class for {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_POST_PROCESSOR_NAME = SECURITY_POST_PROCESSOR;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} class name.
-   * <p>
-   * Actual value of this is fully qualified <code>"class name"</code>.
-   */
-  String DEFAULT_SECURITY_POST_PROCESSOR = "";
-
-  /**
-   * Returns name of algorithm to use for Diffie-Hellman key exchange
-   * {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}
-   */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_DHALGO)
-  String getSecurityClientDHAlgo();
-
-  /**
-   * Set the name of algorithm to use for Diffie-Hellman key exchange
-   * {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO} property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_DHALGO)
-  void setSecurityClientDHAlgo(String attValue);
-
-  /**
-   * Returns name of algorithm to use for Diffie-Hellman key exchange
-   * <a href="../DistributedSystem.html#security-udp-dhalgo">"security-udp-dhalgo"</a>
-   */
-  @ConfigAttributeGetter(name = SECURITY_UDP_DHALGO)
-  String getSecurityUDPDHAlgo();
-
-  /**
-   * Set the name of algorithm to use for Diffie-Hellman key exchange
-   * <a href="../DistributedSystem.html#security-udp-dhalgo">"security-udp-dhalgo"</a> property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_UDP_DHALGO)
-  void setSecurityUDPDHAlgo(String attValue);
-
-  /**
-   * The name of the Diffie-Hellman symmetric algorithm
-   * {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO} property.
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_CLIENT_DHALGO_NAME = SECURITY_CLIENT_DHALGO;
-
-  /**
-   * The name of the Diffie-Hellman symmetric algorithm "security-client-dhalgo" property.
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_UDP_DHALGO_NAME = SECURITY_UDP_DHALGO;
-
-  /**
-   * The default Diffie-Hellman symmetric algorithm name.
-   * <p>
-   * Actual value of this is one of the available symmetric algorithm names in JDK like "DES",
-   * "DESede", "AES", "Blowfish".
-   */
-  String DEFAULT_SECURITY_CLIENT_DHALGO = "";
-
-  /**
-   * The default Diffie-Hellman symmetric algorithm name.
-   * <p>
-   * Actual value of this is one of the available symmetric algorithm names in JDK like "DES",
-   * "DESede", "AES", "Blowfish".
-   */
-  String DEFAULT_SECURITY_UDP_DHALGO = "";
-
-  /**
-   * Returns user defined method name for peer authentication initializer in
-   * {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT}
-   */
-  @ConfigAttributeGetter(name = SECURITY_PEER_AUTH_INIT)
-  String getSecurityPeerAuthInit();
-
-  /**
-   * Sets the user module name in {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_PEER_AUTH_INIT)
-  void setSecurityPeerAuthInit(String attValue);
-
-  /**
-   * The name of user module for {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_PEER_AUTH_INIT_NAME = SECURITY_PEER_AUTH_INIT;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} method name.
-   * <p>
-   * Actual value of this is fully qualified <code>"method name"</code>.
-   */
-  String DEFAULT_SECURITY_PEER_AUTH_INIT = "";
-
-  /**
-   * Returns user defined method name authenticating peer's credentials in
-   * {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
-   */
-  @ConfigAttributeGetter(name = SECURITY_PEER_AUTHENTICATOR)
-  String getSecurityPeerAuthenticator();
-
-  /**
-   * Sets the user module name in {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
-   * property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_PEER_AUTHENTICATOR)
-  void setSecurityPeerAuthenticator(String attValue);
-
-  /**
-   * The name of user defined method for {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
-   * property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_PEER_AUTHENTICATOR_NAME = SECURITY_PEER_AUTHENTICATOR;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR} method.
-   * <p>
-   * Actual value of this is fully qualified <code>"method name"</code>.
-   */
-  String DEFAULT_SECURITY_PEER_AUTHENTICATOR = "";
-
-  /**
-   * Returns user module name authorizing client credentials in
-   * {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
-   */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR)
-  String getSecurityClientAccessor();
-
-  /**
-   * Sets the user defined method name in {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
-   * property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR)
-  void setSecurityClientAccessor(String attValue);
-
-  /**
-   * The name of the factory method for {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
-   * property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_CLIENT_ACCESSOR_NAME = SECURITY_CLIENT_ACCESSOR;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR} method name.
-   * <p>
-   * Actual value of this is fully qualified <code>"method name"</code>.
-   */
-  String DEFAULT_SECURITY_CLIENT_ACCESSOR = "";
-
-  /**
-   * Returns user module name authorizing client credentials in
-   * {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
-   */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR_PP)
-  String getSecurityClientAccessorPP();
-
-  /**
-   * Sets the user defined method name in
-   * {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP} property.
-   */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR_PP)
-  void setSecurityClientAccessorPP(String attValue);
-
-  /**
-   * The name of the factory method for {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
-   * property
-   */
-  @ConfigAttribute(type = String.class)
-  String SECURITY_CLIENT_ACCESSOR_PP_NAME = SECURITY_CLIENT_ACCESSOR_PP;
-
-  /**
-   * The default client post-operation {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
-   * method name.
-   * <p>
-   * Actual value of this is fully qualified <code>"method name"</code>.
-   */
-  String DEFAULT_SECURITY_CLIENT_ACCESSOR_PP = "";
-
-  /**
-   * Get the current log-level for {@link ConfigurationProperties#SECURITY_LOG_LEVEL}.
-   * 
-   * @return the current security log-level
-   */
-  @ConfigAttributeGetter(name = SECURITY_LOG_LEVEL)
-  int getSecurityLogLevel();
-
-  /**
-   * Set the log-level for {@link ConfigurationProperties#SECURITY_LOG_LEVEL}.
-   * 
-   * @param level the new security log-level
-   */
-  @ConfigAttributeSetter(name = SECURITY_LOG_LEVEL)
-  void setSecurityLogLevel(int level);
-
-  /**
-   * The name of {@link ConfigurationProperties#SECURITY_LOG_LEVEL} property that sets the log-level
-   * for security logger obtained using {@link DistributedSystem#getSecurityLogWriter()}
-   */
-  // type is String because the config file "config", "debug", "fine" etc, but the setter getter
-  // accepts int
-  @ConfigAttribute(type = String.class)
-  String SECURITY_LOG_LEVEL_NAME = SECURITY_LOG_LEVEL;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SECURITY_LOG_FILE} property
-   * 
-   * @return <code>null</code> if logging information goes to standard out
-   */
-  @ConfigAttributeGetter(name = SECURITY_LOG_FILE)
-  File getSecurityLogFile();
-
-  /**
-   * Sets the system's {@link ConfigurationProperties#SECURITY_LOG_FILE} containing security related
-   * messages.
-   * <p>
-   * Non-absolute log files are relative to the system directory.
-   * <p>
-   * The security log file can not be changed while the system is running.
-   * 
-   * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
-   *         writing to the system's configuration file.
-   */
-  @ConfigAttributeSetter(name = SECURITY_LOG_FILE)
-  void setSecurityLogFile(File value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SECURITY_LOG_FILE} property. This property is
-   * the path of the file where security related messages are logged.
-   */
-  @ConfigAttribute(type = File.class)
-  String SECURITY_LOG_FILE_NAME = SECURITY_LOG_FILE;
-
-  /**
-   * The default {@link ConfigurationProperties#SECURITY_LOG_FILE}.
-   * <p>
-   * *
-   * <p>
-   * Actual value of this constant is <code>""</code> which directs security log messages to the
-   * same place as the system log file.
-   */
-  File DEFAULT_SECURITY_LOG_FILE = new File("");
-
-  /**
-   * Get timeout for peer membership check when security is enabled.
-   * 
-   * @return Timeout in milliseconds.
-   */
-  @ConfigAttributeGetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
-  int getSecurityPeerMembershipTimeout();
-
-  /**
-   * Set timeout for peer membership check when security is enabled. The timeout must be less than
-   * peer handshake timeout.
-   * 
-   * @param attValue
-   */
-  @ConfigAttributeSetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
-  void setSecurityPeerMembershipTimeout(int attValue);
-
-  /**
-   * The default peer membership check timeout is 1 second.
-   */
-  int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 1000;
-
-  /**
-   * Max membership timeout must be less than max peer handshake timeout. Currently this is set to
-   * default handshake timeout of 60 seconds.
-   */
-  int MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 60000;
-
-  /**
-   * The name of the peer membership check timeout property
-   */
-  @ConfigAttribute(type = Integer.class, min = 0, max = MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT)
-  String SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT;
-
-  /**
-   * Returns all properties starting with {@link ConfigurationProperties#SECURITY_PREFIX}
-   */
-  Properties getSecurityProps();
-
-  /**
-   * Returns the value of security property {@link ConfigurationProperties#SECURITY_PREFIX} for an
-   * exact attribute name match.
-   */
-  String getSecurity(String attName);
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SECURITY_PREFIX} property.
-   */
-  void setSecurity(String attName, String attValue);
-
-  String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
-
-
-  /**
-   * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction
-   * with other <i>cluster-ssl-*</i> properties property <a name="cluster-ssl"/a>
-   * </p>
-   * <U>Description</U>: The cluster-ssl property prefix
-   */
-  @Deprecated
-  String CLUSTER_SSL_PREFIX = "cluster-ssl";
-
-  /**
-   * For the "custom-" prefixed properties
-   */
-  String USERDEFINED_PREFIX_NAME = "custom-";
-
-  /**
-   * For ssl keystore and trust store properties
-   */
-  String SSL_SYSTEM_PROPS_NAME = "javax.net.ssl";
-
-  String KEY_STORE_TYPE_NAME = ".keyStoreType";
-  String KEY_STORE_NAME = ".keyStore";
-  String KEY_STORE_PASSWORD_NAME = ".keyStorePassword";
-  String TRUST_STORE_NAME = ".trustStore";
-  String TRUST_STORE_PASSWORD_NAME = ".trustStorePassword";
-
-  /**
-   * Suffix for ssl keystore and trust store properties for JMX
-   */
-  String JMX_SSL_PROPS_SUFFIX = "-jmx";
-
-  /**
-   * For security properties starting with sysprop in gfsecurity.properties file
-   */
-  String SYS_PROP_NAME = "sysprop-";
-  /**
-   * The property decides whether to remove unresponsive client from the server.
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME = REMOVE_UNRESPONSIVE_CLIENT;
-
-  /**
-   * The default value of remove unresponsive client is false.
-   */
-  boolean DEFAULT_REMOVE_UNRESPONSIVE_CLIENT = false;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#REMOVE_UNRESPONSIVE_CLIENT} property.
-   * 
-   * @since GemFire 6.0
-   */
-  @ConfigAttributeGetter(name = REMOVE_UNRESPONSIVE_CLIENT)
-  boolean getRemoveUnresponsiveClient();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#REMOVE_UNRESPONSIVE_CLIENT} property.
-   * 
-   * @since GemFire 6.0
-   */
-  @ConfigAttributeSetter(name = REMOVE_UNRESPONSIVE_CLIENT)
-  void setRemoveUnresponsiveClient(boolean value);
-
-  /**
-   * @since GemFire 6.3
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String DELTA_PROPAGATION_PROP_NAME = DELTA_PROPAGATION;
-
-  boolean DEFAULT_DELTA_PROPAGATION = true;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#DELTA_PROPAGATION} property.
-   * 
-   * @since GemFire 6.3
-   */
-  @ConfigAttributeGetter(name = DELTA_PROPAGATION)
-  boolean getDeltaPropagation();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#DELTA_PROPAGATION} property.
-   * 
-   * @since GemFire 6.3
-   */
-  @ConfigAttributeSetter(name = DELTA_PROPAGATION)
-  void setDeltaPropagation(boolean value);
-
-  int MIN_DISTRIBUTED_SYSTEM_ID = -1;
-  int MAX_DISTRIBUTED_SYSTEM_ID = 255;
-  /**
-   * @since GemFire 6.6
-   */
-  @ConfigAttribute(type = Integer.class)
-  String DISTRIBUTED_SYSTEM_ID_NAME = DISTRIBUTED_SYSTEM_ID;
-  int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
-
-  /**
-   * @since GemFire 6.6
-   */
-  @ConfigAttributeSetter(name = DISTRIBUTED_SYSTEM_ID)
-  void setDistributedSystemId(int distributedSystemId);
-
-  /**
-   * @since GemFire 6.6
-   */
-  @ConfigAttributeGetter(name = DISTRIBUTED_SYSTEM_ID)
-  int getDistributedSystemId();
-
-  /**
-   * @since GemFire 6.6
-   */
-  @ConfigAttribute(type = String.class)
-  String REDUNDANCY_ZONE_NAME = REDUNDANCY_ZONE;
-  String DEFAULT_REDUNDANCY_ZONE = "";
-
-  /**
-   * @since GemFire 6.6
-   */
-  @ConfigAttributeSetter(name = REDUNDANCY_ZONE)
-  void setRedundancyZone(String redundancyZone);
-
-  /**
-   * @since GemFire 6.6
-   */
-  @ConfigAttributeGetter(name = REDUNDANCY_ZONE)
-  String getRedundancyZone();
-
-  /**
-   * @since GemFire 6.6.2
-   */
-  void setSSLProperty(String attName, String attValue);
-
-  /**
-   * @since GemFire 6.6.2
-   */
-  Properties getSSLProperties();
-
-  Properties getClusterSSLProperties();
-
-  /**
-   * @since GemFire 8.0
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
-   */
-  Properties getJmxSSLProperties();
-
-  /**
-   * @since GemFire 6.6
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String ENFORCE_UNIQUE_HOST_NAME = ENFORCE_UNIQUE_HOST;
-  /**
-   * Using the system property to set the default here to retain backwards compatibility with
-   * customers that are already using this system property.
-   */
-  boolean DEFAULT_ENFORCE_UNIQUE_HOST =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
-
-  @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST)
-  void setEnforceUniqueHost(boolean enforceUniqueHost);
-
-  @ConfigAttributeGetter(name = ENFORCE_UNIQUE_HOST)
-  boolean getEnforceUniqueHost();
-
-  Properties getUserDefinedProps();
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GROUPS} property
-   * <p>
-   * The default value is: {@link #DEFAULT_GROUPS}.
-   * 
-   * @return the value of the property
-   *
-   * @since GemFire 7.0
-   */
-  @ConfigAttributeGetter(name = GROUPS)
-  String getGroups();
-
-  /**
-   * Sets the {@link ConfigurationProperties#GROUPS} property.
-   * <p>
-   * The groups can not be changed while the system is running.
-   * 
-   * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
-   *         writing to the system's configuration file.
-   * @since GemFire 7.0
-   */
-  @ConfigAttributeSetter(name = GROUPS)
-  void setGroups(String value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#GROUPS} property
-   * 
-   * @since GemFire 7.0
-   */
-  @ConfigAttribute(type = String.class)
-  String GROUPS_NAME = GROUPS;
-  /**
-   * The default {@link ConfigurationProperties#GROUPS}.
-   * <p>
-   * Actual value of this constant is <code>""</code>.
-   * 
-   * @since GemFire 7.0
-   */
-  String DEFAULT_GROUPS = "";
-
-  /**
-   * Any cleanup required before closing the distributed system
-   */
-  void close();
-
-  @ConfigAttributeSetter(name = REMOTE_LOCATORS)
-  void setRemoteLocators(String locators);
-
-  @ConfigAttributeGetter(name = REMOTE_LOCATORS)
-  String getRemoteLocators();
-
-  /**
-   * The name of the {@link ConfigurationProperties#REMOTE_LOCATORS} property
-   */
-  @ConfigAttribute(type = String.class)
-  String REMOTE_LOCATORS_NAME = REMOTE_LOCATORS;
-  /**
-   * The default value of the {@link ConfigurationProperties#REMOTE_LOCATORS} property
-   */
-  String DEFAULT_REMOTE_LOCATORS = "";
-
-  @ConfigAttributeGetter(name = JMX_MANAGER)
-  boolean getJmxManager();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER)
-  void setJmxManager(boolean value);
-
-  @ConfigAttribute(type = Boolean.class)
-  String JMX_MANAGER_NAME = JMX_MANAGER;
-  boolean DEFAULT_JMX_MANAGER = false;
-
-  @ConfigAttributeGetter(name = JMX_MANAGER_START)
-  boolean getJmxManagerStart();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER_START)
-  void setJmxManagerStart(boolean value);
-
-  @ConfigAttribute(type = Boolean.class)
-  String JMX_MANAGER_START_NAME = JMX_MANAGER_START;
-  boolean DEFAULT_JMX_MANAGER_START = false;
-
-  @ConfigAttributeGetter(name = JMX_MANAGER_PORT)
-  int getJmxManagerPort();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER_PORT)
-  void setJmxManagerPort(int value);
-
-  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
-  String JMX_MANAGER_PORT_NAME = JMX_MANAGER_PORT;
-
-  int DEFAULT_JMX_MANAGER_PORT = 1099;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_ENABLED)
-  boolean getJmxManagerSSLEnabled();
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} state.
-   * <p>
-   * Actual value of this constant is <code>false</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
-   */
-  @Deprecated
-  boolean DEFAULT_JMX_MANAGER_SSL_ENABLED = false;
-
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String JMX_MANAGER_SSL_ENABLED_NAME = JMX_MANAGER_SSL_ENABLED;
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_ENABLED)
-  void setJmxManagerSSLEnabled(boolean enabled);
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = OFF_HEAP_MEMORY_SIZE)
-  String getOffHeapMemorySize();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = OFF_HEAP_MEMORY_SIZE)
-  void setOffHeapMemorySize(String value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = String.class)
-  String OFF_HEAP_MEMORY_SIZE_NAME = OFF_HEAP_MEMORY_SIZE;
-  /**
-   * The default {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} value of <code>""</code>.
-   * 
-   * @since Geode 1.0
-   */
-  String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_PROTOCOLS)
-  String getJmxManagerSSLProtocols();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_PROTOCOLS)
-  void setJmxManagerSSLProtocols(String protocols);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
-   */
-  @Deprecated
-  String DEFAULT_JMX_MANAGER_SSL_PROTOCOLS = "any";
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_PROTOCOLS_NAME = JMX_MANAGER_SSL_PROTOCOLS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_CIPHERS)
-  String getJmxManagerSSLCiphers();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_CIPHERS)
-  void setJmxManagerSSLCiphers(String ciphers);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS}
-   */
-  @Deprecated
-  String DEFAULT_JMX_MANAGER_SSL_CIPHERS = "any";
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_CIPHERS_NAME = JMX_MANAGER_SSL_CIPHERS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
-  boolean getJmxManagerSSLRequireAuthentication();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
-  void setJmxManagerSSLRequireAuthentication(boolean enabled);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} value.
-   * <p>
-   * Actual value of this constant is <code>true</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  boolean DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = true;
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} property
-   * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE)
-  String getJmxManagerSSLKeyStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE)
-  void setJmxManagerSSLKeyStore(String keyStore);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
-   */
-  @Deprecated
-  String DEFAULT_JMX_MANAGER_SSL_KEYSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_KEYSTORE_NAME = JMX_MANAGER_SSL_KEYSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
-  String getJmxManagerSSLKeyStoreType();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
-  void setJmxManagerSSLKeyStoreType(String keyStoreType);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @Deprecated
-  String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_TYPE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property The name
-   * of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = JMX_MANAGER_SSL_KEYSTORE_TYPE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
-  String getJmxManagerSSLKeyStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
-  void setJmxManagerSSLKeyStorePassword(String keyStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} property The
-   * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
-   * propery
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME = JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
-  String getJmxManagerSSLTrustStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
-  void setJmxManagerSSLTrustStore(String trustStore);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
-   */
-  @Deprecated
-  String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
-   */
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_TRUSTSTORE_NAME = JMX_MANAGER_SSL_TRUSTSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
-  String getJmxManagerSSLTrustStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
-  void setJmxManagerSSLTrustStorePassword(String trusStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} property
-   * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
-
-  @ConfigAttributeGetter(name = JMX_MANAGER_BIND_ADDRESS)
-  String getJmxManagerBindAddress();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER_BIND_ADDRESS)
-  void setJmxManagerBindAddress(String value);
-
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_BIND_ADDRESS_NAME = JMX_MANAGER_BIND_ADDRESS;
-  String DEFAULT_JMX_MANAGER_BIND_ADDRESS = "";
-
-  @ConfigAttributeGetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
-  String getJmxManagerHostnameForClients();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
-  void setJmxManagerHostnameForClients(String value);
-
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME = JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
-  String DEFAULT_JMX_MANAGER_HOSTNAME_FOR_CLIENTS = "";
-
-  @ConfigAttributeGetter(name = JMX_MANAGER_PASSWORD_FILE)
-  String getJmxManagerPasswordFile();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER_PASSWORD_FILE)
-  void setJmxManagerPasswordFile(String value);
-
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_PASSWORD_FILE_NAME = JMX_MANAGER_PASSWORD_FILE;
-  String DEFAULT_JMX_MANAGER_PASSWORD_FILE = "";
-
-  @ConfigAttributeGetter(name = JMX_MANAGER_ACCESS_FILE)
-  String getJmxManagerAccessFile();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER_ACCESS_FILE)
-  void setJmxManagerAccessFile(String value);
-
-  @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_ACCESS_FILE_NAME = JMX_MANAGER_ACCESS_FILE;
-  String DEFAULT_JMX_MANAGER_ACCESS_FILE = "";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
-   * 
-   * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
-   */
-  @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT)
-  int getJmxManagerHttpPort();
-
-  /**
-   * Set the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for jmx-manager.
-   * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for
-   * jmx-manager.
-   * 
-   * @param value the port number for jmx-manager HTTP service
-   *
-   * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.
-   */
-  @ConfigAttributeSetter(name = JMX_MANAGER_HTTP_PORT)
-  void setJmxManagerHttpPort(int value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
-   * <p>
-   * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
-   * 
-   * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
-   */
-  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
-  String JMX_MANAGER_HTTP_PORT_NAME = JMX_MANAGER_HTTP_PORT;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
-   * Current value is a <code>7070</code>
-   * 
-   * @deprecated as of 8.0 use {@link #DEFAULT_HTTP_SERVICE_PORT} instead.
-   */
-  int DEFAULT_JMX_MANAGER_HTTP_PORT = 7070;
-
-  @ConfigAttributeGetter(name = JMX_MANAGER_UPDATE_RATE)
-  int getJmxManagerUpdateRate();
-
-  @ConfigAttributeSetter(name = JMX_MANAGER_UPDATE_RATE)
-  void setJmxManagerUpdateRate(int value);
-
-  int DEFAULT_JMX_MANAGER_UPDATE_RATE = 2000;
-  int MIN_JMX_MANAGER_UPDATE_RATE = 1000;
-  int MAX_JMX_MANAGER_UPDATE_RATE = 60000 * 5;
-  @ConfigAttribute(type = Integer.class, min = MIN_JMX_MANAGER_UPDATE_RATE,
-      max = MAX_JMX_MANAGER_UPDATE_RATE)
-  String JMX_MANAGER_UPDATE_RATE_NAME = JMX_MANAGER_UPDATE_RATE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PORT} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PORT} property
-   * 
-   * @return the port on which GemFireMemcachedServer should be started
-   *
-   * @since GemFire 7.0
-   */
-  @ConfigAttributeGetter(name = MEMCACHED_PORT)
-  int getMemcachedPort();
-
-  @ConfigAttributeSetter(name = MEMCACHED_PORT)
-  void setMemcachedPort(int value);
-
-  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
-  String MEMCACHED_PORT_NAME = MEMCACHED_PORT;
-  int DEFAULT_MEMCACHED_PORT = 0;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PROTOCOL} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PROTOCOL} property
-   * 
-   * @return the protocol for GemFireMemcachedServer
-   *
-   * @since GemFire 7.0
-   */
-  @ConfigAttributeGetter(name = MEMCACHED_PROTOCOL)
-  String getMemcachedProtocol();
-
-  @ConfigAttributeSetter(name = MEMCACHED_PROTOCOL)
-  void setMemcachedProtocol(String protocol);
-
-  @ConfigAttribute(type = String.class)
-  String MEMCACHED_PROTOCOL_NAME = MEMCACHED_PROTOCOL;
-  String DEFAULT_MEMCACHED_PROTOCOL = GemFireMemcachedServer.Protocol.ASCII.name();
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
-   * 
-   * @return the bind address for GemFireMemcachedServer
-   *
-   * @since GemFire 7.0
-   */
-  @ConfigAttributeGetter(name = MEMCACHED_BIND_ADDRESS)
-  String getMemcachedBindAddress();
-
-  @ConfigAttributeSetter(name = MEMCACHED_BIND_ADDRESS)
-  void setMemcachedBindAddress(String bindAddress);
-
-  @ConfigAttribute(type = String.class)
-  String MEMCACHED_BIND_ADDRESS_NAME = MEMCACHED_BIND_ADDRESS;
-  String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
-   * 
-   * @return the port on which GeodeRedisServer should be started
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeGetter(name = REDIS_PORT)
-  int getRedisPort();
-
-  @ConfigAttributeSetter(name = REDIS_PORT)
-  void setRedisPort(int value);
-
-  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
-  String REDIS_PORT_NAME = REDIS_PORT;
-  int DEFAULT_REDIS_PORT = 0;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_BIND_ADDRESS} property
-   * 
-   * @return the bind address for GemFireRedisServer
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeGetter(name = REDIS_BIND_ADDRESS)
-  String getRedisBindAddress();
-
-  @ConfigAttributeSetter(name = REDIS_BIND_ADDRESS)
-  void setRedisBindAddress(String bindAddress);
-
-  @ConfigAttribute(type = String.class)
-  String REDIS_BIND_ADDRESS_NAME = REDIS_BIND_ADDRESS;
-  String DEFAULT_REDIS_BIND_ADDRESS = "";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_PASSWORD} property
-   * 
-   * @return the authentication password for GemFireRedisServer
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeGetter(name = REDIS_PASSWORD)
-  String getRedisPassword();
-
-  @ConfigAttributeSetter(name = REDIS_PASSWORD)
-  void setRedisPassword(String password);
-
-  @ConfigAttribute(type = String.class)
-  String REDIS_PASSWORD_NAME = REDIS_PASSWORD;
-  String DEFAULT_REDIS_PASSWORD = "";
-
-  // Added for the HTTP service
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} property
-   * 
-   * @return the HTTP service port
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_PORT)
-  int getHttpServicePort();
-
-  /**
-   * Set the {@link ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP service.
-   * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP
-   * service.
-   * 
-   * @param value the port number for HTTP service
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_PORT)
-  void setHttpServicePort(int value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
-   * <p>
-   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT}
-   * property
-   * 
-   * @since GemFire 8.0
-   */
-  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
-  String HTTP_SERVICE_PORT_NAME = HTTP_SERVICE_PORT;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property. Current
-   * value is a <code>7070</code>
-   * 
-   * @since GemFire 8.0
-   */
-  int DEFAULT_HTTP_SERVICE_PORT = 7070;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
-   * 
-   * @return the bind-address for HTTP service
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_BIND_ADDRESS)
-  String getHttpServiceBindAddress();
-
-  /**
-   * Set the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} for HTTP service.
-   * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS}
-   * for HTTP service.
-   * 
-   * @param value the bind-address for HTTP service
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_BIND_ADDRESS)
-  void setHttpServiceBindAddress(String value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
-   * 
-   * @since GemFire 8.0
-   */
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_BIND_ADDRESS_NAME = HTTP_SERVICE_BIND_ADDRESS;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property.
-   * Current value is an empty string <code>""</code>
-   * 
-   * @since GemFire 8.0
-   */
-  String DEFAULT_HTTP_SERVICE_BIND_ADDRESS = "";
-
-  // Added for HTTP Service SSL
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ENABLED)
-  boolean getHttpServiceSSLEnabled();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ENABLED)
-  void setHttpServiceSSLEnabled(boolean httpServiceSSLEnabled);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} state.
-   * <p>
-   * Actual value of this constant is <code>false</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
-   */
-  @Deprecated
-  boolean DEFAULT_HTTP_SERVICE_SSL_ENABLED = false;
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String HTTP_SERVICE_SSL_ENABLED_NAME = HTTP_SERVICE_SSL_ENABLED;
-
-  /**
-   * Returns the value of the
-   * {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
-  boolean getHttpServiceSSLRequireAuthentication();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
-  void setHttpServiceSSLRequireAuthentication(boolean httpServiceSSLRequireAuthentication);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} value.
-   * <p>
-   * Actual value of this constant is <code>true</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  boolean DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = false;
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
-   * property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
-  String getHttpServiceSSLProtocols();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
-  void setHttpServiceSSLProtocols(String protocols);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
-   */
-  @Deprecated
-  String DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS = "any";
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_PROTOCOLS_NAME = HTTP_SERVICE_SSL_PROTOCOLS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_CIPHERS)
-  String getHttpServiceSSLCiphers();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_CIPHERS)
-  void setHttpServiceSSLCiphers(String ciphers);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS}
-   */
-  @Deprecated
-  String DEFAULT_HTTP_SERVICE_SSL_CIPHERS = "any";
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_CIPHERS_NAME = HTTP_SERVICE_SSL_CIPHERS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE)
-  String getHttpServiceSSLKeyStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE)
-  void setHttpServiceSSLKeyStore(String keyStore);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
-   */
-  @Deprecated
-  String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_KEYSTORE_NAME = HTTP_SERVICE_SSL_KEYSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
-  String getHttpServiceSSLKeyStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
-  void setHttpServiceSSLKeyStorePassword(String keyStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property The
-   * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
-  String getHttpServiceSSLKeyStoreType();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
-   */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
-  void setHttpServiceSSLKeyStoreType(String keyStoreType);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @Deprecated
-  String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_TYPE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property The
-   * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME = HTTP_SERVICE_SSL_KEYSTORE_TYPE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
-  String getHttpServiceSSLTrustStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
-  void setHttpServiceSSLTrustStore(String trustStore);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
-   */
-  @Deprecated
-  String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property The name
-   * of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_TRUSTSTORE_NAME = HTTP_SERVICE_SSL_TRUSTSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
-  String getHttpServiceSSLTrustStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
-  void setHttpServiceSSLTrustStorePassword(String trustStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
-   * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
-
-  /**
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
-   */
-  @Deprecated
-  Properties getHttpServiceSSLProperties();
-
-  // Added for API REST
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#START_DEV_REST_API} property
-   * <p>
-   * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} property
-   * 
-   * @return the value of the property
-   *
-   * @since GemFire 8.0
-   */
-
-  @ConfigAttributeGetter(name = START_DEV_REST_API)
-  boolean getStartDevRestApi();
-
-  /**
-   * Set the {@link ConfigurationProperties#START_DEV_REST_API} for HTTP service.
-   * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} for
-   * HTTP service.
-   * 
-   * @param value for the property
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeSetter(name = START_DEV_REST_API)
-  void setStartDevRestApi(boolean value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#START_DEV_REST_API} property
-   * <p>
-   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API}
-   * property
-   * 
-   * @since GemFire 8.0
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String START_DEV_REST_API_NAME = START_DEV_REST_API;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#START_DEV_REST_API} property. Current
-   * value is <code>"false"</code>
-   * 
-   * @since GemFire 8.0
-   */
-  boolean DEFAULT_START_DEV_REST_API = false;
-
-  /**
-   * The name of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
-   * 
-   * @since GemFire 8.0
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String DISABLE_AUTO_RECONNECT_NAME = DISABLE_AUTO_RECONNECT;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
-   */
-  boolean DEFAULT_DISABLE_AUTO_RECONNECT = false;
-
-  /**
-   * Gets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
-   */
-  @ConfigAttributeGetter(name = DISABLE_AUTO_RECONNECT)
-  boolean getDisableAutoReconnect();
-
-  /**
-   * Sets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
-   * 
-   * @param value the new setting
-   */
-  @ConfigAttributeSetter(name = DISABLE_AUTO_RECONNECT)
-  void setDisableAutoReconnect(boolean value);
-
-  /**
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
-   */
-  @Deprecated
-  Properties getServerSSLProperties();
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_ENABLED)
-  boolean getServerSSLEnabled();
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_ENABLED} state.
-   * <p>
-   * Actual value of this constant is <code>false</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
-   */
-  @Deprecated
-  boolean DEFAULT_SERVER_SSL_ENABLED = false;
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String SERVER_SSL_ENABLED_NAME = SERVER_SSL_ENABLED;
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_ENABLED)
-  void setServerSSLEnabled(boolean enabled);
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_PROTOCOLS)
-  String getServerSSLProtocols();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property.
-   */
-  @ConfigAttributeSetter(name = SERVER_SSL_PROTOCOLS)
-  void setServerSSLProtocols(String protocols);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
-   */
-  @Deprecated
-  String DEFAULT_SERVER_SSL_PROTOCOLS = "any";
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_PROTOCOLS_NAME = SERVER_SSL_PROTOCOLS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()} 
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_CIPHERS)
-  String getServerSSLCiphers();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_CIPHERS)
-  void setServerSSLCiphers(String ciphers);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_CIPHERS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
-   */
-  @Deprecated
-  String DEFAULT_SERVER_SSL_CIPHERS = "any";
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_CIPHERS} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_CIPHERS_NAME = SERVER_SSL_CIPHERS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()} 
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
-  boolean getServerSSLRequireAuthentication();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)} 
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
-  void setServerSSLRequireAuthentication(boolean enabled);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} value.
-   * <p>
-   * Actual value of this constant is <code>true</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  boolean DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION = true;
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property The
-   * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String SERVER_SSL_REQUIRE_AUTHENTICATION_NAME = SERVER_SSL_REQUIRE_AUTHENTICATION;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE)
-  String getServerSSLKeyStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE)
-  void setServerSSLKeyStore(String keyStore);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
-   */
-  @Deprecated
-  String DEFAULT_SERVER_SSL_KEYSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_KEYSTORE_NAME = SERVER_SSL_KEYSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_TYPE)
-  String getServerSSLKeyStoreType();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_TYPE)
-  void setServerSSLKeyStoreType(String keyStoreType);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @Deprecated
-  String DEFAULT_SERVER_SSL_KEYSTORE_TYPE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_KEYSTORE_TYPE_NAME = SERVER_SSL_KEYSTORE_TYPE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
-  String getServerSSLKeyStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
-  void setServerSSLKeyStorePassword(String keyStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_SERVER_SSL_KEYSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property The name
-   * of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_KEYSTORE_PASSWORD_NAME = SERVER_SSL_KEYSTORE_PASSWORD;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE)
-  String getServerSSLTrustStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setServerSSLTrustStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE)
-  void setServerSSLTrustStore(String trustStore);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
-   */
-  String DEFAULT_SERVER_SSL_TRUSTSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_TRUSTSTORE_NAME = SERVER_SSL_TRUSTSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
-  String getServerSSLTrustStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
-  void setServerSSLTrustStorePassword(String trusStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property The
-   * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_TRUSTSTORE_PASSWORD_NAME = SERVER_SSL_TRUSTSTORE_PASSWORD;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_ENABLED)
-  boolean getGatewaySSLEnabled();
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} state.
-   * <p>
-   * Actual value of this constant is <code>false</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
-   */
-  @Deprecated
-  boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_ENABLED} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String GATEWAY_SSL_ENABLED_NAME = GATEWAY_SSL_ENABLED;
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_ENABLED)
-  void setGatewaySSLEnabled(boolean enabled);
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_PROTOCOLS)
-  String getGatewaySSLProtocols();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_PROTOCOLS)
-  void setGatewaySSLProtocols(String protocols);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
-   */
-  String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_PROTOCOLS_NAME = GATEWAY_SSL_PROTOCOLS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()} 
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_CIPHERS)
-  String getGatewaySSLCiphers();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_CIPHERS)
-  void setGatewaySSLCiphers(String ciphers);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} value.
-   * <p>
-   * Actual value of this constant is <code>any</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
-   */
-  String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_CIPHERS_NAME = GATEWAY_SSL_CIPHERS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
-  boolean getGatewaySSLRequireAuthentication();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setGatewaySSLRequireAuthentication(boolean)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
-  void setGatewaySSLRequireAuthentication(boolean enabled);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} value.
-   * <p>
-   * Actual value of this constant is <code>true</code>.
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  boolean DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION = true;
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property The
-   * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
-   */
-  @Deprecated
-  @ConfigAttribute(type = Boolean.class)
-  String GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME = GATEWAY_SSL_REQUIRE_AUTHENTICATION;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE)
-  String getGatewaySSLKeyStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE)
-  void setGatewaySSLKeyStore(String keyStore);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
-   */
-  @Deprecated
-  String DEFAULT_GATEWAY_SSL_KEYSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_KEYSTORE_NAME = GATEWAY_SSL_KEYSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
-  String getGatewaySSLKeyStoreType();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
-  void setGatewaySSLKeyStoreType(String keyStoreType);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @Deprecated
-  String DEFAULT_GATEWAY_SSL_KEYSTORE_TYPE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_KEYSTORE_TYPE_NAME = GATEWAY_SSL_KEYSTORE_TYPE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
-  String getGatewaySSLKeyStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
-  void setGatewaySSLKeyStorePassword(String keyStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_GATEWAY_SSL_KEYSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property The name
-   * of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_KEYSTORE_PASSWORD_NAME = GATEWAY_SSL_KEYSTORE_PASSWORD;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE)
-  String getGatewaySSLTrustStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE)
-  void setGatewaySSLTrustStore(String trustStore);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
-   */
-  @Deprecated
-  String DEFAULT_GATEWAY_SSL_TRUSTSTORE = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_TRUSTSTORE_NAME = GATEWAY_SSL_TRUSTSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
-   * property.
-   * 
-   * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
-   */
-  @Deprecated
-  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
-  String getGatewaySSLTrustStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property.
-   * 
-   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
-   */
-  @Deprecated
-  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
-  void setGatewaySSLTrustStorePassword(String trusStorePassword);
-
-  /**
-   * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} value.
-   * <p>
-   * Actual value of this constant is "".
-   * 
-   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  String DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property The
-   * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
-   * property
-   * 
-   * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
-   */
-  @Deprecated
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME = GATEWAY_SSL_TRUSTSTORE_PASSWORD;
-
-  /**
-   * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
-   */
-  @Deprecated
-  Properties getGatewaySSLProperties();
-
-  ConfigSource getConfigSource(String attName);
-
-  /**
-   * The name of the {@link ConfigurationProperties#LOCK_MEMORY} property. Used to cause pages to be
-   * locked into memory, thereby preventing them from being swapped to disk.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String LOCK_MEMORY_NAME = LOCK_MEMORY;
-  boolean DEFAULT_LOCK_MEMORY = false;
-
-  /**
-   * Gets the value of {@link ConfigurationProperties#LOCK_MEMORY}
-   * <p>
-   * Gets the value of {@link org.apache.geode.distributed.ConfigurationProperties#LOCK_MEMORY}
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = LOCK_MEMORY)
-  boolean getLockMemory();
-
-  /**
-   * Set the value of {@link ConfigurationProperties#LOCK_MEMORY}
-   * 
-   * @param value the new setting
-   *
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = LOCK_MEMORY)
-  void setLockMemory(boolean value);
-
-  @ConfigAttribute(type = String.class)
-  String SECURITY_SHIRO_INIT_NAME = SECURITY_SHIRO_INIT;
-
-  @ConfigAttributeSetter(name = SECURITY_SHIRO_INIT)
-  void setShiroInit(String value);
-
-  @ConfigAttributeGetter(name = SECURITY_SHIRO_INIT)
-  String getShiroInit();
-
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = SSL_CLUSTER_ALIAS)
-  String getClusterSSLAlias();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = SSL_CLUSTER_ALIAS)
-  void setClusterSSLAlias(String alias);
-
-  /**
-   * The Default Cluster SSL alias
-   * 
-   * @since Geode 1.0
-   */
-  String DEFAULT_SSL_ALIAS = "";
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = String.class)
-  String CLUSTER_SSL_ALIAS_NAME = SSL_CLUSTER_ALIAS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = SSL_LOCATOR_ALIAS)
-  String getLocatorSSLAlias();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = SSL_LOCATOR_ALIAS)
-  void setLocatorSSLAlias(String alias);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = String.class)
-  String LOCATOR_SSL_ALIAS_NAME = SSL_LOCATOR_ALIAS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = SSL_GATEWAY_ALIAS)
-  String getGatewaySSLAlias();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = SSL_GATEWAY_ALIAS)
-  void setGatewaySSLAlias(String alias);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_ALIAS_NAME = SSL_GATEWAY_ALIAS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = SSL_WEB_ALIAS)
-  String getHTTPServiceSSLAlias();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_WEB_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = SSL_WEB_ALIAS)
-  void setHTTPServiceSSLAlias(String alias);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_WEB_ALIAS} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_ALIAS_NAME = SSL_WEB_ALIAS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_JMX_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = SSL_JMX_ALIAS)
-  String getJMXSSLAlias();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_JMX_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = SSL_JMX_ALIAS)
-  void setJMXSSLAlias(String alias);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_JMX_ALIAS} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = String.class)
-  String JMX_SSL_ALIAS_NAME = SSL_JMX_ALIAS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_SERVER_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = SSL_SERVER_ALIAS)
-  String getServerSSLAlias();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_SERVER_ALIAS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = SSL_SERVER_ALIAS)
-  void setServerSSLAlias(String alias);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_SERVER_ALIAS} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = String.class)
-  String SERVER_SSL_ALIAS_NAME = SSL_SERVER_ALIAS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeGetter(name = SSL_ENABLED_COMPONENTS)
-  SecurableCommunicationChannel[] getSecurableCommunicationChannels();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property.
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttributeSetter(name = SSL_ENABLED_COMPONENTS)
-  void setSecurableCommunicationChannels(SecurableCommunicationChannel[] sslEnabledComponents);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
-   * 
-   * @since Geode 1.0
-   */
-  @ConfigAttribute(type = SecurableCommunicationChannel[].class)
-  String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
-
-  /**
-   * The default ssl enabled components
-   * 
-   * @since Geode 1.0
-   */
-  SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
-      new SecurableCommunicationChannel[] {};
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS} property.
-   */
-  @ConfigAttributeGetter(name = SSL_PROTOCOLS)
-  String getSSLProtocols();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_PROTOCOLS} property.
-   */
-  @ConfigAttributeSetter(name = SSL_PROTOCOLS)
-  void setSSLProtocols(String protocols);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_PROTOCOLS} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_CIPHERS} property.
-   */
-  @ConfigAttributeGetter(name = SSL_CIPHERS)
-  String getSSLCiphers();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_CIPHERS} property.
-   */
-  @ConfigAttributeSetter(name = SSL_CIPHERS)
-  void setSSLCiphers(String ciphers);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_CIPHERS} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_CIPHERS_NAME = SSL_CIPHERS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property.
-   */
-  @ConfigAttributeGetter(name = SSL_REQUIRE_AUTHENTICATION)
-  boolean getSSLRequireAuthentication();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property.
-   */
-  @ConfigAttributeSetter(name = SSL_REQUIRE_AUTHENTICATION)
-  void setSSLRequireAuthentication(boolean enabled);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String SSL_REQUIRE_AUTHENTICATION_NAME = SSL_REQUIRE_AUTHENTICATION;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE} property.
-   */
-  @ConfigAttributeGetter(name = SSL_KEYSTORE)
-  String getSSLKeyStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE} property.
-   */
-  @ConfigAttributeSetter(name = SSL_KEYSTORE)
-  void setSSLKeyStore(String keyStore);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_KEYSTORE} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_KEYSTORE_NAME = SSL_KEYSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE} property.
-   */
-  @ConfigAttributeGetter(name = SSL_KEYSTORE_TYPE)
-  String getSSLKeyStoreType();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE} property.
-   */
-  @ConfigAttributeSetter(name = SSL_KEYSTORE_TYPE)
-  void setSSLKeyStoreType(String keyStoreType);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_KEYSTORE_TYPE_NAME = SSL_KEYSTORE_TYPE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD} property.
-   */
-  @ConfigAttributeGetter(name = SSL_KEYSTORE_PASSWORD)
-  String getSSLKeyStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD} property.
-   */
-  @ConfigAttributeSetter(name = SSL_KEYSTORE_PASSWORD)
-  void setSSLKeyStorePassword(String keyStorePassword);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_KEYSTORE_PASSWORD_NAME = SSL_KEYSTORE_PASSWORD;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE} property.
-   */
-  @ConfigAttributeGetter(name = SSL_TRUSTSTORE)
-  String getSSLTrustStore();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE} property.
-   */
-  @ConfigAttributeSetter(name = SSL_TRUSTSTORE)
-  void setSSLTrustStore(String trustStore);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_TRUSTSTORE} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_TRUSTSTORE_NAME = SSL_TRUSTSTORE;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS} property.
-   */
-  @ConfigAttributeGetter(name = SSL_DEFAULT_ALIAS)
-  String getSSLDefaultAlias();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS} property.
-   */
-  @ConfigAttributeSetter(name = SSL_DEFAULT_ALIAS)
-  void setSSLDefaultAlias(String sslDefaultAlias);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_DEFAULT_ALIAS_NAME = SSL_DEFAULT_ALIAS;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD} property.
-   */
-  @ConfigAttributeGetter(name = SSL_TRUSTSTORE_PASSWORD)
-  String getSSLTrustStorePassword();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD} property.
-   */
-  @ConfigAttributeSetter(name = SSL_TRUSTSTORE_PASSWORD)
-  void setSSLTrustStorePassword(String trustStorePassword);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD} property
-   */
-  @ConfigAttribute(type = String.class)
-  String SSL_TRUSTSTORE_PASSWORD_NAME = SSL_TRUSTSTORE_PASSWORD;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}
-   * property.
-   */
-  @ConfigAttributeGetter(name = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION)
-  boolean getSSLWebRequireAuthentication();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}
-   * property.
-   */
-  @ConfigAttributeSetter(name = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION)
-  void setSSLWebRequireAuthentication(boolean requiresAuthentication);
-
-  /**
-   * The name of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION} property
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION_NAME = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
-
-  /**
-   * The default value for http service ssl mutual authentication
-   */
-  boolean DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = false;
-
-  // *************** Initializers to gather all the annotations in this class
-  // ************************
-
-  Map<String, ConfigAttribute> attributes = new HashMap<>();
-  Map<String, Method> setters = new HashMap<>();
-  Map<String, Method> getters = new HashMap<>();
-  String[] dcValidAttributeNames = init();
-
-  static String[] init() {
-    List<String> atts = new ArrayList<>();
-    for (Field field : DistributionConfig.class.getDeclaredFields()) {
-      if (field.isAnnotationPresent(ConfigAttribute.class)) {
-        try {
-          atts.add((String) field.get(null));
-          attributes.put((String) field.get(null), field.getAnnotation(ConfigAttribute.class));
-        } catch (IllegalAccessException e) {
-          e.printStackTrace();
+      @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
+      int[] getMembershipPortRange();
+
+      @ConfigAttributeSetter(name = MEMBERSHIP_PORT_RANGE)
+      void setMembershipPortRange(int[] range);
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
+       */
+      @ConfigAttributeGetter(name = CONSERVE_SOCKETS)
+      boolean getConserveSockets();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property.
+       */
+      @ConfigAttributeSetter(name = CONSERVE_SOCKETS)
+      void setConserveSockets(boolean newValue);
+
+      /**
+       * The name of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String CONSERVE_SOCKETS_NAME = CONSERVE_SOCKETS;
+
+      /**
+       * The default value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
+       */
+      boolean DEFAULT_CONSERVE_SOCKETS = true;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#ROLES} property
+       */
+      @ConfigAttributeGetter(name = ROLES)
+      String getRoles();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#ROLES} property.
+       */
+      @ConfigAttributeSetter(name = ROLES)
+      void setRoles(String roles);
+
+      /**
+       * The name of the {@link ConfigurationProperties#ROLES} property
+       */
+      @ConfigAttribute(type = String.class)
+      String ROLES_NAME = ROLES;
+
+      /**
+       * The default value of the {@link ConfigurationProperties#ROLES} property
+       */
+      String DEFAULT_ROLES = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT} property
+       */
+      @ConfigAttribute(type = Integer.class)
+      String MAX_WAIT_TIME_FOR_RECONNECT_NAME = MAX_WAIT_TIME_RECONNECT;
+
+      /**
+       * Default value for {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, 60,000 milliseconds.
+       */
+      int DEFAULT_MAX_WAIT_TIME_FOR_RECONNECT = 60000;
+
+      /**
+       * Sets the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, in milliseconds, for
+       * reconnect.
+       */
+      @ConfigAttributeSetter(name = MAX_WAIT_TIME_RECONNECT)
+      void setMaxWaitTimeForReconnect(int timeOut);
+
+      /**
+       * Returns the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, in milliseconds, for
+       * reconnect.
+       */
+      @ConfigAttributeGetter(name = MAX_WAIT_TIME_RECONNECT)
+      int getMaxWaitTimeForReconnect();
+
+      /**
+       * The name of the {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES} property.
+       */
+      @ConfigAttribute(type = Integer.class)
+      String MAX_NUM_RECONNECT_TRIES_NAME = MAX_NUM_RECONNECT_TRIES;
+
+      /**
+       * Default value for {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
+       */
+      int DEFAULT_MAX_NUM_RECONNECT_TRIES = 3;
+
+      /**
+       * Sets the {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
+       */
+      @ConfigAttributeSetter(name = MAX_NUM_RECONNECT_TRIES)
+      void setMaxNumReconnectTries(int tries);
+
+      /**
+       * Returns the value for {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
+       */
+      @ConfigAttributeGetter(name = MAX_NUM_RECONNECT_TRIES)
+      int getMaxNumReconnectTries();
+
+      // ------------------- Asynchronous Messaging Properties -------------------
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} property.
+       */
+      @ConfigAttributeGetter(name = ASYNC_DISTRIBUTION_TIMEOUT)
+      int getAsyncDistributionTimeout();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} property.
+       */
+      @ConfigAttributeSetter(name = ASYNC_DISTRIBUTION_TIMEOUT)
+      void setAsyncDistributionTimeout(int newValue);
+
+      /**
+       * The default value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} is
+       * <code>0</code>.
+       */
+      int DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT = 0;
+      /**
+       * The minimum value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} is
+       * <code>0</code>.
+       */
+      int MIN_ASYNC_DISTRIBUTION_TIMEOUT = 0;
+      /**
+       * The maximum value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} is
+       * <code>60000</code>.
+       */
+      int MAX_ASYNC_DISTRIBUTION_TIMEOUT = 60000;
+
+      /**
+       * The name of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} property
+       */
+      @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_DISTRIBUTION_TIMEOUT,
+          max = MAX_ASYNC_DISTRIBUTION_TIMEOUT)
+      String ASYNC_DISTRIBUTION_TIMEOUT_NAME = ASYNC_DISTRIBUTION_TIMEOUT;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property.
+       */
+      @ConfigAttributeGetter(name = ASYNC_QUEUE_TIMEOUT)
+      int getAsyncQueueTimeout();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property.
+       */
+      @ConfigAttributeSetter(name = ASYNC_QUEUE_TIMEOUT)
+      void setAsyncQueueTimeout(int newValue);
+
+      /**
+       * The default value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is <code>60000</code>.
+       */
+      int DEFAULT_ASYNC_QUEUE_TIMEOUT = 60000;
+      /**
+       * The minimum value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is <code>0</code>.
+       */
+      int MIN_ASYNC_QUEUE_TIMEOUT = 0;
+      /**
+       * The maximum value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is
+       * <code>86400000</code>.
+       */
+      int MAX_ASYNC_QUEUE_TIMEOUT = 86400000;
+      /**
+       * The name of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property
+       */
+      @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_QUEUE_TIMEOUT,
+          max = MAX_ASYNC_QUEUE_TIMEOUT)
+      String ASYNC_QUEUE_TIMEOUT_NAME = ASYNC_QUEUE_TIMEOUT;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.
+       */
+      @ConfigAttributeGetter(name = ASYNC_MAX_QUEUE_SIZE)
+      int getAsyncMaxQueueSize();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.
+       */
+      @ConfigAttributeSetter(name = ASYNC_MAX_QUEUE_SIZE)
+      void setAsyncMaxQueueSize(int newValue);
+
+      /**
+       * The default value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>8</code>.
+       */
+      int DEFAULT_ASYNC_MAX_QUEUE_SIZE = 8;
+      /**
+       * The minimum value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>0</code>.
+       */
+      int MIN_ASYNC_MAX_QUEUE_SIZE = 0;
+      /**
+       * The maximum value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>1024</code>.
+       */
+      int MAX_ASYNC_MAX_QUEUE_SIZE = 1024;
+
+      /**
+       * The name of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property
+       */
+      @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_MAX_QUEUE_SIZE,
+          max = MAX_ASYNC_MAX_QUEUE_SIZE)
+      String ASYNC_MAX_QUEUE_SIZE_NAME = ASYNC_MAX_QUEUE_SIZE;
+      /**
+       * @since GemFire 5.7
+       */
+      @ConfigAttribute(type = String.class)
+      String CLIENT_CONFLATION_PROP_NAME = CONFLATE_EVENTS;
+      /**
+       * @since GemFire 5.7
+       */
+      String CLIENT_CONFLATION_PROP_VALUE_DEFAULT = "server";
+      /**
+       * @since GemFire 5.7
+       */
+      String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
+      /**
+       * @since GemFire 5.7
+       */
+      String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
+
+      /**
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String DISTRIBUTED_TRANSACTIONS_NAME = DISTRIBUTED_TRANSACTIONS;
+      boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
+
+      @ConfigAttributeGetter(name = DISTRIBUTED_TRANSACTIONS)
+      boolean getDistributedTransactions();
+
+      @ConfigAttributeSetter(name = DISTRIBUTED_TRANSACTIONS)
+      void setDistributedTransactions(boolean value);
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#CONFLATE_EVENTS} property.
+       * 
+       * @since GemFire 5.7
+       */
+      @ConfigAttributeGetter(name = CONFLATE_EVENTS)
+      String getClientConflation();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#CONFLATE_EVENTS} property.
+       * 
+       * @since GemFire 5.7
+       */
+      @ConfigAttributeSetter(name = CONFLATE_EVENTS)
+      void setClientConflation(String clientConflation);
+      // -------------------------------------------------------------------------
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_ID} property.
+       */
+      @ConfigAttributeGetter(name = DURABLE_CLIENT_ID)
+      String getDurableClientId();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#DURABLE_CLIENT_ID} property.
+       */
+      @ConfigAttributeSetter(name = DURABLE_CLIENT_ID)
+      void setDurableClientId(String durableClientId);
+
+      /**
+       * The name of the {@link ConfigurationProperties#DURABLE_CLIENT_ID} property
+       */
+      @ConfigAttribute(type = String.class)
+      String DURABLE_CLIENT_ID_NAME = DURABLE_CLIENT_ID;
+
+      /**
+       * The default {@link ConfigurationProperties#DURABLE_CLIENT_ID}.
+       * <p>
+       * Actual value of this constant is <code>""</code>.
+       */
+      String DEFAULT_DURABLE_CLIENT_ID = "";
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property.
+       */
+      @ConfigAttributeGetter(name = DURABLE_CLIENT_TIMEOUT)
+      int getDurableClientTimeout();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property.
+       */
+      @ConfigAttributeSetter(name = DURABLE_CLIENT_TIMEOUT)
+      void setDurableClientTimeout(int durableClientTimeout);
+
+      /**
+       * The name of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property
+       */
+      @ConfigAttribute(type = Integer.class)
+      String DURABLE_CLIENT_TIMEOUT_NAME = DURABLE_CLIENT_TIMEOUT;
+
+      /**
+       * The default {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} in seconds.
+       * <p>
+       * Actual value of this constant is <code>"300"</code>.
+       */
+      int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
+
+      /**
+       * Returns user module name for client authentication initializer in
+       * {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT}
+       */
+      @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTH_INIT)
+      String getSecurityClientAuthInit();
+
+      /**
+       * Sets the user module name in {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT}
+       * property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTH_INIT)
+      void setSecurityClientAuthInit(String attValue);
+
+      /**
+       * The name of user defined method name for
+       * {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_CLIENT_AUTH_INIT_NAME = SECURITY_CLIENT_AUTH_INIT;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT} method name.
+       * <p>
+       * Actual value of this is in format <code>"jar file:module name"</code>.
+       */
+      String DEFAULT_SECURITY_CLIENT_AUTH_INIT = "";
+
+      /**
+       * Returns user module name authenticating client credentials in
+       * {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR}
+       */
+      @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTHENTICATOR)
+      String getSecurityClientAuthenticator();
+
+      /**
+       * Sets the user defined method name in
+       * {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR} property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTHENTICATOR)
+      void setSecurityClientAuthenticator(String attValue);
+
+      /**
+       * The name of factory method for {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR}
+       * property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_CLIENT_AUTHENTICATOR_NAME = SECURITY_CLIENT_AUTHENTICATOR;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR} method name.
+       * <p>
+       * Actual value of this is fully qualified <code>"method name"</code>.
+       */
+      String DEFAULT_SECURITY_CLIENT_AUTHENTICATOR = "";
+
+      /**
+       * Returns user defined class name authenticating client credentials in
+       * {@link ConfigurationProperties#SECURITY_MANAGER}
+       */
+      @ConfigAttributeGetter(name = SECURITY_MANAGER)
+      String getSecurityManager();
+
+      /**
+       * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_MANAGER} property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_MANAGER)
+      void setSecurityManager(String attValue);
+
+      /**
+       * The name of class for {@link ConfigurationProperties#SECURITY_MANAGER} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_MANAGER_NAME = SECURITY_MANAGER;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_MANAGER} class name.
+       * <p>
+       * Actual value of this is fully qualified <code>"class name"</code>.
+       */
+      String DEFAULT_SECURITY_MANAGER = "";
+
+      /**
+       * Returns user defined post processor name in
+       * {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
+       */
+      @ConfigAttributeGetter(name = SECURITY_POST_PROCESSOR)
+      String getPostProcessor();
+
+      /**
+       * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
+       * property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_POST_PROCESSOR)
+      void setPostProcessor(String attValue);
+
+      /**
+       * The name of class for {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_POST_PROCESSOR_NAME = SECURITY_POST_PROCESSOR;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} class name.
+       * <p>
+       * Actual value of this is fully qualified <code>"class name"</code>.
+       */
+      String DEFAULT_SECURITY_POST_PROCESSOR = "";
+
+      /**
+       * Returns name of algorithm to use for Diffie-Hellman key exchange
+       * {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}
+       */
+      @ConfigAttributeGetter(name = SECURITY_CLIENT_DHALGO)
+      String getSecurityClientDHAlgo();
+
+      /**
+       * Set the name of algorithm to use for Diffie-Hellman key exchange
+       * {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO} property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_CLIENT_DHALGO)
+      void setSecurityClientDHAlgo(String attValue);
+
+      /**
+       * Returns name of algorithm to use for Diffie-Hellman key exchange
+       * <a href="../DistributedSystem.html#security-udp-dhalgo">"security-udp-dhalgo"</a>
+       */
+      @ConfigAttributeGetter(name = SECURITY_UDP_DHALGO)
+      String getSecurityUDPDHAlgo();
+
+      /**
+       * Set the name of algorithm to use for Diffie-Hellman key exchange
+       * <a href="../DistributedSystem.html#security-udp-dhalgo">"security-udp-dhalgo"</a> property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_UDP_DHALGO)
+      void setSecurityUDPDHAlgo(String attValue);
+
+      /**
+       * The name of the Diffie-Hellman symmetric algorithm
+       * {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO} property.
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_CLIENT_DHALGO_NAME = SECURITY_CLIENT_DHALGO;
+
+      /**
+       * The name of the Diffie-Hellman symmetric algorithm "security-client-dhalgo" property.
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_UDP_DHALGO_NAME = SECURITY_UDP_DHALGO;
+
+      /**
+       * The default Diffie-Hellman symmetric algorithm name.
+       * <p>
+       * Actual value of this is one of the available symmetric algorithm names in JDK like "DES",
+       * "DESede", "AES", "Blowfish".
+       */
+      String DEFAULT_SECURITY_CLIENT_DHALGO = "";
+
+      /**
+       * The default Diffie-Hellman symmetric algorithm name.
+       * <p>
+       * Actual value of this is one of the available symmetric algorithm names in JDK like "DES",
+       * "DESede", "AES", "Blowfish".
+       */
+      String DEFAULT_SECURITY_UDP_DHALGO = "";
+
+      /**
+       * Returns user defined method name for peer authentication initializer in
+       * {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT}
+       */
+      @ConfigAttributeGetter(name = SECURITY_PEER_AUTH_INIT)
+      String getSecurityPeerAuthInit();
+
+      /**
+       * Sets the user module name in {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_PEER_AUTH_INIT)
+      void setSecurityPeerAuthInit(String attValue);
+
+      /**
+       * The name of user module for {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_PEER_AUTH_INIT_NAME = SECURITY_PEER_AUTH_INIT;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} method name.
+       * <p>
+       * Actual value of this is fully qualified <code>"method name"</code>.
+       */
+      String DEFAULT_SECURITY_PEER_AUTH_INIT = "";
+
+      /**
+       * Returns user defined method name authenticating peer's credentials in
+       * {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
+       */
+      @ConfigAttributeGetter(name = SECURITY_PEER_AUTHENTICATOR)
+      String getSecurityPeerAuthenticator();
+
+      /**
+       * Sets the user module name in {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
+       * property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_PEER_AUTHENTICATOR)
+      void setSecurityPeerAuthenticator(String attValue);
+
+      /**
+       * The name of user defined method for {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
+       * property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_PEER_AUTHENTICATOR_NAME = SECURITY_PEER_AUTHENTICATOR;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR} method.
+       * <p>
+       * Actual value of this is fully qualified <code>"method name"</code>.
+       */
+      String DEFAULT_SECURITY_PEER_AUTHENTICATOR = "";
+
+      /**
+       * Returns user module name authorizing client credentials in
+       * {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
+       */
+      @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR)
+      String getSecurityClientAccessor();
+
+      /**
+       * Sets the user defined method name in {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
+       * property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR)
+      void setSecurityClientAccessor(String attValue);
+
+      /**
+       * The name of the factory method for {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
+       * property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_CLIENT_ACCESSOR_NAME = SECURITY_CLIENT_ACCESSOR;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR} method name.
+       * <p>
+       * Actual value of this is fully qualified <code>"method name"</code>.
+       */
+      String DEFAULT_SECURITY_CLIENT_ACCESSOR = "";
+
+      /**
+       * Returns user module name authorizing client credentials in
+       * {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
+       */
+      @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR_PP)
+      String getSecurityClientAccessorPP();
+
+      /**
+       * Sets the user defined method name in
+       * {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP} property.
+       */
+      @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR_PP)
+      void setSecurityClientAccessorPP(String attValue);
+
+      /**
+       * The name of the factory method for {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
+       * property
+       */
+      @ConfigAttribute(type = String.class)
+      String SECURITY_CLIENT_ACCESSOR_PP_NAME = SECURITY_CLIENT_ACCESSOR_PP;
+
+      /**
+       * The default client post-operation {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
+       * method name.
+       * <p>
+       * Actual value of this is fully qualified <code>"method name"</code>.
+       */
+      String DEFAULT_SECURITY_CLIENT_ACCESSOR_PP = "";
+
+      /**
+       * Get the current log-level for {@link ConfigurationProperties#SECURITY_LOG_LEVEL}.
+       * 
+       * @return the current security log-level
+       */
+      @ConfigAttributeGetter(name = SECURITY_LOG_LEVEL)
+      int getSecurityLogLevel();
+
+      /**
+       * Set the log-level for {@link ConfigurationProperties#SECURITY_LOG_LEVEL}.
+       * 
+       * @param level the new security log-level
+       */
+      @ConfigAttributeSetter(name = SECURITY_LOG_LEVEL)
+      void setSecurityLogLevel(int level);
+
+      /**
+       * The name of {@link ConfigurationProperties#SECURITY_LOG_LEVEL} property that sets the log-level
+       * for security logger obtained using {@link DistributedSystem#getSecurityLogWriter()}
+       */
+      // type is String because the config file "config", "debug", "fine" etc, but the setter getter
+      // accepts int
+      @ConfigAttribute(type = String.class)
+      String SECURITY_LOG_LEVEL_NAME = SECURITY_LOG_LEVEL;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SECURITY_LOG_FILE} property
+       * 
+       * @return <code>null</code> if logging information goes to standard out
+       */
+      @ConfigAttributeGetter(name = SECURITY_LOG_FILE)
+      File getSecurityLogFile();
+
+      /**
+       * Sets the system's {@link ConfigurationProperties#SECURITY_LOG_FILE} containing security related
+       * messages.
+       * <p>
+       * Non-absolute log files are relative to the system directory.
+       * <p>
+       * The security log file can not be changed while the system is running.
+       * 
+       * @throws IllegalArgumentException if the specified value is not acceptable.
+       * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+       * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+       *         writing to the system's configuration file.
+       */
+      @ConfigAttributeSetter(name = SECURITY_LOG_FILE)
+      void setSecurityLogFile(File value);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SECURITY_LOG_FILE} property. This property is
+       * the path of the file where security related messages are logged.
+       */
+      @ConfigAttribute(type = File.class)
+      String SECURITY_LOG_FILE_NAME = SECURITY_LOG_FILE;
+
+      /**
+       * The default {@link ConfigurationProperties#SECURITY_LOG_FILE}.
+       * <p>
+       * *
+       * <p>
+       * Actual value of this constant is <code>""</code> which directs security log messages to the
+       * same place as the system log file.
+       */
+      File DEFAULT_SECURITY_LOG_FILE = new File("");
+
+      /**
+       * Get timeout for peer membership check when security is enabled.
+       * 
+       * @return Timeout in milliseconds.
+       */
+      @ConfigAttributeGetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
+      int getSecurityPeerMembershipTimeout();
+
+      /**
+       * Set timeout for peer membership check when security is enabled. The timeout must be less than
+       * peer handshake timeout.
+       * 
+       * @param attValue
+       */
+      @ConfigAttributeSetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
+      void setSecurityPeerMembershipTimeout(int attValue);
+
+      /**
+       * The default peer membership check timeout is 1 second.
+       */
+      int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 1000;
+
+      /**
+       * Max membership timeout must be less than max peer handshake timeout. Currently this is set to
+       * default handshake timeout of 60 seconds.
+       */
+      int MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 60000;
+
+      /**
+       * The name of the peer membership check timeout property
+       */
+      @ConfigAttribute(type = Integer.class, min = 0, max = MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT)
+      String SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT;
+
+      /**
+       * Returns all properties starting with {@link ConfigurationProperties#SECURITY_PREFIX}
+       */
+      Properties getSecurityProps();
+
+      /**
+       * Returns the value of security property {@link ConfigurationProperties#SECURITY_PREFIX} for an
+       * exact attribute name match.
+       */
+      String getSecurity(String attName);
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SECURITY_PREFIX} property.
+       */
+      void setSecurity(String attName, String attValue);
+
+      String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
+
+
+      /**
+       * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction
+       * with other <i>cluster-ssl-*</i> properties property <a name="cluster-ssl"/a>
+       * </p>
+       * <U>Description</U>: The cluster-ssl property prefix
+       */
+      @Deprecated
+      String CLUSTER_SSL_PREFIX = "cluster-ssl";
+
+      /**
+       * For the "custom-" prefixed properties
+       */
+      String USERDEFINED_PREFIX_NAME = "custom-";
+
+      /**
+       * For ssl keystore and trust store properties
+       */
+      String SSL_SYSTEM_PROPS_NAME = "javax.net.ssl";
+
+      String KEY_STORE_TYPE_NAME = ".keyStoreType";
+      String KEY_STORE_NAME = ".keyStore";
+      String KEY_STORE_PASSWORD_NAME = ".keyStorePassword";
+      String TRUST_STORE_NAME = ".trustStore";
+      String TRUST_STORE_PASSWORD_NAME = ".trustStorePassword";
+
+      /**
+       * Suffix for ssl keystore and trust store properties for JMX
+       */
+      String JMX_SSL_PROPS_SUFFIX = "-jmx";
+
+      /**
+       * For security properties starting with sysprop in gfsecurity.properties file
+       */
+      String SYS_PROP_NAME = "sysprop-";
+      /**
+       * The property decides whether to remove unresponsive client from the server.
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME = REMOVE_UNRESPONSIVE_CLIENT;
+
+      /**
+       * The default value of remove unresponsive client is false.
+       */
+      boolean DEFAULT_REMOVE_UNRESPONSIVE_CLIENT = false;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#REMOVE_UNRESPONSIVE_CLIENT} property.
+       * 
+       * @since GemFire 6.0
+       */
+      @ConfigAttributeGetter(name = REMOVE_UNRESPONSIVE_CLIENT)
+      boolean getRemoveUnresponsiveClient();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#REMOVE_UNRESPONSIVE_CLIENT} property.
+       * 
+       * @since GemFire 6.0
+       */
+      @ConfigAttributeSetter(name = REMOVE_UNRESPONSIVE_CLIENT)
+      void setRemoveUnresponsiveClient(boolean value);
+
+      /**
+       * @since GemFire 6.3
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String DELTA_PROPAGATION_PROP_NAME = DELTA_PROPAGATION;
+
+      boolean DEFAULT_DELTA_PROPAGATION = true;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#DELTA_PROPAGATION} property.
+       * 
+       * @since GemFire 6.3
+       */
+      @ConfigAttributeGetter(name = DELTA_PROPAGATION)
+      boolean getDeltaPropagation();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#DELTA_PROPAGATION} property.
+       * 
+       * @since GemFire 6.3
+       */
+      @ConfigAttributeSetter(name = DELTA_PROPAGATION)
+      void setDeltaPropagation(boolean value);
+
+      int MIN_DISTRIBUTED_SYSTEM_ID = -1;
+      int MAX_DISTRIBUTED_SYSTEM_ID = 255;
+      /**
+       * @since GemFire 6.6
+       */
+      @ConfigAttribute(type = Integer.class)
+      String DISTRIBUTED_SYSTEM_ID_NAME = DISTRIBUTED_SYSTEM_ID;
+      int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
+
+      /**
+       * @since GemFire 6.6
+       */
+      @ConfigAttributeSetter(name = DISTRIBUTED_SYSTEM_ID)
+      void setDistributedSystemId(int distributedSystemId);
+
+      /**
+       * @since GemFire 6.6
+       */
+      @ConfigAttributeGetter(name = DISTRIBUTED_SYSTEM_ID)
+      int getDistributedSystemId();
+
+      /**
+       * @since GemFire 6.6
+       */
+      @ConfigAttribute(type = String.class)
+      String REDUNDANCY_ZONE_NAME = REDUNDANCY_ZONE;
+      String DEFAULT_REDUNDANCY_ZONE = "";
+
+      /**
+       * @since GemFire 6.6
+       */
+      @ConfigAttributeSetter(name = REDUNDANCY_ZONE)
+      void setRedundancyZone(String redundancyZone);
+
+      /**
+       * @since GemFire 6.6
+       */
+      @ConfigAttributeGetter(name = REDUNDANCY_ZONE)
+      String getRedundancyZone();
+
+      /**
+       * @since GemFire 6.6.2
+       */
+      void setSSLProperty(String attName, String attValue);
+
+      /**
+       * @since GemFire 6.6.2
+       */
+      Properties getSSLProperties();
+
+      Properties getClusterSSLProperties();
+
+      /**
+       * @since GemFire 8.0
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
+       */
+      Properties getJmxSSLProperties();
+
+      /**
+       * @since GemFire 6.6
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String ENFORCE_UNIQUE_HOST_NAME = ENFORCE_UNIQUE_HOST;
+      /**
+       * Using the system property to set the default here to retain backwards compatibility with
+       * customers that are already using this system property.
+       */
+      boolean DEFAULT_ENFORCE_UNIQUE_HOST =
+          Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
+
+      @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST)
+      void setEnforceUniqueHost(boolean enforceUniqueHost);
+
+      @ConfigAttributeGetter(name = ENFORCE_UNIQUE_HOST)
+      boolean getEnforceUniqueHost();
+
+      Properties getUserDefinedProps();
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GROUPS} property
+       * <p>
+       * The default value is: {@link #DEFAULT_GROUPS}.
+       * 
+       * @return the value of the property
+       *
+       * @since GemFire 7.0
+       */
+      @ConfigAttributeGetter(name = GROUPS)
+      String getGroups();
+
+      /**
+       * Sets the {@link ConfigurationProperties#GROUPS} property.
+       * <p>
+       * The groups can not be changed while the system is running.
+       * 
+       * @throws IllegalArgumentException if the specified value is not acceptable.
+       * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+       * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+       *         writing to the system's configuration file.
+       * @since GemFire 7.0
+       */
+      @ConfigAttributeSetter(name = GROUPS)
+      void setGroups(String value);
+
+      /**
+       * The name of the {@link ConfigurationProperties#GROUPS} property
+       * 
+       * @since GemFire 7.0
+       */
+      @ConfigAttribute(type = String.class)
+      String GROUPS_NAME = GROUPS;
+      /**
+       * The default {@link ConfigurationProperties#GROUPS}.
+       * <p>
+       * Actual value of this constant is <code>""</code>.
+       * 
+       * @since GemFire 7.0
+       */
+      String DEFAULT_GROUPS = "";
+
+      /**
+       * Any cleanup required before closing the distributed system
+       */
+      void close();
+
+      @ConfigAttributeSetter(name = REMOTE_LOCATORS)
+      void setRemoteLocators(String locators);
+
+      @ConfigAttributeGetter(name = REMOTE_LOCATORS)
+      String getRemoteLocators();
+
+      /**
+       * The name of the {@link ConfigurationProperties#REMOTE_LOCATORS} property
+       */
+      @ConfigAttribute(type = String.class)
+      String REMOTE_LOCATORS_NAME = REMOTE_LOCATORS;
+      /**
+       * The default value of the {@link ConfigurationProperties#REMOTE_LOCATORS} property
+       */
+      String DEFAULT_REMOTE_LOCATORS = "";
+
+      @ConfigAttributeGetter(name = JMX_MANAGER)
+      boolean getJmxManager();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER)
+      void setJmxManager(boolean value);
+
+      @ConfigAttribute(type = Boolean.class)
+      String JMX_MANAGER_NAME = JMX_MANAGER;
+      boolean DEFAULT_JMX_MANAGER = false;
+
+      @ConfigAttributeGetter(name = JMX_MANAGER_START)
+      boolean getJmxManagerStart();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER_START)
+      void setJmxManagerStart(boolean value);
+
+      @ConfigAttribute(type = Boolean.class)
+      String JMX_MANAGER_START_NAME = JMX_MANAGER_START;
+      boolean DEFAULT_JMX_MANAGER_START = false;
+
+      @ConfigAttributeGetter(name = JMX_MANAGER_PORT)
+      int getJmxManagerPort();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER_PORT)
+      void setJmxManagerPort(int value);
+
+      @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+      String JMX_MANAGER_PORT_NAME = JMX_MANAGER_PORT;
+
+      int DEFAULT_JMX_MANAGER_PORT = 1099;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_ENABLED)
+      boolean getJmxManagerSSLEnabled();
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} state.
+       * <p>
+       * Actual value of this constant is <code>false</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
+       */
+      @Deprecated
+      boolean DEFAULT_JMX_MANAGER_SSL_ENABLED = false;
+
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String JMX_MANAGER_SSL_ENABLED_NAME = JMX_MANAGER_SSL_ENABLED;
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_ENABLED)
+      void setJmxManagerSSLEnabled(boolean enabled);
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = OFF_HEAP_MEMORY_SIZE)
+      String getOffHeapMemorySize();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = OFF_HEAP_MEMORY_SIZE)
+      void setOffHeapMemorySize(String value);
+
+      /**
+       * The name of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = String.class)
+      String OFF_HEAP_MEMORY_SIZE_NAME = OFF_HEAP_MEMORY_SIZE;
+      /**
+       * The default {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} value of <code>""</code>.
+       * 
+       * @since Geode 1.0
+       */
+      String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_PROTOCOLS)
+      String getJmxManagerSSLProtocols();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_PROTOCOLS)
+      void setJmxManagerSSLProtocols(String protocols);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
+       */
+      @Deprecated
+      String DEFAULT_JMX_MANAGER_SSL_PROTOCOLS = "any";
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_SSL_PROTOCOLS_NAME = JMX_MANAGER_SSL_PROTOCOLS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_CIPHERS)
+      String getJmxManagerSSLCiphers();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_CIPHERS)
+      void setJmxManagerSSLCiphers(String ciphers);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS}
+       */
+      @Deprecated
+      String DEFAULT_JMX_MANAGER_SSL_CIPHERS = "any";
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_SSL_CIPHERS_NAME = JMX_MANAGER_SSL_CIPHERS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
+      boolean getJmxManagerSSLRequireAuthentication();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
+      void setJmxManagerSSLRequireAuthentication(boolean enabled);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} value.
+       * <p>
+       * Actual value of this constant is <code>true</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      boolean DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = true;
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} property
+       * The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE)
+      String getJmxManagerSSLKeyStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE)
+      void setJmxManagerSSLKeyStore(String keyStore);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
+       */
+      @Deprecated
+      String DEFAULT_JMX_MANAGER_SSL_KEYSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_SSL_KEYSTORE_NAME = JMX_MANAGER_SSL_KEYSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
+      String getJmxManagerSSLKeyStoreType();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
+      void setJmxManagerSSLKeyStoreType(String keyStoreType);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @Deprecated
+      String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_TYPE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property The name
+       * of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = JMX_MANAGER_SSL_KEYSTORE_TYPE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
+      String getJmxManagerSSLKeyStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
+      void setJmxManagerSSLKeyStorePassword(String keyStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} property The
+       * name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
+       * propery
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME = JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
+      String getJmxManagerSSLTrustStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
+      void setJmxManagerSSLTrustStore(String trustStore);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
+       */
+      @Deprecated
+      String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+       */
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_SSL_TRUSTSTORE_NAME = JMX_MANAGER_SSL_TRUSTSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
+      String getJmxManagerSSLTrustStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
+      void setJmxManagerSSLTrustStorePassword(String trusStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} property
+       * The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
+
+      @ConfigAttributeGetter(name = JMX_MANAGER_BIND_ADDRESS)
+      String getJmxManagerBindAddress();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER_BIND_ADDRESS)
+      void setJmxManagerBindAddress(String value);
+
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_BIND_ADDRESS_NAME = JMX_MANAGER_BIND_ADDRESS;
+      String DEFAULT_JMX_MANAGER_BIND_ADDRESS = "";
+
+      @ConfigAttributeGetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
+      String getJmxManagerHostnameForClients();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
+      void setJmxManagerHostnameForClients(String value);
+
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME = JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
+      String DEFAULT_JMX_MANAGER_HOSTNAME_FOR_CLIENTS = "";
+
+      @ConfigAttributeGetter(name = JMX_MANAGER_PASSWORD_FILE)
+      String getJmxManagerPasswordFile();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER_PASSWORD_FILE)
+      void setJmxManagerPasswordFile(String value);
+
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_PASSWORD_FILE_NAME = JMX_MANAGER_PASSWORD_FILE;
+      String DEFAULT_JMX_MANAGER_PASSWORD_FILE = "";
+
+      @ConfigAttributeGetter(name = JMX_MANAGER_ACCESS_FILE)
+      String getJmxManagerAccessFile();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER_ACCESS_FILE)
+      void setJmxManagerAccessFile(String value);
+
+      @ConfigAttribute(type = String.class)
+      String JMX_MANAGER_ACCESS_FILE_NAME = JMX_MANAGER_ACCESS_FILE;
+      String DEFAULT_JMX_MANAGER_ACCESS_FILE = "";
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
+       * 
+       * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
+       */
+      @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT)
+      int getJmxManagerHttpPort();
+
+      /**
+       * Set the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for jmx-manager.
+       * <p>
+       * Set the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for
+       * jmx-manager.
+       * 
+       * @param value the port number for jmx-manager HTTP service
+       *
+       * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.
+       */
+      @ConfigAttributeSetter(name = JMX_MANAGER_HTTP_PORT)
+      void setJmxManagerHttpPort(int value);
+
+      /**
+       * The name of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
+       * <p>
+       * The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
+       * 
+       * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
+       */
+      @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+      String JMX_MANAGER_HTTP_PORT_NAME = JMX_MANAGER_HTTP_PORT;
+
+      /**
+       * The default value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
+       * Current value is a <code>7070</code>
+       * 
+       * @deprecated as of 8.0 use {@link #DEFAULT_HTTP_SERVICE_PORT} instead.
+       */
+      int DEFAULT_JMX_MANAGER_HTTP_PORT = 7070;
+
+      @ConfigAttributeGetter(name = JMX_MANAGER_UPDATE_RATE)
+      int getJmxManagerUpdateRate();
+
+      @ConfigAttributeSetter(name = JMX_MANAGER_UPDATE_RATE)
+      void setJmxManagerUpdateRate(int value);
+
+      int DEFAULT_JMX_MANAGER_UPDATE_RATE = 2000;
+      int MIN_JMX_MANAGER_UPDATE_RATE = 1000;
+      int MAX_JMX_MANAGER_UPDATE_RATE = 60000 * 5;
+      @ConfigAttribute(type = Integer.class, min = MIN_JMX_MANAGER_UPDATE_RATE,
+          max = MAX_JMX_MANAGER_UPDATE_RATE)
+      String JMX_MANAGER_UPDATE_RATE_NAME = JMX_MANAGER_UPDATE_RATE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PORT} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PORT} property
+       * 
+       * @return the port on which GemFireMemcachedServer should be started
+       *
+       * @since GemFire 7.0
+       */
+      @ConfigAttributeGetter(name = MEMCACHED_PORT)
+      int getMemcachedPort();
+
+      @ConfigAttributeSetter(name = MEMCACHED_PORT)
+      void setMemcachedPort(int value);
+
+      @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+      String MEMCACHED_PORT_NAME = MEMCACHED_PORT;
+      int DEFAULT_MEMCACHED_PORT = 0;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PROTOCOL} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PROTOCOL} property
+       * 
+       * @return the protocol for GemFireMemcachedServer
+       *
+       * @since GemFire 7.0
+       */
+      @ConfigAttributeGetter(name = MEMCACHED_PROTOCOL)
+      String getMemcachedProtocol();
+
+      @ConfigAttributeSetter(name = MEMCACHED_PROTOCOL)
+      void setMemcachedProtocol(String protocol);
+
+      @ConfigAttribute(type = String.class)
+      String MEMCACHED_PROTOCOL_NAME = MEMCACHED_PROTOCOL;
+      String DEFAULT_MEMCACHED_PROTOCOL = GemFireMemcachedServer.Protocol.ASCII.name();
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
+       * 
+       * @return the bind address for GemFireMemcachedServer
+       *
+       * @since GemFire 7.0
+       */
+      @ConfigAttributeGetter(name = MEMCACHED_BIND_ADDRESS)
+      String getMemcachedBindAddress();
+
+      @ConfigAttributeSetter(name = MEMCACHED_BIND_ADDRESS)
+      void setMemcachedBindAddress(String bindAddress);
+
+      @ConfigAttribute(type = String.class)
+      String MEMCACHED_BIND_ADDRESS_NAME = MEMCACHED_BIND_ADDRESS;
+      String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
+       * 
+       * @return the port on which GeodeRedisServer should be started
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeGetter(name = REDIS_PORT)
+      int getRedisPort();
+
+      @ConfigAttributeSetter(name = REDIS_PORT)
+      void setRedisPort(int value);
+
+      @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+      String REDIS_PORT_NAME = REDIS_PORT;
+      int DEFAULT_REDIS_PORT = 0;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_BIND_ADDRESS} property
+       * 
+       * @return the bind address for GemFireRedisServer
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeGetter(name = REDIS_BIND_ADDRESS)
+      String getRedisBindAddress();
+
+      @ConfigAttributeSetter(name = REDIS_BIND_ADDRESS)
+      void setRedisBindAddress(String bindAddress);
+
+      @ConfigAttribute(type = String.class)
+      String REDIS_BIND_ADDRESS_NAME = REDIS_BIND_ADDRESS;
+      String DEFAULT_REDIS_BIND_ADDRESS = "";
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_PASSWORD} property
+       * 
+       * @return the authentication password for GemFireRedisServer
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeGetter(name = REDIS_PASSWORD)
+      String getRedisPassword();
+
+      @ConfigAttributeSetter(name = REDIS_PASSWORD)
+      void setRedisPassword(String password);
+
+      @ConfigAttribute(type = String.class)
+      String REDIS_PASSWORD_NAME = REDIS_PASSWORD;
+      String DEFAULT_REDIS_PASSWORD = "";
+
+      // Added for the HTTP service
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} property
+       * 
+       * @return the HTTP service port
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeGetter(name = HTTP_SERVICE_PORT)
+      int getHttpServicePort();
+
+      /**
+       * Set the {@link ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP service.
+       * <p>
+       * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP
+       * service.
+       * 
+       * @param value the port number for HTTP service
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeSetter(name = HTTP_SERVICE_PORT)
+      void setHttpServicePort(int value);
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
+       * <p>
+       * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT}
+       * property
+       * 
+       * @since GemFire 8.0
+       */
+      @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+      String HTTP_SERVICE_PORT_NAME = HTTP_SERVICE_PORT;
+
+      /**
+       * The default value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property. Current
+       * value is a <code>7070</code>
+       * 
+       * @since GemFire 8.0
+       */
+      int DEFAULT_HTTP_SERVICE_PORT = 7070;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
+       * 
+       * @return the bind-address for HTTP service
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeGetter(name = HTTP_SERVICE_BIND_ADDRESS)
+      String getHttpServiceBindAddress();
+
+      /**
+       * Set the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} for HTTP service.
+       * <p>
+       * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS}
+       * for HTTP service.
+       * 
+       * @param value the bind-address for HTTP service
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeSetter(name = HTTP_SERVICE_BIND_ADDRESS)
+      void setHttpServiceBindAddress(String value);
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
+       * 
+       * @since GemFire 8.0
+       */
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_BIND_ADDRESS_NAME = HTTP_SERVICE_BIND_ADDRESS;
+
+      /**
+       * The default value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property.
+       * Current value is an empty string <code>""</code>
+       * 
+       * @since GemFire 8.0
+       */
+      String DEFAULT_HTTP_SERVICE_BIND_ADDRESS = "";
+
+      // Added for HTTP Service SSL
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ENABLED)
+      boolean getHttpServiceSSLEnabled();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ENABLED)
+      void setHttpServiceSSLEnabled(boolean httpServiceSSLEnabled);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} state.
+       * <p>
+       * Actual value of this constant is <code>false</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
+       */
+      @Deprecated
+      boolean DEFAULT_HTTP_SERVICE_SSL_ENABLED = false;
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String HTTP_SERVICE_SSL_ENABLED_NAME = HTTP_SERVICE_SSL_ENABLED;
+
+      /**
+       * Returns the value of the
+       * {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
+      boolean getHttpServiceSSLRequireAuthentication();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
+      void setHttpServiceSSLRequireAuthentication(boolean httpServiceSSLRequireAuthentication);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} value.
+       * <p>
+       * Actual value of this constant is <code>true</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      boolean DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = false;
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
+       * property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
+      String getHttpServiceSSLProtocols();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
+      void setHttpServiceSSLProtocols(String protocols);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
+       */
+      @Deprecated
+      String DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS = "any";
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_PROTOCOLS_NAME = HTTP_SERVICE_SSL_PROTOCOLS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_CIPHERS)
+      String getHttpServiceSSLCiphers();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_CIPHERS)
+      void setHttpServiceSSLCiphers(String ciphers);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS}
+       */
+      @Deprecated
+      String DEFAULT_HTTP_SERVICE_SSL_CIPHERS = "any";
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_CIPHERS_NAME = HTTP_SERVICE_SSL_CIPHERS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE)
+      String getHttpServiceSSLKeyStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE)
+      void setHttpServiceSSLKeyStore(String keyStore);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
+       */
+      @Deprecated
+      String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_KEYSTORE_NAME = HTTP_SERVICE_SSL_KEYSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
+      String getHttpServiceSSLKeyStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
+      void setHttpServiceSSLKeyStorePassword(String keyStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property The
+       * name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
+      String getHttpServiceSSLKeyStoreType();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
+       */
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
+      void setHttpServiceSSLKeyStoreType(String keyStoreType);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @Deprecated
+      String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_TYPE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property The
+       * name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME = HTTP_SERVICE_SSL_KEYSTORE_TYPE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
+      String getHttpServiceSSLTrustStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
+      void setHttpServiceSSLTrustStore(String trustStore);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
+       */
+      @Deprecated
+      String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property The name
+       * of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_TRUSTSTORE_NAME = HTTP_SERVICE_SSL_TRUSTSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
+      String getHttpServiceSSLTrustStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
+      void setHttpServiceSSLTrustStorePassword(String trustStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
+       * The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
+
+      /**
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
+       */
+      @Deprecated
+      Properties getHttpServiceSSLProperties();
+
+      // Added for API REST
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#START_DEV_REST_API} property
+       * <p>
+       * Returns the value of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} property
+       * 
+       * @return the value of the property
+       *
+       * @since GemFire 8.0
+       */
+
+      @ConfigAttributeGetter(name = START_DEV_REST_API)
+      boolean getStartDevRestApi();
+
+      /**
+       * Set the {@link ConfigurationProperties#START_DEV_REST_API} for HTTP service.
+       * <p>
+       * Set the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} for
+       * HTTP service.
+       * 
+       * @param value for the property
+       *
+       * @since GemFire 8.0
+       */
+      @ConfigAttributeSetter(name = START_DEV_REST_API)
+      void setStartDevRestApi(boolean value);
+
+      /**
+       * The name of the {@link ConfigurationProperties#START_DEV_REST_API} property
+       * <p>
+       * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API}
+       * property
+       * 
+       * @since GemFire 8.0
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String START_DEV_REST_API_NAME = START_DEV_REST_API;
+
+      /**
+       * The default value of the {@link ConfigurationProperties#START_DEV_REST_API} property. Current
+       * value is <code>"false"</code>
+       * 
+       * @since GemFire 8.0
+       */
+      boolean DEFAULT_START_DEV_REST_API = false;
+
+      /**
+       * The name of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
+       * 
+       * @since GemFire 8.0
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String DISABLE_AUTO_RECONNECT_NAME = DISABLE_AUTO_RECONNECT;
+
+      /**
+       * The default value of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
+       */
+      boolean DEFAULT_DISABLE_AUTO_RECONNECT = false;
+
+      /**
+       * Gets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
+       */
+      @ConfigAttributeGetter(name = DISABLE_AUTO_RECONNECT)
+      boolean getDisableAutoReconnect();
+
+      /**
+       * Sets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
+       * 
+       * @param value the new setting
+       */
+      @ConfigAttributeSetter(name = DISABLE_AUTO_RECONNECT)
+      void setDisableAutoReconnect(boolean value);
+
+      /**
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
+       */
+      @Deprecated
+      Properties getServerSSLProperties();
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_ENABLED)
+      boolean getServerSSLEnabled();
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_ENABLED} state.
+       * <p>
+       * Actual value of this constant is <code>false</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
+       */
+      @Deprecated
+      boolean DEFAULT_SERVER_SSL_ENABLED = false;
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String SERVER_SSL_ENABLED_NAME = SERVER_SSL_ENABLED;
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_ENABLED)
+      void setServerSSLEnabled(boolean enabled);
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_PROTOCOLS)
+      String getServerSSLProtocols();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property.
+       */
+      @ConfigAttributeSetter(name = SERVER_SSL_PROTOCOLS)
+      void setServerSSLProtocols(String protocols);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
+       */
+      @Deprecated
+      String DEFAULT_SERVER_SSL_PROTOCOLS = "any";
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_PROTOCOLS_NAME = SERVER_SSL_PROTOCOLS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()} 
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_CIPHERS)
+      String getServerSSLCiphers();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_CIPHERS)
+      void setServerSSLCiphers(String ciphers);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_CIPHERS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
+       */
+      @Deprecated
+      String DEFAULT_SERVER_SSL_CIPHERS = "any";
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_CIPHERS} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_CIPHERS_NAME = SERVER_SSL_CIPHERS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()} 
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
+      boolean getServerSSLRequireAuthentication();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)} 
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
+      void setServerSSLRequireAuthentication(boolean enabled);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} value.
+       * <p>
+       * Actual value of this constant is <code>true</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      boolean DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION = true;
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property The
+       * name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String SERVER_SSL_REQUIRE_AUTHENTICATION_NAME = SERVER_SSL_REQUIRE_AUTHENTICATION;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE)
+      String getServerSSLKeyStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE)
+      void setServerSSLKeyStore(String keyStore);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
+       */
+      @Deprecated
+      String DEFAULT_SERVER_SSL_KEYSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_KEYSTORE_NAME = SERVER_SSL_KEYSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_TYPE)
+      String getServerSSLKeyStoreType();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_TYPE)
+      void setServerSSLKeyStoreType(String keyStoreType);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @Deprecated
+      String DEFAULT_SERVER_SSL_KEYSTORE_TYPE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_KEYSTORE_TYPE_NAME = SERVER_SSL_KEYSTORE_TYPE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
+      String getServerSSLKeyStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
+      void setServerSSLKeyStorePassword(String keyStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_SERVER_SSL_KEYSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property The name
+       * of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_KEYSTORE_PASSWORD_NAME = SERVER_SSL_KEYSTORE_PASSWORD;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE)
+      String getServerSSLTrustStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setServerSSLTrustStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE)
+      void setServerSSLTrustStore(String trustStore);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
+       */
+      String DEFAULT_SERVER_SSL_TRUSTSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_TRUSTSTORE_NAME = SERVER_SSL_TRUSTSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
+      String getServerSSLTrustStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
+      void setServerSSLTrustStorePassword(String trusStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property The
+       * name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_TRUSTSTORE_PASSWORD_NAME = SERVER_SSL_TRUSTSTORE_PASSWORD;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_ENABLED)
+      boolean getGatewaySSLEnabled();
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} state.
+       * <p>
+       * Actual value of this constant is <code>false</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
+       */
+      @Deprecated
+      boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_ENABLED} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String GATEWAY_SSL_ENABLED_NAME = GATEWAY_SSL_ENABLED;
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_ENABLED)
+      void setGatewaySSLEnabled(boolean enabled);
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_PROTOCOLS)
+      String getGatewaySSLProtocols();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_PROTOCOLS)
+      void setGatewaySSLProtocols(String protocols);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
+       */
+      String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_PROTOCOLS_NAME = GATEWAY_SSL_PROTOCOLS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()} 
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_CIPHERS)
+      String getGatewaySSLCiphers();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_CIPHERS)
+      void setGatewaySSLCiphers(String ciphers);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} value.
+       * <p>
+       * Actual value of this constant is <code>any</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
+       */
+      String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_CIPHERS_NAME = GATEWAY_SSL_CIPHERS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
+      boolean getGatewaySSLRequireAuthentication();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setGatewaySSLRequireAuthentication(boolean)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
+      void setGatewaySSLRequireAuthentication(boolean enabled);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} value.
+       * <p>
+       * Actual value of this constant is <code>true</code>.
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      boolean DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION = true;
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property The
+       * name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+       */
+      @Deprecated
+      @ConfigAttribute(type = Boolean.class)
+      String GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME = GATEWAY_SSL_REQUIRE_AUTHENTICATION;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE)
+      String getGatewaySSLKeyStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE)
+      void setGatewaySSLKeyStore(String keyStore);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
+       */
+      @Deprecated
+      String DEFAULT_GATEWAY_SSL_KEYSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_KEYSTORE_NAME = GATEWAY_SSL_KEYSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
+      String getGatewaySSLKeyStoreType();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
+      void setGatewaySSLKeyStoreType(String keyStoreType);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @Deprecated
+      String DEFAULT_GATEWAY_SSL_KEYSTORE_TYPE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property The name of
+       * the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_KEYSTORE_TYPE_NAME = GATEWAY_SSL_KEYSTORE_TYPE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
+      String getGatewaySSLKeyStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
+      void setGatewaySSLKeyStorePassword(String keyStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_GATEWAY_SSL_KEYSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property The name
+       * of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_KEYSTORE_PASSWORD_NAME = GATEWAY_SSL_KEYSTORE_PASSWORD;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE)
+      String getGatewaySSLTrustStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE)
+      void setGatewaySSLTrustStore(String trustStore);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
+       */
+      @Deprecated
+      String DEFAULT_GATEWAY_SSL_TRUSTSTORE = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property The name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_TRUSTSTORE_NAME = GATEWAY_SSL_TRUSTSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
+       * property.
+       * 
+       * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
+       */
+      @Deprecated
+      @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
+      String getGatewaySSLTrustStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property.
+       * 
+       * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
+       */
+      @Deprecated
+      @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
+      void setGatewaySSLTrustStorePassword(String trusStorePassword);
+
+      /**
+       * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} value.
+       * <p>
+       * Actual value of this constant is "".
+       * 
+       * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      String DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property The
+       * name of the
+       * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
+       * property
+       * 
+       * @deprecated Geode 1.0 use
+       *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+       */
+      @Deprecated
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME = GATEWAY_SSL_TRUSTSTORE_PASSWORD;
+
+      /**
+       * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
+       */
+      @Deprecated
+      Properties getGatewaySSLProperties();
+
+      ConfigSource getConfigSource(String attName);
+
+      /**
+       * The name of the {@link ConfigurationProperties#LOCK_MEMORY} property. Used to cause pages to be
+       * locked into memory, thereby preventing them from being swapped to disk.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String LOCK_MEMORY_NAME = LOCK_MEMORY;
+      boolean DEFAULT_LOCK_MEMORY = false;
+
+      /**
+       * Gets the value of {@link ConfigurationProperties#LOCK_MEMORY}
+       * <p>
+       * Gets the value of {@link org.apache.geode.distributed.ConfigurationProperties#LOCK_MEMORY}
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = LOCK_MEMORY)
+      boolean getLockMemory();
+
+      /**
+       * Set the value of {@link ConfigurationProperties#LOCK_MEMORY}
+       * 
+       * @param value the new setting
+       *
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = LOCK_MEMORY)
+      void setLockMemory(boolean value);
+
+      @ConfigAttribute(type = String.class)
+      String SECURITY_SHIRO_INIT_NAME = SECURITY_SHIRO_INIT;
+
+      @ConfigAttributeSetter(name = SECURITY_SHIRO_INIT)
+      void setShiroInit(String value);
+
+      @ConfigAttributeGetter(name = SECURITY_SHIRO_INIT)
+      String getShiroInit();
+
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = SSL_CLUSTER_ALIAS)
+      String getClusterSSLAlias();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = SSL_CLUSTER_ALIAS)
+      void setClusterSSLAlias(String alias);
+
+      /**
+       * The Default Cluster SSL alias
+       * 
+       * @since Geode 1.0
+       */
+      String DEFAULT_SSL_ALIAS = "";
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = String.class)
+      String CLUSTER_SSL_ALIAS_NAME = SSL_CLUSTER_ALIAS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = SSL_LOCATOR_ALIAS)
+      String getLocatorSSLAlias();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = SSL_LOCATOR_ALIAS)
+      void setLocatorSSLAlias(String alias);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = String.class)
+      String LOCATOR_SSL_ALIAS_NAME = SSL_LOCATOR_ALIAS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = SSL_GATEWAY_ALIAS)
+      String getGatewaySSLAlias();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = SSL_GATEWAY_ALIAS)
+      void setGatewaySSLAlias(String alias);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = String.class)
+      String GATEWAY_SSL_ALIAS_NAME = SSL_GATEWAY_ALIAS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = SSL_WEB_ALIAS)
+      String getHTTPServiceSSLAlias();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_WEB_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = SSL_WEB_ALIAS)
+      void setHTTPServiceSSLAlias(String alias);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_WEB_ALIAS} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = String.class)
+      String HTTP_SERVICE_SSL_ALIAS_NAME = SSL_WEB_ALIAS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_JMX_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = SSL_JMX_ALIAS)
+      String getJMXSSLAlias();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_JMX_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = SSL_JMX_ALIAS)
+      void setJMXSSLAlias(String alias);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_JMX_ALIAS} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = String.class)
+      String JMX_SSL_ALIAS_NAME = SSL_JMX_ALIAS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_SERVER_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = SSL_SERVER_ALIAS)
+      String getServerSSLAlias();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_SERVER_ALIAS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = SSL_SERVER_ALIAS)
+      void setServerSSLAlias(String alias);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_SERVER_ALIAS} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = String.class)
+      String SERVER_SSL_ALIAS_NAME = SSL_SERVER_ALIAS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeGetter(name = SSL_ENABLED_COMPONENTS)
+      SecurableCommunicationChannel[] getSecurableCommunicationChannels();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property.
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttributeSetter(name = SSL_ENABLED_COMPONENTS)
+      void setSecurableCommunicationChannels(SecurableCommunicationChannel[] sslEnabledComponents);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
+       * 
+       * @since Geode 1.0
+       */
+      @ConfigAttribute(type = SecurableCommunicationChannel[].class)
+      String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
+
+      /**
+       * The default ssl enabled components
+       * 
+       * @since Geode 1.0
+       */
+      SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
+          new SecurableCommunicationChannel[] {};
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS} property.
+       */
+      @ConfigAttributeGetter(name = SSL_PROTOCOLS)
+      String getSSLProtocols();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_PROTOCOLS} property.
+       */
+      @ConfigAttributeSetter(name = SSL_PROTOCOLS)
+      void setSSLProtocols(String protocols);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_PROTOCOLS} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_CIPHERS} property.
+       */
+      @ConfigAttributeGetter(name = SSL_CIPHERS)
+      String getSSLCiphers();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_CIPHERS} property.
+       */
+      @ConfigAttributeSetter(name = SSL_CIPHERS)
+      void setSSLCiphers(String ciphers);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_CIPHERS} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_CIPHERS_NAME = SSL_CIPHERS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property.
+       */
+      @ConfigAttributeGetter(name = SSL_REQUIRE_AUTHENTICATION)
+      boolean getSSLRequireAuthentication();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property.
+       */
+      @ConfigAttributeSetter(name = SSL_REQUIRE_AUTHENTICATION)
+      void setSSLRequireAuthentication(boolean enabled);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String SSL_REQUIRE_AUTHENTICATION_NAME = SSL_REQUIRE_AUTHENTICATION;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE} property.
+       */
+      @ConfigAttributeGetter(name = SSL_KEYSTORE)
+      String getSSLKeyStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE} property.
+       */
+      @ConfigAttributeSetter(name = SSL_KEYSTORE)
+      void setSSLKeyStore(String keyStore);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_KEYSTORE} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_KEYSTORE_NAME = SSL_KEYSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE} property.
+       */
+      @ConfigAttributeGetter(name = SSL_KEYSTORE_TYPE)
+      String getSSLKeyStoreType();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE} property.
+       */
+      @ConfigAttributeSetter(name = SSL_KEYSTORE_TYPE)
+      void setSSLKeyStoreType(String keyStoreType);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_KEYSTORE_TYPE_NAME = SSL_KEYSTORE_TYPE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD} property.
+       */
+      @ConfigAttributeGetter(name = SSL_KEYSTORE_PASSWORD)
+      String getSSLKeyStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD} property.
+       */
+      @ConfigAttributeSetter(name = SSL_KEYSTORE_PASSWORD)
+      void setSSLKeyStorePassword(String keyStorePassword);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_KEYSTORE_PASSWORD_NAME = SSL_KEYSTORE_PASSWORD;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE} property.
+       */
+      @ConfigAttributeGetter(name = SSL_TRUSTSTORE)
+      String getSSLTrustStore();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE} property.
+       */
+      @ConfigAttributeSetter(name = SSL_TRUSTSTORE)
+      void setSSLTrustStore(String trustStore);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_TRUSTSTORE} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_TRUSTSTORE_NAME = SSL_TRUSTSTORE;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS} property.
+       */
+      @ConfigAttributeGetter(name = SSL_DEFAULT_ALIAS)
+      String getSSLDefaultAlias();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS} property.
+       */
+      @ConfigAttributeSetter(name = SSL_DEFAULT_ALIAS)
+      void setSSLDefaultAlias(String sslDefaultAlias);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_DEFAULT_ALIAS_NAME = SSL_DEFAULT_ALIAS;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD} property.
+       */
+      @ConfigAttributeGetter(name = SSL_TRUSTSTORE_PASSWORD)
+      String getSSLTrustStorePassword();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD} property.
+       */
+      @ConfigAttributeSetter(name = SSL_TRUSTSTORE_PASSWORD)
+      void setSSLTrustStorePassword(String trustStorePassword);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD} property
+       */
+      @ConfigAttribute(type = String.class)
+      String SSL_TRUSTSTORE_PASSWORD_NAME = SSL_TRUSTSTORE_PASSWORD;
+
+      /**
+       * Returns the value of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}
+       * property.
+       */
+      @ConfigAttributeGetter(name = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION)
+      boolean getSSLWebRequireAuthentication();
+
+      /**
+       * Sets the value of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}
+       * property.
+       */
+      @ConfigAttributeSetter(name = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION)
+      void setSSLWebRequireAuthentication(boolean requiresAuthentication);
+
+      /**
+       * The name of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION} property
+       */
+      @ConfigAttribute(type = Boolean.class)
+      String SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION_NAME = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
+
+      /**
+       * The default value for http service ssl mutual authentication
+       */
+      boolean DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = false;
+
+      // *************** Initializers to gather all the annotations in this class
+      // ************************
+
+      Map<String, ConfigAttribute> attributes = new HashMap<>();
+      Map<String, Method> setters = new HashMap<>();
+      Map<String, Method> getters = new HashMap<>();
+      String[] dcValidAttributeNames = init();
+
+      static String[] init() {
+        List<String> atts = new ArrayList<>();
+        for (Field field : DistributionConfig.class.getDeclaredFields()) {
+          if (field.isAnnotationPresent(ConfigAttribute.class)) {
+            try {
+              atts.add((String) field.get(null));
+              attributes.put((String) field.get(null), field.getAnnotation(ConfigAttribute.class));
+            } catch (IllegalAccessException e) {
+              e.printStackTrace();
+            }
+          }
         }
-      }
-    }
 
-    for (Method method : DistributionConfig.class.getDeclaredMethods()) {
-      if (method.isAnnotationPresent(ConfigAttributeGetter.class)) {
-        ConfigAttributeGetter getter = method.getAnnotation(ConfigAttributeGetter.class);
-        getters.put(getter.name(), method);
-      } else if (method.isAnnotationPresent(ConfigAttributeSetter.class)) {
-        ConfigAttributeSetter setter = method.getAnnotation(ConfigAttributeSetter.class);
-        setters.put(setter.name(), method);
+        for (Method method : DistributionConfig.class.getDeclaredMethods()) {
+          if (method.isAnnotationPresent(ConfigAttributeGetter.class)) {
+            ConfigAttributeGetter getter = method.getAnnotation(ConfigAttributeGetter.class);
+            getters.put(getter.name(), method);
+          } else if (method.isAnnotationPresent(ConfigAttributeSetter.class)) {
+            ConfigAttributeSetter setter = method.getAnnotation(ConfigAttributeSetter.class);
+            setters.put(setter.name(), method);
+          }
+        }
+        Collections.sort(atts);
+        return atts.toArray(new String[atts.size()]);
       }
-    }
-    Collections.sort(atts);
-    return atts.toArray(new String[atts.size()]);
-  }
 
 }
