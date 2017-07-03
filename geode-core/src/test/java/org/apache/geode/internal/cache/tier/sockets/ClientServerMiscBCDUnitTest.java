@@ -18,9 +18,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
@@ -31,18 +47,6 @@ import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.awaitility.Awaitility;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, ClientServerTest.class, BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
@@ -98,6 +102,112 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   }
 
   @Test
+  public void testSubscriptionWithMixedServersAndNewPeerFeed() throws Exception {
+    doTestSubscriptionWithMixedServersAndPeerFeed(VersionManager.CURRENT_VERSION, true);
+  }
+
+  @Test
+  public void testSubscriptionWithMixedServersAndOldPeerFeed() throws Exception {
+    doTestSubscriptionWithMixedServersAndPeerFeed(testVersion, true);
+  }
+
+  @Test
+  public void testSubscriptionWithMixedServersAndOldClientFeed() throws Exception {
+    doTestSubscriptionWithMixedServersAndPeerFeed(testVersion, false);
+  }
+
+  private void doTestSubscriptionWithMixedServersAndPeerFeed(String version,
+      boolean usePeerForFeed) {
+    server1 = Host.getHost(0).getVM(testVersion, 2);
+    server2 = Host.getHost(0).getVM(3);
+    VM server3 = Host.getHost(0).getVM(4);
+    VM interestClient = Host.getHost(0).getVM(testVersion, 0);
+    VM feeder = Host.getHost(0).getVM(version, 1);
+
+    // start servers first
+    int server1Port = initServerCache(true);
+
+    int server2Port = initServerCache2(true);
+
+    int server3Port = server3.invoke(() -> createServerCache(true, getMaxThreads(), false));
+
+    System.out.println("old server is vm 2 and new server is vm 3");
+    System.out
+        .println("old server port is " + server1Port + " and new server port is " + server2Port);
+
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    interestClient.invoke("create interestClient cache", () -> {
+      createClientCache(hostname, 300000, false, server1Port, server2Port, server3Port);
+      populateCache();
+      registerInterest();
+    });
+
+    if (!usePeerForFeed) {
+      feeder.invoke("create client cache for feed", () -> {
+        Pool ignore = createClientCache(hostname, server1Port);
+      });
+    }
+    feeder.invoke("putting data in feeder", () -> putForClient());
+
+    // interestClient will receive feeder's updates asynchronously
+    interestClient.invoke("verification 1", () -> {
+      Region r2 = getCache().getRegion(REGION_NAME2);
+      MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> verifier.eventReceived);
+      verifier.reset();
+    });
+
+    server1.invoke("shutdown old server", () -> {
+      getCache().getDistributedSystem().disconnect();
+    });
+
+    server2.invoke("wait for failover queue to drain", () -> {
+      CacheClientProxy proxy =
+          CacheClientNotifier.getInstance().getClientProxies().iterator().next();
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        proxy.getHARegionQueue().isEmpty();
+      });
+    });
+
+    // the client should now get duplicate events from the current-version server
+    interestClient.invoke("verification 2", () -> {
+      Cache cache = getCache();
+      Region r2 = cache.getRegion(REGION_NAME2);
+      MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
+      assertFalse(verifier.eventReceived); // no duplicate events should have arrived
+      PoolImpl pool = (PoolImpl) PoolManager.find("ClientServerMiscDUnitTestPool");
+
+      Map seqMap = pool.getThreadIdToSequenceIdMap();
+      assertEquals(3, seqMap.size()); // one for each server and one for the feed
+      verifier.reset();
+    });
+
+    server2.invoke("shutdown new server", () -> {
+      getCache().getDistributedSystem().disconnect();
+    });
+
+    server3.invoke("wait for failover queue to drain", () -> {
+      CacheClientProxy proxy =
+          CacheClientNotifier.getInstance().getClientProxies().iterator().next();
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        proxy.getHARegionQueue().isEmpty();
+      });
+    });
+
+    // the client should now get duplicate events from the current-version server
+    interestClient.invoke("verification 3", () -> {
+      Cache cache = getCache();
+      Region r2 = cache.getRegion(REGION_NAME2);
+      MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
+      assertFalse(verifier.eventReceived); // no duplicate events should have arrived
+      PoolImpl pool = (PoolImpl) PoolManager.find("ClientServerMiscDUnitTestPool");
+
+      Map seqMap = pool.getThreadIdToSequenceIdMap();
+      assertEquals(4, seqMap.size()); // one for each server and one for the feed
+    });
+  }
+
+  @Test
   public void testDistributedMemberBytesWithCurrentServerAndOldClient() throws Exception {
     // Start current version server
     int serverPort = initServerCache(true);
@@ -120,19 +230,28 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
 
     // Verify member id bytes on client and server are equal
     String complaint = "size on client=" + clientMembershipIdBytesOnClient.length
-        + "; size on server=" + clientMembershipIdBytesOnServer.length;
+        + "; size on server=" + clientMembershipIdBytesOnServer.length + "\nclient bytes="
+        + Arrays.toString(clientMembershipIdBytesOnClient) + "\nserver bytes="
+        + Arrays.toString(clientMembershipIdBytesOnServer);
     assertTrue(complaint,
         Arrays.equals(clientMembershipIdBytesOnClient, clientMembershipIdBytesOnServer));
   }
 
   private byte[] getClientMembershipIdBytesOnClient() {
-    return EventID.getMembershipId(getCache().getDistributedSystem());
+    DistributedSystem system = getCache().getDistributedSystem();
+    byte[] result =
+        EventID.getMembershipId(new ClientProxyMembershipID(system.getDistributedMember()));
+    System.out.println("client ID bytes are " + Arrays.toString(result));
+    return result;
   }
 
   private byte[] getClientMembershipIdBytesOnServer() {
     Set cpmIds = ClientHealthMonitor.getInstance().getClientHeartbeats().keySet();
     assertEquals(1, cpmIds.size());
     ClientProxyMembershipID cpmId = (ClientProxyMembershipID) cpmIds.iterator().next();
-    return EventID.getMembershipId(cpmId);
+    System.out.println("client ID on server is " + cpmId.getDistributedMember());
+    byte[] result = EventID.getMembershipId(cpmId);
+    System.out.println("client ID bytes are " + Arrays.toString(result));
+    return result;
   }
 }

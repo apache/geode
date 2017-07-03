@@ -173,7 +173,30 @@ public class ProcessManager {
     String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
     String dunitClasspath = System.getProperty("java.class.path");
     String classPath;
-    if (!VersionManager.isCurrentVersion(version)) {
+    if (VersionManager.isCurrentVersion(version)) {
+      classPath = dunitClasspath;
+    } else {
+      // remove current-version product classes and resources from the classpath
+       String buildDir = separator + "geode-core" + separator + "build" + separator;
+
+       String mainClasses = buildDir + "classes" + separator + "main";
+       dunitClasspath = removeFromPath(dunitClasspath, mainClasses);
+
+       String mainResources = buildDir + "resources" + separator + "main";
+       dunitClasspath = removeFromPath(dunitClasspath, mainResources);
+
+       String generatedResources = buildDir + "generated-resources" + separator + "main";
+       dunitClasspath = removeFromPath(dunitClasspath, generatedResources);
+
+       buildDir = separator + "geode-common" + separator + "build" + separator + "classes"
+       + separator + "main";
+       dunitClasspath = removeFromPath(dunitClasspath, buildDir);
+
+       buildDir = separator + "geode-json" + separator + "build" + separator + "classes" +
+       separator
+       + "main";
+       dunitClasspath = removeFromPath(dunitClasspath, buildDir);
+
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     } else {
       classPath = dunitClasspath;
