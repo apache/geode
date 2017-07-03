@@ -24,7 +24,7 @@ message PutRequest {
 }
 
 message PutResponse {
-    bool success = 1;
+    // message presence indicates success.
 }
 
 message GetRequest {
@@ -32,10 +32,17 @@ message GetRequest {
     EncodedValue key = 2;
 }
 
+message LookupFailure {
+    // if true, the key is set to the value null.
+    // if false, the key did not exist in the region.
+   bool keyInKeySet = 1;
+}
+
 message GetResponse {
-    bool success = 1;
-    bool keyExists = 2;
-    EncodedValue result = 3;
+    oneof response {
+        LookupFailure null = 1;
+        EncodedValue result = 2;
+    }
 }
 
 message PutAllRequest {
@@ -99,11 +106,10 @@ message DestroyRegionResponse {
     bool success = 1;
 }
 
-message GetRegionsRequest {
+message GetRegionNamesRequest {
 
 }
 
-message GetRegionsResponse {
-    bool success = 1;
-    repeated Region regions = 2;
+message GetRegionNamesResponse {
+    repeated string regions = 1;
 }

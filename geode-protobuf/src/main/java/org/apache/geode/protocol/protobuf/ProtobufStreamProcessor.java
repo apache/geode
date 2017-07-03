@@ -18,13 +18,14 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.protobuf.operations.GetRegionsRequestOperationHandler;
-import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
-import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
-import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerAlreadyRegisteredException;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
+import org.apache.geode.protocol.protobuf.operations.GetRegionNamesRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 
 import java.io.IOException;
@@ -60,8 +61,8 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
         ClientProtocol.Request.RequestAPICase.PUTREQUEST.getNumber(),
         new PutRequestOperationHandler());
     registry.registerOperationHandlerForOperationId(
-        ClientProtocol.Request.RequestAPICase.GETREGIONSREQUEST.getNumber(),
-        new GetRegionsRequestOperationHandler());
+        ClientProtocol.Request.RequestAPICase.GETREGIONNAMESREQUEST.getNumber(),
+        new GetRegionNamesRequestOperationHandler());
   }
 
   public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)
@@ -70,9 +71,10 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
 
     ClientProtocol.Request request = message.getRequest();
     ClientProtocol.Response response = protobufOpsProcessor.process(request, cache);
-
+    ClientProtocol.MessageHeader responseHeader =
+        ProtobufUtilities.createMessageHeaderForRequest(message);
     ClientProtocol.Message responseMessage =
-        ProtobufUtilities.wrapResponseWithDefaultHeader(response);
+        ProtobufUtilities.createProtobufResponse(responseHeader, response);
     protobufProtocolSerializer.serialize(responseMessage, outputStream);
   }
 
