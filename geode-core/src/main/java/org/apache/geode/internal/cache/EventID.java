@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -291,8 +292,23 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @return the member that initiated this event
    */
   public InternalDistributedMember getDistributedMember() {
+    return getDistributedMember(Version.CURRENT);
+  }
+
+  /**
+   * deserialize the memberID bytes using the given version. The correct thing to do would be to
+   * have EventID carry the version ordinal of the serialized memberID, or to have it be part of the
+   * memberID bytes and use that version to deserialize the bytes
+   */
+  private InternalDistributedMember getDistributedMember(Version targetVersion) {
     ByteArrayInputStream bais = new ByteArrayInputStream(this.membershipID);
     DataInputStream dis = new DataInputStream(bais);
+    if (0 <= targetVersion.compareTo(Version.GFE_90)
+        && targetVersion.compareTo(Version.GEODE_110) < 0) {
+      // GEODE-3153: clients expect to receive UUID bytes, which are only
+      // read if the stream's version is 1.0.0-incubating
+      dis = new VersionedDataInputStream(dis, Version.GFE_90);
+    }
     InternalDistributedMember result = null;
     try {
       result = InternalDistributedMember.readEssentialData(dis);
@@ -324,8 +340,14 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   public void toData(DataOutput dop) throws IOException {
     Version version = InternalDataSerializer.getVersionForDataStream(dop);
-    if (version.compareTo(Version.GFE_90) <= 0) {
-      InternalDistributedMember member = getDistributedMember();
+    // if we are sending to old clients we need to reserialize the ID
+    // using the client's version to ensure it gets the proper on-wire form
+    // of the identifier
+    // See GEODE-3072
+    if (version.compareTo(Version.GEODE_110) < 0) {
+      InternalDistributedMember member = getDistributedMember(version);
+      // reserialize with the client's version so that we write the UUID
+      // bytes
       HeapDataOutputStream hdos = new HeapDataOutputStream(version);
       member.writeEssentialData(hdos);
       DataSerializer.writeByteArray(hdos.toByteArray(), dop);
@@ -423,6 +445,9 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * GEODE-3072 - v1.0.0 memberIDs in EventIDs may have trailing bytes that should be ignored
    */
   static private boolean nullUUIDCheck(byte[] memberID, int position) {
+    if (position < 0) {
+      return false;
+    }
     if (memberID.length - position != NULL_90_MEMBER_DATA_LENGTH) {
       return false;
     }

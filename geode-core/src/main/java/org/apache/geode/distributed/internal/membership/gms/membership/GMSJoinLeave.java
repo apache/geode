@@ -126,6 +126,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * membership logger
    */
   private static final Logger logger = Services.getLogger();
+  private static final boolean ALLOW_OLD_VERSION_FOR_TESTING = Boolean
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing");
 
   /**
    * the view ID where I entered into membership
@@ -532,7 +534,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     logger.info("received join request from {}", incomingRequest.getMemberID());
 
-    if (incomingRequest.getMemberID().getVersionObject().compareTo(Version.CURRENT) < 0) {
+    if (!ALLOW_OLD_VERSION_FOR_TESTING
+        && incomingRequest.getMemberID().getVersionObject().compareTo(Version.CURRENT) < 0) {
       logger.warn("detected an attempt to start a peer using an older version of the product {}",
           incomingRequest.getMemberID());
       JoinResponseMessage m =
@@ -542,6 +545,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       services.getMessenger().send(m);
       return;
     }
+
     Object creds = incomingRequest.getCredentials();
     String rejection;
     try {
