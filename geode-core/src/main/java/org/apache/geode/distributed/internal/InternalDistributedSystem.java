@@ -122,7 +122,7 @@ import org.apache.geode.security.SecurityManager;
  * @since GemFire 3.0
  */
 public class InternalDistributedSystem extends DistributedSystem
-implements OsStatisticsFactory, StatisticsManager {
+    implements OsStatisticsFactory, StatisticsManager {
 
   /**
    * True if the user is allowed lock when memory resources appear to be overcommitted.
@@ -141,11 +141,11 @@ implements OsStatisticsFactory, StatisticsManager {
 
   public static final CreationStackGenerator DEFAULT_CREATION_STACK_GENERATOR =
       new CreationStackGenerator() {
-    @Override
-    public Throwable generateCreationStack(final DistributionConfig config) {
-      return null;
-    }
-  };
+        @Override
+        public Throwable generateCreationStack(final DistributionConfig config) {
+          return null;
+        }
+      };
 
   // the following is overridden from DistributedTestCase to fix #51058
   public static final AtomicReference<CreationStackGenerator> TEST_CREATION_STACK_GENERATOR =
@@ -668,7 +668,7 @@ implements OsStatisticsFactory, StatisticsManager {
       } catch (Exception ex) {
         throw new GemFireSecurityException(
             LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION
-            .toLocalizedString(),
+                .toLocalizedString(),
             ex);
       }
 
@@ -691,7 +691,7 @@ implements OsStatisticsFactory, StatisticsManager {
           } else {
             throw new IllegalStateException(
                 LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT
-                .toLocalizedString(avail, size));
+                    .toLocalizedString(avail, size));
           }
         }
 
@@ -742,7 +742,7 @@ implements OsStatisticsFactory, StatisticsManager {
         // but during startup we should instead throw a SystemConnectException
         throw new SystemConnectException(
             LocalizedStrings.InternalDistributedSystem_DISTRIBUTED_SYSTEM_HAS_DISCONNECTED
-            .toLocalizedString(),
+                .toLocalizedString(),
             e);
       }
 
@@ -841,7 +841,7 @@ implements OsStatisticsFactory, StatisticsManager {
     } catch (IOException e) {
       throw new GemFireIOException(
           LocalizedStrings.InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE
-          .toLocalizedString(),
+              .toLocalizedString(),
           e);
     }
   }
@@ -889,7 +889,7 @@ implements OsStatisticsFactory, StatisticsManager {
     if (!isConnected()) {
       throw new DistributedSystemDisconnectedException(
           LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
-          .toLocalizedString(),
+              .toLocalizedString(),
           dm.getRootCause());
     }
   }
@@ -1296,7 +1296,7 @@ implements OsStatisticsFactory, StatisticsManager {
         } catch (InterruptedException e) {
           interrupted = true;
           getLogWriter().convertToLogWriterI18n()
-          .warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
+              .warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
         } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
@@ -2109,7 +2109,7 @@ implements OsStatisticsFactory, StatisticsManager {
           // is still usable:
           SystemFailure.checkFailure();
           sys.getLogWriter().convertToLogWriterI18n()
-          .severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
+              .severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
         }
       }
     }
@@ -2215,7 +2215,7 @@ implements OsStatisticsFactory, StatisticsManager {
           this.listeners.remove(listener); // don't leave in the list!
           throw new DistributedSystemDisconnectedException(
               LocalizedStrings.InternalDistributedSystem_NO_LISTENERS_PERMITTED_AFTER_SHUTDOWN_0
-              .toLocalizedString(reason),
+                  .toLocalizedString(reason),
               dm.getRootCause());
         }
       }
@@ -2639,7 +2639,7 @@ implements OsStatisticsFactory, StatisticsManager {
             }
             throw new CacheClosedException(
                 LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                .toLocalizedString());
+                    .toLocalizedString());
           }
         }
 
@@ -2919,11 +2919,11 @@ implements OsStatisticsFactory, StatisticsManager {
       if (this.creationStack == null) {
         throw new IllegalStateException(
             LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-            .toLocalizedString(sb.toString()));
+                .toLocalizedString(sb.toString()));
       } else {
         throw new IllegalStateException(
             LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-            .toLocalizedString(sb.toString()),
+                .toLocalizedString(sb.toString()),
             this.creationStack);
       }
     }

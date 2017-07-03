@@ -766,7 +766,7 @@ public class InternalDistributedSystemJUnitTest {
     new DistributionConfigImpl(props, false);
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException
-    .expectMessage("There is no registered component for the name: testing");
+        .expectMessage("There is no registered component for the name: testing");
   }
 
 
@@ -779,7 +779,7 @@ public class InternalDistributedSystemJUnitTest {
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
         LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-        .getRawText());
+            .getRawText());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -792,7 +792,7 @@ public class InternalDistributedSystemJUnitTest {
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
         LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-        .getRawText());
+            .getRawText());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -805,7 +805,7 @@ public class InternalDistributedSystemJUnitTest {
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
         LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-        .getRawText());
+            .getRawText());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -818,7 +818,7 @@ public class InternalDistributedSystemJUnitTest {
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
         LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-        .getRawText());
+            .getRawText());
   }
 
   private Properties getCommonProperties() {
