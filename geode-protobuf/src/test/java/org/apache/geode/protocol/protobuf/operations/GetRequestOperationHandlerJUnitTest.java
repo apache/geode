@@ -14,13 +14,13 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.protocol.MessageUtil;
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.*;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
+import org.apache.geode.serialization.codec.StringCodec;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -32,10 +32,7 @@ import org.junit.experimental.categories.Category;
 
 import java.nio.charset.Charset;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
@@ -48,6 +45,7 @@ public class GetRequestOperationHandlerJUnitTest {
   public Cache cacheStub;
   public SerializationService serializationServiceStub;
   private GetRequestOperationHandler operationHandler;
+  private StringCodec stringDecoder;
 
   @Before
   public void setUp() throws Exception {
@@ -56,6 +54,10 @@ public class GetRequestOperationHandlerJUnitTest {
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(TEST_KEY);
     when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_VALUE))
         .thenReturn(TEST_VALUE.getBytes(Charset.forName("UTF-8")));
+    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_KEY))
+        .thenReturn(TEST_KEY.getBytes(Charset.forName("UTF-8")));
+    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, MISSING_KEY))
+        .thenReturn(MISSING_KEY.getBytes(Charset.forName("UTF-8")));
 
     Region regionStub = mock(Region.class);
     when(regionStub.get(TEST_KEY)).thenReturn(TEST_VALUE);
@@ -64,20 +66,22 @@ public class GetRequestOperationHandlerJUnitTest {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     when(cacheStub.getRegion(MISSING_REGION)).thenReturn(null);
     operationHandler = new GetRequestOperationHandler();
+    stringDecoder = new StringCodec();
   }
 
   @Test
   public void processReturnsTheEncodedValueFromTheRegion()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
-    RegionAPI.GetResponse response = operationHandler.process(serializationServiceStub,
-        MessageUtil.makeGetRequest(TEST_KEY, TEST_REGION), cacheStub);
+    ClientProtocol.Request getRequest = generateTestRequest(false, false);
+    ClientProtocol.Response response =
+        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 
-    Assert.assertEquals(true, response.getSuccess());
-    Assert.assertEquals(true, response.getKeyExists());
-    Assert.assertEquals(BasicTypes.EncodingType.STRING, response.getResult().getEncodingType());
-    String actualValue =
-        MessageUtil.getStringCodec().decode(response.getResult().getValue().toByteArray());
+    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
+        response.getResponseAPICase());
+    RegionAPI.GetResponse getResponse = response.getGetResponse();
+    Assert.assertEquals(BasicTypes.EncodingType.STRING, getResponse.getResult().getEncodingType());
+    String actualValue = stringDecoder.decode(getResponse.getResult().getValue().toByteArray());
     Assert.assertEquals(TEST_VALUE, actualValue);
   }
 
@@ -85,39 +89,51 @@ public class GetRequestOperationHandlerJUnitTest {
   public void processReturnsUnsucessfulResponseForInvalidRegion()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
-    RegionAPI.GetResponse response = operationHandler.process(serializationServiceStub,
-        MessageUtil.makeGetRequest(TEST_KEY, MISSING_REGION), cacheStub);
+    ClientProtocol.Request getRequest = generateTestRequest(true, false);
+    ClientProtocol.Response response =
+        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 
-    Assert.assertEquals(false, response.getSuccess());
+    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
+        response.getResponseAPICase());
   }
 
   @Test
   public void processReturnsKeyNotFoundWhenKeyIsNotFound()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
-    RegionAPI.GetResponse response = operationHandler.process(serializationServiceStub,
-        MessageUtil.makeGetRequest(MISSING_KEY, TEST_REGION), cacheStub);
+    ClientProtocol.Request getRequest = generateTestRequest(false, true);
+    ClientProtocol.Response response =
+        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 
-    Assert.assertEquals(true, response.getSuccess());
-    Assert.assertEquals(false, response.getKeyExists());
+    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
+        response.getResponseAPICase());
+    RegionAPI.GetResponse getResponse = response.getGetResponse();
+    Assert.assertFalse(getResponse.hasResult());
   }
 
   @Test
   public void processReturnsErrorWhenUnableToDecodeRequest()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
-    LogWriter loggerMock = mock(LogWriter.class);
-    when(cacheStub.getLogger()).thenReturn(loggerMock);
-
     CodecNotRegisteredForTypeException exception =
         new CodecNotRegisteredForTypeException("error finding codec for type");
     when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
 
-    RegionAPI.GetResponse response = operationHandler.process(serializationServiceStub,
-        MessageUtil.makeGetRequest(TEST_KEY, TEST_REGION), cacheStub);
+    ClientProtocol.Request getRequest = generateTestRequest(false, false);
+    ClientProtocol.Response response =
+        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 
-    Assert.assertEquals(false, response.getSuccess());
-    verify(loggerMock).error(any(String.class), eq(exception));
+    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
+        response.getResponseAPICase());
+  }
+
+  private ClientProtocol.Request generateTestRequest(boolean missingRegion, boolean missingKey)
+      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    String region = missingRegion ? MISSING_REGION : TEST_REGION;
+    String key = missingKey ? MISSING_KEY : TEST_KEY;
+    BasicTypes.EncodedValue testKey =
+        ProtobufUtilities.createEncodedValue(serializationServiceStub, key);
+    return ProtobufRequestUtilities.createGetRequest(region, testKey);
   }
 }

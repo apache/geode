@@ -19,7 +19,6 @@ import org.apache.geode.protocol.operations.registry.exception.OperationHandlerA
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
 
 import java.util.HashMap;
-import java.util.ServiceLoader;
 
 /**
  * This class tracks which operation handlers are expected to handle which types of operations.
