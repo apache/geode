@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
-
+import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -38,12 +38,23 @@ public class TXSynchronizationRunnable implements Runnable {
   private boolean secondRunnableCompleted;
 
   private boolean abort;
+  private final CommBufferPool commBufferPool;
 
-  public TXSynchronizationRunnable(Runnable beforeCompletion) {
+  public TXSynchronizationRunnable(Runnable beforeCompletion, final CommBufferPool commBufferPool) {
     this.firstRunnable = beforeCompletion;
+    this.commBufferPool = commBufferPool;
   }
 
   public void run() {
+    commBufferPool.setTLCommBuffer();
+    try {
+      doSynchronizationOps();
+    } finally {
+      commBufferPool.releaseTLCommBuffer();
+    }
+  }
+
+  private void doSynchronizationOps() {
     synchronized (this.firstRunnableSync) {
       try {
         this.firstRunnable.run();

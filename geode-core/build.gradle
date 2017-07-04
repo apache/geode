@@ -39,6 +39,8 @@ dependencies {
   compile 'antlr:antlr:' + project.'antlr.version'
   compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
   compile 'commons-io:commons-io:' + project.'commons-io.version'
+  compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
+
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile ('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
     exclude module: 'commons-digester'
@@ -133,6 +135,7 @@ dependencies {
   testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
   testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
+  testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
   testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
   testCompile 'redis.clients:jedis:' + project.'jedis.version'
 

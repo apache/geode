@@ -122,18 +122,21 @@ public class MemberFunctionExecutor extends AbstractExecution {
     if (dest.size() == 1 && dest.contains(localVM)) {
       localOnly = true;
     }
+
+
     final MemberFunctionResultSender resultSender =
         new MemberFunctionResultSender(dm, localRC, function, localOnly, remoteOnly, sender);
     if (dest.contains(localVM)) {
       // if member is local VM
       dest.remove(localVM);
-      final FunctionContext context = new FunctionContextImpl(function.getId(),
-          getArgumentsForMember(localVM.getId()), resultSender);
+
       boolean isTx = false;
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
         isTx = cache.getTxManager().getTXState() == null ? false : true;
       }
+      final FunctionContext context = new FunctionContextImpl(cache, function.getId(),
+          getArgumentsForMember(localVM.getId()), resultSender);
       executeFunctionOnLocalNode(function, context, resultSender, dm, isTx);
     }
 

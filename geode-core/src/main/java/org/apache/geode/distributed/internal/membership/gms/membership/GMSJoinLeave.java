@@ -126,6 +126,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * membership logger
    */
   private static final Logger logger = Services.getLogger();
+  private static final boolean ALLOW_OLD_VERSION_FOR_TESTING = Boolean
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing");
 
   /**
    * the view ID where I entered into membership
@@ -184,7 +186,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    */
   private NetView lastConflictingView;
 
-  private List<InetSocketAddress> locators;
+  private List<HostAddress> locators;
 
   /**
    * a list of join/leave/crashes
@@ -532,7 +534,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     logger.info("received join request from {}", incomingRequest.getMemberID());
 
-    if (incomingRequest.getMemberID().getVersionObject().compareTo(Version.CURRENT) < 0) {
+    if (!ALLOW_OLD_VERSION_FOR_TESTING
+        && incomingRequest.getMemberID().getVersionObject().compareTo(Version.CURRENT) < 0) {
       logger.warn("detected an attempt to start a peer using an older version of the product {}",
           incomingRequest.getMemberID());
       JoinResponseMessage m =
@@ -542,6 +545,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       services.getMessenger().send(m);
       return;
     }
+
     Object creds = incomingRequest.getCredentials();
     String rejection;
     try {
@@ -1098,8 +1102,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     state.locatorsContacted = 0;
 
     do {
-      for (InetSocketAddress addr : locators) {
+      for (HostAddress laddr : locators) {
         try {
+          InetSocketAddress addr = laddr.getSocketInetAddress();
           Object o = tcpClientWrapper.sendCoordinatorFindRequest(addr, request, connectTimeout);
           FindCoordinatorResponse response =
               (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse) o : null;
@@ -1135,6 +1140,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
+          logger.debug("EOFException IOException ", problem);
         }
       }
     } while (!anyResponses && System.currentTimeMillis() < giveUpTime);
@@ -1187,8 +1193,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         FindCoordinatorRequest request, int connectTimeout)
         throws ClassNotFoundException, IOException {
       TcpClient client = new TcpClient();
-      return client.requestToServer(addr.getAddress(), addr.getPort(), request, connectTimeout,
-          true);
+      return client.requestToServer(addr, request, connectTimeout, true);
     }
   }
 

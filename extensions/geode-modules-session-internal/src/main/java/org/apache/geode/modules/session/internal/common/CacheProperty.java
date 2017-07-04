@@ -38,8 +38,7 @@ public enum CacheProperty {
    * This parameter can take the following values which match the respective attribute container
    * classes
    * <p/>
-   * delta_queued : QueuedDeltaSessionAttributes delta_immediate : DeltaSessionAttributes immediate
-   * : ImmediateSessionAttributes queued : QueuedSessionAttributes
+   * delta_queued : QueuedDeltaSessionAttributes delta_immediate : DeltaSessionAttributes
    */
   SESSION_DELTA_POLICY(String.class),
 

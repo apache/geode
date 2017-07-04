@@ -58,18 +58,19 @@ public class ExportLogsFunctionIntegrationTest {
     File notALogFile = new File(serverWorkingDir, "foo.txt");
     FileUtils.writeStringToFile(notALogFile, "some text");
 
-    verifyExportLogsFunctionDoesNotBlowUp();
+    verifyExportLogsFunctionDoesNotBlowUp(serverStarterRule.getCache());
 
-    Cache cache = GemFireCacheImpl.getInstance();
+    Cache cache = serverStarterRule.getCache();
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isEmpty();
   }
 
-  public static void verifyExportLogsFunctionDoesNotBlowUp() throws Throwable {
+  public static void verifyExportLogsFunctionDoesNotBlowUp(Cache cache) throws Throwable {
     ExportLogsFunction.Args args =
         new ExportLogsFunction.Args(null, null, "info", false, false, false);
 
     CapturingResultSender resultSender = new CapturingResultSender();
-    FunctionContext context = new FunctionContextImpl("functionId", args, resultSender);
+
+    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
 
     new ExportLogsFunction().execute(context);
 

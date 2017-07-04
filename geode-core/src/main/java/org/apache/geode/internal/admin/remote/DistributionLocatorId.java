@@ -23,12 +23,14 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.validator.routines.InetAddressValidator;
 
 /**
  * Identifies the host, port, and bindAddress a distribution locator is listening on.
@@ -38,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
 public class DistributionLocatorId implements java.io.Serializable {
   private static final long serialVersionUID = 6587390186971937865L;
 
-  private final InetAddress host;
+  private InetAddress host;
   private final int port;
   private final String bindAddress;
   transient private SSLConfig sslConfig;
@@ -47,6 +49,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   private boolean peerLocator = true;
   private boolean serverLocator = true;
   private String hostnameForClients;
+  private String hostname;
 
   /**
    * Constructs a DistributionLocatorId with the given host and port.
@@ -116,7 +119,7 @@ public class DistributionLocatorId implements java.io.Serializable {
       bindIdx = marshalled.lastIndexOf(':');
     }
 
-    String hostname = marshalled.substring(0, bindIdx > -1 ? bindIdx : portStartIdx);
+    hostname = marshalled.substring(0, bindIdx > -1 ? bindIdx : portStartIdx);
 
     if (hostname.indexOf(':') >= 0) {
       bindIdx = marshalled.lastIndexOf('@');
@@ -127,9 +130,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     try {
       this.host = InetAddress.getByName(hostname);
     } catch (UnknownHostException ex) {
-      throw new InternalGemFireException(
-          LocalizedStrings.DistributionLocatorId_FAILED_GETTING_HOST_FROM_NAME_0
-              .toLocalizedString(hostname));
+      this.host = null;
     }
 
     try {
@@ -215,9 +216,37 @@ public class DistributionLocatorId implements java.io.Serializable {
     return this.port;
   }
 
-  /** Returns the host. */
-  public InetAddress getHost() {
-    return this.host;
+  /**
+   * Returns the resolved InetSocketAddress of the locator We cache the InetAddress if hostname is
+   * ipString Otherwise we create InetAddress each time.
+   * 
+   **/
+  public InetSocketAddress getHost() throws UnknownHostException {
+    if (this.hostname != null) {
+      boolean isIpString = InetAddressValidator.getInstance().isValid(this.hostname);
+      if (isIpString) {
+        if (this.host == null) {
+          this.host = InetAddress.getByName(this.hostname);
+        }
+        return new InetSocketAddress(this.host, this.port);
+      }
+    }
+
+    if (this.hostname == null) {
+      if (this.host != null) {
+        return new InetSocketAddress(this.host, this.port);
+      }
+      throw new UnknownHostException("locator ID has no hostname or resolved inet address");
+    }
+    return new InetSocketAddress(this.hostname, this.port);
+  }
+
+  /** returns the host name */
+  public String getHostName() {
+    if (this.hostname == null) {
+      this.hostname = this.host.getHostName();
+    }
+    return this.hostname;
   }
 
   /** Returns true if this is a multicast address:port */

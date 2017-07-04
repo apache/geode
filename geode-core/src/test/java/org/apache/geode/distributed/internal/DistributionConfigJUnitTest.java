@@ -344,8 +344,8 @@ public class DistributionConfigJUnitTest {
     assertEquals(config.getStartLocator(), address);
   }
 
-  @Test(expected = InternalGemFireException.class)
-  public void testInvalidLocatorAddress() {
+  @Test
+  public void testInvalidLocatorAddressDoesntThrowException() {
     String address = "bad.bad[7056]";
     config.modifiable = true;
     // config.setStartLocator(address);

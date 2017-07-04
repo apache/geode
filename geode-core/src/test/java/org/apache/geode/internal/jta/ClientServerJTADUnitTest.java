@@ -49,19 +49,19 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
   private String key = "key";
   private String value = "value";
   private String newValue = "newValue";
+  final Host host = Host.getHost(0);
+  final VM server = host.getVM(0);
+  final VM client = host.getVM(1);
 
   @Test
   public void testClientTXStateStubBeforeCompletion() throws Exception {
-    final Host host = Host.getHost(0);
-    final VM server = host.getVM(0);
-    final VM client = host.getVM(1);
     final String regionName = getUniqueName();
     getBlackboard().initBlackboard();
     final Properties properties = getDistributedSystemProperties();
 
     final int port = server.invoke("create cache", () -> {
       Cache cache = getCache(properties);
-      CacheServer cacheServer = createCacheServer(cache);
+      CacheServer cacheServer = createCacheServer(cache, 0);
       Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
       region.put(key, value);
 
@@ -106,8 +106,9 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private CacheServer createCacheServer(Cache cache) {
+  private CacheServer createCacheServer(Cache cache, int maxThreads) {
     CacheServer server = cache.addCacheServer();
+    server.setMaxThreads(maxThreads);
     server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     try {
       server.start();
@@ -139,5 +140,42 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
       getBlackboard().waitForGate(second, 30, TimeUnit.SECONDS);
     }
     txStub.afterCompletion(Status.STATUS_COMMITTED);
+  }
+
+  @Test
+  public void testJTAMaxThreads() throws TimeoutException, InterruptedException {
+    testJTAWithMaxThreads(1);
+  }
+
+  @Test
+  public void testJTANoMaxThreadsSetting() throws TimeoutException, InterruptedException {
+    testJTAWithMaxThreads(0);
+  }
+
+  private void testJTAWithMaxThreads(int maxThreads) {
+    final String regionName = getUniqueName();
+    getBlackboard().initBlackboard();
+    final Properties properties = getDistributedSystemProperties();
+
+    final int port = server.invoke("create cache", () -> {
+      Cache cache = getCache(properties);
+      CacheServer cacheServer = createCacheServer(cache, maxThreads);
+      Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
+      region.put(key, value);
+
+      return cacheServer.getPort();
+    });
+
+    createClientRegion(host, port, regionName);
+
+    Region region = getCache().getRegion(regionName);
+    assertTrue(region.get(key).equals(value));
+
+    try {
+      commitTxWithBeforeCompletion(regionName, false, null, null);
+    } catch (Exception e) {
+      Assert.fail("got unexpected exception", e);
+    }
+    assertTrue(region.get(key).equals(newValue));
   }
 }
