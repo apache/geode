@@ -276,7 +276,7 @@ public interface DiskEntry extends RegionEntry {
      * @since GemFire 3.2.1
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry, DiskRegion dr,
-        DM mgr, ByteArrayDataInput in, RegionEntryContext context) {
+        DM mgr, ByteArrayDataInput in, RegionEntryContext context, Version version) {
       @Retained
       @Released
       Object v = null;
@@ -310,7 +310,7 @@ public interface DiskEntry extends RegionEntry {
               }
               assert did != null;
               // do recursive call to get readLock on did
-              return fillInValue(de, entry, dr, mgr, in, context);
+              return fillInValue(de, entry, dr, mgr, in, context, version);
             }
             if (logger.isDebugEnabled()) {
               logger.debug(
@@ -360,7 +360,7 @@ public interface DiskEntry extends RegionEntry {
               entry.setSerialized(true);
             } else {
               try {
-                HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+                HeapDataOutputStream hdos = new HeapDataOutputStream(version);
                 BlobHelper.serializeTo(tmp, hdos);
                 hdos.trim();
                 entry.value = hdos;
@@ -401,7 +401,7 @@ public interface DiskEntry extends RegionEntry {
         }
         {
           try {
-            HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+            HeapDataOutputStream hdos = new HeapDataOutputStream(version);
             BlobHelper.serializeTo(preparedValue, hdos);
             hdos.trim();
             entry.value = hdos;
