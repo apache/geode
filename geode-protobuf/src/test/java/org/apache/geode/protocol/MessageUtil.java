@@ -14,19 +14,13 @@
  */
 package org.apache.geode.protocol;
 
-import com.google.protobuf.ByteString;
-
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
-import org.apache.geode.protocol.protobuf.RegionAPI;
-import org.apache.geode.serialization.codec.StringCodec;
+import org.apache.geode.protocol.protobuf.*;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.serialization.registry.SerializationCodecRegistry;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-
-import java.nio.ByteBuffer;
 
 public class MessageUtil {
   public static ClientProtocol.Message createGetRequestMessage() {
@@ -38,58 +32,27 @@ public class MessageUtil {
     return messageBuilder.build();
   }
 
-  public static RegionAPI.PutRequest makePutRequest(String requestKey, String requestValue,
-      String requestRegion) throws CodecNotRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecAlreadyRegisteredForTypeException {
-    StringCodec stringCodec = getStringCodec();
-    BasicTypes.EncodedValue.Builder key =
-        BasicTypes.EncodedValue.newBuilder().setEncodingType(BasicTypes.EncodingType.STRING)
-            .setValue(ByteString.copyFrom(stringCodec.encode(requestKey)));
-    BasicTypes.EncodedValue.Builder value =
-        BasicTypes.EncodedValue.newBuilder().setEncodingType(BasicTypes.EncodingType.STRING)
-            .setValue(ByteString.copyFrom(stringCodec.encode(requestValue)));
-    BasicTypes.Entry.Builder entry = BasicTypes.Entry.newBuilder().setKey(key).setValue(value);
-    RegionAPI.PutRequest.Builder putRequestBuilder = RegionAPI.PutRequest.newBuilder();
-    putRequestBuilder.setRegionName(requestRegion).setEntry(entry);
-
-    return putRequestBuilder.build();
-  }
-
-  public static ClientProtocol.Message makePutRequestMessage(String requestKey, String requestValue,
+  public static ClientProtocol.Message makePutRequestMessage(
+      SerializationService serializationService, String requestKey, String requestValue,
       String requestRegion, ClientProtocol.MessageHeader header)
       throws CodecNotRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecAlreadyRegisteredForTypeException {
-    ClientProtocol.Request request = ClientProtocol.Request.newBuilder()
-        .setPutRequest(makePutRequest(requestKey, requestValue, requestRegion)).build();
-    return ClientProtocol.Message.newBuilder().setMessageHeader(header).setRequest(request).build();
+    BasicTypes.Entry entry = ProtobufUtilities.createEntry(
+        ProtobufUtilities.createEncodedValue(serializationService, requestKey),
+        ProtobufUtilities.createEncodedValue(serializationService, requestValue));
+
+    ClientProtocol.Request request =
+        ProtobufRequestUtilities.createPutRequest(requestRegion, entry);
+    return ProtobufUtilities.createProtobufRequest(header, request);
   }
 
-  public static RegionAPI.GetRequest makeGetRequest(String requestKey, String requestRegion)
-      throws CodecNotRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecAlreadyRegisteredForTypeException {
-    StringCodec stringCodec = getStringCodec();
-    RegionAPI.GetRequest.Builder getRequestBuilder = RegionAPI.GetRequest.newBuilder();
-    getRequestBuilder.setRegionName(requestRegion)
-        .setKey(BasicTypes.EncodedValue.newBuilder().setEncodingType(BasicTypes.EncodingType.STRING)
-            .setValue(ByteString.copyFrom(stringCodec.encode(requestKey))));
-
-    return getRequestBuilder.build();
-  }
-
-  public static ClientProtocol.Message makeGetRequestMessage(String requestKey,
-      String requestRegion, ClientProtocol.MessageHeader header)
-      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
-    ClientProtocol.Request request = ClientProtocol.Request.newBuilder()
-        .setGetRequest(makeGetRequest(requestKey, requestRegion)).build();
-    return ClientProtocol.Message.newBuilder().setMessageHeader(header).setRequest(request).build();
-  }
-
-  public static StringCodec getStringCodec() throws CodecAlreadyRegisteredForTypeException,
-      CodecNotRegisteredForTypeException, UnsupportedEncodingTypeException {
-    SerializationCodecRegistry serializationCodecRegistry = new SerializationCodecRegistry();
-    return (StringCodec) serializationCodecRegistry.getCodecForType(
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.STRING));
+  public static ClientProtocol.Message makeGetRequestMessage(
+      SerializationService serializationService, String requestKey, String requestRegion,
+      ClientProtocol.MessageHeader header) throws CodecAlreadyRegisteredForTypeException,
+      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    ClientProtocol.Request request = ProtobufRequestUtilities.createGetRequest(requestRegion,
+        ProtobufUtilities.createEncodedValue(serializationService, requestKey));
+    return ProtobufUtilities.createProtobufRequest(header, request);
   }
 
   private static ClientProtocol.Request.Builder getRequestBuilder() {
@@ -102,16 +65,5 @@ public class MessageUtil {
 
   private static ClientProtocol.MessageHeader.Builder getMessageHeaderBuilder() {
     return ClientProtocol.MessageHeader.newBuilder();
-  }
-
-  public static RegionAPI.GetRegionsRequest makeGetRegionsRequest() {
-    return RegionAPI.GetRegionsRequest.newBuilder().build();
-  }
-
-  public static ClientProtocol.Message makeGetRegionsRequestMessage(
-      ClientProtocol.MessageHeader header) {
-    ClientProtocol.Request request =
-        ClientProtocol.Request.newBuilder().setGetRegionsRequest(makeGetRegionsRequest()).build();
-    return ClientProtocol.Message.newBuilder().setMessageHeader(header).setRequest(request).build();
   }
 }

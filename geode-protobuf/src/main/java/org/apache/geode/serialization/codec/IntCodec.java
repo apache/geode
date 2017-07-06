@@ -18,7 +18,6 @@ import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 
 public class IntCodec implements TypeCodec<Integer> {
   @Override

@@ -16,7 +16,6 @@ package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 

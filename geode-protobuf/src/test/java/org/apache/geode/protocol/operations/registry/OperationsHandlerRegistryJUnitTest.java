@@ -14,11 +14,6 @@
  */
 package org.apache.geode.protocol.operations.registry;
 
-import static io.codearte.catchexception.shade.mockito.Mockito.mock;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerAlreadyRegisteredException;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
@@ -26,6 +21,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import static io.codearte.catchexception.shade.mockito.Mockito.mock;
+import static org.junit.Assert.*;
 
 @Category(UnitTest.class)
 public class OperationsHandlerRegistryJUnitTest {
