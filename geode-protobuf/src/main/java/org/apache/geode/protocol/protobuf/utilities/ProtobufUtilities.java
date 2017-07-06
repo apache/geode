@@ -16,8 +16,6 @@ package org.apache.geode.protocol.protobuf.utilities;
 
 import com.google.protobuf.ByteString;
 import org.apache.geode.protocol.protobuf.*;
-import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
-import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -55,7 +53,7 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * Creates a protobuf key,value pair
+   * Creates a protobuf key,value pair from an encoded key and value
    *
    * @param key - an EncodedValue containing the key of the entry
    * @param value - an EncodedValue containing the value of the entry
@@ -64,6 +62,26 @@ public abstract class ProtobufUtilities {
   public static BasicTypes.Entry createEntry(BasicTypes.EncodedValue key,
       BasicTypes.EncodedValue value) {
     return BasicTypes.Entry.newBuilder().setKey(key).setValue(value).build();
+  }
+
+  /**
+   * Creates a protobuf key,value pair from unencoded data
+   *
+   * @param serializationService - object which knows how to encode objects for the protobuf
+   *        protocol {@link ProtobufSerializationService}
+   * @param unencodedKey - the unencoded key for the entry
+   * @param unencodedValue - the unencoded value for the entry
+   * @return a protobuf Entry containing the encoded key and value
+   * @throws UnsupportedEncodingTypeException - The key or value passed doesn't have a corresponding
+   *         SerializationType
+   * @throws CodecNotRegisteredForTypeException - There isn't a protobuf codec for the
+   *         SerializationType of the passed key or value
+   */
+  public static BasicTypes.Entry createEntry(SerializationService serializationService,
+      Object unencodedKey, Object unencodedValue)
+      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    return createEntry(createEncodedValue(serializationService, unencodedKey),
+        createEncodedValue(serializationService, unencodedValue));
   }
 
   /**

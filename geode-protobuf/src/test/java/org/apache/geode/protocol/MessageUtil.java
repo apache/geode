@@ -47,7 +47,7 @@ public class MessageUtil {
   }
 
   public static ClientProtocol.Message makeGetRequestMessage(
-      SerializationService serializationService, String requestKey, String requestRegion,
+      SerializationService serializationService, Object requestKey, String requestRegion,
       ClientProtocol.MessageHeader header) throws CodecAlreadyRegisteredForTypeException,
       UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     ClientProtocol.Request request = ProtobufRequestUtilities.createGetRequest(requestRegion,
