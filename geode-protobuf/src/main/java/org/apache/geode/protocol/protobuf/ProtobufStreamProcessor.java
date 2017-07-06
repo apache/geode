@@ -24,6 +24,7 @@ import org.apache.geode.protocol.operations.registry.exception.OperationHandlerN
 import org.apache.geode.protocol.protobuf.operations.GetRegionNamesRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.RemoveRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
@@ -63,6 +64,9 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
     registry.registerOperationHandlerForOperationId(
         ClientProtocol.Request.RequestAPICase.GETREGIONNAMESREQUEST.getNumber(),
         new GetRegionNamesRequestOperationHandler());
+    registry.registerOperationHandlerForOperationId(
+        ClientProtocol.Request.RequestAPICase.REMOVEREQUEST.getNumber(),
+        new RemoveRequestOperationHandler());
   }
 
   public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)
