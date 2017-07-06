@@ -25,6 +25,8 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -179,8 +181,8 @@ public interface RegionEntry {
    * @since GemFire 3.2.1
    */
   public boolean fillInValue(LocalRegion r,
-      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) InitialImageOperation.Entry entry,
-      ByteArrayDataInput in, DM mgr);
+      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in, DM mgr,
+      final Version version);
 
   /**
    * Returns true if this entry has overflowed to disk.

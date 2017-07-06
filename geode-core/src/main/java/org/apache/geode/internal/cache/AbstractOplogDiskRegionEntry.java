@@ -18,6 +18,8 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
@@ -54,9 +56,9 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   }
 
   @Override
-  public boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
-      ByteArrayDataInput in, DM mgr) {
-    return Helper.fillInValue(this, entry, r.getDiskRegion(), mgr, in, r);
+  public boolean fillInValue(LocalRegion r, Entry entry, ByteArrayDataInput in, DM mgr,
+      final Version version) {
+    return Helper.fillInValue(this, entry, r.getDiskRegion(), mgr, in, r, version);
   }
 
   @Override

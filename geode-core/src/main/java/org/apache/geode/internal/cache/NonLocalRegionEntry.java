@@ -30,6 +30,8 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -184,8 +186,8 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
     return false;
   }
 
-  public boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
-      ByteArrayDataInput in, DM mgr) {
+  public boolean fillInValue(LocalRegion r, Entry entry, ByteArrayDataInput in, DM mgr,
+      final Version version) {
     throw new UnsupportedOperationException(
         LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
             .toLocalizedString());

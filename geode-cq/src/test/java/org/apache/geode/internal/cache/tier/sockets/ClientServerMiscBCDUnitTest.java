@@ -16,7 +16,10 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import io.codearte.catchexception.shade.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +28,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.server.CacheServer;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -205,6 +212,92 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
       Map seqMap = pool.getThreadIdToSequenceIdMap();
       assertEquals(4, seqMap.size()); // one for each server and one for the feed
     });
+  }
+
+  @Test
+  public void giiEventQueueFromOldToCurrentMemberShouldSucceed() {
+    giiEventQueueShouldSucceedWithMixedVersions(testVersion, VersionManager.CURRENT_VERSION);
+  }
+
+  @Test
+  public void giiEventQueueFromCurrentToOldMemberShouldSucceed() {
+    giiEventQueueShouldSucceedWithMixedVersions(VersionManager.CURRENT_VERSION, testVersion);
+
+  }
+
+  public void giiEventQueueShouldSucceedWithMixedVersions(String server1Version,
+      String server2Version) {
+    VM interestClient = Host.getHost(0).getVM(testVersion, 0);
+    // VM interestClient = Host.getHost(0).getVM(0);
+    VM feeder = Host.getHost(0).getVM(1);
+    server1 = Host.getHost(0).getVM(server1Version, 2);
+    server2 = Host.getHost(0).getVM(server2Version, 3);
+
+    // start servers first
+    int server1Port = initServerCache(true, server1, true);
+    int server2Port = initServerCache(true, server2, true);
+    server2.invoke(() -> {
+      getCache().getCacheServers().stream().forEach(CacheServer::stop);
+    });
+
+
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    interestClient.invoke("create interestClient cache", () -> {
+      createClientCache(hostname, 300000, false, server1Port, server2Port);
+      registerInterest();
+      registerCQ();
+    });
+
+    feeder.invoke("putting data in feeder", () -> putForClient());
+
+    // Start server 2
+    server2.invoke(() -> {
+      for (CacheServer server : getCache().getCacheServers()) {
+        server.start();
+      }
+    });
+
+    // Make sure server 2 copies the queue
+    server2.invoke(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        final Collection<CacheClientProxy> clientProxies =
+            CacheClientNotifier.getInstance().getClientProxies();
+        assertFalse(clientProxies.isEmpty());
+        CacheClientProxy proxy = clientProxies.iterator().next();
+        assertFalse(proxy.getHARegionQueue().isEmpty());
+      });
+    });
+
+    // interestClient will receive feeder's updates asynchronously
+    interestClient.invoke("verification 1", () -> {
+      Region r2 = getCache().getRegion(REGION_NAME2);
+      MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> verifier.eventReceived);
+      verifier.reset();
+    });
+
+    server1.invoke("shutdown old server", () -> {
+      getCache().getDistributedSystem().disconnect();
+    });
+
+    server2.invoke("wait for failover queue to drain", () -> {
+      CacheClientProxy proxy =
+          CacheClientNotifier.getInstance().getClientProxies().iterator().next();
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+        proxy.getHARegionQueue().isEmpty();
+      });
+    });
+  }
+
+  public static void registerCQ() throws Exception {
+    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+    assertNotNull(r);
+    CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
+    cqAttributesFactory.addCqListener(Mockito.mock(CqListener.class));
+    final CqQuery cq = cache.getQueryService().newCq("testCQ", "select * from " + r.getFullPath(),
+        cqAttributesFactory.create());
+    cq.execute();
   }
 
   @Test
