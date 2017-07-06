@@ -42,7 +42,7 @@ message PutAllRequest {
 }
 
 message PutAllResponse {
-    repeated EncodedValue failedKeys = 1;
+    // message presence indicates success.
 }
 
 message GetAllRequest {

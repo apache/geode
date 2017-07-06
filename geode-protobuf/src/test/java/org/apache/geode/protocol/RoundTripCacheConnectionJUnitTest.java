@@ -17,7 +17,6 @@ package org.apache.geode.protocol;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -42,6 +41,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 import org.awaitility.Awaitility;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,13 +52,20 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test that switching on the header byte makes instances of
@@ -76,6 +83,13 @@ public class RoundTripCacheConnectionJUnitTest {
   private static final String DEFAULT_STORE = "default.keystore";
   private static final String SSL_PROTOCOLS = "any";
   private static final String SSL_CIPHERS = "any";
+
+  public static final String TEST_MULTIOP_KEY1 = "multiopKey1";
+  public static final String TEST_MULTIOP_KEY2 = "multiopKey2";
+  public static final String TEST_MULTIOP_KEY3 = "multiopKey3";
+  public static final String TEST_MULTIOP_VALUE1 = "multiopValue1";
+  public static final String TEST_MULTIOP_VALUE2 = "multiopValue2";
+  public static final String TEST_MULTIOP_VALUE3 = "multiopValue3";
 
   private Cache cache;
   private int cacheServerPort;
@@ -144,7 +158,76 @@ public class RoundTripCacheConnectionJUnitTest {
     ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
         TEST_KEY, TEST_REGION, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
     protobufProtocolSerializer.serialize(getMessage, outputStream);
-    validateGetResponse(socket, protobufProtocolSerializer);
+    validateGetResponse(socket, protobufProtocolSerializer, TEST_VALUE);
+  }
+
+  @Test
+  public void testNewProtocolWithMultikeyOperations() throws Exception {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+
+    Socket socket = new Socket("localhost", cacheServerPort);
+    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    OutputStream outputStream = socket.getOutputStream();
+    outputStream.write(110);
+
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+    Set<BasicTypes.Entry> putEntries = new HashSet<>();
+    putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY1,
+        TEST_MULTIOP_VALUE1));
+    putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY2,
+        TEST_MULTIOP_VALUE2));
+    putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
+        TEST_MULTIOP_VALUE3));
+    ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufRequest(
+        ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID),
+        ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, putEntries));
+    protobufProtocolSerializer.serialize(putAllMessage, outputStream);
+    validatePutAllResponse(socket, protobufProtocolSerializer,
+        ClientProtocol.Response.ResponseAPICase.PUTALLRESPONSE);
+
+    Set<BasicTypes.EncodedValue> getEntries = new HashSet<>();
+    getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY1));
+    getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY2));
+    getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY3));
+    ClientProtocol.Message getAllMessage = ProtobufUtilities.createProtobufRequest(
+        ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID),
+        ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, getEntries));
+    protobufProtocolSerializer.serialize(getAllMessage, outputStream);
+    validateGetAllResponse(socket, protobufProtocolSerializer);
+  }
+
+  @Test
+  public void multiKeyOperationErrorsWithClasscastException() throws Exception {
+    RegionFactory<Float, Object> regionFactory = cache.createRegionFactory();
+    regionFactory.setKeyConstraint(Float.class);
+    String regionName = "constraintRegion";
+    regionFactory.create(regionName);
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+
+    Socket socket = new Socket("localhost", cacheServerPort);
+    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    OutputStream outputStream = socket.getOutputStream();
+    outputStream.write(110);
+
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+    Set<BasicTypes.Entry> putEntries = new HashSet<>();
+    putEntries.add(
+        ProtobufUtilities.createEntry(serializationService, new Float(2.2), TEST_MULTIOP_VALUE1));
+    putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY2,
+        TEST_MULTIOP_VALUE2));
+    putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
+        TEST_MULTIOP_VALUE3));
+    ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufRequest(
+        ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID),
+        ProtobufRequestUtilities.createPutAllRequest(regionName, putEntries));
+    protobufProtocolSerializer.serialize(putAllMessage, outputStream);
+    validatePutAllResponse(socket, protobufProtocolSerializer,
+        ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE);
+
+    ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
+        new Float(2.2), regionName, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
+    protobufProtocolSerializer.serialize(getMessage, outputStream);
+    validateGetResponse(socket, protobufProtocolSerializer, TEST_MULTIOP_VALUE1);
 
     ClientProtocol.Message removeMessage = ProtobufUtilities.createProtobufRequest(
         ProtobufUtilities.createMessageHeader(TEST_REMOVE_CORRELATION_ID),
@@ -207,7 +290,7 @@ public class RoundTripCacheConnectionJUnitTest {
   }
 
   private void validateGetResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer)
+      ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
       throws InvalidProtocolMessageException, IOException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException, CodecAlreadyRegisteredForTypeException {
     ClientProtocol.Message message =
@@ -220,7 +303,7 @@ public class RoundTripCacheConnectionJUnitTest {
     RegionAPI.GetResponse getResponse = response.getGetResponse();
     BasicTypes.EncodedValue result = getResponse.getResult();
     assertEquals(BasicTypes.EncodingType.STRING, result.getEncodingType());
-    assertEquals(TEST_VALUE, new ProtobufSerializationService().decode(result.getEncodingType(),
+    assertEquals(expectedValue, new ProtobufSerializationService().decode(result.getEncodingType(),
         result.getValue().toByteArray()));
   }
 
@@ -237,6 +320,50 @@ public class RoundTripCacheConnectionJUnitTest {
     RegionAPI.GetRegionNamesResponse getRegionsResponse = response.getGetRegionNamesResponse();
     assertEquals(1, getRegionsResponse.getRegionsCount());
     assertEquals(TEST_REGION, getRegionsResponse.getRegions(0));
+  }
+
+  private void validatePutAllResponse(Socket socket,
+      ProtobufProtocolSerializer protobufProtocolSerializer,
+      ClientProtocol.Response.ResponseAPICase responseCase) throws Exception {
+    ClientProtocol.Message message =
+        protobufProtocolSerializer.deserialize(socket.getInputStream());
+    assertEquals(TEST_PUT_CORRELATION_ID, message.getMessageHeader().getCorrelationId());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
+    ClientProtocol.Response response = message.getResponse();
+    assertEquals(responseCase, response.getResponseAPICase());
+  }
+
+  private void validateGetAllResponse(Socket socket,
+      ProtobufProtocolSerializer protobufProtocolSerializer)
+      throws InvalidProtocolMessageException, IOException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException, CodecAlreadyRegisteredForTypeException {
+    ClientProtocol.Message message =
+        protobufProtocolSerializer.deserialize(socket.getInputStream());
+    assertEquals(TEST_GET_CORRELATION_ID, message.getMessageHeader().getCorrelationId());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
+    ClientProtocol.Response response = message.getResponse();
+    assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
+        response.getResponseAPICase());
+    RegionAPI.GetAllResponse getAllResponse = response.getGetAllResponse();
+    assertEquals(3, getAllResponse.getEntriesCount());
+    for (BasicTypes.Entry result : getAllResponse.getEntriesList()) {
+      String key = (String) ProtobufUtilities.decodeValue(serializationService, result.getKey());
+      String value =
+          (String) ProtobufUtilities.decodeValue(serializationService, result.getValue());
+      switch (key) {
+        case TEST_MULTIOP_KEY1:
+          assertEquals(TEST_MULTIOP_VALUE1, value);
+          break;
+        case TEST_MULTIOP_KEY2:
+          assertEquals(TEST_MULTIOP_VALUE2, value);
+          break;
+        case TEST_MULTIOP_KEY3:
+          assertEquals(TEST_MULTIOP_VALUE3, value);
+          break;
+        default:
+          Assert.fail("Unexpected key found by getAll: " + key);
+      }
+    }
   }
 
   private void validateRemoveResponse(Socket socket,

@@ -17,7 +17,9 @@ package org.apache.geode.protocol.protobuf.operations;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
-import org.apache.geode.protocol.protobuf.*;
+import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
@@ -26,46 +28,82 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PutRequestOperationHandler
+import java.util.HashMap;
+import java.util.Map;
+
+public class PutAllRequestOperationHandler
     implements OperationHandler<ClientProtocol.Request, ClientProtocol.Response> {
   private static Logger logger = LogManager.getLogger();
+
+  private RegionAPI.PutAllRequest putAllRequest = null;
+  private Region region = null;
+  private Map<Object, Object> entries = null;
 
   @Override
   public ClientProtocol.Response process(SerializationService serializationService,
       ClientProtocol.Request request, Cache cache) {
-    if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.PUTREQUEST) {
+    ClientProtocol.Response errorResponse = validatePutAllRequest(request);
+    if (errorResponse == null) {
+      errorResponse = determinePutAllRegion(cache);
+    }
+    if (errorResponse == null) {
+      errorResponse = extractPutAllEntries(serializationService);
+    }
+    if (errorResponse == null) {
+      try {
+        region.putAll(entries);
+      } catch (Exception ex) {
+        return ProtobufResponseUtilities.createAndLogErrorResponse(ex.getMessage(), logger, ex);
+      }
+
+      return ProtobufResponseUtilities.createPutAllResponse();
+    } else {
+      return errorResponse;
+    }
+  }
+
+  private ClientProtocol.Response validatePutAllRequest(ClientProtocol.Request request) {
+    if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.PUTALLREQUEST) {
       return ProtobufResponseUtilities
           .createAndLogErrorResponse("Improperly formatted put request message.", logger, null);
     }
-    RegionAPI.PutRequest putRequest = request.getPutRequest();
 
-    String regionName = putRequest.getRegionName();
-    Region region = cache.getRegion(regionName);
+    putAllRequest = request.getPutAllRequest();
+    return null;
+  }
+
+  private ClientProtocol.Response determinePutAllRegion(Cache cache) {
+    String regionName = putAllRequest.getRegionName();
+    region = cache.getRegion(regionName);
+
     if (region == null) {
       return ProtobufResponseUtilities.createAndLogErrorResponse(
           "Region passed by client did not exist: " + regionName, logger, null);
+    } else {
+      return null;
     }
+  }
 
+  // Read all of the entries out of the protobuf and return an error (without performing any puts)
+  // if any of the entries can't be decoded
+  private ClientProtocol.Response extractPutAllEntries(SerializationService serializationService) {
+    entries = new HashMap();
     try {
-      BasicTypes.Entry entry = putRequest.getEntry();
+      for (BasicTypes.Entry entry : putAllRequest.getEntryList()) {
+        Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
+        Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
 
-      Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
-      Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
-      try {
-        region.put(decodedKey, decodedValue);
-        return ProtobufResponseUtilities.createPutResponse();
-      } catch (ClassCastException ex) {
-        return ProtobufResponseUtilities
-            .createAndLogErrorResponse("invalid key or value type for region " + regionName
-                + ",passed key: " + entry.getKey().getEncodingType() + " value: "
-                + entry.getValue().getEncodingType(), logger, ex);
+        entries.put(decodedKey, decodedValue);
       }
     } catch (UnsupportedEncodingTypeException ex) {
-      return ProtobufResponseUtilities.createAndLogErrorResponse("encoding not supported ", logger,
+      return ProtobufResponseUtilities.createAndLogErrorResponse("Encoding not supported ", logger,
           ex);
     } catch (CodecNotRegisteredForTypeException ex) {
       return ProtobufResponseUtilities
-          .createAndLogErrorResponse("codec error in protobuf deserialization ", logger, ex);
+          .createAndLogErrorResponse("Codec error in protobuf deserialization ", logger, ex);
     }
+
+    return null;
   }
+
 }

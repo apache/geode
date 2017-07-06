@@ -34,15 +34,15 @@ public class GetRequestOperationHandler
   public ClientProtocol.Response process(SerializationService serializationService,
       ClientProtocol.Request request, Cache cache) {
     if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.GETREQUEST) {
-      return ProtobufResponseUtilities.createAndLogErrorResponse(false, false,
-          "Improperly formatted get request message.", logger, null);
+      return ProtobufResponseUtilities
+          .createAndLogErrorResponse("Improperly formatted get request message.", logger, null);
     }
     RegionAPI.GetRequest getRequest = request.getGetRequest();
 
     String regionName = getRequest.getRegionName();
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return ProtobufResponseUtilities.createErrorResponse(false, false, "Region not found");
+      return ProtobufResponseUtilities.createErrorResponse("Region not found");
     }
 
     try {
@@ -58,11 +58,11 @@ public class GetRequestOperationHandler
       return ProtobufResponseUtilities.createGetResponse(encodedValue);
     } catch (UnsupportedEncodingTypeException ex) {
       // can be thrown by encoding or decoding.
-      return ProtobufResponseUtilities.createAndLogErrorResponse(false, false,
-          "Encoding not supported.", logger, ex);
+      return ProtobufResponseUtilities.createAndLogErrorResponse("Encoding not supported.", logger,
+          ex);
     } catch (CodecNotRegisteredForTypeException ex) {
-      return ProtobufResponseUtilities.createAndLogErrorResponse(true, false,
-          "Codec error in protobuf deserialization.", logger, ex);
+      return ProtobufResponseUtilities
+          .createAndLogErrorResponse("Codec error in protobuf deserialization.", logger, ex);
     }
   }
 }
