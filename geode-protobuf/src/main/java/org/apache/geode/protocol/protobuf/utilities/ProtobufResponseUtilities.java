@@ -82,14 +82,10 @@ public abstract class ProtobufResponseUtilities {
   /**
    * This creates a response object containing a RegionAPI.GetResponse
    *
-   * @param lookupFailure - object describing a lookup failure, see createLookupFailure in
-   *        {@link ProtobufUtilities}
    * @return A response indicating a failure to find a requested key or value
    */
-  public static ClientProtocol.Response createGetResponse(RegionAPI.LookupFailure lookupFailure) {
-    RegionAPI.GetResponse getResponse =
-        RegionAPI.GetResponse.newBuilder().setNull(lookupFailure).build();
-    return ClientProtocol.Response.newBuilder().setGetResponse(getResponse).build();
+  public static ClientProtocol.Response createNullGetResponse() {
+    return ClientProtocol.Response.newBuilder().setGetResponse(RegionAPI.GetResponse.newBuilder()).build();
   }
 
   /**

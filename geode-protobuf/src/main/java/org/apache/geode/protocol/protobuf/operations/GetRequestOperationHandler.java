@@ -50,8 +50,7 @@ public class GetRequestOperationHandler
       Object resultValue = region.get(decodedKey);
 
       if (resultValue == null) {
-        RegionAPI.LookupFailure lookupFailure = ProtobufUtilities.createLookupFailure(false);
-        return ProtobufResponseUtilities.createGetResponse(lookupFailure);
+        return ProtobufResponseUtilities.createNullGetResponse();
       }
 
       BasicTypes.EncodedValue encodedValue =

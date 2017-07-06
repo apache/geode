@@ -32,17 +32,8 @@ message GetRequest {
     EncodedValue key = 2;
 }
 
-message LookupFailure {
-    // if true, the key is set to the value null.
-    // if false, the key did not exist in the region.
-   bool keyInKeySet = 1;
-}
-
 message GetResponse {
-    oneof response {
-        LookupFailure null = 1;
-        EncodedValue result = 2;
-    }
+    EncodedValue result = 1;
 }
 
 message PutAllRequest {

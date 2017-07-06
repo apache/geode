@@ -67,17 +67,6 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * This creates a protobuf message representing a failed lookup.
-   *
-   * @param keyFound - If true indicates that a key was found, but for some reason there wasn't an
-   *        associated value
-   * @return a protobuf LoopupFailure containing the above parameter
-   */
-  public static RegionAPI.LookupFailure createLookupFailure(boolean keyFound) {
-    return RegionAPI.LookupFailure.newBuilder().setKeyInKeySet(keyFound).build();
-  }
-
-  /**
    * This creates a protobuf message containing a ClientProtocol.Response
    *
    * @param messageHeader - The header for the message

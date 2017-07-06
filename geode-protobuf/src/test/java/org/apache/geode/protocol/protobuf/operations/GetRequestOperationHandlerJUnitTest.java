@@ -108,8 +108,7 @@ public class GetRequestOperationHandlerJUnitTest {
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
     RegionAPI.GetResponse getResponse = response.getGetResponse();
-    Assert.assertNotNull(getResponse.getNull());
-    Assert.assertFalse(getResponse.getNull().getKeyInKeySet());
+    Assert.assertFalse(getResponse.hasResult());
   }
 
   @Test
