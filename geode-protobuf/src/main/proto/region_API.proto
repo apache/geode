@@ -69,7 +69,6 @@ message RemoveRequest {
 }
 
 message RemoveResponse {
-    bool success = 1;
 }
 
 message RemoveAllRequest {

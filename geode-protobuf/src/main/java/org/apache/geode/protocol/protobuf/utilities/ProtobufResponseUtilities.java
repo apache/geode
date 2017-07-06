@@ -80,6 +80,16 @@ public abstract class ProtobufResponseUtilities {
   }
 
   /**
+   * This creates a response object containing a RegionAPI.RemoveResponse
+   *
+   * @return A response indicating the entry with the passed key was removed
+   */
+  public static ClientProtocol.Response createRemoveResponse() {
+    RegionAPI.RemoveResponse removeResponse = RegionAPI.RemoveResponse.newBuilder().build();
+    return ClientProtocol.Response.newBuilder().setRemoveResponse(removeResponse).build();
+  }
+
+  /**
    * This creates a response object containing a RegionAPI.GetResponse
    *
    * @return A response indicating a failure to find a requested key or value
