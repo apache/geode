@@ -1132,7 +1132,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // write name last to fix bug 45160
     DataSerializer.writeString(netMbr.getName(), out);
 
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90) == 0) {
+    Version outputVersion = InternalDataSerializer.getVersionForDataStream(out);
+    if (0 <= outputVersion.compareTo(Version.GFE_90)
+        && outputVersion.compareTo(Version.GEODE_110) < 0) {
       netMbr.writeAdditionalData(out);
     }
   }
