@@ -194,7 +194,7 @@ public class EventIdOptimizationJUnitTest {
     eventID2.fromData(dataInputStream);
 
     assertEquals(distributedMember, eventID2.getDistributedMember(Version.GFE_90));
-    
+
     assertEquals(memberBytes.length + 17, eventID2.getMembershipID().length);
   }
 
