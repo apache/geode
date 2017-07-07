@@ -1910,7 +1910,8 @@ public class InitialImageOperation {
                     entry = new InitialImageOperation.Entry();
                     entry.key = key;
                     entry.setVersionTag(stamp.asVersionTag());
-                    fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager());
+                    fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
+                        sender.getVersionObject());
                     if (versionVector != null) {
                       if (logger.isTraceEnabled(LogMarker.GII)) {
                         logger.trace(LogMarker.GII, "chunkEntries:entry={},stamp={}", entry, stamp);
@@ -1920,7 +1921,8 @@ public class InitialImageOperation {
                 } else {
                   entry = new InitialImageOperation.Entry();
                   entry.key = key;
-                  fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager());
+                  fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
+                      sender.getVersionObject());
                 }
               } catch (DiskAccessException dae) {
                 rgn.handleDiskAccessException(dae);
