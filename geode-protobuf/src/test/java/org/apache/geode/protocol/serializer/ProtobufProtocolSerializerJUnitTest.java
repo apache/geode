@@ -16,8 +16,8 @@ package org.apache.geode.protocol.serializer;
 
 import org.apache.geode.protocol.MessageUtil;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Assert;
 import org.junit.Before;

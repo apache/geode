@@ -14,15 +14,13 @@
  */
 package org.apache.geode.protocol.protobuf;
 
-import static org.junit.Assert.assertSame;
-
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.assertSame;
 
 @Category(UnitTest.class)
 public class EncodingTypeToSerializationTypeTranslatorJUnitTest {

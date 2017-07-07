@@ -14,16 +14,14 @@
  */
 package org.apache.geode.serialization.codec;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.nio.charset.Charset;
+
+import static org.junit.Assert.*;
 
 @Category(UnitTest.class)
 public class BinaryFormatJUnitTest {
