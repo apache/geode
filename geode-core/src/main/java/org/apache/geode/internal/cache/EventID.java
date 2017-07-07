@@ -298,13 +298,13 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * deserialize the memberID bytes using the given version. The correct thing to do would be to
    * have EventID carry the version ordinal of the serialized memberID, or to have it be part of the
-   * memberID bytes and use that version to deserialize the bytes
+   * memberID bytes and use that version to deserialize the bytes. Clients prior to 1.1.0 need to
+   * have UUID bytes in the memberID. Newer clients don't require this.
    */
-  private InternalDistributedMember getDistributedMember(Version targetVersion) {
+  public InternalDistributedMember getDistributedMember(Version targetVersion) {
     ByteArrayInputStream bais = new ByteArrayInputStream(this.membershipID);
     DataInputStream dis = new DataInputStream(bais);
-    if (0 <= targetVersion.compareTo(Version.GFE_90)
-        && targetVersion.compareTo(Version.GEODE_110) < 0) {
+    if (targetVersion.compareTo(Version.GEODE_110) < 0) {
       // GEODE-3153: clients expect to receive UUID bytes, which are only
       // read if the stream's version is 1.0.0-incubating
       dis = new VersionedDataInputStream(dis, Version.GFE_90);
@@ -345,10 +345,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     // of the identifier
     // See GEODE-3072
     if (version.compareTo(Version.GEODE_110) < 0) {
-      InternalDistributedMember member = getDistributedMember(version);
+      InternalDistributedMember member = getDistributedMember(Version.GFE_90);
       // reserialize with the client's version so that we write the UUID
       // bytes
-      HeapDataOutputStream hdos = new HeapDataOutputStream(version);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.GFE_90);
       member.writeEssentialData(hdos);
       DataSerializer.writeByteArray(hdos.toByteArray(), dop);
     } else {
