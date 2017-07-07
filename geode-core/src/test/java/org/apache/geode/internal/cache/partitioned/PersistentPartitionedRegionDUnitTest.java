@@ -2167,8 +2167,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
       }
     }
 
-    closePR(vm1, PR_CHILD_REGION_NAME);
-    closePR(vm1);
+    closeCache(vm1);
   }
 
   /**
