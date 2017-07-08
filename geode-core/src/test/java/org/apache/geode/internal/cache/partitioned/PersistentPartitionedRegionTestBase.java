@@ -388,7 +388,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
       boolean setPersistenceAdvisorObserver) {
     vm.invoke(() -> {
       String dsName = "colacatedpr";
-      
+
       Cache cache = getCache();
 
       // Wait for both nested PRs to be created
