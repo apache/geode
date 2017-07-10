@@ -64,7 +64,8 @@ public abstract class ContainerInstall {
 
   public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
   public static final String DEFAULT_INSTALL_DIR = "/tmp/cargo_containers/";
-  public static final String DEFAULT_MODULE_DIR = GEODE_BUILD_HOME + "/tools/Modules/";
+  private static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
+  public static final String DEFAULT_MODULE_EXTRACTION_DIR = "/tmp/cargo_modules/";
 
   /**
    * Represents the type of connection used in this installation
@@ -121,6 +122,7 @@ public abstract class ContainerInstall {
     INSTALL_PATH = installer.getHome();
     // Find and extract the module path
     MODULE_PATH = findAndExtractModule(moduleName);
+    logger.info("Extracted module " + moduleName + " to " + MODULE_PATH);
     // Find the session testing war path
     WAR_FILE_PATH = findSessionTestingWar();
 
@@ -306,17 +308,17 @@ public abstract class ContainerInstall {
    * @throws IOException
    */
   protected static String findAndExtractModule(String moduleName) throws IOException {
-    String modulePath = null;
-    String modulesDir = DEFAULT_MODULE_DIR;
+    File modulePath = null;
+    File modulesDir = new File(DEFAULT_MODULE_LOCATION);
 
     boolean archive = false;
     logger.info("Trying to access build dir " + modulesDir);
 
     // Search directory for tomcat module folder/zip
-    for (File file : (new File(modulesDir)).listFiles()) {
+    for (File file : modulesDir.listFiles()) {
 
       if (file.getName().toLowerCase().contains(moduleName)) {
-        modulePath = file.getAbsolutePath();
+        modulePath = file;
 
         archive = !file.isDirectory();
         if (!archive)
@@ -326,19 +328,26 @@ public abstract class ContainerInstall {
 
     // Unzip if it is a zip file
     if (archive) {
-      if (!FilenameUtils.getExtension(modulePath).equals("zip")) {
+      if (!FilenameUtils.getExtension(modulePath.getAbsolutePath()).equals("zip")) {
         throw new IOException("Bad module archive " + modulePath);
       }
 
-      ZipUtils.unzip(modulePath, modulePath.substring(0, modulePath.length() - 4));
+      // Get the name of the new module folder within the extraction directory
+      File newModuleFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR
+          + modulePath.getName().substring(0, modulePath.getName().length() - 4));
 
-      modulePath = modulePath.substring(0, modulePath.length() - 4);
+      // Extract folder to location if not already there
+      if (!newModuleFolder.exists()) {
+        ZipUtils.unzip(modulePath.getAbsolutePath(), newModuleFolder.getAbsolutePath());
+      }
+
+      modulePath = newModuleFolder;
     }
 
     // No module found within directory throw IOException
     if (modulePath == null)
       throw new IOException("No module found in " + modulesDir);
-    return modulePath;
+    return modulePath.getAbsolutePath();
   }
 
   /**
