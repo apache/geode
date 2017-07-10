@@ -161,7 +161,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     File pwd = new File(".");
     for (File entry : pwd.listFiles()) {
       try {
-        FileUtils.deleteDirectory(entry);
+        if (entry.isDirectory()) {
+          FileUtils.deleteDirectory(entry);
+        } else {
+          entry.delete();
+        }
       } catch (Exception e) {
         System.out.println("Could not delete " + entry + ": " + e.getMessage());
       }
