@@ -20,9 +20,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.rules.gfsh.GfshRule;
 import org.apache.geode.test.dunit.rules.gfsh.GfshScript;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(DistributedTest.class)
+@Category(AcceptanceTest.class)
 public class StatusLocatorRealGfshTest {
   @Rule
   public GfshRule gfshRule = new GfshRule();
