@@ -31,7 +31,7 @@ public class Tomcat7Test extends CargoTestBase {
   public static void setupTomcatInstall() throws Exception {
     install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
         ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7Test");
-    install.setLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
+    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 
   @Override

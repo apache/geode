@@ -14,26 +14,12 @@
  */
 package org.apache.geode.session.tests;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.cargo.container.ContainerType;
-import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
-import org.codehaus.cargo.container.configuration.ConfigurationType;
-import org.codehaus.cargo.container.configuration.LocalConfiguration;
-import org.codehaus.cargo.container.deployable.WAR;
-import org.codehaus.cargo.container.property.GeneralPropertySet;
-import org.codehaus.cargo.container.property.ServletPropertySet;
-import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
-import org.codehaus.cargo.generic.DefaultContainerFactory;
-import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -44,24 +30,24 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class ContainerManager {
   private static final Logger logger = LogService.getLogger();
-
-  private ArrayList<InstalledLocalContainer> containers;
-  private ArrayList<ContainerInstall> installs;
-
   private String testName;
+
+  private ArrayList<ServerContainer> containers;
 
   public ContainerManager() {
     containers = new ArrayList<>();
-    installs = new ArrayList<>();
   }
 
   /**
-   * Set the name of the current test
-   *
-   * Used for debugging so that log files can be easily identified
+   * @return the number of containers managed
    */
-  public void setTestName(String testName) {
-    this.testName = testName;
+  public int numContainers() {
+    return containers.size();
+  }
+
+  public void cleanUp() throws IOException {
+    for (int i = 0; i < numContainers(); i++)
+      getContainer(i).cleanUp();
   }
 
   /**
@@ -69,7 +55,7 @@ public class ContainerManager {
    *
    * The container will not be running until one of the start methods is called.
    */
-  public InstalledLocalContainer addContainer(ContainerInstall install) throws IOException {
+  public ServerContainer addContainer(ContainerInstall install) throws IOException {
     return addContainer(install, containers.size());
   }
 
@@ -84,166 +70,25 @@ public class ContainerManager {
   }
 
   /**
-   * Return the http port the given container is listening on, if the container is running
-   * 
-   * @throws IllegalStateException if the container is not running.
-   */
-  public String getContainerPort(int index) {
-    return getContainerPort(getContainer(index));
-  }
-
-  private String getContainerPort(InstalledLocalContainer container) {
-    LocalConfiguration config = container.getConfiguration();
-    config.applyPortOffset();
-
-    if (!container.getState().isStarted()) {
-      throw new IllegalStateException("Port has not yet been assigned to container");
-    }
-    return config.getPropertyValue(ServletPropertySet.PORT);
-  }
-
-  /**
-   * @return the number of containers managed
-   */
-  public int numContainers() {
-    return containers.size();
-  }
-
-  public ArrayList<Integer> getContainerIndexesWithState(String state) {
-    ArrayList<Integer> indexes = new ArrayList<>();
-    for (int i = 0; i < numContainers(); i++) {
-      if (state.equals(State.STARTED.toString()) || state.equals(State.STOPPED.toString())
-          || state.equals(State.STARTED.toString()) || state.equals(State.STOPPING.toString())
-          || state.equals(State.UNKNOWN.toString())) {
-        if (getContainer(i).getState().toString().equals(state))
-          indexes.add(i);
-      } else
-        throw new IllegalArgumentException(
-            "State must be one of the 5 specified cargo state strings (stopped, started, starting, stopping, or unknown). Given: "
-                + state);
-    }
-    return indexes;
-  }
-
-  /**
-   * Return the cargo container of all of the containers in the given state
-   */
-  public ArrayList<InstalledLocalContainer> getContainersWithState(String state) {
-    ArrayList<InstalledLocalContainer> statedContainers = new ArrayList<>();
-    for (int index : getContainerIndexesWithState(state))
-      statedContainers.add(getContainer(index));
-    return statedContainers;
-  }
-
-  private ArrayList<Integer> getInactiveContainerIndexes() {
-    ArrayList<Integer> indexes = getContainerIndexesWithState(State.STOPPED.toString());
-    indexes.addAll(getContainerIndexesWithState(State.UNKNOWN.toString()));
-    return indexes;
-  }
-
-  private ArrayList<InstalledLocalContainer> getInactiveContainers() {
-    ArrayList<InstalledLocalContainer> inactiveContainers =
-        getContainersWithState(State.STOPPED.toString());
-    inactiveContainers.addAll(getContainersWithState(State.UNKNOWN.toString()));
-    return inactiveContainers;
-  }
-
-  private ArrayList<Integer> getActiveContainerIndexes() {
-    return getContainerIndexesWithState(State.STARTED.toString());
-  }
-
-  public ArrayList<InstalledLocalContainer> getActiveContainers() {
-    return getContainersWithState(State.STARTED.toString());
-  }
-
-  public InstalledLocalContainer getContainer(int index) {
-    return containers.get(index);
-  }
-
-  public ContainerInstall getContainerInstall(int index) {
-    return installs.get(index);
-  }
-
-  /**
-   * Get a textual description of the given container.
-   */
-  public String getContainerDescription(int index) {
-    return getContainerDescription(getContainer(index), getContainerInstall(index)) + " (" + index
-        + ")";
-  }
-
-  private String getContainerDescription(InstalledLocalContainer container,
-      ContainerInstall install) {
-    String port = "<" + container.getState().toString() + ">";
-    try {
-      port = String.valueOf(getContainerPort(container));
-    } catch (IllegalStateException ise) {
-    }
-
-    return install.getContainerDescription() + ":" + port;
-  }
-
-  /**
    * Start the given container
    */
   public void startContainer(int index) {
-    InstalledLocalContainer container = getContainer(index);
-    ContainerInstall install = getContainerInstall(index);
-    String containerDescription = getContainerDescription(index);
-
-    String logFilePath =
-        new File("cargo_logs/containers/" + getUniqueContainerDescription(index) + ".log")
-            .getAbsolutePath();
-    container.setOutput(logFilePath);
-    logger.info("Sending log file output to " + logFilePath);
-
-    if (!container.getState().isStarted()) {
-      logger.info("Starting container " + containerDescription);
-      int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-      container.getConfiguration().setProperty(ServletPropertySet.PORT, Integer.toString(ports[0]));
-      container.getConfiguration().setProperty(GeneralPropertySet.RMI_PORT,
-          Integer.toString(ports[1]));
-      container.getConfiguration().setProperty(TomcatPropertySet.AJP_PORT,
-          Integer.toString(ports[2]));
-      container.getConfiguration().setProperty(GeneralPropertySet.PORT_OFFSET, "0");
-
-      try {
-        install.writeProperties();
-        container.start();
-      } catch (Exception e) {
-        throw new RuntimeException(
-            "Something very bad happened to this container when starting. Check the cargo_logs folder for container logs.",
-            e);
-      }
-      logger.info("Started container " + containerDescription);
-    } else {
-      throw new IllegalArgumentException("Cannot start container " + containerDescription
-          + " its current state is " + container.getState());
+    try {
+      getContainer(index).start();
+    } catch (Exception e) {
+      throw new RuntimeException("Something very bad happened when trying to start container "
+          + getContainerDescription(index), e);
     }
+
+    logger.info("Started container " + getContainerDescription(index));
   }
 
   /**
-   * Stop the given container
+   * Start all containers specified by the given indexes
    */
-  public void stopContainer(int index) {
-    InstalledLocalContainer container = getContainer(index);
-    if (container.getState().isStarted()) {
-      logger.info("Stopping container" + index + " " + getContainerDescription(index));
-      container.stop();
-      logger.info("Stopped container" + index + " " + getContainerDescription(index));
-    } else
-      throw new IllegalArgumentException("Cannot stop container " + getContainerDescription(index)
-          + " it is currently " + container.getState());
-  }
-
   public void startContainers(ArrayList<Integer> indexes) {
     for (int index : indexes)
       startContainer(index);
-  }
-
-  public void stopContainers(ArrayList<Integer> indexes) {
-    for (int index : indexes)
-      stopContainer(index);
   }
 
   /**
@@ -254,105 +99,134 @@ public class ContainerManager {
   }
 
   /**
+   * Stop the given container
+   */
+  public void stopContainer(int index) {
+    getContainer(index).stop();
+
+    logger.info("Stopped container " + getContainerDescription(index));
+  }
+
+  /**
+   * Stop all containers specified by the given indexes
+   */
+  public void stopContainers(ArrayList<Integer> indexes) {
+    for (int index : indexes)
+      stopContainer(index);
+  }
+
+  /**
    * Stop all containers that are currently running.
    */
   public void stopAllActiveContainers() {
     stopContainers(getActiveContainerIndexes());
   }
 
-  public void removeContainer(int index) {
-    stopContainer(index);
-    containers.remove(index);
-    installs.remove(index);
-  }
-
   /**
-   * Runs {@link #clean} on all containers
-   */
-  public void cleanUp() throws IOException {
-    for (int i = 0; i < numContainers(); i++)
-      clean(i);
-  }
-
-  /**
-   * Deletes the configuration directory for the specified container
-   */
-  private void clean(int index) throws IOException {
-    ContainerInstall install = getContainerInstall(index);
-
-    String baseLogFilePath = new File("cargo_logs").getAbsolutePath();
-    String configLogFolderPath = baseLogFilePath + "/configs/";
-
-    File configDir = new File(getContainer(index).getConfiguration().getHome());
-    File configLogDir = new File(configLogFolderPath + configDir.getName());
-
-    if (configDir.exists()) {
-      configLogDir.mkdirs();
-
-      logger.info("Configuration in " + configDir.getAbsolutePath());
-      FileUtils.copyDirectory(configDir, configLogDir);
-      logger.info("Copied configuration to " + configLogDir.getAbsolutePath());
-      logger.info("Deleting configuration folder " + configDir.getAbsolutePath());
-      FileUtils.deleteDirectory(configDir);
-    }
-  }
-
-  private String getUniqueContainerDescription(int index) {
-    return getUniqueContainerDescription(index, getContainerInstall(index));
-  }
-
-  /**
-   * Get a human readable unique container description for container storage.
+   * Set the name of the current test
    *
-   * Unique descriptions currently are generated by joining
-   * {@link ContainerInstall#getContainerDescription()}, the index passed in, {@link #testName}, and
-   * the {@link System#nanoTime()} with '_' characters
+   * Used for debugging so that log files can be easily identified.
    */
-  private String getUniqueContainerDescription(int index, ContainerInstall install) {
-    return String.join("_", Arrays.asList(install.getContainerDescription(),
-        Integer.toString(index), testName, Long.toString(System.nanoTime())));
+  public void setTestName(String testName) {
+    this.testName = testName;
+  }
+
+  /**
+   * Get the positions of the containers with the given container state
+   *
+   * @param state A string representing the Cargo state a container is in. The possible states can
+   *        be found in as static variables in the {@link State} class.
+   */
+  public ArrayList<Integer> getContainerIndexesWithState(String state) {
+    ArrayList<Integer> indexes = new ArrayList<>();
+    for (int i = 0; i < numContainers(); i++) {
+      if (state.equals(State.STARTED.toString()) || state.equals(State.STOPPED.toString())
+          || state.equals(State.STARTED.toString()) || state.equals(State.STOPPING.toString())
+          || state.equals(State.UNKNOWN.toString())) {
+        if (getContainer(i).getState().toString().equals(state))
+          indexes.add(i);
+      } else
+        throw new IllegalArgumentException(
+            "State must be one of the 5 specified cargo state strings (stopped, started, starting, stopping, or unknown). State given was: "
+                + state);
+    }
+    return indexes;
+  }
+
+  /**
+   * Return the cargo container of all of the containers in the given state
+   */
+  public ArrayList<ServerContainer> getContainersWithState(String state) {
+    ArrayList<ServerContainer> statedContainers = new ArrayList<>();
+    for (int index : getContainerIndexesWithState(state))
+      statedContainers.add(getContainer(index));
+    return statedContainers;
+  }
+
+  /**
+   * Get the port of the container at the given index
+   */
+  public String getContainerPort(int index) {
+    return getContainer(index).getPort();
+  }
+
+  /**
+   * Get the container at the given index
+   */
+  public ServerContainer getContainer(int index) {
+    return containers.get(index);
+  }
+
+  /**
+   * Get a human readable unique description for the container (calls
+   * {@link ServerContainer#toString()})
+   */
+  public String getContainerDescription(int index) {
+    return getContainer(index).toString();
   }
 
   /**
    * Create a container to manage, given an installation.
    */
-  private InstalledLocalContainer addContainer(ContainerInstall install, int index)
-      throws IOException {
-    String uniqueName = getUniqueContainerDescription(index, install);
-
-    // Create the Cargo Container instance wrapping our physical container
-    LocalConfiguration configuration = (LocalConfiguration) new DefaultConfigurationFactory()
-        .createConfiguration(install.getContainerId(), ContainerType.INSTALLED,
-            ConfigurationType.STANDALONE, "/tmp/cargo_configs/" + uniqueName);
-    configuration.setProperty(GeneralPropertySet.LOGGING, install.getLoggingLevel());
-
-    install.modifyConfiguration(configuration);
-
-    File gemfireLogFile = new File("cargo_logs/gemfire_modules/" + uniqueName);
-    gemfireLogFile.getParentFile().mkdirs();
-    install.setSystemProperty("log-file", gemfireLogFile.getAbsolutePath());
-    logger.info("Gemfire logs in " + gemfireLogFile.getAbsolutePath());
-
-    // Removes secureRandom generation so that container startup is much faster
-    configuration.setProperty(GeneralPropertySet.JVMARGS,
-        "-Djava.security.egd=file:/dev/./urandom");
-
-    // Statically deploy WAR file for servlet
-    WAR war = install.getDeployableWAR();
-    war.setContext("");
-    configuration.addDeployable(war);
-    logger.info("Deployed WAR file at " + war.getFile());
-
-    // Create the container, set it's home dir to where it was installed, and set the its output log
-    InstalledLocalContainer container = (InstalledLocalContainer) (new DefaultContainerFactory())
-        .createContainer(install.getContainerId(), ContainerType.INSTALLED, configuration);
-
-    container.setHome(install.getInstallPath());
+  private ServerContainer addContainer(ContainerInstall install, int index) throws IOException {
+    ServerContainer container = install.generateContainer(testName + "_" + index);
 
     containers.add(index, container);
-    installs.add(index, install);
 
     logger.info("Setup container " + getContainerDescription(index));
     return container;
+  }
+
+  /**
+   * Get the indexes of all active containers
+   */
+  private ArrayList<Integer> getActiveContainerIndexes() {
+    return getContainerIndexesWithState(State.STARTED.toString());
+  }
+
+  /**
+   * Get all active containers
+   */
+  private ArrayList<ServerContainer> getActiveContainers() {
+    return getContainersWithState(State.STARTED.toString());
+  }
+
+  /**
+   * Get the indexes of all inactive containers
+   */
+  private ArrayList<Integer> getInactiveContainerIndexes() {
+    ArrayList<Integer> indexes = getContainerIndexesWithState(State.STOPPED.toString());
+    indexes.addAll(getContainerIndexesWithState(State.UNKNOWN.toString()));
+    return indexes;
+  }
+
+  /**
+   * Get all inactive containers
+   */
+  private ArrayList<ServerContainer> getInactiveContainers() {
+    ArrayList<ServerContainer> inactiveContainers =
+        getContainersWithState(State.STOPPED.toString());
+    inactiveContainers.addAll(getContainersWithState(State.UNKNOWN.toString()));
+    return inactiveContainers;
   }
 }
