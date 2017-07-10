@@ -631,13 +631,15 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
+    int prevRegionSize = vm2.invoke(() -> WANTestBase.getRegionSize(getTestMethodName() + "_PR"));
+
     AsyncInvocation inv3 =
         vm6.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
     vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS)
         .until(() -> assertEquals(
-            "Failure in waiting for additional 10 events to be received by the receiver ", true,
-            getRegionSize(getTestMethodName() + "_PR") > 5010)));
+            "Failure in waiting for additional 20 events to be received by the receiver ", true,
+            getRegionSize(getTestMethodName() + "_PR") > 20 + prevRegionSize)));
 
     AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
 
