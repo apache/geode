@@ -14,136 +14,126 @@
  */
 package org.apache.geode.distributed;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static javax.management.MBeanServerInvocationHandler.newProxyInstance;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Properties;
+import java.util.Set;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.management.*;
-import java.lang.management.ManagementFactory;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.process.ControllableProcess;
+import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Tests querying of MemberMXBean which is used by MBeanProcessController to control GemFire
- * ControllableProcesses.
+ * Integration tests for querying of {@link MemberMXBean} as used in MBeanProcessController to
+ * manage a {@link ControllableProcess}.
+ *
+ * <p>
+ * This test is an experiment in using given/when/then custom methods for better BDD readability.
  * 
  * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
-public class LauncherMemberMXBeanIntegrationTest extends AbstractLauncherIntegrationTestCase {
+public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTestCase {
+
+  private ObjectName pattern;
+  private QueryExp constraint;
+  private Set<ObjectName> mbeanNames;
 
   @Before
-  public final void setUpLauncherMemberMXBeanIntegrationTest() throws Exception {}
+  public void setUp() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty("name", getUniqueName());
+    new CacheFactory(props).create();
+
+    pattern = ObjectName.getInstance("GemFire:type=Member,*");
+    waitForMemberMXBean(getPlatformMBeanServer(), pattern);
+  }
 
   @After
-  public final void tearDownLauncherMemberMXBeanIntegrationTest() throws Exception {
-    InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
-    if (ids != null) {
-      ids.disconnect();
-    }
+  public void tearDown() throws Exception {
+    disconnectFromDS();
   }
 
   @Test
-  public void testQueryForMemberMXBean() throws Exception {
-    final Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty("name", getUniqueName());
-    new CacheFactory(props).create();
+  public void queryWithNullFindsMemberMXBean() throws Exception {
+    givenConstraint(null);
 
-    final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-    final ObjectName pattern = ObjectName.getInstance("GemFire:type=Member,*");
+    whenQuerying(getPlatformMBeanServer());
 
-    waitForMemberMXBean(mbeanServer, pattern);
-
-    final Set<ObjectName> mbeanNames = mbeanServer.queryNames(pattern, null);
-    assertFalse(mbeanNames.isEmpty());
-    assertEquals("mbeanNames=" + mbeanNames, 1, mbeanNames.size());
-
-    final ObjectName objectName = mbeanNames.iterator().next();
-    final MemberMXBean mbean = MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-        objectName, MemberMXBean.class, false);
-
-    assertNotNull(mbean);
-    assertEquals(ProcessUtils.identifyPid(), mbean.getProcessId());
-    assertEquals(getUniqueName(), mbean.getName());
-    assertEquals(getUniqueName(), mbean.getMember());
+    thenMemberMXBeanShouldBeFound().andShouldMatchCurrentMember();
   }
 
   @Test
-  public void testQueryForMemberMXBeanWithProcessId() throws Exception {
-    final Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty("name", getUniqueName());
-    new CacheFactory(props).create();
+  public void queryWithProcessIdFindsMemberMXBean() throws Exception {
+    givenConstraint(Query.eq(Query.attr("ProcessId"), Query.value(localPid)));
 
-    final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-    final ObjectName pattern = ObjectName.getInstance("GemFire:type=Member,*");
-    final QueryExp constraint =
-        Query.eq(Query.attr("ProcessId"), Query.value(ProcessUtils.identifyPid()));
+    whenQuerying(getPlatformMBeanServer());
 
-    waitForMemberMXBean(mbeanServer, pattern);
-
-    final Set<ObjectName> mbeanNames = mbeanServer.queryNames(pattern, constraint);
-    assertFalse(mbeanNames.isEmpty());
-    assertEquals(1, mbeanNames.size());
-
-    final ObjectName objectName = mbeanNames.iterator().next();
-    final MemberMXBean mbean = MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-        objectName, MemberMXBean.class, false);
-
-    assertNotNull(mbean);
-    assertEquals(ProcessUtils.identifyPid(), mbean.getProcessId());
-    assertEquals(getUniqueName(), mbean.getName());
-    assertEquals(getUniqueName(), mbean.getMember());
+    thenMemberMXBeanShouldBeFound().andShouldMatchCurrentMember();
   }
 
   @Test
-  public void testQueryForMemberMXBeanWithMemberName() throws Exception {
-    final Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty("name", getUniqueName());
-    new CacheFactory(props).create();
+  public void queryWithMemberNameFindsMemberMXBean() throws Exception {
+    givenConstraint(Query.eq(Query.attr("Name"), Query.value(getUniqueName())));
 
-    final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-    final ObjectName pattern = ObjectName.getInstance("GemFire:type=Member,*");
-    final QueryExp constraint = Query.eq(Query.attr("Name"), Query.value(getUniqueName()));
+    whenQuerying(getPlatformMBeanServer());
 
-    waitForMemberMXBean(mbeanServer, pattern);
-
-    final Set<ObjectName> mbeanNames = mbeanServer.queryNames(pattern, constraint);
-    assertFalse(mbeanNames.isEmpty());
-    assertEquals(1, mbeanNames.size());
-
-    final ObjectName objectName = mbeanNames.iterator().next();
-    final MemberMXBean mbean = MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-        objectName, MemberMXBean.class, false);
-
-    assertNotNull(mbean);
-    assertEquals(getUniqueName(), mbean.getMember());
+    thenMemberMXBeanShouldBeFound().andShouldMatchCurrentMember();
   }
 
-  private void waitForMemberMXBean(final MBeanServer mbeanServer, final ObjectName pattern)
-      throws Exception {
-    assertEventuallyTrue("waiting for MemberMXBean to be registered", new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        Set<ObjectName> mbeanNames = mbeanServer.queryNames(pattern, null);
-        return !mbeanNames.isEmpty();
-      }
-    }, WAIT_FOR_MBEAN_TIMEOUT, INTERVAL_MILLISECONDS);
+  private void givenConstraint(final QueryExp constraint) {
+    this.constraint = constraint;
+  }
+
+  private void whenQuerying(final MBeanServer mbeanServer) {
+    mbeanNames = mbeanServer.queryNames(pattern, constraint);
+  }
+
+  private LauncherMemberMXBeanIntegrationTest thenMemberMXBeanShouldBeFound() {
+    assertThat(mbeanNames).hasSize(1);
+
+    return this;
+  }
+
+  private LauncherMemberMXBeanIntegrationTest andShouldMatchCurrentMember() {
+    ObjectName objectName = mbeanNames.iterator().next();
+    MemberMXBean mbean =
+        newProxyInstance(getPlatformMBeanServer(), objectName, MemberMXBean.class, false);
+
+    assertThat(mbean.getMember()).isEqualTo(getUniqueName());
+    assertThat(mbean.getName()).isEqualTo(getUniqueName());
+    assertThat(mbean.getProcessId()).isEqualTo(localPid);
+
+    return this;
+  }
+
+  @Override
+  protected ProcessType getProcessType() {
+    throw new UnsupportedOperationException(
+        "getProcessType is not used by " + getClass().getSimpleName());
+  }
+
+  private void waitForMemberMXBean(final MBeanServer mbeanServer, final ObjectName pattern) {
+    await().atMost(2, MINUTES)
+        .until(() -> assertThat(mbeanServer.queryNames(pattern, null)).isNotEmpty());
   }
 }

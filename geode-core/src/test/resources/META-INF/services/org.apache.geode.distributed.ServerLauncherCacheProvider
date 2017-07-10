@@ -1,1 +1,1 @@
-org.apache.geode.distributed.MockServerLauncherCacheProvider
+org.apache.geode.distributed.TestServerLauncherCacheProvider

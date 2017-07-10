@@ -14,8 +14,16 @@
  */
 package org.apache.geode.distributed;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.AbstractLauncher.loadGemFireProperties;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,21 +31,16 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.util.Properties;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Integration tests for AbstractLauncher class. These tests require file system I/O.
+ * Integration tests for {@link AbstractLauncher} that require file system I/O.
  */
 @Category(IntegrationTest.class)
 public class AbstractLauncherIntegrationTest {
 
-  private File gemfirePropertiesFile;
-  private Properties expectedGemfireProperties;
+  private File propertiesFile;
+  private Properties expectedProperties;
 
   @Rule
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -47,26 +50,20 @@ public class AbstractLauncherIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    this.gemfirePropertiesFile =
-        this.temporaryFolder.newFile(DistributionConfig.GEMFIRE_PREFIX + "properties");
+    propertiesFile = temporaryFolder.newFile(GEMFIRE_PREFIX + "properties");
 
-    this.expectedGemfireProperties = new Properties();
-    this.expectedGemfireProperties.setProperty(NAME, "memberOne");
-    this.expectedGemfireProperties.setProperty(GROUPS, "groupOne, groupTwo");
-    this.expectedGemfireProperties.store(new FileWriter(this.gemfirePropertiesFile, false),
-        this.testName.getMethodName());
+    expectedProperties = new Properties();
+    expectedProperties.setProperty(NAME, "memberOne");
+    expectedProperties.setProperty(GROUPS, "groupOne, groupTwo");
+    expectedProperties.store(new FileWriter(propertiesFile, false), testName.getMethodName());
 
-    assertThat(this.gemfirePropertiesFile).isNotNull();
-    assertThat(this.gemfirePropertiesFile.exists()).isTrue();
-    assertThat(this.gemfirePropertiesFile.isFile()).isTrue();
+    assertThat(propertiesFile).exists().isFile();
   }
 
   @Test
-  public void testLoadGemFirePropertiesFromFile() throws Exception {
-    final Properties actualGemFireProperties =
-        AbstractLauncher.loadGemFireProperties(this.gemfirePropertiesFile.toURI().toURL());
+  public void loadGemFirePropertiesFromFile() throws Exception {
+    Properties loadedProperties = loadGemFireProperties(propertiesFile.toURI().toURL());
 
-    assertThat(actualGemFireProperties).isNotNull();
-    assertThat(actualGemFireProperties).isEqualTo(this.expectedGemfireProperties);
+    assertThat(loadedProperties).isEqualTo(expectedProperties);
   }
 }

@@ -23,23 +23,23 @@ public class ConnectionFailedException extends Exception {
   private static final long serialVersionUID = 5622636452836752700L;
 
   /**
-   * Creates a new <code>ConnectionFailedException</code>.
+   * Creates a new {@code ConnectionFailedException}.
    */
   public ConnectionFailedException(final String message) {
     super(message);
   }
 
   /**
-   * Creates a new <code>ConnectionFailedException</code> that was caused by a given exception
+   * Creates a new {@code ConnectionFailedException} that was caused by a given exception
    */
-  public ConnectionFailedException(final String message, final Throwable thr) {
-    super(message, thr);
+  public ConnectionFailedException(final String message, final Throwable cause) {
+    super(message, cause);
   }
 
   /**
-   * Creates a new <code>ConnectionFailedException</code> that was caused by a given exception
+   * Creates a new {@code ConnectionFailedException} that was caused by a given exception
    */
-  public ConnectionFailedException(final Throwable thr) {
-    super(thr.getMessage(), thr);
+  public ConnectionFailedException(final Throwable cause) {
+    super(cause.getMessage(), cause);
   }
 }

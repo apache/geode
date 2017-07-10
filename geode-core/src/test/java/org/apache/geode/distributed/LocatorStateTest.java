@@ -14,14 +14,16 @@
  */
 package org.apache.geode.distributed;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static com.googlecode.catchexception.CatchException.verifyException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,26 +35,45 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Unit tests for LocatorLauncher.LocatorState
+ * Unit tests for {@link LocatorLauncher.LocatorState}.
  */
 @Category(UnitTest.class)
 public class LocatorStateTest {
 
-  private String classpath = "test_classpath";
-  private String gemFireVersion = "test_gemfireversion";
-  private String host = "test_host";
-  private String javaVersion = "test_javaversion";
-  private String jvmArguments = "test_jvmarguments";
-  private String serviceLocation = "test_location";
-  private String logFile = "test_logfile";
-  private String memberName = "test_membername";
-  private Integer pid = 6396;
-  private String port = "test_port";
-  private String statusDescription = Status.NOT_RESPONDING.getDescription();
-  private String statusMessage = "test_statusmessage";
-  private Long timestampTime = 1450728233024L;
-  private Long uptime = 1629L;
-  private String workingDirectory = "test_workingdirectory";
+  private String classpath;
+  private String gemFireVersion;
+  private String host;
+  private String javaVersion;
+  private String jvmArguments;
+  private String serviceLocation;
+  private String logFile;
+  private String memberName;
+  private Integer pid;
+  private String port;
+  private String statusDescription;
+  private String statusMessage;
+  private Long timestampTime;
+  private Long uptime;
+  private String workingDirectory;
+
+  @Before
+  public void before() throws Exception {
+    classpath = "test_classpath";
+    gemFireVersion = "test_gemfireVersion";
+    host = "test_host";
+    javaVersion = "test_javaVersion";
+    jvmArguments = "test_jvmArguments";
+    serviceLocation = "test_location";
+    logFile = "test_logfile";
+    memberName = "test_memberName";
+    pid = 6396;
+    port = "test_port";
+    statusDescription = Status.NOT_RESPONDING.getDescription();
+    statusMessage = "test_statusMessage";
+    timestampTime = 1450728233024L;
+    uptime = 1629L;
+    workingDirectory = "test_workingDirectory";
+  }
 
   @Test
   public void fromJsonWithEmptyStringThrowsIllegalArgumentException() throws Exception {
@@ -65,7 +86,6 @@ public class LocatorStateTest {
     // then: throws IllegalArgumentException with cause of GfJsonException
     assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(GfJsonException.class);
-
     assertThat(caughtException().getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
   }
 
@@ -80,7 +100,6 @@ public class LocatorStateTest {
     // then: throws IllegalArgumentException with cause of GfJsonException
     assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(GfJsonException.class);
-
     assertThat(caughtException().getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
   }
 
@@ -106,107 +125,53 @@ public class LocatorStateTest {
 
     // then: return valid instance of LocatorState
     assertThat(value).isInstanceOf(LocatorState.class);
-
-    assertThat(value.getClasspath()).isEqualTo(getClasspath());
-    assertThat(value.getGemFireVersion()).isEqualTo(getGemFireVersion());
-    assertThat(value.getHost()).isEqualTo(getHost());
-    assertThat(value.getJavaVersion()).isEqualTo(getJavaVersion());
+    assertThat(value.getClasspath()).isEqualTo(classpath);
+    assertThat(value.getGemFireVersion()).isEqualTo(gemFireVersion);
+    assertThat(value.getHost()).isEqualTo(host);
+    assertThat(value.getJavaVersion()).isEqualTo(javaVersion);
     assertThat(value.getJvmArguments()).isEqualTo(getJvmArguments());
-    assertThat(value.getServiceLocation()).isEqualTo(getServiceLocation());
-    assertThat(value.getLogFile()).isEqualTo(getLogFile());
-    assertThat(value.getMemberName()).isEqualTo(getMemberName());
-    assertThat(value.getPid()).isEqualTo(getPid());
-    assertThat(value.getPort()).isEqualTo(getPort());
-    assertThat(value.getStatus().getDescription()).isEqualTo(getStatusDescription());
-    assertThat(value.getStatusMessage()).isEqualTo(getStatusMessage());
-    assertThat(value.getTimestamp().getTime()).isEqualTo(getTimestampTime());
-    assertThat(value.getUptime()).isEqualTo(getUptime());
-    assertThat(value.getWorkingDirectory()).isEqualTo(getWorkingDirectory());
+    assertThat(value.getLogFile()).isEqualTo(logFile);
+    assertThat(value.getMemberName()).isEqualTo(memberName);
+    assertThat(value.getPid()).isEqualTo(pid);
+    assertThat(value.getPort()).isEqualTo(port);
+    assertThat(value.getServiceLocation()).isEqualTo(serviceLocation);
+    assertThat(value.getStatus().getDescription()).isEqualTo(statusDescription);
+    assertThat(value.getStatusMessage()).isEqualTo(statusMessage);
+    assertThat(value.getTimestamp().getTime()).isEqualTo(timestampTime);
+    assertThat(value.getUptime()).isEqualTo(uptime);
+    assertThat(value.getWorkingDirectory()).isEqualTo(workingDirectory);
   }
 
+  /**
+   * NOTE: Must be protected for CatchException.
+   */
   protected LocatorState fromJson(final String value) {
     return LocatorState.fromJson(value);
   }
 
-  private String getClasspath() {
-    return this.classpath;
-  }
-
-  private String getGemFireVersion() {
-    return this.gemFireVersion;
-  }
-
-  private String getHost() {
-    return this.host;
-  }
-
-  private String getJavaVersion() {
-    return this.javaVersion;
-  }
-
   private List<String> getJvmArguments() {
-    List<String> list = new ArrayList<String>();
-    list.add(this.jvmArguments);
+    List<String> list = new ArrayList<>();
+    list.add(jvmArguments);
     return list;
   }
 
-  private String getServiceLocation() {
-    return this.serviceLocation;
-  }
-
-  private String getLogFile() {
-    return this.logFile;
-  }
-
-  private String getMemberName() {
-    return this.memberName;
-  }
-
-  private Integer getPid() {
-    return this.pid;
-  }
-
-  private String getPort() {
-    return this.port;
-  }
-
-  private String getStatusDescription() {
-    return this.statusDescription;
-  }
-
-  private String getStatusMessage() {
-    return this.statusMessage;
-  }
-
-  private Long getTimestampTime() {
-    return this.timestampTime;
-  }
-
-  private Long getUptime() {
-    return this.uptime;
-  }
-
-  private String getWorkingDirectory() {
-    return this.workingDirectory;
-  }
-
   private String createStatusJson() {
-    final Map<String, Object> map = new HashMap<String, Object>();
-    map.put(ServiceState.JSON_CLASSPATH, getClasspath());
-    map.put(ServiceState.JSON_GEMFIREVERSION, getGemFireVersion());
-    map.put(ServiceState.JSON_HOST, getHost());
-    map.put(ServiceState.JSON_JAVAVERSION, getJavaVersion());
+    Map<String, Object> map = new HashMap<>();
+    map.put(ServiceState.JSON_CLASSPATH, classpath);
+    map.put(ServiceState.JSON_GEMFIREVERSION, gemFireVersion);
+    map.put(ServiceState.JSON_HOST, host);
+    map.put(ServiceState.JSON_JAVAVERSION, javaVersion);
     map.put(ServiceState.JSON_JVMARGUMENTS, getJvmArguments());
-    map.put(ServiceState.JSON_LOCATION, getServiceLocation());
-    map.put(ServiceState.JSON_LOGFILE, getLogFile());
-    map.put(ServiceState.JSON_MEMBERNAME, getMemberName());
-    map.put(ServiceState.JSON_PID, getPid());
-    map.put(ServiceState.JSON_PORT, getPort());
-    map.put(ServiceState.JSON_STATUS, getStatusDescription());
-    map.put(ServiceState.JSON_STATUSMESSAGE, getStatusMessage());
-    map.put(ServiceState.JSON_TIMESTAMP, getTimestampTime());
-    map.put(ServiceState.JSON_UPTIME, getUptime());
-    map.put(ServiceState.JSON_WORKINGDIRECTORY, getWorkingDirectory());
+    map.put(ServiceState.JSON_LOCATION, serviceLocation);
+    map.put(ServiceState.JSON_LOGFILE, logFile);
+    map.put(ServiceState.JSON_MEMBERNAME, memberName);
+    map.put(ServiceState.JSON_PID, pid);
+    map.put(ServiceState.JSON_PORT, port);
+    map.put(ServiceState.JSON_STATUS, statusDescription);
+    map.put(ServiceState.JSON_STATUSMESSAGE, statusMessage);
+    map.put(ServiceState.JSON_TIMESTAMP, timestampTime);
+    map.put(ServiceState.JSON_UPTIME, uptime);
+    map.put(ServiceState.JSON_WORKINGDIRECTORY, workingDirectory);
     return new GfJsonObject(map).toString();
   }
 }

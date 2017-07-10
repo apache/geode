@@ -24,23 +24,23 @@ public class PidUnavailableException extends Exception {
   private static final long serialVersionUID = -1660269538268828059L;
 
   /**
-   * Creates a new <code>PidUnavailableException</code>.
+   * Creates a new {@code PidUnavailableException}.
    */
   public PidUnavailableException(final String message) {
     super(message);
   }
 
   /**
-   * Creates a new <code>PidUnavailableException</code> that was caused by a given exception
+   * Creates a new {@code PidUnavailableException} that was caused by a given exception
    */
-  public PidUnavailableException(final String message, final Throwable thr) {
-    super(message, thr);
+  public PidUnavailableException(final String message, final Throwable cause) {
+    super(message, cause);
   }
 
   /**
-   * Creates a new <code>PidUnavailableException</code> that was caused by a given exception
+   * Creates a new {@code PidUnavailableException} that was caused by a given exception
    */
-  public PidUnavailableException(final Throwable thr) {
-    super(thr.getMessage(), thr);
+  public PidUnavailableException(final Throwable cause) {
+    super(cause.getMessage(), cause);
   }
 }

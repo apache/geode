@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.process;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import static org.apache.commons.lang.Validate.isTrue;
+import static org.apache.commons.lang.Validate.notNull;
+
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import org.apache.commons.lang.SystemUtils;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.internal.logging.LogService;
 
 /**
  * Reads the output stream of a Process.
@@ -30,8 +27,8 @@ import org.apache.geode.internal.logging.LogService;
  * @since GemFire 7.0
  */
 public abstract class ProcessStreamReader implements Runnable {
-  private static final int DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS = 5000;
-  private static final Logger logger = LogService.getLogger();
+
+  private static final int DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLIS = 5000;
 
   protected final Process process;
   protected final InputStream inputStream;
@@ -40,8 +37,11 @@ public abstract class ProcessStreamReader implements Runnable {
   private Thread thread;
 
   protected ProcessStreamReader(final Builder builder) {
+    notNull(builder, "Invalid builder '" + builder + "' specified");
+
     this.process = builder.process;
     this.inputStream = builder.inputStream;
+
     if (builder.inputListener == null) {
       this.inputListener = new InputListener() {
         @Override
@@ -59,44 +59,13 @@ public abstract class ProcessStreamReader implements Runnable {
     }
   }
 
-  @Override
-  public void run() {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("Running {}", this);
-    }
-    BufferedReader reader = null;
-    try {
-      reader = new BufferedReader(new InputStreamReader(inputStream));
-      String line;
-      while ((line = reader.readLine()) != null) {
-        this.inputListener.notifyInputLine(line);
-      }
-    } catch (IOException e) {
-      if (isDebugEnabled) {
-        logger.debug("Failure reading from buffered input stream: {}", e.getMessage(), e);
-      }
-    } finally {
-      try {
-        reader.close();
-      } catch (IOException e) {
-        if (isDebugEnabled) {
-          logger.debug("Failure closing buffered input stream reader: {}", e.getMessage(), e);
-        }
-      }
-      if (isDebugEnabled) {
-        logger.debug("Terminating {}", this);
-      }
-    }
-  }
-
   public ProcessStreamReader start() {
     synchronized (this) {
-      if (this.thread == null) {
-        this.thread = new Thread(this, createThreadName());
-        this.thread.setDaemon(true);
-        this.thread.start();
-      } else if (this.thread.isAlive()) {
+      if (thread == null) {
+        thread = new Thread(this, createThreadName());
+        thread.setDaemon(true);
+        thread.start();
+      } else if (thread.isAlive()) {
         throw new IllegalStateException(this + " has already started");
       } else {
         throw new IllegalStateException(this + " was stopped and cannot be restarted");
@@ -107,33 +76,23 @@ public abstract class ProcessStreamReader implements Runnable {
 
   public ProcessStreamReader stop() {
     synchronized (this) {
-      if (this.thread != null && this.thread.isAlive()) {
-        this.thread.interrupt();
-      } else if (this.thread != null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("{} has already been stopped", this);
-        }
-      } else {
-        if (logger.isDebugEnabled()) {
-          logger.debug("{} has not been started", this);
-        }
+      if (thread != null && thread.isAlive()) {
+        thread.interrupt();
       }
     }
     return this;
   }
 
   public ProcessStreamReader stopAsync(final long delayMillis) {
-    Runnable delayedStop = new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(delayMillis);
-        } catch (InterruptedException e) {
-        } finally {
-          stop();
-        }
+    Runnable delayedStop = () -> {
+      try {
+        Thread.sleep(delayMillis);
+      } catch (InterruptedException ignored) {
+      } finally {
+        stop();
       }
     };
+
     String threadName =
         getClass().getSimpleName() + " stopAfterDelay Thread @" + Integer.toHexString(hashCode());
     Thread thread = new Thread(delayedStop, threadName);
@@ -144,14 +103,14 @@ public abstract class ProcessStreamReader implements Runnable {
 
   public boolean isRunning() {
     synchronized (this) {
-      if (this.thread != null) {
-        return this.thread.isAlive();
+      if (thread != null) {
+        return thread.isAlive();
       }
     }
     return false;
   }
 
-  public void join() throws InterruptedException {
+  public ProcessStreamReader join() throws InterruptedException {
     Thread thread;
     synchronized (this) {
       thread = this.thread;
@@ -159,9 +118,10 @@ public abstract class ProcessStreamReader implements Runnable {
     if (thread != null) {
       thread.join();
     }
+    return this;
   }
 
-  public void join(final long millis) throws InterruptedException {
+  public ProcessStreamReader join(final long millis) throws InterruptedException {
     Thread thread;
     synchronized (this) {
       thread = this.thread;
@@ -169,9 +129,10 @@ public abstract class ProcessStreamReader implements Runnable {
     if (thread != null) {
       thread.join(millis);
     }
+    return this;
   }
 
-  public void join(final long millis, final int nanos) throws InterruptedException {
+  public ProcessStreamReader join(final long millis, final int nanos) throws InterruptedException {
     Thread thread;
     synchronized (this) {
       thread = this.thread;
@@ -179,47 +140,44 @@ public abstract class ProcessStreamReader implements Runnable {
     if (thread != null) {
       thread.join(millis, nanos);
     }
+    return this;
   }
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append(" Thread").append(" #").append(System.identityHashCode(this));
-    sb.append(" alive=").append(isRunning()); // this.thread == null ? false :
-                                              // this.thread.isAlive());
-    sb.append(" listener=").append(this.inputListener);
+    sb.append(" alive=").append(isRunning());
+    sb.append(" listener=").append(inputListener);
     return sb.toString();
   }
 
   private String createThreadName() {
-    return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+    return getClass().getSimpleName() + '@' + Integer.toHexString(hashCode());
   }
 
   /**
    * Defines the callback for lines of output found in the stream.
    */
-  public static interface InputListener {
-    public void notifyInputLine(String line);
+  public interface InputListener {
+    void notifyInputLine(final String line);
   }
 
   /** Default ReadingMode is BLOCKING */
-  public static enum ReadingMode {
-    BLOCKING, NON_BLOCKING;
+  public enum ReadingMode {
+    BLOCKING, NON_BLOCKING
   }
 
-  public static String waitAndCaptureProcessStandardOutputStream(final Process process) {
-    return waitAndCaptureProcessStandardOutputStream(process,
-        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS);
-  }
-
-  public static String waitAndCaptureProcessStandardOutputStream(final Process process,
+  private static String waitAndCaptureProcessStandardOutputStream(final Process process,
       final long waitTimeMilliseconds) {
+    notNull(process, "Invalid process '" + process + "' specified");
+
     return waitAndCaptureProcessStream(process, process.getInputStream(), waitTimeMilliseconds);
   }
 
   public static String waitAndCaptureProcessStandardErrorStream(final Process process) {
     return waitAndCaptureProcessStandardErrorStream(process,
-        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS);
+        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLIS);
   }
 
   public static String waitAndCaptureProcessStandardErrorStream(final Process process,
@@ -228,8 +186,8 @@ public abstract class ProcessStreamReader implements Runnable {
   }
 
   private static String waitAndCaptureProcessStream(final Process process,
-      final InputStream processInputStream, long waitTimeMilliseconds) {
-    final StringBuffer buffer = new StringBuffer();
+      final InputStream processInputStream, final long waitTimeMilliseconds) {
+    StringBuffer buffer = new StringBuffer();
 
     InputListener inputListener = line -> {
       buffer.append(line);
@@ -242,7 +200,7 @@ public abstract class ProcessStreamReader implements Runnable {
     try {
       reader.start();
 
-      final long endTime = (System.currentTimeMillis() + waitTimeMilliseconds);
+      long endTime = System.currentTimeMillis() + waitTimeMilliseconds;
 
       while (System.currentTimeMillis() < endTime) {
         try {
@@ -259,15 +217,16 @@ public abstract class ProcessStreamReader implements Runnable {
 
   /**
    * Builds a ProcessStreamReader.
-   * 
+   *
    * @since GemFire 8.2
    */
   public static class Builder {
-    protected Process process;
-    protected InputStream inputStream;
-    protected InputListener inputListener;
-    protected long continueReadingMillis = 0;
-    protected ReadingMode readingMode = ReadingMode.BLOCKING;
+
+    final Process process;
+    InputStream inputStream;
+    InputListener inputListener;
+    long continueReadingMillis = 0;
+    ReadingMode readingMode = ReadingMode.BLOCKING;
 
     public Builder(final Process process) {
       this.process = process;
@@ -297,16 +256,12 @@ public abstract class ProcessStreamReader implements Runnable {
     }
 
     public ProcessStreamReader build() {
-      if (process == null) {
-        throw new NullPointerException("process may not be null");
-      }
-      if (inputStream == null) {
-        throw new NullPointerException("inputStream may not be null");
-      }
-      if (continueReadingMillis < 0) {
-        throw new IllegalArgumentException("continueReadingMillis must zero or positive");
-      }
-      switch (this.readingMode) {
+      notNull(process, "Invalid process '" + process + "' specified");
+      notNull(inputStream, "Invalid inputStream '" + inputStream + "' specified");
+      isTrue(continueReadingMillis >= 0,
+          "Invalid continueReadingMillis '" + continueReadingMillis + "' specified");
+
+      switch (readingMode) {
         case NON_BLOCKING:
           return new NonBlockingProcessStreamReader(this);
         default:

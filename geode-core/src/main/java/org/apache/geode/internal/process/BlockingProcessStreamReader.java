@@ -14,9 +14,11 @@
  */
 package org.apache.geode.internal.process;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -39,32 +41,11 @@ public class BlockingProcessStreamReader extends ProcessStreamReader {
 
   @Override
   public void run() {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("Running {}", this);
-    }
-    BufferedReader reader = null;
     try {
-      reader = new BufferedReader(new InputStreamReader(inputStream));
-      String line;
-      while ((line = reader.readLine()) != null) {
-        this.inputListener.notifyInputLine(line);
-      }
-    } catch (IOException e) {
-      if (isDebugEnabled) {
-        logger.debug("Failure reading from buffered input stream: {}", e.getMessage(), e);
-      }
-    } finally {
-      try {
-        reader.close();
-      } catch (IOException e) {
-        if (isDebugEnabled) {
-          logger.debug("Failure closing buffered input stream reader: {}", e.getMessage(), e);
-        }
-      }
-      if (isDebugEnabled) {
-        logger.debug("Terminating {}", this);
-      }
+      new BufferedReader(new InputStreamReader(inputStream)).lines()
+          .map(line -> line + LINE_SEPARATOR).forEach(this.inputListener::notifyInputLine);
+    } catch (UncheckedIOException e) {
+      logger.debug(e);
     }
   }
 }
