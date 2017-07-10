@@ -39,6 +39,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.UserTransaction;
 
+import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
@@ -3988,8 +3989,16 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   private void verifyTXStateEmpty(DistributedMember clientId) {
     TXManagerImpl txmgr = getGemfireCache().getTxManager();
-    Set<TXId> states = txmgr.getTransactionsForClient((InternalDistributedMember) clientId);
-    assertEquals(0, states.size()); // both transactions should be rolled back.
+    // both transactions should be rolled back.
+    // Server sends reply with CommitMessage back to client before removing the TXState from its
+    // hostedTXStates map. Client finishes the JTA once it gets the reply from server.
+    // There exists a race that TXState is yet to be removed when client JTA tx is finished.
+    // Add the wait before checking the TXState.
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(30, TimeUnit.SECONDS)
+        .until(() -> Assertions
+            .assertThat(txmgr.getTransactionsForClient((InternalDistributedMember) clientId).size())
+            .isEqualTo(0));
   }
 
   private SerializableCallable getClientDM() {
