@@ -525,6 +525,10 @@ public class InternalLocator extends Locator implements ConnectListener {
     return this.config;
   }
 
+  public InternalCache getCache() {
+    return myCache;
+  }
+
   /**
    * Start peer location in this locator. If you plan on starting a distributed system later, this
    * method should be called first so that the distributed system can use this locator.

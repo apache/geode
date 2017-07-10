@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.process;
 
+import static org.apache.commons.lang.Validate.isTrue;
+
 import org.apache.geode.internal.process.ProcessUtils.InternalProcessUtils;
 import org.apache.geode.internal.shared.NativeCalls;
 
@@ -24,17 +26,23 @@ import org.apache.geode.internal.shared.NativeCalls;
  */
 class NativeProcessUtils implements InternalProcessUtils {
 
-  private final static NativeCalls nativeCalls = NativeCalls.getInstance();
+  private static final NativeCalls nativeCalls = NativeCalls.getInstance();
 
-  NativeProcessUtils() {}
+  NativeProcessUtils() {
+    // nothing
+  }
 
   @Override
   public boolean isProcessAlive(int pid) {
+    isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
+
     return nativeCalls.isProcessActive(pid);
   }
 
   @Override
   public boolean killProcess(int pid) {
+    isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
+
     return nativeCalls.killProcess(pid);
   }
 

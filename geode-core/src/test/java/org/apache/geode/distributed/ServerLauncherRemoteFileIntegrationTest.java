@@ -14,29 +14,21 @@
  */
 package org.apache.geode.distributed;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.internal.process.ProcessControllerFactory;
-import org.apache.geode.internal.process.ProcessStreamReader;
-import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Subclass of ServerLauncherRemoteDUnitTest which forces the code to not find the Attach API which
- * is in the JDK tools.jar. As a result ServerLauncher ends up using the FileProcessController
+ * Subclass of {@link ServerLauncherLocalIntegrationTest} which forces the code to not find the
+ * Attach API. As a result {@link ServerLauncher} ends up using the FileProcessController
  * implementation.
  * 
  * @since GemFire 8.0
@@ -47,179 +39,54 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
   @Before
   public void setUpServerLauncherRemoteFileTest() throws Exception {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
+    assertThat(new ProcessControllerFactory().isAttachAPIFound()).isFalse();
   }
 
-  @After
-  public void tearDownServerLauncherRemoteFileTest() throws Exception {}
-
+  /**
+   * Override to assert that STATUS with --pid throws AttachAPINotFoundException
+   */
   @Override
   @Test
-  /**
-   * Override and assert Attach API is NOT found
-   */
-  public void testIsAttachAPIFound() throws Exception {
-    final ProcessControllerFactory factory = new ProcessControllerFactory();
-    assertFalse(factory.isAttachAPIFound());
+  public void statusWithPidReturnsOnlineWithDetails() throws Exception {
+    givenRunningServer();
+
+    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().status())
+        .isInstanceOf(AttachAPINotFoundException.class);
   }
 
+  /**
+   * Override to assert that STOP with --pid throws AttachAPINotFoundException
+   */
   @Override
   @Test
-  /**
-   * Override because FileProcessController cannot request status with PID
-   */
-  public void testStatusUsingPid() throws Throwable {
-    final List<String> jvmArguments = getJvmArguments();
+  public void stopWithPidDeletesPidFile() throws Exception {
+    givenRunningServer();
 
-    final List<String> command = new ArrayList<String>();
-    command
-        .add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
-    for (String jvmArgument : jvmArguments) {
-      command.add(jvmArgument);
-    }
-    command.add("-cp");
-    command.add(System.getProperty("java.class.path"));
-    command.add(ServerLauncher.class.getName());
-    command.add(ServerLauncher.Command.START.getName());
-    command.add(getUniqueName());
-    command.add("--disable-default-server");
-    command.add("--redirect-output");
-
-    this.process = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot()).start();
-    this.processOutReader = new ProcessStreamReader.Builder(this.process)
-        .inputStream(this.process.getInputStream()).build().start();
-    this.processErrReader = new ProcessStreamReader.Builder(this.process)
-        .inputStream(this.process.getErrorStream()).build().start();
-
-    // wait for server to start
-    int pid = 0;
-    ServerLauncher pidLauncher = null;
-    this.launcher = new ServerLauncher.Builder()
-        .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath()).build();
-    try {
-      waitForServerToStart();
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-
-      // validate log file was created
-      final String logFileName = getUniqueName() + ".log";
-      assertTrue("Log file should exist: " + logFileName,
-          new File(this.temporaryFolder.getRoot(), logFileName).exists());
-
-      // use launcher with pid
-      pidLauncher = new Builder().setPid(pid).build();
-
-      assertNotNull(pidLauncher);
-      assertFalse(pidLauncher.isRunning());
-
-      // status with pid only should throw AttachAPINotFoundException
-      try {
-        pidLauncher.status();
-        fail("FileProcessController should have thrown AttachAPINotFoundException");
-      } catch (AttachAPINotFoundException e) {
-        // passed
-      }
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    // stop the server
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForPidToStop(pid, true);
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    } finally {
-      new File(ProcessType.SERVER.getStatusRequestFileName()).delete(); // TODO: delete
-    }
+    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
+        .isInstanceOf(AttachAPINotFoundException.class);
   }
 
+  /**
+   * Override to assert that STOP with --pid throws AttachAPINotFoundException
+   */
   @Override
   @Test
+  public void stopWithPidReturnsStopped() throws Exception {
+    givenRunningServer();
+
+    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
+        .isInstanceOf(AttachAPINotFoundException.class);
+  }
+
   /**
-   * Override because FileProcessController cannot request stop with PID
+   * Override to assert that STOP with --pid throws AttachAPINotFoundException
    */
-  public void testStopUsingPid() throws Throwable {
-    final List<String> jvmArguments = getJvmArguments();
+  @Override
+  @Test
+  public void stopWithPidStopsServerProcess() throws Exception {
+    givenRunningServer();
 
-    final List<String> command = new ArrayList<String>();
-    command
-        .add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
-    for (String jvmArgument : jvmArguments) {
-      command.add(jvmArgument);
-    }
-    command.add("-cp");
-    command.add(System.getProperty("java.class.path"));
-    command.add(ServerLauncher.class.getName());
-    command.add(ServerLauncher.Command.START.getName());
-    command.add(getUniqueName());
-    command.add("--disable-default-server");
-    command.add("--redirect-output");
-
-    this.process = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot()).start();
-    this.processOutReader =
-        new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream())
-            .inputListener(createLoggingListener("sysout", getUniqueName() + "#sysout")).build()
-            .start();
-    this.processErrReader =
-        new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream())
-            .inputListener(createLoggingListener("syserr", getUniqueName() + "#syserr")).build()
-            .start();
-
-    // wait for server to start
-    int pid = 0;
-    ServerLauncher pidLauncher = null;
-    this.launcher = new ServerLauncher.Builder()
-        .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath()).build();
-    try {
-      waitForServerToStart();
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-
-      // validate log file was created
-      final String logFileName = getUniqueName() + ".log";
-      assertTrue("Log file should exist: " + logFileName,
-          new File(this.temporaryFolder.getRoot(), logFileName).exists());
-
-      // use launcher with pid
-      pidLauncher = new Builder().setPid(pid).build();
-
-      assertNotNull(pidLauncher);
-      assertFalse(pidLauncher.isRunning());
-
-      // stop with pid only should throw AttachAPINotFoundException
-      try {
-        pidLauncher.stop();
-        fail("FileProcessController should have thrown AttachAPINotFoundException");
-      } catch (AttachAPINotFoundException e) {
-        // passed
-      }
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      // stop the server
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForPidToStop(pid);
-      waitForFileToDelete(this.pidFile);
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    } finally {
-      new File(ProcessType.SERVER.getStopRequestFileName()).delete(); // TODO: delete
-    }
+    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
+        .isInstanceOf(AttachAPINotFoundException.class);
   }
 }

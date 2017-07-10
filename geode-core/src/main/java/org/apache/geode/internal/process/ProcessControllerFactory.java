@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.process;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import static org.apache.commons.lang.Validate.isTrue;
+import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * Manages which implementation of {@link ProcessController} will be used and constructs the
@@ -29,6 +32,9 @@ import java.util.concurrent.TimeoutException;
  */
 public class ProcessControllerFactory {
 
+  /**
+   * For testing only
+   */
   public static final String PROPERTY_DISABLE_ATTACH_API =
       DistributionConfig.GEMFIRE_PREFIX + "test.ProcessControllerFactory.DisableAttachApi";
 
@@ -38,52 +44,28 @@ public class ProcessControllerFactory {
     this.disableAttachApi = Boolean.getBoolean(PROPERTY_DISABLE_ATTACH_API);
   }
 
-  public ProcessController createProcessController(final ProcessControllerParameters arguments,
+  public ProcessController createProcessController(final ProcessControllerParameters parameters,
       final int pid) {
-    if (arguments == null) {
-      throw new NullPointerException("ProcessControllerParameters must not be null");
-    }
-    if (pid < 1) {
-      throw new IllegalArgumentException("Invalid pid '" + pid + "' specified");
-    }
-    try {
-      if (isAttachAPIFound()) {
-        return new MBeanProcessController((MBeanControllerParameters) arguments, pid);
-      } else {
-        return new FileProcessController((FileControllerParameters) arguments, pid);
+    notNull(parameters, "Invalid parameters '" + parameters + "' specified");
+    isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
+
+    if (isAttachAPIFound()) {
+      try {
+        return new MBeanProcessController(parameters, pid);
+      } catch (ExceptionInInitializerError ignore) {
       }
-    } catch (final ExceptionInInitializerError e) {
-      // LOGGER.warn("Attach API class not found", e);
     }
-    return null;
+    return new FileProcessController(parameters, pid);
   }
 
-  public ProcessController createProcessController(final ProcessControllerParameters arguments,
-      final File pidFile, final long timeout, final TimeUnit unit)
+  public ProcessController createProcessController(final ProcessControllerParameters parameters,
+      final File directory, final String pidFileName)
       throws IOException, InterruptedException, TimeoutException {
-    if (arguments == null) {
-      throw new NullPointerException("ProcessControllerParameters must not be null");
-    }
-    if (pidFile == null) {
-      throw new NullPointerException("Pid file must not be null");
-    }
-    return createProcessController(arguments, new PidFile(pidFile).readPid(timeout, unit));
-  }
+    notNull(parameters, "Invalid parameters '" + parameters + "' specified");
+    notNull(directory, "Invalid directory '" + directory + "' specified");
+    notEmpty(pidFileName, "Invalid pidFileName '" + pidFileName + "' specified");
 
-  public ProcessController createProcessController(final ProcessControllerParameters arguments,
-      final File directory, final String pidFilename, final long timeout, final TimeUnit unit)
-      throws IOException, InterruptedException, TimeoutException {
-    if (arguments == null) {
-      throw new NullPointerException("ProcessControllerParameters must not be null");
-    }
-    if (directory == null) {
-      throw new NullPointerException("Directory must not be null");
-    }
-    if (pidFilename == null) {
-      throw new NullPointerException("Pid file name must not be null");
-    }
-    return createProcessController(arguments,
-        new PidFile(directory, pidFilename).readPid(timeout, unit));
+    return createProcessController(parameters, readPid(directory, pidFileName));
   }
 
   public boolean isAttachAPIFound() {
@@ -94,8 +76,12 @@ public class ProcessControllerFactory {
     try {
       final Class<?> virtualMachineClass = Class.forName("com.sun.tools.attach.VirtualMachine");
       found = virtualMachineClass != null;
-    } catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException ignore) {
     }
     return found;
+  }
+
+  private int readPid(final File directory, final String pidFileName) throws IOException {
+    return new PidFile(directory, pidFileName).readPid();
   }
 }

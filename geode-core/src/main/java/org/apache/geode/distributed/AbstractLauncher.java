@@ -12,27 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.lang.ClassUtils;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.process.PidUnavailableException;
-import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.internal.util.ArgumentRedactor;
-import org.apache.geode.internal.util.SunAPINotFoundException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 import java.io.File;
 import java.io.FileReader;
@@ -54,6 +39,23 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.util.ArgumentRedactor;
+import org.apache.geode.internal.util.SunAPINotFoundException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and
  * run different GemFire processes, like Cache Servers, Locators, Managers, HTTP servers and so on.
@@ -67,6 +69,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   protected static final Boolean DEFAULT_FORCE = Boolean.FALSE;
 
+  /**
+   * @deprecated This timeout is no longer needed.
+   */
+  @Deprecated
   protected static final long READ_PID_FILE_TIMEOUT_MILLIS = 2 * 1000;
 
   public static final String DEFAULT_WORKING_DIRECTORY = SystemUtils.CURRENT_DIRECTORY;
@@ -102,7 +108,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    *
    * @param port an integer indicating the network port to listen for client network requests.
    * @throws BindException if the network port is not available.
-   * @see #assertPortAvailable
    */
   protected static void assertPortAvailable(final int port) throws BindException {
     assertPortAvailable(null, port);
@@ -124,7 +129,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     if (!AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, bindAddress)) {
       throw new BindException(
           String.format("Network is unreachable; port (%1$d) is not available on %2$s.", port,
-              (bindAddress != null ? bindAddress.getCanonicalHostName() : "localhost")));
+              bindAddress != null ? bindAddress.getCanonicalHostName() : "localhost"));
     }
   }
 
@@ -141,7 +146,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see java.util.Properties
    */
   protected static boolean isSet(final Properties properties, final String propertyName) {
-    return StringUtils.isNotBlank(properties.getProperty(propertyName));
+    return isNotBlank(properties.getProperty(propertyName));
   }
 
   /**
@@ -157,7 +162,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     if (url != null) {
       try {
         properties.load(new FileReader(new File(url.toURI())));
-      } catch (Exception e) {
+      } catch (Exception ignored) {
         try {
           // not in the file system, try the classpath
           properties.load(
@@ -240,7 +245,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       distributedSystemProperties.putAll(defaults);
     }
 
-    if (StringUtils.isNotBlank(getMemberName())) {
+    if (isNotBlank(getMemberName())) {
       distributedSystemProperties.setProperty(NAME, getMemberName());
     }
 
@@ -264,8 +269,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   protected String getLogFileCanonicalPath() {
     try {
       return getLogFile().getCanonicalPath();
-    } catch (IOException e) {
-      return getLogFileName(); // TODO: or return null?
+    } catch (IOException ignored) {
+      return getLogFileName();
     }
   }
 
@@ -288,10 +293,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see #getMemberId()
    */
   public String getMember() {
-    if (StringUtils.isNotBlank(getMemberName())) {
+    if (isNotBlank(getMemberName())) {
       return getMemberName();
     }
-    if (StringUtils.isNotBlank(getMemberId())) {
+    if (isNotBlank(getMemberId())) {
       return getMemberId();
     }
     return null;
@@ -307,7 +312,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   public String getMemberId() {
     final InternalDistributedSystem distributedSystem =
         InternalDistributedSystem.getConnectedInstance();
-    return (distributedSystem != null ? distributedSystem.getMemberId() : null);
+    return distributedSystem != null ? distributedSystem.getMemberId() : null;
   }
 
   /**
@@ -319,7 +324,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   public String getMemberName() {
     final InternalDistributedSystem distributedSystem =
         InternalDistributedSystem.getConnectedInstance();
-    return (distributedSystem != null ? distributedSystem.getConfig().getName() : null);
+    return distributedSystem != null ? distributedSystem.getConfig().getName() : null;
   }
 
   /**
@@ -430,7 +435,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   int identifyPidOrNot() {
     try {
       return identifyPid();
-    } catch (PidUnavailableException e) {
+    } catch (PidUnavailableException ignored) {
       return -1;
     }
   }
@@ -488,10 +493,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     private final Timestamp timestamp;
 
-    // TODO refactor the logic in this method into a DateTimeFormatUtils class
+    // consider refactoring the logic in this method into a DateTimeFormatUtils class
     protected static String format(final Date timestamp) {
-      return (timestamp == null ? ""
-          : new SimpleDateFormat(DATE_TIME_FORMAT_PATTERN).format(timestamp));
+      return timestamp == null ? ""
+          : new SimpleDateFormat(DATE_TIME_FORMAT_PATTERN).format(timestamp);
     }
 
     protected static Integer identifyPid() {
@@ -502,7 +507,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       }
     }
 
-    // TODO refactor the logic in this method into a DateTimeFormatUtils class
+    // consider refactoring the logic in this method into a DateTimeFormatUtils class
     protected static String toDaysHoursMinutesSeconds(final Long milliseconds) {
       final StringBuilder buffer = new StringBuilder();
 
@@ -592,12 +597,11 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     }
 
     public static boolean isStartingNotRespondingOrNull(final ServiceState serviceState) {
-      return (serviceState == null || serviceState.isStartingOrNotResponding());
+      return serviceState == null || serviceState.isStartingOrNotResponding();
     }
 
     public boolean isStartingOrNotResponding() {
-      return (Status.NOT_RESPONDING.equals(this.getStatus())
-          || Status.STARTING.equals(this.getStatus()));
+      return Status.NOT_RESPONDING == getStatus() || Status.STARTING == getStatus();
     }
 
     public boolean isVmWithProcessIdRunning() {
@@ -800,7 +804,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     // a String concatenation of all values separated by " "
     protected String toString(final Object... values) {
-      return values == null ? "" : StringUtils.join(values, " ");
+      return values == null ? "" : join(values, " ");
     }
 
     // the value of the String, or "" if value is null
@@ -813,7 +817,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * The Status enumerated type represents the various lifecycle states of a GemFire service (such
    * as a Cache Server, a Locator or a Manager).
    */
-  public static enum Status {
+  public enum Status {
     NOT_RESPONDING(LocalizedStrings.Launcher_Status_NOT_RESPONDING.toLocalizedString()),
     ONLINE(LocalizedStrings.Launcher_Status_ONLINE.toLocalizedString()),
     STARTING(LocalizedStrings.Launcher_Status_STARTING.toLocalizedString()),
@@ -822,8 +826,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     private final String description;
 
     Status(final String description) {
-      assert StringUtils.isNotBlank(description) : "The Status description must be specified!";
-      this.description = StringUtils.lowerCase(description);
+      assert isNotBlank(description) : "The Status description must be specified!";
+      this.description = lowerCase(description);
     }
 
     /**

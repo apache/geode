@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.process.signal;
 
+import static org.apache.commons.lang.StringUtils.EMPTY;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,10 +43,10 @@ public abstract class AbstractSignalNotificationHandler {
 
   // Based on Open BSD OS Signals...
   static {
-    final String[] SIGNAL_NAMES_ARRAY =
-        new String[] {"", "HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT", "EMT", "FPE", "KILL", "BUS",
-            "SEGV", "SYS", "PIPE", "ALRM", "TERM", "URG", "STOP", "TSTP", "CONT", "CHLD", "TTIN",
-            "TTOU", "IO", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH", "INFO", "USR1", "USR2"};
+    final String[] SIGNAL_NAMES_ARRAY = new String[] {EMPTY, "HUP", "INT", "QUIT", "ILL", "TRAP",
+        "ABRT", "EMT", "FPE", "KILL", "BUS", "SEGV", "SYS", "PIPE", "ALRM", "TERM", "URG", "STOP",
+        "TSTP", "CONT", "CHLD", "TTIN", "TTOU", "IO", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH",
+        "INFO", "USR1", "USR2"};
 
     SIGNAL_NAMES = Collections.unmodifiableList(Arrays.asList(SIGNAL_NAMES_ARRAY));
   }

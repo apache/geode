@@ -24,23 +24,23 @@ public class UnableToControlProcessException extends Exception {
   private static final long serialVersionUID = 7579463534993125290L;
 
   /**
-   * Creates a new <code>UnableToControlProcessException</code>.
+   * Creates a new {@code UnableToControlProcessException}.
    */
   public UnableToControlProcessException(final String message) {
     super(message);
   }
 
   /**
-   * Creates a new <code>UnableToControlProcessException</code> that was caused by a given exception
+   * Creates a new {@code UnableToControlProcessException} that was caused by a given exception
    */
-  public UnableToControlProcessException(final String message, final Throwable thr) {
-    super(message, thr);
+  public UnableToControlProcessException(final String message, final Throwable cause) {
+    super(message, cause);
   }
 
   /**
-   * Creates a new <code>UnableToControlProcessException</code> that was caused by a given exception
+   * Creates a new {@code UnableToControlProcessException} that was caused by a given exception
    */
-  public UnableToControlProcessException(final Throwable thr) {
-    super(thr.getMessage(), thr);
+  public UnableToControlProcessException(final Throwable cause) {
+    super(cause.getMessage(), cause);
   }
 }

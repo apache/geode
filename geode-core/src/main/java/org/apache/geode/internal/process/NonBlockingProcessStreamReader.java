@@ -30,7 +30,7 @@ import org.apache.geode.internal.util.StopWatch;
  * 
  * @since GemFire 8.2
  */
-public class NonBlockingProcessStreamReader extends ProcessStreamReader {
+class NonBlockingProcessStreamReader extends ProcessStreamReader {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -39,61 +39,65 @@ public class NonBlockingProcessStreamReader extends ProcessStreamReader {
    */
   private final long continueReadingMillis;
 
-  protected NonBlockingProcessStreamReader(final Builder builder) {
+  private final StopWatch continueReading;
+
+  private StringBuilder stringBuilder;
+  private int character;
+  private boolean ready;
+
+  NonBlockingProcessStreamReader(final Builder builder) {
     super(builder);
+
     continueReadingMillis = builder.continueReadingMillis;
+    continueReading = new StopWatch();
+    stringBuilder = new StringBuilder();
+    character = 0;
+    ready = false;
   }
 
   @Override
   public void run() {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("Running {}", this);
-    }
-    StopWatch continueReading = new StopWatch();
-    BufferedReader reader = null;
-    try {
-      reader = new BufferedReader(new InputStreamReader(inputStream));
-      StringBuilder sb = new StringBuilder();
-      boolean ready = false;
-      int ch = 0;
-      while (ch != -1) {
-        while ((ready = reader.ready()) && (ch = reader.read()) != -1) {
-          sb.append((char) ch);
-          if ((char) ch == '\n') {
-            this.inputListener.notifyInputLine(sb.toString());
-            sb = new StringBuilder();
-          }
-        }
-        if (!ready) {
-          if (!ProcessUtils.isProcessAlive(process)) {
-            if (!continueReading.isRunning()) {
-              continueReading.start();
-            } else if (continueReading.elapsedTimeMillis() > continueReadingMillis) {
-              return;
-            }
-          }
-          Thread.sleep(10);
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+      while (character != -1) {
+        readWhileReady(reader);
+        if (shouldTerminate()) {
+          break;
         }
       }
     } catch (IOException e) {
-      if (isDebugEnabled) {
+      if (logger.isDebugEnabled()) {
         logger.debug("Failure reading from buffered input stream: {}", e.getMessage(), e);
       }
     } catch (InterruptedException e) {
-      if (isDebugEnabled) {
+      if (logger.isDebugEnabled()) {
         logger.debug("Interrupted reading from buffered input stream: {}", e.getMessage(), e);
       }
-    } finally {
-      try {
-        reader.close();
-      } catch (IOException e) {
-        if (isDebugEnabled) {
-          logger.debug("Failure closing buffered input stream reader: {}", e.getMessage(), e);
-        }
+    }
+  }
+
+  private boolean shouldTerminate() throws InterruptedException {
+    if (!ProcessUtils.isProcessAlive(process)) {
+      if (!continueReading.isRunning()) {
+        continueReading.start();
+      } else if (continueReading.elapsedTimeMillis() > continueReadingMillis) {
+        return true;
       }
-      if (isDebugEnabled) {
-        logger.debug("Terminating {}", this);
+    }
+    Thread.sleep(10);
+    return false;
+  }
+
+  /**
+   * This is a hot reader while there are characters ready to read. As soon as there are no more
+   * characters to read, it returns and the loop invokes shouldTerminate which has a 10 millisecond
+   * sleep until there are more characters ready to read.
+   */
+  private void readWhileReady(BufferedReader reader) throws IOException {
+    while ((ready = reader.ready()) && (character = reader.read()) != -1) {
+      stringBuilder.append((char) character);
+      if ((char) character == '\n') {
+        this.inputListener.notifyInputLine(stringBuilder.toString());
+        stringBuilder = new StringBuilder();
       }
     }
   }

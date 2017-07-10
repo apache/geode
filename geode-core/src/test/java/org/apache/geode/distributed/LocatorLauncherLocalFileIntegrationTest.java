@@ -14,42 +14,29 @@
  */
 package org.apache.geode.distributed;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import static org.junit.Assert.assertFalse;
 
 /**
- * Subclass of LocatorLauncherLocalDUnitTest which forces the code to not find the Attach API which
- * is in the JDK tools.jar. As a result LocatorLauncher ends up using the FileProcessController
- * implementation.
+ * Integration tests for using {@link LocatorLauncher} as an in-process API within an existing JVM
+ * without the Attach API.
+ *
+ * Sets {@link ProcessControllerFactory#PROPERTY_DISABLE_ATTACH_API} to force
+ * {@code LocatorLauncher} to use the FileProcessController implementation.
  *
  * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class LocatorLauncherLocalFileIntegrationTest extends LocatorLauncherLocalIntegrationTest {
 
   @Before
-  public final void setUpLocatorLauncherLocalFileIntegrationTest() throws Exception {
+  public void setUpLocatorLauncherLocalFileIntegrationTest() throws Exception {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
-  }
-
-  @After
-  public final void tearDownLocatorLauncherLocalFileIntegrationTest() throws Exception {}
-
-  @Override
-  @Test
-  public void testIsAttachAPIFound() throws Exception {
-    final ProcessControllerFactory factory = new ProcessControllerFactory();
-    assertFalse(factory.isAttachAPIFound());
+    assertThat(new ProcessControllerFactory().isAttachAPIFound()).isFalse();
   }
 }

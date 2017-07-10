@@ -35,7 +35,6 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.util.IOUtils;
@@ -415,8 +414,6 @@ public class StartServerCommand implements GfshCommand {
       return ResultBuilder.createUserErrorResult(message);
     } catch (IllegalStateException e) {
       return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (ClusterConfigurationNotAvailableException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;

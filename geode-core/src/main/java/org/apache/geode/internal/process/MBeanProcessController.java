@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.process;
 
+import static org.apache.commons.lang.Validate.isTrue;
+import static org.apache.commons.lang.Validate.notNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -42,17 +45,20 @@ import com.sun.tools.attach.VirtualMachine;
  * 
  * @since GemFire 8.0
  */
-public class MBeanProcessController implements ProcessController {
+class MBeanProcessController implements ProcessController {
 
   /** Property name for the JMX local connector address (from sun.management.Agent) */
-  private static final String LOCAL_CONNECTOR_ADDRESS_PROP =
+  private static final String PROPERTY_LOCAL_CONNECTOR_ADDRESS =
       "com.sun.management.jmxremote.localConnectorAddress";
+
+  private static final Object[] PARAMS = {};
+  private static final String[] SIGNATURE = {};
 
   private final MBeanControllerParameters arguments;
   private final int pid;
 
-  protected JMXConnector jmxc;
-  protected MBeanServerConnection server;
+  private JMXConnector jmxc;
+  private MBeanServerConnection server;
 
   /**
    * Constructs an instance for controlling a local process.
@@ -61,10 +67,10 @@ public class MBeanProcessController implements ProcessController {
    * 
    * @throws IllegalArgumentException if pid is not a positive integer
    */
-  public MBeanProcessController(final MBeanControllerParameters arguments, final int pid) {
-    if (pid < 1) {
-      throw new IllegalArgumentException("Invalid pid '" + pid + "' specified");
-    }
+  MBeanProcessController(final MBeanControllerParameters arguments, final int pid) {
+    notNull(arguments, "Invalid arguments '" + arguments + "' specified");
+    isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
+
     this.pid = pid;
     this.arguments = arguments;
   }
@@ -90,7 +96,9 @@ public class MBeanProcessController implements ProcessController {
   }
 
   @Override
-  public void checkPidSupport() {}
+  public void checkPidSupport() {
+    // nothing
+  }
 
   /**
    * Connects to the process and tells it to shut down.
@@ -156,8 +164,8 @@ public class MBeanProcessController implements ProcessController {
     ObjectName objectName = namePattern;
     connect();
     try {
-      final QueryExp constraint = buildQueryExp(pidAttribute, attributes, values);
-      final Set<ObjectName> mbeanNames = this.server.queryNames(namePattern, constraint);
+      QueryExp constraint = buildQueryExp(pidAttribute, attributes, values);
+      Set<ObjectName> mbeanNames = this.server.queryNames(namePattern, constraint);
 
       if (mbeanNames.isEmpty()) {
         throw new MBeanInvocationFailedException("Failed to find mbean matching '" + namePattern
@@ -170,13 +178,7 @@ public class MBeanProcessController implements ProcessController {
 
       objectName = mbeanNames.iterator().next();
       return invoke(objectName, methodName);
-    } catch (InstanceNotFoundException e) {
-      throw new MBeanInvocationFailedException(
-          "Failed to invoke " + methodName + " on " + objectName, e);
-    } catch (MBeanException e) {
-      throw new MBeanInvocationFailedException(
-          "Failed to invoke " + methodName + " on " + objectName, e);
-    } catch (ReflectionException e) {
+    } catch (InstanceNotFoundException | MBeanException | ReflectionException e) {
       throw new MBeanInvocationFailedException(
           "Failed to invoke " + methodName + " on " + objectName, e);
     } finally {
@@ -193,7 +195,7 @@ public class MBeanProcessController implements ProcessController {
    */
   private void connect() throws ConnectionFailedException, IOException {
     try {
-      final JMXServiceURL jmxUrl = getJMXServiceURL();
+      JMXServiceURL jmxUrl = getJMXServiceURL();
       this.jmxc = JMXConnectorFactory.connect(jmxUrl);
       this.server = this.jmxc.getMBeanServerConnection();
     } catch (AttachNotSupportedException e) {
@@ -209,7 +211,7 @@ public class MBeanProcessController implements ProcessController {
     if (this.jmxc != null) {
       try {
         this.jmxc.close();
-      } catch (IOException e) {
+      } catch (IOException ignored) {
         // ignore
       }
     }
@@ -228,9 +230,9 @@ public class MBeanProcessController implements ProcessController {
    * @throws PidUnavailableException if parsing the pid from the RuntimeMXBean name fails
    */
   boolean checkPidMatches() throws IllegalStateException, IOException, PidUnavailableException {
-    final RuntimeMXBean proxy = ManagementFactory.newPlatformMXBeanProxy(this.server,
+    RuntimeMXBean proxy = ManagementFactory.newPlatformMXBeanProxy(this.server,
         ManagementFactory.RUNTIME_MXBEAN_NAME, RuntimeMXBean.class);
-    final int remotePid = ProcessUtils.identifyPid(proxy.getName());
+    int remotePid = ProcessUtils.identifyPid(proxy.getName());
     if (remotePid != this.pid) {
       throw new IllegalStateException(
           "Process has different pid '" + remotePid + "' than expected pid '" + this.pid + "'");
@@ -250,16 +252,16 @@ public class MBeanProcessController implements ProcessController {
    * @throws IOException if the JDK management agent cannot be found and loaded
    */
   private JMXServiceURL getJMXServiceURL() throws AttachNotSupportedException, IOException {
-    String connectorAddress = null;
-    final VirtualMachine vm = VirtualMachine.attach(String.valueOf(this.pid));
+    String connectorAddress;
+    VirtualMachine vm = VirtualMachine.attach(String.valueOf(this.pid));
     try {
       Properties agentProps = vm.getAgentProperties();
-      connectorAddress = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+      connectorAddress = agentProps.getProperty(PROPERTY_LOCAL_CONNECTOR_ADDRESS);
 
       if (connectorAddress == null) {
         // need to load the management-agent and get the address
 
-        final String javaHome = vm.getSystemProperties().getProperty("java.home");
+        String javaHome = vm.getSystemProperties().getProperty("java.home");
 
         // assume java.home is JDK and look in JRE for agent
         String managementAgentPath = javaHome + File.separator + "jre" + File.separator + "lib"
@@ -279,19 +281,13 @@ public class MBeanProcessController implements ProcessController {
         managementAgentPath = managementAgent.getCanonicalPath();
         try {
           vm.loadAgent(managementAgentPath, "com.sun.management.jmxremote");
-        } catch (AgentLoadException e) {
-          IOException ioe = new IOException(e.getMessage());
-          ioe.initCause(e);
-          throw ioe;
-        } catch (AgentInitializationException e) {
-          IOException ioe = new IOException(e.getMessage());
-          ioe.initCause(e);
-          throw ioe;
+        } catch (AgentLoadException | AgentInitializationException e) {
+          throw new IOException(e);
         }
 
         // get the connector address
         agentProps = vm.getAgentProperties();
-        connectorAddress = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+        connectorAddress = agentProps.getProperty(PROPERTY_LOCAL_CONNECTOR_ADDRESS);
       }
     } finally {
       vm.detach();
@@ -316,7 +312,7 @@ public class MBeanProcessController implements ProcessController {
    */
   private QueryExp buildQueryExp(final String pidAttribute, final String[] attributes,
       final Object[] values) {
-    final QueryExp optionalAttributes = buildOptionalQueryExp(attributes, values);
+    QueryExp optionalAttributes = buildOptionalQueryExp(attributes, values);
     QueryExp constraint;
     if (optionalAttributes != null) {
       constraint =
@@ -342,10 +338,10 @@ public class MBeanProcessController implements ProcessController {
     for (int i = 0; i < attributes.length; i++) {
       if (values[i] instanceof Boolean) {
         if (queryExp == null) {
-          queryExp = Query.eq(Query.attr(attributes[i]), Query.value(((Boolean) values[i])));
+          queryExp = Query.eq(Query.attr(attributes[i]), Query.value((Boolean) values[i]));
         } else {
           queryExp = Query.and(queryExp,
-              Query.eq(Query.attr(attributes[i]), Query.value(((Boolean) values[i]))));
+              Query.eq(Query.attr(attributes[i]), Query.value((Boolean) values[i])));
         }
       } else if (values[i] instanceof Number) {
         if (queryExp == null) {
@@ -381,6 +377,6 @@ public class MBeanProcessController implements ProcessController {
    */
   private Object invoke(final ObjectName objectName, final String method)
       throws InstanceNotFoundException, IOException, MBeanException, ReflectionException {
-    return this.server.invoke(objectName, method, new Object[] {}, new String[] {});
+    return this.server.invoke(objectName, method, PARAMS, SIGNATURE);
   }
 }

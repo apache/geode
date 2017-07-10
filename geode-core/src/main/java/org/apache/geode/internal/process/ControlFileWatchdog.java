@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.process;
 
+import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang.Validate.notNull;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -30,19 +33,24 @@ class ControlFileWatchdog implements Runnable {
   private static final Logger logger = LogService.getLogger();
 
   private static final long STOP_TIMEOUT_MILLIS = 60 * 1000;
-  private static final long SLEEP_MILLIS = 1000;
+  private static final long LOOP_INTERVAL_MILLIS = 1000;
 
-  private final File workingDir;
+  private final File directory;
   private final File file;
   private final ControlRequestHandler requestHandler;
   private final boolean stopAfterRequest;
+
   private Thread thread;
   private boolean alive;
 
-  ControlFileWatchdog(final File workingDir, final String fileName,
+  ControlFileWatchdog(final File directory, final String fileName,
       final ControlRequestHandler requestHandler, final boolean stopAfterRequest) {
-    this.workingDir = workingDir;
-    this.file = new File(this.workingDir, fileName);
+    notNull(directory, "Invalid directory '" + directory + "' specified");
+    notEmpty(fileName, "Invalid fileName '" + fileName + "' specified");
+    notNull(requestHandler, "Invalid requestHandler '" + requestHandler + "' specified");
+
+    this.directory = directory;
+    this.file = new File(this.directory, fileName);
     this.requestHandler = requestHandler;
     this.stopAfterRequest = stopAfterRequest;
   }
@@ -51,26 +59,7 @@ class ControlFileWatchdog implements Runnable {
   public void run() {
     try { // always set this.alive before stopping
       while (isAlive()) {
-        try { // handle handle exceptions
-          Thread.sleep(SLEEP_MILLIS);
-          if (this.file.exists()) {
-            try { // always check stopAfterRequest after main work
-              work();
-            } finally {
-              if (this.stopAfterRequest) {
-                stopMe();
-              }
-            }
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          // allow to loop around and check isAlive()
-        } catch (IOException e) {
-          logger.error(
-              "Unable to control process with {}. Please add tools.jar from JDK to classpath for improved process control.",
-              this.file);
-          // allow to loop around and check isAlive()
-        }
+        doWork();
       }
     } finally {
       synchronized (this) {
@@ -79,7 +68,30 @@ class ControlFileWatchdog implements Runnable {
     }
   }
 
-  private void work() throws IOException {
+  private void doWork() {
+    try { // handle handle exceptions
+      if (this.file.exists()) {
+        try { // always check stopAfterRequest after handleRequest
+          handleRequest();
+        } finally {
+          if (this.stopAfterRequest) {
+            stopMe();
+          }
+        }
+      }
+      Thread.sleep(LOOP_INTERVAL_MILLIS);
+    } catch (InterruptedException ignored) {
+      Thread.currentThread().interrupt();
+      // allow to loop around and check isAlive()
+    } catch (IOException ignored) {
+      logger.error(
+          "Unable to control process with {}. Please add tools.jar from JDK to classpath for improved process control.",
+          this.file);
+      // allow to loop around and check isAlive()
+    }
+  }
+
+  private void handleRequest() throws IOException {
     try { // always delete file after invoking handler
       this.requestHandler.handleRequest();
     } finally {
@@ -136,17 +148,17 @@ class ControlFileWatchdog implements Runnable {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("workingDir=").append(this.workingDir);
+    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    sb.append('@').append(System.identityHashCode(this)).append('{');
+    sb.append("directory=").append(this.directory);
     sb.append(", file=").append(this.file);
-    sb.append(", alive=").append(this.alive);
+    sb.append(", alive=").append(this.alive); // not synchronized
     sb.append(", stopAfterRequest=").append(this.stopAfterRequest);
-    return sb.append("}").toString();
+    return sb.append('}').toString();
   }
 
   private String createThreadName() {
-    return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + " monitoring "
+    return getClass().getSimpleName() + '@' + Integer.toHexString(hashCode()) + " monitoring "
         + this.file.getName();
   }
 
@@ -154,6 +166,6 @@ class ControlFileWatchdog implements Runnable {
    * Defines the callback to be invoked when the control file exists.
    */
   interface ControlRequestHandler {
-    public void handleRequest() throws IOException;
+    void handleRequest() throws IOException;
   }
 }
