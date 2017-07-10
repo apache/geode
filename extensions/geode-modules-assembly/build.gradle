@@ -42,7 +42,7 @@ def getJarArtifact(module) {
   }.collect { it.file }
 }
 
-def moduleBaseName = "${productName.replace(' ', '_')}_Modules"
+def moduleBaseName = "Apache_Geode_Modules"
 
 def configureTcServerAssembly = {
   baseName = moduleBaseName
