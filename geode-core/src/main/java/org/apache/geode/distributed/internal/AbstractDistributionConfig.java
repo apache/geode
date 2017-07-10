@@ -24,11 +24,13 @@ import org.apache.geode.internal.AbstractConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.memcached.GemFireMemcachedServer;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -53,6 +55,8 @@ import java.util.StringTokenizer;
 @SuppressWarnings("deprecation")
 public abstract class AbstractDistributionConfig extends AbstractConfig
     implements DistributionConfig {
+
+  private static final Logger logger = LogService.getLogger();
 
   protected Object checkAttribute(String attName, Object value) {
     // first check to see if this attribute is modifiable, this also checks if the attribute is a
@@ -274,9 +278,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         hostAddress = InetAddress.getByName(host);
 
       } catch (UnknownHostException ex) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_UNKNOWN_LOCATOR_HOST_0
-                .toLocalizedString(host));
+        logger.warn("Unknown locator host: " + host);
       }
 
       locatorsb.append(host);

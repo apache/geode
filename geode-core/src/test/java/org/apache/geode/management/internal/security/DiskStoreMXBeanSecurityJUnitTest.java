@@ -17,13 +17,7 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.management.DiskStoreMXBean;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -31,16 +25,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.DiskStoreMXBean;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+
 @Category({IntegrationTest.class, SecurityTest.class})
 public class DiskStoreMXBeanSecurityJUnitTest {
   private DiskStoreMXBean bean;
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -57,7 +56,48 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "clusterRead", password = "clusterRead")
+  public void testClusterReadAccess() throws Exception {
+    assertThatThrownBy(() -> bean.flush()).hasMessageContaining(TestCommand.diskManage.toString());
+    assertThatThrownBy(() -> bean.forceCompaction())
+        .hasMessageContaining(TestCommand.diskManage.toString());
+    assertThatThrownBy(() -> bean.forceRoll())
+        .hasMessageContaining(TestCommand.diskManage.toString());
+    assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f))
+        .hasMessageContaining(TestCommand.diskManage.toString());
+    assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f))
+        .hasMessageContaining(TestCommand.diskManage.toString());
+
+    bean.getCompactionThreshold();
+    bean.getDiskDirectories();
+    bean.getDiskReadsRate();
+    bean.isAutoCompact();
+    bean.isForceCompactionAllowed();
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "clusterManageDisk", password = "clusterManageDisk")
+  public void testDiskManageAccess() throws Exception {
+    assertThatThrownBy(() -> bean.getCompactionThreshold())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getDiskDirectories())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getDiskReadsRate())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.isAutoCompact())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.isForceCompactionAllowed())
+        .hasMessageContaining(TestCommand.clusterRead.toString());
+
+    bean.flush();
+    bean.forceCompaction();
+    bean.forceRoll();
+    bean.setDiskUsageCriticalPercentage(0.5f);
+    bean.setDiskUsageWarningPercentage(0.5f);
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
   public void testAllAccess() throws Exception {
     bean.flush();
     bean.forceCompaction();
@@ -72,26 +112,30 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "noAccess", password = "noAccess")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.flush()).hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.forceCompaction())
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.forceRoll())
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.getCompactionThreshold())
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> bean.flush())
+        .hasMessageContaining(TestCommand.clusterManageDisk.toString());
+    softly.assertThatThrownBy(() -> bean.forceCompaction())
+        .hasMessageContaining(TestCommand.clusterManageDisk.toString());
+    softly.assertThatThrownBy(() -> bean.forceRoll())
+        .hasMessageContaining(TestCommand.clusterManageDisk.toString());
+    softly.assertThatThrownBy(() -> bean.getCompactionThreshold())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getDiskDirectories())
+    softly.assertThatThrownBy(() -> bean.getDiskDirectories())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getDiskReadsRate())
+    softly.assertThatThrownBy(() -> bean.getDiskReadsRate())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.isAutoCompact())
+    softly.assertThatThrownBy(() -> bean.isAutoCompact())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.isForceCompactionAllowed())
+    softly.assertThatThrownBy(() -> bean.isForceCompactionAllowed())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f))
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+    softly.assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f))
+        .hasMessageContaining(TestCommand.clusterManageDisk.toString());
+    softly.assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f))
+        .hasMessageContaining(TestCommand.clusterManageDisk.toString());
+    softly.assertAll();
   }
 }

@@ -175,7 +175,7 @@ public class Version implements Comparable<Version> {
 
   // 41-44 available for 8.2.x variants
 
-  private static final byte GFE_90_ORDINAL = 45;
+  private static final byte GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
 
   public static final Version GFE_90 =
       new Version("GFE", "9.0", (byte) 9, (byte) 0, (byte) 0, (byte) 0, GFE_90_ORDINAL);

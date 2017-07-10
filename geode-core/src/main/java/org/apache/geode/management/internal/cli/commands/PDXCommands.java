@@ -14,6 +14,17 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -32,42 +43,25 @@ import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collection;
 
 public class PDXCommands implements GfshCommand {
 
 
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result configurePDX(
       @CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) Boolean readSerialized,
       @CliOption(key = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP) Boolean ignoreUnreadFields,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE, specifiedDefaultValue = "",
           help = CliStrings.CONFIGURE_PDX__DISKSTORE__HELP) String diskStore,
       @CliOption(key = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP) String[] patterns,
       @CliOption(key = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          specifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP) String[] portablePatterns) {
-    Result result = null;
+    Result result;
 
     try {
       InfoResultData ird = ResultBuilder.createInfoResultData();
@@ -105,7 +99,7 @@ public class PDXCommands implements GfshCommand {
           CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + cache.getPdxReadSerialized());
 
 
-      // Set ingoreUnreadFields
+      // Set ignoreUnreadFields
       if (ignoreUnreadFields != null) {
         cache.setPdxIgnoreUnreadFields(ignoreUnreadFields);
       } else {
@@ -153,7 +147,6 @@ public class PDXCommands implements GfshCommand {
 
   @CliCommand(value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result pdxRename(@CliOption(key = CliStrings.PDX_RENAME_OLD, mandatory = true,
       help = CliStrings.PDX_RENAME_OLD__HELP) String oldClassName,
 
@@ -191,7 +184,7 @@ public class PDXCommands implements GfshCommand {
       }
       String resultString =
           CliStrings.format(CliStrings.PDX_RENAME__SUCCESS, outputStream.toString());
-      return ResultBuilder.createInfoResult(resultString.toString());
+      return ResultBuilder.createInfoResult(resultString);
 
     } catch (Exception e) {
       return ResultBuilder.createGemFireErrorResult(

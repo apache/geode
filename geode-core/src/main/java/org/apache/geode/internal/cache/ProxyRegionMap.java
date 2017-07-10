@@ -32,7 +32,9 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
+import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.lru.LRUEntry;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -485,8 +487,8 @@ class ProxyRegionMap implements RegionMap {
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
-        ByteArrayDataInput in, DM mgr) {
+    public boolean fillInValue(LocalRegion r, Entry entry, ByteArrayDataInput in, DM mgr,
+        final Version version) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));

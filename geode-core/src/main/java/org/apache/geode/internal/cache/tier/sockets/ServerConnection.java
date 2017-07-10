@@ -74,9 +74,9 @@ import org.apache.geode.security.GemFireSecurityException;
  *
  * @since GemFire 2.0.2
  */
-public class ServerConnection implements Runnable {
+public abstract class ServerConnection implements Runnable {
 
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
 
   /**
    * This is a buffer that we add to client readTimeout value before we cleanup the connection. This
@@ -138,12 +138,12 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  private Socket theSocket;
+  protected Socket theSocket;
   // private InputStream in = null;
   // private OutputStream out = null;
   private ByteBuffer commBuffer;
-  private final CachedRegionHelper crHelper;
-  private String name = null;
+  protected final CachedRegionHelper crHelper;
+  protected String name = null;
 
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client
@@ -168,7 +168,7 @@ public class ServerConnection implements Runnable {
   /**
    * Handshake reference uniquely identifying a client
    */
-  private ClientHandShake handshake;
+  protected ClientHandShake handshake;
   private int handShakeTimeout;
   private final Object handShakeMonitor = new Object();
 
@@ -213,7 +213,7 @@ public class ServerConnection implements Runnable {
    * The communication mode for this <code>ServerConnection</code>. Valid types include
    * 'client-server', 'gateway-gateway' and 'monitor-server'.
    */
-  private final byte communicationMode;
+  protected final byte communicationMode;
   private final String communicationModeStr;
 
   private long processingMessageStartTime = -1;
@@ -233,7 +233,7 @@ public class ServerConnection implements Runnable {
 
   private Part securePart = null;
 
-  private Principal principal;
+  protected Principal principal;
 
   private MessageIdExtractor messageIdExtractor = new MessageIdExtractor();
 
@@ -592,19 +592,14 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  private boolean acceptHandShake(byte epType, int qSize) {
-    try {
-      this.handshake.accept(theSocket.getOutputStream(), theSocket.getInputStream(), epType, qSize,
-          this.communicationMode, this.principal);
-    } catch (IOException ioe) {
-      if (!crHelper.isShutdown() && !isTerminated()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ServerConnection_0_HANDSHAKE_ACCEPT_FAILED_ON_SOCKET_1_2,
-            new Object[] {this.name, this.theSocket, ioe}));
-      }
-      cleanup();
-      return false;
-    }
+  protected boolean acceptHandShake(byte epType, int qSize) {
+    return doHandShake(epType, qSize) && handshakeAccepted();
+  }
+
+  protected abstract boolean doHandShake(byte epType, int qSize);
+
+
+  protected boolean handshakeAccepted() {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Accepted handshake", this.name);
     }
@@ -670,6 +665,16 @@ public class ServerConnection implements Runnable {
     }
   }
 
+  /**
+   * @return whether this is a connection to a client, regardless of protocol.
+   */
+  public boolean isClientServerConnection() {
+    return communicationMode == Acceptor.CLIENT_TO_SERVER
+        || communicationMode == Acceptor.PRIMARY_SERVER_TO_CLIENT
+        || communicationMode == Acceptor.SECONDARY_SERVER_TO_CLIENT
+        || communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE;
+  }
+
   static class Counter {
     int cnt;
 
@@ -686,22 +691,12 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  // public void setUserAuthAttributes(ClientProxyMembershipID proxyId, AuthorizeRequest
-  // authzRequest, AuthorizeRequestPP postAuthzRequest) {
-  // UserAuthAttributes uaa = new UserAuthAttributes(authzRequest, postAuthzRequest);
-  // }
-
-  /**
-   * Set to false once handshake has been done
-   */
-  private boolean doHandshake = true;
-
   private boolean clientDisconnectedCleanly = false;
   private Throwable clientDisconnectedException;
   private int failureCount = 0;
   private boolean processMessages = true;
 
-  private void doHandshake() {
+  protected void doHandshake() {
     // hitesh:to create new connection handshake
     if (verifyClientConnection()) {
       // Initialize the commands after the handshake so that the version
@@ -718,7 +713,7 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  private void doNormalMsg() {
+  protected void doNormalMsg() {
     Message msg = null;
     msg = BaseCommand.readRequest(this);
     ThreadState threadState = null;
@@ -903,15 +898,7 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  private void doOneMessage() {
-    if (this.doHandshake) {
-      doHandshake();
-      this.doHandshake = false;
-    } else {
-      this.resetTransientData();
-      doNormalMsg();
-    }
-  }
+  protected abstract void doOneMessage();
 
   private void initializeClientUserAuths() {
     this.clientUserAuths = getClientUserAuths(this.proxyId);
@@ -1070,7 +1057,7 @@ public class ServerConnection implements Runnable {
   /**
    * MessageType of the messages (typically internal commands) which do not need to participate in
    * security should be added in the following if block.
-   * 
+   *
    * @return Part
    * @see AbstractOp#processSecureBytes(Connection, Message)
    * @see AbstractOp#needsUserId()
@@ -1131,7 +1118,7 @@ public class ServerConnection implements Runnable {
       try {
         this.stats.decThreadQueueSize();
         if (!isTerminated()) {
-          Message.setTLCommBuffer(getAcceptor().takeCommBuffer());
+          getAcceptor().setTLCommBuffer();
           doOneMessage();
           if (this.processMessages && !(this.crHelper.isShutdown())) {
             registerWithSelector(); // finished msg so reregister
@@ -1147,7 +1134,7 @@ public class ServerConnection implements Runnable {
             LocalizedMessage.create(LocalizedStrings.ServerConnection_0__UNEXPECTED_EXCEPTION, ex));
         setClientDisconnectedException(ex);
       } finally {
-        getAcceptor().releaseCommBuffer(Message.setTLCommBuffer(null));
+        getAcceptor().releaseTLCommBuffer();
         // DistributedSystem.releaseThreadsSockets();
         unsetOwner();
         setNotProcessingMessage();
@@ -1495,7 +1482,7 @@ public class ServerConnection implements Runnable {
 
   /**
    * Just ensure that this class gets loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {

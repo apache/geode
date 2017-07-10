@@ -340,6 +340,7 @@ org/apache/geode/internal/cache/tier/sockets/CacheClientNotifier$2,false,this$0:
 org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher$1,true,0,this$0:org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher
 org/apache/geode/internal/cache/tier/sockets/ClientTombstoneMessage$TOperation,false
 org/apache/geode/internal/cache/tier/sockets/MessageTooLargeException,true,-8970585803331525833
+org/apache/geode/internal/cache/tier/sockets/ServiceLoadingFailureException,false
 org/apache/geode/internal/cache/tier/sockets/UnregisterAllInterest,true,5026160621257178459
 org/apache/geode/internal/cache/tx/TransactionalOperation$ServerRegionOperation,false
 org/apache/geode/internal/cache/versions/ConcurrentCacheModificationException,true,2316928221010347462
@@ -533,8 +534,8 @@ org/apache/geode/management/internal/cli/functions/AsyncEventQueueFunctionArgs,t
 org/apache/geode/management/internal/cli/functions/ChangeLogLevelFunction,true,1
 org/apache/geode/management/internal/cli/functions/CloseDurableClientFunction,true,1
 org/apache/geode/management/internal/cli/functions/CloseDurableCqFunction,true,1
-org/apache/geode/management/internal/cli/functions/ContunuousQueryFunction,true,1
-org/apache/geode/management/internal/cli/functions/ContunuousQueryFunction$ClientInfo,true,1,isDurable:java/lang/String,primaryServer:java/lang/String,secondaryServer:java/lang/String,this$0:org/apache/geode/management/internal/cli/functions/ContunuousQueryFunction
+org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction,true,1
+org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction$ClientInfo,true,1,isDurable:java/lang/String,primaryServer:java/lang/String,secondaryServer:java/lang/String,this$0:org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction
 org/apache/geode/management/internal/cli/functions/CreateAsyncEventQueueFunction,true,1
 org/apache/geode/management/internal/cli/functions/CreateDefinedIndexesFunction,true,1
 org/apache/geode/management/internal/cli/functions/CreateDiskStoreFunction,true,1

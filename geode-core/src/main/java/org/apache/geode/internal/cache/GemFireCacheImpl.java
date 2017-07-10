@@ -77,6 +77,7 @@ import javax.transaction.TransactionManager;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import org.apache.commons.lang.StringUtils;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -322,6 +323,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private static final int FIVE_HOURS = 5 * 60 * 60 * 1000;
 
   private static final Pattern DOUBLE_BACKSLASH = Pattern.compile("\\\\");
+
+  private volatile ConfigurationResponse configurationResponse;
 
   /** To test MAX_QUERY_EXECUTION_TIME option. */
   public int testMaxQueryExecutionTime = -1;
@@ -809,7 +812,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.system = system;
       this.dm = this.system.getDistributionManager();
 
-      this.securityService = this.system.getSecurityService();
+      this.configurationResponse = requestSharedConfiguration();
+
+      // apply the cluster's properties configuration and initialize security using that
+      // configuration
+      ClusterConfigurationLoader.applyClusterPropertiesConfiguration(this.configurationResponse,
+          this.system.getConfig());
+
+      this.securityService =
+          SecurityServiceFactory.create(this.system.getConfig().getSecurityProps(), cacheConfig);
+      this.system.setSecurityService(this.securityService);
 
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
         // We only support management on members of a distributed system
@@ -1035,17 +1047,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private void deployJarsReceivedFromClusterConfiguration(ConfigurationResponse response) {
-    try {
-      ClusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(this, response);
-    } catch (IOException | ClassNotFoundException e) {
-      throw new GemFireConfigException(
-          LocalizedStrings.GemFireCache_EXCEPTION_OCCURRED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION
-              .toLocalizedString(),
-          e);
-    }
-  }
-
   /**
    * When called, clusterProps and serverProps and key could not be null
    */
@@ -1150,15 +1151,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       listener.cacheCreated(this);
     }
 
+    // set ClassPathLoader and then deploy cluster config jars
     ClassPathLoader.setLatestToDefault(this.system.getConfig().getDeployWorkingDir());
 
-    // request and check cluster configuration
-    ConfigurationResponse configurationResponse = requestSharedConfiguration();
-    deployJarsReceivedFromClusterConfiguration(configurationResponse);
-
-    // apply the cluster's properties configuration and initialize security using that configuration
-    ClusterConfigurationLoader.applyClusterPropertiesConfiguration(this, configurationResponse,
-        this.system.getConfig());
+    try {
+      ClusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(this,
+          this.configurationResponse);
+    } catch (IOException | ClassNotFoundException e) {
+      throw new GemFireConfigException(
+          LocalizedStrings.GemFireCache_EXCEPTION_OCCURRED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION
+              .toLocalizedString(),
+          e);
+    }
 
     SystemMemberCacheEventProcessor.send(this, Operation.CACHE_CREATE);
     this.resourceAdvisor.initializationGate();
@@ -1182,11 +1186,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     boolean completedCacheXml = false;
     try {
-      if (configurationResponse == null) {
+      if (this.configurationResponse == null) {
         // Deploy all the jars from the deploy working dir.
         ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
       }
-      ClusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
+      ClusterConfigurationLoader.applyClusterXmlConfiguration(this, this.configurationResponse,
           this.system.getConfig());
       initializeDeclarativeCache();
       completedCacheXml = true;
@@ -1199,6 +1203,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           // I don't want init to throw an exception that came from the close.
           // I want it to throw the original exception that came from initializeDeclarativeCache.
         }
+        this.configurationResponse = null;
       }
     }
 

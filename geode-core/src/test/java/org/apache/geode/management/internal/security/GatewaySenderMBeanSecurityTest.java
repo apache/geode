@@ -15,18 +15,11 @@
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.beans.GatewaySenderMBean;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import javax.management.ObjectName;
+
+import org.assertj.core.api.SoftAssertions;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,7 +28,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.management.ObjectName;
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.beans.GatewaySenderMBean;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GatewaySenderMBeanSecurityTest {
@@ -47,10 +48,7 @@ public class GatewaySenderMBeanSecurityTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
@@ -58,7 +56,7 @@ public class GatewaySenderMBeanSecurityTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    // the server does not have a GAtewaySenderMXBean registered initially, has to register a mock
+    // the server does not have a GatewaySenderMXBean registered initially, has to register a mock
     // one.
     service = ManagementService.getManagementService(server.getCache());
     mockBeanName = ObjectName.getInstance("GemFire", "key", "value");
@@ -76,7 +74,7 @@ public class GatewaySenderMBeanSecurityTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
   public void testAllAccess() throws Exception {
     bean.getAlertThreshold();
     bean.getAverageDistributionTimePerBatch();
@@ -93,28 +91,36 @@ public class GatewaySenderMBeanSecurityTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "stranger", password = "1234567")
+  @ConnectionConfiguration(user = "stranger", password = "stranger")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.getAlertThreshold())
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> bean.getAlertThreshold())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch())
+    softly.assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getBatchSize())
+    softly.assertThatThrownBy(() -> bean.getBatchSize())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getMaximumQueueMemory())
+    softly.assertThatThrownBy(() -> bean.getMaximumQueueMemory())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getOrderPolicy())
+    softly.assertThatThrownBy(() -> bean.getOrderPolicy())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.isBatchConflationEnabled())
+    softly.assertThatThrownBy(() -> bean.isBatchConflationEnabled())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.isManualStart())
+    softly.assertThatThrownBy(() -> bean.isManualStart())
         .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.pause()).hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.rebalance())
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.resume()).hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.start()).hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.stop()).hasMessageContaining(TestCommand.dataManage.toString());
+    softly.assertThatThrownBy(() -> bean.pause())
+        .hasMessageContaining(TestCommand.clusterManageGateway.toString());
+    softly.assertThatThrownBy(() -> bean.rebalance())
+        .hasMessageContaining(TestCommand.clusterManageGateway.toString());
+    softly.assertThatThrownBy(() -> bean.resume())
+        .hasMessageContaining(TestCommand.clusterManageGateway.toString());
+    softly.assertThatThrownBy(() -> bean.start())
+        .hasMessageContaining(TestCommand.clusterManageGateway.toString());
+    softly.assertThatThrownBy(() -> bean.stop())
+        .hasMessageContaining(TestCommand.clusterManageGateway.toString());
+
+    softly.assertAll();
   }
 
 }

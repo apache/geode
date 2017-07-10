@@ -14,23 +14,40 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.RegionShortcut.*;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.*;
-import static org.junit.Assert.*;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.createIndex;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.getIndexQueue;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.pauseSender;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyIndexFinishFlushing;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.awaitility.Awaitility;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-
+import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -40,7 +57,6 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.DiskDirRule;
 
 /**
  * Tests of lucene index creation that use persistence
@@ -50,13 +66,13 @@ import org.apache.geode.test.junit.rules.DiskDirRule;
 public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegrationTest {
 
   @Rule
-  public DiskDirRule diskDirRule = new DiskDirRule();
+  public TemporaryFolder tempFolderRule = new TemporaryFolder();
 
   @Override
   public void createCache() {
     super.createCache();
-    cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDirRule.get()}).setMaxOplogSize(1)
-        .create(GemFireCacheImpl.getDefaultDiskStoreName());
+    cache.createDiskStoreFactory().setDiskDirs(new File[] {tempFolderRule.getRoot()})
+        .setMaxOplogSize(1).create(GemFireCacheImpl.getDefaultDiskStoreName());
   }
 
   @Test
@@ -100,7 +116,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   public void shouldNotUseDiskStoreWhenUserRegionIsNotPersistent() {
     createIndex(cache, "text");
     String diskStoreName = "diskStore";
-    cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDirRule.get()})
+    cache.createDiskStoreFactory().setDiskDirs(new File[] {tempFolderRule.getRoot()})
         .create(diskStoreName);
     cache.createRegionFactory(RegionShortcut.PARTITION_OVERFLOW).setDiskStoreName(diskStoreName)
         .create(REGION_NAME);
@@ -196,7 +212,8 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   @Test
   public void shouldStoreIndexAndQueueInTheSameDiskStoreAsTheRegion() {
     createIndex(cache, "text");
-    cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDirRule.get()}).create("DiskStore");
+    cache.createDiskStoreFactory().setDiskDirs(new File[] {tempFolderRule.getRoot()})
+        .create("DiskStore");
     cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).setDiskStoreName("DiskStore")
         .create(REGION_NAME);
     final String diskStoreName = cache.getRegion(REGION_NAME).getAttributes().getDiskStoreName();

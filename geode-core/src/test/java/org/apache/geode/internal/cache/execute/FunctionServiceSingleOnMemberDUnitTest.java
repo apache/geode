@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test of the behavior of a custom ResultCollector when handling exceptions
@@ -28,11 +28,11 @@ import org.junit.experimental.categories.Category;
 @Category(DistributedTest.class)
 public class FunctionServiceSingleOnMemberDUnitTest extends FunctionServiceBase {
 
-  private InternalDistributedMember memberId;
+  private DistributedMember memberId;
 
   @Before
   public void createDistributedSystem() {
-    memberId = getSystem().getDistributedMember();
+    memberId = getCache().getDistributedSystem().getDistributedMember();
   }
 
   @Override

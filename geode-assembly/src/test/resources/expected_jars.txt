@@ -51,6 +51,7 @@ mx4j-remote
 mx4j-tools
 netty-all
 paranamer
+protobuf-java
 ra.jar
 scala-library
 scala-reflect
@@ -86,3 +87,4 @@ springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
 swagger-models
+commons-validator

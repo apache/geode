@@ -37,8 +37,11 @@ include 'extensions/geode-modules-tomcat8'
 include 'extensions/geode-modules-session-internal'
 include 'extensions/geode-modules-session'
 include 'extensions/geode-modules-assembly'
-
+include 'geode-protobuf'
+include 'extensions/session-testing-war'
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
   throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
 }
+
+

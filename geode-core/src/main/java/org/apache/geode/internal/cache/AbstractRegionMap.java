@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
@@ -768,7 +770,16 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
 
     if (owner instanceof HARegion && newValue instanceof CachedDeserializable) {
-      Object actualVal = ((CachedDeserializable) newValue).getDeserializedValue(null, null);
+      Object actualVal = null;
+      try {
+        actualVal =
+            BlobHelper.deserializeBlob(((CachedDeserializable) newValue).getSerializedValue(),
+                sender.getVersionObject(), null);
+        newValue = CachedDeserializableFactory.create(actualVal,
+            ((CachedDeserializable) newValue).getValueSizeInBytes());
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException("Unable to deserialize HA event for region " + owner);
+      }
       if (actualVal instanceof HAEventWrapper) {
         HAEventWrapper haEventWrapper = (HAEventWrapper) actualVal;
         // Key was removed at sender side so not putting it into the HARegion
@@ -3486,10 +3497,10 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   public void dumpMap() {
-    logger.debug("dump of concurrent map of size {} for region {}", this._getMap().size(),
+    logger.info("dump of concurrent map of size {} for region {}", this._getMap().size(),
         this._getOwner());
     for (Iterator it = this._getMap().values().iterator(); it.hasNext();) {
-      logger.trace("dumpMap:" + it.next().toString());
+      logger.info("dumpMap:" + it.next().toString());
     }
   }
 

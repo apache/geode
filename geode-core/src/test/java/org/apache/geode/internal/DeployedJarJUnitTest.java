@@ -140,7 +140,8 @@ public class DeployedJarJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
-    FunctionContext functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
+    FunctionContext functionContext =
+        new FunctionContextImpl(null, function.getId(), null, resultSender);
     function.execute(functionContext);
     assertThat(resultSender.getResults()).isEqualTo("GOODv1");
 
@@ -153,7 +154,7 @@ public class DeployedJarJUnitTest {
     function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertThat(function).isNotNull();
     resultSender = new TestResultSender();
-    functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
+    functionContext = new FunctionContextImpl(null, function.getId(), null, resultSender);
     function.execute(functionContext);
     assertThat(resultSender.getResults()).isEqualTo("GOODv2");
 
@@ -220,7 +221,7 @@ public class DeployedJarJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunctionNoXml");
     assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertThat((String) resultSender.getResults()).isEqualTo("NOPARMSv1");
   }
 
@@ -280,7 +281,8 @@ public class DeployedJarJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
-    FunctionContext functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
+    FunctionContext functionContext =
+        new FunctionContextImpl(null, function.getId(), null, resultSender);
     function.execute(functionContext);
     assertThat((String) resultSender.getResults()).isEqualTo("PARENT:USES");
   }

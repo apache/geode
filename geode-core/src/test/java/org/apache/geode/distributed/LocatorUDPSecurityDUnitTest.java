@@ -30,6 +30,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,6 +44,13 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
   @Override
   protected void addDSProps(Properties p) {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
+  }
+
+  @Override
+  @Test
+  @Ignore // GEODE-3094
+  public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
+    super.testMultipleLocatorsRestartingAtSameTimeWithMissingServers();
   }
 
   @Test

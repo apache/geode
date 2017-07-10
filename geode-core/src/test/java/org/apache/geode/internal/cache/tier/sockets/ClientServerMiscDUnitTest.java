@@ -23,6 +23,19 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.AttributesFactory;
@@ -34,6 +47,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.NoAvailableServersException;
@@ -50,10 +64,13 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -67,18 +84,6 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests client server corner cases between Region and Pool
@@ -763,15 +768,20 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void createClientCacheV(String h, int port) throws Exception {
-    _createClientCache(h, false, port);
+    _createClientCache(h, false, -1, port);
   }
 
   public static void createEmptyClientCache(String h, int... ports) throws Exception {
-    _createClientCache(h, false, ports);
+    _createClientCache(h, false, -1, ports);
   }
 
   public static Pool createClientCache(String h, int... ports) throws Exception {
-    return _createClientCache(h, false, ports);
+    return _createClientCache(h, false, -1, ports);
+  }
+
+  public static Pool createClientCache(String h, int subscriptionAckInterval, boolean empty,
+      int... ports) throws Exception {
+    return _createClientCache(h, empty, subscriptionAckInterval, ports);
   }
 
   private static PoolFactory addServers(PoolFactory factory, String h, int... ports) {
@@ -781,28 +791,41 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     return factory;
   }
 
-  public static Pool _createClientCache(String h, boolean empty, int... ports) throws Exception {
+  public static Pool _createClientCache(String h, boolean empty, int subscriptionAckInterval,
+      int... ports) throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     Cache cache = new ClientServerMiscDUnitTest().createCacheV(props);
     ClientServerMiscDUnitTest.static_cache = cache;
-    PoolFactory poolFactory = PoolManager.createFactory();
-    PoolImpl p = (PoolImpl) addServers(poolFactory, h, ports).setSubscriptionEnabled(true)
-        .setThreadLocalConnections(true).setReadTimeout(1000).setSocketBufferSize(32768)
-        .setMinConnections(3).setSubscriptionRedundancy(-1).setPingInterval(2000)
-        // .setRetryAttempts(5)
-        // .setRetryInterval(2000)
-        .create("ClientServerMiscDUnitTestPool");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        "true");
+    PoolImpl p;
+    try {
+      PoolFactory poolFactory = PoolManager.createFactory();
+      addServers(poolFactory, h, ports).setSubscriptionEnabled(true).setThreadLocalConnections(true)
+          .setReadTimeout(1000).setSocketBufferSize(32768).setMinConnections(3)
+          .setSubscriptionRedundancy(1).setPingInterval(2000);
+      // .setRetryAttempts(5)
+      // .setRetryInterval(2000)
+      if (subscriptionAckInterval > 0) {
+        poolFactory.setSubscriptionAckInterval(subscriptionAckInterval);
+      }
+      p = (PoolImpl) poolFactory.create("ClientServerMiscDUnitTestPool");
 
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    if (empty) {
-      factory.setDataPolicy(DataPolicy.EMPTY);
+      AttributesFactory factory = new AttributesFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      if (empty) {
+        factory.setDataPolicy(DataPolicy.EMPTY);
+      }
+      factory.setPoolName(p.getName());
+
+      attrs = factory.create();
+    } finally {
+      System.getProperties()
+          .remove(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
     }
-    factory.setPoolName(p.getName());
 
-    attrs = factory.create();
     Region region1 = cache.createRegion(REGION_NAME1, attrs);
     Region region2 = cache.createRegion(REGION_NAME2, attrs);
     Region prRegion = cache.createRegion(PR_REGION_NAME, attrs);
@@ -857,6 +880,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
       eventReceived = true;
       DistributedMember memberID = event.getDistributedMember();
       memberIDNotReceived = (memberID == null);
+      // System.out.println("received event " + event);
     }
 
     public void reset() {
@@ -864,6 +888,32 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
       eventReceived = false;
     }
   }
+
+  public static void dumpPoolIdentifiers() throws Exception {
+    // duplicate events were received, so let's look at the thread identifiers we have
+    PoolImpl pool = (PoolImpl) PoolManager.find("ClientServerMiscDUnitTestPool");
+
+    Map seqMap = pool.getThreadIdToSequenceIdMap();
+    for (Iterator it = seqMap.keySet().iterator(); it.hasNext();) {
+      ThreadIdentifier tid = (ThreadIdentifier) it.next();
+      byte[] memberBytes = tid.getMembershipID();
+      dumpMemberId(tid, memberBytes);
+    }
+  }
+
+  public static void dumpMemberId(Object holder, byte[] memberBytes) throws Exception {
+    byte[] newBytes = new byte[memberBytes.length + 17];
+    System.arraycopy(memberBytes, 0, newBytes, 0, memberBytes.length);
+    ByteArrayInputStream bais = new ByteArrayInputStream(newBytes);
+    DataInputStream dataIn = new DataInputStream(bais);
+    InternalDistributedMember memberId = InternalDistributedMember.readEssentialData(dataIn);
+    StringBuilder sb = new StringBuilder(300);
+    sb.append('<').append(Thread.currentThread().getName()).append("> ").append(holder)
+        .append(" is ").append(memberId).append(" byte count = ").append(memberBytes.length)
+        .append(" bytes = ").append(Arrays.toString(memberBytes));
+    System.out.println(sb.toString());
+  }
+
 
   public static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads,
       boolean isHA) throws Exception {
@@ -873,6 +923,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
+    factory.setConcurrencyChecksEnabled(true);
     RegionAttributes myAttrs = factory.create();
     Region r1 = cache.createRegion(REGION_NAME1, myAttrs);
     Region r2 = cache.createRegion(REGION_NAME2, myAttrs);
@@ -1144,6 +1195,9 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   public static void putForClient() {
     Cache cache = new ClientServerMiscDUnitTest().getCache();
     Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+    if (r2 == null) {
+      r2 = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME2);
+    }
 
     r2.put(k1, "client2_k1");
     r2.put(k2, "client2_k2");
