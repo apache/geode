@@ -315,7 +315,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       if (cache != null) {
         IgnoredException.addIgnoredException("java.net.ConnectException");
       }
-      return (InternalClientCache) cache;
+      return (ClientCache) cache;
     }
   }
 
