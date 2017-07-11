@@ -109,7 +109,7 @@ public class RoundTripCacheConnectionJUnitTest {
     cacheServer.start();
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    Region<Object, Object> testRegion = regionFactory.create(TEST_REGION);
+    regionFactory.create(TEST_REGION);
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
@@ -204,7 +204,6 @@ public class RoundTripCacheConnectionJUnitTest {
     ClientProtocol.Response response = message.getResponse();
     assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
         response.getResponseAPICase());
-    RegionAPI.PutResponse putResponse = response.getPutResponse();
   }
 
   private void validateGetResponse(Socket socket,
