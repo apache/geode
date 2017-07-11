@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test that switching on the header byte makes instances of
@@ -62,6 +63,7 @@ public class RoundTripCacheConnectionJUnitTest {
   public static final String TEST_REGION = "testRegion";
   public static final int TEST_PUT_CORRELATION_ID = 574;
   public static final int TEST_GET_CORRELATION_ID = 68451;
+  public static final int TEST_REMOVE_CORRELATION_ID = 51;
 
   private Cache cache;
   private int cacheServerPort;
@@ -111,6 +113,13 @@ public class RoundTripCacheConnectionJUnitTest {
         TEST_KEY, TEST_REGION, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
     protobufProtocolSerializer.serialize(getMessage, outputStream);
     validateGetResponse(socket, protobufProtocolSerializer);
+
+    ClientProtocol.Message removeMessage = ProtobufUtilities.createProtobufRequest(
+        ProtobufUtilities.createMessageHeader(TEST_REMOVE_CORRELATION_ID),
+        ProtobufRequestUtilities.createRemoveRequest(TEST_REGION,
+            ProtobufUtilities.createEncodedValue(serializationService, TEST_KEY)));
+    protobufProtocolSerializer.serialize(removeMessage, outputStream);
+    validateRemoveResponse(socket, protobufProtocolSerializer);
   }
 
   @Test
@@ -205,5 +214,16 @@ public class RoundTripCacheConnectionJUnitTest {
     RegionAPI.GetRegionNamesResponse getRegionsResponse = response.getGetRegionNamesResponse();
     assertEquals(1, getRegionsResponse.getRegionsCount());
     assertEquals(TEST_REGION, getRegionsResponse.getRegions(0));
+  }
+
+  private void validateRemoveResponse(Socket socket,
+      ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
+    ClientProtocol.Message message =
+        protobufProtocolSerializer.deserialize(socket.getInputStream());
+    assertEquals(TEST_REMOVE_CORRELATION_ID, message.getMessageHeader().getCorrelationId());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
+    ClientProtocol.Response response = message.getResponse();
+    assertEquals(ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE,
+        response.getResponseAPICase());
   }
 }

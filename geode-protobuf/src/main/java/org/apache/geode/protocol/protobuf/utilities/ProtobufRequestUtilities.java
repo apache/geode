@@ -38,6 +38,20 @@ public abstract class ProtobufRequestUtilities {
   }
 
   /**
+   * Creates a request object containing a RegionAPI.RemoveRequest
+   *
+   * @param regionName - Name of the region being deleted from
+   * @param key - Encoded key, see createEncodedValue in {@link ProtobufRequestUtilities}
+   * @return Request object containing the passed params.
+   */
+  public static ClientProtocol.Request createRemoveRequest(String regionName,
+      BasicTypes.EncodedValue key) {
+    RegionAPI.RemoveRequest removeRequest =
+        RegionAPI.RemoveRequest.newBuilder().setRegionName(regionName).setKey(key).build();
+    return ClientProtocol.Request.newBuilder().setRemoveRequest(removeRequest).build();
+  }
+
+  /**
    * Creates a request object containing a RegionAPI.GetRegionNamesRequest
    *
    * @return Request object for a getRegionNames operation
