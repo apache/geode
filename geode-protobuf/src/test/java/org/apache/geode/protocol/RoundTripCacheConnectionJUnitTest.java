@@ -240,7 +240,7 @@ public class RoundTripCacheConnectionJUnitTest {
   }
 
   private void validateRemoveResponse(Socket socket,
-                                      ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
+      ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
     assertEquals(TEST_REMOVE_CORRELATION_ID, message.getMessageHeader().getCorrelationId());
