@@ -2143,7 +2143,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     Pool p;
     try {
       p = PoolManager.createFactory().addLocator(host, port0).setPingInterval(250)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(20000)
           .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
           .create("pool");
     } finally {
