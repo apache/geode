@@ -55,7 +55,6 @@ message Request {
 }
 
 message Response {
-    ResponseHeader responseHeader = 1;
     oneof responseAPI {
         PutResponse putResponse = 2;
         GetResponse getResponse = 3;
@@ -77,16 +76,8 @@ message Response {
 }
 
 message ErrorResponse {
-    bool internalServerError = 1;
-    bool retriable = 2;
-    string message = 3;
-}
-
-message ResponseHeader {
-    oneof reponseType {
-        int32 responseTypeID = 1;
-        int32 errorCode = 2;
-    }
+    int32 errorCode = 1;
+    string message = 2;
 }
 
 message MetaData {

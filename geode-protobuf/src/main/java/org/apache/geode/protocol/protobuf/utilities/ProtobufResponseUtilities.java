@@ -24,7 +24,7 @@ import java.util.Set;
 
 /**
  * This class contains helper functions for generating ClientProtocol.Response objects.
- *
+ * <p>
  * Request building helpers can be found in {@link ProtobufRequestUtilities}, while more general
  * purpose helpers can be found in {@link ProtobufUtilities}
  */
@@ -32,16 +32,12 @@ public abstract class ProtobufResponseUtilities {
   /**
    * This creates response object containing a ClientProtocol.ErrorResponse
    *
-   * @param serverInternal - is this error internal to the server
-   * @param retriable - can the operation be retried with a potentially different result
    * @param errorMessage - description of the error
    * @return An error response containing the above parameters
    */
-  public static ClientProtocol.Response createErrorResponse(boolean serverInternal,
-      boolean retriable, String errorMessage) {
+  public static ClientProtocol.Response createErrorResponse(String errorMessage) {
     ClientProtocol.ErrorResponse error =
-        ClientProtocol.ErrorResponse.newBuilder().setInternalServerError(serverInternal)
-            .setRetriable(retriable).setMessage(errorMessage).build();
+        ClientProtocol.ErrorResponse.newBuilder().setMessage(errorMessage).build();
     return ClientProtocol.Response.newBuilder().setErrorResponse(error).build();
   }
 
@@ -49,21 +45,19 @@ public abstract class ProtobufResponseUtilities {
    * This creates response object containing a ClientProtocol.ErrorResponse, and also logs the
    * passed error message and exception (if present) to the provided logger.
    *
-   * @param serverInternal - is this error internal to the server
-   * @param retriable - can the operation be retried with a potentially different result
    * @param errorMessage - description of the error
    * @param logger - logger to write the error message to
    * @param ex - exception which should be logged
    * @return An error response containing the first three parameters.
    */
-  public static ClientProtocol.Response createAndLogErrorResponse(boolean serverInternal,
-      boolean retriable, String errorMessage, Logger logger, Exception ex) {
+  public static ClientProtocol.Response createAndLogErrorResponse(String errorMessage,
+      Logger logger, Exception ex) {
     if (ex != null) {
       logger.error(errorMessage, ex);
     } else {
       logger.error(errorMessage);
     }
-    return createErrorResponse(serverInternal, retriable, errorMessage);
+    return createErrorResponse(errorMessage);
   }
 
   /**
@@ -122,5 +116,28 @@ public abstract class ProtobufResponseUtilities {
   public static ClientProtocol.Response createPutResponse() {
     return ClientProtocol.Response.newBuilder().setPutResponse(RegionAPI.PutResponse.newBuilder())
         .build();
+  }
+
+  /**
+   * This creates a response object containing a RegionAPI.GetAllResponse
+   *
+   * @param entries - key, value pairs for which lookups succeeded
+   * @return A response object containing all the passed results
+   */
+  public static ClientProtocol.Response createGetAllResponse(Set<BasicTypes.Entry> entries) {
+    RegionAPI.GetAllResponse.Builder builder = RegionAPI.GetAllResponse.newBuilder();
+    builder.addAllEntries(entries);
+    return ClientProtocol.Response.newBuilder().setGetAllResponse(builder).build();
+  }
+
+  /**
+   * This creates a response for a putAll request
+   *
+   * @return A response object indicating any invalid keys (all others are assumed to have
+   *         succeeded)
+   */
+  public static ClientProtocol.Response createPutAllResponse() {
+    return ClientProtocol.Response.newBuilder()
+        .setPutAllResponse(RegionAPI.PutAllResponse.newBuilder()).build();
   }
 }
