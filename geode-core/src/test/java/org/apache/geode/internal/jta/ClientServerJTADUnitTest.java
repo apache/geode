@@ -35,6 +35,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -96,14 +97,27 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
       getBlackboard().signalGate(second);
     }
 
+    // GEODE commit apply the tx change to cache before releasing the locks held, so
+    // the region could have the new value but still hold the locks.
+    // Add the wait to check new JTA tx can be committed.
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(30, TimeUnit.SECONDS).until(() -> region.get(key).equals(newValue));
+        .atMost(30, TimeUnit.SECONDS).until(() -> ableToCommitNewTx(regionName, mgr));
+  }
 
+  private boolean expectionLogged = false;
+
+  private boolean ableToCommitNewTx(final String regionName, TXManagerImpl mgr) {
     try {
-      commitTxWithBeforeCompletion(regionName, false, first, second);
+      commitTxWithBeforeCompletion(regionName, false, null, null);
     } catch (Exception e) {
-      Assert.fail("got unexpected exception", e);
+      if (!expectionLogged) {
+        LogService.getLogger().info("got exception stack trace", e);
+        expectionLogged = true;
+      }
+      mgr.setTXState(null);
+      return false;
     }
+    return true;
   }
 
   private CacheServer createCacheServer(Cache cache, int maxThreads) {
