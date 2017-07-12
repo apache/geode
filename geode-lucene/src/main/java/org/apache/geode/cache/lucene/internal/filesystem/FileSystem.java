@@ -69,6 +69,7 @@ public class FileSystem {
       throw new IOException("File exists.");
     }
     stats.incFileCreates(1);
+
     // TODO unlock region ?
     return file;
   }

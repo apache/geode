@@ -175,6 +175,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
     factory.setMaximumQueueMemory(1000);
     factory.setDispatcherThreads(10);
+    factory.setBatchSize(1000);
     factory.setIsMetaQueue(true);
     if (attributes.getDataPolicy().withPersistence()) {
       factory.setPersistent(true);
