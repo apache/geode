@@ -25,8 +25,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -374,7 +376,10 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest.createEntries());
 
     serverVM1.invoke(() -> HARQueueNewImplDUnitTest.startServer());
-    Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
+
+    serverVM1.invoke(() -> ValidateRegionSizes(PORT2));
+    serverVM0.invoke(() -> ValidateRegionSizes(PORT1));
+
 
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest.updateMapForVM0());
     serverVM1.invoke(() -> HARQueueNewImplDUnitTest.updateMapForVM1());
@@ -383,6 +388,19 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         new Integer(PORT1)));
     serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyQueueData(new Integer(5), new Integer(5),
         new Integer(PORT2)));
+  }
+
+  private void ValidateRegionSizes(int port) {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Region region = cache.getRegion("/" + regionName);
+      Region msgsRegion = cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
+      int clientMsgRegionSize = msgsRegion.size();
+      int regionSize = region.size();
+      assertTrue(
+          "Region sizes were not as expected after 60 seconds elapsed. Actual region size = "
+              + regionSize + "Actual client msg region size = " + clientMsgRegionSize,
+          true == ((5 == clientMsgRegionSize) && (5 == regionSize)));
+    });
   }
 
   /**
