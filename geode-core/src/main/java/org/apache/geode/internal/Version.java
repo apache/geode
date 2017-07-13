@@ -180,11 +180,14 @@ public class Version implements Comparable<Version> {
   public static final Version GFE_90 =
       new Version("GFE", "9.0", (byte) 9, (byte) 0, (byte) 0, (byte) 0, GFE_90_ORDINAL);
 
+  // prior to v1.2.0 GEODE_110 was named GFE_91. This was used for both the rel/v1.1.0
+  // and rel/v1.1.1 releases
   private static final byte GEODE_110_ORDINAL = 50;
 
   public static final Version GEODE_110 =
       new Version("GEODE", "1.1.0", (byte) 1, (byte) 1, (byte) 0, (byte) 0, GEODE_110_ORDINAL);
 
+  // This ordinal was never used
   private static final byte GEODE_111_ORDINAL = 55;
 
   public static final Version GEODE_111 =
@@ -205,8 +208,6 @@ public class Version implements Comparable<Version> {
    * A lot of versioning code needs access to the current version's ordinal
    */
   public static final short CURRENT_ORDINAL = CURRENT.ordinal();
-
-  public static final short NOT_SUPPORTED_ORDINAL = 59;
 
   /**
    * version ordinal for test Backward compatibility.
@@ -246,14 +247,6 @@ public class Version implements Comparable<Version> {
   /** Return the <code>Version</code> represented by specified ordinal */
   public static Version fromOrdinal(short ordinal, boolean forGFEClients)
       throws UnsupportedVersionException {
-    // Un-version client(client's prior to release 5.7) doesn't send version
-    // byte in the handshake. So the next byte in the handshake has value 59 and
-    // is interpreted as version byte. We are not supporting version 59 to
-    // distinguish version client from unversion. Please use version ordinal 60
-    // after 58 if required.
-    if (ordinal == NOT_SUPPORTED_ORDINAL) {
-      throw new UnsupportedVersionException("Un-versioned clients are not supported. ");
-    }
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }
