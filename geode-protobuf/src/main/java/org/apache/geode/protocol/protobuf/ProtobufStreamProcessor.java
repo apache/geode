@@ -21,7 +21,13 @@ import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerAlreadyRegisteredException;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
-import org.apache.geode.protocol.protobuf.operations.*;
+import org.apache.geode.protocol.protobuf.operations.GetAllRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.GetRegionNamesRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.GetRegionRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.PutAllRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.RemoveRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
@@ -36,15 +42,16 @@ import java.io.OutputStream;
  * and then pushes it to the output stream.
  */
 public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
-  ProtobufProtocolSerializer protobufProtocolSerializer;
-  OperationsHandlerRegistry registry;
-  ProtobufSerializationService protobufSerializationService;
-  ProtobufOpsProcessor protobufOpsProcessor;
+  private ProtobufProtocolSerializer protobufProtocolSerializer;
+  private OperationsHandlerRegistry registry;
+  private ProtobufSerializationService protobufSerializationService;
+  private ProtobufOpsProcessor protobufOpsProcessor;
 
   public ProtobufStreamProcessor()
       throws OperationHandlerAlreadyRegisteredException, CodecAlreadyRegisteredForTypeException {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
     registry = new OperationsHandlerRegistry();
+
     addOperationHandlers(registry);
     protobufSerializationService = new ProtobufSerializationService();
     protobufOpsProcessor = new ProtobufOpsProcessor(registry, protobufSerializationService);
@@ -70,6 +77,9 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
     registry.registerOperationHandlerForOperationId(
         ClientProtocol.Request.RequestAPICase.REMOVEREQUEST.getNumber(),
         new RemoveRequestOperationHandler());
+    registry.registerOperationHandlerForOperationId(
+        ClientProtocol.Request.RequestAPICase.GETREGIONREQUEST.getNumber(),
+        new GetRegionRequestOperationHandler());
   }
 
   public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)

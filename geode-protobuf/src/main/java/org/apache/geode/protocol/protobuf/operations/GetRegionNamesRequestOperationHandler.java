@@ -27,7 +27,7 @@ public class GetRegionNamesRequestOperationHandler
     implements OperationHandler<ClientProtocol.Request, ClientProtocol.Response> {
   @Override
   public ClientProtocol.Response process(SerializationService serializationService,
-      ClientProtocol.Request request, Cache cache) {
+                                         ClientProtocol.Request request, Cache cache) {
     Set<Region<?, ?>> regions = cache.rootRegions();
     return ProtobufResponseUtilities.createGetRegionNamesResponse(regions);
   }

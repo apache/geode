@@ -140,4 +140,13 @@ public abstract class ProtobufResponseUtilities {
     return ClientProtocol.Response.newBuilder()
         .setPutAllResponse(RegionAPI.PutAllResponse.newBuilder()).build();
   }
+
+  /**
+   * This creates a ClientProtocol.Response object containing a RegionAPI.GetRegionResponse
+   *
+   * @return A ClientProtocol.Response object indicating a successful getRegionRequest
+   */
+  public static ClientProtocol.Response createGetRegionResponse(BasicTypes.Region protoRegion) {
+    return ClientProtocol.Response.newBuilder().setGetRegionResponse(RegionAPI.GetRegionResponse.newBuilder().setRegion(protoRegion)).build();
+  }
 }

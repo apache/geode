@@ -39,17 +39,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
-public class GetRegionNamesRequestOperationHandlerJUnitTest {
-  public static final String TEST_REGION1 = "test region 1";
-  public static final String TEST_REGION2 = "test region 2";
-  public static final String TEST_REGION3 = "test region 3";
-  public Cache cacheStub;
-  public SerializationService serializationServiceStub;
-  private GetRegionNamesRequestOperationHandler operationHandler;
+public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest{
+  private final String TEST_REGION1 = "test region 1";
+  private final String TEST_REGION2 = "test region 2";
+  private final String TEST_REGION3 = "test region 3";
 
   @Before
   public void setUp() throws Exception {
-    serializationServiceStub = mock(SerializationService.class);
+    super.setUp();
+
     when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_REGION1))
         .thenReturn(TEST_REGION1.getBytes(Charset.forName("UTF-8")));
     when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_REGION2))
@@ -64,16 +62,15 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest {
     Region<String, String> region3Stub = mock(Region.class);
     when(region3Stub.getName()).thenReturn(TEST_REGION3);
 
-    cacheStub = mock(Cache.class);
     when(cacheStub.rootRegions()).thenReturn(Collections.unmodifiableSet(
-        new HashSet<Region<String, String>>(Arrays.asList(region1Stub, region2Stub, region3Stub))));
+        new HashSet<>(Arrays.asList(region1Stub, region2Stub, region3Stub))));
     operationHandler = new GetRegionNamesRequestOperationHandler();
   }
 
   @Test
   public void processReturnsCacheRegions() throws CodecAlreadyRegisteredForTypeException,
       UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    ClientProtocol.Response response = operationHandler.process(serializationServiceStub,
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
         ProtobufRequestUtilities.createGetRegionNamesRequest(), cacheStub);
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
         response.getResponseAPICase());
@@ -98,7 +95,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest {
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    ClientProtocol.Response response = operationHandler.process(serializationServiceStub,
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
         ProtobufRequestUtilities.createGetRegionNamesRequest(), emptyCache);
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
         response.getResponseAPICase());

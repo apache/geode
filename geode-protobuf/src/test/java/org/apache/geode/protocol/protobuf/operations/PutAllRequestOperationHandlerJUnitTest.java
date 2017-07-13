@@ -14,6 +14,14 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -26,9 +34,11 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentMatcher;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -37,27 +47,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.mockito.Mockito.*;
-import org.hamcrest.CoreMatchers;
-import org.mockito.ArgumentMatcher;
-
 @Category(UnitTest.class)
-public class PutAllRequestOperationHandlerJUnitTest {
-  private static final String TEST_KEY1 = "my key1";
-  private static final String TEST_KEY2 = "my key2";
-  private static final String TEST_KEY3 = "my key3";
-  private static final String TEST_INVALID_KEY = "invalid key";
-  private static final String TEST_VALUE1 = "my value1";
-  private static final String TEST_VALUE2 = "my value2";
-  private static final String TEST_VALUE3 = "my value3";
-  private static final Integer TEST_INVALID_VALUE = 732;
-  private static final String TEST_REGION = "test region";
-  private static final String EXCEPTION_TEXT = "Simulating put failure";
-  private Cache cacheStub;
-  private SerializationService serializationServiceStub;
+public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+  private final String TEST_KEY1 = "my key1";
+  private final String TEST_KEY2 = "my key2";
+  private final String TEST_KEY3 = "my key3";
+  private final String TEST_INVALID_KEY = "invalid key";
+  private final String TEST_VALUE1 = "my value1";
+  private final String TEST_VALUE2 = "my value2";
+  private final String TEST_VALUE3 = "my value3";
+  private final Integer TEST_INVALID_VALUE = 732;
+  private final String TEST_REGION = "test region";
+  private final String EXCEPTION_TEXT = "Simulating put failure";
   private Region regionMock;
 
-  class isAMapContainingInvalidKey implements ArgumentMatcher<Map> {
+  private class MapContainingInvalidKeyMatcher implements ArgumentMatcher<Map> {
     @Override
     public boolean matches(Map argument) {
       return argument.containsKey(TEST_INVALID_KEY);
@@ -66,7 +70,8 @@ public class PutAllRequestOperationHandlerJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    serializationServiceStub = mock(SerializationService.class);
+    super.setUp();
+
     addStringStubEncoding(serializationServiceStub, TEST_KEY1);
     addStringStubEncoding(serializationServiceStub, TEST_KEY2);
     addStringStubEncoding(serializationServiceStub, TEST_KEY3);
@@ -78,14 +83,13 @@ public class PutAllRequestOperationHandlerJUnitTest {
         .thenReturn(ByteBuffer.allocate(Integer.BYTES).putInt(TEST_INVALID_VALUE).array());
     when(serializationServiceStub.decode(BasicTypes.EncodingType.INT,
         ByteBuffer.allocate(Integer.BYTES).putInt(TEST_INVALID_VALUE).array()))
-            .thenReturn(TEST_INVALID_VALUE);
+        .thenReturn(TEST_INVALID_VALUE);
 
     regionMock = mock(Region.class);
 
     doThrow(new ClassCastException(EXCEPTION_TEXT)).when(regionMock)
-        .putAll(argThat(new isAMapContainingInvalidKey()));
+        .putAll(argThat(new MapContainingInvalidKeyMatcher()));
 
-    cacheStub = mock(Cache.class);
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionMock);
   }
 
