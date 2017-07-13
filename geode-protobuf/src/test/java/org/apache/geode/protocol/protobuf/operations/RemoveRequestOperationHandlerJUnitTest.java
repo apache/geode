@@ -14,6 +14,10 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -34,26 +38,19 @@ import org.junit.experimental.categories.Category;
 
 import java.nio.charset.Charset;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @Category(UnitTest.class)
-public class RemoveRequestOperationHandlerJUnitTest {
-  public static final String TEST_KEY = "my key";
-  public static final String TEST_VALUE = "my value";
-  public static final String TEST_REGION = "test region";
-  public static final String MISSING_REGION = "missing region";
-  public static final String MISSING_KEY = "missing key";
-  public Cache cacheStub;
-  public SerializationService serializationServiceStub;
-  private RemoveRequestOperationHandler operationHandler;
+public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+  private final String TEST_KEY = "my key";
+  private final String TEST_VALUE = "my value";
+  private final String TEST_REGION = "test region";
+  private final String MISSING_REGION = "missing region";
+  private final String MISSING_KEY = "missing key";
   private StringCodec stringDecoder;
   private Region regionStub;
 
   @Before
   public void setUp() throws Exception {
-    serializationServiceStub = mock(SerializationService.class);
+    super.setUp();
     when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(TEST_KEY);
     when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_VALUE))
@@ -68,7 +65,6 @@ public class RemoveRequestOperationHandlerJUnitTest {
     when(regionStub.containsKey(TEST_KEY)).thenReturn(true);
     when(regionStub.containsKey(MISSING_KEY)).thenReturn(false);
 
-    cacheStub = mock(Cache.class);
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     when(cacheStub.getRegion(MISSING_REGION)).thenReturn(null);
     operationHandler = new RemoveRequestOperationHandler();
@@ -81,7 +77,8 @@ public class RemoveRequestOperationHandlerJUnitTest {
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request removeRequest = generateTestRequest(false, false);
     ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+        (ClientProtocol.Response) operationHandler
+            .process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE,
         response.getResponseAPICase());
@@ -95,7 +92,8 @@ public class RemoveRequestOperationHandlerJUnitTest {
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request removeRequest = generateTestRequest(true, false);
     ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+        (ClientProtocol.Response) operationHandler
+            .process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());
@@ -107,7 +105,8 @@ public class RemoveRequestOperationHandlerJUnitTest {
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request removeRequest = generateTestRequest(false, true);
     ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+        (ClientProtocol.Response) operationHandler
+            .process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE,
         response.getResponseAPICase());
@@ -125,7 +124,7 @@ public class RemoveRequestOperationHandlerJUnitTest {
 
     ClientProtocol.Request removeRequest = generateTestRequest(false, false);
     ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());

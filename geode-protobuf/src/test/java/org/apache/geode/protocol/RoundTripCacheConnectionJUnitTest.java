@@ -278,6 +278,31 @@ public class RoundTripCacheConnectionJUnitTest {
     testNewProtocolHeaderLeadsToNewProtocolServerConnection();
   }
 
+  @Test
+  public void testNewProtocolGetRegionCallSucceeds() throws Exception {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+
+    Socket socket = new Socket("localhost", cacheServerPort);
+    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    OutputStream outputStream = socket.getOutputStream();
+    outputStream.write(110);
+
+
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+    ClientProtocol.Message getRegionMessage =
+        MessageUtil.makeGetRegionRequestMessage(TEST_REGION, ClientProtocol.MessageHeader.newBuilder().build());
+    protobufProtocolSerializer.serialize(getRegionMessage, outputStream);
+
+    ClientProtocol.Message message =
+        protobufProtocolSerializer.deserialize(socket.getInputStream());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
+    ClientProtocol.Response response = message.getResponse();
+    assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONRESPONSE,
+        response.getResponseAPICase());
+    response.getGetRegionResponse();
+    //TODO add some assertions for Region data
+  }
+
   private void validatePutResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
     ClientProtocol.Message message =

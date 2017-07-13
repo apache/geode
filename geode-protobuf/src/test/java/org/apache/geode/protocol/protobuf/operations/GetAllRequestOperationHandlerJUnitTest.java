@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
-public class GetAllRequestOperationHandlerJUnitTest {
+public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest{
   private static final String TEST_KEY1 = "my key1";
   private static final String TEST_VALUE1 = "my value1";
   private static final String TEST_KEY2 = "my key2";
@@ -47,14 +47,11 @@ public class GetAllRequestOperationHandlerJUnitTest {
   private static final String TEST_KEY3 = "my key3";
   private static final String TEST_VALUE3 = "my value3";
   private static final String TEST_REGION = "test region";
-  private Cache cacheStub;
-  private SerializationService serializationServiceStub;
-  private GetAllRequestOperationHandler operationHandler;
   private StringCodec stringDecoder;
 
   @Before
   public void setUp() throws Exception {
-    serializationServiceStub = mock(SerializationService.class);
+    super.setUp();
     addStringMockEncoding(serializationServiceStub, TEST_KEY1, true, true);
     addStringMockEncoding(serializationServiceStub, TEST_KEY2, true, true);
     addStringMockEncoding(serializationServiceStub, TEST_KEY3, true, true);
@@ -77,7 +74,6 @@ public class GetAllRequestOperationHandlerJUnitTest {
       }
     });
 
-    cacheStub = mock(Cache.class);
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     operationHandler = new GetAllRequestOperationHandler();
     stringDecoder = new StringCodec();
@@ -101,7 +97,7 @@ public class GetAllRequestOperationHandlerJUnitTest {
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(true);
     ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
         response.getResponseAPICase());
@@ -121,7 +117,7 @@ public class GetAllRequestOperationHandlerJUnitTest {
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false);
     ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
         response.getResponseAPICase());

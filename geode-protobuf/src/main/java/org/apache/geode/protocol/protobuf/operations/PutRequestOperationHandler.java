@@ -32,7 +32,7 @@ public class PutRequestOperationHandler
 
   @Override
   public ClientProtocol.Response process(SerializationService serializationService,
-      ClientProtocol.Request request, Cache cache) {
+                                         ClientProtocol.Request request, Cache cache) {
     if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.PUTREQUEST) {
       return ProtobufResponseUtilities
           .createAndLogErrorResponse("Improperly formatted put request message.", logger, null);

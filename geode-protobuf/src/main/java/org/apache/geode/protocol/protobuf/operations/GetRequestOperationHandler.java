@@ -32,7 +32,7 @@ public class GetRequestOperationHandler
 
   @Override
   public ClientProtocol.Response process(SerializationService serializationService,
-      ClientProtocol.Request request, Cache cache) {
+                                         ClientProtocol.Request request, Cache cache) {
     if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.GETREQUEST) {
       return ProtobufResponseUtilities
           .createAndLogErrorResponse("Improperly formatted get request message.", logger, null);

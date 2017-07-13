@@ -17,48 +17,30 @@ package org.apache.geode.protocol.protobuf.operations;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
+import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-public class RemoveRequestOperationHandler
+public class GetRegionRequestOperationHandler
     implements OperationHandler<ClientProtocol.Request, ClientProtocol.Response> {
-  private static Logger logger = LogManager.getLogger();
 
   @Override
   public ClientProtocol.Response process(SerializationService serializationService,
                                          ClientProtocol.Request request, Cache cache) {
-    if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.REMOVEREQUEST) {
-      return ProtobufResponseUtilities
-          .createAndLogErrorResponse("Improperly formatted get request message.", logger, null);
-    }
-    RegionAPI.RemoveRequest removeRequest = request.getRemoveRequest();
 
-    String regionName = removeRequest.getRegionName();
+    RegionAPI.GetRegionRequest regionRequest = request.getGetRegionRequest();
+    String regionName = regionRequest.getRegionName();
+
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return ProtobufResponseUtilities.createErrorResponse("Region not found");
+      return ProtobufResponseUtilities.createErrorResponse("No region exists for name: "+regionName);
     }
 
-    try {
-      Object decodedKey =
-          ProtobufUtilities.decodeValue(serializationService, removeRequest.getKey());
-      region.remove(decodedKey);
+    BasicTypes.Region protoRegion = ProtobufUtilities.createRegionMessageFromRegion(region);
 
-      return ProtobufResponseUtilities.createRemoveResponse();
-    } catch (UnsupportedEncodingTypeException ex) {
-      // can be thrown by encoding or decoding.
-      return ProtobufResponseUtilities.createAndLogErrorResponse("Encoding not supported.", logger,
-          ex);
-    } catch (CodecNotRegisteredForTypeException ex) {
-      return ProtobufResponseUtilities
-          .createAndLogErrorResponse("Codec error in protobuf deserialization.", logger, ex);
-    }
+    return ProtobufResponseUtilities.createGetRegionResponse(protoRegion);
   }
 }
