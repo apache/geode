@@ -1280,19 +1280,6 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
           }
         }
       } catch (IOException e) {
-        if (isRunning()) {
-          if (e instanceof SSLException) {
-            try {
-              // Try to send a proper rejection message
-              ServerHandShakeProcessor.refuse(s.getOutputStream(), e.toString(),
-                  HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
-            } catch (IOException ex) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("Bridge server: Unable to write SSL error");
-              }
-            }
-          }
-        }
         closeSocket(s);
         if (isRunning()) {
           if (!this.loggedAcceptError) {
