@@ -29,14 +29,15 @@ public class GetRegionRequestOperationHandler
 
   @Override
   public ClientProtocol.Response process(SerializationService serializationService,
-                                         ClientProtocol.Request request, Cache cache) {
+      ClientProtocol.Request request, Cache cache) {
 
     RegionAPI.GetRegionRequest regionRequest = request.getGetRegionRequest();
     String regionName = regionRequest.getRegionName();
 
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return ProtobufResponseUtilities.createErrorResponse("No region exists for name: "+regionName);
+      return ProtobufResponseUtilities
+          .createErrorResponse("No region exists for name: " + regionName);
     }
 
     BasicTypes.Region protoRegion = ProtobufUtilities.createRegionMessageFromRegion(region);

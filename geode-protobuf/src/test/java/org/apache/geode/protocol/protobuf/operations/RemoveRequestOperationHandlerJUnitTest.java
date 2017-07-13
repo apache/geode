@@ -76,9 +76,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request removeRequest = generateTestRequest(false, false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler
-            .process(serializationServiceStub, removeRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE,
         response.getResponseAPICase());
@@ -91,9 +90,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request removeRequest = generateTestRequest(true, false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler
-            .process(serializationServiceStub, removeRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());
@@ -104,9 +102,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request removeRequest = generateTestRequest(false, true);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler
-            .process(serializationServiceStub, removeRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE,
         response.getResponseAPICase());
@@ -123,8 +120,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
 
     ClientProtocol.Request removeRequest = generateTestRequest(false, false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, removeRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());

@@ -59,7 +59,6 @@ public abstract class ProtobufUtilities {
 
   /**
    * Creates a protobuf key,value pair from an encoded key and value
-   *
    * @param key - an EncodedValue containing the key of the entry
    * @param value - an EncodedValue containing the value of the entry
    * @return a protobuf Entry object containing the passed key and value
@@ -71,19 +70,18 @@ public abstract class ProtobufUtilities {
 
   /**
    * Creates a protobuf key,value pair from unencoded data
-   *
    * @param serializationService - object which knows how to encode objects for the protobuf
-   *        protocol {@link ProtobufSerializationService}
+   * protocol {@link ProtobufSerializationService}
    * @param unencodedKey - the unencoded key for the entry
    * @param unencodedValue - the unencoded value for the entry
    * @return a protobuf Entry containing the encoded key and value
    * @throws UnsupportedEncodingTypeException - The key or value passed doesn't have a corresponding
-   *         SerializationType
+   * SerializationType
    * @throws CodecNotRegisteredForTypeException - There isn't a protobuf codec for the
-   *         SerializationType of the passed key or value
+   * SerializationType of the passed key or value
    */
   public static BasicTypes.Entry createEntry(SerializationService serializationService,
-      Object unencodedKey, Object unencodedValue)
+                                             Object unencodedKey, Object unencodedValue)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     return createEntry(createEncodedValue(serializationService, unencodedKey),
         createEncodedValue(serializationService, unencodedValue));
@@ -151,6 +149,11 @@ public abstract class ProtobufUtilities {
     return serializationService.decode(encoding, bytes);
   }
 
+  /**
+   *
+   * @param region
+   * @return a Protobuf BasicTypes.Region message that represents the {@link Region}
+   */
   public static BasicTypes.Region createRegionMessageFromRegion(Region region) {
     RegionAttributes regionAttributes = region.getAttributes();
     BasicTypes.Region.Builder protoRegionBuilder = BasicTypes.Region.newBuilder();
@@ -159,13 +162,15 @@ public abstract class ProtobufUtilities {
     protoRegionBuilder.setSize(region.size());
 
     protoRegionBuilder.setPersisted(regionAttributes.getDataPolicy().withPersistence());
-    protoRegionBuilder.setKeyConstraint(regionAttributes.getKeyConstraint() == null ? ""
-        : regionAttributes.getKeyConstraint().toString());
-    protoRegionBuilder.setValueConstraint(regionAttributes.getValueConstraint() == null ? ""
-        : regionAttributes.getValueConstraint().toString());
+    if (regionAttributes.getKeyConstraint() != null) {
+      protoRegionBuilder.setKeyConstraint(regionAttributes.getKeyConstraint().toString());
+    }
+    if (regionAttributes.getValueConstraint() != null) {
+      protoRegionBuilder.setValueConstraint(regionAttributes.getValueConstraint().toString());
+    }
 
     protoRegionBuilder.setScope(regionAttributes.getScope().toString());
-    protoRegionBuilder.setType(regionAttributes.getDataPolicy().toString());
+    protoRegionBuilder.setDataPolicy(regionAttributes.getDataPolicy().toString());
     return protoRegionBuilder.build();
   }
 }

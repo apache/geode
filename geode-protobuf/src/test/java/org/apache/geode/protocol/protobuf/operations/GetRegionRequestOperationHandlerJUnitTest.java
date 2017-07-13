@@ -73,13 +73,13 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
     when(regionAttributesStub.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
 
     ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, createRequestMessage(
-            MessageUtil.makeGetRegionRequest(TEST_REGION1)), cacheStub);
+        (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
+            createRequestMessage(MessageUtil.makeGetRegionRequest(TEST_REGION1)), cacheStub);
     BasicTypes.Region region = response.getGetRegionResponse().getRegion();
     Assert.assertEquals(TEST_REGION1, region.getName());
     Assert.assertEquals(String.class.toString(), region.getKeyConstraint());
     Assert.assertEquals(Scope.DISTRIBUTED_ACK.toString(), region.getScope());
-    Assert.assertEquals(DataPolicy.PERSISTENT_REPLICATE.toString(), region.getType());
+    Assert.assertEquals(DataPolicy.PERSISTENT_REPLICATE.toString(), region.getDataPolicy());
     Assert.assertEquals(Integer.class.toString(), region.getValueConstraint());
     Assert.assertEquals(true, region.getPersisted());
     Assert.assertEquals(10, region.getSize());
@@ -96,11 +96,13 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";
-    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
-        createRequestMessage(MessageUtil.makeGetRegionRequest(unknownRegionName)), emptyCache);
+    ClientProtocol.Response response =
+        (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
+            createRequestMessage(MessageUtil.makeGetRegionRequest(unknownRegionName)), emptyCache);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE.getNumber(),
         response.getResponseAPICase().getNumber());
-    Assert.assertEquals("No region exists for name: " + unknownRegionName,response.getErrorResponse().getMessage());
+    Assert.assertEquals("No region exists for name: " + unknownRegionName,
+        response.getErrorResponse().getMessage());
   }
 }

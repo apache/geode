@@ -83,7 +83,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
         .thenReturn(ByteBuffer.allocate(Integer.BYTES).putInt(TEST_INVALID_VALUE).array());
     when(serializationServiceStub.decode(BasicTypes.EncodingType.INT,
         ByteBuffer.allocate(Integer.BYTES).putInt(TEST_INVALID_VALUE).array()))
-        .thenReturn(TEST_INVALID_VALUE);
+            .thenReturn(TEST_INVALID_VALUE);
 
     regionMock = mock(Region.class);
 

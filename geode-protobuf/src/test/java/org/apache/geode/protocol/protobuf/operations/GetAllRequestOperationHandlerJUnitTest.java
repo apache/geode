@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
-public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest{
+public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private static final String TEST_KEY1 = "my key1";
   private static final String TEST_VALUE1 = "my value1";
   private static final String TEST_KEY2 = "my key2";
@@ -96,8 +96,8 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(true);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
         response.getResponseAPICase());
@@ -116,8 +116,8 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processReturnsNoEntriesForNoKeysRequested()
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
         response.getResponseAPICase());

@@ -52,7 +52,7 @@ message CallbackArguments {
 
 message Region {
     string name = 1;
-    string type = 2;
+    string dataPolicy = 2;
     string scope = 3;
     string keyConstraint = 4;
     string valueConstraint = 5;
