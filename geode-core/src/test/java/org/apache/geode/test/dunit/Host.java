@@ -163,7 +163,9 @@ public abstract class Host implements Serializable {
       throw new IllegalArgumentException(s);
 
     } else {
-      return (VM) vms.get(n);
+      VM vm = (VM) vms.get(n);
+      vm.makeAvailable();
+      return vm;
     }
   }
 
