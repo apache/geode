@@ -694,7 +694,7 @@ public abstract class ServerConnection implements Runnable {
   private boolean clientDisconnectedCleanly = false;
   private Throwable clientDisconnectedException;
   private int failureCount = 0;
-  private boolean processMessages = true;
+  protected boolean processMessages = true;
 
   protected void doHandshake() {
     // hitesh:to create new connection handshake
