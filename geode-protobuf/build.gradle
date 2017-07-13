@@ -50,7 +50,7 @@ protobuf {
 sourceSets {
     main {
         java {
-            srcDir 'build/generated-src/proto/main/java'
+            srcDir "$buildDir/generated-src/proto/main/java"
         }
     }
 }
