@@ -84,9 +84,8 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false, false, false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler
-            .process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -101,9 +100,8 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(true, false, false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler
-            .process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());
@@ -114,8 +112,8 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false, true, false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -128,9 +126,8 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false, false, true);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler
-            .process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -148,9 +145,8 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
 
     ClientProtocol.Request getRequest = generateTestRequest(false, false, false);
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler
-            .process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());

@@ -29,9 +29,9 @@ public class MessageUtil {
   }
 
   public static ClientProtocol.Message makeGetRegionRequestMessage(String requestRegion,
-                                                                   ClientProtocol.MessageHeader header) {
-    ClientProtocol.Request request =
-        ClientProtocol.Request.newBuilder().setGetRegionRequest(makeGetRegionRequest(requestRegion)).build();
+      ClientProtocol.MessageHeader header) {
+    ClientProtocol.Request request = ClientProtocol.Request.newBuilder()
+        .setGetRegionRequest(makeGetRegionRequest(requestRegion)).build();
     return ClientProtocol.Message.newBuilder().setMessageHeader(header).setRequest(request).build();
   }
 

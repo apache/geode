@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
-public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest{
+public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION1 = "test region 1";
   private final String TEST_REGION2 = "test region 2";
   private final String TEST_REGION3 = "test region 3";
@@ -62,16 +62,17 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
     Region<String, String> region3Stub = mock(Region.class);
     when(region3Stub.getName()).thenReturn(TEST_REGION3);
 
-    when(cacheStub.rootRegions()).thenReturn(Collections.unmodifiableSet(
-        new HashSet<>(Arrays.asList(region1Stub, region2Stub, region3Stub))));
+    when(cacheStub.rootRegions()).thenReturn(Collections
+        .unmodifiableSet(new HashSet<>(Arrays.asList(region1Stub, region2Stub, region3Stub))));
     operationHandler = new GetRegionNamesRequestOperationHandler();
   }
 
   @Test
   public void processReturnsCacheRegions() throws CodecAlreadyRegisteredForTypeException,
       UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
-        ProtobufRequestUtilities.createGetRegionNamesRequest(), cacheStub);
+    ClientProtocol.Response response =
+        (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
+            ProtobufRequestUtilities.createGetRegionNamesRequest(), cacheStub);
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
         response.getResponseAPICase());
 
@@ -95,8 +96,9 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
-        ProtobufRequestUtilities.createGetRegionNamesRequest(), emptyCache);
+    ClientProtocol.Response response =
+        (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
+            ProtobufRequestUtilities.createGetRegionNamesRequest(), emptyCache);
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
         response.getResponseAPICase());
 
