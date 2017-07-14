@@ -28,9 +28,6 @@ When you start up `gfsh`, it will automatically load required JAR files that hav
 
 These dependency JAR files are packaged in your Apache Geode installation in the `$GEMFIRE/lib` (or on Windows, the `%GEODE_HOME%\lib`) directory.
 
-**Note:**
-The `gfsh` command-line utility also searches for `tools.jar` (included with JDK) and adds it to gfsh's CLASSPATH. If you do not have a JDK installed, gfsh uses file-based communication instead for the `status` and `stop` commands. If using a JRE instead of JDK, gfsh must have read-write permissions in the working directory of the server and locator processes.
-
 ## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_02EEF9A519094EAD9D6B5C8E896EBA27" class="no-quick-link"></a>Machine Hostname
 
 On some operating systems, you may need to ensure that the hostname of your machine is configured in your system hosts file. For example, on Mac OSX you may need to map your machine's hostname to your IP address in the `/etc/hosts` file in order for `gfsh` and Pulse to operate correctly.
