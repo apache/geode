@@ -40,16 +40,17 @@ Import user data from a file to a region.
 **Syntax:**
 
 ``` pre
- import data --region=value --file=value --member=value
+ import data --region=value --file=value --member=value [--invoke-callbacks=value]
 ```
 
 <a id="topic_jw2_2ld_2l__table_lzg_3fg_2w"></a>
 
-| Name                                           | Description                                                                                                                                                                                                                      |
-|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-region</span> | *Required.* Region into which data will be imported.                                                                                                                                                                             |
-| <span class="keyword parmname">\\-\\-file </span>  | *Required.* File from which the imported data will be read. The file must have an extension of ".gfd" and must be on the file system of the member (or accessible to that member via NFS) that is being targeted for the import. |
-| <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/Id of a member which hosts the region. The data will be imported from the specified file on the host where the member is running.                                                                               |
+| Name                                           | Description                                                                                                                                                                                                                      | Default Value |
+|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----|
+| <span class="keyword parmname">\\-\\-region</span> | *Required.* Region into which data will be imported. | |
+| <span class="keyword parmname">\\-\\-file </span>  | *Required.* File from which the imported data will be read. The file must have an extension of ".gfd" and must be on the file system of the member (or accessible to that member via NFS) that is being targeted for the import. | |
+| <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/ID of a member that hosts the region. The data will be imported from the specified file on the host where the member is running. | |
+| <span class="keyword parmname">&#8209;&#8209;invoke-callbacks</span> | Boolean value that, when true, invokes callbacks during the data import. |  false |
 
 <span class="tablecap">Table 1. Import Data Parameters</span>
 
