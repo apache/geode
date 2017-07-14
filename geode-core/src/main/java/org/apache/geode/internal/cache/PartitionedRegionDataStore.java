@@ -934,7 +934,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       }
       return false;
     }
-    if (!canAccommodateMoreBytesSafely(size)) {
+    if (!forceCreation && !canAccommodateMoreBytesSafely(size)) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Partitioned Region {} has exceeded local maximum memory configuration {} Mb, current size is {} Mb",
