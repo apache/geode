@@ -453,7 +453,7 @@ public class DistributedEventTracker implements EventTracker {
 
   @Override
   public void syncBulkOp(Runnable r, EventID eventID, boolean partOfTransaction) {
-    if (!partOfTransaction) {
+    if (partOfTransaction) {
       r.run();
       return;
     }
