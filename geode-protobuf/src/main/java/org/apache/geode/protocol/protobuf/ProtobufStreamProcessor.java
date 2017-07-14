@@ -26,6 +26,7 @@ import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -75,6 +76,9 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)
       throws InvalidProtocolMessageException, OperationHandlerNotRegisteredException, IOException {
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
+    if (message == null) {
+      throw new EOFException("Tried to deserialize protobuf message at EOF");
+    }
 
     ClientProtocol.Request request = message.getRequest();
     ClientProtocol.Response response = protobufOpsProcessor.process(request, cache);
