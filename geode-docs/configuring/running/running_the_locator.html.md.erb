@@ -35,7 +35,7 @@ You can run the locator standalone or embedded within another Geode process. Run
 
 Locator configuration and log files have the following properties:
 
--   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR files (`$GEMFIRE/lib/locator-dependencies.jar`) into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify `$GEMFIRE/lib/locator-dependencies.jar` inside the command used to launch the locator process. For more information on CLASSPATH settings in Geode, see [CLASSPATH Settings for Geode Processes](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
+-   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR file (`$GEMFIRE/lib/locator-dependencies.jar`) into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify `$GEMFIRE/lib/locator-dependencies.jar` inside the command used to launch the locator process. For more information on CLASSPATH settings in Geode, see [CLASSPATH Settings for Geode Processes](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
 -   Locators are members of the distributed system just like any other member. In terms of `mcast-port` and `locators` configuration, a locator should be configured in the same manner as a server. Therefore, if there are two other locators in the distributed system, each locator should reference the other locators (just like a server member would). For example:
 
     ``` pre
@@ -218,7 +218,7 @@ Java Version: 1.7.0_65
 Log File: /home/user/locator1/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
  -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar
 
 Cluster configuration service is up and running.
 ```
