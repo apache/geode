@@ -36,8 +36,8 @@ where _install-dir_ is the server installation directory and _n.n.n_ is a versio
 
 The REST API service for application development runs only on servers; you cannot run the service on a locator.
 
-To enable the Developer REST API service on a given server, set the `start-dev-rest-api` property
-to `true` for the server, using either the `gfsh start server` command or the ServerLauncher API.
+To enable the Developer REST API service on a given server, use the `gfsh start server` command with the `--start-rest-api` option,
+or set the `start-dev-rest-api` property to `true` for the server via the ServerLauncher API.
 This starts an embedded Jetty server and deploys the Developer REST API WAR file on that server.
 
 ## Enabling the REST API on Multiple Servers
@@ -103,8 +103,9 @@ To configure PDX in your cluster, perform the following steps:
 
 ## Start the REST API Service on One or More Servers
 
-As described above, you can start the REST API service on a server by setting the Geode property `start-dev-rest-api` set to `true`. 
-If you wish to start the service on multiple servers, use a `http-service-bind-address` and `http-service-port` to
+As described above, you can start the REST API service on a server by using `gfsh start server --start-rest-api`,
+or by setting the Geode property `start-dev-rest-api` to `true`. 
+If you wish to start the service on multiple servers, use `http-service-bind-address` and `http-service-port` to
 identify the cache server and specific port that will host REST services. If you do not specify
 the `http-service-port`, the default port is 7070, which may collide with other locators and servers.
 If you do not specify `http-service-bind-address`, the HTTP service will bind to all local addresses by default.
