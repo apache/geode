@@ -201,7 +201,22 @@ Implement these steps to change an index:
 5. Create a new region without the user-defined business logic callbacks
 6. Import the region data with the option to turn on callbacks. 
 The callbacks will be to invoke a Lucene async event listener to index
-the data.
+the data. The `gfsh import data` command will be of the form:
+
+    ``` pre
+    gfsh>import data --region=myReg --member=M3 --file=myReg.gfd --invoke-callbacks=true
+    ```
+If the API is used to import data, the code to set the option to
+invoke callbacks will be similar to this code fragment:
+
+    ``` pre
+    Region region = ...;
+    File snapshotFile = ...;
+    RegionSnapshotService service = region.getSnapshotService();
+    SnapshotOptions options = service.createOptions();
+    options.invokeCallbacks(true);
+    service.load(snapshotFile, SnapshotFormat.GEMFIRE, options);
+    ```
 7. Alter the region to add the user-defined business logic callbacks
 
 ## <a id="addl-gfsh-api" class="no-quick-link"></a>Additional Gfsh Commands
