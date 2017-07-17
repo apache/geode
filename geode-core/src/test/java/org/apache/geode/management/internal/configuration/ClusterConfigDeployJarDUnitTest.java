@@ -19,13 +19,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
@@ -39,9 +40,9 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
 
   @Before
   public void before() throws Exception {
-    clusterJar = createJarFileWithClass("Cluster", "cluster.jar", lsRule.getTempFolder().getRoot());
-    group1Jar = createJarFileWithClass("Group1", "group1.jar", lsRule.getTempFolder().getRoot());
-    group2Jar = createJarFileWithClass("Group2", "group2.jar", lsRule.getTempFolder().getRoot());
+    clusterJar = createJarFileWithClass("Cluster", "cluster.jar", temporaryFolder.getRoot());
+    group1Jar = createJarFileWithClass("Group1", "group1.jar", temporaryFolder.getRoot());
+    group2Jar = createJarFileWithClass("Group2", "group2.jar", temporaryFolder.getRoot());
   }
 
   @Test

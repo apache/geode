@@ -38,7 +38,7 @@ public class LogNoPasswordTest {
   private static String PASSWORD = "abcdefghijklmn";
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withProperty(LOG_LEVEL, "DEBUG")
-      .withSecurityManager(MySecurityManager.class);
+      .withLogFile().withSecurityManager(MySecurityManager.class);
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();

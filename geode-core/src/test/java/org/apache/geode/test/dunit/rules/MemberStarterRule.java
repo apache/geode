@@ -53,6 +53,7 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
   protected int httpPort = -1;
 
   protected String name;
+  protected boolean logFile = false;
   protected Properties properties = new Properties();
 
   protected boolean autoStart = false;
@@ -61,20 +62,13 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
     this(null);
   }
 
-  public MemberStarterRule(File workDir) {
-    workingDir = workDir;
+  // Not meant to be public, only used by LocatorServerStartupRule
+  MemberStarterRule(File workDir) {
     oldUserDir = System.getProperty("user.dir");
-    if (workingDir == null) {
-      temporaryFolder = new TemporaryFolder();
-      try {
-        temporaryFolder.create();
-      } catch (IOException e) {
-        throw new RuntimeException(e.getMessage(), e);
-      }
-      workingDir = temporaryFolder.getRoot().getAbsoluteFile();
+    workingDir = workDir;
+    if (workDir != null) {
+      withWorkingDir();
     }
-
-    System.setProperty("user.dir", workingDir.toString());
     // initial values
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
@@ -126,8 +120,44 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
   public T withName(String name) {
     this.name = name;
     properties.setProperty(NAME, name);
-    // if log-file is not already set
-    properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath());
+    return (T) this;
+  }
+
+  /**
+   * this will make the logging to into a log file instead of on the console.
+   *
+   * Use with caution, the logs files are created in a temp working directory. this is achieved by
+   * dynamically changing the "user.dir" system property.
+   * 
+   * @return
+   */
+  public T withLogFile() {
+    this.logFile = true;
+    return (T) this;
+  }
+
+  // Not meant to be public, only used by LocatorServerStartupRule
+  T withLogFile(boolean logFile) {
+    this.logFile = logFile;
+    return (T) this;
+  }
+
+  /**
+   * create the working dir using temporaryFolder. Use with caution, this sets "user.dir" system
+   * property that not approved by JDK
+   */
+  public T withWorkingDir() {
+    if (workingDir == null) {
+      temporaryFolder = new TemporaryFolder();
+      try {
+        temporaryFolder.create();
+      } catch (IOException e) {
+        throw new RuntimeException(e.getMessage(), e);
+      }
+      workingDir = temporaryFolder.getRoot().getAbsoluteFile();
+    }
+
+    System.setProperty("user.dir", workingDir.toString());
     return (T) this;
   }
 
@@ -188,6 +218,16 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
       // this will make sure we have all the missing properties, but it won't override
       // the existing properties
       withJMXManager(false);
+    }
+
+    // if caller wants the logs being put into a file instead of in console output
+    // do it here since only here, we can gurantee the name is present
+    if (logFile) {
+      // if working dir is not created yet, creates it.
+      if (workingDir == null) {
+        withWorkingDir();
+      }
+      properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath());
     }
   }
 

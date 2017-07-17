@@ -21,6 +21,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -32,14 +41,7 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDistributionDUnitTest {
@@ -51,6 +53,9 @@ public class ClusterConfigDistributionDUnitTest {
   private static final String AsyncEventQueue1 = "Q1";
 
   private MemberVM locator;
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -137,8 +142,8 @@ public class ClusterConfigDistributionDUnitTest {
   }
 
   private String createAsyncEventQueueJar() throws IOException {
-    String queueCommandsJarName = this.lsRule.getTempFolder().getRoot().getCanonicalPath()
-        + File.separator + "testEndToEndSC-QueueCommands.jar";
+    String queueCommandsJarName = temporaryFolder.getRoot().getCanonicalPath() + File.separator
+        + "testEndToEndSC-QueueCommands.jar";
     final File jarFile = new File(queueCommandsJarName);
 
     ClassBuilder classBuilder = new ClassBuilder();

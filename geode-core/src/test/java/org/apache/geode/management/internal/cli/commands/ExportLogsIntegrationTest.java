@@ -17,25 +17,25 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.nio.file.Path;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.nio.file.Path;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class ExportLogsIntegrationTest {
 
   @ClassRule
-  public static LocatorStarterRule locator =
-      new LocatorStarterRule().withJMXManager().withProperty("groups", "g1,g2").withAutoStart();
+  public static LocatorStarterRule locator = new LocatorStarterRule().withLogFile().withAutoStart();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();

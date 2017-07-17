@@ -18,21 +18,20 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
@@ -93,17 +92,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
         getCache().createRegionFactory(regionType).create(regionName);
       });
     }
-  }
-
-  /**
-   * By default, the ServerStartRule dynamically changes the "user.dir" system property to point to
-   * a temporary folder. The Path API caches the first value of "user.dir" that it sees, and this
-   * can result in a stale cached value of "user.dir" which points to a directory that no longer
-   * exists, causing later tests to fail. By passing in the real value of "user.dir", we avoid these
-   * problems.
-   */
-  public static ServerStarterRule createWithoutTemporaryWorkingDir() {
-    return new ServerStarterRule(new File(System.getProperty("user.dir")));
   }
 
   @Override

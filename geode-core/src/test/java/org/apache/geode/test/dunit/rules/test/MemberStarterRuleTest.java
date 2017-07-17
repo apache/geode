@@ -18,18 +18,28 @@ package org.apache.geode.test.dunit.rules.test;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class MemberStarterRuleTest {
 
+  private LocatorStarterRule locator;
+
+  @After
+  public void after() {
+    if (locator != null)
+      locator.after();
+  }
+
   @Test
   public void testSetJMXPortWithProperty() {
     int port = 2000;
-    LocatorStarterRule locator = new LocatorStarterRule().withProperty(JMX_MANAGER_PORT, port + "");
+    locator = new LocatorStarterRule().withProperty(JMX_MANAGER_PORT, port + "");
     locator.before();
     assertThat(locator.getJmxPort()).isEqualTo(port);
   }
@@ -37,7 +47,7 @@ public class MemberStarterRuleTest {
   @Test
   public void testSetJMXPortWithPropertyThenAPI() {
     int port = 2000;
-    LocatorStarterRule locator = new LocatorStarterRule().withProperty(JMX_MANAGER_PORT, port + "");
+    locator = new LocatorStarterRule().withProperty(JMX_MANAGER_PORT, port + "");
 
     // user call withJMXManager again
     locator.withJMXManager();
@@ -49,7 +59,7 @@ public class MemberStarterRuleTest {
   @Test
   public void testSetJMXPortWithAPIThenProperty() {
     // this first one wins
-    LocatorStarterRule locator = new LocatorStarterRule().withJMXManager();
+    locator = new LocatorStarterRule().withJMXManager();
     int port = locator.getJmxPort();
 
     locator.withProperty(JMX_MANAGER_PORT, "9999");
@@ -60,7 +70,7 @@ public class MemberStarterRuleTest {
 
   @Test
   public void testUseRandomPortByDefault() {
-    LocatorStarterRule locator = new LocatorStarterRule();
+    locator = new LocatorStarterRule();
     locator.before();
 
     assertThat(locator.getJmxPort()).isNotEqualTo(1099);
@@ -68,5 +78,31 @@ public class MemberStarterRuleTest {
 
     assertThat(locator.getHttpPort()).isNotEqualTo(7070);
     assertThat(locator.getHttpPort()).isNotEqualTo(-1);
+  }
+
+  @Test
+  public void workingDirNotCreatedByDefault() throws Exception {
+    String userDir = System.getProperty("user.dir");
+    locator = new LocatorStarterRule();
+    locator.before();
+    assertThat(System.getProperty("user.dir")).isSameAs(userDir);
+    assertThat(locator.getWorkingDir()).isNull();
+  }
+
+  @Test
+  public void userDirSetToWorkingDirWhenCreatedWithIt() throws Exception {
+    locator = new LocatorStarterRule().withWorkingDir();
+    locator.before();
+
+    assertThat(System.getProperty("user.dir")).isEqualTo(locator.getWorkingDir().toString());
+  }
+
+  @Test
+  public void logInFileCreatesWorkingDir() throws Exception {
+    locator = new LocatorStarterRule().withLogFile();
+    locator.before();
+
+    assertThat(locator.getName()).isNotNull();
+    assertThat(locator.getWorkingDir()).isNotNull();
   }
 }

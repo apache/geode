@@ -14,19 +14,21 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.management.ManagementException;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,11 +37,13 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.mockito.Matchers;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class SizeExportLogsFunctionTest {
@@ -58,7 +62,7 @@ public class SizeExportLogsFunctionTest {
   public TestName testName = new TestName();
 
   @Rule
-  public ServerStarterRule server = new ServerStarterRule();
+  public ServerStarterRule server = new ServerStarterRule().withLogFile();
 
   @Before
   public void before() throws Throwable {
