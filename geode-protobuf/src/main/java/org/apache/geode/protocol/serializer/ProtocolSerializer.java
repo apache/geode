@@ -14,11 +14,11 @@
  */
 package org.apache.geode.protocol.serializer;
 
-import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 
 /**
  * This interface is used to translate between binary data and protocol specific messages.

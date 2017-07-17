@@ -14,11 +14,11 @@
  */
 package org.apache.geode.protocol.protobuf.utilities;
 
+import java.util.Set;
+
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
-
-import java.util.Set;
 
 /**
  * This class contains helper functions for generating ClientProtocol.Request objects
@@ -29,7 +29,7 @@ import java.util.Set;
 public abstract class ProtobufRequestUtilities {
   /**
    * Creates a request object containing a RegionAPI.GetRequest
-   *
+   * 
    * @param regionName - Name of the region being fetched from
    * @param key - Encoded key, see createEncodedValue in {@link ProtobufRequestUtilities}
    * @return Request object containing the passed params.
@@ -43,7 +43,7 @@ public abstract class ProtobufRequestUtilities {
 
   /**
    * Creates a request object containing a RegionAPI.RemoveRequest
-   *
+   * 
    * @param regionName - Name of the region being deleted from
    * @param key - Encoded key, see createEncodedValue in {@link ProtobufRequestUtilities}
    * @return Request object containing the passed params.
@@ -57,17 +57,16 @@ public abstract class ProtobufRequestUtilities {
 
   /**
    * Creates a request object containing a RegionAPI.GetRegionNamesRequest
-   *
+   * 
    * @return Request object for a getRegionNames operation
    */
-  public static ClientProtocol.Request createGetRegionNamesRequest() {
-    return ClientProtocol.Request.newBuilder()
-        .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()).build();
+  public static RegionAPI.GetRegionNamesRequest createGetRegionNamesRequest() {
+    return RegionAPI.GetRegionNamesRequest.newBuilder().build();
   }
 
   /**
    * Creates a request object containing a RegionAPI.PutRequest
-   *
+   * 
    * @param region - Name of the region to put data in
    * @param entry - Encoded key,value pair, see createEntry in {@link ProtobufRequestUtilities}
    * @return Request object containing the passed params.
@@ -80,22 +79,22 @@ public abstract class ProtobufRequestUtilities {
 
   /**
    * Create a request to get the values for multiple keys
-   *
+   * 
    * @param regionName - Name of the region to fetch from
    * @param keys - Set of keys being fetched
    * @return Request object containing the getAll request
    */
-  public static ClientProtocol.Request createGetAllRequest(String regionName,
+  public static RegionAPI.GetAllRequest createGetAllRequest(String regionName,
       Set<BasicTypes.EncodedValue> keys) {
     RegionAPI.GetAllRequest.Builder getAllRequestBuilder =
         RegionAPI.GetAllRequest.newBuilder().setRegionName(regionName);
     getAllRequestBuilder.addAllKey(keys);
-    return ClientProtocol.Request.newBuilder().setGetAllRequest(getAllRequestBuilder).build();
+    return getAllRequestBuilder.build();
   }
 
   /**
    * Create a request to insert multiple entries in a region
-   *
+   * 
    * @param regionName - Region to which entries are being added
    * @param entries - key, value pairs to add to the region
    * @return Request object containing the putAll request for the passed parameters

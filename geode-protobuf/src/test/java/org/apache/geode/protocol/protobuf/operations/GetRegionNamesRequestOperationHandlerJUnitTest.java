@@ -14,29 +14,30 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
-import org.apache.geode.protocol.protobuf.RegionAPI;
-import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.Result;
+import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
+import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
+import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -70,13 +71,12 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   @Test
   public void processReturnsCacheRegions() throws CodecAlreadyRegisteredForTypeException,
       UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
+    Result<RegionAPI.GetRegionNamesResponse> result =
+        operationHandler.process(serializationServiceStub,
             ProtobufRequestUtilities.createGetRegionNamesRequest(), cacheStub);
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Success);
 
-    RegionAPI.GetRegionNamesResponse getRegionsResponse = response.getGetRegionNamesResponse();
+    RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
     Assert.assertEquals(3, getRegionsResponse.getRegionsCount());
 
     // There's no guarantee for what order we receive the regions in from the response
@@ -96,13 +96,12 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    ClientProtocol.Response response =
-        (ClientProtocol.Response) operationHandler.process(serializationServiceStub,
+    Result<RegionAPI.GetRegionNamesResponse> result =
+        operationHandler.process(serializationServiceStub,
             ProtobufRequestUtilities.createGetRegionNamesRequest(), emptyCache);
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Success);
 
-    RegionAPI.GetRegionNamesResponse getRegionsResponse = response.getGetRegionNamesResponse();
+    RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
     Assert.assertEquals(0, getRegionsResponse.getRegionsCount());
   }
 }

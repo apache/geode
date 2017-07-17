@@ -15,6 +15,34 @@
 
 package org.apache.geode.protocol;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -41,33 +69,6 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
-import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Test that switching on the header byte makes instances of
@@ -180,7 +181,7 @@ public class RoundTripCacheConnectionJUnitTest {
         TEST_MULTIOP_VALUE2));
     putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
         TEST_MULTIOP_VALUE3));
-    ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufRequest(
+    ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufMessage(
         ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID),
         ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, putEntries));
     protobufProtocolSerializer.serialize(putAllMessage, outputStream);
@@ -191,9 +192,13 @@ public class RoundTripCacheConnectionJUnitTest {
     getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY1));
     getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY2));
     getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY3));
-    ClientProtocol.Message getAllMessage = ProtobufUtilities.createProtobufRequest(
+
+    RegionAPI.GetAllRequest getAllRequest =
+        ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, getEntries);
+
+    ClientProtocol.Message getAllMessage = ProtobufUtilities.createProtobufMessage(
         ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID),
-        ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, getEntries));
+        ProtobufUtilities.createProtobufRequestWithGetAllRequest(getAllRequest));
     protobufProtocolSerializer.serialize(getAllMessage, outputStream);
     validateGetAllResponse(socket, protobufProtocolSerializer);
   }
@@ -219,7 +224,7 @@ public class RoundTripCacheConnectionJUnitTest {
         TEST_MULTIOP_VALUE2));
     putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
         TEST_MULTIOP_VALUE3));
-    ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufRequest(
+    ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufMessage(
         ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID),
         ProtobufRequestUtilities.createPutAllRequest(regionName, putEntries));
     protobufProtocolSerializer.serialize(putAllMessage, outputStream);
@@ -231,7 +236,7 @@ public class RoundTripCacheConnectionJUnitTest {
     protobufProtocolSerializer.serialize(getMessage, outputStream);
     validateGetResponse(socket, protobufProtocolSerializer, TEST_MULTIOP_VALUE1);
 
-    ClientProtocol.Message removeMessage = ProtobufUtilities.createProtobufRequest(
+    ClientProtocol.Message removeMessage = ProtobufUtilities.createProtobufMessage(
         ProtobufUtilities.createMessageHeader(TEST_REMOVE_CORRELATION_ID),
         ProtobufRequestUtilities.createRemoveRequest(TEST_REGION,
             ProtobufUtilities.createEncodedValue(serializationService, TEST_KEY)));
@@ -268,9 +273,12 @@ public class RoundTripCacheConnectionJUnitTest {
     int correlationId = TEST_GET_CORRELATION_ID; // reuse this value for this test
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    ClientProtocol.Message getRegionsMessage = ProtobufUtilities.createProtobufRequest(
+    RegionAPI.GetRegionNamesRequest getRegionNamesRequest =
+        ProtobufRequestUtilities.createGetRegionNamesRequest();
+
+    ClientProtocol.Message getRegionsMessage = ProtobufUtilities.createProtobufMessage(
         ProtobufUtilities.createMessageHeader(correlationId),
-        ProtobufRequestUtilities.createGetRegionNamesRequest());
+        ProtobufUtilities.createProtobufRequestWithGetRegionNamesRequest(getRegionNamesRequest));
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
     validateGetRegionNamesResponse(socket, correlationId, protobufProtocolSerializer);
   }
@@ -289,12 +297,10 @@ public class RoundTripCacheConnectionJUnitTest {
     OutputStream outputStream = socket.getOutputStream();
     outputStream.write(110);
 
-
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message getRegionMessage = MessageUtil.makeGetRegionRequestMessage(TEST_REGION,
         ClientProtocol.MessageHeader.newBuilder().build());
     protobufProtocolSerializer.serialize(getRegionMessage, outputStream);
-
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
@@ -311,7 +317,6 @@ public class RoundTripCacheConnectionJUnitTest {
     assertEquals("", region.getKeyConstraint());
     assertEquals("", region.getValueConstraint());
     assertEquals(Scope.DISTRIBUTED_NO_ACK, Scope.fromString(region.getScope()));
-
   }
 
   private void validatePutResponse(Socket socket,

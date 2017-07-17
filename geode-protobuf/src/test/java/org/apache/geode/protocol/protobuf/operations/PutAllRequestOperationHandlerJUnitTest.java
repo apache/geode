@@ -14,6 +14,7 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.doThrow;
@@ -22,30 +23,34 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
-import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentMatcher;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentMatcher;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.Result;
+import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.serialization.SerializationService;
+import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
+import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -105,11 +110,10 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecNotRegisteredForTypeException, CodecAlreadyRegisteredForTypeException {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    ClientProtocol.Response response = operationHandler.process(serializationServiceStub,
+    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
         generateTestRequest(false, true), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.PUTALLRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Success);
 
     HashMap<Object, Object> expectedValues = new HashMap<>();
     expectedValues.put(TEST_KEY1, TEST_VALUE1);
@@ -123,13 +127,12 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithInvalidEntryReturnsError() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    ClientProtocol.Response response = operationHandler.process(serializationServiceStub,
+    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
         generateTestRequest(true, true), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        response.getResponseAPICase());
-    Assert.assertThat(response.getErrorResponse().getMessage(),
-        CoreMatchers.containsString(EXCEPTION_TEXT));
+    assertTrue(result instanceof Failure);
+    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
+    Assert.assertThat(errorMessage.getMessage(), CoreMatchers.containsString(EXCEPTION_TEXT));
     // can't verify anything about put keys because we make no guarantees.
   }
 
@@ -137,16 +140,15 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithNoEntriesPasses() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    ClientProtocol.Response response = operationHandler.process(serializationServiceStub,
+    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
         generateTestRequest(false, false), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.PUTALLRESPONSE,
-        response.getResponseAPICase());
+    assertTrue(result instanceof Success);
 
     verify(regionMock, times(0)).put(any(), any());
   }
 
-  private ClientProtocol.Request generateTestRequest(boolean addInvalidKey, boolean addValidKeys)
+  private RegionAPI.PutAllRequest generateTestRequest(boolean addInvalidKey, boolean addValidKeys)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     Set<BasicTypes.Entry> entries = new HashSet<>();
     if (addInvalidKey) {
@@ -165,6 +167,6 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
           ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_KEY3),
           ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_VALUE3)));
     }
-    return ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, entries);
+    return ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, entries).getPutAllRequest();
   }
 }

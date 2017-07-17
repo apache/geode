@@ -14,10 +14,10 @@
  */
 package org.apache.geode.serialization.codec;
 
+import java.nio.ByteBuffer;
+
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
-
-import java.nio.ByteBuffer;
 
 public class ByteCodec implements TypeCodec<Byte> {
   @Override

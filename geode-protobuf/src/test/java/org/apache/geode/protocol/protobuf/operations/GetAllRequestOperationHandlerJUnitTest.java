@@ -14,11 +14,24 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.geode.cache.Cache;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.Result;
+import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
@@ -28,15 +41,6 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.nio.charset.Charset;
-import java.util.*;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -95,16 +99,16 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processReturnsExpectedValuesForValidKeys()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
-    ClientProtocol.Request getRequest = generateTestRequest(true);
-    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
-        .process(serializationServiceStub, getRequest, cacheStub);
+    Result<RegionAPI.GetAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(true), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
-        response.getResponseAPICase());
-    RegionAPI.GetAllResponse getAllResponse = response.getGetAllResponse();
-    Assert.assertEquals(3, getAllResponse.getEntriesCount());
+    Assert.assertTrue(result instanceof Success);
 
-    List<BasicTypes.Entry> entriesList = getAllResponse.getEntriesList();
+    RegionAPI.GetAllResponse response = result.getMessage();
+
+    Assert.assertEquals(3, response.getEntriesCount());
+
+    List<BasicTypes.Entry> entriesList = response.getEntriesList();
     Map<String, String> responseEntries = convertEntryListToMap(entriesList);
 
     Assert.assertEquals(TEST_VALUE1, responseEntries.get(TEST_KEY1));
@@ -115,20 +119,17 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsNoEntriesForNoKeysRequested()
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    ClientProtocol.Request getRequest = generateTestRequest(false);
-    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
-        .process(serializationServiceStub, getRequest, cacheStub);
+    Result<RegionAPI.GetAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(false), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Success);
 
-    RegionAPI.GetAllResponse getAllResponse = response.getGetAllResponse();
-    List<BasicTypes.Entry> entriesList = getAllResponse.getEntriesList();
+    List<BasicTypes.Entry> entriesList = result.getMessage().getEntriesList();
     Map<String, String> responseEntries = convertEntryListToMap(entriesList);
     Assert.assertEquals(0, responseEntries.size());
   }
 
-  private ClientProtocol.Request generateTestRequest(boolean addKeys)
+  private RegionAPI.GetAllRequest generateTestRequest(boolean addKeys)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     HashSet<BasicTypes.EncodedValue> testKeys = new HashSet<>();
     if (addKeys) {

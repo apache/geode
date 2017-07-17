@@ -12,26 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.serialization.codec;
+package org.apache.geode.protocol.protobuf;
 
-import java.nio.ByteBuffer;
+import java.util.function.Function;
 
-import org.apache.geode.serialization.SerializationType;
-import org.apache.geode.serialization.TypeCodec;
+public class Failure<SuccessType> implements Result<SuccessType> {
+  private final ClientProtocol.ErrorResponse errorResponse;
 
-public class FloatCodec implements TypeCodec<Float> {
-  @Override
-  public Float decode(byte[] incoming) {
-    return ByteBuffer.wrap(incoming).getFloat();
+  public Failure(ClientProtocol.ErrorResponse errorResponse) {
+    this.errorResponse = errorResponse;
+  }
+
+  public static <T> Failure<T> of(ClientProtocol.ErrorResponse errorResponse) {
+    return new Failure<>(errorResponse);
   }
 
   @Override
-  public byte[] encode(Float incoming) {
-    return ByteBuffer.allocate(Float.BYTES).putFloat(incoming).array();
+  public <T> T map(Function<SuccessType, T> successFunction,
+      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
+    return errorFunction.apply(errorResponse);
   }
 
   @Override
-  public SerializationType getSerializationType() {
-    return SerializationType.FLOAT;
+  public SuccessType getMessage() {
+    throw new RuntimeException("This is not a Success result");
+  }
+
+  @Override
+  public ClientProtocol.ErrorResponse getErrorMessage() {
+    return errorResponse;
   }
 }

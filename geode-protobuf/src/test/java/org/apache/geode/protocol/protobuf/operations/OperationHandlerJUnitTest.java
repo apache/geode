@@ -16,12 +16,13 @@ package org.apache.geode.protocol.protobuf.operations;
 
 import static org.mockito.Mockito.mock;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class OperationHandlerJUnitTest {
