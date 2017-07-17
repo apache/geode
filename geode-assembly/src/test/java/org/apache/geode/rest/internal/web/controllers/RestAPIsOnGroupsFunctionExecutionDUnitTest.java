@@ -14,32 +14,36 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.junit.Assert.*;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.rest.internal.web.RestFunctionTemplate;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.rest.internal.web.RestFunctionTemplate;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import static org.junit.Assert.assertFalse;
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Parameterized.Parameter
   public String urlContext;

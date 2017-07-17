@@ -15,11 +15,10 @@
 
 package org.apache.geode.tools.pulse;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.apache.geode.test.dunit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.http.HttpResponse;
@@ -28,9 +27,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @Category(IntegrationTest.class)
 public class PulseVerificationTest {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @ClassRule
   public static LocatorStarterRule locator =

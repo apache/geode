@@ -14,13 +14,13 @@
  */
 package org.apache.geode;
 
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.io.FileUtils;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.util.test.TestUtil;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,8 +36,13 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.assertTrue;
+
 @Category({IntegrationTest.class, RestAPITest.class})
 public class BundledJarsJUnitTest {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   private static final String VERSION_PATTERN = "[0-9-_.v]{3,}.*\\.jar$";
   protected static final String GEODE_HOME = System.getenv("GEODE_HOME");

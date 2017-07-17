@@ -14,11 +14,11 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -26,8 +26,13 @@ import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertNotNull;
+
 @Category(IntegrationTest.class)
 public class AgentUtilJUnitTest {
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   private AgentUtil agentUtil;
   private String version;
