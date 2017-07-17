@@ -14,25 +14,33 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.geode.cache.Cache;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.nio.charset.Charset;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.Result;
+import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.nio.charset.Charset;
-
-import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -64,11 +72,10 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   public void test_puttingTheEncodedEntryIntoRegion() throws UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException, CodecAlreadyRegisteredForTypeException {
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    ClientProtocol.Response response =
+    Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Success);
 
     verify(regionMock).put(TEST_KEY, TEST_VALUE);
     verify(regionMock, times(1)).put(anyString(), anyString());
@@ -77,33 +84,36 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void test_invalidEncodingType() throws CodecAlreadyRegisteredForTypeException,
       UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    String exceptionText = "unsupported type!";
     UnsupportedEncodingTypeException exception =
-        new UnsupportedEncodingTypeException("unsupported type!");
+        new UnsupportedEncodingTypeException(exceptionText);
     when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
 
-    ClientProtocol.Response response =
+    Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Failure);
+    org.junit.Assert.assertEquals(exceptionText, result.getErrorMessage().getMessage());
   }
 
   @Test
   public void test_codecNotRegistered() throws CodecAlreadyRegisteredForTypeException,
       UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    String exceptionMessage = "error finding codec for type";
     CodecNotRegisteredForTypeException exception =
-        new CodecNotRegisteredForTypeException("error finding codec for type");
+        new CodecNotRegisteredForTypeException(exceptionMessage);
     when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
 
-    ClientProtocol.Response response =
+    Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Failure);
+    org.junit.Assert.assertThat(result.getErrorMessage().getMessage(),
+        CoreMatchers.containsString(exceptionMessage));
   }
 
   @Test
@@ -111,11 +121,12 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    ClientProtocol.Response response =
+    Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Failure);
+    org.junit.Assert.assertEquals("Region passed by client did not exist: test region",
+        result.getErrorMessage().getMessage());
   }
 
   @Test
@@ -124,20 +135,21 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     when(regionMock.put(any(), any())).thenThrow(ClassCastException.class);
 
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    ClientProtocol.Response response =
+    Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        response.getResponseAPICase());
+    Assert.assertTrue(result instanceof Failure);
+    org.junit.Assert.assertThat(result.getErrorMessage().getMessage(),
+        CoreMatchers.containsString("invalid key or value type"));
   }
 
-  private ClientProtocol.Request generateTestRequest()
+  private RegionAPI.PutRequest generateTestRequest()
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
     BasicTypes.EncodedValue testKey =
         ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_KEY);
     BasicTypes.EncodedValue testValue =
         ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_VALUE);
     BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(testKey, testValue);
-    return ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry);
+    return ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
   }
 }

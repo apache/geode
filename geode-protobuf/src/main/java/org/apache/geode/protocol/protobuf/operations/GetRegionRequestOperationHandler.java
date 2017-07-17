@@ -19,29 +19,30 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.RegionAPI;
-import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
+import org.apache.geode.protocol.protobuf.Result;
+import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 
 public class GetRegionRequestOperationHandler
-    implements OperationHandler<ClientProtocol.Request, ClientProtocol.Response> {
+    implements OperationHandler<RegionAPI.GetRegionRequest, RegionAPI.GetRegionResponse> {
 
   @Override
-  public ClientProtocol.Response process(SerializationService serializationService,
-      ClientProtocol.Request request, Cache cache) {
+  public Result<RegionAPI.GetRegionResponse> process(SerializationService serializationService,
+      RegionAPI.GetRegionRequest request, Cache cache) {
 
-    RegionAPI.GetRegionRequest regionRequest = request.getGetRegionRequest();
-    String regionName = regionRequest.getRegionName();
+    String regionName = request.getRegionName();
 
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return ProtobufResponseUtilities
-          .createErrorResponse("No region exists for name: " + regionName);
+      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
+          .setMessage("No region exists for name: " + regionName).build());
     }
 
     BasicTypes.Region protoRegion = ProtobufUtilities.createRegionMessageFromRegion(region);
 
-    return ProtobufResponseUtilities.createGetRegionResponse(protoRegion);
+    return Success.of(RegionAPI.GetRegionResponse.newBuilder().setRegion(protoRegion).build());
   }
 }

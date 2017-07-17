@@ -17,55 +17,51 @@ package org.apache.geode.protocol.protobuf.operations;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
-import org.apache.geode.protocol.protobuf.*;
-import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
+import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.Result;
+import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class PutRequestOperationHandler
-    implements OperationHandler<ClientProtocol.Request, ClientProtocol.Response> {
-  private static Logger logger = LogManager.getLogger();
+    implements OperationHandler<RegionAPI.PutRequest, RegionAPI.PutResponse> {
 
   @Override
-  public ClientProtocol.Response process(SerializationService serializationService,
-      ClientProtocol.Request request, Cache cache) {
-    if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.PUTREQUEST) {
-      return ProtobufResponseUtilities
-          .createAndLogErrorResponse("Improperly formatted put request message.", logger, null);
-    }
-    RegionAPI.PutRequest putRequest = request.getPutRequest();
-
-    String regionName = putRequest.getRegionName();
+  public Result<RegionAPI.PutResponse> process(SerializationService serializationService,
+      RegionAPI.PutRequest request, Cache cache) {
+    String regionName = request.getRegionName();
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return ProtobufResponseUtilities.createAndLogErrorResponse(
-          "Region passed by client did not exist: " + regionName, logger, null);
+      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
+          .setMessage("Region passed by client did not exist: " + regionName).build());
     }
 
     try {
-      BasicTypes.Entry entry = putRequest.getEntry();
+      BasicTypes.Entry entry = request.getEntry();
 
       Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
       Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
       try {
         region.put(decodedKey, decodedValue);
-        return ProtobufResponseUtilities.createPutResponse();
+        return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
-        return ProtobufResponseUtilities
-            .createAndLogErrorResponse("invalid key or value type for region " + regionName
-                + ",passed key: " + entry.getKey().getEncodingType() + " value: "
-                + entry.getValue().getEncodingType(), logger, ex);
+        return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
+            .setMessage("invalid key or value type for region " + regionName + ",passed key: "
+                + entry.getKey().getEncodingType() + " value: "
+                + entry.getValue().getEncodingType())
+            .build());
       }
     } catch (UnsupportedEncodingTypeException ex) {
-      return ProtobufResponseUtilities.createAndLogErrorResponse("encoding not supported ", logger,
-          ex);
+      return Failure
+          .of(ClientProtocol.ErrorResponse.newBuilder().setMessage(ex.getMessage()).build());
     } catch (CodecNotRegisteredForTypeException ex) {
-      return ProtobufResponseUtilities
-          .createAndLogErrorResponse("codec error in protobuf deserialization ", logger, ex);
+      return Failure
+          .of(ClientProtocol.ErrorResponse.newBuilder().setMessage(ex.getMessage()).build());
     }
   }
 }

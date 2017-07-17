@@ -12,14 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.operations.registry.exception;
+package org.apache.geode.protocol.protobuf;
 
-/**
- * Indicates that an operation handler is attempting to register for an already handled operation
- * type.
- */
-public class OperationHandlerAlreadyRegisteredException extends Exception {
-  public OperationHandlerAlreadyRegisteredException(String message) {
-    super(message);
+import java.util.function.Function;
+
+public class Success<SuccessType> implements Result<SuccessType> {
+  private final SuccessType successResponse;
+
+  public Success(SuccessType successResponse) {
+    this.successResponse = successResponse;
+  }
+
+  public static <T> Success<T> of(T result) {
+    return new Success<>(result);
+  }
+
+  @Override
+  public <T> T map(Function<SuccessType, T> successFunction,
+      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
+    return successFunction.apply(successResponse);
+  }
+
+  @Override
+  public SuccessType getMessage() {
+    return successResponse;
+  }
+
+  @Override
+  public ClientProtocol.ErrorResponse getErrorMessage() {
+    throw new RuntimeException("This is a not Failure result");
   }
 }
