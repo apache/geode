@@ -2513,9 +2513,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         RegionEntry re = getEntry(key);
         if (re != null) {
           synchronized (re) {
-            {
+            // Fix GEODE-3204, do not invalidate the region entry if it is a removed token
+            if (!Token.isRemoved(re.getValueAsToken())) {
               final int oldSize = owner.calculateRegionEntryValueSize(re);
-              boolean wasTombstone = re.isTombstone();
               Object oldValue = re.getValueInVM(owner); // OFFHEAP eei
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks
@@ -2543,9 +2543,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                 try {
                   re.setValue(owner, re.prepareValueForCache(owner, newValue, true));
                   EntryLogger.logTXInvalidate(_getOwnerObject(), key);
-                  if (wasTombstone) {
-                    owner.unscheduleTombstone(re);
-                  }
                   owner.updateSizeOnPut(key, oldSize, 0);
                 } catch (RegionClearedException rce) {
                   clearOccured = true;
@@ -2572,9 +2569,11 @@ public abstract class AbstractRegionMap implements RegionMap {
                 if (!cbEventInPending)
                   cbEvent.release();
               }
+              return;
             }
           }
-        } else { // re == null
+        }
+        { // re == null or region entry is removed token.
           // Fix bug#43594
           // In cases where bucket region is re-created, it may so happen
           // that the invalidate is already applied on the Initial image
@@ -3107,7 +3106,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
     final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
     final boolean isTXHost = txEntryState != null;
-    final boolean isClientTXOriginator = owner.cache.isClient() && !hasRemoteOrigin;
+    final boolean isClientTXOriginator = owner.getCache().isClient() && !hasRemoteOrigin;
     final boolean isRegionReady = owner.isInitialized();
     @Released
     EntryEventImpl cbEvent = null;
