@@ -14,17 +14,18 @@
  */
 package org.apache.geode.internal.security;
 
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Target;
-import org.apache.geode.security.SecurityManager;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
-import java.util.Properties;
-import java.util.concurrent.Callable;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.SecurityManager;
 
 public interface SecurityService {
 
@@ -51,6 +52,8 @@ public interface SecurityService {
   default void authorize(Resource resource, Operation operation, Target target, String key) {}
 
   default void authorize(Resource resource, Operation operation, Target target) {}
+
+  default void authorize(Resource resource, Operation operation, String target) {}
 
   default void authorizeClusterManage() {}
 

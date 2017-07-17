@@ -14,8 +14,22 @@
  */
 package org.apache.geode.internal.security;
 
+import java.io.IOException;
+import java.security.AccessController;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.ShiroException;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.support.SubjectThreadState;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.util.ThreadState;
+
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -33,19 +47,6 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.ResourcePermission.Target;
 import org.apache.geode.security.SecurityManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.ShiroException;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.subject.support.SubjectThreadState;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.util.ThreadState;
-
-import java.io.IOException;
-import java.security.AccessController;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  * Security service with SecurityManager and an optional PostProcessor.
@@ -282,6 +283,11 @@ public class IntegratedSecurityService implements SecurityService {
   @Override
   public void authorize(Resource resource, Operation operation, String target, String key) {
     authorize(new ResourcePermission(resource, operation, target, key));
+  }
+
+  @Override
+  public void authorize(Resource resource, Operation operation, String target) {
+    authorize(new ResourcePermission(resource, operation, target, ResourcePermission.ALL));
   }
 
   @Override
