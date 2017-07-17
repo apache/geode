@@ -13,19 +13,19 @@
  * the License.
  */
 
-package org.apache.geode.internal.process.signal;
+package org.apache.geode.management.internal.cli.commands;
 
-import java.util.EventListener;
+import org.apache.geode.internal.process.signal.SignalEvent;
+import org.apache.geode.internal.process.signal.SignalListener;
 
-/**
- * <p>
- * The SignalListener class...
- * </p>
- * 
- * @see java.util.EventListener
- * @since GemFire 7.0
- */
-@SuppressWarnings("unused")
-public interface SignalListener extends EventListener {
-  void handle(SignalEvent event);
+public class LauncherSignalListener implements SignalListener {
+  private volatile boolean signaled = false;
+
+  public boolean isSignaled() {
+    return signaled;
+  }
+
+  public void handle(final SignalEvent event) {
+    this.signaled = true;
+  }
 }
