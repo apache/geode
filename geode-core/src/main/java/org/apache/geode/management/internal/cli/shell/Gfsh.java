@@ -14,8 +14,35 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 import jline.Terminal;
 import jline.console.ConsoleReader;
+import org.springframework.shell.core.AbstractShell;
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.JLineLogHandler;
+import org.springframework.shell.core.JLineShell;
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ShellStatus.Status;
+
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ClassUtils;
@@ -39,32 +66,6 @@ import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
 import org.apache.geode.management.internal.cli.shell.unsafe.GfshSignalHandler;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
-import org.springframework.shell.core.AbstractShell;
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.JLineLogHandler;
-import org.springframework.shell.core.JLineShell;
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ShellStatus.Status;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 /**
  * Extends an interactive shell provided by
@@ -84,7 +85,7 @@ import java.util.logging.Logger;
  * @since GemFire 7.0
  */
 public class Gfsh extends JLineShell {
-  public static final int DEFAULT_APP_FETCH_SIZE = 1000;
+  public static final int DEFAULT_APP_FETCH_SIZE = 100;
   public static final int DEFAULT_APP_LAST_EXIT_STATUS = 0;
   public static final int DEFAULT_APP_COLLECTION_LIMIT = 20;
   public static final boolean DEFAULT_APP_QUIET_EXECUTION = false;
