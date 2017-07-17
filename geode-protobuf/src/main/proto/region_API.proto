@@ -104,12 +104,10 @@ message GetRegionNamesResponse {
     repeated string regions = 1;
 }
 
-/* does a region exist? */
 message GetRegionRequest {
     string regionName = 1;
 }
 
-/* success will be true if the region exists */
 message GetRegionResponse {
     Region region = 1;
 }
