@@ -1790,12 +1790,10 @@ public class CliStrings {
           + "\" variable." + " Page size will default to the value stored in the \""
           + Gfsh.ENV_APP_COLLECTION_LIMIT + "\" variable.";
   public static final String QUERY__QUERY = "query";
-  public static final String QUERY__STEPNAME = "step-name";
-  public static final String QUERY__STEPNAME__DEFAULTVALUE = "ALL";
   public static final String QUERY__INTERACTIVE = "interactive";
   public static final String QUERY__QUERY__HELP = "The OQL string.";
   public static final String QUERY__INTERACTIVE__HELP =
-      "Whether or not this query is interactive. If false then all results will be displayed at once.";
+      "Deprecated. This option has no effect, but is kept around to maintain backwards compatibility with existing scripts.";
   public static final String QUERY__MSG__QUERY_EMPTY = "Query is either empty or Null";
   public static final String QUERY__MSG__INVALID_QUERY = "Query is invalid due for error : <{0}>";
   public static final String QUERY__MSG__REGIONS_NOT_FOUND =
