@@ -23,8 +23,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Operation;
@@ -35,7 +33,6 @@ import org.apache.geode.cache.client.internal.ContainsKeyOp.MODE;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.EntryEventImpl;
