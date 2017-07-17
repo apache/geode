@@ -15,30 +15,29 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 
-import java.util.Properties;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.rules.GfshParserRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class LauncherLifecycleCommandsTest {
+public class StartServerCommandIntegrationTest {
   private static final String FAKE_HOSTNAME = "someFakeHostname";
 
   @Rule
@@ -48,22 +47,8 @@ public class LauncherLifecycleCommandsTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
-  public void startLocatorWorksWithNoOptions() throws Exception {
-    LauncherLifecycleCommands spy = spyOnCommand("start locator");
-    commandRule.executeLastCommandWithInstance(spy);
-
-    ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
-    verify(spy).createStartLocatorCommandLine(any(), any(), any(),
-        gemfirePropertiesCaptor.capture(), any(), any(), any(), any(), any());
-
-    Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
-    assertThat(gemfireProperties).containsKey(ENABLE_CLUSTER_CONFIGURATION);
-    assertThat(gemfireProperties.get(ENABLE_CLUSTER_CONFIGURATION)).isEqualTo("true");
-  }
-
-  @Test
   public void startServerWorksWithNoOptions() throws Exception {
-    LauncherLifecycleCommands spy = spyOnCommand("start server");
+    StartServerCommand spy = spyOnStartServerCommand("start server");
     commandRule.executeLastCommandWithInstance(spy);
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
@@ -76,29 +61,11 @@ public class LauncherLifecycleCommandsTest {
   }
 
   @Test
-  public void startLocatorRespectsJmxManagerHostnameForClients() throws Exception {
-    String startLocatorCommand = new CommandStringBuilder("start locator")
-        .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
-
-    LauncherLifecycleCommands spyCommand = spyOnCommand(startLocatorCommand);
-    commandRule.executeLastCommandWithInstance(spyCommand);
-
-    ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
-    verify(spyCommand).createStartLocatorCommandLine(any(), any(), any(),
-        gemfirePropertiesCaptor.capture(), any(), any(), any(), any(), any());
-
-    Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
-    assertThat(gemfireProperties).containsKey(JMX_MANAGER_HOSTNAME_FOR_CLIENTS);
-    assertThat(gemfireProperties.get(JMX_MANAGER_HOSTNAME_FOR_CLIENTS)).isEqualTo(FAKE_HOSTNAME);
-  }
-
-  @Test
   public void startServerRespectsJmxManagerHostnameForClients() throws Exception {
     String startServerCommand = new CommandStringBuilder("start server")
         .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
 
-    LauncherLifecycleCommands commandSpy = spyOnCommand(startServerCommand);
-
+    StartServerCommand commandSpy = spyOnStartServerCommand(startServerCommand);
     commandRule.executeLastCommandWithInstance(commandSpy);
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
@@ -110,11 +77,9 @@ public class LauncherLifecycleCommandsTest {
     assertThat(gemfireProperties.get(JMX_MANAGER_HOSTNAME_FOR_CLIENTS)).isEqualTo(FAKE_HOSTNAME);
   }
 
-  private LauncherLifecycleCommands spyOnCommand(String command) {
-    LauncherLifecycleCommands spy = commandRule.spyCommand(command);
+  private StartServerCommand spyOnStartServerCommand(String command) {
+    StartServerCommand spy = commandRule.spyCommand(command);
     doReturn(mock(Gfsh.class)).when(spy).getGfsh();
-    doReturn(temporaryFolder.getRoot().getAbsolutePath()).when(spy).resolveWorkingDir(any(), any());
-
     return spy;
   }
 }
