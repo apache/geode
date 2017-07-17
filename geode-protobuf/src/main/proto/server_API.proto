@@ -32,6 +32,5 @@ message GetServersRequest {
 }
 
 message GetServersResponse {
-    int32 numberOfServers = 1;
-    repeated Server servers = 2;
+    repeated Server servers = 1;
 }
