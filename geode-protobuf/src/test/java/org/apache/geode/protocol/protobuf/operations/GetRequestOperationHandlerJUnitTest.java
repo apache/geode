@@ -14,6 +14,9 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -34,25 +37,20 @@ import org.junit.experimental.categories.Category;
 
 import java.nio.charset.Charset;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @Category(UnitTest.class)
-public class GetRequestOperationHandlerJUnitTest {
-  public static final String TEST_KEY = "my key";
-  public static final String TEST_VALUE = "my value";
-  public static final String TEST_REGION = "test region";
-  public static final String MISSING_REGION = "missing region";
-  public static final String MISSING_KEY = "missing key";
-  public static final String NULLED_KEY = "nulled key";
-  public Cache cacheStub;
-  public SerializationService serializationServiceStub;
-  private GetRequestOperationHandler operationHandler;
+public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+  private final String TEST_KEY = "my key";
+  private final String TEST_VALUE = "my value";
+  private final String TEST_REGION = "test region";
+  private final String MISSING_REGION = "missing region";
+  private final String MISSING_KEY = "missing key";
+  private final String NULLED_KEY = "nulled key";
   private StringCodec stringDecoder;
 
   @Before
   public void setUp() throws Exception {
-    serializationServiceStub = mock(SerializationService.class);
+    super.setUp();
+
     when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(TEST_KEY);
     when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_VALUE))
@@ -75,7 +73,6 @@ public class GetRequestOperationHandlerJUnitTest {
     when(regionStub.containsKey(MISSING_KEY)).thenReturn(false);
     when(regionStub.containsKey(NULLED_KEY)).thenReturn(true);
 
-    cacheStub = mock(Cache.class);
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     when(cacheStub.getRegion(MISSING_REGION)).thenReturn(null);
     operationHandler = new GetRequestOperationHandler();
@@ -87,8 +84,8 @@ public class GetRequestOperationHandlerJUnitTest {
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false, false, false);
-    ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -103,8 +100,8 @@ public class GetRequestOperationHandlerJUnitTest {
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(true, false, false);
-    ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());
@@ -115,8 +112,8 @@ public class GetRequestOperationHandlerJUnitTest {
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false, true, false);
-    ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -129,8 +126,8 @@ public class GetRequestOperationHandlerJUnitTest {
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException {
     ClientProtocol.Request getRequest = generateTestRequest(false, false, true);
-    ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -148,8 +145,8 @@ public class GetRequestOperationHandlerJUnitTest {
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
 
     ClientProtocol.Request getRequest = generateTestRequest(false, false, false);
-    ClientProtocol.Response response =
-        operationHandler.process(serializationServiceStub, getRequest, cacheStub);
+    ClientProtocol.Response response = (ClientProtocol.Response) operationHandler
+        .process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         response.getResponseAPICase());

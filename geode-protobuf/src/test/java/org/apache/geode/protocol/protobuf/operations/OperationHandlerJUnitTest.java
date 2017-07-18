@@ -12,23 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.operations;
+package org.apache.geode.protocol.protobuf.operations;
+
+import static org.mockito.Mockito.mock;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.ProtobufOpsProcessor;
+import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.serialization.SerializationService;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
-/**
- * This interface is implemented by a object capable of handling request types 'Req' and returning
- * an a response of type 'Resp'
- *
- * See {@link ProtobufOpsProcessor}
- */
-public interface OperationHandler<Req, Resp> {
-  /**
-   * Decode the message, deserialize contained values using the serialization service, do the work
-   * indicated on the provided cache, and return a response.
-   */
-  Resp process(SerializationService serializationService, Req request, Cache cache);
+@Category(UnitTest.class)
+public class OperationHandlerJUnitTest {
+  protected Cache cacheStub;
+  protected SerializationService serializationServiceStub;
+  protected OperationHandler operationHandler;
+
+  @Before
+  public void setUp() throws Exception {
+    cacheStub = mock(Cache.class);
+    serializationServiceStub = mock(SerializationService.class);
+  }
 }

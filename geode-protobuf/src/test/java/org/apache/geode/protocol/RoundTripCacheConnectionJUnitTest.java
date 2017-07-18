@@ -17,7 +17,9 @@ package org.apache.geode.protocol;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -73,23 +75,23 @@ import static org.junit.Assert.assertFalse;
  */
 @Category(IntegrationTest.class)
 public class RoundTripCacheConnectionJUnitTest {
-  public static final String TEST_KEY = "testKey";
-  public static final String TEST_VALUE = "testValue";
-  public static final String TEST_REGION = "testRegion";
-  public static final int TEST_PUT_CORRELATION_ID = 574;
-  public static final int TEST_GET_CORRELATION_ID = 68451;
-  public static final int TEST_REMOVE_CORRELATION_ID = 51;
+  private final String TEST_KEY = "testKey";
+  private final String TEST_VALUE = "testValue";
+  private final String TEST_REGION = "testRegion";
+  private final int TEST_PUT_CORRELATION_ID = 574;
+  private final int TEST_GET_CORRELATION_ID = 68451;
+  private final int TEST_REMOVE_CORRELATION_ID = 51;
 
-  private static final String DEFAULT_STORE = "default.keystore";
-  private static final String SSL_PROTOCOLS = "any";
-  private static final String SSL_CIPHERS = "any";
+  private final String DEFAULT_STORE = "default.keystore";
+  private final String SSL_PROTOCOLS = "any";
+  private final String SSL_CIPHERS = "any";
 
-  public static final String TEST_MULTIOP_KEY1 = "multiopKey1";
-  public static final String TEST_MULTIOP_KEY2 = "multiopKey2";
-  public static final String TEST_MULTIOP_KEY3 = "multiopKey3";
-  public static final String TEST_MULTIOP_VALUE1 = "multiopValue1";
-  public static final String TEST_MULTIOP_VALUE2 = "multiopValue2";
-  public static final String TEST_MULTIOP_VALUE3 = "multiopValue3";
+  private final String TEST_MULTIOP_KEY1 = "multiopKey1";
+  private final String TEST_MULTIOP_KEY2 = "multiopKey2";
+  private final String TEST_MULTIOP_KEY3 = "multiopKey3";
+  private final String TEST_MULTIOP_VALUE1 = "multiopValue1";
+  private final String TEST_MULTIOP_VALUE2 = "multiopValue2";
+  private final String TEST_MULTIOP_VALUE3 = "multiopValue3";
 
   private Cache cache;
   private int cacheServerPort;
@@ -276,6 +278,40 @@ public class RoundTripCacheConnectionJUnitTest {
   @Test
   public void useSSL_testNewProtocolHeaderLeadsToNewProtocolServerConnection() throws Exception {
     testNewProtocolHeaderLeadsToNewProtocolServerConnection();
+  }
+
+  @Test
+  public void testNewProtocolGetRegionCallSucceeds() throws Exception {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+
+    Socket socket = new Socket("localhost", cacheServerPort);
+    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    OutputStream outputStream = socket.getOutputStream();
+    outputStream.write(110);
+
+
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+    ClientProtocol.Message getRegionMessage = MessageUtil.makeGetRegionRequestMessage(TEST_REGION,
+        ClientProtocol.MessageHeader.newBuilder().build());
+    protobufProtocolSerializer.serialize(getRegionMessage, outputStream);
+
+    ClientProtocol.Message message =
+        protobufProtocolSerializer.deserialize(socket.getInputStream());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
+    ClientProtocol.Response response = message.getResponse();
+    assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONRESPONSE,
+        response.getResponseAPICase());
+    RegionAPI.GetRegionResponse getRegionResponse = response.getGetRegionResponse();
+    BasicTypes.Region region = getRegionResponse.getRegion();
+
+    assertEquals(TEST_REGION, region.getName());
+    assertEquals(0, region.getSize());
+    assertEquals(false, region.getPersisted());
+    assertEquals(DataPolicy.NORMAL.toString(), region.getDataPolicy());
+    assertEquals("", region.getKeyConstraint());
+    assertEquals("", region.getValueConstraint());
+    assertEquals(Scope.DISTRIBUTED_NO_ACK, Scope.fromString(region.getScope()));
+
   }
 
   private void validatePutResponse(Socket socket,

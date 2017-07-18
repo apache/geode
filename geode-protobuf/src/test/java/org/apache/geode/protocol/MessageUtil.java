@@ -23,6 +23,18 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 public class MessageUtil {
+
+  public static RegionAPI.GetRegionRequest makeGetRegionRequest(String requestRegion) {
+    return RegionAPI.GetRegionRequest.newBuilder().setRegionName(requestRegion).build();
+  }
+
+  public static ClientProtocol.Message makeGetRegionRequestMessage(String requestRegion,
+      ClientProtocol.MessageHeader header) {
+    ClientProtocol.Request request = ClientProtocol.Request.newBuilder()
+        .setGetRegionRequest(makeGetRegionRequest(requestRegion)).build();
+    return ClientProtocol.Message.newBuilder().setMessageHeader(header).setRequest(request).build();
+  }
+
   public static ClientProtocol.Message createGetRequestMessage() {
     ClientProtocol.Message.Builder messageBuilder = ClientProtocol.Message.newBuilder();
     messageBuilder.setMessageHeader(getMessageHeaderBuilder());

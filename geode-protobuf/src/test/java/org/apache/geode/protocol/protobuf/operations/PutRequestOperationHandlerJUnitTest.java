@@ -35,17 +35,16 @@ import java.nio.charset.Charset;
 import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
-public class PutRequestOperationHandlerJUnitTest {
-  public static final String TEST_KEY = "my key";
-  public static final String TEST_VALUE = "99";
-  public static final String TEST_REGION = "test region";
-  public Cache cacheStub;
-  public SerializationService serializationServiceStub;
+public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+  private final String TEST_KEY = "my key";
+  private final String TEST_VALUE = "99";
+  private final String TEST_REGION = "test region";
   private Region regionMock;
 
   @Before
   public void setUp() throws Exception {
-    serializationServiceStub = mock(SerializationService.class);
+    super.setUp();
+
     when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
         TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(TEST_KEY);
     when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
@@ -58,7 +57,6 @@ public class PutRequestOperationHandlerJUnitTest {
     regionMock = mock(Region.class);
     when(regionMock.put(TEST_KEY, TEST_VALUE)).thenReturn(1);
 
-    cacheStub = mock(Cache.class);
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionMock);
   }
 

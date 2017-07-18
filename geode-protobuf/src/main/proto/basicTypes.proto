@@ -52,7 +52,12 @@ message CallbackArguments {
 
 message Region {
     string name = 1;
-    // TODO: key, value types?
+    string dataPolicy = 2;
+    string scope = 3;
+    string keyConstraint = 4;
+    string valueConstraint = 5;
+    bool persisted = 6;
+    int64 size = 7;
 }
 
 message Server {

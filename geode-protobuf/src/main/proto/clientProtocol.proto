@@ -51,6 +51,8 @@ message Request {
         PingRequest pingRequest = 41;
         GetServersRequest getServersRequest = 42;
         GetRegionNamesRequest getRegionNamesRequest = 43;
+        GetRegionRequest getRegionRequest = 44;
+
     }
 }
 
@@ -72,6 +74,7 @@ message Response {
         PingResponse pingResponse = 41;
         GetServersResponse getServersResponse = 42;
         GetRegionNamesResponse getRegionNamesResponse = 43;
+        GetRegionResponse getRegionResponse = 44;
     }
 }
 

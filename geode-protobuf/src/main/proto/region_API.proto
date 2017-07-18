@@ -103,3 +103,11 @@ message GetRegionNamesRequest {
 message GetRegionNamesResponse {
     repeated string regions = 1;
 }
+
+message GetRegionRequest {
+    string regionName = 1;
+}
+
+message GetRegionResponse {
+    Region region = 1;
+}
