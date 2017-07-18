@@ -63,3 +63,13 @@ message Region {
 message Server {
     string url = 1;
 }
+
+message ErrorResponse {
+    int32 errorCode = 1;
+    string message = 2;
+}
+
+message KeyedErrorResponse {
+    EncodedValue key = 1;
+    ErrorResponse error = 2;
+}

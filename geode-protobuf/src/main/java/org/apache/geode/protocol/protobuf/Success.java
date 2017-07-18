@@ -29,7 +29,7 @@ public class Success<SuccessType> implements Result<SuccessType> {
 
   @Override
   public <T> T map(Function<SuccessType, T> successFunction,
-      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
+      Function<BasicTypes.ErrorResponse, T> errorFunction) {
     return successFunction.apply(successResponse);
   }
 
@@ -39,7 +39,7 @@ public class Success<SuccessType> implements Result<SuccessType> {
   }
 
   @Override
-  public ClientProtocol.ErrorResponse getErrorMessage() {
+  public BasicTypes.ErrorResponse getErrorMessage() {
     throw new RuntimeException("This is a not Failure result");
   }
 }

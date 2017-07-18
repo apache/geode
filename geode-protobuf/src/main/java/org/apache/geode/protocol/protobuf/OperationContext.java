@@ -15,15 +15,15 @@
 
 package org.apache.geode.protocol.protobuf;
 
-import java.util.function.Function;
-
 import org.apache.geode.protocol.operations.OperationHandler;
+
+import java.util.function.Function;
 
 public class OperationContext<OperationRequest, OperationResponse> {
   private final OperationHandler<OperationRequest, OperationResponse> operationHandler;
   private final Function<ClientProtocol.Request, OperationRequest> fromRequest;
   private final Function<OperationResponse, ClientProtocol.Response.Builder> toResponse;
-  private final Function<ClientProtocol.ErrorResponse, ClientProtocol.Response.Builder> toErrorResponse;
+  private final Function<BasicTypes.ErrorResponse, ClientProtocol.Response.Builder> toErrorResponse;
 
   public OperationContext(Function<ClientProtocol.Request, OperationRequest> fromRequest,
       OperationHandler<OperationRequest, OperationResponse> operationHandler,
@@ -35,7 +35,7 @@ public class OperationContext<OperationRequest, OperationResponse> {
   }
 
   public static ClientProtocol.Response.Builder makeErrorBuilder(
-      ClientProtocol.ErrorResponse errorResponse) {
+      BasicTypes.ErrorResponse errorResponse) {
     return ClientProtocol.Response.newBuilder().setErrorResponse(errorResponse);
   }
 
@@ -51,7 +51,7 @@ public class OperationContext<OperationRequest, OperationResponse> {
     return toResponse;
   }
 
-  public Function<ClientProtocol.ErrorResponse, ClientProtocol.Response.Builder> getToErrorResponse() {
+  public Function<BasicTypes.ErrorResponse, ClientProtocol.Response.Builder> getToErrorResponse() {
     return toErrorResponse;
   }
 }

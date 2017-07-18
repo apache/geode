@@ -15,7 +15,6 @@
 package org.apache.geode.protocol.protobuf.utilities;
 
 import com.google.protobuf.ByteString;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -31,7 +30,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
  * This class contains helper functions for assistance in creating protobuf objects. This class is
  * mainly focused on helper functions which can be used in building BasicTypes for use in other
  * messages or those used to create the top level Message objects.
- *
+ * <p>
  * Helper functions specific to creating ClientProtocol.Responses can be found at
  * {@link ProtobufResponseUtilities} Helper functions specific to creating ClientProtocol.Requests
  * can be found at {@link ProtobufRequestUtilities}
@@ -170,7 +169,6 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   *
    * @param region
    * @return a Protobuf BasicTypes.Region message that represents the {@link Region}
    */
