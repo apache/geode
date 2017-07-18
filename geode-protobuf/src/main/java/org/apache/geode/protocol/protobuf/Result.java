@@ -18,9 +18,9 @@ import java.util.function.Function;
 
 public interface Result<SuccessType> {
   <T> T map(Function<SuccessType, T> successFunction,
-      Function<ClientProtocol.ErrorResponse, T> errorFunction);
+      Function<BasicTypes.ErrorResponse, T> errorFunction);
 
   SuccessType getMessage();
 
-  ClientProtocol.ErrorResponse getErrorMessage();
+  BasicTypes.ErrorResponse getErrorMessage();
 }

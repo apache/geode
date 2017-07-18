@@ -14,13 +14,10 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
@@ -30,6 +27,8 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class RemoveRequestOperationHandler
     implements OperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse> {
@@ -43,7 +42,7 @@ public class RemoveRequestOperationHandler
     Region region = cache.getRegion(regionName);
     if (region == null) {
       return Failure
-          .of(ClientProtocol.ErrorResponse.newBuilder().setMessage("Region not found").build());
+          .of(BasicTypes.ErrorResponse.newBuilder().setMessage("Region not found").build());
     }
 
     try {

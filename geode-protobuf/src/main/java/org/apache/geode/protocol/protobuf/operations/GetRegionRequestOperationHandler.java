@@ -18,7 +18,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
@@ -37,7 +36,7 @@ public class GetRegionRequestOperationHandler
 
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
           .setMessage("No region exists for name: " + regionName).build());
     }
 

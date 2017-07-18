@@ -17,19 +17,19 @@ package org.apache.geode.protocol.protobuf;
 import java.util.function.Function;
 
 public class Failure<SuccessType> implements Result<SuccessType> {
-  private final ClientProtocol.ErrorResponse errorResponse;
+  private final BasicTypes.ErrorResponse errorResponse;
 
-  public Failure(ClientProtocol.ErrorResponse errorResponse) {
+  public Failure(BasicTypes.ErrorResponse errorResponse) {
     this.errorResponse = errorResponse;
   }
 
-  public static <T> Failure<T> of(ClientProtocol.ErrorResponse errorResponse) {
+  public static <T> Failure<T> of(BasicTypes.ErrorResponse errorResponse) {
     return new Failure<>(errorResponse);
   }
 
   @Override
   public <T> T map(Function<SuccessType, T> successFunction,
-      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
+      Function<BasicTypes.ErrorResponse, T> errorFunction) {
     return errorFunction.apply(errorResponse);
   }
 
@@ -39,7 +39,7 @@ public class Failure<SuccessType> implements Result<SuccessType> {
   }
 
   @Override
-  public ClientProtocol.ErrorResponse getErrorMessage() {
+  public BasicTypes.ErrorResponse getErrorMessage() {
     return errorResponse;
   }
 }

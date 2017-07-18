@@ -14,33 +14,8 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentMatcher;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
@@ -50,7 +25,24 @@ import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -65,13 +57,6 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   private final String TEST_REGION = "test region";
   private final String EXCEPTION_TEXT = "Simulating put failure";
   private Region regionMock;
-
-  private class MapContainingInvalidKeyMatcher implements ArgumentMatcher<Map> {
-    @Override
-    public boolean matches(Map argument) {
-      return argument.containsKey(TEST_INVALID_KEY);
-    }
-  }
 
   @Before
   public void setUp() throws Exception {
@@ -91,9 +76,8 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
             .thenReturn(TEST_INVALID_VALUE);
 
     regionMock = mock(Region.class);
-
-    doThrow(new ClassCastException(EXCEPTION_TEXT)).when(regionMock)
-        .putAll(argThat(new MapContainingInvalidKeyMatcher()));
+    when(regionMock.put(TEST_INVALID_KEY, TEST_INVALID_VALUE))
+        .thenThrow(new ClassCastException(EXCEPTION_TEXT));
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionMock);
   }
@@ -115,12 +99,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     Assert.assertTrue(result instanceof Success);
 
-    HashMap<Object, Object> expectedValues = new HashMap<>();
-    expectedValues.put(TEST_KEY1, TEST_VALUE1);
-    expectedValues.put(TEST_KEY2, TEST_VALUE2);
-    expectedValues.put(TEST_KEY3, TEST_VALUE3);
-
-    verify(regionMock).putAll(expectedValues);
+    verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
+    verify(regionMock).put(TEST_KEY2, TEST_VALUE2);
+    verify(regionMock).put(TEST_KEY3, TEST_VALUE3);
   }
 
   @Test
@@ -130,10 +111,16 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
         generateTestRequest(true, true), cacheStub);
 
-    assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
-    Assert.assertThat(errorMessage.getMessage(), CoreMatchers.containsString(EXCEPTION_TEXT));
-    // can't verify anything about put keys because we make no guarantees.
+    assertTrue(result instanceof Success);
+    verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
+    verify(regionMock).put(TEST_KEY2, TEST_VALUE2);
+    verify(regionMock).put(TEST_KEY3, TEST_VALUE3);
+
+    RegionAPI.PutAllResponse putAllResponse = result.getMessage();
+    assertEquals(1, putAllResponse.getFailedKeysCount());
+    BasicTypes.KeyedErrorResponse error = putAllResponse.getFailedKeys(0);
+    assertEquals(TEST_INVALID_KEY, serializationServiceStub.decode(error.getKey().getEncodingType(),
+        error.getKey().getValue().toByteArray()));
   }
 
   @Test
