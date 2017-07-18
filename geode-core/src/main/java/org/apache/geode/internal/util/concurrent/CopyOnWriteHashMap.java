@@ -163,6 +163,10 @@ public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>
     return clone;
   }
 
+  public Map<K, V> getSnapshot() {
+    return Collections.unmodifiableMap(map);
+  }
+
   @Override
   public synchronized V putIfAbsent(K key, V value) {
     V oldValue = map.get(key);
