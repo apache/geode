@@ -22,7 +22,7 @@ import java.util.concurrent.Callable;
  * conjunction with {@link VM#invoke(SerializableCallableIF)}.
  *
  * <PRE>
- * public void testRepilcatedRegionPut() {
+ * public void testReplicatedRegionPut() {
  *   final Host host = Host.getHost(0);
  *   VM vm0 = host.getVM(0);
  *   VM vm1 = host.getVM(1);
