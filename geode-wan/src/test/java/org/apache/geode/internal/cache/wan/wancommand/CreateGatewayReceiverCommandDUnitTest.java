@@ -14,6 +14,17 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
@@ -24,23 +35,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * DUnit tests for 'create gateway-receiver' command.
  */
 @Category(DistributedTest.class)
-public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase {
+public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
@@ -49,16 +49,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiverWithDefault() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -75,9 +69,8 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(4, status.size());// expected size 4 includes the manager node
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
@@ -102,16 +95,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiver() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -134,14 +121,12 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(4, status.size());// expected size 4 includes the manager node
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
         512000, null));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
@@ -155,16 +140,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiverWithGatewayTransportFilter() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -189,14 +168,12 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(4, status.size());// expected size 4 includes the manager node
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
     List<String> transportFilters = new ArrayList<String>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
 
@@ -213,16 +190,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -246,14 +217,12 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(4, status.size());// expected size 4 includes the manager node
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
     List<String> transportFilters = new ArrayList<String>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
@@ -271,16 +240,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiver_Error() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
@@ -303,9 +266,8 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       assertEquals(4, status.size());// expected size 4 includes the manager
                                      // node
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation should have failed",
-            status.get(i).indexOf("ERROR:") != -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation should have failed", stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
@@ -317,22 +279,16 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiver_onMember() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
     vm5.invoke(() -> createCache(punePort));
 
-    final DistributedMember vm3Member = vm3.invoke(() -> getMember());
+    final DistributedMember vm3Member = vm3.invoke(this::getMember);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -352,14 +308,12 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(1, status.size());
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
         512000, null));
   }
@@ -370,23 +324,17 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   @Category(FlakyTest.class) // GEODE-1355
   @Test
   public void testCreateGatewayReceiver_onMultipleMembers() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCache(punePort));
     vm4.invoke(() -> createCache(punePort));
     vm5.invoke(() -> createCache(punePort));
 
-    final DistributedMember vm3Member = vm3.invoke(() -> getMember());
-    final DistributedMember vm4Member = vm4.invoke(() -> getMember());
+    final DistributedMember vm3Member = vm3.invoke(this::getMember);
+    final DistributedMember vm4Member = vm4.invoke(this::getMember);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -406,14 +354,12 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(2, status.size());
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
         512000, null));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
@@ -425,16 +371,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiver_onGroup() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
@@ -458,9 +398,8 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(3, status.size());//
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
@@ -480,16 +419,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiver_onGroup_Scenario2() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
@@ -513,14 +446,12 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(2, status.size());//
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
         512000, null));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
@@ -532,16 +463,10 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
    */
   @Test
   public void testCreateGatewayReceiver_onMultipleGroups() {
-
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(() -> getLocatorPort());
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int punePort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(punePort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
 
     vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
     vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
@@ -565,14 +490,12 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
       List<String> status = resultData.retrieveAllValues("Status");
       assertEquals(3, status.size());//
       // verify there is no error in the status
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewayReceiver creation failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
         512000, null));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
@@ -580,5 +503,4 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
         512000, null));
   }
-
 }
