@@ -27,7 +27,7 @@ In terms of querying and indexing, because the documents are stored internally a
 
 You can then use the `JSONFormatter` to convert the PdxInstance results back into the JSON document.
 
-`JSONFormatter` uses a streaming parser ([Jackson](http://wiki.fasterxml.com/JacksonHome), JSON processor) to turn JSON documents into the optimized PDX format. To use the JSONFormatter, make sure that `$GEMFIRE/lib/server-dependencies.jar` is available in your application's CLASSPATH.
+`JSONFormatter` uses a streaming parser ([Jackson](http://wiki.fasterxml.com/JacksonHome), JSON processor) to turn JSON documents into the optimized PDX format. To use the JSONFormatter, make sure that `lib/geode-dependencies.jar` is available in your application's CLASSPATH.
 
 The `JSONFormatter` class has four static methods that are used to convert JSON document into PdxInstances and then to convert those PdxInstances back into JSON document.
 

@@ -420,8 +420,8 @@ In this step you restart the cache servers in parallel. Because the data is pers
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true
     -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true
     -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /home/username/Apache_Geode_Linux/lib/gemfire.jar:
-    /home/username/Apache_Geode_Linux/lib/server-dependencies.jar
+    Class-Path: /home/username/Apache_Geode_Linux/lib/geode-core-1.0.0.jar:
+    /home/username/Apache_Geode_Linux/lib/geode-dependencies.jar
     ```
 
 5.  Verify that the locator and two servers are running:
