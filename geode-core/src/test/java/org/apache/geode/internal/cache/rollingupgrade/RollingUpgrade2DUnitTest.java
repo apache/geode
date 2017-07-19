@@ -57,10 +57,12 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -159,7 +161,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     File pwd = new File(".");
     for (File entry : pwd.listFiles()) {
       try {
-        FileUtils.deleteDirectory(entry);
+        if (entry.isDirectory()) {
+          FileUtils.deleteDirectory(entry);
+        } else {
+          entry.delete();
+        }
       } catch (Exception e) {
         System.out.println("Could not delete " + entry + ": " + e.getMessage());
       }
@@ -330,7 +336,8 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server3);
 
       invokeRunnableInVMs(
-          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts), client);
+          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts, false),
+          client);
       // invokeRunnableInVMs(invokeAssertVersion(oldOrdinal), server2, server3, client);
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), server2, server3);
       invokeRunnableInVMs(invokeCreateClientRegion(regionName, ClientRegionShortcut.PROXY), client);
@@ -351,7 +358,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       putAndVerify(objectType, server2, regionName, 30, 40, server3, client);
 
       client = rollClientToCurrentAndCreateRegion(client, ClientRegionShortcut.PROXY, regionName,
-          hostNames, locatorPorts);
+          hostNames, locatorPorts, false);
       putAndVerify(objectType, client, regionName, 35, 45, server2, server3);
       putAndVerify(objectType, server2, regionName, 40, 50, server3, client);
 
@@ -1073,6 +1080,53 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @Test
+  public void testHARegionNameOnDifferentServerVersions() throws Exception {
+    doTestHARegionNameOnDifferentServerVersions(false, oldVersion);
+  }
+
+  public void doTestHARegionNameOnDifferentServerVersions(boolean partitioned, String oldVersion)
+      throws Exception {
+    final Host host = Host.getHost(0);
+    VM locator = host.getVM(oldVersion, 0);
+    VM server1 = host.getVM(oldVersion, 1);
+    VM server2 = host.getVM(2);
+    VM client = host.getVM(oldVersion, 3);
+
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] locatorPorts = new int[] {ports[0]};
+    int[] csPorts = new int[] {ports[1], ports[2]};
+
+    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+
+    String hostName = NetworkUtils.getServerHostName(host);
+    String[] hostNames = new String[] {hostName};
+    String locatorString = getLocatorString(locatorPorts);
+    try {
+      locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
+          getLocatorPropertiesPre91(locatorString)));
+      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
+      invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server1);
+      invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server2);
+
+      invokeRunnableInVMs(
+          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts, true),
+          client);
+
+      // Get HARegion name on server1
+      String server1HARegionName = server1.invoke(() -> getHARegionName());
+
+      // Get HARegionName on server2
+      String server2HARegionName = server2.invoke(() -> getHARegionName());
+
+      // Verify they are equal
+      assertEquals(server1HARegionName, server2HARegionName);
+    } finally {
+      invokeRunnableInVMs(true, invokeStopLocator(), locator);
+      invokeRunnableInVMs(true, invokeCloseCache(), server1, server2, client);
+    }
+  }
+
   // ******** TEST HELPER METHODS ********/
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM check1, VM check2, VM check3) throws Exception {
@@ -1218,12 +1272,12 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return rollServer;
   }
 
-  private VM rollClientToCurrent(VM oldClient, String[] hostNames, int[] locatorPorts)
-      throws Exception {
+  private VM rollClientToCurrent(VM oldClient, String[] hostNames, int[] locatorPorts,
+      boolean subscriptionEnabled) throws Exception {
     oldClient.invoke(invokeCloseCache());
     VM rollClient = Host.getHost(0).getVM(oldClient.getPid());
-    rollClient
-        .invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts));
+    rollClient.invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts,
+        subscriptionEnabled));
     rollClient.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
     return rollClient;
   }
@@ -1275,8 +1329,9 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception
    */
   private VM rollClientToCurrentAndCreateRegion(VM oldClient, ClientRegionShortcut shortcut,
-      String regionName, String[] hostNames, int[] locatorPorts) throws Exception {
-    VM rollClient = rollClientToCurrent(oldClient, hostNames, locatorPorts);
+      String regionName, String[] hostNames, int[] locatorPorts, boolean subscriptionEnabled)
+      throws Exception {
+    VM rollClient = rollClientToCurrent(oldClient, hostNames, locatorPorts, subscriptionEnabled);
     // recreate region on "rolled" client
     invokeRunnableInVMs(invokeCreateClientRegion(regionName, shortcut), rollClient);
     return rollClient;
@@ -1418,11 +1473,12 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   private CacheSerializableRunnable invokeCreateClientCache(final Properties systemProperties,
-      final String[] hosts, final int[] ports) {
+      final String[] hosts, final int[] ports, boolean subscriptionEnabled) {
     return new CacheSerializableRunnable("execute: createClientCache") {
       public void run2() {
         try {
-          RollingUpgrade2DUnitTest.cache = createClientCache(systemProperties, hosts, ports);
+          RollingUpgrade2DUnitTest.cache =
+              createClientCache(systemProperties, hosts, ports, subscriptionEnabled);
         } catch (Exception e) {
           fail("Error creating client cache", e);
         }
@@ -1638,8 +1694,12 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static ClientCache createClientCache(Properties systemProperties, String[] hosts,
-      int[] ports) throws Exception {
+      int[] ports, boolean subscriptionEnabled) throws Exception {
     ClientCacheFactory cf = new ClientCacheFactory(systemProperties);
+    if (subscriptionEnabled) {
+      cf.setPoolSubscriptionEnabled(true);
+      cf.setPoolSubscriptionRedundancy(-1);
+    }
     int hostsLength = hosts.length;
     for (int i = 0; i < hostsLength; i++) {
       cf.addPoolLocator(hosts[i], ports[i]);
@@ -1911,6 +1971,16 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
    */
   public static String getDUnitLocatorAddress() {
     return Host.getHost(0).getHostName();
+  }
+
+  private String getHARegionName() {
+    assertEquals(1, ((GemFireCacheImpl) cache).getCacheServers().size());
+    CacheServerImpl bs =
+        (CacheServerImpl) ((GemFireCacheImpl) cache).getCacheServers().iterator().next();
+    assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
+    CacheClientProxy ccp =
+        bs.getAcceptor().getCacheClientNotifier().getClientProxies().iterator().next();
+    return ccp.getHARegion().getName();
   }
 
   public static class GetDataSerializableFunction implements Function {

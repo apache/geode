@@ -3480,11 +3480,12 @@ public class PartitionedRegion extends LocalRegion
             execution.isForwardExceptions(), function, localBucketSet);
 
     if (localKeys != null) {
-      final RegionFunctionContextImpl prContext = new RegionFunctionContextImpl(function.getId(),
-          PartitionedRegion.this, execution.getArgumentsForMember(getMyId().getId()),
-          localKeys, ColocationHelper
-              .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
-          localBucketSet, resultSender, execution.isReExecute());
+      final RegionFunctionContextImpl prContext =
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
+              execution.getArgumentsForMember(getMyId().getId()),
+              localKeys, ColocationHelper
+                  .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
+              localBucketSet, resultSender, execution.isReExecute());
       if (logger.isDebugEnabled()) {
         logger.debug("FunctionService: Executing on local node with keys.{}", localKeys);
       }
@@ -3619,7 +3620,7 @@ public class PartitionedRegion extends LocalRegion
               execution.getServerResultSender(), true, false, execution.isForwardExceptions(),
               function, buckets);
       final FunctionContext context =
-          new RegionFunctionContextImpl(function.getId(), PartitionedRegion.this,
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
               execution.getArgumentsForMember(localVm.getId()), routingKeys, ColocationHelper
                   .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, buckets),
               buckets, resultSender, execution.isReExecute());
@@ -3750,7 +3751,7 @@ public class PartitionedRegion extends LocalRegion
     // execute locally and collect the result
     if (isSelf && this.dataStore != null) {
       final RegionFunctionContextImpl prContext =
-          new RegionFunctionContextImpl(function.getId(), PartitionedRegion.this,
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
               execution.getArgumentsForMember(getMyId().getId()), null, ColocationHelper
                   .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
               localBucketSet, resultSender, execution.isReExecute());
@@ -3846,7 +3847,7 @@ public class PartitionedRegion extends LocalRegion
     // execute locally and collect the result
     if (isSelf && this.dataStore != null) {
       final RegionFunctionContextImpl prContext =
-          new RegionFunctionContextImpl(function.getId(), PartitionedRegion.this,
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
               execution.getArgumentsForMember(getMyId().getId()), null, ColocationHelper
                   .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
               localBucketSet, resultSender, execution.isReExecute());

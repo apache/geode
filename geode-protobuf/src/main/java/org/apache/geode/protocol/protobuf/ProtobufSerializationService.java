@@ -37,6 +37,9 @@ public class ProtobufSerializationService implements SerializationService<BasicT
   @Override
   public Object decode(BasicTypes.EncodingType encodingTypeValue, byte[] value)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    if (encodingTypeValue == BasicTypes.EncodingType.INVALID) {
+      return null;
+    }
     TypeCodec codecForType = getTypeCodecForProtobufType(encodingTypeValue);
     return codecForType.decode(value);
   }

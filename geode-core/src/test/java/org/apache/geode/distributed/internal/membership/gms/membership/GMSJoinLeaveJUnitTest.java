@@ -36,11 +36,13 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
@@ -98,6 +100,7 @@ public class GMSJoinLeaveJUnitTest {
   private GMSJoinLeave gmsJoinLeave;
   private Manager manager;
   private Stopper stopper;
+  private TestLocator testLocator;
   private InternalDistributedMember removeMember = null;
   private InternalDistributedMember leaveMember = null;
 
@@ -144,6 +147,9 @@ public class GMSJoinLeaveJUnitTest {
     when(services.getManager()).thenReturn(manager);
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
 
+    testLocator = new TestLocator();
+    when(services.getLocator()).thenReturn(testLocator);
+
     Timer t = new Timer(true);
     when(services.getTimer()).thenReturn(t);
 
@@ -169,6 +175,24 @@ public class GMSJoinLeaveJUnitTest {
       gmsJoinLeave.stop();
       gmsJoinLeave.stopped();
     }
+  }
+
+  static class TestLocator implements Locator {
+
+    boolean isCoordinator;
+
+    @Override
+    public void installView(NetView v) {}
+
+    @Override
+    public void setIsCoordinator(boolean isCoordinator) {
+      this.isCoordinator = isCoordinator;
+    }
+
+    public boolean isCoordinator() {
+      return isCoordinator;
+    }
+
   }
 
   @Test
@@ -1130,9 +1154,12 @@ public class GMSJoinLeaveJUnitTest {
         gmsJoinLeave.processMessage(msg);
       }
 
+      assertTrue(testLocator.isCoordinator);
+
       Awaitility.await("waiting for view creator to stop").atMost(5000, MILLISECONDS)
           .until(() -> !gmsJoinLeave.getViewCreator().isAlive());
       assertEquals(1, gmsJoinLeave.getView().getViewId());
+      assertFalse(testLocator.isCoordinator);
 
     } finally {
       System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
@@ -1196,29 +1223,26 @@ public class GMSJoinLeaveJUnitTest {
 
   @Test
   public void testCoordinatorFindRequestSuccess() throws Exception {
-    try {
-      initMocks(false);
-      HashSet<InternalDistributedMember> registrants = new HashSet<>();
-      registrants.add(mockMembers[0]);
-      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0],
-          false, null, registrants, false, true, null);
-      NetView view = createView();
-      JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
+    initMocks(false);
+    HashSet<InternalDistributedMember> registrants = new HashSet<>();
+    registrants.add(mockMembers[0]);
+    FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false,
+        null, registrants, false, true, null);
+    NetView view = createView();
+    JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
 
-      TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
-      gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-      FindCoordinatorRequest fcreq =
-          new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0, "");
-      int connectTimeout = (int) services.getConfig().getMemberTimeout() * 2;
-      when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12345),
-          fcreq, connectTimeout)).thenReturn(fcr);
-      callAsnyc(() -> {
-        gmsJoinLeave.installView(view);
-      });
-      assertTrue("Should be able to join ", gmsJoinLeave.join());
-    } finally {
-
-    }
+    TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
+    gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
+    FindCoordinatorRequest fcreq =
+        new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0, "");
+    int connectTimeout = (int) services.getConfig().getMemberTimeout() * 2;
+    when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12345),
+        fcreq, connectTimeout)).thenReturn(fcr);
+    callAsnyc(() -> {
+      gmsJoinLeave.installView(view);
+    });
+    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+        .until(() -> assertTrue("Should be able to join ", gmsJoinLeave.join()));
   }
 
   private void callAsnyc(Runnable run) {

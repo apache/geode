@@ -12,23 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.protobuf;
+package org.apache.geode.session.tests;
 
-import com.google.protobuf.ByteString;
+import org.junit.BeforeClass;
 
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.test.dunit.DUnitEnv;
 
-public abstract class ProtobufUtilities {
-  public static BasicTypes.EncodedValue getEncodedValue(BasicTypes.EncodingType resultEncodingType,
-      byte[] resultEncodedValue) {
-    return BasicTypes.EncodedValue.newBuilder().setEncodingType(resultEncodingType)
-        .setValue(ByteString.copyFrom(resultEncodedValue)).build();
+/**
+ * Tomcat 6 Peer to Peer tests
+ *
+ * Runs all the tests in {@link CargoTestBase} on the Tomcat 6 install, setup in the
+ * {@link #setupTomcatInstall()} method before tests are run.
+ */
+public class Tomcat6Test extends CargoTestBase {
+  private static ContainerInstall install;
+
+  @BeforeClass
+  public static void setupTomcatInstall() throws Exception {
+    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT6,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat6Test");
+    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 
-  public static ClientProtocol.Message wrapResponseWithDefaultHeader(
-      ClientProtocol.Response response) {
-    return ClientProtocol.Message.newBuilder()
-        .setMessageHeader(ClientProtocol.MessageHeader.newBuilder()).setResponse(response).build();
+  @Override
+  public ContainerInstall getInstall() {
+    return install;
   }
 }

@@ -12,10 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.serialization.exception;
+package org.apache.geode.session.tests;
 
-public class TypeEncodingException extends Exception {
-  public TypeEncodingException(String message) {
-    super(message);
+import org.junit.BeforeClass;
+
+import org.apache.geode.test.dunit.DUnitEnv;
+
+/**
+ * Tomcat 8 Peer to Peer tests
+ *
+ * Runs all the tests in {@link CargoTestBase} on the Tomcat 8 install, setup in the
+ * {@link #setupTomcatInstall()} method before tests are run.
+ */
+public class Tomcat8Test extends CargoTestBase {
+  private static ContainerInstall install;
+
+  @BeforeClass
+  public static void setupTomcatInstall() throws Exception {
+    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat8Test");
+    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
+  }
+
+  @Override
+  public ContainerInstall getInstall() {
+    return install;
   }
 }

@@ -12,36 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.rules;
+package org.apache.geode.protocol.protobuf;
 
-import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
-
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
-
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 @Category(UnitTest.class)
-public class DiskDirRuleTest {
-  @Test
-  public void shouldDeleteDirInAfter() throws Throwable {
-    DiskDirRule diskDirRule = new DiskDirRule();
-    diskDirRule.before();
-    final File dir = diskDirRule.get();
-    assertTrue(dir.exists());
-    final File file1 = new File(dir, "file1");
-    final File subdir = new File(dir, "subdir");
-    final File file2 = new File(dir, "file2");
-    subdir.mkdir();
-    Files.write(file1.toPath(), Arrays.asList("abc"));
-    Files.write(file2.toPath(), Arrays.asList("stuff"));
-    diskDirRule.after();
-    assertFalse(dir.exists());
+public class ProtobufStreamProcessorTest {
+  @Test(expected = EOFException.class)
+  public void receiveMessage() throws Exception {
+    InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+    OutputStream outputStream = new ByteArrayOutputStream(2);
+
+    ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
+    InternalCache mockInternalCache = mock(InternalCache.class);
+    protobufStreamProcessor.receiveMessage(inputStream, outputStream, mockInternalCache);
   }
 }

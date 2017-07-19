@@ -79,7 +79,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       InternalDistributedSystem sys, int socketBufferSize, int handShakeTimeout, int readTimeout,
       ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion, boolean usedByGateway,
       GatewaySender sender, long pingInterval, boolean multiuserSecureMode, PoolImpl pool) {
-    this.handshake = new HandShake(proxyId, sys);
+    this.handshake = new HandShake(proxyId, sys, sys.getSecurityService());
     this.handshake.setClientReadTimeout(readTimeout);
     this.source = source;
     this.endpointManager = endpointManager;

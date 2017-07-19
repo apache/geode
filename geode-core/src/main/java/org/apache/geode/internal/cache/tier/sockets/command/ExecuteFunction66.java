@@ -206,15 +206,17 @@ public class ExecuteFunction66 extends BaseCommand {
       ServerToClientFunctionResultSender resultSender = new ServerToClientFunctionResultSender65(m,
           MessageType.EXECUTE_FUNCTION_RESULT, serverConnection, functionObject, executeContext);
 
-      InternalDistributedMember localVM = (InternalDistributedMember) serverConnection.getCache()
-          .getDistributedSystem().getDistributedMember();
       FunctionContext context = null;
+      InternalCache cache = serverConnection.getCache();
+      InternalDistributedMember localVM =
+          (InternalDistributedMember) cache.getDistributedSystem().getDistributedMember();
 
       if (memberMappedArg != null) {
-        context = new FunctionContextImpl(functionObject.getId(),
+        context = new FunctionContextImpl(cache, functionObject.getId(),
             memberMappedArg.getArgumentsForMember(localVM.getId()), resultSender, isReexecute);
       } else {
-        context = new FunctionContextImpl(functionObject.getId(), args, resultSender, isReexecute);
+        context =
+            new FunctionContextImpl(cache, functionObject.getId(), args, resultSender, isReexecute);
       }
       HandShake handShake = (HandShake) serverConnection.getHandshake();
       int earlierClientReadTimeout = handShake.getClientReadTimeout();
@@ -224,7 +226,7 @@ public class ExecuteFunction66 extends BaseCommand {
           logger.debug("Executing Function on Server: {} with context: {}", serverConnection,
               context);
         }
-        InternalCache cache = serverConnection.getCache();
+
         HeapMemoryMonitor hmm =
             ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
         if (functionObject.optimizeForWrite() && cache != null && hmm.getState().isCritical()

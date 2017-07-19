@@ -14,7 +14,7 @@ build-eclipse/
 /tags
 out/
 
-
+.DS_store
 *.iml
 *.ipr
 *.iws

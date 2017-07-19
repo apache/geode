@@ -14,20 +14,20 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
+import static org.junit.Assert.assertEquals;
+
+import java.net.SocketException;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -35,11 +35,7 @@ import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySen
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.Wait;
-
-import java.net.SocketException;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test the functionality of ParallelGatewaySender with multiple dispatchers.
@@ -635,13 +631,15 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
+    int prevRegionSize = vm2.invoke(() -> WANTestBase.getRegionSize(getTestMethodName() + "_PR"));
+
     AsyncInvocation inv3 =
         vm6.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
     vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS)
         .until(() -> assertEquals(
-            "Failure in waiting for additional 10 events to be received by the receiver ", true,
-            getRegionSize(getTestMethodName() + "_PR") > 5010)));
+            "Failure in waiting for additional 20 events to be received by the receiver ", true,
+            getRegionSize(getTestMethodName() + "_PR") > 20 + prevRegionSize)));
 
     AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
 

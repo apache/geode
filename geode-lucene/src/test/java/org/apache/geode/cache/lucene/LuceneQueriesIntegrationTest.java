@@ -14,8 +14,13 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.IntRangeQueryProvider;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeyAndValues;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeys;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,9 +31,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.LoaderHelper;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -44,6 +46,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.TestObject;
@@ -59,7 +64,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
   private static final String INDEX_NAME = "index";
-  protected static final String REGION_NAME = "index";
+  public static final String REGION_NAME = "index";
   private Region region;
 
   @Test()

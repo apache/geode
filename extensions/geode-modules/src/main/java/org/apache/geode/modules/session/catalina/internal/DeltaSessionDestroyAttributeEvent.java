@@ -52,14 +52,6 @@ public class DeltaSessionDestroyAttributeEvent implements DeltaSessionAttributeE
     DataSerializer.writeString(this.attributeName, out);
   }
 
-  public static void registerInstantiator(int id) {
-    Instantiator.register(new Instantiator(DeltaSessionDestroyAttributeEvent.class, id) {
-      public DataSerializable newInstance() {
-        return new DeltaSessionDestroyAttributeEvent();
-      }
-    });
-  }
-
   public String toString() {
     return new StringBuilder().append("DeltaSessionDestroyAttributeEvent[").append("attributeName=")
         .append(this.attributeName).append("]").toString();

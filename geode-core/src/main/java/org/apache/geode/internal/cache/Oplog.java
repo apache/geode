@@ -7126,9 +7126,8 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public boolean fillInValue(LocalRegion r,
-        org.apache.geode.internal.cache.InitialImageOperation.Entry entry, ByteArrayDataInput in,
-        DM mgr) {
+    public boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
+        ByteArrayDataInput in, DM mgr, final Version version) {
       // TODO Auto-generated method stub
       return false;
     }

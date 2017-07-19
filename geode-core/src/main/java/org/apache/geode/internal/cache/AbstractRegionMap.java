@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
@@ -768,7 +770,16 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
 
     if (owner instanceof HARegion && newValue instanceof CachedDeserializable) {
-      Object actualVal = ((CachedDeserializable) newValue).getDeserializedValue(null, null);
+      Object actualVal = null;
+      try {
+        actualVal =
+            BlobHelper.deserializeBlob(((CachedDeserializable) newValue).getSerializedValue(),
+                sender.getVersionObject(), null);
+        newValue = CachedDeserializableFactory.create(actualVal,
+            ((CachedDeserializable) newValue).getValueSizeInBytes());
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException("Unable to deserialize HA event for region " + owner);
+      }
       if (actualVal instanceof HAEventWrapper) {
         HAEventWrapper haEventWrapper = (HAEventWrapper) actualVal;
         // Key was removed at sender side so not putting it into the HARegion
@@ -2502,9 +2513,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         RegionEntry re = getEntry(key);
         if (re != null) {
           synchronized (re) {
-            {
+            // Fix GEODE-3204, do not invalidate the region entry if it is a removed token
+            if (!Token.isRemoved(re.getValueAsToken())) {
               final int oldSize = owner.calculateRegionEntryValueSize(re);
-              boolean wasTombstone = re.isTombstone();
               Object oldValue = re.getValueInVM(owner); // OFFHEAP eei
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks
@@ -2532,9 +2543,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                 try {
                   re.setValue(owner, re.prepareValueForCache(owner, newValue, true));
                   EntryLogger.logTXInvalidate(_getOwnerObject(), key);
-                  if (wasTombstone) {
-                    owner.unscheduleTombstone(re);
-                  }
                   owner.updateSizeOnPut(key, oldSize, 0);
                 } catch (RegionClearedException rce) {
                   clearOccured = true;
@@ -2561,9 +2569,11 @@ public abstract class AbstractRegionMap implements RegionMap {
                 if (!cbEventInPending)
                   cbEvent.release();
               }
+              return;
             }
           }
-        } else { // re == null
+        }
+        { // re == null or region entry is removed token.
           // Fix bug#43594
           // In cases where bucket region is re-created, it may so happen
           // that the invalidate is already applied on the Initial image
@@ -3096,7 +3106,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
     final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
     final boolean isTXHost = txEntryState != null;
-    final boolean isClientTXOriginator = owner.cache.isClient() && !hasRemoteOrigin;
+    final boolean isClientTXOriginator = owner.getCache().isClient() && !hasRemoteOrigin;
     final boolean isRegionReady = owner.isInitialized();
     @Released
     EntryEventImpl cbEvent = null;
@@ -3486,10 +3496,10 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   public void dumpMap() {
-    logger.debug("dump of concurrent map of size {} for region {}", this._getMap().size(),
+    logger.info("dump of concurrent map of size {} for region {}", this._getMap().size(),
         this._getOwner());
     for (Iterator it = this._getMap().values().iterator(); it.hasNext();) {
-      logger.trace("dumpMap:" + it.next().toString());
+      logger.info("dumpMap:" + it.next().toString());
     }
   }
 

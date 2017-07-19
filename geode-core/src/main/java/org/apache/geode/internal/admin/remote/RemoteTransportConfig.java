@@ -30,6 +30,7 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.admin.TransportConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -259,7 +260,7 @@ public class RemoteTransportConfig implements TransportConfig {
     }
     if (this.mcastEnabled) {
       // Fix bug 32849
-      props.setProperty(MCAST_ADDRESS, String.valueOf(this.mcastId.getHost().getHostAddress()));
+      props.setProperty(MCAST_ADDRESS, this.mcastId.getHostName());
       props.setProperty(MCAST_PORT, String.valueOf(this.mcastId.getPort()));
 
     } else {
@@ -274,7 +275,7 @@ public class RemoteTransportConfig implements TransportConfig {
         if (baddr != null && baddr.trim().length() > 0) {
           locators.append(baddr);
         } else {
-          locators.append(locator.getHost().getCanonicalHostName());
+          locators.append(locator.getHostName());
         }
         locators.append("[");
         locators.append(locator.getPort());

@@ -20,7 +20,6 @@ import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
 import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.serialization.exception.TypeEncodingException;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -37,30 +36,11 @@ public class ProtobufOpsProcessor {
   }
 
   public ClientProtocol.Response process(ClientProtocol.Request request, Cache cache)
-      throws TypeEncodingException, OperationHandlerNotRegisteredException,
-      InvalidProtocolMessageException {
-    OperationHandler opsHandler = opsHandlerRegistry
-        .getOperationHandlerForOperationId(request.getRequestAPICase().getNumber());
+      throws OperationHandlerNotRegisteredException, InvalidProtocolMessageException {
+    ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
+    OperationHandler opsHandler =
+        opsHandlerRegistry.getOperationHandlerForOperationId(requestType.getNumber());
 
-    Object responseMessage =
-        opsHandler.process(serializationService, getRequestForOperationTypeID(request), cache);
-    return ClientProtocol.Response.newBuilder()
-        .setGetResponse((RegionAPI.GetResponse) responseMessage).build();
-  }
-
-  // package visibility for testing
-  static Object getRequestForOperationTypeID(ClientProtocol.Request request)
-      throws InvalidProtocolMessageException {
-    switch (request.getRequestAPICase()) {
-      case PUTREQUEST:
-        return request.getPutRequest();
-      case GETREQUEST:
-        return request.getGetRequest();
-      case PUTALLREQUEST:
-        return request.getPutAllRequest();
-      default:
-        throw new InvalidProtocolMessageException(
-            "Unknown request type: " + request.getRequestAPICase().getNumber());
-    }
+    return (ClientProtocol.Response) opsHandler.process(serializationService, request, cache);
   }
 }

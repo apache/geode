@@ -32,8 +32,8 @@ Specify an `http-service-port` for the developer REST service, as the default po
     gfsh>start locator --name=locator1
     Starting a Geode Locator in /Users/admin/apache-geode-1.2.0/locator1...
     ....
-    gfsh>start server --name=server1  --J=-Dgemfire.start-dev-rest-api=true \
-    --J=-Dgemfire.http-service-bind-address=localhost --J=-Dgemfire.http-service-port=8080
+    gfsh>start server --name=server1  --start-rest-api=true \
+    --http-service-bind-address=localhost --J=-Dgemfire.http-service-port=8080
     ```
 
 2.  To access Swagger, open a browser and enter the following URL. For example:
@@ -62,6 +62,5 @@ Specify an `http-service-port` for the developer REST service, as the default po
 
 You can use the Swagger interface to try out additional Geode API endpoints and view sample responses.
 
-For more information on Swagger, see the [Swagger website](http://swagger.io/).
-
+For more information on Swagger, see the [Swagger website](http://swagger.io/) and the [OpenAPI specification](https://github.com/OAI/OpenAPI-Specification).
 

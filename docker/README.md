@@ -26,7 +26,7 @@ docker push apachegeode/geode:1.0.0-incubating
 1. Execute the following command to run the container and start `gfsh`:
 
 ```
-docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apache/geode:1.0.0-incubating
+docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode:1.0.0-incubating
 ```
 
 From this point you can pretty much follow [Apache Geode in 5 minutes](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes) for example:

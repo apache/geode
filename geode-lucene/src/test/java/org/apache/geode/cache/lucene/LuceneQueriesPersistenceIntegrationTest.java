@@ -14,11 +14,21 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
+
+import junitparams.JUnitParamsRunner;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
@@ -30,15 +40,6 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.DiskDirRule;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import junitparams.JUnitParamsRunner;
 
 /**
  * Tests of lucene index creation that use persistence
@@ -48,13 +49,13 @@ import junitparams.JUnitParamsRunner;
 public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTest {
 
   @Rule
-  public DiskDirRule diskDirRule = new DiskDirRule();
+  public TemporaryFolder tempFolderRule = new TemporaryFolder();
 
   @Override
   public void createCache() {
     super.createCache();
-    cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDirRule.get()}).setMaxOplogSize(1)
-        .create(GemFireCacheImpl.getDefaultDiskStoreName());
+    cache.createDiskStoreFactory().setDiskDirs(new File[] {tempFolderRule.getRoot()})
+        .setMaxOplogSize(1).create(GemFireCacheImpl.getDefaultDiskStoreName());
   }
 
 

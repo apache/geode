@@ -15,8 +15,8 @@
 package org.apache.geode.protocol.protobuf.serializer;
 
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.serializer.ProtocolSerializer;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.protocol.serializer.ProtocolSerializer;
 
 import java.io.IOException;
 import java.io.InputStream;

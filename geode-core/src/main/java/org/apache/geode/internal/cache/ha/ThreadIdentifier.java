@@ -21,10 +21,14 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Class identifying a Thread uniquely across the distributed system. It is composed of two fields
@@ -151,21 +155,16 @@ public class ThreadIdentifier implements DataSerializable {
     if ((obj == null) || !(obj instanceof ThreadIdentifier)) {
       return false;
     }
-    return (this.threadID == ((ThreadIdentifier) obj).threadID
-        && Arrays.equals(this.membershipID, ((ThreadIdentifier) obj).membershipID));
+    ThreadIdentifier other = (ThreadIdentifier) obj;
+    return (this.threadID == other.threadID
+        && EventID.equalMembershipIds(this.membershipID, other.membershipID));
   }
 
-  // TODO: Asif : Check this implementation
   @Override
   public int hashCode() {
-    int result = 17;
     final int mult = 37;
 
-    if (this.membershipID != null && this.membershipID.length > 0) {
-      for (int i = 0; i < this.membershipID.length; i++) {
-        result = mult * result + this.membershipID[i];
-      }
-    }
+    int result = EventID.hashCodeMemberId(membershipID);
     result = mult * result + (int) this.threadID;
     result = mult * result + (int) (this.threadID >>> 32);
 
@@ -198,6 +197,7 @@ public class ThreadIdentifier implements DataSerializable {
     StringBuilder sb = new StringBuilder();
 
     sb.append("ThreadId[");
+    sb.append("id=").append(membershipID.length).append("bytes; ");
     sb.append(toDisplayString(threadID));
     sb.append("]");
 

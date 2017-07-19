@@ -845,8 +845,8 @@ public class InternalDistributedSystem extends DistributedSystem
                                                                                      // Appenders
               this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and
                                       // Appenders
-              locId.getHost(), locId.getHostnameForClients(), this.originalConfig.toProperties(),
-              false);
+              locId.getHost().getAddress(), locId.getHostnameForClients(),
+              this.originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);
@@ -1595,7 +1595,7 @@ public class InternalDistributedSystem extends DistributedSystem
       if (addr != null && addr.trim().length() > 0) {
         canonical.append(addr);
       } else {
-        canonical.append(locId.getHost().getHostAddress());
+        canonical.append(locId.getHostName());
       }
       canonical.append("[");
       canonical.append(String.valueOf(locId.getPort()));

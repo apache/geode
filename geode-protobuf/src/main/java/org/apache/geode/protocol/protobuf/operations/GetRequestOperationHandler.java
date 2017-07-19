@@ -14,50 +14,55 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.geode.protocol.protobuf.ProtobufUtilities;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.*;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
-import org.apache.geode.serialization.exception.TypeEncodingException;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class GetRequestOperationHandler
-    implements OperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
+    implements OperationHandler<ClientProtocol.Request, ClientProtocol.Response> {
+  private static Logger logger = LogManager.getLogger();
 
   @Override
-  public RegionAPI.GetResponse process(SerializationService serializationService,
-      RegionAPI.GetRequest request, Cache cache) throws TypeEncodingException {
-    String regionName = request.getRegionName();
-    BasicTypes.EncodedValue key = request.getKey();
-    BasicTypes.EncodingType encodingType = key.getEncodingType();
-    byte[] value = key.getValue().toByteArray();
-    Object decodedValue = serializationService.decode(encodingType, value);
+  public ClientProtocol.Response process(SerializationService serializationService,
+      ClientProtocol.Request request, Cache cache) {
+    if (request.getRequestAPICase() != ClientProtocol.Request.RequestAPICase.GETREQUEST) {
+      return ProtobufResponseUtilities
+          .createAndLogErrorResponse("Improperly formatted get request message.", logger, null);
+    }
+    RegionAPI.GetRequest getRequest = request.getGetRequest();
 
+    String regionName = getRequest.getRegionName();
     Region region = cache.getRegion(regionName);
-    Object resultValue = region.get(decodedValue);
+    if (region == null) {
+      return ProtobufResponseUtilities.createErrorResponse("Region not found");
+    }
 
-    return buildGetResponse(serializationService, resultValue);
-  }
+    try {
+      Object decodedKey = ProtobufUtilities.decodeValue(serializationService, getRequest.getKey());
+      Object resultValue = region.get(decodedKey);
 
-  @Override
-  public int getOperationCode() {
-    return ClientProtocol.Request.RequestAPICase.GETREQUEST.getNumber();
-  }
+      if (resultValue == null) {
+        return ProtobufResponseUtilities.createNullGetResponse();
+      }
 
-  private RegionAPI.GetResponse buildGetResponse(SerializationService serializationService,
-      Object resultValue) throws TypeEncodingException {
-    BasicTypes.EncodingType resultEncodingType =
-        EncodingTypeTranslator.getEncodingTypeForObject(resultValue);
-    byte[] resultEncodedValue = serializationService.encode(resultEncodingType, resultValue);
-
-    return RegionAPI.GetResponse.newBuilder()
-        .setResult(ProtobufUtilities.getEncodedValue(resultEncodingType, resultEncodedValue))
-        .build();
+      BasicTypes.EncodedValue encodedValue =
+          ProtobufUtilities.createEncodedValue(serializationService, resultValue);
+      return ProtobufResponseUtilities.createGetResponse(encodedValue);
+    } catch (UnsupportedEncodingTypeException ex) {
+      // can be thrown by encoding or decoding.
+      return ProtobufResponseUtilities.createAndLogErrorResponse("Encoding not supported.", logger,
+          ex);
+    } catch (CodecNotRegisteredForTypeException ex) {
+      return ProtobufResponseUtilities
+          .createAndLogErrorResponse("Codec error in protobuf deserialization.", logger, ex);
+    }
   }
 }

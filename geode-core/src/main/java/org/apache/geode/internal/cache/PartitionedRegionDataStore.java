@@ -934,7 +934,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       }
       return false;
     }
-    if (!canAccommodateMoreBytesSafely(size)) {
+    if (!forceCreation && !canAccommodateMoreBytesSafely(size)) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Partitioned Region {} has exceeded local maximum memory configuration {} Mb, current size is {} Mb",
@@ -2893,7 +2893,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         this.partitionedRegion, time, msg, function, bucketSet);
 
     final RegionFunctionContextImpl prContext =
-        new RegionFunctionContextImpl(function.getId(),
+        new RegionFunctionContextImpl(getPartitionedRegion().getCache(), function.getId(),
             this.partitionedRegion, object, localKeys, ColocationHelper
                 .constructAndGetAllColocatedLocalDataSet(this.partitionedRegion, bucketSet),
             bucketSet, resultSender, isReExecute);

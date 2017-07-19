@@ -336,12 +336,25 @@ public class ClientProxyMembershipID
     }
     // don't cache if we haven't connected to the server yet
     if (((InternalDistributedMember) getDistributedMember()).getPort() == 0) {
-      return getDistributedMember().toString();
+      return getMemberIdAsString();
     }
     if (memberIdString == null) {
-      memberIdString = getDistributedMember().toString();
+      memberIdString = getMemberIdAsString();
     }
     return memberIdString;
+  }
+
+  private String getMemberIdAsString() {
+    String memberIdAsString = null;
+    InternalDistributedMember idm = (InternalDistributedMember) getDistributedMember();
+    if (getClientVersion().compareTo(Version.GFE_90) < 0) {
+      memberIdAsString = idm.toString();
+    } else {
+      StringBuilder sb = new StringBuilder();
+      idm.addFixedToString(sb);
+      memberIdAsString = sb.toString();
+    }
+    return memberIdAsString;
   }
 
   /**

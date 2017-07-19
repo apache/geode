@@ -56,6 +56,7 @@ dependencies {
   archives project(':geode-core')
   archives project(':geode-lucene')
   archives project(':geode-old-client-support')
+  archives project(':geode-protobuf')
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-wan')
@@ -72,6 +73,21 @@ dependencies {
 
   testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
+  testCompile 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
+
+  testCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+
+  testCompile (project(':extensions/geode-modules')) {
+    // Remove everything related to Tomcat
+    exclude group: 'org.apache.tomcat'
+  }
+  testCompile (project(':extensions/geode-modules-session-internal')) {
+    // Remove everything related to Tomcat
+    exclude group: 'org.apache.tomcat'
+  }
+
+  testCompile project(':extensions/session-testing-war')
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
   testRuntime files("$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar")
@@ -140,6 +156,7 @@ def cp = {
         it.contains('commons-collections') ||
         it.contains('commons-lang') ||
         it.contains('commons-logging') ||
+        it.contains('commons-validator') ||
         it.contains('fast-classpath-scanner') ||
         it.contains('fastutil') ||
         it.contains('jackson-annotations') ||
@@ -177,7 +194,10 @@ def cp = {
         it.contains('lucene-analyzers-common') ||
         it.contains('lucene-core') ||
         it.contains('lucene-queries') ||
-        it.contains('lucene-queryparser')
+        it.contains('lucene-queryparser') ||
+
+        // dependencies from geode-protobuf
+        it.contains('protobuf-java')
       }
     }
   }.flatten().unique().join(' ')
@@ -338,6 +358,9 @@ distributions {
         from project(":geode-old-client-support").configurations.runtime
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
 
+        from project(":geode-protobuf").configurations.runtime
+        from project(":geode-protobuf").configurations.archives.allArtifacts.files
+
         from project(":geode-rebalancer").configurations.runtime
         from project(":geode-rebalancer").configurations.archives.allArtifacts.files
 
@@ -396,6 +419,7 @@ flakyTest dependOnInstalledProduct
 build.dependsOn installDist
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
+distributedTest.dependsOn ':extensions/session-testing-war:war'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
