@@ -50,39 +50,23 @@ The following is an example of starting a new locator that also starts an embedd
 
 ``` pre
 gfsh>start locator --name=locator1
-Starting a GemFire Locator in /home/user/test2/locator1...
-............................................
-Locator in /home/user/test2/locator1 on ubuntu.local[10334] as locator1 is currently online.
-Process ID: 2081
-Uptime: 30 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/test2/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
--Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar
+Starting a Geode Locator in /Users/username/apache-geode/locator1...
+....
+Locator in /Users/username/apache-geode/locator1 on 192.0.2.0[10334] as locator1
+is currently online.
+Process ID: 27144
+Uptime: 5 seconds
+Geode Version: 1.2.0
+Java Version: 1.8.0_111
+Log File: /Users/username/apache-geode/locator1/locator1.log
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true 
+-Dgemfire.load-cluster-configuration-from-dir=false 
+-Dgemfire.launcher.registerSignalHandlers=true 
+-Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /Users/username/apache-geode/lib/geode-core-1.2.0.jar
+:/Users/username/apache-geode/lib/geode-dependencies.jar
 
-Successfully connected to: [host=ubuntu.local, port=1099]
-
-Cluster configuration service is up and running.
-```
-
-Or you can enter the command directly in your terminal:
-
-``` pre
-$ gfsh start locator --name=locator1
-....................................
-Locator in /home/user/locator1 on ubuntu.local[10334] as locator1 is currently online.
-Process ID: 2359
-Uptime: 21 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
- -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar
-
-Successfully connected to: [host=ubuntu.local, port=1099]
+Successfully connected to: JMX Manager [host=192.0.2.0, port=1099]
 
 Cluster configuration service is up and running.
 ```
@@ -96,7 +80,7 @@ At any point, you can determine whether a node is a JMX Manager by using the Mem
 Using the Java API, any managed node that has been configured with `jmx-manager=true` can also be turned into a JMX Manager Node by invoking the ManagementService startManager() method.
 
 **Note:**
-If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in `$GEMFIRE/lib` of your Geode installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH because this library refers to other dependencies in `$GEMFIRE/lib` by a relative path.
+If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in the `lib` directory of your installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH, because this library refers to other dependencies in `lib` by a relative path.
 
 ## <a id="topic_263072624B8D4CDBAD18B82E07AA44B6" class="no-quick-link"></a>Configuring a JMX Manager
 
