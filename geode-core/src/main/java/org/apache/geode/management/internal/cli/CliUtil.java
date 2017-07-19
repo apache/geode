@@ -14,30 +14,6 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.MembersForRegionFunction;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResultException;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -65,6 +41,29 @@ import java.util.Set;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.functions.MembersForRegionFunction;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * This class contains utility methods used by classes used to build the Command Line Interface
@@ -127,8 +126,7 @@ public class CliUtil {
     return cache;
   }
 
-  public static byte[][] filesToBytes(String[] fileNames)
-      throws FileNotFoundException, IOException {
+  public static byte[][] filesToBytes(String[] fileNames) throws IOException {
     List<byte[]> filesDataList = new ArrayList<byte[]>();
 
     for (int i = 0; i < fileNames.length; i++) {
@@ -190,7 +188,7 @@ public class CliUtil {
   }
 
   public static void bytesToFiles(byte[][] fileData, String parentDirPath, boolean mkRequireddirs)
-      throws FileNotFoundException, IOException, UnsupportedOperationException {
+      throws IOException, UnsupportedOperationException {
     FileOutputStream fos = null;
 
     File parentDir = new File(parentDirPath);
@@ -373,13 +371,13 @@ public class CliUtil {
       }
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-              new Object[] {classToLoadName, neededFor}),
+          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+              classToLoadName, neededFor),
           e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          new Object[] {classToLoadName, neededFor}), e);
+          classToLoadName, neededFor), e);
     }
 
     return loadedClass;
@@ -391,12 +389,12 @@ public class CliUtil {
       instance = klass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_REGION__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
+          neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-              new Object[] {klass, neededFor}),
+          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
+              klass, neededFor),
           e);
     }
 
@@ -671,7 +669,7 @@ public class CliUtil {
       int lastNewlineAt = 0;
 
       for (Iterator<?> it = col.iterator(); it.hasNext();) {
-        Object object = (Object) it.next();
+        Object object = it.next();
         builder.append(String.valueOf(object));
         if (it.hasNext()) {
           builder.append(", ");
@@ -690,7 +688,7 @@ public class CliUtil {
     if (array != null) {
       StringBuilder builder = new StringBuilder();
       for (int i = 0; i < array.length; i++) {
-        Object object = (Object) array[i];
+        Object object = array[i];
         builder.append(String.valueOf(object));
         if (i < array.length - 1) {
           builder.append(", ");

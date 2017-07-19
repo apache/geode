@@ -283,7 +283,7 @@ public class ClientCommands implements GfshCommand {
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_CPU, clientHealthStatus.getCpus());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS,
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS,
           clientHealthStatus.getNumOfCacheListenerCalls());
       sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_GETS,
           clientHealthStatus.getNumOfGets());

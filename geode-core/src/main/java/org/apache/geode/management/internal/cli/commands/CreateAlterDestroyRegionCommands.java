@@ -208,7 +208,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
             CliStrings.CREATE_REGION__MSG__ONLY_ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_CAN_BE_SPECIFIED);
       } else if (regionShortcut == null && useAttributesFrom == null) {
         throw new IllegalArgumentException(
-            CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_IS_REQUIRED);
+            CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED);
       }
 
       validateRegionPathAndParent(cache, regionPath);
@@ -586,7 +586,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
     if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
       if (!regionExists(cache, parentRegionPath)) {
         throw new IllegalArgumentException(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOESNOT_EXIST,
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST,
                 new Object[] {regionPath}));
       }
     }
@@ -995,7 +995,7 @@ public class CreateAlterDestroyRegionCommands implements GfshCommand {
 
       if (regionMembersList.size() == 0) {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE,
+            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE,
                 regionPath, "jmx-manager-update-rate milliseconds"));
       }
 

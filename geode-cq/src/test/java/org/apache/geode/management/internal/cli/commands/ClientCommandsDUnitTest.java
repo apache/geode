@@ -237,8 +237,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     final VM server1 = Host.getHost(0).getVM(1);
     final VM server2 = Host.getHost(0).getVM(3);
     final VM manager = Host.getHost(0).getVM(0);
-    String serverName1 =
-        (String) server1.invoke("get DistributedMemberID ", this::getDistributedMemberId);
+    String serverName1 = server1.invoke("get DistributedMemberID ", this::getDistributedMemberId);
 
     String serverName2 = server2.invoke("get DistributedMemberID ", this::getDistributedMemberId);
 
@@ -340,7 +339,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       assertTrue(puts.equals("2"));
       String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
       assertTrue(queue.equals("1"));
-      String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+      String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
       assertTrue(calls.equals("1"));
       String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
       assertTrue(primServer.equals(serverName));
@@ -400,7 +399,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(puts.equals("2"));
     String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
     assertTrue(queue.equals("1"));
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
     assertTrue(primServer.equals(serverName));
@@ -459,7 +458,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(puts.equals("2"));
     String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
     assertTrue(queue.equals("1"));
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
     assertTrue(primServer.equals(serverName));
@@ -955,7 +954,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String puts = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS);
     assertTrue(puts.equals("2"));
 
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
 
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
@@ -1034,7 +1033,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String puts = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS);
     assertTrue(puts.equals("2"));
 
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
 
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
