@@ -1475,10 +1475,6 @@ org/apache/geode/internal/cache/locks/TXLockIdImpl,2
 fromData,22,2a2bb80012c00013b500022a2bb900140100b50005b1
 toData,19,2ab400022bb800152b2ab40005b900160200b1
 
-org/apache/geode/internal/cache/locks/TXLockToken,2
-fromData,17,2a2bb80011b500022a2bb80012b50003b1
-toData,17,2ab400022bb800132ab400032bb80014b1
-
 org/apache/geode/internal/cache/locks/TXLockUpdateParticipantsMessage,2
 fromData,40,2a2bb7001d2a2bb9001e0100b500052a2bb8001fb500022a2bb80020b500032a2bb80021b50004b1
 toData,40,2a2bb700172b2ab40005b9001802002ab400022bb800192ab400032bb8001a2ab400042bb8001bb1
