@@ -5456,16 +5456,11 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void createEventTracker() {
-    // PR buckets maintain their own trackers. None is needed at this level
-  }
-
-  @Override
-  public VersionTag findVersionTagForClientEvent(EventID eventId) {
+  public VersionTag findVersionTagForEvent(EventID eventId) {
     if (this.dataStore != null) {
       Set<Map.Entry<Integer, BucketRegion>> bucketMap = this.dataStore.getAllLocalBuckets();
       for (Map.Entry<Integer, BucketRegion> entry : bucketMap) {
-        VersionTag result = entry.getValue().findVersionTagForClientEvent(eventId);
+        VersionTag result = entry.getValue().findVersionTagForEvent(eventId);
         if (result != null) {
           return result;
         }

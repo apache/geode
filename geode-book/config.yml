@@ -24,11 +24,6 @@ sections:
   directory: docs/guide/12
   subnav_template: geode-subnav
 
-archive_menu:
-  - v1.2
-  - v1.1: index-11.html
-  - v1.0: index-10.html
-
 template_variables:
   support_url: http://geode.apache.org/community
   product_url: http://geode.apache.org/

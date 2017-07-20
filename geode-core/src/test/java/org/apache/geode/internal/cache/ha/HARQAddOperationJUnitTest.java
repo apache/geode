@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.HARegionQueue.MapWrapper;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -286,13 +288,11 @@ public class HARQAddOperationJUnitTest {
           "ThreadIdentifier removed itself through expiry even though data was lying in the queue",
           eventsMap.get(threadId));
 
-      // wait for some more time to allow expiry on data
-      Thread.sleep(16000);
-
       // After the expiry of the data , AvaialbleIds size should be 0,
       // entry
       // removed from Region, LastDispatchedWrapperSet should have size 0.
-      assertEquals(0, regionqueue.getRegion().entrySet(false).size());
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .until(() -> assertEquals(0, regionqueue.getRegion().entrySet(false).size()));
       assertEquals(0, regionqueue.getAvalaibleIds().size());
       assertNull(regionqueue.getCurrentCounterSet(id1));
 

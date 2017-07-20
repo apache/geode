@@ -25,6 +25,11 @@
       "name": "guest",
       "password": "guest",
       "roles": ["readRegionA"]
+    },
+    {
+      "name": "phantom",
+      "password": "guest",
+      "roles": ["notExist"]
     }
   ]
 }

@@ -411,6 +411,7 @@ def dependOnInstalledProduct = {
 
 // Add the configuration closure to the test targets so they depend on the install directory
 test dependOnInstalledProduct
+acceptanceTest dependOnInstalledProduct
 distributedTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
 flakyTest dependOnInstalledProduct

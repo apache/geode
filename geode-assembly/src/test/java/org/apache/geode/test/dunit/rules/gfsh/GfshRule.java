@@ -48,7 +48,7 @@ public class GfshRule extends ExternalResource {
     return execute(GfshScript.of(commands));
   }
 
-  protected GfshExecution execute(GfshScript gfshScript) {
+  public GfshExecution execute(GfshScript gfshScript) {
     GfshExecution gfshExecution;
     try {
       File workingDir = temporaryFolder.newFolder(gfshScript.getName());
