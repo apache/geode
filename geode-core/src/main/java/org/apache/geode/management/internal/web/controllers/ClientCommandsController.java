@@ -14,20 +14,21 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.ClientCommands
+ * @see org.apache.geode.management.internal.cli.commands.ListClientCommand
+ * @see org.apache.geode.management.internal.cli.commands.DescribeClientCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestMapping
