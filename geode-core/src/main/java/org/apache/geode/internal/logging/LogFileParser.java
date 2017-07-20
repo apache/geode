@@ -14,11 +14,17 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Parses a log file written by a {@link org.apache.geode.i18n.LogWriterI18n} into
@@ -381,7 +387,7 @@ public class LogFileParser {
   public static void main(String[] args) throws Throwable {
     if (args.length < 1) {
       System.err.println(LocalizedStrings.LogFileParser_MISSING_LOG_FILE_NAME.toLocalizedString());
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
 
     String logFileName = args[0];

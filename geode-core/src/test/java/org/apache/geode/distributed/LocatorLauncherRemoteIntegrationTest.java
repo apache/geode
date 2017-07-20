@@ -14,9 +14,16 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,12 +35,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.DistributionLocator;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -45,13 +61,6 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Integration tests for launching a Locator in a forked process.
@@ -1036,7 +1045,7 @@ public class LocatorLauncherRemoteIntegrationTest
 
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
-        System.exit(0);
+        ExitCode.NORMAL.doSystemExit();
       } catch (Throwable t) {
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main error: " + t,
             t);

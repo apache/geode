@@ -25,6 +25,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.springframework.shell.core.ExitShellRequest;
 
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -131,7 +132,8 @@ public class Launcher {
     }
 
     Launcher launcher = new Launcher();
-    System.exit(launcher.parseCommandLine(args));
+    int exitValue = launcher.parseCommandLine(args);
+    ExitCode.fromValue(exitValue).doSystemExit();
   }
 
   private int parseCommandLineCommand(final String... args) {

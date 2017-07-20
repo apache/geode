@@ -14,14 +14,27 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.*;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
-import java.io.*;
+
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 // import java.util.*;
 
 /**
@@ -464,7 +477,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
     err.println("");
 
-    System.exit(1);
+    ExitCode.FATAL.doSystemExit();
   }
 
   public static void main(String[] args) throws Exception {

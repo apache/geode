@@ -14,19 +14,37 @@
  */
 package org.apache.geode.sequence;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.io.Filter;
 import org.apache.geode.internal.sequencelog.io.GraphReader;
-import org.apache.geode.internal.sequencelog.model.*;
-import org.apache.geode.sequence.*;
-
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
+import org.apache.geode.internal.sequencelog.model.Edge;
+import org.apache.geode.internal.sequencelog.model.Graph;
+import org.apache.geode.internal.sequencelog.model.GraphID;
+import org.apache.geode.internal.sequencelog.model.GraphSet;
+import org.apache.geode.internal.sequencelog.model.Vertex;
 
 /**
  */
@@ -250,7 +268,7 @@ public class GemfireSequenceDisplay {
           + "\t-logs (expiremental) instead of using .graph files, parse the gemfire logs to generate the sequence display"
           + "\t-filterkey a java regular expression to match against key names. If specified\n"
           + "The list of key sequence diagrams will only contain matching keys");
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
       return;
     }
 
