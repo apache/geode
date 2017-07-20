@@ -16,14 +16,14 @@ package org.apache.geode.test.dunit.standalone;
 
 import java.rmi.Naming;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher.MasterRemote;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -68,7 +68,7 @@ public class ChildVM {
       }
     } catch (Throwable t) {
       logger.info("VM is exiting with error", t);
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     } finally {
       logger.info("VM is exiting");
     }

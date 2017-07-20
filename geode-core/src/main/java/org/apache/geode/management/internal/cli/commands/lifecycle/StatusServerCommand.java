@@ -16,7 +16,11 @@ package org.apache.geode.management.internal.cli.commands.lifecycle;
 
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.MemberMXBean;
@@ -26,8 +30,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 public class StatusServerCommand implements GfshCommand {
 
@@ -70,9 +72,14 @@ public class StatusServerCommand implements GfshCommand {
 
         final ServerLauncher.ServerState status = serverLauncher.status();
 
+        if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
+            || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
+          return ResultBuilder.createGemFireErrorResult(status.toString());
+        }
         return ResultBuilder.createInfoResult(status.toString());
       }
     } catch (IllegalArgumentException | IllegalStateException e) {
+
       return ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
