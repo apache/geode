@@ -14,6 +14,12 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.converters.ArrayConverter;
 import org.springframework.shell.core.CommandMarker;
@@ -22,13 +28,6 @@ import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.core.SimpleParser;
 import org.springframework.shell.event.ParseResult;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Implementation of the {@link Parser} interface for GemFire SHell (gfsh) requirements.

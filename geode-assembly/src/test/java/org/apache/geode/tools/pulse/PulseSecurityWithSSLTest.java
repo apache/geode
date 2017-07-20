@@ -25,11 +25,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.util.test.TestUtil.getResourcePath;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.security.SecurableCommunicationChannels;
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.util.Properties;
+
 import org.apache.http.HttpResponse;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -37,8 +35,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.util.Properties;
+import org.apache.geode.security.SecurableCommunicationChannels;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.HttpClientRule;
+import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 
 @Category(IntegrationTest.class)
