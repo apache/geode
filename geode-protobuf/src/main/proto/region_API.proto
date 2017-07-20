@@ -53,6 +53,7 @@ message GetAllRequest {
 
 message GetAllResponse {
     repeated Entry entries = 1;
+    repeated ErrorEntry errors = 2;
 }
 
 message ListKeysRequest {

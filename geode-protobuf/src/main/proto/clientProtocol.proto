@@ -66,7 +66,7 @@ message Response {
         RemoveAllResponse removeAllResponse = 7;
         ListKeysResponse listKeysResponse = 8;
 
-        ErrorResponse errorResponse = 13;
+        Error error = 13;
 
         CreateRegionResponse createRegionResponse = 20;
         DestroyRegionResponse destroyRegionResponse = 21;
@@ -76,11 +76,6 @@ message Response {
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;
     }
-}
-
-message ErrorResponse {
-    int32 errorCode = 1;
-    string message = 2;
 }
 
 message MetaData {
