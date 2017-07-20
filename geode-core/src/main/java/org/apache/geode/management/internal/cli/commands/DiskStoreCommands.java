@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -417,7 +418,7 @@ public class DiskStoreCommands implements GfshCommand {
       // disk store exists validation
       if (!diskStoreExists(diskStoreName)) {
         result = ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.COMPACT_DISK_STORE__DISKSTORE_0_DOESNOT_EXIST,
+            CliStrings.format(CliStrings.COMPACT_DISK_STORE__DISKSTORE_0_DOES_NOT_EXIST,
                 new Object[] {diskStoreName}));
       } else {
         InternalDistributedSystem ds = getCache().getInternalDistributedSystem();

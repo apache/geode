@@ -21,9 +21,9 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.ClassPathLoader;
@@ -200,13 +200,13 @@ public class GatewaySenderCreateFunction extends FunctionAdapter implements Inte
       }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-              new Object[] {classToLoadName, neededFor}),
+          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+              classToLoadName, neededFor),
           e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          new Object[] {classToLoadName, neededFor}), e);
+          classToLoadName, neededFor), e);
     }
 
     return loadedClass;
@@ -218,12 +218,12 @@ public class GatewaySenderCreateFunction extends FunctionAdapter implements Inte
       instance = klass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_GATEWAYSENDER__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_GATEWAYSENDER__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
+          klass, neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_GATEWAYSENDER__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_GATEWAYSENDER__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, klass,
+          neededFor), e);
     }
     return instance;
   }

@@ -28,6 +28,7 @@ import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPo
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -237,10 +238,8 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     final VM server1 = Host.getHost(0).getVM(1);
     final VM server2 = Host.getHost(0).getVM(3);
     final VM manager = Host.getHost(0).getVM(0);
-    String serverName1 =
-        (String) server1.invoke("get DistributedMemberID ", this::getDistributedMemberId);
-
-    String serverName2 = server2.invoke("get DistributedMemberID ", this::getDistributedMemberId);
+    String serverName1 = server1.invoke("get DistributedMemberID ", () -> getDistributedMemberId());
+    String serverName2 = server2.invoke("get DistributedMemberID ", () -> getDistributedMemberId());
 
     final DistributedMember serverMember1 = getMember(server1);
 
@@ -340,7 +339,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       assertTrue(puts.equals("2"));
       String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
       assertTrue(queue.equals("1"));
-      String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+      String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
       assertTrue(calls.equals("1"));
       String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
       assertTrue(primServer.equals(serverName));
@@ -371,7 +370,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     getLogWriter().info("testDescribeClient commandStr=" + commandString);
 
     final VM server1 = Host.getHost(0).getVM(1);
-    String serverName = server1.invoke("get distributed member Id", this::getDistributedMemberId);
+    String serverName = server1.invoke("get distributed member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testDescribeClient commandResult=" + commandResult);
@@ -400,7 +399,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(puts.equals("2"));
     String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
     assertTrue(queue.equals("1"));
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
     assertTrue(primServer.equals(serverName));
@@ -430,7 +429,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     getLogWriter().info("testDescribeClientWithServers commandStr=" + commandString);
 
     final VM server1 = Host.getHost(0).getVM(1);
-    String serverName = server1.invoke("get Distributed Member Id", this::getDistributedMemberId);
+    String serverName = server1.invoke("get Distributed Member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testDescribeClientWithServers commandResult=" + commandResult);
@@ -459,7 +458,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(puts.equals("2"));
     String queue = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE);
     assertTrue(queue.equals("1"));
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
     assertTrue(primServer.equals(serverName));
@@ -504,7 +503,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       return bean.getClientIds();
     });
 
-    String serverName = server1.invoke("get distributed member Id", this::getDistributedMemberId);
+    String serverName = server1.invoke("get distributed member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testListClient commandResult=" + commandResult);
@@ -563,9 +562,11 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       return bean.getClientIds();
     });
 
-    String serverName1 = server1.invoke("get distributed member Id", this::getDistributedMemberId);
+    String serverName1 =
+        server1.invoke("get distributed member Id", () -> getDistributedMemberId());
 
-    String serverName2 = server2.invoke("get distributed member Id", this::getDistributedMemberId);
+    String serverName2 =
+        server2.invoke("get distributed member Id", () -> getDistributedMemberId());
 
     CommandResult commandResult = executeCommand(commandString);
     System.out.println("testListClientForServers commandResult=" + commandResult);
@@ -955,7 +956,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String puts = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS);
     assertTrue(puts.equals("2"));
 
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
 
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
@@ -987,7 +988,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String[] clientIds = setupSystemWithSubAndNonSubClient();
 
     final VM server1 = Host.getHost(0).getVM(1);
-    String serverName = server1.invoke("Get DistributedMember Id", this::getDistributedMemberId);
+    String serverName = server1.invoke("Get DistributedMember Id", () -> getDistributedMemberId());
 
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID
         + "=\"" + clientIds[0] + "\"";
@@ -1024,6 +1025,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
     List<String> minConn = tableResultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MIN_CONN);
     List<String> maxConn = tableResultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MAX_CONN);
+
     List<String> redundancy =
         tableResultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_REDUNDANCY);
 
@@ -1034,7 +1036,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
     String puts = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS);
     assertTrue(puts.equals("2"));
 
-    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS);
+    String calls = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS);
     assertTrue(calls.equals("1"));
 
     String primServer = section.retrieveString(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS);
