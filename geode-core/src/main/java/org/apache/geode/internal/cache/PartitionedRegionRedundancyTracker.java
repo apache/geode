@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Keeps track redundancy statistics across the buckets of a given {@link PartitionedRegion}
  */
-public class PartitionedRegionRedundancyTracker {
+class PartitionedRegionRedundancyTracker {
   private static final Logger logger = LogService.getLogger();
 
   private final PartitionedRegionStats stats;
@@ -131,5 +131,9 @@ public class PartitionedRegionRedundancyTracker {
     if (noCopiesBuckets == 0) {
       lowestBucketCopies = 1;
     }
+  }
+
+  void setActualRedundancy(int actualRedundancy) {
+    stats.setActualRedundantCopies(actualRedundancy);
   }
 }

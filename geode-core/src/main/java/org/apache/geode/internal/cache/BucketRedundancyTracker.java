@@ -23,7 +23,7 @@ class BucketRedundancyTracker {
   private boolean hasAnyCopies = false;
   private boolean redundancyEverSatisfied = false;
   private boolean hasEverHadCopies = false;
-  private int currentRedundancy = -1;
+  private volatile int currentRedundancy = -1;
   private final int targetRedundancy;
   private final PartitionedRegionRedundancyTracker regionRedundancyTracker;
 
@@ -45,7 +45,7 @@ class BucketRedundancyTracker {
    * Adjust statistics based on closing a bucket
    */
   synchronized void closeBucket() {
-    if (redundancyEverSatisfied && !redundancySatisfied) {
+    if (!redundancySatisfied) {
       regionRedundancyTracker.decrementLowRedundancyBucketCount();
       redundancySatisfied = true;
     }
@@ -62,8 +62,8 @@ class BucketRedundancyTracker {
    * @param currentBucketHosts number of current hosts for the bucket
    */
   synchronized void updateStatistics(int currentBucketHosts) {
-    updateNoCopiesStatistics(currentBucketHosts);
     updateRedundancyStatistics(currentBucketHosts);
+    updateNoCopiesStatistics(currentBucketHosts);
   }
 
   /**
@@ -88,23 +88,35 @@ class BucketRedundancyTracker {
     }
   }
 
-  private void updateRedundancyStatistics(int currentBucketHosts) {
-    int actualRedundancy = currentBucketHosts - 1;
-    currentRedundancy = actualRedundancy;
-    if (actualRedundancy < targetRedundancy) {
+  private void updateRedundancyStatistics(int updatedBucketHosts) {
+    int updatedRedundancy = updatedBucketHosts - 1;
+    updateCurrentRedundancy(updatedRedundancy);
+
+    if (updatedRedundancy < targetRedundancy) {
+      reportUpdatedBucketCount(updatedBucketHosts);
       if (redundancySatisfied) {
         regionRedundancyTracker.incrementLowRedundancyBucketCount();
         redundancySatisfied = false;
+      } else if (!hasAnyCopies && updatedRedundancy >= 0) {
+        regionRedundancyTracker.incrementLowRedundancyBucketCount();
       }
-      if (redundancyEverSatisfied) {
-        regionRedundancyTracker.reportBucketCount(currentBucketHosts);
-      }
-    } else if (!redundancySatisfied && actualRedundancy >= targetRedundancy) {
-      if (redundancyEverSatisfied) {
-        regionRedundancyTracker.decrementLowRedundancyBucketCount();
-      }
+    } else if (!redundancySatisfied && updatedRedundancy == targetRedundancy) {
+      regionRedundancyTracker.decrementLowRedundancyBucketCount();
       redundancySatisfied = true;
       redundancyEverSatisfied = true;
+    }
+  }
+
+  private void updateCurrentRedundancy(int updatedRedundancy) {
+    if (updatedRedundancy != currentRedundancy) {
+      regionRedundancyTracker.setActualRedundancy(updatedRedundancy);
+      currentRedundancy = updatedRedundancy;
+    }
+  }
+
+  private void reportUpdatedBucketCount(int updatedBucketHosts) {
+    if (redundancyEverSatisfied) {
+      regionRedundancyTracker.reportBucketCount(updatedBucketHosts);
     }
   }
 }

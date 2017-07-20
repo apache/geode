@@ -15,11 +15,11 @@
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
@@ -43,7 +43,7 @@ public class BucketRedundancyTrackerTest {
   @Test
   public void whenRedundancyNeverMetDoesNotWarnOnLowRedundancy() {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
-    verifyZeroInteractions(regionRedundancyTracker);
+    verify(regionRedundancyTracker, never()).reportBucketCount(anyInt());
   }
 
   @Test
@@ -59,7 +59,7 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
-    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
+    verify(regionRedundancyTracker, times(2)).decrementLowRedundancyBucketCount();
     assertEquals(TARGET_COPIES - 1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
@@ -68,15 +68,7 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
     bucketRedundancyTracker.closeBucket();
-    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
-    assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
-  }
-
-  @Test
-  public void bucketCountNotDecrementedOnClosingBucketThatNeverHadRedundancy() {
-    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
-    bucketRedundancyTracker.closeBucket();
-    verify(regionRedundancyTracker, never()).decrementLowRedundancyBucketCount();
+    verify(regionRedundancyTracker, times(2)).decrementLowRedundancyBucketCount();
     assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
@@ -86,7 +78,7 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
     bucketRedundancyTracker.updateStatistics(0);
     bucketRedundancyTracker.closeBucket();
-    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
+    verify(regionRedundancyTracker, times(2)).decrementLowRedundancyBucketCount();
     assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
@@ -99,7 +91,7 @@ public class BucketRedundancyTrackerTest {
   @Test
   public void doesNotWarnWhenNeverHadAnyCopies() {
     bucketRedundancyTracker.updateStatistics(0);
-    verifyZeroInteractions(regionRedundancyTracker);
+    verify(regionRedundancyTracker, never()).reportBucketCount(anyInt());
     assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
@@ -118,5 +110,15 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker.updateStatistics(1);
     verify(regionRedundancyTracker, times(1)).decrementNoCopiesBucketCount();
     assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
+  }
+
+  @Test
+  public void updatesRedundancyOnlyIfChanged() {
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
+    verify(regionRedundancyTracker, times(1)).setActualRedundancy(TARGET_COPIES - 2);
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
+    verify(regionRedundancyTracker, times(1)).setActualRedundancy(TARGET_COPIES - 1);
+    bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
+    verify(regionRedundancyTracker, times(2)).setActualRedundancy(anyInt());
   }
 }
