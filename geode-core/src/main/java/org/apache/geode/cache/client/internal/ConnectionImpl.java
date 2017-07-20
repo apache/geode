@@ -54,6 +54,9 @@ public class ConnectionImpl implements Connection {
 
   // TODO: DEFAULT_CLIENT_FUNCTION_TIMEOUT should be private
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
+  private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
+
   private static Logger logger = LogService.getLogger();
 
   /**
@@ -61,9 +64,6 @@ public class ConnectionImpl implements Connection {
    * the connection.
    */
   private static boolean TEST_DURABLE_CLIENT_CRASH = false;
-
-  // TODO: clientFunctionTimeout is not thread-safe and should be non-static
-  private static int clientFunctionTimeout;
 
   private Socket theSocket;
   private ByteBuffer commBuffer;
@@ -88,13 +88,12 @@ public class ConnectionImpl implements Connection {
 
   public ConnectionImpl(InternalDistributedSystem ds, CancelCriterion cancelCriterion) {
     this.ds = ds;
-    int time = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT",
-        DEFAULT_CLIENT_FUNCTION_TIMEOUT);
-    clientFunctionTimeout = time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
   }
 
   public static int getClientFunctionTimeout() {
-    return clientFunctionTimeout;
+    int time = Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY,
+        DEFAULT_CLIENT_FUNCTION_TIMEOUT);
+    return time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
   }
 
   public ServerQueueStatus connect(EndpointManager endpointManager, ServerLocation location,
