@@ -186,13 +186,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      GatewaySender sender = null;
-      for (GatewaySender s : senders) {
-        if (s.getId().equals(senderId)) {
-          sender = s;
-          break;
-        }
-      }
+      AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+          .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
       sender.start();
     } finally {
       exln.remove();
@@ -203,13 +198,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      GatewaySender sender = null;
-      for (GatewaySender s : senders) {
-        if (s.getId().equals(senderId)) {
-          sender = s;
-          break;
-        }
-      }
+      AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+          .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
       sender.pause();
     } finally {
       exln.remove();
@@ -337,14 +327,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      AbstractGatewaySender sender = null;
-      for (GatewaySender s : senders) {
-        if (s.getId().equals(senderId)) {
-          sender = (AbstractGatewaySender) s;
-          break;
-        }
-      }
-
+      AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+          .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
       assertEquals(isRunning, sender.isRunning());
       assertEquals(isPaused, sender.isPaused());
     } finally {
@@ -360,13 +344,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       List<String> expectedGatewayTransportFilters) {
 
     Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
+    AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+        .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
     assertEquals("remoteDistributedSystemId", remoteDsID, sender.getRemoteDSId());
     assertEquals("isParallel", isParallel, sender.isParallel());
     assertEquals("manualStart", manualStart, sender.isManualStart());
@@ -469,13 +448,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   public static void verifySenderDestroyed(String senderId, boolean isParallel) {
     Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
+    AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+        .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
     assertNull(sender);
     String queueRegionNameSuffix = null;
     if (isParallel) {
@@ -485,7 +459,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     }
     Set<LocalRegion> allRegions = ((GemFireCacheImpl) cache).getAllRegions();
     for (LocalRegion region : allRegions) {
-      if (region.getName().indexOf(senderId + queueRegionNameSuffix) != -1) {
+      if (region.getName().contains(senderId + queueRegionNameSuffix)) {
         fail("Region underlying the sender is not destroyed.");
       }
     }
@@ -501,14 +475,14 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     closeCacheAndDisconnect();
-    vm0.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm1.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm2.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm3.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm4.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm5.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm6.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm7.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm0.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm1.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm2.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm3.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm4.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm5.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm6.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm7.invoke(WANCommandTestBase::closeCacheAndDisconnect);
   }
 
   public static void closeCacheAndDisconnect() {

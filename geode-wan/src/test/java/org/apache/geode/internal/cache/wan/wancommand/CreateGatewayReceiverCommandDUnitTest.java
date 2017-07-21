@@ -50,13 +50,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiverWithDefault() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER;
     CommandResult cmdResult = executeCommand(command);
@@ -96,13 +96,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiver() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -141,13 +141,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiverWithGatewayTransportFilter() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -191,13 +191,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --"
         + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS + "=localhost" + " --"
@@ -241,13 +241,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiver_Error() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS
@@ -280,13 +280,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiver_onMember() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     final DistributedMember vm3Member = vm3.invoke(this::getMember);
 
@@ -325,13 +325,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiver_onMultipleMembers() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     final DistributedMember vm3Member = vm3.invoke(this::getMember);
     final DistributedMember vm4Member = vm4.invoke(this::getMember);
@@ -372,13 +372,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiver_onGroup() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
+    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
+    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
+    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -420,13 +420,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiver_onGroup_Scenario2() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(punePort, "receiverGroup2"));
+    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
+    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
+    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup2"));
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -464,13 +464,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiver_onMultipleGroups() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(punePort, "receiverGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(punePort, "receiverGroup2"));
+    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
+    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
+    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup2"));
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART

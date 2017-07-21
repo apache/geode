@@ -36,13 +36,13 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class DestroyGatewaySenderCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testDestroyGatewaySender_NotCreatedSender() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     // Test Destroy Command
     String command =

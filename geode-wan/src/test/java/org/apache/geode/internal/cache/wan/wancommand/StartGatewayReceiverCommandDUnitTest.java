@@ -45,11 +45,11 @@ public class StartGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewayReceiver_ErrorConditions() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createReceiver(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createReceiver(dsIdPort));
 
     final DistributedMember vm1Member = vm3.invoke(this::getMember);
     String command = CliStrings.START_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "="
@@ -71,13 +71,13 @@ public class StartGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewayReceiver() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createReceiver(punePort));
-    vm4.invoke(() -> createReceiver(punePort));
-    vm5.invoke(() -> createReceiver(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createReceiver(dsIdPort));
+    vm4.invoke(() -> createReceiver(dsIdPort));
+    vm5.invoke(() -> createReceiver(dsIdPort));
     vm3.invoke(() -> verifyReceiverState(false));
     vm4.invoke(() -> verifyReceiverState(false));
     vm5.invoke(() -> verifyReceiverState(false));
@@ -107,13 +107,13 @@ public class StartGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewayReceiver_onMember() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createReceiver(punePort));
-    vm4.invoke(() -> createReceiver(punePort));
-    vm5.invoke(() -> createReceiver(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createReceiver(dsIdPort));
+    vm4.invoke(() -> createReceiver(dsIdPort));
+    vm5.invoke(() -> createReceiver(dsIdPort));
     vm3.invoke(() -> verifyReceiverState(false));
     vm4.invoke(() -> verifyReceiverState(false));
     vm5.invoke(() -> verifyReceiverState(false));
@@ -144,13 +144,13 @@ public class StartGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewayReceiver_Group() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createReceiverWithGroup(punePort, "RG1"));
-    vm4.invoke(() -> createReceiverWithGroup(punePort, "RG1"));
-    vm5.invoke(() -> createReceiverWithGroup(punePort, "RG1"));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createReceiverWithGroup(dsIdPort, "RG1"));
+    vm4.invoke(() -> createReceiverWithGroup(dsIdPort, "RG1"));
+    vm5.invoke(() -> createReceiverWithGroup(dsIdPort, "RG1"));
     vm3.invoke(() -> verifyReceiverState(false));
     vm4.invoke(() -> verifyReceiverState(false));
     vm5.invoke(() -> verifyReceiverState(false));
@@ -184,15 +184,15 @@ public class StartGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testStartGatewayReceiver_MultipleGroup() {
     VM puneLocator = Host.getLocator();
-    int punePort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(punePort);
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createReceiverWithGroup(punePort, "RG1"));
-    vm4.invoke(() -> createReceiverWithGroup(punePort, "RG1"));
-    vm5.invoke(() -> createReceiverWithGroup(punePort, "RG1, RG2"));
-    vm6.invoke(() -> createReceiverWithGroup(punePort, "RG1, RG2"));
-    vm7.invoke(() -> createReceiverWithGroup(punePort, "RG3"));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createReceiverWithGroup(dsIdPort, "RG1"));
+    vm4.invoke(() -> createReceiverWithGroup(dsIdPort, "RG1"));
+    vm5.invoke(() -> createReceiverWithGroup(dsIdPort, "RG1, RG2"));
+    vm6.invoke(() -> createReceiverWithGroup(dsIdPort, "RG1, RG2"));
+    vm7.invoke(() -> createReceiverWithGroup(dsIdPort, "RG3"));
     vm3.invoke(() -> verifyReceiverState(false));
     vm4.invoke(() -> verifyReceiverState(false));
     vm5.invoke(() -> verifyReceiverState(false));
