@@ -83,7 +83,7 @@ class PartitionedRegionRedundancyTracker {
       lowestBucketCopies = bucketCopies;
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.BucketAdvisor_REDUNDANCY_HAS_DROPPED_BELOW_0_CONFIGURED_COPIES_TO_1_ACTUAL_COPIES_FOR_2,
-          new Object[] {targetRedundancy, bucketCopies + 1, regionPath}));
+          new Object[] {targetRedundancy + 1, bucketCopies, regionPath}));
     }
   }
 
@@ -112,8 +112,8 @@ class PartitionedRegionRedundancyTracker {
     stats.incLowRedundancyBucketCount(-1);
     if (lowRedundancyBuckets == 0) {
       lowestBucketCopies = targetRedundancy + 1;
-      logger.info("Configured redundancy of " + targetRedundancy + " copies has been restored to "
-          + regionPath);
+      logger.info("Configured redundancy of " + (targetRedundancy + 1)
+          + " copies has been restored to " + regionPath);
     }
   }
 
