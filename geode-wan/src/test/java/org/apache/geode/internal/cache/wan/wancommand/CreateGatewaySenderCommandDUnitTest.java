@@ -43,13 +43,13 @@ public class CreateGatewaySenderCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testCreateGatewaySender_Error() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
@@ -89,13 +89,13 @@ public class CreateGatewaySenderCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testCreateParallelGatewaySender_Error() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID

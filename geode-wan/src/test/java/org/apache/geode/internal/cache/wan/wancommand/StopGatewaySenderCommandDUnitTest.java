@@ -38,11 +38,11 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class StopGatewaySenderCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testStopGatewaySender_ErrorConditions() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCache(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCache(dsIdPort));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
 
     final DistributedMember vm1Member = vm3.invoke(this::getMember);
@@ -62,15 +62,15 @@ public class StopGatewaySenderCommandDUnitTest extends WANCommandTestBase {
 
   @Test
   public void testStopGatewaySender() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCache(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCache(dsIdPort));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createCache(punePort));
+    vm4.invoke(() -> createCache(dsIdPort));
     vm4.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createCache(punePort));
+    vm5.invoke(() -> createCache(dsIdPort));
     vm5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
     vm3.invoke(() -> startSender("ln"));
     vm4.invoke(() -> startSender("ln"));
@@ -105,11 +105,11 @@ public class StopGatewaySenderCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testStopGatewaySender_onMember() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCache(punePort));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCache(dsIdPort));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
     vm3.invoke(() -> startSender("ln"));
     vm3.invoke(() -> verifySenderState("ln", true, false));
@@ -135,15 +135,15 @@ public class StopGatewaySenderCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testStopGatewaySender_Group() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
+    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
     vm4.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
+    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
     vm5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
     vm3.invoke(() -> startSender("ln"));
     vm4.invoke(() -> startSender("ln"));
@@ -179,19 +179,19 @@ public class StopGatewaySenderCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testStopGatewaySender_MultipleGroup() {
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(punePort);
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    propsSetUp(dsIdPort);
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
-    vm3.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
     vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1"));
+    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
     vm4.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createCacheWithGroups(punePort, "SenderGroup1, SenderGroup2"));
+    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1, SenderGroup2"));
     vm5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm6.invoke(() -> createCacheWithGroups(punePort, "SenderGroup2"));
+    vm6.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup2"));
     vm6.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm7.invoke(() -> createCacheWithGroups(punePort, "SenderGroup3"));
+    vm7.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup3"));
     vm7.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
     vm3.invoke(() -> startSender("ln"));
     vm4.invoke(() -> startSender("ln"));
