@@ -55,7 +55,11 @@ public class LuceneSearchResults<K, V> implements Comparable<LuceneSearchResults
 
   @Override
   public int compareTo(final LuceneSearchResults searchResults) {
-    return Float.compare(getScore(), searchResults.getScore());
+    // Lucene search result is compared on score of result. Higher the score more relevant the
+    // result.
+    // This comparator is used to list results, order will be higher to lower on score. (Ref.
+    // GEODE-3206)
+    return Float.compare(getScore(), searchResults.getScore()) * -1;
   }
 
   public boolean getExeptionFlag() {
