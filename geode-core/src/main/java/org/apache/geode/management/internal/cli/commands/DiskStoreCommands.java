@@ -640,8 +640,10 @@ public class DiskStoreCommands implements GfshCommand {
       fieldsMessage += CliUtil.arrayToString(diskDirs);
       String errorString = CliStrings.format(
           CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2,
-          diskStoreName, fieldsMessage);
-      result = ResultBuilder.createUserErrorResult(errorString);
+          diskStoreName, fieldsMessage, e.getMessage());
+      result = ResultBuilder.createUserErrorResult(CliStrings.format(
+          CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_REASON_0,
+          errorString));
       if (logWrapper.fineEnabled()) {
         logWrapper.fine(e.getMessage(), e);
       }
@@ -649,7 +651,9 @@ public class DiskStoreCommands implements GfshCommand {
       if (output.length() != 0) {
         Gfsh.println(output.toString());
       }
-      result = ResultBuilder.createUserErrorResult(errorMessage.toString());
+      result = ResultBuilder.createUserErrorResult(CliStrings.format(
+          CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_REASON_0,
+          new Object[] {e.getMessage()}));
       if (logWrapper.fineEnabled()) {
         logWrapper.fine(error.toString());
       }
@@ -657,13 +661,14 @@ public class DiskStoreCommands implements GfshCommand {
       if (output.length() != 0) {
         Gfsh.println(output.toString());
       }
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
+      result = ResultBuilder.createUserErrorResult(CliStrings.format(
+          CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_REASON_0,
+          new Object[] {e.getMessage()}));
     } finally {
       if (compacterProcess != null) {
         try {
           // just to check whether the process has exited
-          // Process.exitValue() throws IllegalThreadStateException if Process
-          // is alive
+          // Process.exitValue() throws IllegalThreadStateException if Process is alive
           compacterProcess.exitValue();
         } catch (IllegalThreadStateException ise) {
           // not yet terminated, destroy the process

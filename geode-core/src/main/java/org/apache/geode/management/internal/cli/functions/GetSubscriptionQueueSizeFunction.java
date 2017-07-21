@@ -85,7 +85,7 @@ public class GetSubscriptionQueueSizeFunction extends FunctionAdapter implements
           }
         } else {
           result.setErrorMessage(
-              CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
+              CliStrings.format(CliStrings.DURABLE_CQ_CLIENT_NOT_FOUND, durableClientId));
         }
       } else {
         result.setErrorMessage(CliStrings.NO_CLIENT_FOUND);
