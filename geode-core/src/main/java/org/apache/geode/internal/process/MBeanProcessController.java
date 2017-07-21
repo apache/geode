@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.process;
 
+import static org.apache.geode.internal.Assert.assertState;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -36,6 +38,9 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * Controls a {@link ControllableProcess} using the Attach API to manipulate MBeans.
@@ -280,12 +285,10 @@ public class MBeanProcessController implements ProcessController {
         try {
           vm.loadAgent(managementAgentPath, "com.sun.management.jmxremote");
         } catch (AgentLoadException e) {
-          IOException ioe = new IOException(e.getMessage());
-          ioe.initCause(e);
+          IOException ioe = new IOException(e.getMessage(), e);
           throw ioe;
         } catch (AgentInitializationException e) {
-          IOException ioe = new IOException(e.getMessage());
-          ioe.initCause(e);
+          IOException ioe = new IOException(e.getMessage(), e);
           throw ioe;
         }
 

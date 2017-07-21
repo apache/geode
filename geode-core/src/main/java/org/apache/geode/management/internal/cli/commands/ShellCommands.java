@@ -332,7 +332,6 @@ public class ShellCommands implements GfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result history(
       @CliOption(key = {CliStrings.HISTORY__FILE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.HISTORY__FILE__HELP) String saveHistoryTo,
       @CliOption(key = {CliStrings.HISTORY__CLEAR}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
@@ -344,7 +343,7 @@ public class ShellCommands implements GfshCommand {
     } else {
       // Process file option
       Gfsh gfsh = Gfsh.getCurrentInstance();
-      ErrorResultData errorResultData = null;
+      ErrorResultData errorResultData;
       StringBuilder contents = new StringBuilder();
       Writer output = null;
 
@@ -359,7 +358,7 @@ public class ShellCommands implements GfshCommand {
 
       while (it.hasNext()) {
         String line = it.next().toString();
-        if (line.isEmpty() == false) {
+        if (!line.isEmpty()) {
           if (flagForLineNumbers) {
             lineNumber++;
             contents.append(String.format("%" + historySizeWordLength + "s  ", lineNumber));

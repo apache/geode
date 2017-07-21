@@ -48,18 +48,30 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * - * Contains 'String' constants used as key to the Localized strings to be used in classes under
- * <code>org.apache.geode.management.internal.cli</code> for Command Line Interface (CLI). NOTES: 1.
- * CONVENTIONS: Defining constants for Command Name, option, argument, help: 1.1 Command Name:
- * Command name in BOLD. Multiple words separated by single underscore ('_') E.g. COMPACT_DISK_STORE
+ * <code>org.apache.geode.management.internal.cli</code> for Command Line Interface (CLI).
+ *
+ * NOTES:
+ *
+ * 1. CONVENTIONS: Defining constants for Command Name, option, argument, help:
+ *
+ * 1.1 Command Name: Command name in BOLD. Multiple words separated by single underscore ('_') E.g.
+ * COMPACT_DISK_STORE
+ *
  * 1.2 Command Help Text: Command name in BOLD followed by double underscore ('__') followed by HELP
- * in BOLD. E.g.COMPACT_DISK_STORE__HELP 1.3 Command Option: Command name in BOLD followed by double
- * underscore ('__') followed by option name in BOLD - multiple words concatenated by removing
- * space. E.g. for option "--disk-dirs" - COMPACT_DISK_STORE__DISKDIRS 1.4 Command Option Help: As
- * mentioned in 1.3, followed by double underscore ('__') followed by HELP in BOLD. E.g.
- * COMPACT_DISK_STORE__DISKDIRS__HELP 1.5 Info/Error Message used in a command: Command name in BOLD
- * followed by double underscore ('__') followed by MSG in BOLD followed by brief name for the
- * message (Similar to used in LocalizedStrings). E.g.
- * COMPACT_DISK_STORE__MSG__ERROR_WHILE_COMPACTING = "Error occurred while compacting disk store."
+ * in BOLD. E.g.COMPACT_DISK_STORE__HELP
+ *
+ * 1.3 Command Option: Command name in BOLD followed by double underscore ('__') followed by option
+ * name in BOLD - multiple words concatenated by removing space. E.g. for option "--disk-dirs" -
+ * COMPACT_DISK_STORE__DISKDIRS
+ *
+ * 1.4 Command Option Help: As mentioned in 1.3, followed by double underscore ('__') followed by
+ * HELP in BOLD. E.g. COMPACT_DISK_STORE__DISKDIRS__HELP
+ *
+ * 1.5 Info/Error Message used in a command: Command name in BOLD followed by double underscore
+ * ('__') followed by MSG in BOLD followed by brief name for the message (similar to used in
+ * LocalizedStrings). E.g. COMPACT_DISK_STORE__MSG__ERROR_WHILE_COMPACTING = "Error occurred while
+ * compacting disk store."
+ *
  * 1.6 Parameterized messages are supposed to be handled by users. It's recommended to use the same
  * conventions as used in LocalizedStrings. E.g. COMPACT_DISK_STORE__MSG__ERROR_WHILE_COMPACTING__0
  * = "Error occurred while compacting disk store {0}."
@@ -139,7 +151,7 @@ public class CliStrings {
   public static final String TOPIC_GFSH = "GFSH";
   public static final String TOPIC_GFSH__DESC = "The Geode Shell";
   public static final String TOPIC_SHARED_CONFIGURATION = "Cluster Configuration";
-  public static final String TOPIC_SHARED_CONFIGURATION_HELP =
+  public static final String TOPIC_SHARED_CONFIGURATION_DESC =
       "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfsh command are persisted to the locator hosting the cluster configuration service.";
   public static final String TOPIC_LOGS = "Logs";
   public static final String TOPIC_LOGS__DESC = "Generate log contents as per the need";
@@ -154,31 +166,23 @@ public class CliStrings {
       "Running desktop applications is not supported on %1$s.";
   public static final String GEODE_HOME_NOT_FOUND_ERROR_MESSAGE =
       "The GEODE environment variable was not defined.  Please set the GEODE environment variable to the directory where GEODE is installed.";
-  public static final String JAVA_HOME_NOT_FOUND_ERROR_MESSAGE =
-      "Unable to locate the Java executables and dependencies.  Please set the JAVA_HOME environment variable.";
   public static final String CACHE_XML_NOT_FOUND_MESSAGE =
       "Warning: The Geode cache XML file {0} could not be found.";
   public static final String GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE =
       "Warning: The Geode {0}properties file {1} could not be found.";
   public static final String MEMBER_NOT_FOUND_ERROR_MESSAGE =
       "Member {0} could not be found.  Please verify the member name or ID and try again.";
-  public static final String NO_MEMBERS_IN_GROUP_ERROR_MESSAGE =
-      "No caching members for group {0} could be found.  Please verify the group and try again.";
   public static final String NO_MEMBERS_FOUND_MESSAGE = "No Members Found";
   public static final String NO_CACHING_MEMBERS_FOUND_MESSAGE = "No caching members found.";
   public static final String COMMAND_FAILURE_MESSAGE = "Error occurred while executing : {0}";
   public static final String EXCEPTION_CLASS_AND_MESSAGE = "Exception : {0} , Message : {1}";
-  public static final String GROUP_EMPTY_ERROR_MESSAGE = "No members found in group : {0}";
   public static final String REGION_NOT_FOUND = "Region : {0} not found";
   public static final String INVALID_REGION_NAME = "Invalid region name";
   public static final String INVALID_FILE_EXTENSION =
       "Invalid file type, the file extension must be \"{0}\"";
   public static final String GEODE_DATA_FILE_EXTENSION = ".gfd";
-  public static final String LOCATOR_HEADER = "Locator";
   public static final String LOCATOR_TERM_NAME = "Locator";
-  public static final String ERROR__MSG__HEADER = "Error";
   public static final String ZIP_FILE_EXTENSION = ".zip";
-  // This should be thrown for FunctionInvocationTargetException
   public static final String COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN =
       "Could not execute \" {0} \", please try again ";
   public static final String UNEXPECTED_RETURN_TYPE_EXECUTING_COMMAND_ERROR_MESSAGE =
@@ -193,13 +197,8 @@ public class CliStrings {
       "Please provide either \"member\" or \"group\" option.";
   public static final String GFSH_MUST_BE_CONNECTED_FOR_LAUNCHING_0 =
       "Gfsh must be connected for launching {0}";
-  public static final String GFSH_MUST_BE_CONNECTED_VIA_JMX_FOR_LAUNCHING_0 =
-      "Gfsh must be connected via JMX for launching {0}";
-  public static final String ATTACH_API_IN_0_NOT_FOUND_ERROR_MESSAGE =
-      "The JDK {0} is required by 'start', 'status' and 'stop' commands for Locators and Servers. Please set JAVA_HOME to the JDK Directory or add the JDK {0} to the classpath, restart Gfsh and try again.";
   public static final String ASYNC_PROCESS_LAUNCH_MESSAGE =
       "Broken out of wait... the %1$s process will continue to startup in the background.%n";
-  public static final String NO_NON_LOCATOR_MEMBERS_FOUND = "No non-locator members found.";
   public static final String NO_CLIENT_FOUND = "No client found on this server";
   public static final String NO_CLIENT_FOUND_WITH_CLIENT_ID =
       "No client found with client-id : {0}";
@@ -207,36 +206,11 @@ public class CliStrings {
   public static final String OCCURRED_ON_MEMBERS = "Occurred on members";
   public static final String SHARED_CONFIGURATION_NOT_STARTED =
       "Cluster configuration service is enabled but has not started yet.";
-  public static final String SHARED_CONFIGURATION_NO_LOCATORS_WITH_SHARED_CONFIGURATION =
-      "No locators with cluster configuration enabled.";
   public static final String SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES =
       "Failed to persist the configuration changes due to this command, Revert the command to maintain consistency.\nPlease use \"status cluster-config-service\" to determine whether Cluster configuration service is RUNNING.";
+
   /* Other Constants */
   public static final String GFSH__MSG__NO_LONGER_CONNECTED_TO_0 = "No longer connected to {0}.";
-  public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
-  public static final String GFSHPARSER__MSG__VALUE_REQUIRED_FOR_OPTION_0 =
-      "Value is required for parameter \"{0}\"";
-  public static final String GFSHPARSER__MSG__AMBIGUOUS_COMMAND_0_FOR_ASSISTANCE_USE_1_OR_HINT_HELP =
-      "Ambiguous command \"{0}\" (for assistance press \"{1}\" or type \"hint\" or \"help <command name>\" & then hit ENTER)";
-  public static final String GFSHPARSER__MSG__COMMAND_ARGUMENT_0_IS_REQUIRED_USE_HELP =
-      "Command parameter \"{0}\" is required. Use \"help <command name>\" for assistance.";
-  public static final String GFSHPARSER__MSG__COMMAND_OPTION_0_IS_REQUIRED_USE_HELP =
-      "Parameter \"{0}\" is required. Use \"help <command name>\" for assistance.";
-  public static final String GFSHPARSER__MSG__VALUE_0_IS_NOT_APPLICABLE_FOR_1 =
-      "Value \"{0}\" is not applicable for \"{1}\".";
-  public static final String GFSHPARSER__MSG__INVALID_COMMAND_STRING_0 =
-      "Invalid command String: {0}";
-  public static final String GFSHPARSER__MSG__COMMAND_0_IS_NOT_VALID =
-      "Command \"{0}\" is not valid.";
-  public static final String GFSHPARSER__MSG__NO_MATCHING_COMMAND = "No matching command";
-  public static final String GFSHPARSER__MSG__USE_0_HELP_COMMAND_TODISPLAY_DETAILS =
-      "Use {0}help <command name> to display detailed usage information for a specific command.";
-  public static final String GFSHPARSER__MSG__HELP_CAN_ALSO_BE_OBTAINED_BY_0_KEY =
-      "Help with command and parameter completion can also be obtained by entering all or a portion of either followed by the \"{0}\" key.";
-  public static final String GFSHPARSER__MSG__0_IS_NOT_AVAILABLE_REASON_1 =
-      "\"{0}\" is not available. Reason: {1}";
-  public static final String GFSHPARSER__MSG__OTHER_COMMANDS_STARTING_WITH_0_ARE =
-      "Other commands starting with \"{0}\" are: ";
 
   public static final String ABSTRACTRESULTDATA__MSG__FILE_WITH_NAME_0_EXISTS_IN_1 =
       "File with name \"{0}\" already exists in \"{1}\".";
@@ -247,13 +221,8 @@ public class CliStrings {
   public static final String ABSTRACTRESULTDATA__MSG__PARENT_OF_0_IS_NOT_DIRECTORY =
       "Parent of \"{0}\" is not a directory.";
 
-  public static final String AVAILABILITYTARGET_MSG_DEFAULT_UNAVAILABILITY_DESCRIPTION =
-      "Requires connection.";
-
   public static final String LAUNCHERLIFECYCLECOMMANDS__MSG__FAILED_TO_START_0_REASON_1 =
       "Failed to start {0}. Reason: {1}";
-
-  public static final String GFSH__PLEASE_CHECK_LOGS_AT_0 = "Please check logs {0}";
 
   /*-**************************************************************************
    * *********** COMMAND NAME, OPTION, ARGUMENT, HELP, MESSAGES ****************
@@ -350,10 +319,7 @@ public class CliStrings {
       "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
   public static final String ALTER_REGION__ASYNCEVENTQUEUEID = "async-event-queue-id";
   public static final String ALTER_REGION__ASYNCEVENTQUEUEID__HELP =
-      "IDs of the Async Event Queues that will be used for write-behind operations."; // TODO -
-                                                                                      // Abhishek Is
-                                                                                      // this
-                                                                                      // correct?
+      "IDs of the Async Event Queues that will be used for write-behind operations.";
   public static final String ALTER_REGION__GATEWAYSENDERID = "gateway-sender-id";
   public static final String ALTER_REGION__GATEWAYSENDERID__HELP =
       "IDs of the Gateway Senders to which data will be routed.";
@@ -393,7 +359,6 @@ public class CliStrings {
       "Alter a subset of member or members configuration properties while running.";
   public static final String ALTER_RUNTIME_CONFIG__MEMBER__HELP =
       "Name/Id of the member in whose configuration will be altered.";
-
   public static final String ALTER_RUNTIME_CONFIG__GROUP__HELP =
       "Group of members whose configuration will be altered.";
   public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT =
@@ -455,7 +420,6 @@ public class CliStrings {
 
   public static final String ALTER_RUNTIME_CONFIG__SUCCESS__MESSAGE =
       "Runtime configuration altered successfully for the following member(s)";
-  public static final String ALTER_RUNTIME_CONFIG__MEMBER__NOT__FOUND = "Member : {0} not found";
   public static final String ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE =
       "Please provide a relevant parameter(s)";
 
@@ -515,14 +479,11 @@ public class CliStrings {
   public static final String COMPACT_OFFLINE_DISK_STORE__J = "J";
   public static final String COMPACT_OFFLINE_DISK_STORE__J__HELP =
       "Arguments passed to the Java Virtual Machine performing the compact operation on the disk store.";
-  public static final String COMPACT_OFFLINE_DISK_STORE__MSG__DISKSTORE_0_DOES_NOT_EXIST =
-      "Disk store \"{0}\" does not exist.";
-  public static final String COMPACT_OFFLINE_DISK_STORE__MSG__COMPACTION_ATTEMPTED_BUT_NOTHING_TO_COMPACT =
-      "Attempted to compact disk store, but there was nothing to do.";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_REASON_0 =
       "An error occurred while doing compaction: \"{0}\"";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__VERIFY_WHETHER_DISKSTORE_EXISTS_IN_0 =
-      "Verify whether the disk store exists in \"{0}\".";
+      "Disk store in \"{0}\" does not seem to exist. "
+          + "Verify whether the disk store exists in \"{0}\".";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__DISKSTORE_IN_USE_COMPACT_DISKSTORE_CAN_BE_USED =
       "This disk store is in use by other process. \"" + CliStrings.COMPACT_DISK_STORE
           + "\" can be used to compact disk store that is current in use.";
@@ -545,8 +506,6 @@ public class CliStrings {
   public static final String CONNECT__URL = "url";
   public static final String CONNECT__DEFAULT_BASE_URL =
       "http://localhost:" + DistributionConfig.DEFAULT_HTTP_SERVICE_PORT + "/gemfire/v1";
-  public static final String CONNECT__DEFAULT_SSL_BASE_URL =
-      "https://localhost:" + DistributionConfig.DEFAULT_HTTP_SERVICE_PORT + "/gemfire/v1";
   public static final String CONNECT__URL__HELP =
       "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/gemfire/v1' Default is '"
           + CONNECT__DEFAULT_BASE_URL + "'";
@@ -587,27 +546,14 @@ public class CliStrings {
       "Whether to use SSL for communication with Locator and/or JMX Manager. If set to \"true\", \"gfsecurity.properties\" will also be read. SSL Options take precedence over the properties file. If none are specified, defaults will be used. The default value for this options is \"false\".";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_AT_0 =
       "Connecting to Manager at {0} ..";
-  public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_HTTP_SERVICE_AT_0 =
-      "Connecting to Manager's HTTP service at {0} ..";
   public static final String CONNECT__MSG__LOCATOR_COULD_NOT_FIND_MANAGER =
       "Locator could not find a JMX Manager";
   public static final String CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED =
       "password must be specified.";
-  public static final String CONNECT__MSG__ALREADY_CONNECTED = "Already connected to: {0}";
   public static final String CONNECT__MSG__SUCCESS = "Successfully connected to: {0}";
   public static final String CONNECT__MSG__ERROR = "Could not connect to : {0}. {1}";
-  public static final String CONNECT__MSG__SERVICE_UNAVAILABLE_ERROR =
-      "Could not find a Geode jmx-manager service at {0}.";
-  public static final String CONNECT__MSG__COULD_NOT_CONNECT_TO_LOCATOR_0 =
-      "Could not connect to Geode Locator service at {0}.";
   public static final String CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0 =
       "Could not read config from {0}.";
-  public static final String CONNECT__MSG__COULD_NOT_CONNECT_TO_LOCATOR_0_POSSIBLY_SSL_CONFIG_ERROR =
-      "Could not connect to Locator at {0}." + Gfsh.LINE_SEPARATOR
-          + "Possible reason: Wrong or no SSL configuration provided.";
-  public static final String CONNECT__MSG__COULD_NOT_CONNECT_TO_MANAGER_0_POSSIBLY_SSL_CONFIG_ERROR =
-      "Could not connect to Manager at {0}." + Gfsh.LINE_SEPARATOR
-          + "Possible reason: Wrong or no SSL configuration provided.";
 
   /* 'create async-event-queue' command */
   public static final String CREATE_ASYNC_EVENT_QUEUE = "create async-event-queue";
@@ -743,12 +689,10 @@ public class CliStrings {
       "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG =
       "Failed to create index \"{0}\" due to following reasons";
-  public static final String CREATE_INDEX__ERROR__MSG =
-      "Exception \"{0}\" occurred on following members";
   public static final String CREATE_INDEX__NAME__CONFLICT =
-      "Index \"{0}\" already exists.  " + "Create failed due to duplicate name.";
+      "Index \"{0}\" already exists. Create failed due to duplicate name.";
   public static final String CREATE_INDEX__INDEX__EXISTS =
-      "Index \"{0}\" already exists.  " + "Create failed due to duplicate definition.";
+      "Index \"{0}\" already exists. Create failed due to duplicate definition.";
   public static final String CREATE_INDEX__INVALID__EXPRESSION =
       "Invalid indexed expression : \"{0}\"";
   public static final String CREATE_INDEX__INVALID__REGIONPATH = "Region not found : \"{0}\"";
@@ -793,12 +737,8 @@ public class CliStrings {
       "Failed to create some or all indexes \"{0}\" due to following reasons";
   public static final String CREATE_DEFINED_INDEXES__MEMBER__HELP = CREATE_INDEX__MEMBER__HELP;
   public static final String CREATE_DEFINED_INDEXES__GROUP__HELP = CREATE_INDEX__GROUP__HELP;
-  public static final String CREATE_DEFINED_INDEXES__MEMBER__MSG = CREATE_INDEX__MEMBER__MSG;
   public static final String CREATE_DEFINED_INDEXES__NUMBER__AND__MEMBER =
       CREATE_INDEX__NUMBER__AND__MEMBER;
-  public static final String CREATE_DEFINED_INDEXES__EXCEPTION__OCCURRED__ON =
-      CREATE_INDEX__EXCEPTION__OCCURRED__ON;
-
 
   public static final String CLEAR_DEFINED_INDEXES = "clear defined indexes";
   public static final String CLEAR_DEFINED__HELP = "Clears all the defined indexes.";
@@ -885,10 +825,7 @@ public class CliStrings {
       "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID = "async-event-queue-id";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID__HELP =
-      "IDs of the Async Event Queues that will be used for write-behind operations."; // TODO -
-                                                                                      // Abhishek Is
-                                                                                      // this
-                                                                                      // correct?
+      "IDs of the Async Event Queues that will be used for write-behind operations.";
   public static final String CREATE_REGION__GATEWAYSENDERID = "gateway-sender-id";
   public static final String CREATE_REGION__GATEWAYSENDERID__HELP =
       "IDs of the Gateway Senders to which data will be routed.";
@@ -932,8 +869,6 @@ public class CliStrings {
       "Parent region for \"{0}\" doesn't exist. ";
   public static final String CREATE_REGION__MSG__GROUPS_0_ARE_INVALID =
       "Group(s) \"{0}\" are invalid.";
-  public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_USE_ATTR_FROM =
-      "Specify a valid region path for " + CliStrings.CREATE_REGION__USEATTRIBUTESFROM;
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID =
       "Specify a valid class name for " + CliStrings.CREATE_REGION__KEYCONSTRAINT
           + ". \"{0}\" is not valid.";
@@ -985,14 +920,6 @@ public class CliStrings {
       "Could not access class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_REGION__MSG__EXPIRATION_ACTION_0_IS_NOT_VALID =
       "Expiration action \"{0}\" is not valid.";
-  public static final String CREATE_REGION__MSG__ERROR_ON_MEMBER_0 = "Error on member: {0}. "; // leave
-                                                                                               // space
-                                                                                               // in
-                                                                                               // the
-                                                                                               // end
-                                                                                               // for
-                                                                                               // further
-                                                                                               // message
   public static final String CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1 =
       "Could not retrieve region attributes for given path \"{0}\". Reason: {1}";
   public static final String CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_VERIFY_REGION_EXISTS =
@@ -1033,8 +960,6 @@ public class CliStrings {
   public static final String CREATE_REGION__PARTITION_RESOLVER = "partition-resolver";
   public static final String CREATE_REGION__PARTITION_RESOLVER__HELP =
       "The fully-qualified class name of the region's partition resolver";
-  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER_ONLY_FOR_REGION_TYPE_PARTITION =
-      "partition resolver property is only applicable to PARTITION region type";
 
   public static final String CREATE_REGION_PARTITION_RESOLVER__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
       "Could not find class \"{0}\" specified for \"{1}\".";
@@ -1153,8 +1078,6 @@ public class CliStrings {
   public static final String DESCRIBE_REGION__NAME = "name";
   public static final String DESCRIBE_REGION__NAME__HELP =
       "Name/Path of the region to be described.";
-  public static final String DESCRIBE_REGION__MSG__NOT_FOUND = "Region not found";
-  public static final String DESCRIBE_REGION__MSG__ERROR = "Error";
   public static final String DESCRIBE_REGION__ATTRIBUTE__TYPE = "Type";
   public static final String DESCRIBE_REGION__MEMBER = "Member";
   public static final String DESCRIBE_REGION__ATTRIBUTE__NAME = "Name";
@@ -1219,7 +1142,6 @@ public class CliStrings {
       "Index \"{0}\" could not be destroyed for following reasons";
   public static final String DESTROY_INDEX__INDEX__NOT__FOUND = "Index named \"{0}\" not found";
   public static final String DESTROY_INDEX__REGION__NOT__FOUND = "Region \"{0}\" not found";
-  public static final String DESTROY_INDEX__INVALID__NAME = "Invalid index name";
   public static final String DESTROY_INDEX__REASON_MESSAGE = "{0}.";
   public static final String DESTROY_INDEX__EXCEPTION__OCCURRED__ON =
       "Occurred on following members";
@@ -1236,15 +1158,12 @@ public class CliStrings {
       "Region path \"{0}\" is not valid.";
   public static final String DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE =
       "Could not find a Region with Region path \"{0}\" in this Geode cluster. If region was recently created, please wait for at least {1} to allow the associated Management resources to be federated.";
-  public static final String DESTROY_REGION__MSG__AND_ITS_SUBREGIONS = "and its subregions";
   public static final String DESTROY_REGION__MSG__REGION_0_1_DESTROYED =
       "\"{0}\" {1} destroyed successfully.";
   public static final String DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1 =
       "Error occurred while destroying region \"{0}\". Reason: {1}";
   public static final String DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1 =
       "Unknown result while destroying region \"{0}\". Reason: {1}";
-  public static final String DESTROY_REGION__MSG__COULD_NOT_FIND_MEMBER_WITH_REGION_0 =
-      "Could not find a Geode member which hosts a region with Region path \"{0}\"";
   public static final String DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY =
       "Please specify region path for the region to be destroyed.";
   public static final String DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1 =
@@ -1289,17 +1208,10 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__FILTER__HELP =
       "Key list which causes the function to only be executed on members which have entries with these keys.";
   public static final String EXECUTE_FUNCTION__MSG__MISSING_FUNCTIONID = "Provide FunctionId";
-  public static final String EXECUTE_FUNCTION__MSG__MISSING_OPTIONS =
-      "Provide one of region/member/groups";
   public static final String EXECUTE_FUNCTION__MSG__OPTIONS =
       "Provide Only one of region/member/groups";
-  public static final String EXECUTE_FUNCTION__MSG__NO_FUNCTION_FOR_FUNCTIONID =
-      "For the functionId provided could not retrieve function. Function may not be registered";
-  public static final String EXECUTE_FUNCTION__MSG__NO_FUNCTION_EXECUTION =
-      "FunctionService could not create execution. Can not execute Function";
   public static final String EXECUTE_FUNCTION__MSG__NO_ASSOCIATED_MEMBER =
       "Could not find a member matching";
-  public static final String EXECUTE_FUNCTION__MSG__HAS_NO_MEMBER = "No member to execute on";
   public static final String EXECUTE_FUNCTION__MSG__COULD_NOT_EXECUTE_FUNCTION_0_ON_MEMBER_1_ERROR_2 =
       "Could not execute function :{0} on member : {1}. Details are : {2}";
   public static final String EXECUTE_FUNCTION__MSG__DOES_NOT_HAVE_FUNCTION_0_REGISTERED =
@@ -1347,8 +1259,6 @@ public class CliStrings {
       "Directory to which the exported configuration files will be written.";
   public static final String EXPORT_CONFIG__MSG__EXCEPTION =
       "Exception while exporting config: {0}";
-  public static final String EXPORT_CONFIG__MSG__MEMBER_EXCEPTION =
-      "Exception while exporting config for {0}: {0}";
   public static final String EXPORT_CONFIG__MSG__NOT_A_DIRECTORY = "{0} is not a directory";
   public static final String EXPORT_CONFIG__MSG__NOT_WRITEABLE = "{0} is not writeable";
   public static final String EXPORT_CONFIG__MSG__CANNOT_CREATE_DIR =
@@ -1365,7 +1275,6 @@ public class CliStrings {
   public static final String EXPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be exported to the specified file on the host where the member is running.";
   public static final String EXPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found";
-  public static final String EXPORT_DATA__REGION__NOT__FOUND = "Region {0} not found";
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
       "Data successfully exported from region : {0} to file : {1} on host : {2}";
 
@@ -1379,7 +1288,6 @@ public class CliStrings {
       "Name/Id of the member whose log files will be exported.";
   public static final String EXPORT_LOGS__GROUP__HELP =
       "Group of members whose log files will be exported.";
-  public static final String EXPORT_LOGS__MSG__CANNOT_EXECUTE = "Cannot execute";
   public static final String EXPORT_LOGS__LOGLEVEL = LOG_LEVEL;
   public static final String EXPORT_LOGS__LOGLEVEL__HELP =
       "Minimum level of log entries to export.  " + LOG_LEVEL_VALUES + "  The default is ALL.";
@@ -1395,22 +1303,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__MERGELOG = "merge-log";
   public static final String EXPORT_LOGS__MERGELOG__HELP =
       "Whether to merge logs after exporting to the target directory. Deprecated: Since Geode1.2, no longer used.";
-  public static final String EXPORT_LOGS__MSG__CANNOT_MERGE =
-      "Could not merge the files in target directory";
-  public static final String EXPORT_LOGS__MSG__SPECIFY_ONE_OF_OPTION =
-      "Specify one of group or member ID";
-  public static final String EXPORT_LOGS__MSG__FUNCTION_EXCEPTION = "Error in executing function";
   public static final String EXPORT_LOGS__MSG__FILE_DOES_NOT_EXIST = "Does not exist";
-  public static final String EXPORT_LOGS__MSG__TARGET_DIR_CANNOT_BE_CREATED =
-      "Target Directory {0} cannot be created";
-  public static final String EXPORT_LOGS__MSG__SPECIFY_ENDTIME = "Specify End Time.";
-  public static final String EXPORT_LOGS__MSG__SPECIFY_STARTTIME = "Specify Start Time.";
-  public static final String EXPORT_LOGS__MSG__INVALID_TIMERANGE = "Invalid Time Range.";
-  public static final String EXPORT_LOGS__MSG__INVALID_MEMBERID = "Member : {0} is not valid.";
-  public static final String EXPORT_LOGS__MSG__NO_GROUPMEMBER_FOUND =
-      "Groups specified have no members";
-  public static final String EXPORT_LOGS__MSG__FAILED_TO_EXPORT_LOG_FILES_FOR_MEMBER_0 =
-      "Could not export log files for member {0}";
   public static final String EXPORT_LOGS__LOGSONLY = "logs-only";
   public static final String EXPORT_LOGS__STATSONLY = "stats-only";
   public static final String EXPORT_LOGS__LOGSONLY__HELP = "Whether to only export logs";
@@ -1421,7 +1314,6 @@ public class CliStrings {
   public static final String EXPORT_LOGS__FILESIZELIMIT__SPECIFIED_DEFAULT = "0";
   public static final String EXPORT_LOGS__FILESIZELIMIT__UNSPECIFIED_DEFAULT = "100m";
 
-
   /* export stack-trace command */
   public static final String EXPORT_STACKTRACE = "export stack-traces";
   public static final String EXPORT_STACKTRACE__HELP =
@@ -1430,17 +1322,13 @@ public class CliStrings {
       "Name/Id of the member whose stack trace will be exported.";
   public static final String EXPORT_STACKTRACE__GROUP__HELP =
       "Group of members whose stack trace will be exported.";
-  public static final String EXPORT_STACKTRACE_ALL_STACKS = "all-stacks";
-  public static final String EXPORT_STACKTRACE_ALL_STACKS__HELP =
-      "When set to true exports all the stacktraces.";
   public static final String EXPORT_STACKTRACE__FILE = "file";
   public static final String EXPORT_STACKTRACE__FILE__HELP =
       "Name of the file to which the stack traces will be written.";
   public static final String EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT = "abort-if-file-exists";
   public static final String EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT__HELP =
       "Abort the command if already exists at locator directory";
-  public static final String EXPORT_STACKTRACE__MEMBER__NOT__FOUND = "Member not found";
-  public static final String EXPORT_STACKTRACE__SUCCESS = "stack-trace(s) exported to file: {0}";
+  public static final String EXPORT_STACKTRACE__SUCCESS = "Stack-trace(s) exported to file: {0}";
   public static final String EXPORT_STACKTRACE__ERROR = "Error occurred while showing stack-traces";
   public static final String EXPORT_STACKTRACE__ERROR__FILE__PRESENT =
       "Error occurred while exporting stack-traces, file {0} already present";
@@ -1458,12 +1346,10 @@ public class CliStrings {
   public static final String GC__GROUP__HELP =
       "Group(s) of members on which garbage collection will be done.";
   public static final String GC__MSG__MEMBER_NOT_FOUND = "Member not found";
-  public static final String GC__MSG__CANNOT_EXECUTE = "Cannot execute";
   public static final String GC__MSG__MEMBER_NAME = "Member ID/Name";
   public static final String GC__MSG__HEAP_SIZE_BEFORE_GC = "HeapSize (MB) Before GC";
   public static final String GC__MSG__HEAP_SIZE_AFTER_GC = "HeapSize(MB) After GC";
   public static final String GC__MSG__TOTAL_TIME_IN_GC = "Time Taken for GC in ms";
-
 
   /* get command */
   public static final String GET = "get";
@@ -1485,7 +1371,6 @@ public class CliStrings {
   public static final String GET__REGIONNAME__HELP = "Region from which to get the entry.";
   public static final String GET__MSG__REGIONNAME_EMPTY = "Region name is either empty or Null";
   public static final String GET__MSG__KEY_EMPTY = "Key is either empty or Null";
-  public static final String GET__MSG__VALUE_EMPTY = "Value is either empty or Null";
   public static final String GET__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS =
       "Region <{0}> not found in any of the members";
   public static final String GET__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
@@ -1495,10 +1380,6 @@ public class CliStrings {
   public static final String HELP = "help";
   public static final String HELP__HELP =
       "Display syntax and usage information for all commands or list all available commands if <command> isn't specified.";
-  public static final String HELP__COMMAND = "command";
-  public static final String HELP__COMMAND__HELP =
-      "Name of the command for which help will be displayed.";
-  public static final String PARAM_CONTEXT_HELP = "help:disable-string-converter";
 
   /* hint command */
   public static final String HINT = "hint";
@@ -1507,8 +1388,6 @@ public class CliStrings {
   public static final String HINT__TOPICNAME = "topic";
   public static final String HINT__TOPICNAME__HELP =
       "Name of the topic for which hints will be displayed.";
-  public static final String HINT__MSG__SHELL_NOT_INITIALIZED =
-      "Shell is not initialized properly. Please restart the shell. Check gfsh-<timestamp>.log for errors.";
   public static final String HINT__MSG__UNKNOWN_TOPIC =
       "Unknown topic: {0}. Use " + HINT + "; to view the list of available topics.";
   public static final String HINT__MSG__TOPICS_AVAILABLE =
@@ -1520,7 +1399,6 @@ public class CliStrings {
   public static final String HISTORY__HELP = "Display or export previously executed GFSH commands.";
   public static final String HISTORY__FILE = "file";
   public static final String HISTORY__FILE__HELP = "File to which the history will be written.";
-  public static final String HISTORY__MSG__FILE_NULL = "File should not be null";
   public static final String HISTORY__MSG__FILE_DOES_NOT_EXISTS = "File does not exist";
   public static final String HISTORY__MSG__FILE_SHOULD_NOT_BE_DIRECTORY =
       "File Should not be a directory";
@@ -1529,8 +1407,6 @@ public class CliStrings {
   public static final String HISTORY__CLEAR = "clear";
   public static final String HISTORY__CLEAR__HELP =
       "Clears the history of GFSH commands. Takes value as true or false";
-  public static final String HISTORY__MSG__DID_NOT_CLEAR_HISTORY =
-      "Did not clear history of GFSH commands";
   public static final String HISTORY__MSG__CLEARED_HISTORY = "Successfully deleted history";
 
 
@@ -1545,7 +1421,6 @@ public class CliStrings {
   public static final String IMPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be imported from the specified file on the host where the member is running.";
   public static final String IMPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found.";
-  public static final String IMPORT_DATA__REGION__NOT__FOUND = "Region {0} not found.";
   public static final String IMPORT_DATA__SUCCESS__MESSAGE =
       "Data imported from file : {0} on host : {1} to region : {2}";
   public static final String IMPORT_DATA__INVOKE_CALLBACKS = "invoke-callbacks";
@@ -1707,10 +1582,8 @@ public class CliStrings {
   public static final String LOCATE_ENTRY__MSG__REGIONNAME_EMPTY =
       "Region name is either empty or Null";
   public static final String LOCATE_ENTRY__MSG__KEY_EMPTY = "Key is either empty or Null";
-  public static final String LOCATE_ENTRY__MSG__VALUE_EMPTY = "Value is either empty or Null";
   public static final String LOCATE_ENTRY__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS =
       "Region <{0}> not found in any of the members";
-  public static final String LOCATE_ENTRY__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
   public static final String LOCATE_ENTRY__MSG__KEY_NOT_FOUND_REGION =
       "Key is not present in the region";
 
@@ -1781,7 +1654,8 @@ public class CliStrings {
   public static final String PUT__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS =
       "Region <{0}> not found in any of the members";
   public static final String PUT__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
-  public static final String PUT__MSG__KEY_NOT_FOUND_REGION = "Key is not present in the region";
+  public static final String PUT__MSG__KEY_NOT_FOUND_REGION =
+      "Key {0} is not present in the region";
 
   public static final String QUERY = "query";
   public static final String QUERY__HELP =
@@ -1798,8 +1672,6 @@ public class CliStrings {
   public static final String QUERY__MSG__INVALID_QUERY = "Query is invalid due for error : <{0}>";
   public static final String QUERY__MSG__REGIONS_NOT_FOUND =
       "Cannot find regions <{0}> in any of the members";
-  public static final String QUERY__MSG__NOT_SUPPORTED_ON_MEMBERS = CliStrings.QUERY
-      + " command should be used only from shell. Use QueryService API for running query inside Geode VMs";
 
   /* 'rebalance' command */
   public static final String REBALANCE = "rebalance";
@@ -1817,13 +1689,6 @@ public class CliStrings {
   public static final String REBALANCE__SIMULATE = "simulate";
   public static final String REBALANCE__SIMULATE__HELP =
       "Whether to only simulate rebalancing. The --time-out parameter is not available when simulating.";
-  public static final String REBALANCE__MSG__SIMULATED = "Simulated Successfully";
-  public static final String REBALANCE__MSG__TIMEOUT =
-      "Time out. Rebalance operation will continue on servers";
-  public static final String REBALANCE__MSG__REBALANCED = "Rebalanced Successfully";
-  public static final String REBALANCE__MSG__CANCELLED = "Rebalance Cancelled";
-  public static final String REBALANCE__MSG__WAIT_INTERRUPTED =
-      "Rebalance wait interrupted Cancelled";
   public static final String REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER =
       "For the region {0}, no member was found";
   public static final String REBALANCE__MSG__NO_EXECUTION = "Could not execute for member:{0}";
@@ -1851,19 +1716,13 @@ public class CliStrings {
       "Exception occurred while rebalancing on member : {0} . Exception is ";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1 =
       "Exception occurred while rebalancing on member : {0} . Exception is : {1}";
-  public static final String REBALANCE__MSG__ERROR_IN_RETRIEVING_MBEAN =
-      "Could not retrieve MBean for region : {0}";
   public static final String REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1 =
       "Could not execute rebalance for region: {0} on members : {1} ";
-  public static final String REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0 =
-      "Could not execute rebalance for region: {0}";
   public static final String REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED =
       " Reason : Members may be departed";
   public static final String REBALANCE__MSG__REASON = " Reason : ";
   public static final String REBALANCE__MSG__REBALANCE_WILL_CONTINUE =
       "Rebalance will continue in background";
-  public static final String REBALANCE__MSG__REGION_NOT_ASSOCIATED_WITH_MORE_THAN_ONE_MEMBER =
-      "No regions associated with more than 1 members";
   public static final String REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0 =
       "Exception occurred while rebalancing. Reason : {0}";
 
@@ -1884,7 +1743,6 @@ public class CliStrings {
       "Clears the region by removing all entries. Partitioned region does not support remove-all";
   public static final String REMOVE__MSG__REGIONNAME_EMPTY = "Region name is either empty or Null";
   public static final String REMOVE__MSG__KEY_EMPTY = "Key is Null";
-  public static final String REMOVE__MSG__VALUE_EMPTY = "Value is either empty or Null";
   public static final String REMOVE__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS =
       "Region <{0}> not found in any of the members";
   public static final String REMOVE__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
@@ -1892,6 +1750,7 @@ public class CliStrings {
   public static final String REMOVE__MSG__CLEARED_ALL_CLEARS = "Cleared all keys in the region";
   public static final String REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION =
       "Option --" + REMOVE__ALL + " is not supported on partitioned region";
+
 
   /* resume gateway-sender */
   public static final String RESUME_GATEWAYSENDER = "resume gateway-sender";
@@ -1924,8 +1783,6 @@ public class CliStrings {
   public static final String RUN__CONTINUEONERROR__HELP =
       "Whether command execution should continue if an error is received.";
 
-  public static final String RUN__MSG_FILE_NOT_FOUND = "Could not find specified script file: ";
-
   /* 'set variable' command */
   public static final String SET_VARIABLE = "set variable";
   public static final String SET_VARIABLE__HELP =
@@ -1939,22 +1796,6 @@ public class CliStrings {
       "Name for the variable. Name must only be composed of letters, numbers and the \"_\" character and may not start with a number.";
   public static final String SET_VARIABLE__VALUE = "value";
   public static final String SET_VARIABLE__VALUE__HELP = "Value that the variable will be set to.";
-
-  public static final String USEFUL_VARIABLES = "[A] System Variables\n"
-      + "1. SYS_USER          User name (read only)\n"
-      + "2. SYS_USER_HOME     User's home directory (read only)\n"
-      + "3. SYS_HOST_NAME     Host where GFSH is running (read only)\n"
-      + "4. SYS_CLASSPATH     CLASSPATH of the GFSH JVM (read only)\n"
-      + "5. SYS_JAVA_VERSION  Java version used by GFSH (read only)\n"
-      + "6. SYS_OS            OS name for the host where GFSH is running (read only)\n"
-      + "7. SYS_PWD           Current working directory (read only)\n\n"
-      + "[B] Application Variables\n"
-      + "1. APP_CONTEXT_PATH                Current context path (read only)\n"
-      + "2. APP_FETCH_SIZE                  Fetch size used when querying. Valid values are: 1-100\n"
-      + "3. APP_LAST_EXIT_STATUS            Numeric value for last command exit status. One of: 0 (success), 1 (error), 2 (crash) (read only)\n"
-      + "4. APP_COLLECTION_LIMIT            Number of items in the embedded collection of a result to be iterated. Valid values are: 1-100.\n"
-      + "5. APP_QUERY_RESULTS_DISPLAY_MODE  How command results should be shown. Valid values are: table and catalog.\n"
-      + "6. APP_QUIET_EXECUTION.            Whether commands should be executed in quiet mode. Valid values are: true and false.\n";
 
   /* 'sh' command */
   public static final String SH = "sh";
@@ -1991,7 +1832,6 @@ public class CliStrings {
       "Number of lines from the log file to display. The maximum is 100.";
   public static final String SHOW_LOG_NO_LOG = "There is no log for this member";
   public static final String SHOW_LOG_MSG_MEMBER_NOT_FOUND = "Member not found";
-  public static final String SHOW_LOG_MSG_INVALID_NUMBER = "Invalid number";
   public static final String SHOW_LOG_ERROR = "Error";
 
   /* show metrics */
@@ -2041,9 +1881,6 @@ public class CliStrings {
   public static final String INCLUDE_LOCATORS = "include-locators";
   public static final String INCLUDE_LOCATORS_HELP =
       "To shutdown locators specify this option as true. Default is false";
-  public static final String SHUTDOWN__MSG__CANNOT_EXECUTE = "Cannot execute";
-  public static final String SHUTDOWN__MSG__ERROR =
-      "Exception occurred while shutdown. Reason : {0}";
   public static final String SHUTDOWN__MSG__MANAGER_NOT_FOUND = "Could not locate Manager.";
   public static final String SHUTDOWN__MSG__WARN_USER =
       "As a lot of data in memory will be lost, including possibly events in queues, do you really want to shutdown the entire distributed system?";
@@ -2053,11 +1890,8 @@ public class CliStrings {
       "Shutting down entire distributed system";
   public static final String SHUTDOWN__MSG__IMPROPER_TIMEOUT =
       "time-out should not be less than 10 sec.";
-  public static final String SHUTDOWN__MSG__CAN_NOT_SHUTDOWN_WITHIN_TIMEOUT =
-      "Could not shutdown within timeout. Shutdown will continue in background";
   public static final String SHUTDOWN__MSG__NO_DATA_NODE_FOUND =
       "No data node found for stopping. Please specify --include-locators option if you want locators to be stopped";
-
   public static final String SHUTDOWN_TIMEDOUT =
       "Shutdown command timedout. Please manually check node status";
 
@@ -2073,11 +1907,8 @@ public class CliStrings {
   public static final String CHANGE_LOGLEVEL__LOGLEVEL__HELP = "Log level to change to";
   public static final String CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER =
       "Specify one of group or member";
-  public static final String CHANGE_LOGLEVEL__MSG__INVALID_LOG_LEVEL =
-      "Specified log-level is invalid";
-  public static final String CHANGE_LOGLEVEL__MSG__SPECIFY_LOG_LEVEL = "Specify valid log-level";
   public static final String CHANGE_LOGLEVEL__MSG__CANNOT_EXECUTE =
-      "Cannot execute change log-level.";
+      "Cannot execute change log-level. The specified log-level may be invalid or missing.";
   public static final String CHANGE_LOGLEVEL__COLUMN_MEMBER = "Member";
   public static final String CHANGE_LOGLEVEL__COLUMN_STATUS = "Changed log-level";
   public static final String CHANGE_LOGLEVEL__MSG_NO_MEMBERS =
@@ -2282,9 +2113,6 @@ public class CliStrings {
       "An error occurred while launching Java VisualVM - %1$s";
   public static final String START_JVISUALVM__EXPECTED_JDK_VERSION_ERROR_MESSAGE =
       "Java VisualVM was not bundled with the JDK until version 1.6.\nDownload and install Java VisualVM to the JDK bin directory separately.";
-  public static final String START_JVISUALVM__J = "J";
-  public static final String START_JVISUALVM__J__HELP =
-      "Arguments passed to the JVM on which Java VisualVM will run.";
   public static final String START_JVISUALVM__NOT_FOUND_ERROR_MESSAGE =
       "Java VisualVM could not be found on this system.\nPlease ensure that \"jvisualvm\" is installed in the JDK bin directory and the JDK bin directory is in the system PATH.";
   public static final String START_JVISUALVM__RUN = "Launched JVisualVM";
@@ -2381,40 +2209,6 @@ public class CliStrings {
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS = "http-service-bind-address";
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP =
       "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
-
-  /* 'start manager' command */
-  public static final String START_MANAGER = "start manager";
-  public static final String START_MANAGER__HELP =
-      "Start a Manager. Parameters --peer and --server will be removed for simplicity and Locator is always available for both.";
-  public static final String START_MANAGER__MEMBERNAME = "name";
-  public static final String START_MANAGER__MEMBERNAME__HELP =
-      "Member name for this Manager service.";
-  public static final String START_MANAGER__DIR = "dir";
-  public static final String START_MANAGER__DIR__HELP =
-      "Directory in which the Manager will be run. The default is the current directory.";
-  public static final String START_MANAGER__CLASSPATH = "classpath";
-  public static final String START_MANAGER__CLASSPATH__HELP =
-      "Location of user classes required by the Manager. This path is appended to the current classpath.";
-  public static final String START_MANAGER__PORT = "port";
-  public static final String START_MANAGER__PORT__HELP =
-      "Port the Manager will listen on for JMX-RMI client connections.";
-  public static final String START_MANAGER__BIND_ADDRESS = "bind-address";
-  public static final String START_MANAGER__BIND_ADDRESS__HELP =
-      "IP address the Manager listen on for JMX-RMI client connections. The default is to bind to all local addresses.";
-  public static final String START_MANAGER__GROUP__HELP =
-      "Group(s) this Manager will be a part of.";
-  public static final String START_MANAGER__MAXHEAP = "max-heap";
-  public static final String START_MANAGER__MAXHEAP__HELP =
-      "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
-  public static final String START_MANAGER__INITIALHEAP = "initial-heap";
-  public static final String START_MANAGER__INITIALHEAP__HELP =
-      "Initial size of the heap in the same format as the JVM -Xms parameter.";
-  public static final String START_MANAGER__GEODEPROPS = "G";
-  public static final String START_MANAGER__GEODEPROPS__HELP =
-      "Geode property passed as a <name>=<value> pair.";
-  public static final String START_MANAGER__J = "J";
-  public static final String START_MANAGER__J__HELP =
-      "Argument passed to the JVM on which the Locator will run. For example, --J=-Dfoo.bar=true will set the property \"foo.bar\" to \"true\".";
 
   /* 'start server' command */
   public static final String START_SERVER = "start server";
@@ -2536,10 +2330,6 @@ public class CliStrings {
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE = STATISTIC_ARCHIVE_FILE;
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE__HELP =
       "The file that statistic samples are written to.  An empty string (default) disables statistic archival.";
-  // public static final String START_SERVER__START_LOCATOR = "start-locator";
-  // public static final String START_SERVER__START_LOCATOR__HELP =
-  // "To start embedded Locator with given endpoints in the format: host[port]. If no endpoints are
-  // given defaults (localhost[10334]) are assumed.";
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION = USE_CLUSTER_CONFIGURATION;
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION__HELP =
       "When set to true, the server requests the configuration from locator's cluster configuration service.";
@@ -2569,27 +2359,12 @@ public class CliStrings {
   public static final String START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP =
       "Set the percentage of off-heap memory at or above which the eviction should begin on Regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately."
           + " Only one change to this attribute or critical off-heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed.";
-  // cacheServer.setLoadPollInterval(loadPollInterval)
-  // cacheServer.setLoadProbe(loadProbe);
-  // cacheServer.setMaxConnections(maxCons);
-  // cacheServer.setMaximumMessageCount(maxMessageCount);
-  // cacheServer.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
-  // cacheServer.setMaxThreads(maxThreads);
-  // cacheServer.setMessageTimeToLive(messageTimeToLive);
-  // cacheServer.setSocketBufferSize(socketBufferSize)
-  // cacheServer.setTcpNoDelay(noDelay)
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS = "hostname-for-clients";
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS__HELP =
       "Sets the ip address or host name that this cache server is to listen on for client connections."
           + "Setting a specific hostname-for-clients will cause server locators to use this value when telling clients how to connect to this cache server. This is useful in the case where the cache server may refer to itself with one hostname, but the clients need to use a different hostname to find the cache server."
           + "The value \"\" causes the bind-address to be given to clients."
           + "A null value will be treated the same as the default \"\".";
-
-
-  public static final String START_SERVER__LOAD__POLL__INTERVAL = "load-poll-interval";
-  public static final String START_SERVER__LOAD__POLL__INTERVAL__HELP =
-      "Set the frequency in milliseconds to poll the load probe on this cache server";
-
 
   public static final String START_SERVER__MAX__CONNECTIONS = "max-connections";
   public static final String START_SERVER__MAX__CONNECTIONS__HELP =
@@ -2611,11 +2386,6 @@ public class CliStrings {
   public static final String START_SERVER__SOCKET__BUFFER__SIZE__HELP =
       "Sets the buffer size in bytes of the socket connection for this CacheServer. The default is 32768 bytes.";
 
-  public static final String START_SERVER__TCP__NO__DELAY = "tcp-no-delay";
-  public static final String START_SERVER__TCP__NO__DELAY__HELP =
-      "Configures the tcpNoDelay setting of sockets used to send messages to clients. TcpNoDelay is enabled by default";
-
-
   /* start vsd command */
   public static final String START_VSD = "start vsd";
   public static final String START_VSD__FILE = "file";
@@ -2628,16 +2398,6 @@ public class CliStrings {
       "The location of VSD could not be found.  Please ensure VSD was properly installed under Geode home (%1$s).";
   public static final String START_VSD__RUN =
       "Launched Geode Visual Statistics Display (VSD) (see Geode log files for issues on start)";
-
-  /* start databrowser command */
-  public static final String START_DATABROWSER = "start data-browser";
-  public static final String START_DATABROWSER__HELP = "Start Data Browser in a separate process.";
-  public static final String START_DATABROWSER__NOT_FOUND_ERROR_MESSAGE =
-      "The location of DataBrowser could not be found.  Please ensure DataBrowser was properly installed under Geode home (%1$s).";
-  public static final String START_DATABROWSER__RUN =
-      "Launched Geode DataBrowser (see Geode log files for issues on start)";
-  public static final String START_DATABROWSER__ERROR =
-      "An error occurred while launching DataBrowser - %1$s";
 
   /* status gateway-receiver */
   public static final String STATUS_GATEWAYRECEIVER = "status gateway-receiver";
@@ -2739,8 +2499,6 @@ public class CliStrings {
       "No Locator with member name or ID {0} could be found.";
   public static final String STOP_LOCATOR__NOT_LOCATOR_ERROR_MESSAGE =
       "The Geode member identified by {0} is not a Locator and cannot be shutdown using 'stop locator'.";
-  public static final String STOP_LOCATOR__SHUTDOWN_MEMBER_MESSAGE =
-      "Locator {0} has been requested to stop.";
   public static final String STOP_LOCATOR__STOPPING_LOCATOR_MESSAGE =
       "Stopping Locator running in %1$s on %2$s as %3$s...%nProcess ID: %4$d%nLog File: %5$s";
 
@@ -2762,8 +2520,6 @@ public class CliStrings {
   public static final String STOP_SERVER__PID = "pid";
   public static final String STOP_SERVER__PID__HELP =
       "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
-  public static final String STOP_SERVER__SHUTDOWN_MEMBER_MESSAGE =
-      "Cache Server {0} has been requested to stop.";
   public static final String STOP_SERVER__STOPPING_SERVER_MESSAGE =
       "Stopping Cache Server running in %1$s on %2$s as %3$s...%nProcess ID: %4$d%nLog File: %5$s";
 
@@ -2792,12 +2548,6 @@ public class CliStrings {
   public static final String UPGRADE_OFFLINE_DISK_STORE__J = "J";
   public static final String UPGRADE_OFFLINE_DISK_STORE__J__HELP =
       "Arguments passed to the Java Virtual Machine performing the upgrade operation on the disk store.";
-  public static final String UPGRADE_OFFLINE_DISK_STORE__DISKSTORE_0_DOES_NOT_EXIST =
-      "Disk store \"{0}\" does not exist.";
-  public static final String UPGRADE_OFFLINE_DISK_STORE__UPGRADE_ATTEMPTED_BUT_NOTHING_TO_UPGRADE =
-      "Upgradation was attempted but nothing to upgrade.";
-  public static final String UPGRADE_OFFLINE_DISK_STORE__ERROR_WHILE_UPGRADATION_REASON_0 =
-      "Error occurred while performing disk store upgrade. Reason: \"{0}\"";
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_LOCATE_0_DISKSTORE_IN_1 =
       "Cannot locate disk store \"{0}\" in directory : \"{1}\"";
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__DISKSTORE_IN_USE_COMPACT_DISKSTORE_CAN_BE_USED =
@@ -2834,8 +2584,6 @@ public class CliStrings {
   public static final String VERSION__FULL__HELP = "Whether to show the full version information.";
 
   /* start gateway command messages */
-  public static final String GATEWAY__MSG__OPTIONS = "Provide only one of member/group";
-  public static final String GATEWAY_MSG_MEMBER_0_NOT_FOUND = "Member : {0} not found";
   public static final String GATEWAY_MSG_MEMBERS_NOT_FOUND = "Members not found";
   public static final String GATEWAY_ERROR = "Error";
   public static final String GATEWAY_OK = "OK";
@@ -2877,8 +2625,6 @@ public class CliStrings {
 
   public static final String GATEWAY_RECEIVER_IS_NOT_AVAILABLE_OR_STOPPED =
       "GatewayReceiver is not available or already stopped";
-  public static final String GATEWAY_RECEIVER_IS_NOT_AVAILABLE_OR_STOPPED_ON_MEMBER =
-      "GatewayReceiver is not available or already stopped on member {0}";
   public static final String GATEWAY_RECEIVER_IS_ALREADY_STARTED_ON_MEMBER_0 =
       "GatewayReceiver is already started on member {0}";
   public static final String GATEWAY_RECEIVER_IS_STARTED_ON_MEMBER_0 =
@@ -2921,13 +2667,11 @@ public class CliStrings {
       "Could not start gateway sender {0} on member due to {1}";
   /* end gateway command messages */
 
-  /***
-   * CQ Commands
-   *
-   */
+  /* Durable CQ Commands */
+  public static final String DURABLE_CQ_CLIENT_NOT_FOUND =
+      "No durable client found on server for durable client id {0}.";
 
   // List durable cqs
-
   public static final String LIST_DURABLE_CQS = "list durable-cqs";
   public static final String LIST_DURABLE_CQS__DURABLECLIENTID = DURABLE_CLIENT_ID;
   public static final String LIST_DURABLE_CQS__DURABLECLIENTID__HELP =
@@ -2940,18 +2684,12 @@ public class CliStrings {
       "Group of members for which the durable client is registered and durable cqs will be displayed.";
   public static final String LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT =
       "No durable cqs found for durable-client-id : \"{0}\".";
-  public static final String LIST_DURABLE_CQS__PER__MEMBER__MSG =
-      "Durable cqs on member : \"{0}\".";
-  public static final String LIST_DURABLE_CQS__FAILURE__MSG =
-      "Errors while retrieving cqs for durable client \"{0}\".";
-  public static final String LIST_DURABLE_CQS__EXCEPTION__OCCURRED__ON =
-      "Members with exceptions while retrieving durable cqs.";
   public static final String LIST_DURABLE_CQS__NO__CQS__REGISTERED =
       "No durable cq's registered on this member.";
   public static final String LIST_DURABLE_CQS__NAME = "durable-cq-name";
+
   public static final String LIST_DURABLE_CQS__FAILURE__HEADER =
       "Unable to list durable-cqs for durable-client-id : \"{0}\" due to following reasons.";
-
   // Close Durable CQ's
   public static final String CLOSE_DURABLE_CQS = "close durable-cq";
   public static final String CLOSE_DURABLE_CQS__HELP =
@@ -2969,9 +2707,9 @@ public class CliStrings {
       "Could not close the durable-cq : \"{0}\" for the durable-client-id : \"{1}\" due to following reasons.";
   public static final String CLOSE_DURABLE_CQS__SUCCESS =
       "Closed the durable cq : \"{0}\" for the durable client : \"{1}\".";
+
   public static final String CLOSE_DURABLE_CQS__UNABLE__TO__CLOSE__CQ =
       "Unable to close the durable cq : \"{0}\" for the durable client : \"{1}\".";
-
   // Close Durable Clients
   public static final String CLOSE_DURABLE_CLIENTS = "close durable-client";
   public static final String CLOSE_DURABLE_CLIENTS__HELP =
@@ -2985,9 +2723,9 @@ public class CliStrings {
       "Group of members for which the durable client is to be closed.";
   public static final String CLOSE_DURABLE_CLIENTS__FAILURE__HEADER =
       "Unable to close the durable client : \"{0}\" due to following reasons.";
+
   public static final String CLOSE_DURABLE_CLIENTS__SUCCESS =
       "Closed the durable client : \"{0}\".";
-
   public static final String COUNT_DURABLE_CQ_EVENTS = "show subscription-queue-size";
   public static final String COUNT_DURABLE_CQ_EVENTS__HELP =
       "Shows the number of events in the subscription queue.  If a cq name is provided, counts the number of events in the subscription queue for the specified cq.";
@@ -3001,16 +2739,12 @@ public class CliStrings {
       "Name/Id of the member for which the subscription events are to be counted.";
   public static final String COUNT_DURABLE_CQ_EVENTS__GROUP__HELP =
       "Group of members for which the subscription queue events are to be counted.";
-  public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE_CLIENT_NOT_FOUND =
-      "No durable client found on server for durable client id {0}.";
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE_CQ_NOT_FOUND =
       "No cq found on server for client with durable-client-id : {0} with cq-name : {1}.";
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE_CQ_STATS_NOT_FOUND =
       "No cq stats found on server for durable client id {0} with cq name {1}.";
   public static final String COUNT_DURABLE_CQ_EVENTS__NO__CQS__REGISTERED =
       "No cq's registered on this member";
-  public static final String COUNT_DURABLE_CQ_EVENTS__SUBSCRIPTION__QUEUE__SIZE__CQ =
-      "subscription-queue-size for durable-cq : \"{0}\".";
   public static final String COUNT_DURABLE_CQ_EVENTS__SUBSCRIPTION__QUEUE__SIZE__CLIENT =
       "subscription-queue-size for durable-client : \"{0}\".";
 
@@ -3024,15 +2758,8 @@ public class CliStrings {
   public static final String EXPORT_SHARED_CONFIG__FILE = "zip-file-name";
   public static final String EXPORT_SHARED_CONFIG__FILE__HELP =
       "Path to the zip file containing the exported cluster configuration artifacts";
-  public static final String EXPORT_SHARED_CONFIG__MSG__NOT_A_DIRECTORY = "{0} is not a directory.";
-  public static final String EXPORT_SHARED_CONFIG__MSG__CANNOT_CREATE_DIR =
-      "Directory {0} could not be created.";
-  public static final String EXPORT_SHARED_CONFIG__MSG__NOT_WRITEABLE = "{0} is not writeable";
-  public static final String EXPORT_SHARED_CONFIG__FILE__NAME = "cluster-config-{0}.zip";
   public static final String EXPORT_SHARED_CONFIG__DOWNLOAD__MSG =
       "Downloading cluster configuration : {0}";
-  public static final String EXPORT_SHARED_CONFIG__LOCATOR_HEADER = "Locator";
-  public static final String EXPORT_SHARED_CONFIG__LOCATOR__ERROR__MSG__HEADER = "Error";
   public static final String EXPORT_SHARED_CONFIG__UNABLE__TO__EXPORT__CONFIG =
       "Unable to export config";
 
@@ -3042,18 +2769,8 @@ public class CliStrings {
   public static final String IMPORT_SHARED_CONFIG__ZIP = "zip-file-name";
   public static final String IMPORT_SHARED_CONFIG__ZIP__HELP =
       "The zip file containing the cluster configuration artifacts, which are to be imported";
-  public static final String IMPORT_SHARED_CONFIG__DIR = "dir";
-  public static final String IMPORT_SHARED_CONFIG__DIR__HELP =
-      "The directory which contains the cluster configuration artifacts, which are to be imported.";
-  public static final String IMPORT_SHARED_CONFIG__PRE__IMPORT__MSG =
-      "Importing configuration into locator would overwrite the existing cluster configuration. Would you like to proceed ?";
-  public static final String IMPORT_SHARED_CONFIG__CANNOT__IMPORT__MSG =
-      "Cluster configuration cannot be imported when there are running data members present in the distributed system.\n"
-          + "Shutdown all the non locator members to import the cluster configuration, and restart them after the cluster configuration is successfully imported.";
   public static final String NO_LOCATORS_WITH_SHARED_CONFIG =
       "No locators found with \"enable-cluster-configuration=true\".";
-  public static final String IMPORT_SHARED_CONFIG__ARTIFACTS__COPIED =
-      "Cluster configuration artifacts successfully copied";
   public static final String IMPORT_SHARED_CONFIG__SUCCESS__MSG =
       "Cluster configuration successfully imported";
   public static final String IMPORT_SHARED_CONFIG__PROVIDE__ZIP =
@@ -3063,8 +2780,6 @@ public class CliStrings {
   public static final String STATUS_SHARED_CONFIG_HELP =
       "Displays the status of cluster configuration service on all the locators with enable-cluster-configuration set to true.";
   public static final String STATUS_SHARED_CONFIG_NAME_HEADER = "Name";
-  public static final String STATUS_SHARED_CONFIG_HOST_HEADER = "Hostname";
-  public static final String STATUS_SHARED_CONFIG_PORT_HEADER = "Port";
   public static final String STATUS_SHARED_CONFIG_STATUS = "Status";
 
 
@@ -3079,15 +2794,9 @@ public class CliStrings {
       "Control whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be including their data during serialization. But if you configure the cache to ignore unread fields then their data will be lost during serialization."
           + "You should only set this attribute to true if you know this member will only be reading cache data. In this use case you do not need to pay the cost of preserving the unread fields since you will never be reserializing pdx data.";
   public static final String CONFIGURE_PDX__PERSISTENT = "persistent";
-  public static final String CONFIGURE_PDX__PERSISTENT__HELP =
-      "Control whether the type metadata for PDX objects is persisted to disk. The default for this setting is false. If you are using persistent regions with PDX then you must set this to true. If you are using a GatewaySender or AsyncEventQueue with PDX then you should set this to true";
   public static final String CONFIGURE_PDX__DISKSTORE = "disk-store";
   public static final String CONFIGURE_PDX__DISKSTORE__HELP =
       "Named disk store where the PDX type data will be stored";
-
-  public static final String CONFIGURE_PDX__CHECK__PORTABILITY = "check-portability";
-  public static final String CONFIGURE_PDX__CHECK__PORTABILITY__HELP =
-      "if true then an serialization done by this serializer will throw an exception if the object it not portable to non-java languages.";
 
   public static final String CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES =
       "portable-auto-serializable-classes";
@@ -3119,18 +2828,8 @@ public class CliStrings {
   public static final String PDX_RENAME__EMPTY = "No Pdx types found to rename.";
 
   public static final String PDX_DELETE_FIELD = "pdx delete-field";
-  public static final String PDX_DELETE_FIELD__HELP =
-      "Deletes a field from a PDX type in an offline disk store. \n Any pdx types with a field deleted by this command will be listed in the output. \n If no deletes are done or the disk-store is online then this command will fail.";
   public static final String PDX_CLASS = "class";
-  public static final String PDX_CLASS__HELP =
-      "The fully qualified class name of the pdx type to delete the field from.";
   public static final String PDX_FIELD = "field";
-  public static final String PDX_FIELD__HELP = "Field name to delete";
-  public static final String PDX_DELETE_FIELD__SUCCESS =
-      "Successfully deleted field in types:\n{0}";
-  public static final String PDX_DELETE_FIELD__ERROR = "Error deleting field : {0}";
-  public static final String PDX_DELETE__EMPTY = "Field to be deleted not found in the class.";
-
 
   public static final String START_SERVER__REST_API = "start-rest-api";
   public static final String START_SERVER__REST_API__HELP =
@@ -3179,7 +2878,5 @@ public class CliStrings {
     return MessageFormat.format(pattern, arguments);
   }
 
-
   public static final String IGNORE_INTERCEPTORS = "ignoreInterceptors";
-
 }
