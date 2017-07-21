@@ -17,6 +17,7 @@
 
 
 apply plugin: 'antlr'
+apply plugin: 'me.champeau.gradle.jmh'
 
 sourceSets {
   jca {
@@ -220,6 +221,10 @@ configurations {
 
 dependencies {
   classesOutput sourceSets.main.output
+}
+
+jmh {
+  duplicateClassesStrategy = 'warn'
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
