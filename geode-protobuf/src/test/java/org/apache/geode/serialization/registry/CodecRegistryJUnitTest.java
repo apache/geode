@@ -14,11 +14,6 @@
  */
 package org.apache.geode.serialization.registry;
 
-import org.apache.geode.serialization.SerializationType;
-import org.apache.geode.serialization.TypeCodec;
-import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
-import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +24,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import org.apache.geode.serialization.SerializationType;
+import org.apache.geode.serialization.TypeCodec;
+import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
+import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)

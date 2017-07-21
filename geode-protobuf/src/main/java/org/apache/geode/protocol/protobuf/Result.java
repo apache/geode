@@ -12,13 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.protocol.operations.registry.exception;
+package org.apache.geode.protocol.protobuf;
 
-/**
- * Indicates that we're trying to handle an operation for which no operation handler has registered.
- */
-public class OperationHandlerNotRegisteredException extends Exception {
-  public OperationHandlerNotRegisteredException(String message) {
-    super(message);
-  }
+import java.util.function.Function;
+
+public interface Result<SuccessType> {
+  <T> T map(Function<SuccessType, T> successFunction,
+      Function<ClientProtocol.ErrorResponse, T> errorFunction);
+
+  SuccessType getMessage();
+
+  ClientProtocol.ErrorResponse getErrorMessage();
 }
