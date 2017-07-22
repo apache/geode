@@ -33,9 +33,9 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class ExportLogsIntegrationTest {
-
   @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule().withLogFile().withAutoStart();
+  public static LocatorStarterRule locator =
+      new LocatorStarterRule().withWorkingDir().withLogFile().withAutoStart();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();

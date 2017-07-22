@@ -65,7 +65,8 @@ public class ExportLogsDUnitTest {
   private static final String ERROR_LOG_PREFIX = "[IGNORE]";
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
+  public LocatorServerStartupRule lsRule =
+      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();

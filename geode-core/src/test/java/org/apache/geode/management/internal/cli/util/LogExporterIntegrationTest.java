@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class LogExporterIntegrationTest {
 
   @Rule
-  public ServerStarterRule server = new ServerStarterRule().withLogFile();
+  public ServerStarterRule server = new ServerStarterRule().withWorkingDir();
 
   private LogExporter logExporter;
 

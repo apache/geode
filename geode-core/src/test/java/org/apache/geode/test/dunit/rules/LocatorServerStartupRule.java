@@ -67,8 +67,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   /**
-   * This rule will use a temporary folder to hold all the vm directories instead of using dunit
-   * folder. It will set each VM's working dir to its respective sub-directories.
+   * This will use a temporary folder to hold all the vm directories instead of using dunit folder.
+   * It will set each VM's working dir to its respective sub-directories.
    *
    * use this if you want to examine each member's file system without worrying about it's being
    * contaminated with DUnitLauncher's log files that exists in each dunit/vm folder such as
@@ -85,11 +85,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   /**
-   * all the logs will go into the file. If this is called, a temp directory is used for this rule
-   * instead of dunit folder. It's the same effect as calling .withTempWorkingDir() and withLogFile.
+   * this will allow all the logs go into log files instead of going into the console output
    */
   public LocatorServerStartupRule withLogFile() {
-    withTempWorkingDir();
     this.logFile = true;
     return this;
   }
@@ -126,14 +124,13 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     properties.setProperty(NAME, name);
     VM locatorVM = getHost(0).getVM(index);
     Locator locator = locatorVM.invoke(() -> {
+      locatorStarter = new LocatorStarterRule();
       if (useTempWorkingDir()) {
         File workingDirFile = createWorkingDirForMember(name);
-        locatorStarter = new LocatorStarterRule(workingDirFile);
-      } else {
-        locatorStarter = new LocatorStarterRule();
+        locatorStarter.withWorkingDir(workingDirFile);
       }
-
-      locatorStarter.withLogFile(logFile);
+      if (logFile)
+        locatorStarter.withLogFile();
       locatorStarter.withProperties(properties).withAutoStart();
       locatorStarter.before();
       return locatorStarter;
@@ -163,13 +160,13 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     properties.setProperty(NAME, name);
     VM serverVM = getHost(0).getVM(index);
     Server server = serverVM.invoke(() -> {
+      serverStarter = new ServerStarterRule();
       if (useTempWorkingDir()) {
         File workingDirFile = createWorkingDirForMember(name);
-        serverStarter = new ServerStarterRule(workingDirFile);
-      } else {
-        serverStarter = new ServerStarterRule();
+        serverStarter.withWorkingDir(workingDirFile);
       }
-      serverStarter.withLogFile(logFile);
+      if (logFile)
+        serverStarter.withLogFile();
       serverStarter.withProperties(properties).withConnectionToLocator(locatorPort).withAutoStart();
       serverStarter.before();
       return serverStarter;
@@ -192,13 +189,13 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
     VM serverVM = getHost(0).getVM(index);
     Server server = serverVM.invoke(() -> {
+      serverStarter = new ServerStarterRule();
       if (useTempWorkingDir()) {
         File workingDirFile = createWorkingDirForMember(name);
-        serverStarter = new ServerStarterRule(workingDirFile);
-      } else {
-        serverStarter = new ServerStarterRule();
+        serverStarter.withWorkingDir(workingDirFile);
       }
-      serverStarter.withLogFile(logFile);
+      if (logFile)
+        serverStarter.withLogFile();
       serverStarter.withEmbeddedLocator().withName(name).withJMXManager().withAutoStart();
       serverStarter.before();
       return serverStarter;

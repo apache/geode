@@ -90,19 +90,19 @@ public class MemberStarterRuleTest {
   }
 
   @Test
-  public void userDirSetToWorkingDirWhenCreatedWithIt() throws Exception {
-    locator = new LocatorStarterRule().withWorkingDir();
-    locator.before();
-
-    assertThat(System.getProperty("user.dir")).isEqualTo(locator.getWorkingDir().toString());
-  }
-
-  @Test
-  public void logInFileCreatesWorkingDir() throws Exception {
+  public void logFileDoesNotCreatesWorkingDir() throws Exception {
     locator = new LocatorStarterRule().withLogFile();
     locator.before();
 
     assertThat(locator.getName()).isNotNull();
+    assertThat(locator.getWorkingDir()).isNull();
+  }
+
+  @Test
+  public void workDirCreatesWorkDir() throws Exception {
+    locator = new LocatorStarterRule().withWorkingDir();
+    locator.before();
+
     assertThat(locator.getWorkingDir()).isNotNull();
   }
 }

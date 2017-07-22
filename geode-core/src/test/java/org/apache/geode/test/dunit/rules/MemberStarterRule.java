@@ -44,9 +44,9 @@ import org.apache.geode.security.SecurityManager;
  * duplication.
  */
 public abstract class MemberStarterRule<T> extends ExternalResource implements Member {
-  protected transient TemporaryFolder temporaryFolder;
   protected String oldUserDir;
 
+  protected transient TemporaryFolder temporaryFolder;
   protected File workingDir;
   protected int memberPort = -1;
   protected int jmxPort = -1;
@@ -59,19 +59,43 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
   protected boolean autoStart = false;
 
   public MemberStarterRule() {
-    this(null);
-  }
-
-  // Not meant to be public, only used by LocatorServerStartupRule
-  MemberStarterRule(File workDir) {
     oldUserDir = System.getProperty("user.dir");
-    workingDir = workDir;
-    if (workDir != null) {
-      withWorkingDir();
-    }
+
     // initial values
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+  }
+
+  public T withWorkingDir(File workingDir) {
+    this.workingDir = workingDir;
+    if (workingDir != null) {
+      System.setProperty("user.dir", workingDir.toString());
+    }
+    return (T) this;
+  }
+
+  /**
+   * create a working dir using temporaryFolder. Use with caution, this sets "user.dir" system
+   * property that not approved by JDK
+   */
+  public T withWorkingDir() {
+    temporaryFolder = new TemporaryFolder();
+    try {
+      temporaryFolder.create();
+    } catch (IOException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+    withWorkingDir(temporaryFolder.getRoot().getAbsoluteFile());
+    return (T) this;
+  }
+
+  /**
+   * All the logs are written in the logfile instead on the console. this is usually used with
+   * withWorkingDir so that logs are accessible and will be cleaned up afterwards.
+   */
+  public T withLogFile() {
+    this.logFile = true;
+    return (T) this;
   }
 
   @Override
@@ -84,14 +108,14 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
       ds.disconnect();
     }
 
+    if (temporaryFolder != null) {
+      temporaryFolder.delete();
+    }
+
     if (oldUserDir == null) {
       System.clearProperty("user.dir");
     } else {
       System.setProperty("user.dir", oldUserDir);
-    }
-
-    if (temporaryFolder != null) {
-      temporaryFolder.delete();
     }
   }
 
@@ -120,44 +144,6 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
   public T withName(String name) {
     this.name = name;
     properties.setProperty(NAME, name);
-    return (T) this;
-  }
-
-  /**
-   * this will make the logging to into a log file instead of on the console.
-   *
-   * Use with caution, the logs files are created in a temp working directory. this is achieved by
-   * dynamically changing the "user.dir" system property.
-   * 
-   * @return
-   */
-  public T withLogFile() {
-    this.logFile = true;
-    return (T) this;
-  }
-
-  // Not meant to be public, only used by LocatorServerStartupRule
-  T withLogFile(boolean logFile) {
-    this.logFile = logFile;
-    return (T) this;
-  }
-
-  /**
-   * create the working dir using temporaryFolder. Use with caution, this sets "user.dir" system
-   * property that not approved by JDK
-   */
-  public T withWorkingDir() {
-    if (workingDir == null) {
-      temporaryFolder = new TemporaryFolder();
-      try {
-        temporaryFolder.create();
-      } catch (IOException e) {
-        throw new RuntimeException(e.getMessage(), e);
-      }
-      workingDir = temporaryFolder.getRoot().getAbsoluteFile();
-    }
-
-    System.setProperty("user.dir", workingDir.toString());
     return (T) this;
   }
 
@@ -221,12 +207,8 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
     }
 
     // if caller wants the logs being put into a file instead of in console output
-    // do it here since only here, we can gurantee the name is present
+    // do it here since only here, we can guarantee the name is present
     if (logFile) {
-      // if working dir is not created yet, creates it.
-      if (workingDir == null) {
-        withWorkingDir();
-      }
       properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath());
     }
   }

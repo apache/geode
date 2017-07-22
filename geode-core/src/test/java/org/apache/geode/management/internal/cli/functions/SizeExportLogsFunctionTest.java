@@ -62,7 +62,7 @@ public class SizeExportLogsFunctionTest {
   public TestName testName = new TestName();
 
   @Rule
-  public ServerStarterRule server = new ServerStarterRule().withLogFile();
+  public ServerStarterRule server = new ServerStarterRule();
 
   @Before
   public void before() throws Throwable {
@@ -121,6 +121,8 @@ public class SizeExportLogsFunctionTest {
 
   @Test
   public void sizeGreaterThanDiskAvailable_sendsErrorResult() throws Throwable {
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
     server.withProperties(config).startServer();
 
     FunctionContext context =

@@ -16,7 +16,10 @@ package org.apache.geode.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -33,13 +36,6 @@ import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.junit.rules.RestoreTCCLRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +43,14 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
 /**
  * Integration tests for {@link ClassPathLoader}.
@@ -238,7 +241,8 @@ public class ClassPathLoaderIntegrationTest {
     outStream.write(jarBytes);
     outStream.close();
 
-    ServerStarterRule serverStarterRule = new ServerStarterRule(temporaryFolder.getRoot());
+    ServerStarterRule serverStarterRule =
+        new ServerStarterRule().withWorkingDir(temporaryFolder.getRoot());
     serverStarterRule.startServer();
 
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
@@ -257,7 +261,7 @@ public class ClassPathLoaderIntegrationTest {
     File jarVersion1 = createVersionOfJar("Version1", "MyFunction", "MyJar.jar");
     File jarVersion2 = createVersionOfJar("Version2", "MyFunction", "MyJar.jar");
 
-    ServerStarterRule serverStarterRule = new ServerStarterRule(temporaryFolder.getRoot());
+    ServerStarterRule serverStarterRule = new ServerStarterRule();
     serverStarterRule.startServer();
 
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();

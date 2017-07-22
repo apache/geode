@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,24 +55,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   private boolean pdxPersistent = false;
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
-
-  /**
-   * Default constructor, if used, the rule will create a temporary folder as the server's working
-   * dir, and will delete it when the test is done.
-   */
-  public ServerStarterRule() {
-    // nothing
-  }
-
-  /**
-   * if constructed this way, the rule won't be deleting the workingDir after the test is done. It's
-   * the caller's responsibility to delete it.
-   * 
-   * @param workingDir: the working dir this server should be writing the artifacts to.
-   */
-  public ServerStarterRule(File workingDir) {
-    super(workingDir);
-  }
 
   public InternalCache getCache() {
     return cache;

@@ -53,7 +53,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class ExportLogsStatsDUnitTest {
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
+  public static LocatorServerStartupRule lsRule =
+      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @ClassRule
   public static GfshShellConnectionRule connector = new GfshShellConnectionRule();

@@ -18,13 +18,13 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.awaitility.Awaitility;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
 
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
@@ -45,12 +45,6 @@ import java.util.concurrent.TimeUnit;
 public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> implements Locator {
 
   private transient InternalLocator locator;
-
-  public LocatorStarterRule() {}
-
-  public LocatorStarterRule(File workingDir) {
-    super(workingDir);
-  }
 
   public InternalLocator getLocator() {
     return locator;

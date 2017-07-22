@@ -38,7 +38,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class ExportLogsOnServerManagerDUnit {
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
+  public LocatorServerStartupRule lsRule =
+      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();

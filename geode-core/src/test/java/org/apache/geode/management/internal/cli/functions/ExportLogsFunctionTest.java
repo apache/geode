@@ -16,15 +16,17 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.logging.log4j.Level;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.apache.logging.log4j.Level;
-import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class ExportLogsFunctionTest {
@@ -40,6 +42,36 @@ public class ExportLogsFunctionTest {
     assertEquals(args.getLogLevel(), Level.ALL);
     ExportLogsFunction.Args args2 = new ExportLogsFunction.Args("", "", null, false, false, false);
     assertEquals(args2.getLogLevel(), Level.ALL);
+  }
+
+  @Test
+  public void argsCorrectlyBuildALogLevelFilter() {
+    ExportLogsFunction.Args args =
+        new ExportLogsFunction.Args(null, null, "info", false, false, false);
+    assertThat(args.getLogLevel().toString()).isEqualTo("INFO");
+    assertThat(args.isThisLogLevelOnly()).isFalse();
+    assertThat(args.isIncludeLogs()).isTrue();
+    assertThat(args.isIncludeStats()).isTrue();
+  }
+
+  @Test
+  public void argsCorrectlyBuilt() {
+    ExportLogsFunction.Args args =
+        new ExportLogsFunction.Args(null, null, "error", true, true, false);
+    assertThat(args.getLogLevel()).isEqualTo(Level.ERROR);
+    assertThat(args.isThisLogLevelOnly()).isTrue();
+    assertThat(args.isIncludeLogs()).isTrue();
+    assertThat(args.isIncludeStats()).isFalse();
+  }
+
+  @Test
+  public void argsCorrectlyBuiltWithGeodeLevel() {
+    ExportLogsFunction.Args args =
+        new ExportLogsFunction.Args(null, null, "fine", true, true, false);
+    assertThat(args.getLogLevel()).isEqualTo(Level.DEBUG);
+    assertThat(args.isThisLogLevelOnly()).isTrue();
+    assertThat(args.isIncludeLogs()).isTrue();
+    assertThat(args.isIncludeStats()).isFalse();
   }
 
 }

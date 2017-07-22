@@ -40,7 +40,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class MergeLogsDUnitTest {
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
+  public LocatorServerStartupRule lsRule =
+      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
   private MemberVM locator;
 
   private static final String MESSAGE_1 = "MergeLogsMessage1";
