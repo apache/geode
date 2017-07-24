@@ -22,6 +22,7 @@ dependencies {
     compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
     compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
     compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
+    compile ('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
     compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
       exclude module: 'lucene-sandbox'
     }

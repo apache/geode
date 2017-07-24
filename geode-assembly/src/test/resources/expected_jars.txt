@@ -46,6 +46,7 @@ lucene-analyzers-common
 lucene-core
 lucene-queries
 lucene-queryparser
+lucene-analyzers-phonetic
 mx4j
 mx4j-remote
 mx4j-tools
