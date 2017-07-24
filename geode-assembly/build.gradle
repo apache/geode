@@ -195,6 +195,7 @@ def cp = {
         it.contains('lucene-core') ||
         it.contains('lucene-queries') ||
         it.contains('lucene-queryparser') ||
+        it.contains('lucene-analyzers-phonetic') ||
 
         // dependencies from geode-protobuf
         it.contains('protobuf-java')
