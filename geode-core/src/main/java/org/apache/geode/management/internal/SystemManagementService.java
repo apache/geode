@@ -79,11 +79,6 @@ public class SystemManagementService extends BaseManagementService {
   private NotificationHub notificationHub;
 
   /**
-   * Local Filter chain for local MBean filters
-   */
-  private LocalFilterChain localFilterChain;
-
-  /**
    * whether the service is closed or not if cache is closed automatically this service will be
    * closed
    */
@@ -137,7 +132,6 @@ public class SystemManagementService extends BaseManagementService {
           LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
               .toLocalizedString());
     }
-    this.localFilterChain = new LocalFilterChain();
     this.jmxAdapter = new MBeanJMXAdapter();
     this.repo = new ManagementResourceRepo();
 
@@ -150,7 +144,7 @@ public class SystemManagementService extends BaseManagementService {
     }
     ManagementFunction function = new ManagementFunction(notificationHub);
     FunctionService.registerFunction(function);
-    this.proxyListeners = new CopyOnWriteArrayList<ProxyListener>();
+    this.proxyListeners = new CopyOnWriteArrayList<>();
   }
 
   /**
@@ -201,16 +195,7 @@ public class SystemManagementService extends BaseManagementService {
   }
 
   public boolean isStartedAndOpen() {
-    if (!isStarted) {
-      return false;
-    }
-    if (closed) {
-      return false;
-    }
-    if (!system.isConnected()) {
-      return false;
-    }
-    return true;
+    return isStarted && !closed && system.isConnected();
   }
 
   private void verifyManagementService() {
@@ -300,8 +285,7 @@ public class SystemManagementService extends BaseManagementService {
 
   @Override
   public CacheServerMXBean getLocalCacheServerMXBean(int serverPort) {
-    CacheServerMXBean bean = jmxAdapter.getClientServiceMXBean(serverPort);
-    return bean;
+    return jmxAdapter.getClientServiceMXBean(serverPort);
   }
 
   @Override
@@ -323,20 +307,17 @@ public class SystemManagementService extends BaseManagementService {
 
   @Override
   public DiskStoreMXBean getLocalDiskStoreMBean(String diskStoreName) {
-    DiskStoreMXBean bean = jmxAdapter.getLocalDiskStoreMXBean(diskStoreName);
-    return bean;
+    return jmxAdapter.getLocalDiskStoreMXBean(diskStoreName);
   }
 
   @Override
-  public LockServiceMXBean getLocalLockServiceMBean(String lockSreviceName) {
-    LockServiceMXBean bean = jmxAdapter.getLocalLockServiceMXBean(lockSreviceName);
-    return bean;
+  public LockServiceMXBean getLocalLockServiceMBean(String lockServiceName) {
+    return jmxAdapter.getLocalLockServiceMXBean(lockServiceName);
   }
 
   @Override
   public RegionMXBean getLocalRegionMBean(String regionPath) {
-    RegionMXBean bean = jmxAdapter.getLocalRegionMXBean(regionPath);
-    return bean;
+    return jmxAdapter.getLocalRegionMXBean(regionPath);
   }
 
   public <T> T getMBeanProxy(ObjectName objectName, Class<T> interfaceClass) { // TODO: this is too
@@ -380,17 +361,11 @@ public class SystemManagementService extends BaseManagementService {
   @Override
   public ObjectName registerMBean(Object object, ObjectName objectName) {
     verifyManagementService();
-    if (localFilterChain.isFiltered(objectName)) {
-      return null;
-    }
     return jmxAdapter.registerMBean(object, objectName, false);
   }
 
   public ObjectName registerInternalMBean(Object object, ObjectName objectName) {
     verifyManagementService();
-    if (localFilterChain.isFiltered(objectName)) {
-      return null;
-    }
     return jmxAdapter.registerMBean(object, objectName, true);
   }
 
@@ -420,10 +395,7 @@ public class SystemManagementService extends BaseManagementService {
   }
 
   public boolean isManagerCreated() {
-    if (!isStartedAndOpen()) {
-      return false;
-    }
-    return federatingManager != null;
+    return isStartedAndOpen() && federatingManager != null;
   }
 
   @Override
@@ -457,10 +429,7 @@ public class SystemManagementService extends BaseManagementService {
           }
           getInternalCache().getJmxManagerAdvisor().broadcastChange();
           started = true;
-        } catch (RuntimeException e) {
-          logger.error("Jmx manager could not be started because {}", e.getMessage(), e);
-          throw e;
-        } catch (Error e) {
+        } catch (RuntimeException | Error e) {
           logger.error("Jmx manager could not be started because {}", e.getMessage(), e);
           throw e;
         } finally {
@@ -581,8 +550,8 @@ public class SystemManagementService extends BaseManagementService {
   }
 
   @Override
-  public ObjectName getGatewaySenderMBeanName(DistributedMember member, String gatwaySenderId) {
-    return MBeanJMXAdapter.getGatewaySenderMBeanName(member, gatwaySenderId);
+  public ObjectName getGatewaySenderMBeanName(DistributedMember member, String gatewaySenderId) {
+    return MBeanJMXAdapter.getGatewaySenderMBeanName(member, gatewaySenderId);
   }
 
   @Override
@@ -716,8 +685,7 @@ public class SystemManagementService extends BaseManagementService {
 
   public static class UniversalListenerContainer {
 
-    private List<MembershipListener> membershipListeners =
-        new CopyOnWriteArrayList<MembershipListener>();
+    private List<MembershipListener> membershipListeners = new CopyOnWriteArrayList<>();
 
     public void memberJoined(InternalDistributedMember id) {
       MembershipEvent event = createEvent(id);
@@ -757,7 +725,8 @@ public class SystemManagementService extends BaseManagementService {
     private MembershipEvent createEvent(InternalDistributedMember id) {
       final String memberId = id.getId();
       final DistributedMember member = id;
-      MembershipEvent event = new MembershipEvent() {
+
+      return new MembershipEvent() {
 
         @Override
         public String getMemberId() {
@@ -769,8 +738,6 @@ public class SystemManagementService extends BaseManagementService {
           return member;
         }
       };
-
-      return event;
     }
 
     /**
