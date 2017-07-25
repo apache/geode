@@ -124,13 +124,6 @@ subprojects {
     reports.junitXml.destination = file "$buildDir/test-reports-flaky"
   }
 
-  task acceptanceTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-    forkEvery 1
-  }
-
   task securityTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.SecurityTest'
@@ -272,7 +265,7 @@ subprojects {
           def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
           progress << "$now Completed test $desc.className $desc.name with result: ${result.resultType}$eol"
         }
-        
+
         doFirst {
           resultsDir.deleteDir()
           resultsDir.mkdirs()
@@ -282,12 +275,12 @@ subprojects {
   })
 
   // Make precheckin task run all validation tests for checking in code.
-  task precheckin (dependsOn: [ build, acceptanceTest, integrationTest, distributedTest, flakyTest ]) {
+  task precheckin (dependsOn: [ build, ":geode-assembly:acceptanceTest", integrationTest, distributedTest, flakyTest ]) {
     description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
 
   check.dependsOn checkMissedTests
 
-  combineReports.mustRunAfter check, test, acceptanceTest, integrationTest, distributedTest, flakyTest, checkMissedTests
+  combineReports.mustRunAfter check, test, ":geode-assembly:acceptanceTest", integrationTest, distributedTest, flakyTest, checkMissedTests
   [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests].each {it.finalizedBy combineReports}
 }
