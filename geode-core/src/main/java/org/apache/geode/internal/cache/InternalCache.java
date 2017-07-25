@@ -313,4 +313,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   void waitForRegisterInterestsInProgress();
 
   SecurityService getSecurityService();
+
+  boolean hasPersistentRegion();
 }

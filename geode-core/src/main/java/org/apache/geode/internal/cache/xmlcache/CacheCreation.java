@@ -2204,4 +2204,9 @@ public class CacheCreation implements InternalCache {
   public URL getCacheXmlURL() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
+  @Override
+  public boolean hasPersistentRegion() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
 }

@@ -76,13 +76,12 @@ import javax.transaction.TransactionManager;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import org.apache.commons.lang.StringUtils;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -3214,6 +3213,24 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
     return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public boolean hasPersistentRegion() {
+    synchronized (this.rootRegions) {
+      for (LocalRegion region : this.rootRegions.values()) {
+        if (region.getDataPolicy().withPersistence()) {
+          return true;
+        }
+        for (LocalRegion subRegion : (Set<LocalRegion>) region.basicSubregions(true)) {
+          if (subRegion.getDataPolicy().withPersistence()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
   }
 
   @Override
