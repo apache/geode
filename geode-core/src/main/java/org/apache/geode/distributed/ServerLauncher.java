@@ -2644,7 +2644,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       this(status, // status
           errorMessage, // statusMessage
           System.currentTimeMillis(), // timestamp
-          null, // serverLocation
+          launcher.getId(), // serverLocation
           null, // pid
           0L, // uptime
           launcher.getWorkingDirectory(), // workingDirectory
@@ -2653,8 +2653,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
           GemFireVersion.getGemFireVersion(), // gemfireVersion
           null, // javaVersion
           null, // logFile
-          null, // host
-          null, // port
+          launcher.getServerBindAddressAsString(), // host
+          launcher.getServerPortAsString(), // port
           null);// memberName
     }
 

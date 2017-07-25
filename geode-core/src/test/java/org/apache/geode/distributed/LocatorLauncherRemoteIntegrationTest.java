@@ -30,7 +30,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -458,18 +457,7 @@ public class LocatorLauncherRemoteIntegrationTest
       this.errorCollector.addError(e);
     }
 
-    try {
-      // check the status
-      final LocatorState locatorState = dirLauncher.status();
-      assertNotNull(locatorState);
-      assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
-
-      final String logFileName = getUniqueName() + ".log";
-      assertFalse("Log file should exist: " + logFileName,
-          new File(this.temporaryFolder.getRoot(), logFileName).exists());
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    checkLocatorStatus(dirLauncher);
 
     // if the following fails, then the SHORTER_TIMEOUT is too short for slow machines
     // or this test needs to use MainLauncher in ProcessWrapper
@@ -487,6 +475,21 @@ public class LocatorLauncherRemoteIntegrationTest
 
     this.errorCollector.checkThat(status.getStatus(),
         is(equalTo(getExpectedStopStatusForNotRunning())));
+  }
+
+  private void checkLocatorStatus(LocatorLauncher dirLauncher) {
+    try {
+      // check the status
+      final LocatorState locatorState = dirLauncher.status();
+      assertNotNull(locatorState);
+      assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
+
+      final String logFileName = getUniqueName() + ".log";
+      assertFalse("Log file should exist: " + logFileName,
+          new File(this.temporaryFolder.getRoot(), logFileName).exists());
+    } catch (Throwable e) {
+      this.errorCollector.addError(e);
+    }
   }
 
   @Test
@@ -541,19 +544,7 @@ public class LocatorLauncherRemoteIntegrationTest
       this.errorCollector.addError(e);
     }
 
-    try {
-      // check the status
-      final LocatorState locatorState = dirLauncher.status();
-      assertNotNull(locatorState);
-      assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
-
-      // creation of log file seems to be random -- look into why sometime
-      final String logFileName = getUniqueName() + ".log";
-      assertFalse("Log file should exist: " + logFileName,
-          new File(this.temporaryFolder.getRoot(), logFileName).exists());
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    checkLocatorStatus(dirLauncher);
 
     // if the following fails, then the SHORTER_TIMEOUT might be too short for slow machines
     // or this test needs to use MainLauncher in ProcessWrapper
@@ -644,7 +635,7 @@ public class LocatorLauncherRemoteIntegrationTest
   public void testStatusUsingPid() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
 
-    final List<String> command = new ArrayList<String>();
+    final List<String> command = new ArrayList<>();
     command
         .add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -705,7 +696,9 @@ public class LocatorLauncherRemoteIntegrationTest
       assertEquals(System.getProperty("java.version"), actualStatus.getJavaVersion());
       assertEquals(this.temporaryFolder.getRoot().getCanonicalPath() + File.separator
           + getUniqueName() + ".log", actualStatus.getLogFile());
-      assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
+      // Deleting the assertion on host. Assertions using InetAddress.getLocalHost can be flaky
+      // because some systems return "localhost" instead of the localhost's IP address as a string.
+      // assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
       assertEquals(getUniqueName(), actualStatus.getMemberName());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -731,7 +724,7 @@ public class LocatorLauncherRemoteIntegrationTest
   public void testStatusUsingWorkingDirectory() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
 
-    final List<String> command = new ArrayList<String>();
+    final List<String> command = new ArrayList<>();
     command
         .add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -788,7 +781,9 @@ public class LocatorLauncherRemoteIntegrationTest
       assertEquals(System.getProperty("java.version"), actualStatus.getJavaVersion());
       assertEquals(this.temporaryFolder.getRoot().getCanonicalPath() + File.separator
           + getUniqueName() + ".log", actualStatus.getLogFile());
-      assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
+      // Deleting the assertion on host. Assertions using InetAddress.getLocalHost can be flaky
+      // because some systems return "localhost" instead of the localhost's IP address as a string.
+      // assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
       assertEquals(getUniqueName(), actualStatus.getMemberName());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -819,7 +814,7 @@ public class LocatorLauncherRemoteIntegrationTest
         is(equalTo(this.temporaryFolder.getRoot().getCanonicalPath())));
     assertThat(actualStatus.getClasspath(), is(nullValue()));
     assertThat(actualStatus.getGemFireVersion(), is(equalTo(GemFireVersion.getGemFireVersion())));
-    assertThat(actualStatus.getJavaVersion(), is(nullValue()));
+    assertThat(actualStatus.getJavaVersion(), is(equalTo(System.getProperty("java.version"))));
     assertThat(actualStatus.getLogFile(), is(nullValue()));
     assertThat(actualStatus.getHost(), is(nullValue()));
     assertThat(actualStatus.getMemberName(), is(nullValue()));
@@ -851,7 +846,7 @@ public class LocatorLauncherRemoteIntegrationTest
         is(equalTo(this.temporaryFolder.getRoot().getCanonicalPath())));
     assertThat(actualStatus.getClasspath(), is(nullValue()));
     assertThat(actualStatus.getGemFireVersion(), is(equalTo(GemFireVersion.getGemFireVersion())));
-    assertThat(actualStatus.getJavaVersion(), is(nullValue()));
+    assertThat(actualStatus.getJavaVersion(), is(equalTo(System.getProperty("java.version"))));
     assertThat(actualStatus.getLogFile(), is(nullValue()));
     assertThat(actualStatus.getHost(), is(nullValue()));
     assertThat(actualStatus.getMemberName(), is(nullValue()));
@@ -861,7 +856,7 @@ public class LocatorLauncherRemoteIntegrationTest
   public void testStopUsingPid() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
 
-    final List<String> command = new ArrayList<String>();
+    final List<String> command = new ArrayList<>();
     command
         .add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -942,7 +937,7 @@ public class LocatorLauncherRemoteIntegrationTest
   public void testStopUsingWorkingDirectory() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
 
-    final List<String> command = new ArrayList<String>();
+    final List<String> command = new ArrayList<>();
     command
         .add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -1013,7 +1008,7 @@ public class LocatorLauncherRemoteIntegrationTest
         final int port = Integer.parseInt(args[0]);
 
         // launch LocatorLauncher
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         command.add(
             new File(new File(System.getProperty("java.home"), "bin"), "java").getAbsolutePath());
         command.add("-cp");
