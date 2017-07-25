@@ -14,19 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Declarable;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.logging.log4j.Logger;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,7 +25,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -53,9 +39,22 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.deployment.FunctionScanner;
+import org.apache.geode.pdx.internal.TypeRegistry;
+
 /**
  * ClassLoader for a single JAR file.
- * 
+ *
  * @since GemFire 7.0
  */
 public class DeployedJar {
@@ -123,7 +122,7 @@ public class DeployedJar {
 
   /**
    * Peek into the JAR data and make sure that it is valid JAR content.
-   * 
+   *
    * @param inputStream InputStream containing data to be validated.
    * @return True if the data has JAR content, false otherwise
    */
@@ -149,7 +148,7 @@ public class DeployedJar {
 
   /**
    * Peek into the JAR data and make sure that it is valid JAR content.
-   * 
+   *
    * @param jarBytes Bytes of data to be validated.
    * @return True if the data has JAR content, false otherwise
    */
@@ -171,7 +170,7 @@ public class DeployedJar {
 
     JarInputStream jarInputStream = null;
     try {
-      List<String> functionClasses = findFunctionsInThisJar();
+      Collection<String> functionClasses = findFunctionsInThisJar();
 
       jarInputStream = new JarInputStream(byteArrayInputStream);
       JarEntry jarEntry = jarInputStream.getNextJarEntry();
@@ -259,7 +258,7 @@ public class DeployedJar {
   /**
    * Uses MD5 hashes to determine if the original byte content of this DeployedJar is the same as
    * that past in.
-   * 
+   *
    * @param compareToBytes Bytes to compare the original content to
    * @return True of the MD5 hash is the same o
    */
@@ -281,7 +280,7 @@ public class DeployedJar {
    * Check to see if the class implements the Function interface. If so, it will be registered with
    * FunctionService. Also, if the functions's class was originally declared in a cache.xml file
    * then any properties specified at that time will be reused when re-registering the function.
-   * 
+   *
    * @param clazz Class to check for implementation of the Function class
    * @return A collection of Objects that implement the Function interface.
    */
@@ -333,14 +332,10 @@ public class DeployedJar {
     return registerableFunctions;
   }
 
-  private List<String> findFunctionsInThisJar() throws IOException {
-    URLClassLoader urlClassLoader =
-        new URLClassLoader(new URL[] {this.getFile().getCanonicalFile().toURL()});
-    FastClasspathScanner fastClasspathScanner = new FastClasspathScanner()
-        .removeTemporaryFilesAfterScan(true).overrideClassLoaders(urlClassLoader);
-    ScanResult scanResult = fastClasspathScanner.scan();
-    return scanResult.getNamesOfClassesImplementing(Function.class);
+  protected Collection<String> findFunctionsInThisJar() throws IOException {
+    return new FunctionScanner().findFunctionsInJar(this.file);
   }
+
 
   private Function newFunction(final Class<Function> clazz, final boolean errorOnNoSuchMethod) {
     try {
