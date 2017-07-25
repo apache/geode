@@ -48,6 +48,7 @@ import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
  */
 @SuppressWarnings("unused")
 public interface GfshCommand extends CommandMarker {
+
   default String convertDefaultValue(final String from, final String to) {
     return CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(from) ? to : from;
   }
@@ -193,8 +194,6 @@ public interface GfshCommand extends CommandMarker {
     } else {
       FunctionService.registerFunction(function);
     }
-
     return function;
   }
-
 }

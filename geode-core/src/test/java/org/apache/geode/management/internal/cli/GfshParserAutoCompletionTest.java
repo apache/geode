@@ -34,7 +34,7 @@ public class GfshParserAutoCompletionTest {
   private GfshParserRule.CommandCandidate candidate;
 
   @Test
-  public void testCompletionDescibe() throws Exception {
+  public void testCompletionDescribe() throws Exception {
     buffer = "describe";
     candidate = parser.complete(buffer);
     assertThat(candidate.size()).isEqualTo(7);
@@ -42,7 +42,7 @@ public class GfshParserAutoCompletionTest {
   }
 
   @Test
-  public void testCompletionDescibeWithSpace() throws Exception {
+  public void testCompletionDescribeWithSpace() throws Exception {
     buffer = "describe ";
     candidate = parser.complete(buffer);
     assertThat(candidate.size()).isEqualTo(7);
