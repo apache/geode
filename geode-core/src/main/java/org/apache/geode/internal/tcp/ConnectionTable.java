@@ -1315,7 +1315,7 @@ public class ConnectionTable {
     public boolean cancel() {
       Connection con = this.c;
       if (con != null) {
-        con.onIdleCancel();
+        con.cleanUpOnIdleTaskCancel();
       }
       this.c = null;
       return super.cancel();

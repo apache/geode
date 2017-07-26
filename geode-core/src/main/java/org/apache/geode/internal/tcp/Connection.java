@@ -568,7 +568,7 @@ public class Connection implements Runnable {
     }
   }
 
-  protected void initRecevier() {
+  protected void initReceiver() {
     this.startReader(owner);
     this.waitForHandshake();
     this.finishedConnecting = true;
@@ -1328,7 +1328,7 @@ public class Connection implements Runnable {
     this.batchFlusher.start();
   }
 
-  public void onIdleCancel() {
+  public void cleanUpOnIdleTaskCancel() {
     // Make sure receivers are removed from the connection table, this should always be a noop, but
     // is done here as a failsafe.
     if (isReceiver) {

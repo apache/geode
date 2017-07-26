@@ -26,7 +26,7 @@ public class PeerConnectionFactory {
   public Connection createReceiver(ConnectionTable table, Socket socket)
       throws IOException, ConnectionException {
     Connection connection = new Connection(table, socket);
-    connection.initRecevier();
+    connection.initReceiver();
     return connection;
   }
 }
