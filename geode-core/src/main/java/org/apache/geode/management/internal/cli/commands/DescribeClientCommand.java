@@ -12,14 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.management.ObjectName;
@@ -38,110 +37,18 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction;
-import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction.ClientInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission;
 
-/**
- * @since GemFire 8.0
- */
-public class ClientCommands implements GfshCommand {
-
-  @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listClient() {
-    Result result;
-
-    try {
-      CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-      SectionResultData section = compositeResultData.addSection("section1");
-
-      TabularResultData resultTable = section.addTable("TableForClientList");
-      String headerText = "ClientList";
-      resultTable = resultTable.setHeader(headerText);
-
-      InternalCache cache = getCache();
-      ManagementService service = ManagementService.getExistingManagementService(cache);
-      ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
-
-      if (cacheServers.length == 0) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.LIST_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
-      }
-
-      Map<String, List<String>> clientServerMap = new HashMap<>();
-
-      for (ObjectName objName : cacheServers) {
-        CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
-        String[] listOfClient = serverMbean.getClientIds();
-
-        if (listOfClient == null || listOfClient.length == 0) {
-          continue;
-        }
-
-
-        for (String clientName : listOfClient) {
-          String serverDetails = "member=" + objName.getKeyProperty("member") + ",port="
-              + objName.getKeyProperty("port");
-          if (clientServerMap.containsKey(clientName)) {
-            List<String> listServers = clientServerMap.get(clientName);
-            listServers.add(serverDetails);
-          } else {
-            List<String> listServer = new ArrayList<>();
-            listServer.add(serverDetails);
-            clientServerMap.put(clientName, listServer);
-          }
-        }
-      }
-
-      if (clientServerMap.size() == 0) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.LIST_COULD_NOT_RETRIEVE_CLIENT_LIST));
-      }
-
-      String memberSeparator = ";  ";
-
-      for (Entry<String, List<String>> pairs : clientServerMap.entrySet()) {
-        String client = pairs.getKey();
-        List<String> servers = pairs.getValue();
-        StringBuilder serverListForClient = new StringBuilder();
-        int serversSize = servers.size();
-        int i = 0;
-        for (String server : servers) {
-          serverListForClient.append(server);
-          if (i < serversSize - 1) {
-            serverListForClient.append(memberSeparator);
-          }
-          i++;
-        }
-        resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_Clients, client);
-        resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_SERVERS,
-            serverListForClient.toString());
-      }
-      result = ResultBuilder.buildResult(compositeResultData);
-
-    } catch (Exception e) {
-      LogWrapper.getInstance()
-          .warning("Error in list clients. stack trace" + CliUtil.stackTraceAsString(e));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.LIST_CLIENT_COULD_NOT_RETRIEVE_CLIENT_LIST_0, e.getMessage()));
-    }
-
-    LogWrapper.getInstance().info("list client result " + result);
-
-    return result;
-  }
-
+public class DescribeClientCommand implements GfshCommand {
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
+      operation = ResourcePermission.Operation.READ)
   public Result describeClient(@CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true,
       help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) {
     Result result;
@@ -160,7 +67,8 @@ public class ClientCommands implements GfshCommand {
 
     try {
       CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-      SectionResultData sectionResult = compositeResultData.addSection("InfoSection");
+      CompositeResultData.SectionResultData sectionResult =
+          compositeResultData.addSection("InfoSection");
       InternalCache cache = getCache();
 
       ManagementService service = ManagementService.getExistingManagementService(cache);
@@ -219,7 +127,8 @@ public class ClientCommands implements GfshCommand {
             }
 
             if (object != null) {
-              ClientInfo objectResult = (ClientInfo) object;
+              ContinuousQueryFunction.ClientInfo objectResult =
+                  (ContinuousQueryFunction.ClientInfo) object;
               isDurable = objectResult.isDurable;
 
               if (objectResult.primaryServer != null && objectResult.primaryServer.length() > 0) {
@@ -265,7 +174,7 @@ public class ClientCommands implements GfshCommand {
     return result;
   }
 
-  private void buildTableResult(SectionResultData sectionResult,
+  private void buildTableResult(CompositeResultData.SectionResultData sectionResult,
       ClientHealthStatus clientHealthStatus, String isDurable, List<String> primaryServers,
       List<String> secondaryServers) {
 
@@ -305,7 +214,7 @@ public class ClientCommands implements GfshCommand {
       Map<String, String> poolStats = clientHealthStatus.getPoolStats();
 
       if (poolStats.size() > 0) {
-        for (Entry<String, String> entry : poolStats.entrySet()) {
+        for (Map.Entry<String, String> entry : poolStats.entrySet()) {
           TabularResultData poolStatsResultTable =
               sectionResult.addTable("Pool Stats For Pool Name = " + entry.getKey());
           poolStatsResultTable.setHeader("Pool Stats For Pool Name = " + entry.getKey());

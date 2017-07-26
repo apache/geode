@@ -119,7 +119,7 @@ public class TestCommand {
   }
 
   private static void init() {
-    // ClientCommands
+    // ListClientCommand, DescribeClientCommand
     createTestCommand("list clients", clusterRead);
     createTestCommand("describe client --clientID=172.16.196.144", clusterRead);
 
