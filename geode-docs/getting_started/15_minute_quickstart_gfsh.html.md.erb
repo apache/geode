@@ -126,14 +126,14 @@ In this step you create a region with the `gfsh` command line utility. Regions a
     regionA
     ```
 
-3.  List the members of your cluster. The locator and cache servers you started appear in the list:
+3.  List the members of your cluster. The locator and cache server you started appear in the list:
 
     ``` pre
     gfsh>list members
       Name   | Id
     -------- | ---------------------------------------
-    locator1 | ubuntu(locator1:3529:locator)<v0>:59926
-    server1  | ubuntu(server1:3883)<v1>:65390
+    locator1 | 192.0.2.0(locator1:3529:locator)<v0>:59926
+    server1  | 192.0.2.0(server1:3883)<v1>:65390
     ```
 
 4.  To view specifics about a region, type the following:
