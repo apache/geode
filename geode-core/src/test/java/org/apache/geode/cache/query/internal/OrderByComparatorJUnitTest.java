@@ -14,12 +14,15 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,9 +35,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvalidException;
-import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -43,7 +46,6 @@ public class OrderByComparatorJUnitTest {
   @Before
   public void setUp() throws java.lang.Exception {
     CacheUtils.startCache();
-
   }
 
   @After
@@ -53,18 +55,13 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testOrderByComparatorUnmapped() throws Exception {
-
     String queries[] = {
-
         "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
     Object r[][] = new Object[queries.length][2];
-    QueryService qs;
-    qs = CacheUtils.getQueryService();
     Position.resetCounter();
+
     // Create Regions
-
     Region r1 = CacheUtils.createRegion("portfolio1", Portfolio.class);
-
     for (int i = 0; i < 10; i++) {
       r1.put(i + "", new Portfolio(i));
     }
@@ -85,7 +82,6 @@ public class OrderByComparatorJUnitTest {
         assertTrue(base instanceof SortedStructSet);
         SortedStructSet sss = (SortedStructSet) base;
         assertTrue(sss.comparator() instanceof OrderByComparatorUnmapped);
-
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -95,16 +91,12 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testOrderByComparatorMapped() throws Exception {
-
     String queries[] = {
-
         "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
     Object r[][] = new Object[queries.length][2];
-    QueryService qs;
-    qs = CacheUtils.getQueryService();
     Position.resetCounter();
-    // Create Regions
 
+    // Create Regions
     Region r1 = CacheUtils.createRegion("portfolio1", Portfolio.class);
 
     for (int i = 0; i < 10; i++) {
@@ -128,7 +120,6 @@ public class OrderByComparatorJUnitTest {
         SortedStructSet sss = (SortedStructSet) base;
         assertFalse(sss.comparator() instanceof OrderByComparatorUnmapped);
         assertTrue(sss.comparator() instanceof OrderByComparator);
-
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -138,14 +129,9 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testUnsupportedOrderByForPR() throws Exception {
-
     String unsupportedQueries[] =
-        {"select distinct p.status from /portfolio1 p order by p.status, p.ID",
-
-        };
+        {"select distinct p.status from /portfolio1 p order by p.status, p.ID"};
     Object r[][] = new Object[unsupportedQueries.length][2];
-    QueryService qs;
-    qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -158,8 +144,7 @@ public class OrderByComparatorJUnitTest {
     }
 
     for (int i = 0; i < unsupportedQueries.length; i++) {
-      Query q = null;
-
+      Query q;
       CacheUtils.getLogger().info("Executing query: " + unsupportedQueries[i]);
       q = CacheUtils.getQueryService().newQuery(unsupportedQueries[i]);
       try {
@@ -173,17 +158,12 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testSupportedOrderByForRR() throws Exception {
-
     String unsupportedQueries[] =
-        {"select distinct p.status from /portfolio1 p order by p.status, p.ID",
-
-        };
+        {"select distinct p.status from /portfolio1 p order by p.status, p.ID"};
     Object r[][] = new Object[unsupportedQueries.length][2];
-    QueryService qs;
-    qs = CacheUtils.getQueryService();
     Position.resetCounter();
-    // Create Regions
 
+    // Create Regions
     Region r1 = CacheUtils.createRegion("portfolio1", Portfolio.class);
 
     for (int i = 0; i < 50; i++) {
@@ -191,13 +171,11 @@ public class OrderByComparatorJUnitTest {
     }
 
     for (int i = 0; i < unsupportedQueries.length; i++) {
-      Query q = null;
-
+      Query q;
       CacheUtils.getLogger().info("Executing query: " + unsupportedQueries[i]);
       q = CacheUtils.getQueryService().newQuery(unsupportedQueries[i]);
       try {
         r[i][0] = q.execute();
-
       } catch (QueryInvalidException qe) {
         qe.printStackTrace();
         fail(qe.toString());
@@ -205,4 +183,29 @@ public class OrderByComparatorJUnitTest {
     }
   }
 
+  // The following tests cover edge cases in OrderByComparator.
+  @Test
+  public void testCompareTwoNulls() throws Exception {
+    assertThat(createComparator().compare(null, null)).isEqualTo(0);
+  }
+
+  @Test
+  public void testCompareTwoObjectArrays() throws Exception {
+    String[] arrString1 = {"elephants"};
+    String[] arrString2 = {"elephant"};
+    assertThat(createComparator().compare(arrString1, arrString2)).isEqualTo(1);
+  }
+
+  @Test
+  public void testCompareThrowsClassCastException() throws Exception {
+    String testString = "elephant";
+    int testInt = 159;
+    assertThatThrownBy(() -> createComparator().compare(testString, testInt))
+        .isInstanceOf(ClassCastException.class);
+  }
+
+  private OrderByComparator createComparator() throws Exception {
+    StructTypeImpl objType = new StructTypeImpl();
+    return new OrderByComparator(null, objType, null);
+  }
 }

@@ -14,12 +14,12 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -113,7 +113,7 @@ public class OrderByComparatorUnmapped extends OrderByComparator {
 
   @Override
   protected Object[] evaluateSortCriteria(Object row) {
-    return (Object[]) orderByMap.get(row);
+    return orderByMap.get(row);
   }
 
 
