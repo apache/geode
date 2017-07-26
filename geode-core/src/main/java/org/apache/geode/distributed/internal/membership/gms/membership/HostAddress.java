@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import java.net.InetSocketAddress;
@@ -20,10 +19,11 @@ import java.net.InetSocketAddress;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 public class HostAddress {
-  private InetSocketAddress socketInetAddress;
-  private String hostname;
-  private int port;
-  private boolean isIpString;
+
+  private final InetSocketAddress socketInetAddress;
+  private final String hostname;
+  private final int port;
+  private final boolean isIpString;
 
   public HostAddress(InetSocketAddress loc, String locStr) {
     this.socketInetAddress = loc;
@@ -39,24 +39,18 @@ public class HostAddress {
   /**
    * if host is ipString then it will return the cached InetSocketAddress Otherwise it will create
    * the new instance of InetSocketAddress
-   * 
-   * @return
    */
   public InetSocketAddress getSocketInetAddress() {
     if (this.isIpString) {
       return this.socketInetAddress;
     } else {
-      InetSocketAddress isa = new InetSocketAddress(hostname, this.socketInetAddress.getPort());
-      return isa;
+      return new InetSocketAddress(hostname, this.socketInetAddress.getPort());
     }
   }
-
-
 
   public String getHostName() {
     return hostname;
   }
-
 
   public int getPort() {
     return port;
@@ -75,11 +69,11 @@ public class HostAddress {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
+    int prime = 31;
     int result = 1;
     result = prime * result + (isIpString ? 1231 : 1237);
-    result = prime * result + ((socketInetAddress == null) ? 0 : socketInetAddress.hashCode());
-    result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
+    result = prime * result + (socketInetAddress == null ? 0 : socketInetAddress.hashCode());
+    result = prime * result + (hostname == null ? 0 : hostname.hashCode());
     return result;
   }
 
@@ -109,10 +103,8 @@ public class HostAddress {
 
   @Override
   public String toString() {
-    return "LocatorAddress [locatorSocketInetAddress=" + socketInetAddress + ", lochostname="
-        + hostname + ", isIpString=" + isIpString + "]";
+    return "LocatorAddress [socketInetAddress=" + socketInetAddress + ", hostname=" + hostname
+        + ", isIpString=" + isIpString + "]";
   }
-
-
 
 }
