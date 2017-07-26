@@ -14,12 +14,6 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
@@ -33,6 +27,11 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class PutAllRequestOperationHandler
     implements OperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse> {
@@ -40,44 +39,44 @@ public class PutAllRequestOperationHandler
 
   @Override
   public Result<RegionAPI.PutAllResponse> process(SerializationService serializationService,
-      RegionAPI.PutAllRequest request, Cache cache) {
-    String regionName = request.getRegionName();
-    Region region = cache.getRegion(regionName);
+      RegionAPI.PutAllRequest putAllRequest, Cache cache) {
+    Region region = cache.getRegion(putAllRequest.getRegionName());
 
     if (region == null) {
       return Failure.of(ProtobufResponseUtilities.createAndLogErrorResponse(
-          "Region passed by client did not exist: " + regionName, logger, null));
+          "Region passed by client did not exist: " + putAllRequest.getRegionName(), logger, null));
     }
 
-    Map entries = extractPutAllEntries(serializationService, request);
-    try {
-      region.putAll(entries);
-    } catch (Exception ex) {
-      return Failure
-          .of(ProtobufResponseUtilities.createAndLogErrorResponse(ex.getMessage(), logger, ex));
-    }
-
-    return Success.of(RegionAPI.PutAllResponse.newBuilder().build());
+    RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder()
+        .addAllFailedKeys(putAllRequest.getEntryList().stream()
+            .map((entry) -> singlePut(serializationService, region, entry)).filter(Objects::nonNull)
+            .collect(Collectors.toList()));
+    return Success.of(builder.build());
   }
 
-  // Read all of the entries out of the protobuf and return an error (without performing any puts)
-  // if any of the entries can't be decoded
-  private Map extractPutAllEntries(SerializationService serializationService,
-      RegionAPI.PutAllRequest putAllRequest) {
-    Map entries = new HashMap();
+  private BasicTypes.KeyedErrorResponse singlePut(SerializationService serializationService,
+      Region region, BasicTypes.Entry entry) {
     try {
-      for (BasicTypes.Entry entry : putAllRequest.getEntryList()) {
-        Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
-        Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
+      Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
+      Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
 
-        entries.put(decodedKey, decodedValue);
-      }
+      region.put(decodedKey, decodedValue);
     } catch (UnsupportedEncodingTypeException ex) {
-      throw new RuntimeException("This exception still needs to be handled in an ErrorMessage");
+      return buildAndLogKeyedError(entry, "Encoding not supported", ex);
     } catch (CodecNotRegisteredForTypeException ex) {
-      throw new RuntimeException("This exception still needs to be handled in an ErrorMessage");
+      return buildAndLogKeyedError(entry, "Codec error in protobuf deserialization", ex);
+    } catch (ClassCastException ex) {
+      return buildAndLogKeyedError(entry, "Invalid key or value type for region", ex);
     }
+    return null;
+  }
 
-    return entries;
+  private BasicTypes.KeyedErrorResponse buildAndLogKeyedError(BasicTypes.Entry entry,
+      String message, Exception ex) {
+    logger.error(message, ex);
+    BasicTypes.ErrorResponse errorResponse =
+        BasicTypes.ErrorResponse.newBuilder().setMessage(message).build();
+    return BasicTypes.KeyedErrorResponse.newBuilder().setKey(entry.getKey()).setError(errorResponse)
+        .build();
   }
 }

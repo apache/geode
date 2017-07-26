@@ -78,11 +78,6 @@ message Response {
     }
 }
 
-message ErrorResponse {
-    int32 errorCode = 1;
-    string message = 2;
-}
-
 message MetaData {
     int32 numberOfMetadata = 1;
     map<int32, google.protobuf.Any> metaDataEntries = 2;

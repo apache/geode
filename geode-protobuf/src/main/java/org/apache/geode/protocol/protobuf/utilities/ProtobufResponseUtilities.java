@@ -14,13 +14,12 @@
  */
 package org.apache.geode.protocol.protobuf.utilities;
 
-import java.util.Set;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.RegionAPI;
+import java.util.Set;
 
 /**
  * This class contains helper functions for generating ClientProtocol.Response objects.
@@ -31,22 +30,22 @@ import org.apache.geode.protocol.protobuf.RegionAPI;
 public abstract class ProtobufResponseUtilities {
 
   /**
-   * This creates response object containing a ClientProtocol.ErrorResponse, and also logs the
-   * passed error message and exception (if present) to the provided logger.
+   * This creates response object containing a BasicTypes.ErrorResponse, and also logs the passed
+   * error message and exception (if present) to the provided logger.
    *
    * @param errorMessage - description of the error
    * @param logger - logger to write the error message to
    * @param ex - exception which should be logged
    * @return An error response containing the first three parameters.
    */
-  public static ClientProtocol.ErrorResponse createAndLogErrorResponse(String errorMessage,
+  public static BasicTypes.ErrorResponse createAndLogErrorResponse(String errorMessage,
       Logger logger, Exception ex) {
     if (ex != null) {
       logger.error(errorMessage, ex);
     } else {
       logger.error(errorMessage);
     }
-    return ClientProtocol.ErrorResponse.newBuilder().setMessage(errorMessage).build();
+    return BasicTypes.ErrorResponse.newBuilder().setMessage(errorMessage).build();
   }
 
   /**

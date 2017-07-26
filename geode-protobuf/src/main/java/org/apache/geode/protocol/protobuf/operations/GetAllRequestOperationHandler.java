@@ -14,15 +14,10 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
@@ -31,6 +26,10 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class GetAllRequestOperationHandler
     implements OperationHandler<RegionAPI.GetAllRequest, RegionAPI.GetAllResponse> {
@@ -42,7 +41,7 @@ public class GetAllRequestOperationHandler
     Region region = cache.getRegion(regionName);
     if (region == null) {
       return Failure
-          .of(ClientProtocol.ErrorResponse.newBuilder().setMessage("Region not found").build());
+          .of(BasicTypes.ErrorResponse.newBuilder().setMessage("Region not found").build());
     }
 
     try {
@@ -58,10 +57,10 @@ public class GetAllRequestOperationHandler
       }
       return Success.of(RegionAPI.GetAllResponse.newBuilder().addAllEntries(entries).build());
     } catch (UnsupportedEncodingTypeException ex) {
-      return Failure.of(
-          ClientProtocol.ErrorResponse.newBuilder().setMessage("Encoding not supported.").build());
+      return Failure
+          .of(BasicTypes.ErrorResponse.newBuilder().setMessage("Encoding not supported.").build());
     } catch (CodecNotRegisteredForTypeException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
           .setMessage("Codec error in protobuf deserialization.").build());
     }
   }
