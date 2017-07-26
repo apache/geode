@@ -10,6 +10,7 @@ commons-io
 commons-lang
 commons-logging
 commons-modeler
+commons-codec
 fast-classpath-scanner
 fastutil
 findbugs-annotations
