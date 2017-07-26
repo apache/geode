@@ -16,14 +16,6 @@ package org.apache.geode;
 
 import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,11 +28,20 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.util.test.TestUtil;
+
 @Category({IntegrationTest.class, RestAPITest.class})
 public class BundledJarsJUnitTest {
 
   private static final String VERSION_PATTERN = "[0-9-_.v]{3,}.*\\.jar$";
-  protected static final String GEODE_HOME = System.getenv("GEODE_HOME");
+  private static final String GEODE_HOME = System.getenv("GEODE_HOME");
   private Set<String> expectedJars;
 
   @Before
@@ -65,27 +66,22 @@ public class BundledJarsJUnitTest {
     TreeSet<String> missingJars = new TreeSet<String>(expectedJars);
     missingJars.removeAll(bundledJarNames);
 
-    StringBuilder message = new StringBuilder();
-    message.append(
-        "The bundled jars have changed. Please make sure you update the licence and notice");
-    message.append(
-        "\nas described in https://cwiki.apache.org/confluence/display/GEODE/License+Guide+for+Contributors");
-    message.append("\nWhen fixed, copy geode-assembly/build/test/bundled_jars.txt");
-    message.append("\nto src/test/resources/expected_jars.txt");
-    message.append("\nRemoved Jars\n--------------\n");
-    message.append(String.join("\n", missingJars));
-    message.append("\n\nAdded Jars\n--------------\n");
-    message.append(String.join("\n", newJars));
-    message.append("\n\n");
+    String message =
+        "The bundled jars have changed. Please make sure you update the licence and notice"
+            + "\nas described in https://cwiki.apache.org/confluence/display/GEODE/License+Guide+for+Contributors"
+            + "\nWhen fixed, copy geode-assembly/build/test/bundled_jars.txt"
+            + "\nto src/test/resources/expected_jars.txt" + "\nRemoved Jars\n--------------\n"
+            + String.join("\n", missingJars) + "\n\nAdded Jars\n--------------\n"
+            + String.join("\n", newJars) + "\n\n";
 
-    assertTrue(message.toString(), expectedJars.equals(bundledJarNames));
+    assertTrue(message, expectedJars.equals(bundledJarNames));
 
   }
 
   /**
    * Find all of the jars bundled with the project. Key is the name of the jar, value is the path.
    */
-  protected TreeMap<String, String> getBundledJars() {
+  private TreeMap<String, String> getBundledJars() {
     File geodeHomeDirectory = new File(GEODE_HOME);
 
     assertTrue(
