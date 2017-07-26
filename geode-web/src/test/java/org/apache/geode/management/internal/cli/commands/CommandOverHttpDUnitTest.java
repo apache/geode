@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.runner.SuiteRunner;
 @Suite.SuiteClasses({ConfigCommandsDUnitTest.class, DeployCommandsDUnitTest.class,
     DiskStoreCommandsDUnitTest.class, FunctionCommandsDUnitTest.class,
     GemfireDataCommandsDUnitTest.class,
-    GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class, IndexCommandsDUnitTest.class,
+    GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class,
     ListAndDescribeDiskStoreCommandsDUnitTest.class, ListIndexCommandDUnitTest.class,
     MiscellaneousCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
     ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class, ShowMetricsDUnitTest.class,
