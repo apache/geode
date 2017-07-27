@@ -1388,7 +1388,6 @@ public class DLockService extends DistributedLockService {
       throw new InterruptedException();
     }
 
-    boolean abnormalExit = true;
     boolean safeExit = true;
     try { // try-block for abnormalExit and safeExit
 
@@ -1716,7 +1715,6 @@ public class DLockService extends DistributedLockService {
         logger.trace(LogMarker.DLS, "{}, name: {} - exiting lock() returning {}", this, name,
             gotLock);
       }
-      abnormalExit = false;
       return gotLock;
     } // try-block for abnormalExit and safeExit
 
@@ -1929,12 +1927,12 @@ public class DLockService extends DistributedLockService {
           checkDestroyed();
           LockGrantorId theLockGrantorId = getLockGrantorId();
           try {
+            synchronized (this.lockGrantorIdLock) {
+              unlocked = token.releaseLock(lockId, rThread);
+            }
             released = callReleaseProcessor(theLockGrantorId.getLockGrantorMember(), name,
                 lockBatch, lockId);
-            synchronized (this.lockGrantorIdLock) {
-              token.releaseLock(lockId, rThread);
-              unlocked = true;
-            }
+
           } catch (LockGrantorDestroyedException e) { // part of fix for bug 35239
             // loop back around to get next lock grantor
           } catch (LockServiceDestroyedException e) { // part of fix for bug 35239

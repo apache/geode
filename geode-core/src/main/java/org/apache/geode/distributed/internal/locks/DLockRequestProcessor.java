@@ -202,18 +202,12 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     Assert.assertTrue(lockId > -1, "lockId is < 0: " + this);
     this.request.lockId = lockId;
 
-    // setDoneProcessing(false);
-
     // local grantor... don't use messaging... fake it
     if (isLockGrantor()) {
       if (isDebugEnabled_DLS) {
         logger.trace(LogMarker.DLS, "DLockRequestProcessor processing lock request directly");
       }
       this.request.setSender(this.dm.getDistributionManagerId());
-      /*
-       * if (svc.isDestroyed()) { return false; }
-       */
-      // svc.checkDestroyed();
 
       // calls processor (this) process...
       this.request.processLocally(this.dm);
