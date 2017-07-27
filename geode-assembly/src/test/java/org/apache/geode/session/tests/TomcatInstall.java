@@ -167,6 +167,30 @@ public class TomcatInstall extends ContainerInstall {
   }
 
   /**
+   * Get the server life cycle class that should be used
+   *
+   * Generates the class based on whether the installation's connection type
+   * {@link ContainerInstall#connType} is client server or peer to peer.
+   */
+  public String getServerLifeCycleListenerClass() {
+    String className = "org.apache.geode.modules.session.catalina.";
+    switch (getConnectionType()) {
+      case PEER_TO_PEER:
+        className += "PeerToPeer";
+        break;
+      case CLIENT_SERVER:
+        className += "ClientServer";
+        break;
+      default:
+        throw new IllegalArgumentException(
+            "Bad connection type. Must be either PEER_TO_PEER or CLIENT_SERVER");
+    }
+
+    className += "CacheLifecycleListener";
+    return className;
+  }
+
+  /**
    * Location of the context XML file in the installation's 'conf' directory
    */
   public File getDefaultContextXMLFile() {

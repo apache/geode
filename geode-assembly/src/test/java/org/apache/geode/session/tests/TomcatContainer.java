@@ -99,7 +99,8 @@ public class TomcatContainer extends ServerContainer {
     ContainerInstall.editXMLFile(contextXMLFile.getAbsolutePath(), "Tomcat", "Manager", "Context",
         cacheProperties);
     writePropertiesToConfig(config, DEFAULT_TOMCAT_CONFIG_XML_DIR + "/" + serverXMLFile.getName(),
-        "//Server/Listener[@className='" + getInstall().getServerLifeCycleListenerClass() + "']",
+        "//Server/Listener[@className='"
+            + ((TomcatInstall) getInstall()).getServerLifeCycleListenerClass() + "']",
         systemProperties);
   }
 

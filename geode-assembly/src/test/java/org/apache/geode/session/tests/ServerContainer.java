@@ -211,10 +211,6 @@ public abstract class ServerContainer {
     File configDir = new File(getConfiguration().getHome());
 
     if (configDir.exists()) {
-      logger.info("Configuration in " + configDir.getAbsolutePath());
-      FileUtils.copyDirectory(configDir, new File(logDir.getAbsolutePath() + "/config"));
-      logger.info("Copied configuration to "
-          + new File(logDir.getAbsolutePath() + "/config").getAbsolutePath());
       logger.info("Deleting configuration folder " + configDir.getAbsolutePath());
       FileUtils.deleteDirectory(configDir);
     }
