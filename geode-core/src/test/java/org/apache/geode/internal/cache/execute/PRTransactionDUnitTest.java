@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -74,6 +76,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
  */
 @Category(DistributedTest.class)
 public class PRTransactionDUnitTest extends PRColocationDUnitTest {
+  private static final Logger logger = LogService.getLogger();
 
   public static final int VERIFY_TX = 0;
 
@@ -90,6 +93,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   public static final int VERIFY_TXSTATE_CONFLICT = 7;
 
   public static final int VERIFY_REP_READ = 8;
+
+  public static final int UPDATE_NON_COLOCATION = 9;
 
   final int totalIterations = 50;
 
@@ -131,6 +136,73 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     basicPRTXInFunction(2, false);
   }
 
+  @Test
+  public void testBasicPRTransactionNonColatedFunction0() {
+    basicPRTXInNonColocatedFunction(0);
+  }
+
+  /**
+   * Test two non colocated functions in a transaction. This method invokes
+   * {@link MyTransactionFunction} and tells it what to test, using different arguments.
+   * 
+   * @param redundantBuckets redundant buckets for colocated PRs
+   */
+  protected void basicPRTXInNonColocatedFunction(int redundantBuckets) {
+    setupColocatedRegions(redundantBuckets);
+
+    dataStore1.invoke(() -> registerFunction());
+    dataStore2.invoke(() -> registerFunction());
+
+    dataStore1.invoke(() -> runTXFunctions());
+  }
+
+  private void registerFunction() {
+    logger.info("register Fn");
+    Function txFunction = new MyTransactionFunction();
+    FunctionService.registerFunction(txFunction);
+  }
+
+  private void runFunction(final Region pr, int cust, boolean isFirstFunc) {
+    CustId custId = new CustId(cust);
+    Customer newCus = new Customer("foo", "bar");
+    ArrayList args = new ArrayList();
+    Execution execution = FunctionService.onRegion(pr);
+    Set filter = new HashSet();
+
+    args.add(new Integer(UPDATE_NON_COLOCATION));
+    logger.info("UPDATE_NON_COLOCATION");
+    args.add(custId);
+    args.add(newCus);
+    filter.add(custId);
+    try {
+      execution.withFilter(filter).setArguments(args).execute(new MyTransactionFunction().getId())
+          .getResult();
+      assertTrue("Expected exception was not thrown", isFirstFunc);
+    } catch (Exception exp) {
+      if (!isFirstFunc) {
+        if (exp instanceof TransactionException && exp.getMessage()
+            .startsWith("Function execution is not colocated with transaction.")) {
+        } else {
+          logger.info("Expected to catch TransactionException but caught exception " + exp, exp);
+          Assert.fail("Expected to catch TransactionException but caught exception ", exp);
+        }
+      } else {
+        logger.info("Caught unexpected exception", exp);
+        Assert.fail("Unexpected exception was thrown", exp);
+      }
+    }
+  }
+
+  private void runTXFunctions() {
+    PartitionedRegion pr = (PartitionedRegion) basicGetCache()
+        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+    CacheTransactionManager mgr = pr.getCache().getCacheTransactionManager();
+    mgr.begin();
+    runFunction(pr, 1, true);
+    runFunction(pr, 2, false);
+    mgr.commit();
+  }
+
   /**
    * Test all the basic functionality of colocated transactions. This method invokes
    * {@link MyTransactionFunction} and tells it what to test, using different arguments.
@@ -146,17 +218,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       createColocatedPRs(redundantBuckets);
     }
 
-    SerializableCallable registerFunction = new SerializableCallable("register Fn") {
-      public Object call() throws Exception {
-        Function txFunction = new MyTransactionFunction();
-        FunctionService.registerFunction(txFunction);
-        return Boolean.TRUE;
-      }
-    };
-
-    dataStore1.invoke(registerFunction);
-    dataStore2.invoke(registerFunction);
-    dataStore3.invoke(registerFunction);
+    dataStore1.invoke(() -> registerFunction());
+    dataStore2.invoke(() -> registerFunction());
+    dataStore3.invoke(() -> registerFunction());
 
     accessor.invoke(new SerializableCallable("run function") {
       public Object call() throws Exception {
@@ -171,7 +235,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         ArrayList args = new ArrayList();
         Function txFunction = new MyTransactionFunction();
         FunctionService.registerFunction(txFunction);
-        Execution e = FunctionService.onRegion(pr);
+        Execution execution = FunctionService.onRegion(pr);
         Set filter = new HashSet();
         // test transaction non-coLocated operations
         filter.clear();
@@ -184,7 +248,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         args.add(order);
         filter.add(custId);
         try {
-          e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+          execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
           fail("Expected exception was not thrown");
         } catch (FunctionException fe) {
           LogWriterUtils.getLogWriter().info("Caught Expected exception");
@@ -201,7 +265,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         LogWriterUtils.getLogWriter().info("VERIFY_TX");
         orderpr.put(orderId, order);
         assertNotNull(orderpr.get(orderId));
-        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+        execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         assertTrue("Unexpected customer value after commit", newCus.equals(pr.get(custId)));
         Order commitedOrder = (Order) orderpr.get(orderId);
         assertTrue(
@@ -209,26 +273,25 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             order.equals(commitedOrder));
         // verify conflict detection
         args.set(0, new Integer(VERIFY_TXSTATE_CONFLICT));
-        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+        execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify that the transaction is rolled back
         args.set(0, new Integer(VERIFY_ROLLBACK));
         LogWriterUtils.getLogWriter().info("VERIFY_ROLLBACK");
-        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+        execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify destroy
         args.set(0, new Integer(VERIFY_DESTROY));
         LogWriterUtils.getLogWriter().info("VERIFY_DESTROY");
-        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+        execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify invalidate
         args.set(0, new Integer(VERIFY_INVALIDATE));
         LogWriterUtils.getLogWriter().info("VERIFY_INVALIDATE");
-        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+        execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         return Boolean.TRUE;
       }
     });
   }
 
   protected void createColocatedPRs(int redundantBuckets) {
-
     createCacheInAllVms();
 
     redundancy = new Integer(redundantBuckets);
@@ -919,7 +982,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         ArrayList args = new ArrayList();
         Function txFunction = new MyTransactionFunction();
         FunctionService.registerFunction(txFunction);
-        Execution e = FunctionService.onRegion(pr);
+        Execution execution = FunctionService.onRegion(pr);
         Set filter = new HashSet();
         boolean caughtException = false;
         // test transaction non-coLocated operations
@@ -933,7 +996,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         args.add(order);
         filter.add(custId);
         caughtException = false;
-        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+        execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         return null;
       }
     });
@@ -943,17 +1006,10 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   @Test
   public void testRepeatableRead() throws Exception {
     createColocatedPRs(1);
-    SerializableCallable registerFunction = new SerializableCallable("register Fn") {
-      public Object call() throws Exception {
-        Function txFunction = new MyTransactionFunction();
-        FunctionService.registerFunction(txFunction);
-        return Boolean.TRUE;
-      }
-    };
 
-    dataStore1.invoke(registerFunction);
-    dataStore2.invoke(registerFunction);
-    dataStore3.invoke(registerFunction);
+    dataStore1.invoke(() -> registerFunction());
+    dataStore2.invoke(() -> registerFunction());
+    dataStore3.invoke(() -> registerFunction());
 
     accessor.invoke(new SerializableCallable("run function") {
       public Object call() throws Exception {
@@ -968,7 +1024,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         ArrayList args = new ArrayList();
         Function txFunction = new MyTransactionFunction();
         FunctionService.registerFunction(txFunction);
-        Execution e = FunctionService.onRegion(pr);
+        Execution execution = FunctionService.onRegion(pr);
         Set filter = new HashSet();
         filter.clear();
         args.clear();
@@ -979,7 +1035,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         args.add(orderId);
         args.add(order);
         filter.add(custId);
-        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
+        execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
 
         return null;
       }
@@ -1013,7 +1069,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       public Object call() throws Exception {
         long perfTime = 0;
         Region customerPR = basicGetCache().getRegion(CustomerPartitionedRegionName);
-        Execution e = FunctionService.onRegion(customerPR);
+        Execution execution = FunctionService.onRegion(customerPR);
         // for each customer, update order and shipment
         for (int iterations = 1; iterations <= totalIterations; iterations++) {
           LogWriterUtils.getLogWriter().info("running perfFunction");
@@ -1036,7 +1092,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           if (iterations > warmupIterations) {
             startTime = NanoTimer.getTime();
           }
-          e.withFilter(filter).setArguments(args).execute("perfFunction").getResult();
+          execution.withFilter(filter).setArguments(args).execute("perfFunction").getResult();
           if (startTime > 0) {
             perfTime += NanoTimer.getTime() - startTime;
           }
@@ -1051,7 +1107,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       public Object call() throws Exception {
         long perfTime = 0;
         Region customerPR = basicGetCache().getRegion(CustomerPartitionedRegionName);
-        Execution e = FunctionService.onRegion(customerPR);
+        Execution execution = FunctionService.onRegion(customerPR);
         // for each customer, update order and shipment
         for (int iterations = 1; iterations <= totalIterations; iterations++) {
           LogWriterUtils.getLogWriter().info("Running perfFunction");
@@ -1074,7 +1130,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           if (iterations > warmupIterations) {
             startTime = NanoTimer.getTime();
           }
-          e.withFilter(filter).setArguments(args).execute("perfTxFunction").getResult();
+          execution.withFilter(filter).setArguments(args).execute("perfTxFunction").getResult();
           if (startTime > 0) {
             perfTime += NanoTimer.getTime() - startTime;
           }
