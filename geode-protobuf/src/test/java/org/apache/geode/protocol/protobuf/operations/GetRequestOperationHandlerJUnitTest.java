@@ -14,11 +14,17 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
+import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,6 +43,7 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.mockito.internal.matchers.Any;
 
 @Category(UnitTest.class)
 public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -51,21 +58,6 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Before
   public void setUp() throws Exception {
     super.setUp();
-
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(TEST_KEY);
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_VALUE))
-        .thenReturn(TEST_VALUE.getBytes(Charset.forName("UTF-8")));
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_KEY))
-        .thenReturn(TEST_KEY.getBytes(Charset.forName("UTF-8")));
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, MISSING_KEY))
-        .thenReturn(MISSING_KEY.getBytes(Charset.forName("UTF-8")));
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        MISSING_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(MISSING_KEY);
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, NULLED_KEY))
-        .thenReturn(NULLED_KEY.getBytes(Charset.forName("UTF-8")));
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        NULLED_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(NULLED_KEY);
 
     Region regionStub = mock(Region.class);
     when(regionStub.get(TEST_KEY)).thenReturn(TEST_VALUE);
@@ -89,10 +81,9 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
         operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 
     Assert.assertTrue(result instanceof Success);
-    Assert.assertEquals(BasicTypes.EncodingType.STRING,
-        result.getMessage().getResult().getEncodingType());
-    String actualValue =
-        stringDecoder.decode(result.getMessage().getResult().getValue().toByteArray());
+    Assert.assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT,
+        result.getMessage().getResult().getValueCase());
+    String actualValue = result.getMessage().getResult().getStringResult();
     Assert.assertEquals(TEST_VALUE, actualValue);
   }
 
@@ -133,13 +124,18 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsErrorWhenUnableToDecodeRequest()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
+      CodecNotRegisteredForTypeException, UnsupportedEncodingException {
     CodecNotRegisteredForTypeException exception =
         new CodecNotRegisteredForTypeException("error finding codec for type");
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
+    when(serializationServiceStub.decode(any(), any())).thenThrow(exception);
 
-    RegionAPI.GetRequest getRequest = generateTestRequest(false, false, false);
+    ByteString byteString = ByteString.copyFrom("{\"someKey\":\"someValue\"}", "UTF-8");
+    BasicTypes.CustomEncodedValue.Builder customEncodedValueBuilder = BasicTypes.CustomEncodedValue
+        .newBuilder().setEncodingType(BasicTypes.EncodingType.JSON).setValue(byteString);
+    BasicTypes.EncodedValue encodedKey = BasicTypes.EncodedValue.newBuilder()
+        .setCustomEncodedValue(customEncodedValueBuilder).build();
+    RegionAPI.GetRequest getRequest =
+        ProtobufRequestUtilities.createGetRequest(TEST_REGION, encodedKey).getGetRequest();
     Result<RegionAPI.GetResponse> response =
         operationHandler.process(serializationServiceStub, getRequest, cacheStub);
 

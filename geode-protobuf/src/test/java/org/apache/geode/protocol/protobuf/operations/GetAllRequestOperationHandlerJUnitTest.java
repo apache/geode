@@ -56,12 +56,6 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    addStringMockEncoding(serializationServiceStub, TEST_KEY1, true, true);
-    addStringMockEncoding(serializationServiceStub, TEST_KEY2, true, true);
-    addStringMockEncoding(serializationServiceStub, TEST_KEY3, true, true);
-    addStringMockEncoding(serializationServiceStub, TEST_VALUE1, true, false);
-    addStringMockEncoding(serializationServiceStub, TEST_VALUE2, true, false);
-    addStringMockEncoding(serializationServiceStub, TEST_VALUE3, true, false);
 
     Region regionStub = mock(Region.class);
     when(regionStub.getAll(new HashSet<Object>() {
@@ -81,18 +75,6 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     operationHandler = new GetAllRequestOperationHandler();
     stringDecoder = new StringCodec();
-  }
-
-  private void addStringMockEncoding(SerializationService mock, String s, boolean add_encoding,
-      boolean add_decoding) throws Exception {
-    if (add_encoding) {
-      when(mock.encode(BasicTypes.EncodingType.STRING, s))
-          .thenReturn(s.getBytes(Charset.forName("UTF-8")));
-    }
-    if (add_decoding) {
-      when(mock.decode(BasicTypes.EncodingType.STRING, s.getBytes(Charset.forName("UTF-8"))))
-          .thenReturn(s);
-    }
   }
 
   @Test
@@ -144,11 +126,13 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     Map<String, String> result = new HashMap<>();
     for (BasicTypes.Entry entry : entriesList) {
       BasicTypes.EncodedValue encodedKey = entry.getKey();
-      Assert.assertEquals(BasicTypes.EncodingType.STRING, encodedKey.getEncodingType());
-      String key = stringDecoder.decode(encodedKey.getValue().toByteArray());
+      Assert.assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT,
+          encodedKey.getValueCase());
+      String key = encodedKey.getStringResult();
       BasicTypes.EncodedValue encodedValue = entry.getValue();
-      Assert.assertEquals(BasicTypes.EncodingType.STRING, encodedValue.getEncodingType());
-      String value = stringDecoder.decode(encodedValue.getValue().toByteArray());
+      Assert.assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT,
+          encodedValue.getValueCase());
+      String value = encodedValue.getStringResult();
       result.put(key, value);
     }
     return result;

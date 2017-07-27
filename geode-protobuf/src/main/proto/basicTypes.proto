@@ -25,21 +25,27 @@ message Entry {
 }
 
 message EncodedValue {
+    oneof value{
+        int32 intResult = 1;
+        int64 longResult = 2;
+        int32 shortResult = 3;
+        int32 byteResult = 4;
+        bool booleanResult = 5;
+        double doubleResult = 6;
+        float floatResult = 7;
+        bytes binaryResult = 8;
+        string stringResult = 9;
+        CustomEncodedValue customEncodedValue = 50;
+    }
+}
+
+message CustomEncodedValue {
     EncodingType encodingType = 1;
     bytes value = 2;
 }
 
 enum EncodingType {
     INVALID = 0;
-    INT = 1;
-    LONG = 2;
-    SHORT = 3;
-    BYTE = 4;
-    BOOLEAN = 5;
-    BINARY = 6;
-    FLOAT = 7;
-    DOUBLE = 8;
-    STRING = 9;
     JSON = 10;
 }
 

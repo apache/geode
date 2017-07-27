@@ -50,10 +50,7 @@ public class PutRequestOperationHandler
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
         return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-            .setMessage("invalid key or value type for region " + regionName + ",passed key: "
-                + entry.getKey().getEncodingType() + " value: "
-                + entry.getValue().getEncodingType())
-            .build());
+            .setMessage("invalid key or value type for region " + regionName).build());
       }
     } catch (UnsupportedEncodingTypeException ex) {
       return Failure.of(BasicTypes.ErrorResponse.newBuilder().setMessage(ex.getMessage()).build());
