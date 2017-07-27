@@ -265,11 +265,7 @@ public class RoundTripCacheConnectionJUnitTest {
         response.getResponseAPICase());
     RegionAPI.GetResponse getResponse = response.getGetResponse();
 
-    // All the following ways of checking a null response are valid.
     assertFalse(getResponse.hasResult());
-    assertEquals(BasicTypes.EncodingType.INVALID, getResponse.getResult().getEncodingType());
-    assertEquals(null,
-        ProtobufUtilities.decodeValue(serializationService, getResponse.getResult()));
   }
 
   @Test
@@ -342,9 +338,8 @@ public class RoundTripCacheConnectionJUnitTest {
         response.getResponseAPICase());
     RegionAPI.GetResponse getResponse = response.getGetResponse();
     BasicTypes.EncodedValue result = getResponse.getResult();
-    assertEquals(BasicTypes.EncodingType.STRING, result.getEncodingType());
-    assertEquals(expectedValue, new ProtobufSerializationService().decode(result.getEncodingType(),
-        result.getValue().toByteArray()));
+    assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, result.getValueCase());
+    assertEquals(expectedValue, result.getStringResult());
   }
 
   private ClientProtocol.Response deserializeResponse(Socket socket,

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import com.google.protobuf.ByteString;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -32,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -51,15 +52,6 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Before
   public void setUp() throws Exception {
     super.setUp();
-
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenReturn(TEST_KEY);
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        TEST_VALUE.getBytes(Charset.forName("UTF-8")))).thenReturn(TEST_VALUE);
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_KEY))
-        .thenReturn(TEST_KEY.getBytes(Charset.forName("UTF-8")));
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_VALUE))
-        .thenReturn(TEST_VALUE.getBytes(Charset.forName("UTF-8")));
 
     regionMock = mock(Region.class);
     when(regionMock.put(TEST_KEY, TEST_VALUE)).thenReturn(1);
@@ -81,38 +73,32 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   }
 
   @Test
-  public void test_invalidEncodingType() throws CodecAlreadyRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+  public void test_invalidEncodingType()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException, UnsupportedEncodingException {
     String exceptionText = "unsupported type!";
     UnsupportedEncodingTypeException exception =
         new UnsupportedEncodingTypeException(exceptionText);
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
+    when(serializationServiceStub.decode(any(), any())).thenThrow(exception);
+
+    ByteString byteString = ByteString.copyFrom("{\"someKey\":\"someValue\"}", "UTF-8");
+    BasicTypes.CustomEncodedValue.Builder customEncodedValueBuilder = BasicTypes.CustomEncodedValue
+        .newBuilder().setEncodingType(BasicTypes.EncodingType.JSON).setValue(byteString);
+    BasicTypes.EncodedValue encodedKey = BasicTypes.EncodedValue.newBuilder()
+        .setCustomEncodedValue(customEncodedValueBuilder).build();
+
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
 
+    BasicTypes.EncodedValue testValue =
+        ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_VALUE);
+    BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(encodedKey, testValue);
+    RegionAPI.PutRequest putRequest =
+        ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
     Result<RegionAPI.PutResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
+        operationHandler.process(serializationServiceStub, putRequest, cacheStub);
 
     Assert.assertTrue(result instanceof Failure);
     org.junit.Assert.assertEquals(exceptionText, result.getErrorMessage().getMessage());
-  }
-
-  @Test
-  public void test_codecNotRegistered() throws CodecAlreadyRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    String exceptionMessage = "error finding codec for type";
-    CodecNotRegisteredForTypeException exception =
-        new CodecNotRegisteredForTypeException(exceptionMessage);
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.STRING,
-        TEST_KEY.getBytes(Charset.forName("UTF-8")))).thenThrow(exception);
-    PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-
-    Result<RegionAPI.PutResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
-
-    Assert.assertTrue(result instanceof Failure);
-    org.junit.Assert.assertThat(result.getErrorMessage().getMessage(),
-        CoreMatchers.containsString(exceptionMessage));
   }
 
   @Test

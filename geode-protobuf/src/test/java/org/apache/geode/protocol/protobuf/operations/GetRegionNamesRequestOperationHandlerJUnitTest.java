@@ -49,13 +49,6 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   public void setUp() throws Exception {
     super.setUp();
 
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_REGION1))
-        .thenReturn(TEST_REGION1.getBytes(Charset.forName("UTF-8")));
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_REGION2))
-        .thenReturn(TEST_REGION2.getBytes(Charset.forName("UTF-8")));
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.STRING, TEST_REGION3))
-        .thenReturn(TEST_REGION3.getBytes(Charset.forName("UTF-8")));
-
     Region<String, String> region1Stub = mock(Region.class);
     when(region1Stub.getName()).thenReturn(TEST_REGION1);
     Region<String, String> region2Stub = mock(Region.class);

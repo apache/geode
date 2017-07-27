@@ -28,24 +28,6 @@ public class EncodingTypeToSerializationTypeTranslatorJUnitTest {
 
   @Test
   public void testTranslateEncodingTypes() throws UnsupportedEncodingTypeException {
-    assertSame(SerializationType.INT,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.INT));
-    assertSame(SerializationType.LONG,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.LONG));
-    assertSame(SerializationType.SHORT,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.SHORT));
-    assertSame(SerializationType.BYTE,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.BYTE));
-    assertSame(SerializationType.BOOLEAN, EncodingTypeTranslator
-        .getSerializationTypeForEncodingType(BasicTypes.EncodingType.BOOLEAN));
-    assertSame(SerializationType.BINARY,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.BINARY));
-    assertSame(SerializationType.FLOAT,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.FLOAT));
-    assertSame(SerializationType.DOUBLE,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.DOUBLE));
-    assertSame(SerializationType.STRING,
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.STRING));
     assertSame(SerializationType.JSON,
         EncodingTypeTranslator.getSerializationTypeForEncodingType(BasicTypes.EncodingType.JSON));
   }
