@@ -35,6 +35,7 @@ import org.eclipse.jetty.http.HttpTester;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,6 +84,9 @@ public class SessionReplicationIntegrationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
+
+    Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"));
+
     File gemfireLogFile = new File(tmpdir.newFolder(), "gemfire_modules.log");
 
     request = HttpTester.newRequest();
