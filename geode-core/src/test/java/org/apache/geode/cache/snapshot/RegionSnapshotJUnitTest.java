@@ -280,6 +280,6 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    f = new File(snaps, "test.snapshot");
+    f = new File(snaps, "test.snapshot.gfd");
   }
 }

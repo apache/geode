@@ -18,7 +18,13 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ProxyRegion;
-import org.apache.geode.cache.execute.*;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
@@ -27,13 +33,23 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -144,8 +160,6 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     if (shouldRunInParallel(options)) {
       snapshotInParallel(new ParallelArgs<K, V>(snapshot, format, options),
           new ParallelExportFunction<K, V>());
-      return;
-
     } else {
       exportOnMember(snapshot, format, options);
     }
@@ -172,8 +186,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
   }
 
   private boolean shouldRunInParallel(SnapshotOptions<K, V> options) {
-    return ((SnapshotOptionsImpl<K, V>) options).isParallelMode()
-        && region.getAttributes().getDataPolicy().withPartitioning()
+    return options.isParallelMode() && region.getAttributes().getDataPolicy().withPartitioning()
         && !(region instanceof LocalDataSet);
   }
 
@@ -200,7 +213,28 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     if (getLoggerI18n().infoEnabled())
       getLoggerI18n().info(LocalizedStrings.Snapshot_IMPORT_BEGIN_0, region.getName());
+    if (snapshot.isDirectory()) {
+      File[] snapshots =
+          snapshot.listFiles((File f) -> f.getName().endsWith(SNAPSHOT_FILE_EXTENSION));
+      if (snapshots == null) {
+        throw new IOException("Unable to access " + snapshot.getCanonicalPath());
+      } else if (snapshots.length == 0) {
+        throw new IllegalArgumentException("Failure to import snapshot: "
+            + snapshot.getAbsolutePath() + " contains no valid .gfd snapshot files");
+      }
+      for (File snapshotFile : snapshots) {
+        importSnapshotFile(snapshotFile, options, local);
+      }
+    } else if (snapshot.getName().endsWith(SNAPSHOT_FILE_EXTENSION)) {
+      importSnapshotFile(snapshot, options, local);
+    } else {
+      throw new IllegalArgumentException("Failure to import snapshot: "
+          + snapshot.getCanonicalPath() + " is not .gfd file or directory containing .gfd files");
+    }
+  }
 
+  private void importSnapshotFile(File snapshot, SnapshotOptions<K, V> options, LocalRegion local)
+      throws IOException, ClassNotFoundException {
     long count = 0;
     long bytes = 0;
     long start = CachePerfStats.getStatTime();
@@ -280,7 +314,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
       if (getLoggerI18n().infoEnabled()) {
         getLoggerI18n().info(LocalizedStrings.Snapshot_IMPORT_END_0_1_2_3,
-            new Object[] {count, bytes, region.getName(), snapshot});
+            new Object[] {count, bytes, region.getName(), snapshot.getAbsolutePath()});
       }
 
     } catch (InterruptedException e) {
@@ -322,8 +356,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       count = exp.export(region, sink, options);
 
       if (getLoggerI18n().infoEnabled()) {
-        getLoggerI18n().info(LocalizedStrings.Snapshot_EXPORT_END_0_1_2_3,
-            new Object[] {count, sink.getBytesWritten(), region.getName(), snapshot});
+        getLoggerI18n().info(LocalizedStrings.Snapshot_EXPORT_END_0_1_2_3, new Object[] {count,
+            sink.getBytesWritten(), region.getName(), snapshot.getAbsolutePath()});
       }
 
     } finally {
@@ -479,7 +513,6 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
         Region<K, V> local =
             PartitionRegionHelper.getLocalDataForContext((RegionFunctionContext) context);
         ParallelArgs<K, V> args = (ParallelArgs<K, V>) context.getArguments();
-
         File f = args.getOptions().getMapper().mapExportPath(
             local.getCache().getDistributedSystem().getDistributedMember(), args.getFile());
 

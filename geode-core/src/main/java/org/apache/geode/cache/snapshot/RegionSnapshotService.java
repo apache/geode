@@ -31,10 +31,22 @@ import org.apache.geode.pdx.PdxSerializer;
  * RegionSnapshot snapshot = region.getSnapshotService();
  * 
  * // export the snapshot, every region in the cache will be exported
- * snapshot.save(new File("snapshot"), SnapshotOptions.GEMFIRE);
+ * snapshot.save(new File("snapshot.gfd"), SnapshotOptions.GEMFIRE);
  * 
  * // import the snapshot file, updates any existing entries in the region
- * snapshot.load(new File("snapshot"), SnapshotOptions.GEMFIRE);
+ * snapshot.load(new File("snapshot.gfd"), SnapshotOptions.GEMFIRE);
+ * </pre>
+ *
+ *
+ * When parallel export is used, the file name will be modified to include a unique identifier for
+ * the member that created the file, so providing a file location of "snapshot.gfd" would result in
+ * creation of multiple files with the format "snapshot-unique_id.gfd". When loading files from a
+ * parallel export, a directory can be given instead of a single file and all snapshot files in that
+ * directory will be loaded.
+ * 
+ * <pre>
+ * // import directory of snapshot files
+ * snapshot.load(new File("snapshotDir"), SnapshotOptions.GEMFIRE);
  * </pre>
  * 
  * The default behavior is to perform all I/O operations on the node where the snapshot operations
@@ -53,7 +65,7 @@ import org.apache.geode.pdx.PdxSerializer;
  * SnapshotOptions<Object, Object> options = snapshot.createOptions();
  * options.setFilter(filter);
  * 
- * snapshot.save(new File("snapshot"), SnapshotFormat.GEMFIRE, options);
+ * snapshot.save(new File("snapshot.gfd"), SnapshotFormat.GEMFIRE, options);
  * </pre>
  * 
  * Note that the snapshot does not provide a consistency guarantee. Updates to data during the
@@ -68,6 +80,12 @@ import org.apache.geode.pdx.PdxSerializer;
  * @since GemFire 7.0
  */
 public interface RegionSnapshotService<K, V> {
+
+  /**
+   * File extension for snapshot files
+   */
+  public static final String SNAPSHOT_FILE_EXTENSION = ".gfd";
+
   /**
    * Creates a <code>SnapshotOptions</code> object configured with default settings. The options can
    * be used to configure snapshot behavior.
@@ -79,7 +97,7 @@ public interface RegionSnapshotService<K, V> {
   /**
    * Exports the region data into the snapshot file.
    * 
-   * @param snapshot the snapshot file
+   * @param snapshot the snapshot file (must end in .gfd)
    * @param format the snapshot format
    * 
    * @throws IOException error writing snapshot
@@ -89,7 +107,7 @@ public interface RegionSnapshotService<K, V> {
   /**
    * Exports the region data into the snapshot file by applying user-configured options.
    * 
-   * @param snapshot the snapshot file
+   * @param snapshot the snapshot file (must end in .gfd)
    * @param format the snapshot format
    * @param options the snapshot options
    * 
@@ -98,13 +116,16 @@ public interface RegionSnapshotService<K, V> {
   void save(File snapshot, SnapshotFormat format, SnapshotOptions<K, V> options) throws IOException;
 
   /**
-   * Imports the snapshot file into the specified region.
+   * Imports the snapshot file into the specified region. The snapshot parameter can be either a
+   * single snapshot file or a directory containing snapshot files. If a single file, it must end in
+   * the snapshot file extension (.gfd) to be imported. If a directory, only files in the directory
+   * that end in .gfd will be loaded.
    * <p>
    * Prior to loading data, the region should have been created and any necessary serializers
    * (either {@link DataSerializer} or {@link PdxSerializer}) and {@link Instantiator}s should have
    * been registered.
    * 
-   * @param snapshot the snapshot file
+   * @param snapshot the snapshot file (ending in .gfd) or a directory of .gfd snapshot files
    * @param format the snapshot file format
    * 
    * @throws IOException Unable to import data
@@ -113,13 +134,16 @@ public interface RegionSnapshotService<K, V> {
   void load(File snapshot, SnapshotFormat format) throws IOException, ClassNotFoundException;
 
   /**
-   * Imports the snapshot file into the specified region by applying user- configured options.
+   * Imports the snapshot file into the specified region by applying user-configured options. The
+   * snapshot parameter can be either a single snapshot file or a directory containing snapshot
+   * files. If a single file, it must end in the snapshot file extension (.gfd) to be imported. If a
+   * directory, only files in the directory that end in .gfd will be loaded.
    * <p>
    * Prior to loading data, the region should have been created and any necessary serializers
    * (either {@link DataSerializer} or {@link PdxSerializer}) and {@link Instantiator}s should have
    * been registered.
    * 
-   * @param snapshot the snapshot file
+   * @param snapshot the snapshot file (ending in .gfd) or a directory of .gfd snapshot files
    * @param format the snapshot file format
    * @param options the snapshot options
    * 

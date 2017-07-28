@@ -77,7 +77,7 @@ public class SnapshotPerformanceDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void doExport(Region<Integer, MyObject> region) throws Exception {
-    File f = new File(getDiskDirs()[0], region.getName());
+    File f = new File(getDiskDirs()[0], region.getName() + ".gfd");
 
     long start = System.currentTimeMillis();
     region.getSnapshotService().save(f, SnapshotFormat.GEMFIRE);
@@ -96,7 +96,7 @@ public class SnapshotPerformanceDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void doImport(Region<Integer, MyObject> region) throws Exception {
-    File f = new File(getDiskDirs()[0], region.getName());
+    File f = new File(getDiskDirs()[0], region.getName() + ".gfd");
 
     long start = System.currentTimeMillis();
     region.getSnapshotService().load(f, SnapshotFormat.GEMFIRE);
