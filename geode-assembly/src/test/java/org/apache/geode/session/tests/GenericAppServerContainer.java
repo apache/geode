@@ -39,6 +39,7 @@ import org.junit.Assume;
  */
 public class GenericAppServerContainer extends ServerContainer {
   private final File modifyWarScript;
+  private final File modifyWarScriptLog;
 
   private static final String DEFAULT_GENERIC_APPSERVER_WAR_DIR = "/tmp/cargo_wars/";
 
@@ -57,6 +58,10 @@ public class GenericAppServerContainer extends ServerContainer {
     // Setup modify war script file so that it is executable and easily findable
     modifyWarScript = new File(install.getModulePath() + "/bin/modify_war");
     modifyWarScript.setExecutable(true);
+
+    // Setup modify_war script logging file
+    modifyWarScriptLog = new File(logDir + "/warScript.log");
+    modifyWarScriptLog.createNewFile();
 
     // Ignore tests that are running on windows, since they can't run the modify war script
     Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"));
@@ -116,7 +121,7 @@ public class GenericAppServerContainer extends ServerContainer {
    * {@link #buildCommand()}
    *
    * The modified WAR file is sent to {@link #warFile}.
-   * 
+   *
    * @throws IOException If the command executed returns with a non-zero exit code.
    */
   private void modifyWarFile() throws IOException, InterruptedException {
@@ -126,6 +131,9 @@ public class GenericAppServerContainer extends ServerContainer {
     builder.inheritIO();
     // Setup the environment builder with the command
     builder.command(buildCommand());
+    // Redirect the command line logging to a file
+    builder.redirectError(modifyWarScriptLog);
+    builder.redirectOutput(modifyWarScriptLog);
     logger.info("Running command: " + String.join(" ", builder.command()));
 
     // Run the command
