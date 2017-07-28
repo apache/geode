@@ -367,8 +367,8 @@ public class StartLocatorCommand implements GfshCommand {
     for (int attempts = 0; (attempts < 10 && !connectSuccess); attempts++) {
       try {
         ConnectToLocatorResult connectToLocatorResult =
-            ShellCommands.connectToLocator(locatorHostname, locatorPort,
-                ShellCommands.getConnectLocatorTimeoutInMS() / 4, locatorConfigurationProperties);
+            ConnectCommand.connectToLocator(locatorHostname, locatorPort,
+                ConnectCommand.CONNECT_LOCATOR_TIMEOUT_MS / 4, locatorConfigurationProperties);
 
         ConnectionEndpoint memberEndpoint = connectToLocatorResult.getMemberEndpoint();
 
