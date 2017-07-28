@@ -56,12 +56,22 @@ which classifies whether the operation as
 The operations are not hierarchical;
 `MANAGE` does not imply `WRITE`, and `WRITE` does not imply `READ`.
 
-Some operations further specify a region name in the permission.
+Some `DATA` operations further specify a region name in the permission.
 This permits restricting operations on that region to only those
 authorized principals.
 And within a region, some operations may specify a key.
 This permits restricting operations on that key within that region to 
 only those authorized principals.
+
+Some `CLUSTER` operations further specify a finer-grained
+target for the operation.
+Specify the target with a string value of:
+
+- `DISK` to target operations that write to a disk store
+- `GATEWAY` to target operations that manage gateway senders and receivers
+- `QUERY` to target operations that manage both indexes and continuous
+ queries
+- `JAR` to target operations that deploy code to servers
 
 This table classifies the permissions assigned for operations common to
 a Client-Server interaction.
@@ -110,7 +120,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | close durable-cq                       | DATA:MANAGE                      |
 | compact disk-store                     | DATA:MANAGE                      |
 | compact offline-disk-store             | DATA:MANAGE                      |
-| configure pdx                          | DATA:MANAGE                      |
+| configure pdx                          | CLUSTER:MANAGE                   |
 | create async-event-queue               | DATA:MANAGE                      |
 | create defined indexes                 | DATA:MANAGE                      |
 | create disk-store                      | DATA:MANAGE                      |
@@ -146,7 +156,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | gc                                     | CLUSTER:MANAGE                   |
 | get &#8209;key=key1 &#8209;region=region1        | DATA:READ:RegionName:Key         |
 | import data                            | DATA:WRITE:RegionName            |
-| import cluster-configuration           | DATA:MANAGE                      |
+| import cluster-configuration           | CLUSTER:MANAGE                   |
 | list async-event-queues                | CLUSTER:READ                     |
 | list clients                           | CLUSTER:READ                     |
 | list deployed                          | CLUSTER:READ                     |
@@ -157,7 +167,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | list indexes                           | CLUSTER:READ                     |
 | list lucene indexes                    | CLUSTER:READ                     |
 | list members                           | CLUSTER:READ                     |
-| list regions                           | DATA:READ                        |
+| list regions                           | CLUSTER:READ                     |
 | load-balance gateway-sender            | DATA:MANAGE                      |
 | locate entry                           | DATA:READ:RegionName:Key         |
 | netstat                                | CLUSTER:READ                     |
@@ -247,7 +257,7 @@ This table classifies the permissions assigned for JMX operations.
 | GatewaySenderMXBean.resume                     | DATA:MANAGE               |
 | GatewaySenderMXBean.start                      | DATA:MANAGE               |
 | GatewaySenderMXBean.stop                       | DATA:MANAGE               |
-| LockServiceMXBean.becomeLockGrantor            | DATA:MANAGE               |
+| LockServiceMXBean.becomeLockGrantor            | CLUSTER:MANAGE            |
 | MemberMXBean.compactAllDiskStores              | DATA:MANAGE               |
 
 ## Implement Authorization
