@@ -331,8 +331,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
-  public void testWaitUntilFlushedForException() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+  public void waitUntilFlushThrowsIllegalStateExceptionWhenAEQNotFound() throws Exception {
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("name", null);
     fields.put("lastName", null);
     fields.put("address", null);
