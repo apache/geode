@@ -27,6 +27,8 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
@@ -40,10 +42,13 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
+import org.apache.geode.internal.cache.wan.PossibleDuplicateAsyncEventListener;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
@@ -62,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -1745,6 +1751,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         .setPersistent(true).setParallel(true).create("ln", new MyAsyncEventListener());
   }
 
+  @Test
   public void testParallelAsyncEventQueueMovePrimaryAndMoveItBackDuringDispatching() {
     Integer lnPort =
         (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
@@ -1803,6 +1810,113 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         LongStream.range(0, 113).mapToObj(Long::valueOf).collect(Collectors.toSet());
     assertEquals(expectedKeys, allKeys);
 
+  }
+
+  @Test
+  public void testParallelAsyncEventQueueWithPossibleDuplicateEvents() {
+    // Set disable move primaries on start up
+    vm0.invoke(() -> setDisableMovePrimary());
+    vm1.invoke(() -> setDisableMovePrimary());
+
+    try {
+      // Create locator
+      Integer lnPort = (Integer) vm0.invoke(() -> createFirstLocatorWithDSId(1));
+
+      // Create cache and async event queue in member 1
+      String aeqId = "ln";
+      vm0.invoke(() -> createCache(lnPort));
+      vm0.invoke(() -> createAsyncEventQueue(aeqId, true, 100, 1, false, false, null, true,
+          "PossibleDuplicateAsyncEventListener"));
+
+      // Create region with async event queue in member 1
+      String regionName = getTestMethodName() + "_PR";
+      vm0.invoke(
+          () -> createPRWithRedundantCopyWithAsyncEventQueue(regionName, aeqId, isOffHeap()));
+
+      // Do puts so that all primaries are in member 1
+      int numPuts = 30;
+      vm0.invoke(() -> doPuts(regionName, numPuts));
+
+      // Create cache and async event queue in member 2
+      vm1.invoke(() -> createCache(lnPort));
+      vm1.invoke(() -> createAsyncEventQueue(aeqId, true, 100, 1, false, false, null, true,
+          "PossibleDuplicateAsyncEventListener"));
+
+      // Create region with paused async event queue in member 2
+      vm1.invoke(
+          () -> createPRWithRedundantCopyWithAsyncEventQueue(regionName, aeqId, isOffHeap()));
+      vm1.invoke(() -> pauseAsyncEventQueue("ln"));
+
+      // Close cache in member 1 (all AEQ buckets will fail over to member 2)
+      vm0.invoke(() -> closeCache());
+
+      // Start processing async event queue in member 2
+      vm1.invoke(() -> resumeAsyncEventQueue("ln"));
+      vm1.invoke(() -> startProcessingAsyncEvents(aeqId));
+
+      // Wait for queue to be empty
+      vm1.invoke(() -> waitForAsyncQueueToGetEmpty("ln"));
+
+      // Verify all events were processed in member 2
+      vm1.invoke(() -> verifyAsyncEventProcessing(aeqId, numPuts));
+    } finally {
+      // Clear disable move primaries on start up
+      vm0.invoke(() -> clearDisableMovePrimary());
+      vm1.invoke(() -> clearDisableMovePrimary());
+    }
+  }
+
+  public static void setDisableMovePrimary() {
+    System.setProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP", "true");
+  }
+
+  public static void clearDisableMovePrimary() {
+    System.clearProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP");
+  }
+
+  public static void startProcessingAsyncEvents(String aeqId) {
+    // Get the async event listener
+    PossibleDuplicateAsyncEventListener listener = getPossibleDuplicateAsyncEventListener(aeqId);
+
+    // Start processing waiting events
+    listener.startProcessingEvents();
+  }
+
+  public static void verifyAsyncEventProcessing(String aeqId, int numEvents) {
+    // Get the async event listener
+    PossibleDuplicateAsyncEventListener listener = getPossibleDuplicateAsyncEventListener(aeqId);
+
+    // Verify all events were processed
+    assertEquals(numEvents, listener.getTotalEvents());
+
+    // Verify all events are possibleDuplicate
+    assertEquals(numEvents, listener.getTotalPossibleDuplicateEvents());
+  }
+
+  private static PossibleDuplicateAsyncEventListener getPossibleDuplicateAsyncEventListener(
+      String aeqId) {
+    // Get the async event queue
+    AsyncEventQueue aeq = cache.getAsyncEventQueue(aeqId);
+    assertNotNull(aeq);
+
+    // Get and return the async event listener
+    AsyncEventListener aeqListener = aeq.getAsyncEventListener();
+    assertTrue(aeqListener instanceof PossibleDuplicateAsyncEventListener);
+    return (PossibleDuplicateAsyncEventListener) aeqListener;
+  }
+
+  private static class RecoveryObserver extends InternalResourceManager.ResourceObserverAdapter {
+
+    private final CountDownLatch recoveryLatch = new CountDownLatch(2);
+
+    @Override
+    public void rebalancingOrRecoveryFinished(Region region) {
+      this.recoveryLatch.countDown();
+    }
+
+    private void waitForRecovery() throws InterruptedException {
+      this.recoveryLatch.await(60, TimeUnit.SECONDS);
+    }
   }
 
   private static Set<Object> getKeysSeen(VM vm, String asyncEventQueueId) {
