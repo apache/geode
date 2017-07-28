@@ -14,17 +14,16 @@
  */
 package org.apache.geode.cache.snapshot;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -34,49 +33,25 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import org.apache.geode.cache30.CacheTestCase;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.snapshot.SnapshotFileMapper;
 import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.VM;
 
 @Category(DistributedTest.class)
 public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
-  static byte[] ffff = new byte[] {0xf, 0xf, 0xf, 0xf};
-  static byte[] eeee = new byte[] {0xe, 0xe, 0xe, 0xe};
-
-  private static class TestSnapshotFileMapper implements SnapshotFileMapper {
-    volatile boolean explode;
-
-    @Override
-    public File mapExportPath(DistributedMember member, File snapshot) {
-      if (explode) {
-        throw new RuntimeException();
-      }
-      return new File(snapshot.getAbsoluteFile().toString() + VM.getCurrentVMNum());
-    }
-
-    @Override
-    public File[] mapImportPath(DistributedMember member, File snapshot) {
-      if (explode) {
-        throw new RuntimeException();
-      }
-
-      File f = new File(snapshot.getAbsoluteFile().toString() + VM.getCurrentVMNum());
-      return new File[] {f};
-    }
-  }
-
-  public ParallelSnapshotDUnitTest() {
-    super();
-  }
+  private static final byte[] ffff = new byte[] {0xf, 0xf, 0xf, 0xf};
+  private static final byte[] eeee = new byte[] {0xe, 0xe, 0xe, 0xe};
 
   @Test
   public void testExportImport() throws Exception {
     doExport(false);
     doImport(false);
+  }
+
+  @Test
+  public void testExportWithSequentialImport() throws Exception {
+    doExport(false);
+    doSequentialImport();
   }
 
   @Test
@@ -104,23 +79,22 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
     RegionSnapshotService rss = region.getSnapshotService();
 
     final TestSnapshotFileMapper mapper = new TestSnapshotFileMapper();
-    mapper.explode = explode;
+    mapper.setShouldExplode(explode);
 
     SnapshotOptionsImpl opt = (SnapshotOptionsImpl) rss.createOptions();
     opt.setParallelMode(true);
     opt.setMapper(mapper);
 
-    final File f = new File("mysnap");
+    File f = new File("mysnap.gfd").getAbsoluteFile();
     rss.save(f, SnapshotFormat.GEMFIRE, opt);
 
-    mapper.explode = false;
+    mapper.setShouldExplode(false);
     SerializableCallable check = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         getCache().getDistributedSystem().getDistributedMember();
         File snap =
             mapper.mapExportPath(getCache().getDistributedSystem().getDistributedMember(), f);
-
         assertTrue("Could not find snapshot: " + snap, snap.exists());
         return null;
       }
@@ -134,19 +108,36 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
     RegionSnapshotService rss = region.getSnapshotService();
 
     final TestSnapshotFileMapper mapper = new TestSnapshotFileMapper();
-    mapper.explode = explode;
+    mapper.setShouldExplode(explode);
 
     SnapshotOptionsImpl opt = (SnapshotOptionsImpl) rss.createOptions();
     opt.setParallelMode(true);
     opt.setMapper(mapper);
 
-    final File f = new File("mysnap");
+    final File f = new File("mysnap.gfd").getAbsoluteFile();
 
     for (int i = 0; i < 1000; i++) {
       region.put(i, eeee);
     }
 
     rss.load(f, SnapshotFormat.GEMFIRE, opt);
+    for (int i = 0; i < 1000; i++) {
+      assertTrue(Arrays.equals(ffff, (byte[]) region.get(i)));
+    }
+  }
+
+  private void doSequentialImport() throws IOException, ClassNotFoundException {
+    Region region = getCache().getRegion("test");
+    RegionSnapshotService rss = region.getSnapshotService();
+    SnapshotOptionsImpl opt = (SnapshotOptionsImpl) rss.createOptions();
+
+
+    for (int i = 0; i < 1000; i++) {
+      region.put(i, eeee);
+    }
+
+    final File file = new File("").getAbsoluteFile();
+    rss.load(file, SnapshotFormat.GEMFIRE, opt);
     for (int i = 0; i < 1000; i++) {
       assertTrue(Arrays.equals(ffff, (byte[]) region.get(i)));
     }
@@ -173,12 +164,7 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    File[] snaps = new File(".").listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return name.startsWith("mysnap");
-      }
-    });
+    File[] snaps = new File(".").listFiles((dir, name) -> name.startsWith("mysnap"));
 
     if (snaps != null) {
       for (File f : snaps) {

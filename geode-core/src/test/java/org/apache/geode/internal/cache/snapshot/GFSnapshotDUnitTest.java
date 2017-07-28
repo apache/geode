@@ -123,7 +123,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
   private void iterateOverSnapshot(final String snapshotFilePath)
       throws IOException, ClassNotFoundException {
 
-    File mySnapshot = new File(snapshotFilePath + "/snapshot-TestRegion");
+    File mySnapshot = new File(snapshotFilePath + "/snapshot-TestRegion.gfd");
     SnapshotIterator<Integer, TestObject> snapshotIterator = SnapshotReader.read(mySnapshot);
 
     Map<Integer, TestObject> result = new TreeMap<>();

@@ -71,7 +71,7 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable export = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        File f = new File(getDiskDirs()[0], "client-export.snapshot");
+        File f = new File(getDiskDirs()[0], "client-export.snapshot.gfd");
         Region<Integer, MyObject> r = getCache().getRegion("clienttest");
 
         r.getSnapshotService().save(f, SnapshotFormat.GEMFIRE);
@@ -104,7 +104,7 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable export = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        File f = new File(getDiskDirs()[0], "client-import.snapshot");
+        File f = new File(getDiskDirs()[0], "client-import.snapshot.gfd");
         Region<Integer, MyObject> r = getCache().getRegion("clienttest");
 
         r.getSnapshotService().save(f, SnapshotFormat.GEMFIRE);
@@ -135,7 +135,7 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
             r.getRegionService().getQueryService().newCq("SELECT * FROM /clienttest", af.create());
         cq.execute();
 
-        File f = new File(getDiskDirs()[0], "client-import.snapshot");
+        File f = new File(getDiskDirs()[0], "client-import.snapshot.gfd");
         r.getSnapshotService().load(f, SnapshotFormat.GEMFIRE);
 
         return cqtest.get();
@@ -174,7 +174,7 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
       region.put(i, new MyObject(i, "clienttest " + i));
     }
 
-    File f = new File(getDiskDirs()[0], "client-callback.snapshot");
+    File f = new File(getDiskDirs()[0], "client-callback.snapshot.gfd");
     region.getSnapshotService().save(f, SnapshotFormat.GEMFIRE);
 
     for (int i = 0; i < count; i++) {
@@ -232,7 +232,7 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
         r.put(1, new MyObject(1, "invalidate"));
         r.invalidate(1);
 
-        File f = new File(getDiskDirs()[0], "client-invalidate.snapshot");
+        File f = new File(getDiskDirs()[0], "client-invalidate.snapshot.gfd");
         r.getSnapshotService().save(f, SnapshotFormat.GEMFIRE);
         r.getSnapshotService().load(f, SnapshotFormat.GEMFIRE);
 
