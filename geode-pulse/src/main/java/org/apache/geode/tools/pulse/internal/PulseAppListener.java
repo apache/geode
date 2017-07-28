@@ -35,9 +35,9 @@ import javax.servlet.ServletContextListener;
 
 /**
  * This class is used for checking the application running mode i.e. Embedded or not
- * 
+ *
  * @since GemFire version 7.0.Beta 2012-09-23
- * 
+ *
  */
 // @WebListener
 public class PulseAppListener implements ServletContextListener {
@@ -81,7 +81,8 @@ public class PulseAppListener implements ServletContextListener {
       // jmx connection parameters
       logger.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_EMBEDDED_MODE"));
       repository.setJmxUseLocator(false);
-      repository.setHost(PulseConstants.GEMFIRE_DEFAULT_HOST);
+      repository.setHost(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST,
+          PulseConstants.GEMFIRE_DEFAULT_HOST));
       repository.setPort(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT,
           PulseConstants.GEMFIRE_DEFAULT_PORT));
 
