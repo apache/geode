@@ -27,6 +27,8 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
@@ -44,6 +46,7 @@ import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
+import org.apache.geode.internal.cache.wan.PossibleDuplicateAsyncEventListener;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
@@ -1726,6 +1729,99 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
       }
     });
+  }
+
+  @Test
+  public void testParallelAsyncEventQueueWithPossibleDuplicateEvents() {
+    // Set disable move primaries on start up
+    vm1.invoke(() -> setDisableMovePrimary());
+    vm2.invoke(() -> setDisableMovePrimary());
+
+    try {
+      // Create locator
+      Integer lnPort = (Integer) vm0.invoke(() -> createFirstLocatorWithDSId(1));
+
+      // Create cache and async event queue in member 1
+      String aeqId = "ln";
+      vm1.invoke(() -> createCache(lnPort));
+      vm1.invoke(() -> createAsyncEventQueue(aeqId, true, 100, 1, false, false, null, true,
+          "PossibleDuplicateAsyncEventListener"));
+
+      // Create region with async event queue in member 1
+      String regionName = getTestMethodName() + "_PR";
+      vm1.invoke(
+          () -> createPRWithRedundantCopyWithAsyncEventQueue(regionName, aeqId, isOffHeap()));
+
+      // Do puts so that all primaries are in member 1
+      int numPuts = 30;
+      vm1.invoke(() -> doPuts(regionName, numPuts));
+
+      // Create cache and async event queue in member 2
+      vm2.invoke(() -> createCache(lnPort));
+      vm2.invoke(() -> createAsyncEventQueue(aeqId, true, 100, 1, false, false, null, true,
+          "PossibleDuplicateAsyncEventListener"));
+
+      // Create region with paused async event queue in member 2
+      vm2.invoke(
+          () -> createPRWithRedundantCopyWithAsyncEventQueue(regionName, aeqId, isOffHeap()));
+      vm2.invoke(() -> pauseAsyncEventQueue(aeqId));
+
+      // Close cache in member 1 (all AEQ buckets will fail over to member 2)
+      vm1.invoke(() -> closeCache());
+
+      // Start processing async event queue in member 2
+      vm2.invoke(() -> resumeAsyncEventQueue(aeqId));
+      vm2.invoke(() -> startProcessingAsyncEvents(aeqId));
+
+      // Wait for queue to be empty
+      vm2.invoke(() -> waitForAsyncQueueToGetEmpty(aeqId));
+
+      // Verify all events were processed in member 2
+      vm2.invoke(() -> verifyAsyncEventProcessing(aeqId, numPuts));
+    } finally {
+      // Clear disable move primaries on start up
+      vm1.invoke(() -> clearDisableMovePrimary());
+      vm2.invoke(() -> clearDisableMovePrimary());
+    }
+  }
+
+  public static void setDisableMovePrimary() {
+    System.setProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP", "true");
+  }
+
+  public static void clearDisableMovePrimary() {
+    System.clearProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP");
+  }
+
+  public static void startProcessingAsyncEvents(String aeqId) {
+    // Get the async event listener
+    PossibleDuplicateAsyncEventListener listener = getPossibleDuplicateAsyncEventListener(aeqId);
+
+    // Start processing waiting events
+    listener.startProcessingEvents();
+  }
+
+  public static void verifyAsyncEventProcessing(String aeqId, int numEvents) {
+    // Get the async event listener
+    PossibleDuplicateAsyncEventListener listener = getPossibleDuplicateAsyncEventListener(aeqId);
+
+    // Verify all events were processed
+    assertEquals(numEvents, listener.getTotalEvents());
+
+    // Verify all events are possibleDuplicate
+    assertEquals(numEvents, listener.getTotalPossibleDuplicateEvents());
+  }
+
+  private static PossibleDuplicateAsyncEventListener getPossibleDuplicateAsyncEventListener(
+      String aeqId) {
+    // Get the async event queue
+    AsyncEventQueue aeq = cache.getAsyncEventQueue(aeqId);
+    assertNotNull(aeq);
+
+    // Get and return the async event listener
+    AsyncEventListener aeqListener = aeq.getAsyncEventListener();
+    assertTrue(aeqListener instanceof PossibleDuplicateAsyncEventListener);
+    return (PossibleDuplicateAsyncEventListener) aeqListener;
   }
 
   private void createPersistentPartitionRegion() {
