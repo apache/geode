@@ -2596,6 +2596,18 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
       throws SAXException {
+    // This while loop pops all StringBuffers at the top of the stack
+    // that contain only whitespace; see GEODE-3306
+    while (!stack.empty()) {
+      Object o = stack.peek();
+      if (o instanceof StringBuffer
+          && ((StringBuffer) o).toString().replaceAll("\\s", "").equals("")) {
+        stack.pop();
+      } else {
+        break;
+      }
+    }
+
     if (qName.equals(CACHE)) {
       startCache(atts);
     } else if (qName.equals(CLIENT_CACHE)) {
@@ -2872,6 +2884,18 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   }
 
   public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+    // This while loop pops all StringBuffers at the top of the stack
+    // that contain only whitespace; see GEODE-3306
+    while (!stack.empty()) {
+      Object o = stack.peek();
+      if (o instanceof StringBuffer
+          && ((StringBuffer) o).toString().replaceAll("\\s", "").equals("")) {
+        stack.pop();
+      } else {
+        break;
+      }
+    }
+
     try {
       // logger.debug("endElement namespaceURI=" + namespaceURI
       // + "; localName = " + localName + "; qName = " + qName);
