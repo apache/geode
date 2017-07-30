@@ -308,6 +308,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setSSLKeyStore(config.getSSLKeyStore());
     gemFirePropertyData.setSSLKeyStoreType(config.getSSLKeyStoreType());
     gemFirePropertyData.setSSLKeyStorePassword(config.getSSLKeyStorePassword());
+
     gemFirePropertyData.setSSLTrustStore(config.getSSLTrustStore());
     gemFirePropertyData.setSSLTrustStorePassword(config.getSSLTrustStorePassword());
     gemFirePropertyData.setSSLTrustStoreType(config.getSSLTrustStoreType());

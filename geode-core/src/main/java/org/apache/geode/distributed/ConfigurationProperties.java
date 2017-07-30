@@ -687,6 +687,10 @@ public interface ConfigurationProperties {
    */
   String SSL_WEB_ALIAS = "ssl-web-alias";
 
+
+  @Deprecated
+  String HTTP_SERVICE_SSL_PREFIX = "http-service-ssl-";
+
   /**
    * The static String definition of the <i>"http-service-ssl-ciphers"</i> property <a
    * name="http-service-ssl-ciphers"/a>

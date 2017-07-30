@@ -17,7 +17,16 @@ package org.apache.geode.management.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.converters.DiskStoreNameConverter;
 import org.apache.geode.management.internal.cli.converters.FilePathConverter;
@@ -25,15 +34,6 @@ import org.apache.geode.management.internal.cli.converters.FilePathStringConvert
 import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
 import org.apache.geode.test.dunit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.shell.event.ParseResult;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Category(IntegrationTest.class)
 public class GfshParserConverterTest {
@@ -152,12 +152,12 @@ public class GfshParserConverterTest {
     doReturn(roots).when(spy).getRoots();
     doReturn(siblings).when(spy).getSiblings(any());
 
-    String command = "start server --properties-file=";
+    String command = "start server --cache-xml-file=";
     commandCandidate = parser.complete(command);
     assertThat(commandCandidate.size()).isEqualTo(2);
     assertThat(commandCandidate.getFirstCandidate()).isEqualTo(command + "/logs");
 
-    command = "start server --properties-file=sibling";
+    command = "start server --cache-xml-file=sibling";
     commandCandidate = parser.complete(command);
     assertThat(commandCandidate.size()).isEqualTo(2);
     assertThat(commandCandidate.getFirstCandidate()).isEqualTo(command + "1");
@@ -169,6 +169,7 @@ public class GfshParserConverterTest {
     assertThat(commandCandidate.size()).isEqualTo(1);
     assertThat(commandCandidate.getFirstCandidate()).isEqualTo(command + "1");
   }
+
 
   @Test
   public void testRegionPathConverter() throws Exception {
