@@ -94,7 +94,7 @@ public abstract class MsgReader {
   public abstract ByteBuffer readAtLeast(int bytes) throws IOException;
 
   protected DMStats getStats() {
-    return conn.getConduit().stats;
+    return conn.getConduit().getStats();
   }
 
   public static class Header {

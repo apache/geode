@@ -114,6 +114,7 @@ public class ConnectionTable {
    * acks, will be put in this map.
    */
   protected final Map unorderedConnectionMap = new ConcurrentHashMap();
+
   /**
    * Used for all accepted connections. These connections are read only; we never send messages,
    * except for acks; only receive.
@@ -201,14 +202,14 @@ public class ConnectionTable {
   }
 
 
-  private ConnectionTable(TCPConduit c) throws IOException {
-    this.owner = c;
+  private ConnectionTable(TCPConduit conduit) throws IOException {
+    this.owner = conduit;
     this.idleConnTimer = (this.owner.idleConnectionTimeout != 0)
-        ? new SystemTimer(c.getDM().getSystem(), true) : null;
+        ? new SystemTimer(conduit.getDM().getSystem(), true) : null;
     this.threadOrderedConnMap = new ThreadLocal();
     this.threadConnMaps = new ArrayList();
     this.threadConnectionMap = new ConcurrentHashMap();
-    this.p2pReaderThreadPool = createThreadPoolForIO(c.getDM().getSystem().isShareSockets());
+    this.p2pReaderThreadPool = createThreadPoolForIO(conduit.getDM().getSystem().isShareSockets());
     this.socketCloser = new SocketCloser();
   }
 
@@ -248,14 +249,14 @@ public class ConnectionTable {
   // }
 
   /** conduit calls acceptConnection after an accept */
-  protected void acceptConnection(Socket sock) throws IOException, ConnectionException {
-    Connection connection = null;
+  protected void acceptConnection(Socket sock, PeerConnectionFactory peerConnectionFactory)
+      throws IOException, ConnectionException, InterruptedException {
     InetAddress connAddress = sock.getInetAddress(); // for bug 44736
     boolean finishedConnecting = false;
-    Connection conn = null;
+    Connection connection = null;
     // boolean exceptionLogged = false;
     try {
-      conn = Connection.createReceiver(this, sock);
+      connection = peerConnectionFactory.createReceiver(this, sock);
 
       // check for shutdown (so it doesn't get missed in the finally block)
       this.owner.getCancelCriterion().checkCancelInProgress(null);
@@ -279,26 +280,31 @@ public class ConnectionTable {
       // in our caller.
       // no need to log error here since caller will log warning
 
-      if (conn != null && !finishedConnecting) {
+      if (connection != null && !finishedConnecting) {
         // we must be throwing from checkCancelInProgress so close the connection
-        closeCon(LocalizedStrings.ConnectionTable_CANCEL_AFTER_ACCEPT.toLocalizedString(), conn);
-        conn = null;
+        closeCon(LocalizedStrings.ConnectionTable_CANCEL_AFTER_ACCEPT.toLocalizedString(),
+            connection);
+        connection = null;
       }
     }
 
-    if (conn != null) {
+    if (connection != null) {
       synchronized (this.receivers) {
-        this.owner.stats.incReceivers();
+        this.owner.getStats().incReceivers();
         if (this.closed) {
           closeCon(LocalizedStrings.ConnectionTable_CONNECTION_TABLE_NO_LONGER_IN_USE
-              .toLocalizedString(), conn);
+              .toLocalizedString(), connection);
           return;
         }
-        this.receivers.add(conn);
+        // If connection.stopped is false, any connection cleanup thread will not yet have acquired
+        // the receiver synchronization to remove the receiver. Therefore we can safely add it here.
+        if (!connection.isSocketClosed() || connection.stopped) {
+          this.receivers.add(connection);
+        }
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("Accepted {} myAddr={} theirAddr={}", conn, getConduit().getMemberId(),
-            conn.remoteAddr);
+        logger.debug("Accepted {} myAddr={} theirAddr={}", connection, getConduit().getMemberId(),
+            connection.remoteAddr);
       }
     }
   }
@@ -328,11 +334,11 @@ public class ConnectionTable {
     try {
       con = Connection.createSender(owner.getMembershipManager(), this, preserveOrder, id,
           sharedResource, startTime, ackThreshold, ackSAThreshold);
-      this.owner.stats.incSenders(sharedResource, preserveOrder);
+      this.owner.getStats().incSenders(sharedResource, preserveOrder);
     } finally {
       // our connection failed to notify anyone waiting for our pending con
       if (con == null) {
-        this.owner.stats.incFailedConnect();
+        this.owner.getStats().incFailedConnect();
         synchronized (m) {
           Object rmObj = m.remove(id);
           if (rmObj != pc && rmObj != null) {
@@ -521,7 +527,7 @@ public class ConnectionTable {
     if (logger.isDebugEnabled()) {
       logger.debug("ConnectionTable: created an ordered connection: {}", result);
     }
-    this.owner.stats.incSenders(false/* shared */, true /* preserveOrder */);
+    this.owner.getStats().incSenders(false/* shared */, true /* preserveOrder */);
 
     // Update the list of connections owned by this thread....
 
@@ -1309,6 +1315,10 @@ public class ConnectionTable {
 
     @Override
     public boolean cancel() {
+      Connection con = this.c;
+      if (con != null) {
+        con.cleanUpOnIdleTaskCancel();
+      }
       this.c = null;
       return super.cancel();
     }
@@ -1355,5 +1365,7 @@ public class ConnectionTable {
     }
   }
 
-
+  public int getNumberOfReceivers() {
+    return receivers.size();
+  }
 }
