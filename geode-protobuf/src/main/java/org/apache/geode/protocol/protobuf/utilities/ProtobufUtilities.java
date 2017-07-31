@@ -15,6 +15,7 @@
 package org.apache.geode.protocol.protobuf.utilities;
 
 import com.google.protobuf.ByteString;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -38,7 +39,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
 public abstract class ProtobufUtilities {
   /**
    * Creates a object containing the type and value encoding of a piece of data
-   *
+   * 
    * @param serializationService - object which knows how to encode objects for the protobuf
    *        protocol {@link ProtobufSerializationService}
    * @param unencodedValue - the value object which is to be encoded
@@ -60,7 +61,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * Creates a protobuf key,value pair from an encoded key and value
-   *
+   * 
    * @param key - an EncodedValue containing the key of the entry
    * @param value - an EncodedValue containing the value of the entry
    * @return a protobuf Entry object containing the passed key and value
@@ -72,7 +73,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * Creates a protobuf key,value pair from unencoded data
-   *
+   * 
    * @param serializationService - object which knows how to encode objects for the protobuf
    *        protocol {@link ProtobufSerializationService}
    * @param unencodedKey - the unencoded key for the entry
@@ -92,7 +93,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * This creates a protobuf message containing a ClientProtocol.Response
-   *
+   * 
    * @param messageHeader - The header for the message
    * @param response - The response for the message
    * @return a protobuf Message containing the above parameters
@@ -105,7 +106,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * This creates a protobuf message containing a ClientProtocol.Request
-   *
+   * 
    * @param messageHeader - The header for the message
    * @param request - The request for the message
    * @return a protobuf Message containing the above parameters
@@ -118,7 +119,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * This creates a protobuf message containing a ClientProtocol.Request
-   *
+   * 
    * @param getAllRequest - The request for the message
    * @return a protobuf Message containing the above parameters
    */
@@ -129,7 +130,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * This builds the MessageHeader for a response which matches an incoming request
-   *
+   * 
    * @param request - The request message that we're responding to.
    * @return the MessageHeader the response to the passed request
    */
@@ -140,7 +141,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * This creates a MessageHeader
-   *
+   * 
    * @param correlationId - An identifier used to correlate requests and responses
    * @return a MessageHeader containing the above parameters
    */
@@ -150,7 +151,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * This will return the object encoded in a protobuf EncodedValue
-   *
+   * 
    * @param serializationService - object which knows how to encode objects for the protobuf
    *        protocol {@link ProtobufSerializationService}
    * @param encodedValue - The value to be decoded
@@ -169,7 +170,6 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * @param region
    * @return a Protobuf BasicTypes.Region message that represents the {@link Region}
    */
   public static BasicTypes.Region createRegionMessageFromRegion(Region region) {
@@ -196,5 +196,9 @@ public abstract class ProtobufUtilities {
       RegionAPI.GetRegionNamesRequest getRegionNamesRequest) {
     return ClientProtocol.Request.newBuilder().setGetRegionNamesRequest(getRegionNamesRequest)
         .build();
+  }
+
+  public static ClientProtocol.Request.Builder createProtobufRequestBuilder() {
+    return ClientProtocol.Request.newBuilder();
   }
 }

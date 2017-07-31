@@ -22,6 +22,7 @@ import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ClientProtocol.Request.RequestAPICase;
 import org.apache.geode.protocol.protobuf.OperationContext;
 import org.apache.geode.protocol.protobuf.operations.GetAllRequestOperationHandler;
+import org.apache.geode.protocol.protobuf.operations.GetAvailableServersOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.GetRegionNamesRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
@@ -75,5 +76,10 @@ public class OperationContextRegistry {
         new OperationContext<>(ClientProtocol.Request::getGetRegionRequest,
             new GetRegionRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetRegionResponse(opsResp)));
+
+    operationContexts.put(RequestAPICase.GETAVAILABLESERVERSREQUEST, new OperationContext<>(
+        ClientProtocol.Request::getGetAvailableServersRequest,
+        new GetAvailableServersOperationHandler(),
+        opsResp -> ClientProtocol.Response.newBuilder().setGetAvailableServersResponse(opsResp)));
   }
 }

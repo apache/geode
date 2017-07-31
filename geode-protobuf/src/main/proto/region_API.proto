@@ -55,14 +55,6 @@ message GetAllResponse {
     repeated Entry entries = 1;
 }
 
-message ListKeysRequest {
-    string regionName = 1;
-}
-
-message ListKeysResponse {
-    repeated EncodedValue key = 1;
-}
-
 message RemoveRequest {
     string regionName = 1;
     EncodedValue key = 2;

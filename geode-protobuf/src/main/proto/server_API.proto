@@ -27,10 +27,10 @@ message PingResponse {
     int32 sequenceNumber = 1;
 }
 
-message GetServersRequest {
+message GetAvailableServersRequest {
 
 }
 
-message GetServersResponse {
+message GetAvailableServersResponse {
     repeated Server servers = 1;
 }

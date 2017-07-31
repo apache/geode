@@ -14,11 +14,12 @@
  */
 package org.apache.geode.protocol.protobuf.utilities;
 
-import java.util.Set;
-
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.ServerAPI;
+
+import java.util.Set;
 
 /**
  * This class contains helper functions for generating ClientProtocol.Request objects
@@ -105,5 +106,11 @@ public abstract class ProtobufRequestUtilities {
         RegionAPI.PutAllRequest.newBuilder().setRegionName(regionName);
     putAllRequestBuilder.addAllEntry(entries);
     return ClientProtocol.Request.newBuilder().setPutAllRequest(putAllRequestBuilder).build();
+  }
+
+  public static ServerAPI.GetAvailableServersRequest createGetAvailableServersRequest() {
+    ServerAPI.GetAvailableServersRequest.Builder builder =
+        ServerAPI.GetAvailableServersRequest.newBuilder();
+    return builder.build();
   }
 }
