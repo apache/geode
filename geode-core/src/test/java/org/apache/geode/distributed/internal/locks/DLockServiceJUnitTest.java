@@ -132,12 +132,10 @@ public class DLockServiceJUnitTest {
       futures.add(executorService.submit(this::putTestKey));
     }
 
-    futures.stream().forEach(future -> {
+    futures.forEach(future -> {
       try {
         future.get();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      } catch (ExecutionException e) {
+      } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
       }
     });
@@ -154,7 +152,6 @@ public class DLockServiceJUnitTest {
 
   private void putTestKey() {
     for (int i = 0; i < 1000; i++) {
-      System.out.println("Put number " + i + " thread " + Thread.currentThread().getName());
       testRegion.put("testKey", "testValue");
     }
   }
