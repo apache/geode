@@ -61,7 +61,8 @@ message Region {
 }
 
 message Server {
-    string url = 1;
+    string hostname = 1;
+    int32 port = 2;
 }
 
 message ErrorResponse {

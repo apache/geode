@@ -43,13 +43,12 @@ message Request {
         GetAllRequest getAllRequest = 5;
         RemoveRequest removeRequest = 6;
         RemoveAllRequest removeAllRequest = 7;
-        ListKeysRequest listKeysRequest = 8;
 
         CreateRegionRequest createRegionRequest = 21;
         DestroyRegionRequest destroyRegionRequest = 22;
 
-        PingRequest pingRequest = 41;
-        GetServersRequest getServersRequest = 42;
+//        PingRequest pingRequest = 41;
+        GetAvailableServersRequest getAvailableServersRequest = 42;
         GetRegionNamesRequest getRegionNamesRequest = 43;
         GetRegionRequest getRegionRequest = 44;
 
@@ -64,15 +63,14 @@ message Response {
         GetAllResponse getAllResponse = 5;
         RemoveResponse removeResponse = 6;
         RemoveAllResponse removeAllResponse = 7;
-        ListKeysResponse listKeysResponse = 8;
 
         ErrorResponse errorResponse = 13;
 
         CreateRegionResponse createRegionResponse = 20;
         DestroyRegionResponse destroyRegionResponse = 21;
 
-        PingResponse pingResponse = 41;
-        GetServersResponse getServersResponse = 42;
+//        PingResponse pingResponse = 41;
+        GetAvailableServersResponse getAvailableServersResponse = 42;
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;
     }
