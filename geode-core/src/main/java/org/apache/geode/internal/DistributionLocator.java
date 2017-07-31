@@ -14,21 +14,22 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * This class is used to work with a managed VM that hosts a
@@ -114,7 +115,7 @@ public class DistributionLocator {
       System.err.println(
           LocalizedStrings.DistributionLocator_A_ZEROLENGTH_HOSTNAMEFORCLIENTS_WILL_DEFAULT_TO_BINDADDRESS
               .toLocalizedString());
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     } else {
       shutdown = false;
     }
@@ -132,7 +133,7 @@ public class DistributionLocator {
           System.err.println(
               LocalizedStrings.DistributionLocator__0_IS_NOT_A_VALID_IP_ADDRESS_FOR_THIS_MACHINE
                   .toLocalizedString(args[1]));
-          System.exit(1);
+          ExitCode.FATAL.doSystemExit();
         }
         address = InetAddress.getByName(args[1]);
       } else {
@@ -183,14 +184,14 @@ public class DistributionLocator {
     } catch (java.net.BindException ex) {
       logger.fatal(LocalizedMessage.create(
           LocalizedStrings.DistributionLocator_COULD_NOT_BIND_LOCATOR_TO__0__1,
-          new Object[] {address, Integer.valueOf(port)}));
-      System.exit(1);
+          new Object[] {address, port}));
+      ExitCode.FATAL.doSystemExit();
 
     } catch (Exception ex) {
       logger.fatal(
           LocalizedMessage.create(LocalizedStrings.DistributionLocator_COULD_NOT_START_LOCATOR),
           ex);
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
   }
 

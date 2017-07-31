@@ -43,7 +43,6 @@ import javax.management.remote.rmi.RMIConnectorServer;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import mx4j.tools.adaptor.http.HttpAdaptor;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
@@ -58,6 +57,7 @@ import org.apache.geode.admin.jmx.AgentFactory;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Banner;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -1054,7 +1054,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     } catch (RuntimeException ex) {
       System.err
           .println(LocalizedStrings.AgentImpl_FAILED_READING_CONFIGURATION_0.toLocalizedString(ex));
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
       return;
     }
 
@@ -1075,7 +1075,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // is still usable:
       SystemFailure.checkFailure();
       t.printStackTrace();
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
   }
 
