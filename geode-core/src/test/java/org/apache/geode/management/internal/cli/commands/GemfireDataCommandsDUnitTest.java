@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
@@ -412,7 +413,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       getLogWriter().info("Region in query : " + regionsInQuery);
       if (regionsInQuery.size() > 0) {
         Set<DistributedMember> members =
-            DataCommands.getQueryRegionsAssociatedMembers(regionsInQuery, cache, returnAll);
+            DataCommandsUtils.getQueryRegionsAssociatedMembers(regionsInQuery, cache, returnAll);
         getLogWriter().info("Members for Region in query : " + members);
         if (expectedMembers != -1) {
           assertNotNull(members);
