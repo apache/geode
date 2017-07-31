@@ -50,7 +50,7 @@ import static org.apache.geode.test.dunit.Wait.waitForCriterion;
  * CacheLoader defined.
  *
  * @see org.apache.geode.management.internal.cli.commands.CliCommandTestBase
- * @see org.apache.geode.management.internal.cli.commands.DataCommands
+ * @see org.apache.geode.management.internal.cli.commands.GetCommand
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
