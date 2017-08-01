@@ -14,25 +14,12 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-
 import com.google.protobuf.ByteString;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
@@ -43,6 +30,18 @@ import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.UnsupportedEncodingException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -90,8 +89,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
         operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
 
     assertTrue(result instanceof Failure);
-    org.junit.Assert.assertThat(result.getErrorMessage().getMessage(),
-        CoreMatchers.containsString("Region"));
+    assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
+        result.getErrorMessage().getErrorCode());
   }
 
   @Test
@@ -125,8 +124,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
         operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
 
     assertTrue(result instanceof Failure);
-    org.junit.Assert.assertEquals("Codec error in protobuf deserialization.",
-        result.getErrorMessage().getMessage());
+    assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
+        result.getErrorMessage().getErrorCode());
   }
 
   private ClientProtocol.Request generateTestRequest(boolean missingRegion, boolean missingKey)

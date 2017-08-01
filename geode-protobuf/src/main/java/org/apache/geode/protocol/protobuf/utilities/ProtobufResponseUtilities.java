@@ -16,6 +16,7 @@ package org.apache.geode.protocol.protobuf.utilities;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.logging.log4j.Logger;
 
@@ -38,14 +39,15 @@ public abstract class ProtobufResponseUtilities {
    * @param ex - exception which should be logged
    * @return An error response containing the first three parameters.
    */
-  public static BasicTypes.ErrorResponse createAndLogErrorResponse(String errorMessage,
-      Logger logger, Exception ex) {
+  public static BasicTypes.ErrorResponse createAndLogErrorResponse(ProtocolErrorCode errorCode,
+      String errorMessage, Logger logger, Exception ex) {
     if (ex != null) {
       logger.error(errorMessage, ex);
     } else {
       logger.error(errorMessage);
     }
-    return BasicTypes.ErrorResponse.newBuilder().setMessage(errorMessage).build();
+    return BasicTypes.ErrorResponse.newBuilder().setErrorCode(errorCode.codeValue)
+        .setMessage(errorMessage).build();
   }
 
   /**

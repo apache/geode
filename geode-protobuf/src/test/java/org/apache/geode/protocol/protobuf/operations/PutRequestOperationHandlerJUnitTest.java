@@ -18,6 +18,7 @@ import com.google.protobuf.ByteString;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
@@ -26,15 +27,15 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.UnsupportedEncodingException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -66,7 +67,7 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertTrue(result instanceof Success);
+    assertTrue(result instanceof Success);
 
     verify(regionMock).put(TEST_KEY, TEST_VALUE);
     verify(regionMock, times(1)).put(anyString(), anyString());
@@ -97,8 +98,9 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, putRequest, cacheStub);
 
-    Assert.assertTrue(result instanceof Failure);
-    org.junit.Assert.assertEquals(exceptionText, result.getErrorMessage().getMessage());
+    assertTrue(result instanceof Failure);
+    assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
+        result.getErrorMessage().getErrorCode());
   }
 
   @Test
@@ -109,9 +111,9 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertTrue(result instanceof Failure);
-    org.junit.Assert.assertEquals("Region passed by client did not exist: test region",
-        result.getErrorMessage().getMessage());
+    assertTrue(result instanceof Failure);
+    assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
+        result.getErrorMessage().getErrorCode());
   }
 
   @Test
@@ -123,9 +125,9 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Result<RegionAPI.PutResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(), cacheStub);
 
-    Assert.assertTrue(result instanceof Failure);
-    org.junit.Assert.assertThat(result.getErrorMessage().getMessage(),
-        CoreMatchers.containsString("invalid key or value type"));
+    assertTrue(result instanceof Failure);
+    assertEquals(ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue,
+        result.getErrorMessage().getErrorCode());
   }
 
   private RegionAPI.PutRequest generateTestRequest()
