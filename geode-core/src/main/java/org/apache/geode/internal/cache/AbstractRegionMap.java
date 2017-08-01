@@ -1361,6 +1361,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                           owner.basicDestroyPart2(tombstone, event, inTokenMode,
                               true /* conflict with clear */, duringRI, true);
                           opCompleted = true;
+                        } else {
+                          Assert.assertTrue(event.getVersionTag() == null);
+                          Assert.assertTrue(newRe == tombstone);
+                          event.setVersionTag(getVersionTagFromStamp(tombstone.getVersionStamp()));
                         }
                       } catch (ConcurrentCacheModificationException ccme) {
                         VersionTag tag = event.getVersionTag();
@@ -1564,6 +1568,15 @@ public abstract class AbstractRegionMap implements RegionMap {
       releaseCacheModificationLock(owner, event);
     }
     return false;
+  }
+
+  private VersionTag getVersionTagFromStamp(VersionStamp stamp) {
+    VersionTag tag = VersionTag.create(stamp.getMemberID());
+    tag.setEntryVersion(stamp.getEntryVersion());
+    tag.setRegionVersion(stamp.getRegionVersion());
+    tag.setVersionTimeStamp(stamp.getVersionTimeStamp());
+    tag.setDistributedSystemId(stamp.getDistributedSystemId());
+    return tag;
   }
 
   public void txApplyDestroy(Object key, TransactionId txId, TXRmtEvent txEvent,

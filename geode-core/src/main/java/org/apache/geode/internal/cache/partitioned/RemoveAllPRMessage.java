@@ -469,6 +469,14 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
                   }
                 } catch (EntryNotFoundException ignore) {
                   didRemove = true;
+                  if (ev.isPossibleDuplicate() && ev.hasValidVersionTag()) {
+                    op.addEntry(ev);
+                    if (logger.isDebugEnabled()) {
+                      logger.debug(
+                          "RemoveAllPRMessage.doLocalRemoveAll:notify client and gateway for not-found-entry:"
+                              + ev);
+                    }
+                  }
                   if (ev.getVersionTag() == null) {
                     if (logger.isDebugEnabled()) {
                       logger.debug(
