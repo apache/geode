@@ -201,6 +201,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   public MemberVM startServerAsEmbededLocator(int index) throws IOException {
+    return startServerAsEmbededLocator(index, new Properties());
+  }
+
+  public MemberVM startServerAsEmbededLocator(int index, Properties properties) throws IOException {
     String name = "server-" + index;
 
     VM serverVM = getVM(index);
@@ -213,7 +217,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       if (logFile) {
         serverStarter.withLogFile();
       }
-      serverStarter.withEmbeddedLocator().withName(name).withJMXManager().withAutoStart();
+      serverStarter.withEmbeddedLocator().withProperties(properties).withName(name).withJMXManager()
+          .withAutoStart();
       serverStarter.before();
       return serverStarter;
     });

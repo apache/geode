@@ -26,9 +26,8 @@ import org.apache.geode.test.junit.runner.SuiteRunner;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(SuiteRunner.class)
-@Suite.SuiteClasses({ConfigCommandsDUnitTest.class, DeployWithGroupsDUnitTest.class,
-    DiskStoreCommandsDUnitTest.class, FunctionCommandsDUnitTest.class,
-    GemfireDataCommandsDUnitTest.class,
+@Suite.SuiteClasses({DeployWithGroupsDUnitTest.class, DiskStoreCommandsDUnitTest.class,
+    FunctionCommandsDUnitTest.class, GemfireDataCommandsDUnitTest.class,
     GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class,
     ListAndDescribeDiskStoreCommandsDUnitTest.class, ListIndexCommandDUnitTest.class,
     MiscellaneousCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
