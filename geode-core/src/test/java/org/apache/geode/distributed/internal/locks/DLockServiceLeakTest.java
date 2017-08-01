@@ -26,7 +26,7 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +43,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 
-@Category(UnitTest.class)
-public class DLockServiceJUnitTest {
+@Category(IntegrationTest.class)
+public class DLockServiceLeakTest {
   private Cache cache;
   private ExecutorService executorService;
   private DistributedRegion testRegion;
