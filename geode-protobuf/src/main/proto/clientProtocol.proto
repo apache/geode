@@ -47,7 +47,6 @@ message Request {
         CreateRegionRequest createRegionRequest = 21;
         DestroyRegionRequest destroyRegionRequest = 22;
 
-//        PingRequest pingRequest = 41;
         GetAvailableServersRequest getAvailableServersRequest = 42;
         GetRegionNamesRequest getRegionNamesRequest = 43;
         GetRegionRequest getRegionRequest = 44;
@@ -69,7 +68,6 @@ message Response {
         CreateRegionResponse createRegionResponse = 20;
         DestroyRegionResponse destroyRegionResponse = 21;
 
-//        PingResponse pingResponse = 41;
         GetAvailableServersResponse getAvailableServersResponse = 42;
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;

@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -46,7 +47,22 @@ public class GetAvailableServersOperationHandler implements
   public Result<ServerAPI.GetAvailableServersResponse> process(
       SerializationService serializationService, ServerAPI.GetAvailableServersRequest request,
       Cache cache) {
+    HashSet<DistributionLocatorId> locators = getLocatorIdsFromDistributedProperties(cache);
 
+    TcpClient tcpClient = getTcpClient();
+    Optional<Result<ServerAPI.GetAvailableServersResponse>> result = locators.stream()
+        .map((locatorId -> getGetAvailableServersFromLocator(tcpClient, locatorId)))
+        .filter((obj) -> obj != null).findFirst();
+
+    if (result.isPresent()) {
+      return result.get();
+    } else {
+      return Failure
+          .of(BasicTypes.ErrorResponse.newBuilder().setMessage("Unable to find a locator").build());
+    }
+  }
+
+  private HashSet<DistributionLocatorId> getLocatorIdsFromDistributedProperties(Cache cache) {
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) cache.getDistributedSystem();
     Properties properties = distributedSystem.getProperties();
@@ -60,30 +76,26 @@ public class GetAvailableServersOperationHandler implements
         locators.add(new DistributionLocatorId(locator));
       }
     }
-
-    TcpClient tcpClient = getTcpClient();
-    for (DistributionLocatorId locator : locators) {
-      try {
-        return getGetAvailableServersFromLocator(tcpClient, locator.getHost());
-      } catch (IOException | ClassNotFoundException e) {
-        // try the next locator
-      }
-    }
-    return Failure
-        .of(BasicTypes.ErrorResponse.newBuilder().setMessage("Unable to find a locator").build());
+    return locators;
   }
 
   private Result<ServerAPI.GetAvailableServersResponse> getGetAvailableServersFromLocator(
-      TcpClient tcpClient, InetSocketAddress address) throws IOException, ClassNotFoundException {
-    GetAllServersResponse getAllServersResponse = (GetAllServersResponse) tcpClient
-        .requestToServer(address, new GetAllServersRequest(), 1000, true);
-    Collection<BasicTypes.Server> servers =
-        (Collection<BasicTypes.Server>) getAllServersResponse.getServers().stream()
-            .map(serverLocation -> getServerProtobufMessage((ServerLocation) serverLocation))
-            .collect(Collectors.toList());
-    ServerAPI.GetAvailableServersResponse.Builder builder =
-        ServerAPI.GetAvailableServersResponse.newBuilder().addAllServers(servers);
-    return Success.of(builder.build());
+      TcpClient tcpClient, DistributionLocatorId locatorId) {
+    try {
+      InetSocketAddress address = locatorId.getHost();
+      GetAllServersResponse getAllServersResponse = (GetAllServersResponse) tcpClient
+          .requestToServer(address, new GetAllServersRequest(), 1000, true);
+      Collection<BasicTypes.Server> servers =
+          (Collection<BasicTypes.Server>) getAllServersResponse.getServers().stream()
+              .map(serverLocation -> getServerProtobufMessage((ServerLocation) serverLocation))
+              .collect(Collectors.toList());
+      ServerAPI.GetAvailableServersResponse.Builder builder =
+          ServerAPI.GetAvailableServersResponse.newBuilder().addAllServers(servers);
+      return Success.of(builder.build());
+    } catch (IOException | ClassNotFoundException e) {
+      // Unable to reach given locator, return null
+      return null;
+    }
   }
 
   protected TcpClient getTcpClient() {

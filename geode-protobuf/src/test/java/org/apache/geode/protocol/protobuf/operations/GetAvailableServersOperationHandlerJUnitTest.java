@@ -42,27 +42,33 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
 
   private TcpClient mockTCPClient;
+  private final String locatorString = "testLocator1Host[12345],testLocator2Host[23456]";
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
 
-    operationHandler = mock(GetAvailableServersOperationHandler.class);
-    cacheStub = mock(GemFireCacheImpl.class);
-    when(operationHandler.process(any(), any(), any())).thenCallRealMethod();
-    InternalDistributedSystem mockDistributedSystem = mock(InternalDistributedSystem.class);
-    when(cacheStub.getDistributedSystem()).thenReturn(mockDistributedSystem);
     Properties mockProperties = mock(Properties.class);
-    when(mockDistributedSystem.getProperties()).thenReturn(mockProperties);
-    String locatorString = "testLocator1Host[12345],testLocator2Host[23456]";
     when(mockProperties.getProperty(ConfigurationProperties.LOCATORS)).thenReturn(locatorString);
+
+    InternalDistributedSystem mockDistributedSystem = mock(InternalDistributedSystem.class);
+    when(mockDistributedSystem.getProperties()).thenReturn(mockProperties);
+
+    cacheStub = mock(GemFireCacheImpl.class);
+    when(cacheStub.getDistributedSystem()).thenReturn(mockDistributedSystem);
+
     mockTCPClient = mock(TcpClient.class);
+
+    operationHandler = mock(GetAvailableServersOperationHandler.class);
+    when(operationHandler.process(any(), any(), any())).thenCallRealMethod();
     when(((GetAvailableServersOperationHandler) operationHandler).getTcpClient())
         .thenReturn(mockTCPClient);
   }
@@ -84,6 +90,7 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
     assertTrue(operationHandlerResult instanceof Success);
     ValidateGetAvailableServersResponse(
         (GetAvailableServersResponse) operationHandlerResult.getMessage());
+    verify(mockTCPClient, times(1)).requestToServer(any(), any(), anyInt(), anyBoolean());
   }
 
   @Test
@@ -104,6 +111,7 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
     assertTrue(operationHandlerResult instanceof Success);
     ValidateGetAvailableServersResponse(
         (GetAvailableServersResponse) operationHandlerResult.getMessage());
+    verify(mockTCPClient, times(2)).requestToServer(any(), any(), anyInt(), anyBoolean());
   }
 
   private void ValidateGetAvailableServersResponse(
@@ -127,5 +135,6 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
     Result operationHandlerResult =
         operationHandler.process(serializationServiceStub, getAvailableServersRequest, cacheStub);
     assertTrue(operationHandlerResult instanceof Failure);
+    verify(mockTCPClient, times(2)).requestToServer(any(), any(), anyInt(), anyBoolean());
   }
 }

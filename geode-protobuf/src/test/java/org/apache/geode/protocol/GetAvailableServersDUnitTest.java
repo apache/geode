@@ -22,7 +22,6 @@ import org.apache.geode.protocol.protobuf.ServerAPI;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -35,8 +34,11 @@ import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Category(DistributedTest.class)
 public class GetAvailableServersDUnitTest extends JUnit4CacheTestCase {
@@ -58,12 +60,12 @@ public class GetAvailableServersDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
+    List<Integer> cacheServerPorts = new ArrayList<Integer>();
 
-    // int cacheServer1Port = vm0.invoke("Start Cache1", () -> startCacheWithCacheServer());
     int cacheServer1Port = startCacheWithCacheServer();
-    int cacheServer2Port = vm1.invoke("Start Cache2", () -> startCacheWithCacheServer());
-    int cacheServer3Port = vm2.invoke("Start Cache3", () -> startCacheWithCacheServer());
+    cacheServerPorts.add(cacheServer1Port);
+    cacheServerPorts.add(vm1.invoke("Start Cache2", () -> startCacheWithCacheServer()));
+    cacheServerPorts.add(vm2.invoke("Start Cache3", () -> startCacheWithCacheServer()));
 
     vm0.invoke(() -> {
       Socket socket = new Socket(host.getHostName(), cacheServer1Port);
@@ -92,6 +94,9 @@ public class GetAvailableServersDUnitTest extends JUnit4CacheTestCase {
       ServerAPI.GetAvailableServersResponse getAvailableServersResponse =
           messageResponse.getGetAvailableServersResponse();
       assertEquals(3, getAvailableServersResponse.getServersCount());
+      assertTrue(cacheServerPorts.contains(getAvailableServersResponse.getServers(0).getPort()));
+      assertTrue(cacheServerPorts.contains(getAvailableServersResponse.getServers(1).getPort()));
+      assertTrue(cacheServerPorts.contains(getAvailableServersResponse.getServers(2).getPort()));
     });
   }
 
