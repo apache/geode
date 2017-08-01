@@ -14,13 +14,25 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.*;
-// import java.text.*;
-// import java.util.*;
-import java.util.zip.*;
 
 /**
  * ArchiveSplitter provides APIs to read statistic snapshots from an archive file.
@@ -535,7 +547,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
     if (args.length != 1) {
       System.err.println(LocalizedStrings.ArchiveSplitter_USAGE.toLocalizedString()
           + ": org.apache.geode.internal.statistics.ArchiveSplitter <archive.gfs>");
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
     ArchiveSplitter as = new ArchiveSplitter(new File(args[0]));
     as.split();

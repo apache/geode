@@ -14,7 +14,10 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -97,7 +100,7 @@ public class MigrationClient {
       instance = new MigrationClient(cacheXmlFileName, bindAddressName, serverPort);
     } catch (IllegalArgumentException e) {
       System.err.println(e.getMessage());
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
     instance.createDistributedSystem();
     instance.createCache();

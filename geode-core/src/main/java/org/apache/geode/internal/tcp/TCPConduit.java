@@ -20,7 +20,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ClosedChannelException;
@@ -189,10 +188,8 @@ public class TCPConduit implements Runnable {
    * the object that receives DistributionMessage messages received by this conduit.
    */
   private final DirectChannel directChannel;
-  /**
-   * Stats from the delegate
-   */
-  DMStats stats;
+
+  private DMStats stats;
 
   /**
    * Config from the delegate
@@ -260,7 +257,7 @@ public class TCPConduit implements Runnable {
       this.stats = directChannel.getDMStats();
       this.config = directChannel.getDMConfig();
     }
-    if (this.stats == null) {
+    if (this.getStats() == null) {
       this.stats = new LonerDistributionManager.DummyDMStats();
     }
 
@@ -642,7 +639,7 @@ public class TCPConduit implements Runnable {
     if (directChannel != null) {
       this.stats = directChannel.getDMStats();
     }
-    if (this.stats == null) {
+    if (this.getStats() == null) {
       this.stats = new LonerDistributionManager.DummyDMStats();
     }
     try {
@@ -745,7 +742,7 @@ public class TCPConduit implements Runnable {
               }
             }
           } else {
-            this.stats.incFailedAccept();
+            this.getStats().incFailedAccept();
             if (e instanceof IOException && "Too many open files".equals(e.getMessage())) {
               getConTable().fileDescriptorsExhausted();
             } else {
@@ -800,16 +797,16 @@ public class TCPConduit implements Runnable {
 
   protected void basicAcceptConnection(Socket othersock) {
     try {
-      getConTable().acceptConnection(othersock);
+      getConTable().acceptConnection(othersock, new PeerConnectionFactory());
     } catch (IOException io) {
       // exception is logged by the Connection
       if (!stopped) {
-        this.stats.incFailedAccept();
+        this.getStats().incFailedAccept();
       }
     } catch (ConnectionException ex) {
       // exception is logged by the Connection
       if (!stopped) {
-        this.stats.incFailedAccept();
+        this.getStats().incFailedAccept();
       }
     } catch (CancelException e) {
     } catch (Exception e) {
@@ -820,7 +817,7 @@ public class TCPConduit implements Runnable {
         // }
         // else
         {
-          this.stats.incFailedAccept();
+          this.getStats().incFailedAccept();
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.TCPConduit_FAILED_TO_ACCEPT_CONNECTION_FROM_0_BECAUSE_1,
               new Object[] {othersock.getInetAddress(), e}), e);
@@ -977,7 +974,7 @@ public class TCPConduit implements Runnable {
           }
 
           // Close the connection (it will get rebuilt later).
-          this.stats.incReconnectAttempts();
+          this.getStats().incReconnectAttempts();
           if (conn != null) {
             try {
               if (logger.isDebugEnabled()) {
@@ -1170,6 +1167,13 @@ public class TCPConduit implements Runnable {
   public boolean hasReceiversFor(DistributedMember endPoint) {
     ConnectionTable ct = this.conTable;
     return (ct != null) && ct.hasReceiversFor(endPoint);
+  }
+
+  /**
+   * Stats from the delegate
+   */
+  public DMStats getStats() {
+    return stats;
   }
 
   protected class Stopper extends CancelCriterion {

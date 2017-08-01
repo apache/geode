@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.internal.DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.apache.geode.test.dunit.LogWriterUtils.*;
 
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -64,6 +66,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -74,6 +77,9 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  */
 @Category(DistributedTest.class)
 public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTestCase {
+  @ClassRule
+  public static DistributedRestoreSystemProperties distributedRestoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   protected static final boolean CLIENT = true;
   protected static final boolean SERVER = false;
@@ -916,6 +922,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     SerializableCallable createBridgeClient = new SerializableCallable("Create bridge client") {
       @Override
       public Object call() {
+        System.setProperty(RESTRICT_MEMBERSHIP_PORT_RANGE, "false");
         System.out.println("[doTestSystemClientEventsInServer] create system bridge client");
         assertTrue(getSystem(serverProperties).isConnected());
         assertFalse(getCache().isClosed());
