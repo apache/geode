@@ -19,6 +19,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
@@ -44,6 +45,7 @@ public class PutAllRequestOperationHandler
 
     if (region == null) {
       return Failure.of(ProtobufResponseUtilities.createAndLogErrorResponse(
+          ProtocolErrorCode.REGION_NOT_FOUND,
           "Region passed by client did not exist: " + putAllRequest.getRegionName(), logger, null));
     }
 
@@ -62,20 +64,23 @@ public class PutAllRequestOperationHandler
 
       region.put(decodedKey, decodedValue);
     } catch (UnsupportedEncodingTypeException ex) {
-      return buildAndLogKeyedError(entry, "Encoding not supported", ex);
+      return buildAndLogKeyedError(entry, ProtocolErrorCode.VALUE_ENCODING_ERROR,
+          "Encoding not supported", ex);
     } catch (CodecNotRegisteredForTypeException ex) {
-      return buildAndLogKeyedError(entry, "Codec error in protobuf deserialization", ex);
+      return buildAndLogKeyedError(entry, ProtocolErrorCode.VALUE_ENCODING_ERROR,
+          "Codec error in protobuf deserialization", ex);
     } catch (ClassCastException ex) {
-      return buildAndLogKeyedError(entry, "Invalid key or value type for region", ex);
+      return buildAndLogKeyedError(entry, ProtocolErrorCode.CONSTRAINT_VIOLATION,
+          "Invalid key or value type for region", ex);
     }
     return null;
   }
 
   private BasicTypes.KeyedErrorResponse buildAndLogKeyedError(BasicTypes.Entry entry,
-      String message, Exception ex) {
+      ProtocolErrorCode errorCode, String message, Exception ex) {
     logger.error(message, ex);
-    BasicTypes.ErrorResponse errorResponse =
-        BasicTypes.ErrorResponse.newBuilder().setMessage(message).build();
+    BasicTypes.ErrorResponse errorResponse = BasicTypes.ErrorResponse.newBuilder()
+        .setErrorCode(errorCode.codeValue).setMessage(message).build();
     return BasicTypes.KeyedErrorResponse.newBuilder().setKey(entry.getKey()).setError(errorResponse)
         .build();
   }
