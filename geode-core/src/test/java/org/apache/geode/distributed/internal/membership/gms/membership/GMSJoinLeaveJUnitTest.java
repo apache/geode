@@ -1145,6 +1145,7 @@ public class GMSJoinLeaveJUnitTest {
           mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
 
       assertTrue(gmsJoinLeave.getViewCreator().isAlive());
+      assertTrue(testLocator.isCoordinator);
 
       when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
       for (int i = 1; i < 4; i++) {
@@ -1153,8 +1154,6 @@ public class GMSJoinLeaveJUnitTest {
         msg.setSender(gmsJoinLeaveMemberId);
         gmsJoinLeave.processMessage(msg);
       }
-
-      assertTrue(testLocator.isCoordinator);
 
       Awaitility.await("waiting for view creator to stop").atMost(5000, MILLISECONDS)
           .until(() -> !gmsJoinLeave.getViewCreator().isAlive());
