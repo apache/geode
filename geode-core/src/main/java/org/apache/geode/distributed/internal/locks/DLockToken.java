@@ -87,7 +87,8 @@ public class DLockToken {
   private Thread thread;
 
   /**
-   * Number of threads currently using this lock token.
+   * Number of usages of this lock token. usageCount = recursion + (# of threads waiting for this
+   * lock). It's weird, I know.
    */
   private int usageCount = 0;
 
@@ -230,10 +231,9 @@ public class DLockToken {
   // -------------------------------------------------------------------------
 
   /**
-   * Destroys this lock token. Caller must synchronize on this lock token.
+   * Destroys this lock token.
    */
   synchronized void destroy() {
-    // checkDestroyed();
     this.destroyed = true;
   }
 
@@ -302,14 +302,14 @@ public class DLockToken {
    * @param remoteThread identity of the leasing thread
    * @return true if lease for this lock token is successfully granted
    */
-  synchronized boolean grantLock(long newLeaseExpireTime, int newLeaseId, int newRecursion,
+  synchronized void grantLock(long newLeaseExpireTime, int newLeaseId, int newRecursion,
       RemoteThread remoteThread) {
 
     Assert.assertTrue(remoteThread != null);
     Assert.assertTrue(newLeaseId > -1, "Invalid attempt to grant lock with leaseId " + newLeaseId);
 
     checkDestroyed();
-    checkForExpiration();
+    checkForExpiration(); // TODO: this should throw.
 
     this.ignoreForRecovery = false;
     this.leaseExpireTime = newLeaseExpireTime;
@@ -321,8 +321,6 @@ public class DLockToken {
     if (logger.isTraceEnabled(LogMarker.DLS)) {
       logger.trace(LogMarker.DLS, "[DLockToken.grantLock.client] granted {}", this);
     }
-
-    return true;
   }
 
   /**
