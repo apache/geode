@@ -508,7 +508,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
    * on the same key, it should get the version tag again.
    */
   @Test
-  public void shouldReturnVersionTagOfTombstoneVersionWhenRemoveAllRetried() throws CacheException, InterruptedException {
+  public void shouldReturnVersionTagOfTombstoneVersionWhenRemoveAllRetried()
+      throws CacheException, InterruptedException {
     final String title = "test51871:";
 
     final Host host = Host.getHost(0);
