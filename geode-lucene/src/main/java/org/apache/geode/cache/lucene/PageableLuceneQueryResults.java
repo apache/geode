@@ -24,8 +24,7 @@ import java.util.List;
  * {@link #hasNext()} and {@link #next()} methods.
  * </p>
  *
- * Each page is fetched individually from the server, so {@link PageableLuceneQueryResults} cannot
- * be serialized and sent to other members.
+ * {@link PageableLuceneQueryResults} can be serialized and sent to other members.
  *
  * @see LuceneQuery#findPages()
  *
