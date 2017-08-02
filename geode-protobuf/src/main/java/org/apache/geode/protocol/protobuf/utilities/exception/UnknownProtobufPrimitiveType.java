@@ -12,17 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.serialization.exception;
+package org.apache.geode.protocol.protobuf.utilities.exception;
 
-/**
- * This indicates an encoding type that we don't know how to handle.
- */
-public class UnsupportedEncodingTypeException extends Exception {
-  public UnsupportedEncodingTypeException(String message) {
+public class UnknownProtobufPrimitiveType extends Exception {
+  public UnknownProtobufPrimitiveType(String message) {
     super(message);
-  }
-
-  public UnsupportedEncodingTypeException(String message, Throwable cause) {
-    super(message, cause);
   }
 }

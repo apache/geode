@@ -61,32 +61,11 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Before
   public void setUp() throws Exception {
     super.setUp();
-
-    addStringStubEncoding(serializationServiceStub, TEST_KEY1);
-    addStringStubEncoding(serializationServiceStub, TEST_KEY2);
-    addStringStubEncoding(serializationServiceStub, TEST_KEY3);
-    addStringStubEncoding(serializationServiceStub, TEST_INVALID_KEY);
-    addStringStubEncoding(serializationServiceStub, TEST_VALUE1);
-    addStringStubEncoding(serializationServiceStub, TEST_VALUE2);
-    addStringStubEncoding(serializationServiceStub, TEST_VALUE3);
-    when(serializationServiceStub.encode(BasicTypes.EncodingType.INT, TEST_INVALID_VALUE))
-        .thenReturn(ByteBuffer.allocate(Integer.BYTES).putInt(TEST_INVALID_VALUE).array());
-    when(serializationServiceStub.decode(BasicTypes.EncodingType.INT,
-        ByteBuffer.allocate(Integer.BYTES).putInt(TEST_INVALID_VALUE).array()))
-            .thenReturn(TEST_INVALID_VALUE);
-
     regionMock = mock(Region.class);
     when(regionMock.put(TEST_INVALID_KEY, TEST_INVALID_VALUE))
         .thenThrow(new ClassCastException(EXCEPTION_TEXT));
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionMock);
-  }
-
-  private void addStringStubEncoding(SerializationService stub, String s) throws Exception {
-    when(stub.encode(BasicTypes.EncodingType.STRING, s))
-        .thenReturn(s.getBytes(Charset.forName("UTF-8")));
-    when(stub.decode(BasicTypes.EncodingType.STRING, s.getBytes(Charset.forName("UTF-8"))))
-        .thenReturn(s);
   }
 
   @Test
@@ -119,8 +98,8 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     RegionAPI.PutAllResponse putAllResponse = result.getMessage();
     assertEquals(1, putAllResponse.getFailedKeysCount());
     BasicTypes.KeyedErrorResponse error = putAllResponse.getFailedKeys(0);
-    assertEquals(TEST_INVALID_KEY, serializationServiceStub.decode(error.getKey().getEncodingType(),
-        error.getKey().getValue().toByteArray()));
+    assertEquals(TEST_INVALID_KEY,
+        ProtobufUtilities.decodeValue(serializationServiceStub, error.getKey()));
   }
 
   @Test

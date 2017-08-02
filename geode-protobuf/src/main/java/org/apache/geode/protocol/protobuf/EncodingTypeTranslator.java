@@ -29,41 +29,15 @@ public abstract class EncodingTypeTranslator {
 
   private static HashMap<Class, BasicTypes.EncodingType> intializeTypeMap() {
     HashMap<Class, BasicTypes.EncodingType> result = new HashMap<>();
-    result.put(Integer.class, BasicTypes.EncodingType.INT);
-    result.put(Byte.class, BasicTypes.EncodingType.BYTE);
-    result.put(Long.class, BasicTypes.EncodingType.LONG);
-    result.put(Float.class, BasicTypes.EncodingType.FLOAT);
-    result.put(Short.class, BasicTypes.EncodingType.SHORT);
-    result.put(byte[].class, BasicTypes.EncodingType.BINARY);
-    result.put(Double.class, BasicTypes.EncodingType.DOUBLE);
-    result.put(String.class, BasicTypes.EncodingType.STRING);
-    result.put(Boolean.class, BasicTypes.EncodingType.BOOLEAN);
+    result.put(PdxInstance.class, BasicTypes.EncodingType.JSON);
     return result;
   }
 
   public static SerializationType getSerializationTypeForEncodingType(
       BasicTypes.EncodingType encodingType) throws UnsupportedEncodingTypeException {
     switch (encodingType) {
-      case INT:
-        return SerializationType.INT;
-      case BYTE:
-        return SerializationType.BYTE;
       case JSON:
         return SerializationType.JSON;
-      case LONG:
-        return SerializationType.LONG;
-      case FLOAT:
-        return SerializationType.FLOAT;
-      case SHORT:
-        return SerializationType.SHORT;
-      case BINARY:
-        return SerializationType.BINARY;
-      case DOUBLE:
-        return SerializationType.DOUBLE;
-      case STRING:
-        return SerializationType.STRING;
-      case BOOLEAN:
-        return SerializationType.BOOLEAN;
       default:
         throw new UnsupportedEncodingTypeException(
             "No serialization type found for protobuf encoding type: " + encodingType);
