@@ -479,20 +479,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
         new WaitUntilFlushedFunctionContext(indexName, timeout, unit);
     Execution execution = FunctionService.onRegion(dataRegion);
     ResultCollector rs = execution.setArguments(context).execute(WaitUntilFlushedFunction.ID);
-    List<Object> results = (List<Object>) rs.getResult();
-    if (results != null) {
-      if (results.get(0) instanceof IllegalStateException) {
+    List<Boolean> results = (List<Boolean>) rs.getResult();
+    for (Boolean oneResult : results) {
+      if (oneResult == false) {
         return false;
-      } else {
-        for (Object oneResult : results) {
-          if ((boolean) oneResult == false) {
-            return false;
-          }
-        }
-        return true;
       }
-    } else {
-      return false;
     }
+    return true;
   }
 }
