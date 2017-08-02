@@ -251,7 +251,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /** Returns true if this is a multicast address:port */
   public boolean isMcastId() {
-    return this.host.isMulticastAddress();
+    return this.host != null && this.host.isMulticastAddress();
   }
 
   /**
@@ -302,8 +302,10 @@ public class DistributionLocatorId implements java.io.Serializable {
     } else {
       if (isMcastId()) {
         sb.append(this.host.getHostAddress());
-      } else {
+      } else if (this.host != null) {
         sb.append(SocketCreator.getHostName(this.host));
+      } else {
+        sb.append(this.hostname);
       }
     }
 
