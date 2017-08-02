@@ -38,6 +38,12 @@ public class EmbeddedPulseRule extends ExternalResource {
     repository.setHost("localhost");
   }
 
+  public void useJmxManager(String jmxHost, int jmxPort) {
+    repository.setJmxUseLocator(false);
+    repository.setHost(jmxHost + "");
+    repository.setPort(jmxPort + "");
+  }
+
   public void useJmxPort(int jmxPort) {
     repository.setJmxUseLocator(false);
     repository.setPort(jmxPort + "");
