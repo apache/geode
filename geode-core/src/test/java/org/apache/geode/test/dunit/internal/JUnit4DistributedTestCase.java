@@ -47,6 +47,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.DiskStoreObserver;
@@ -601,6 +602,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     RegionTestCase.preSnapshotRegion = null;
     SocketCreator.resetHostNameCache();
     SocketCreator.resolve_dns = true;
+    TcpClient.clearStaticData();
 
     // clear system properties -- keep alphabetized
     System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
