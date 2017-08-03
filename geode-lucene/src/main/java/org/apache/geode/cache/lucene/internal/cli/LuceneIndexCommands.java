@@ -555,7 +555,7 @@ public class LuceneIndexCommands implements GfshCommand {
   private Result getResults(int fromIndex, int toIndex, boolean keysonly) throws Exception {
     final TabularResultData data = ResultBuilder.createTabularResultData();
     for (int i = fromIndex; i < toIndex; i++) {
-      if (!searchResults.get(i).getExeptionFlag()) {
+      if (!searchResults.get(i).getExceptionFlag()) {
         data.accumulate("key", searchResults.get(i).getKey());
         if (!keysonly) {
           data.accumulate("value", searchResults.get(i).getValue());

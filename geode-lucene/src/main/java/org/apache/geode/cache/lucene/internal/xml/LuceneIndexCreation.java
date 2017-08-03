@@ -16,7 +16,6 @@
 package org.apache.geode.cache.lucene.internal.xml;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -29,7 +28,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.extension.Extensible;

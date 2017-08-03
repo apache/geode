@@ -15,11 +15,9 @@
 
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Region;
@@ -31,14 +29,10 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.search.Query;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 @Category(UnitTest.class)
 public class WaitUntilFlushedFunctionJUnitTest {

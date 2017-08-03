@@ -15,7 +15,6 @@
 
 package org.apache.geode.cache.lucene.internal.directory;
 
-import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
 import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystem;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;

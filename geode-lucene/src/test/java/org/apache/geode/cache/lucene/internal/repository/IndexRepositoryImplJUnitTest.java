@@ -44,8 +44,6 @@ import org.mockito.Mockito;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
-import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
-import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.Type2;
