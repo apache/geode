@@ -49,6 +49,8 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
+import java.security.KeyStore;
+
 @Category({UnitTest.class, MembershipTest.class})
 public class SSLConfigurationFactoryJUnitTest {
 
@@ -214,11 +216,11 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(CLUSTER_SSL_ENABLED, "true");
     properties.setProperty(MCAST_PORT, "0");
     System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE, "keystore");
-    System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE, "JKS");
+    System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE, KeyStore.getDefaultType());
     System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD, "keystorePassword");
     System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE, "truststore");
     System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD, "truststorePassword");
-    System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, "JKS");
+    System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, KeyStore.getDefaultType());
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SSLConfigurationFactory.setDistributionConfig(distributionConfig);
     SSLConfig sslConfig =

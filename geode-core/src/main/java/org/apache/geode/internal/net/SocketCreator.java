@@ -331,7 +331,6 @@ public class SocketCreator {
    * <p>
    * Caller must synchronize on the SocketCreator instance.
    */
-  @SuppressWarnings("hiding")
   private void initialize() {
     try {
       // set p2p values...
@@ -382,7 +381,7 @@ public class SocketCreator {
 
   /**
    * Creates & configures the SSLContext when SSL is enabled.
-   * 
+   *
    * @return new SSLContext configured using the given protocols & properties
    *
    * @throws GeneralSecurityException if security information can not be found
@@ -400,7 +399,7 @@ public class SocketCreator {
 
   /**
    * Used by CacheServerLauncher and SystemAdmin to read the properties from console
-   * 
+   *
    * @param env Map in which the properties are to be read from console.
    */
   public static void readSSLProperties(Map<String, String> env) {
@@ -411,7 +410,7 @@ public class SocketCreator {
    * Used to read the properties from console. AgentLauncher calls this method directly & ignores
    * gemfire.properties. CacheServerLauncher and SystemAdmin call this through
    * {@link #readSSLProperties(Map)} and do NOT ignore gemfire.properties.
-   * 
+   *
    * @param env Map in which the properties are to be read from console.
    * @param ignoreGemFirePropsFile if <code>false</code> existing gemfire.properties file is read,
    *        if <code>true</code>, properties from gemfire.properties file are ignored.
@@ -541,6 +540,10 @@ public class SocketCreator {
       NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
     GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
 
+    if (sslConfig.getKeystore() == null) {
+      return null;
+    }
+
     KeyManager[] keyManagers = null;
     String keyStoreType = sslConfig.getKeystoreType();
     if (StringUtils.isEmpty(keyStoreType)) {
@@ -615,7 +618,7 @@ public class SocketCreator {
 
     /**
      * Constructor.
-     * 
+     *
      * @param mgr The X509KeyManager used as a delegate
      * @param keyAlias The alias name of the server's keypair and supporting certificate chain
      */
@@ -795,7 +798,7 @@ public class SocketCreator {
   /**
    * Creates or bind server socket to a random port selected from tcp-port-range which is same as
    * membership-port-range.
-   * 
+   *
    * @param ba
    * @param backlog
    * @param isBindAddress
@@ -815,7 +818,7 @@ public class SocketCreator {
   /**
    * Creates or bind server socket to a random port selected from tcp-port-range which is same as
    * membership-port-range.
-   * 
+   *
    * @param ba
    * @param backlog
    * @param isBindAddress
@@ -1025,14 +1028,6 @@ public class SocketCreator {
               ex);
           throw ex;
         }
-      } catch (SSLException ex) {
-        logger
-            .fatal(
-                LocalizedMessage.create(
-                    LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1,
-                    new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
-                ex);
-        throw ex;
       }
     }
   }
@@ -1112,16 +1107,7 @@ public class SocketCreator {
               .create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER), ex);
           throw ex;
         }
-      } catch (SSLException ex) {
-        logger
-            .fatal(
-                LocalizedMessage.create(
-                    LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1,
-                    new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
-                ex);
-        throw ex;
       }
-
     }
   }
 
@@ -1223,7 +1209,7 @@ public class SocketCreator {
 
   /**
    * This method uses JNDI to look up an address in DNS and return its name
-   * 
+   *
    * @param addr
    *
    * @return the host name associated with the address or null if lookup isn't possible or there is
@@ -1299,7 +1285,7 @@ public class SocketCreator {
    * Fails Assertion if the conversion would result in <code>java.lang.UnknownHostException</code>.
    * <p>
    * Any leading slashes on host will be ignored.
-   * 
+   *
    * @param host string version the InetAddress
    *
    * @return the host converted to InetAddress instance
