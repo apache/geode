@@ -310,6 +310,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setSSLKeyStorePassword(config.getSSLKeyStorePassword());
     gemFirePropertyData.setSSLTrustStore(config.getSSLTrustStore());
     gemFirePropertyData.setSSLTrustStorePassword(config.getSSLTrustStorePassword());
+    gemFirePropertyData.setSSLTrustStoreType(config.getSSLTrustStoreType());
 
     gemFirePropertyData.setClusterSSLAlias(config.getClusterSSLAlias());
     gemFirePropertyData.setServerSSLAlias(config.getServerSSLAlias());
