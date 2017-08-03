@@ -32,7 +32,9 @@ import java.io.IOException;
  * endpoints for the Gfsh Deploy Commands.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.ConfigCommands
+ * @see org.apache.geode.management.internal.cli.commands.DeployCommand
+ * @see org.apache.geode.management.internal.cli.commands.UndeployCommand
+ * @see org.apache.geode.management.internal.cli.commands.ListDeployedCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractMultiPartCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestMapping
@@ -61,8 +63,6 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
 
   @RequestMapping(method = RequestMethod.POST, value = "/deployed")
   @ResponseBody
-  // final MultipartHttpServletRequest request
-  // @RequestPart(RESOURCES_REQUEST_PARAMETER) final Resource[] jarFileResources,
   public String deploy(
       @RequestParam(RESOURCES_REQUEST_PARAMETER) final MultipartFile[] jarFileResources,
       @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups,
@@ -82,9 +82,6 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
     if (hasValue(directory)) {
       command.addOption(CliStrings.DEPLOY__DIR, directory);
     }
-
-    // save(jarFileResources);
-
     return processCommand(command.toString(), ConvertUtils.convert(jarFileResources));
   }
 
@@ -103,8 +100,6 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
       command.addOption(CliStrings.JAR,
           StringUtils.join(jarFileNames, StringUtils.COMMA_DELIMITER));
     }
-
     return processCommand(command.toString());
   }
-
 }
