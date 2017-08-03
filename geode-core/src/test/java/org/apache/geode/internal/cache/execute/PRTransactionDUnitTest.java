@@ -137,7 +137,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   @Test
-  public void testBasicPRTransactionNonColatedFunction0() {
+  public void testBasicPRTransactionNonColocatedFunction0() {
     basicPRTXInNonColocatedFunction(0);
   }
 

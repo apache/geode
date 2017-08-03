@@ -78,6 +78,6 @@ public class PRDistTXDUnitTest extends PRTransactionDUnitTest {
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
   @Test
-  public void testBasicPRTransactionNonColatedFunction0() {}
+  public void testBasicPRTransactionNonColocatedFunction0() {}
 
 }
