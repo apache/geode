@@ -86,4 +86,8 @@ public class PRDistTXWithVersionsDUnitTest extends PRTransactionWithVersionsDUni
   @Test
   public void testBasicPRTransactionNonColocatedFunction0() {}
 
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank for distTx.")
+  @Override
+  @Test
+  public void testCommitToFailAfterPrimaryBucketMoved() {}
 }

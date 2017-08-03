@@ -668,7 +668,11 @@ public class TXState implements TXStateInterface {
       while (it.hasNext()) {
         Map.Entry<LocalRegion, TXRegionState> me = it.next();
         LocalRegion r = me.getKey();
-        if (r instanceof BucketRegion && (((BucketRegion) r).getBucketAdvisor().isPrimary())) {
+        if (r instanceof BucketRegion) {
+          if (isDistTx() && !((BucketRegion) r).getBucketAdvisor().isPrimary()) {
+            // For distTx we skip for taking locks on secondary.
+            continue;
+          }
           BucketRegion b = (BucketRegion) r;
           /*
            * Lock the primary bucket so it doesnt get rebalanced until we cleanup!
