@@ -2080,6 +2080,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
         } catch (InterruptedException e) {
           shutdown = true;
+        } catch (DistributedSystemDisconnectedException e) {
+          shutdown = true;
         }
       } while (retry);
     }
