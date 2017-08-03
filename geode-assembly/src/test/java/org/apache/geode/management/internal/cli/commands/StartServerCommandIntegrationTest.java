@@ -25,11 +25,13 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Properties;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -46,10 +48,17 @@ public class StartServerCommandIntegrationTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+  private StartServerCommand spy;
+
+  @Before
+  public void before() throws Exception {
+    spy = Mockito.spy(StartServerCommand.class);
+    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
+  }
+
   @Test
   public void startServerWorksWithNoOptions() throws Exception {
-    StartServerCommand spy = spyOnStartServerCommand("start server");
-    commandRule.executeLastCommandWithInstance(spy);
+    commandRule.executeCommandWithInstance(spy, "start server");
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(spy).createStartServerCommandLine(any(), any(), any(), gemfirePropertiesCaptor.capture(),
@@ -65,21 +74,15 @@ public class StartServerCommandIntegrationTest {
     String startServerCommand = new CommandStringBuilder("start server")
         .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
 
-    StartServerCommand commandSpy = spyOnStartServerCommand(startServerCommand);
-    commandRule.executeLastCommandWithInstance(commandSpy);
+    commandRule.executeCommandWithInstance(spy, startServerCommand);
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
-    verify(commandSpy).createStartServerCommandLine(any(), any(), any(),
-        gemfirePropertiesCaptor.capture(), any(), any(), any(), any(), any(), any());
+    verify(spy).createStartServerCommandLine(any(), any(), any(), gemfirePropertiesCaptor.capture(),
+        any(), any(), any(), any(), any(), any());
 
     Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
     assertThat(gemfireProperties).containsKey(JMX_MANAGER_HOSTNAME_FOR_CLIENTS);
     assertThat(gemfireProperties.get(JMX_MANAGER_HOSTNAME_FOR_CLIENTS)).isEqualTo(FAKE_HOSTNAME);
   }
 
-  private StartServerCommand spyOnStartServerCommand(String command) {
-    StartServerCommand spy = commandRule.spyCommand(command);
-    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
-    return spy;
-  }
 }
