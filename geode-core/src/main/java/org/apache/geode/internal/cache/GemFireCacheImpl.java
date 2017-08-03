@@ -1208,7 +1208,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           this.system.getConfig());
       initializeDeclarativeCache();
       completedCacheXml = true;
-    } catch (CacheXmlException e) {
+    } catch (RuntimeException e) {
       logger.error(e.getLocalizedMessage()); // fix GEODE-3038
       throw e;
     } finally {
