@@ -20,6 +20,7 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,9 +33,13 @@ import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class ConnectionTableTest {
+  private ConnectionTable connectionTable;
+  private Socket socket;
+  private PeerConnectionFactory factory;
+  private Connection connection;
 
-  @Test
-  public void testConnectionsClosedDuringCreateAreNotAddedAsReceivers() throws Exception {
+  @Before
+  public void initConnectionTable() throws Exception {
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     when(system.isShareSockets()).thenReturn(false);
 
@@ -49,18 +54,41 @@ public class ConnectionTableTest {
     when(tcpConduit.getCancelCriterion()).thenReturn(cancelCriterion);
     when(tcpConduit.getStats()).thenReturn(dmStats);
 
-    Connection connection = mock(Connection.class);
+    connection = mock(Connection.class);
+
+    socket = mock(Socket.class);
+
+    connectionTable = ConnectionTable.create(tcpConduit);
+
+    factory = mock(PeerConnectionFactory.class);
+    when(factory.createReceiver(connectionTable, socket)).thenReturn(connection);
+  }
+
+  @Test
+  public void testConnectionsClosedDuringCreateAreNotAddedAsReceivers() throws Exception {
+    when(connection.isReceiverStopped()).thenReturn(false);
     when(connection.isSocketClosed()).thenReturn(true); // Pretend this closed as soon at it was
                                                         // created
 
-    Socket socket = mock(Socket.class);
+    connectionTable.acceptConnection(socket, factory);
+    assertEquals(0, connectionTable.getNumberOfReceivers());
+  }
 
-    ConnectionTable table = ConnectionTable.create(tcpConduit);
+  @Test
+  public void testThreadStoppedNotAddedAsReceivers() throws Exception {
+    when(connection.isSocketClosed()).thenReturn(false); // connection is not closed
 
-    PeerConnectionFactory factory = mock(PeerConnectionFactory.class);
-    when(factory.createReceiver(table, socket)).thenReturn(connection);
+    when(connection.isReceiverStopped()).thenReturn(true);// but receiver is stopped
 
-    table.acceptConnection(socket, factory);
-    assertEquals(0, table.getNumberOfReceivers());
+    connectionTable.acceptConnection(socket, factory);
+    assertEquals(0, connectionTable.getNumberOfReceivers());
+  }
+
+  @Test
+  public void testSocketNotClosedAddedAsReceivers() throws Exception {
+    when(connection.isSocketClosed()).thenReturn(false);// connection is not closed
+
+    connectionTable.acceptConnection(socket, factory);
+    assertEquals(1, connectionTable.getNumberOfReceivers());
   }
 }
