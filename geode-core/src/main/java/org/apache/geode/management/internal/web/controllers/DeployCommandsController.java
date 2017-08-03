@@ -83,9 +83,6 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
     if (hasValue(directory)) {
       command.addOption(CliStrings.DEPLOY__DIR, directory);
     }
-
-    // save(jarFileResources);
-
     return processCommand(command.toString(), ConvertUtils.convert(jarFileResources));
   }
 
@@ -104,8 +101,6 @@ public class DeployCommandsController extends AbstractMultiPartCommandsControlle
       command.addOption(CliStrings.JAR,
           StringUtils.join(jarFileNames, StringUtils.COMMA_DELIMITER));
     }
-
     return processCommand(command.toString());
   }
-
 }
