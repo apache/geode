@@ -128,9 +128,16 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testCacheXmlParserWithSimplePoolXerces() {
-    System.setProperty("javax.xml.parsers.SAXParserFactory",
+    String prevParserFactory = System.setProperty("javax.xml.parsers.SAXParserFactory",
         "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+
     testCacheXmlParserWithSimplePool();
+
+    if (prevParserFactory != null) {
+      System.setProperty("javax.xml.parsers.SAXParserFactory", prevParserFactory);
+    } else {
+      System.clearProperty("javax.xml.parsers.SAXParserFactory");
+    }
   }
 
   /**
@@ -161,9 +168,16 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testDTDFallbackWithNonEnglishLocalXerces() {
-    System.setProperty("javax.xml.parsers.SAXParserFactory",
+    String prevParserFactory = System.setProperty("javax.xml.parsers.SAXParserFactory",
         "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+
     testDTDFallbackWithNonEnglishLocal();
+
+    if (prevParserFactory != null) {
+      System.setProperty("javax.xml.parsers.SAXParserFactory", prevParserFactory);
+    } else {
+      System.clearProperty("javax.xml.parsers.SAXParserFactory");
+    }
   }
 
   /**
