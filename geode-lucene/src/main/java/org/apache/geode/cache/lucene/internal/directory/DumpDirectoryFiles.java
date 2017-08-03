@@ -16,40 +16,25 @@
 package org.apache.geode.cache.lucene.internal.directory;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.cache.lucene.internal.distributed.CollectorManager;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
-import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
-import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystem;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
-import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.logging.LogService;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.store.Directory;
 
 public class DumpDirectoryFiles implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;

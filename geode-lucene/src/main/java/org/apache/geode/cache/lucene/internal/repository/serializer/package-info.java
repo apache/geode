@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * Classes for converting gemfire objects into lucene documents.
+ * Classes for converting Apache Geode objects into lucene documents.
  */
 
 package org.apache.geode.cache.lucene.internal.repository.serializer;

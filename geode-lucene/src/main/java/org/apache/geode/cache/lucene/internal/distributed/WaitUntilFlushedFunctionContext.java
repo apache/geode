@@ -21,10 +21,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.lucene.LuceneQueryFactory;
-import org.apache.geode.cache.lucene.LuceneQueryProvider;
-import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 

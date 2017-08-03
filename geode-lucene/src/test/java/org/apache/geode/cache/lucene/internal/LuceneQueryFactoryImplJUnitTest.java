@@ -16,7 +16,6 @@ package org.apache.geode.cache.lucene.internal;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import org.junit.Rule;
