@@ -76,7 +76,7 @@ public class SerializerUtil {
   private SerializerUtil() {}
 
   /**
-   * Add a gemfire key to a document
+   * Add a Apache Geode key to a document
    */
   public static void addKey(Object key, Document doc) {
     if (key instanceof String) {
@@ -122,7 +122,7 @@ public class SerializerUtil {
   }
 
   /**
-   * Extract the gemfire key from a lucene document
+   * Extract the Apache Geode key from a lucene document
    */
   public static Object getKey(Document doc) {
     IndexableField field = doc.getField(KEY_FIELD);
@@ -134,7 +134,7 @@ public class SerializerUtil {
   }
 
   /**
-   * Extract the gemfire key term from a lucene document
+   * Extract the Apache Geode key term from a lucene document
    */
   public static Term getKeyTerm(Document doc) {
     IndexableField field = doc.getField(KEY_FIELD);
@@ -146,8 +146,8 @@ public class SerializerUtil {
   }
 
   /**
-   * Convert a gemfire key into a key search term that can be used to update or delete the document
-   * associated with this key.
+   * Convert a Apache Geode key into a key search term that can be used to update or delete the
+   * document associated with this key.
    */
   public static Term toKeyTerm(Object key) {
     if (key instanceof String) {

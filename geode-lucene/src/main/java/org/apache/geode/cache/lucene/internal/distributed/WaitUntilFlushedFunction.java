@@ -55,8 +55,6 @@ public class WaitUntilFlushedFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
   public static final String ID = WaitUntilFlushedFunction.class.getName();
 
-  private static final Logger logger = LogService.getLogger();
-
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext ctx = (RegionFunctionContext) context;
@@ -71,9 +69,6 @@ public class WaitUntilFlushedFunction implements Function, InternalEntity {
     }
     long timeout = arg.getTimeout();
     TimeUnit unit = arg.getTimeunit();
-
-    LuceneService service = LuceneServiceProvider.get(cache);
-    LuceneIndexImpl index = (LuceneIndexImpl) service.getIndex(indexName, region.getFullPath());
 
     boolean result = false;
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, region.getFullPath());

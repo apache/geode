@@ -52,8 +52,8 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.Type2;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Test of the {@link IndexRepository} and everything below it. This tests that we can save gemfire
- * objects or PDXInstance objects into a lucene index and search for those objects later.
+ * Test of the {@link IndexRepository} and everything below it. This tests that we can save Apache
+ * Geode objects or PDXInstance objects into a lucene index and search for those objects later.
  */
 @Category(IntegrationTest.class)
 public class IndexRepositoryImplJUnitTest {
