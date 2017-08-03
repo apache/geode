@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
- * Unit tests for the DeployCommands class
+ * Unit tests for DeployCommand, UndeployCommand, ListDeployedCommand
  * 
  * @since GemFire 7.0
  */
