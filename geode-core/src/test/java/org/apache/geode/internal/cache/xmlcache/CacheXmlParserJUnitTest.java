@@ -113,7 +113,6 @@ public class CacheXmlParserJUnitTest {
     InternalDistributedSystem system =
         InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
     when(dm.getSystem()).thenReturn(system);
-    InternalDistributedSystem.connect(nonDefault);
 
     Cache cache = new CacheFactory()
         .set("cache-xml-file", "CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml")
