@@ -19,6 +19,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
@@ -36,8 +37,9 @@ public class GetRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return Failure
-          .of(BasicTypes.ErrorResponse.newBuilder().setMessage("Region not found").build());
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.REGION_NOT_FOUND.codeValue).setMessage("Region not found")
+          .build());
     }
 
     try {
@@ -52,10 +54,12 @@ public class GetRequestOperationHandler
           ProtobufUtilities.createEncodedValue(serializationService, resultValue);
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } catch (UnsupportedEncodingTypeException ex) {
-      return Failure
-          .of(BasicTypes.ErrorResponse.newBuilder().setMessage("Encoding not supported.").build());
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
+          .setMessage("Encoding not supported.").build());
     } catch (CodecNotRegisteredForTypeException ex) {
       return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
           .setMessage("Codec error in protobuf deserialization.").build());
     }
   }
