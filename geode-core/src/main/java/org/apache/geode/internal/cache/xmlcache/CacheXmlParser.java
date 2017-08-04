@@ -2768,11 +2768,11 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         final ServiceLoader<XmlParser> serviceLoader =
             ServiceLoader.load(XmlParser.class, ClassPathLoader.getLatestAsClassLoader());
         for (final XmlParser xmlParser : serviceLoader) {
-          if (xmlParser.getNamspaceUri().equals(namespaceUri)) {
+          if (xmlParser.getNamespaceUri().equals(namespaceUri)) {
             delegate = xmlParser;
             delegate.setStack(stack);
             delegate.setDocumentLocator(documentLocator);
-            delegates.put(xmlParser.getNamspaceUri(), xmlParser);
+            delegates.put(xmlParser.getNamespaceUri(), xmlParser);
             break;
           }
         }

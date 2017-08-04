@@ -189,7 +189,7 @@ public class CacheXmlParserJUnitTest {
   public static class MockXmlParser extends AbstractXmlParser {
 
     @Override
-    public String getNamspaceUri() {
+    public String getNamespaceUri() {
       return "urn:java:org.apache.geode.internal.cache.xmlcache.MockXmlParser";
     }
 

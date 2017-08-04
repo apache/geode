@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.EntryDestroyedException;
-import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.internal.cache.EntrySnapshot;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.InternalGemFireError;

@@ -18,11 +18,8 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.LocalDataSet;
-import org.apache.geode.internal.cache.PartitionedRegion;
 
 import java.util.AbstractMap;
-import java.util.Collections;
 import java.util.Set;
 
 public class BucketTargetingMap<K, V> extends AbstractMap<K, V> {

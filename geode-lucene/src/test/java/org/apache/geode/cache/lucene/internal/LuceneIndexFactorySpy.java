@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.mockito.Matchers.any;
-
 import java.util.function.Consumer;
 
 import org.mockito.Mockito;

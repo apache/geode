@@ -36,7 +36,7 @@ public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
   }
 
   @Override
-  public String getNamspaceUri() {
+  public String getNamespaceUri() {
     return NAMESPACE;
   }
 

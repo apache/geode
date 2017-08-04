@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal.results;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.offheap.StoredObject;

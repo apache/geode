@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal.partition;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,12 +23,12 @@ import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.generator.Size;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-import org.apache.geode.cache.EntryOperation;
+
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
+
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 

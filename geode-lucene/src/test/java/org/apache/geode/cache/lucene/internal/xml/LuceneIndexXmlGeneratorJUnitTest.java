@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal.xml;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
