@@ -17,16 +17,6 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.Config;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.memcached.GemFireMemcachedServer;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -37,6 +27,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
@@ -283,6 +283,33 @@ public interface DistributionConfig extends Config, LogConfig {
    * value is an empty string <code>""</code>
    */
   String DEFAULT_SERVER_BIND_ADDRESS = "";
+
+  /**
+   * The default value of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property. Current
+   * value is an empty string <code>""</code>
+   */
+  String DEFAULT_JMX_BEAN_INPUT_NAMES = "";
+
+
+  /**
+   * get the value of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property
+   */
+
+  @ConfigAttributeGetter(name = JMX_BEAN_INPUT_NAMES)
+  String getBeanInputList();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property
+   */
+  @ConfigAttributeSetter(name = JMX_BEAN_INPUT_NAMES)
+  void setBeanInputList(String value);
+
+  /**
+   * The name of the {@link ConfigurationProperties#JMX_BEAN_INPUT_NAMES} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_BEAN__INPUT_NAME = JMX_BEAN_INPUT_NAMES;
+
 
   /**
    * Returns the value of the {@link ConfigurationProperties#LOCATORS} property

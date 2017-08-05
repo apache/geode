@@ -82,6 +82,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
@@ -113,29 +114,6 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -525,7 +503,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws
-                                                                                 // IllegalStateEx
+    // IllegalStateEx
     this.shareSockets = this.originalConfig.getConserveSockets();
     this.startTime = System.currentTimeMillis();
     this.grc = new GrantorRequestProcessor.GrantorRequestContext(stopper);
@@ -838,13 +816,13 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       this.startedLocator =
           InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is
-                                                                                     // after IDS
-                                                                                     // has created
-                                                                                     // LogWriterLoggers
-                                                                                     // and
-                                                                                     // Appenders
+              // after IDS
+              // has created
+              // LogWriterLoggers
+              // and
+              // Appenders
               this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and
-                                      // Appenders
+
               locId.getHost().getAddress(), locId.getHostnameForClients(),
               this.originalConfig.toProperties(), false);
 
@@ -1362,7 +1340,7 @@ public class InternalDistributedSystem extends DistributedSystem
           InternalCache currentCache = GemFireCacheImpl.getInstance();
           if (currentCache != null && !currentCache.isClosed()) {
             disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
-                                                        // closing the cache
+            // closing the cache
             try {
               currentCache.close(reason, dm.getRootCause(), keepAlive, true); // fix for 42150
             } catch (VirtualMachineError e) {
@@ -1474,7 +1452,7 @@ public class InternalDistributedSystem extends DistributedSystem
       // NOTE: no logging after this point :-)
 
       LoggingThreadGroup.cleanUpThreadGroups(); // bug35388 - logwriters accumulate, causing mem
-                                                // leak
+      // leak
       EventID.unsetDS();
 
     } finally {
@@ -2530,7 +2508,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return false;
     }
     synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a
-                                        // cache
+      // cache
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
         synchronized (this.reconnectLock) {
@@ -3079,6 +3057,15 @@ public class InternalDistributedSystem extends DistributedSystem
     }
     disconnect(false, "stopReconnecting was invoked", false);
     this.attemptingToReconnect = false;
+  }
+
+  public Boolean isFoundInJmxBeanInputList(LocalRegion localRegion) {
+    Boolean isRegionFoundInExceptionList = false;
+    if (this.getConfig().getBeanInputList() != "") {
+      isRegionFoundInExceptionList =
+          this.getConfig().getBeanInputList().contains(localRegion.getName());
+    }
+    return isRegionFoundInExceptionList;
   }
 
   /**

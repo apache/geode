@@ -16,7 +16,20 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.UnmodifiableException;
@@ -31,18 +44,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -245,7 +246,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     while (st.hasMoreTokens()) {
       String locator = st.nextToken();
       StringBuffer locatorsb = new StringBuffer(); // string for this locator is accumulated in this
-                                                   // buffer
+      // buffer
 
       int portIndex = locator.indexOf('[');
       if (portIndex < 1) {
@@ -851,6 +852,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0
             .toLocalizedString(DEFAULT_BIND_ADDRESS));
 
+    m.put(JMX_BEAN_INPUT_NAMES,
+        LocalizedStrings.AbstractDistributionConfig_JMX_INPUT_BEAN_NAMES_0.toLocalizedString(""));
     m.put(NAME,
         "A name that uniquely identifies a member in its distributed system."
             + " Multiple members in the same distributed system can not have the same name."

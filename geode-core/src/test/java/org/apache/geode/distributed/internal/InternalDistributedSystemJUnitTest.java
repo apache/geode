@@ -14,8 +14,32 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -30,24 +54,30 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Tests the functionality of the {@link InternalDistributedSystem} class. Mostly checks
@@ -62,6 +92,8 @@ public class InternalDistributedSystemJUnitTest {
    * A connection to a distributed system created by this test
    */
   private InternalDistributedSystem system;
+  private Cache cache;
+  private Region region;
 
   /**
    * Creates a <code>DistributedSystem</code> with the given configuration properties.
@@ -70,6 +102,20 @@ public class InternalDistributedSystemJUnitTest {
     assertFalse(org.apache.geode.distributed.internal.DistributionManager.isDedicatedAdminVM);
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     return this.system;
+  }
+
+
+  public void initCache() {
+
+    try {
+      cache = CacheFactory.getAnyInstance();
+    } catch (Exception e) {
+      // ignore
+    }
+    if (null == cache) {
+      cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+    }
+
   }
 
   /**
@@ -81,6 +127,10 @@ public class InternalDistributedSystemJUnitTest {
   public void tearDown() throws Exception {
     if (this.system != null) {
       this.system.disconnect();
+    }
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
+      cache = null;
     }
   }
 
@@ -159,6 +209,8 @@ public class InternalDistributedSystemJUnitTest {
 
     assertEquals(DistributionConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION,
         config.getEnableNetworkPartitionDetection());
+
+    assertEquals(DistributionConfig.DEFAULT_JMX_BEAN_INPUT_NAMES, config.getBeanInputList());
   }
 
   @Test
@@ -637,6 +689,42 @@ public class InternalDistributedSystemJUnitTest {
     } finally {
       sys.disconnect();
     }
+  }
+
+  @Test
+  public void testWhenisFoundInJmxBeanInputListReturnTrue() {
+    try {
+
+      initCache();
+      InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+      region = createRegion("REGION_1");
+      system.getConfig().setBeanInputList("REGION_1,REGION_2");
+      assertEquals(true, system.isFoundInJmxBeanInputList((LocalRegion) region));
+    } catch (IllegalArgumentException ex) {
+      // pass...
+    }
+
+  }
+
+  private Region createRegion(String name) {
+    RegionFactory rf;
+    rf = cache.createRegionFactory(RegionShortcut.PARTITION);
+    return rf.create(name);
+  }
+
+  @Test
+  public void testWhenisFoundInJmxBeanInputListReturnFalse() {
+    try {
+
+      initCache();
+      InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+      system.getConfig().setBeanInputList("REGION_1,REGION_2");
+      region = createRegion("REGION_3");
+      assertEquals(false, system.isFoundInJmxBeanInputList((LocalRegion) region));
+    } catch (IllegalArgumentException ex) {
+      // pass...
+    }
+
   }
 
   @Test

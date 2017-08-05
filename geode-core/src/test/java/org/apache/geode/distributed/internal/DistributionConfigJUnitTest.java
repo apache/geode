@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_E
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_BEAN_INPUT_NAMES;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_DISK_SPACE_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
@@ -38,20 +39,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.UnmodifiableException;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.security.TestPostProcessor;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -61,6 +51,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.security.TestPostProcessor;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class DistributionConfigJUnitTest {
@@ -99,7 +101,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 156);
+    assertEquals(attNames.length, 157);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -135,7 +137,7 @@ public class DistributionConfigJUnitTest {
     // are.
     assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(85, stringList.size());
+    assertEquals(86, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }
@@ -388,6 +390,14 @@ public class DistributionConfigJUnitTest {
     DistributionConfig config = new DistributionConfigImpl(props);
     // SECURITY_ENABLED_COMPONENTS is automatically added to getSecurityProps
     assertEquals(config.getSecurityProps().size(), 4);
+  }
+
+  @Test
+  public void TestGetJmxBeanInputList() {
+    Properties props = new Properties();
+    props.put(JMX_BEAN_INPUT_NAMES, "REGION_1");
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertEquals(config.getBeanInputList(), "REGION_1");
   }
 
   @Test

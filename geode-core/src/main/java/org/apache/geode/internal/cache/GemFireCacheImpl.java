@@ -215,6 +215,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -3138,8 +3139,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     invokeRegionAfter(region);
 
+    Boolean isRegionFoundInExceptionList = false;
+    isRegionFoundInExceptionList = this.system.isFoundInJmxBeanInputList(region);
+
+
     // Added for M&M . Putting the callback here to avoid creating RegionMBean in case of Exception
-    if (!region.isInternalRegion()) {
+    if (!region.isInternalRegion() || isRegionFoundInExceptionList) {
       this.system.handleResourceEvent(ResourceEvent.REGION_CREATE, region);
     }
 
