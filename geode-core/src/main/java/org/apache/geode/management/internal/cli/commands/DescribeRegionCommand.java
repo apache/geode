@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -234,7 +233,7 @@ public class DescribeRegionCommand implements GfshCommand {
 
       for (String attributeName : attributes) {
         String attributeValue = attributesMap.get(attributeName);
-        String type, memName;
+        String type;
 
         if (!isTypeAdded) {
           type = attributeType;
@@ -249,46 +248,39 @@ public class DescribeRegionCommand implements GfshCommand {
 
   private void writeFixedPartitionAttributesToTable(TabularResultData table,
       List<FixedPartitionAttributesInfo> fpaList, String member, boolean isMemberNameAdded) {
-
-    if (fpaList != null) {
-      boolean isTypeAdded = false;
-      final String blank = "";
-
-      Iterator<FixedPartitionAttributesInfo> fpaIter = fpaList.iterator();
-      String type, memName;
-
-      while (fpaIter.hasNext()) {
-        FixedPartitionAttributesInfo fpa = fpaIter.next();
-        StringBuilder fpaBuilder = new StringBuilder();
-        fpaBuilder.append(fpa.getPartitionName());
-        fpaBuilder.append(',');
-
-        if (fpa.isPrimary()) {
-          fpaBuilder.append("Primary");
-        } else {
-          fpaBuilder.append("Secondary");
-        }
-        fpaBuilder.append(',');
-        fpaBuilder.append(fpa.getNumBuckets());
-
-        if (!isTypeAdded) {
-          type = "";
-          isTypeAdded = true;
-        } else {
-          type = blank;
-        }
-
-        if (!isMemberNameAdded) {
-          memName = member;
-          isMemberNameAdded = true;
-        } else {
-          memName = blank;
-        }
-
-        writeAttributeToTable(table, memName, type, "Fixed Partition", fpaBuilder.toString());
-      }
+    if (fpaList == null) {
+      return;
     }
 
+    boolean isTypeAdded = false;
+    final String blank = "";
+    String memName;
+
+    for (FixedPartitionAttributesInfo fpa : fpaList) {
+      StringBuilder fpaBuilder = new StringBuilder();
+      fpaBuilder.append(fpa.getPartitionName());
+      fpaBuilder.append(',');
+
+      if (fpa.isPrimary()) {
+        fpaBuilder.append("Primary");
+      } else {
+        fpaBuilder.append("Secondary");
+      }
+      fpaBuilder.append(',');
+      fpaBuilder.append(fpa.getNumBuckets());
+
+      if (!isTypeAdded) {
+        isTypeAdded = true;
+      }
+
+      if (!isMemberNameAdded) {
+        memName = member;
+        isMemberNameAdded = true;
+      } else {
+        memName = blank;
+      }
+      writeAttributeToTable(table, memName, "", "Fixed Partition", fpaBuilder.toString());
+    }
   }
 
   private boolean writeAttributesToTable(TabularResultData table, String attributeType,
