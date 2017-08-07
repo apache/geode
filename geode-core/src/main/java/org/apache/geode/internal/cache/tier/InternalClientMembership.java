@@ -27,9 +27,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -37,11 +34,14 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -290,18 +290,22 @@ public class InternalClientMembership {
   }
 
   public static Map getClientQueueSizes() {
-    Map clientQueueSizes = new HashMap();
-    InternalCache c = (InternalCache) CacheFactory.getAnyInstance();
-    if (c == null) // Add a NULL Check
-      return clientQueueSizes;
+    return getClientQueueSizes((InternalCache) CacheFactory.getAnyInstance());
+  }
 
-    for (Iterator bsii = c.getCacheServers().iterator(); bsii.hasNext();) {
-      CacheServerImpl bsi = (CacheServerImpl) bsii.next();
-      AcceptorImpl ai = bsi.getAcceptor();
-      if (ai != null && ai.getCacheClientNotifier() != null) {
-        clientQueueSizes.putAll(ai.getCacheClientNotifier().getClientQueueSizes());
+  public static Map getClientQueueSizes(final InternalCache cache) {
+    if (cache == null) {
+      return Collections.emptyMap();
+    }
+
+    Map clientQueueSizes = new HashMap();
+    for (CacheServer cacheServer : cache.getCacheServers()) {
+      CacheServerImpl cacheServerImpl = (CacheServerImpl) cacheServer;
+      AcceptorImpl acceptor = cacheServerImpl.getAcceptor();
+      if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
+        clientQueueSizes.putAll(acceptor.getCacheClientNotifier().getClientQueueSizes());
       }
-    } // for
+    }
     return clientQueueSizes;
   }
 

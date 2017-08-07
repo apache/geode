@@ -29,7 +29,6 @@ public class ServerBridge {
 
   protected MBeanStatsMonitor monitor;
 
-
   protected StatsRate getRequestRate;
 
   protected StatsRate putRequestRate;
@@ -38,13 +37,20 @@ public class ServerBridge {
 
   protected StatsAverageLatency putRequestAvgLatency;
 
-
   protected AcceptorImpl acceptor;
 
+  public ServerBridge(final CacheServer cacheServer) {
+    this((CacheServerImpl) cacheServer,
+        new MBeanStatsMonitor(ManagementStrings.SERVER_MONITOR.toLocalizedString()));
+  }
 
-  public ServerBridge(CacheServer cacheServer) {
-    this.monitor = new MBeanStatsMonitor(ManagementStrings.SERVER_MONITOR.toLocalizedString());
-    this.acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+  public ServerBridge(final CacheServerImpl cacheServer, final MBeanStatsMonitor monitor) {
+    this(cacheServer.getAcceptor(), monitor);
+  }
+
+  public ServerBridge(final AcceptorImpl acceptor, final MBeanStatsMonitor monitor) {
+    this.monitor = monitor;
+    this.acceptor = acceptor;
     initializeStats();
     startMonitor();
   }
