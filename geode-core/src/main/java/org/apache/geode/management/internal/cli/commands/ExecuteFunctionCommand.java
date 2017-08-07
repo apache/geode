@@ -12,15 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -28,7 +25,6 @@ import org.apache.commons.lang.BooleanUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -43,15 +39,9 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.functions.ListFunctionFunction;
-import org.apache.geode.management.internal.cli.functions.UnregisterFunction;
 import org.apache.geode.management.internal.cli.functions.UserFunctionExecution;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -59,21 +49,13 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.ResourcePermission;
 
-/**
- * @since GemFire 7.0
- */
-@SuppressWarnings("unused")
-public class FunctionCommands implements GfshCommand {
-
-  private final ListFunctionFunction listFunctionFunction = new ListFunctionFunction();
-
+public class ExecuteFunctionCommand implements GfshCommand {
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.WRITE)
+  @ResourceOperation(resource = ResourcePermission.Resource.DATA,
+      operation = ResourcePermission.Operation.WRITE)
   public Result executeFunction(
       // TODO: Add optioncontext for functionID
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, mandatory = true,
@@ -92,14 +74,11 @@ public class FunctionCommands implements GfshCommand {
           help = CliStrings.EXECUTE_FUNCTION__RESULTCOLLECTOR__HELP) String resultCollector,
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__FILTER,
           help = CliStrings.EXECUTE_FUNCTION__FILTER__HELP) String filterString) {
-
-    Result result = null;
     CompositeResultData executeFunctionResultTable = ResultBuilder.createCompositeResultData();
     TabularResultData resultTable = executeFunctionResultTable.addSection().addTable("Table1");
     String headerText = "Execution summary";
     resultTable.setHeader(headerText);
     ResultCollector resultCollectorInstance = null;
-    Function function;
     Set<String> filters = new HashSet<>();
     Execution execution;
     if (functionId != null) {
@@ -121,23 +100,20 @@ public class FunctionCommands implements GfshCommand {
         ErrorResultData errorResultData =
             ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
                 .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MISSING_FUNCTIONID);
-        result = ResultBuilder.buildResult(errorResultData);
-        return result;
+        return ResultBuilder.buildResult(errorResultData);
       }
 
-      if (isMoreThanOneIsTrue(onRegion != null, onMember != null, onGroups != null)) {
+      if (isMoreThanOneTrue(onRegion != null, onMember != null, onGroups != null)) {
         // Provide Only one of region/member/groups
         ErrorResultData errorResultData =
             ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
                 .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
-        result = ResultBuilder.buildResult(errorResultData);
-        return result;
+        return ResultBuilder.buildResult(errorResultData);
       } else if ((onRegion == null || onRegion.length() == 0) && (filterString != null)) {
         ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
             .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
             .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION);
-        result = ResultBuilder.buildResult(errorResultData);
-        return result;
+        return ResultBuilder.buildResult(errorResultData);
       }
 
       InternalCache cache = getCache();
@@ -156,7 +132,7 @@ public class FunctionCommands implements GfshCommand {
         // if user wish to execute on locator then he can choose --member or --group option
         Set<DistributedMember> dsMembers = CliUtil.getAllNormalMembers(cache);
         if (dsMembers.size() > 0) {
-          function = new UserFunctionExecution();
+          new UserFunctionExecution();
           LogWrapper.getInstance().info(CliStrings
               .format(CliStrings.EXECUTE_FUNCTION__MSG__EXECUTING_0_ON_ENTIRE_DS, functionId));
           for (DistributedMember member : dsMembers) {
@@ -215,7 +191,7 @@ public class FunctionCommands implements GfshCommand {
             if (resultCollectorInstance != null) {
               execution = execution.withCollector(resultCollectorInstance);
             }
-            if (filters != null && filters.size() > 0) {
+            if (filters.size() > 0) {
               execution = execution.withFilter(filters);
             }
             if (arguments != null && arguments.length > 0) {
@@ -253,7 +229,6 @@ public class FunctionCommands implements GfshCommand {
           dsMembers.addAll(cache.getDistributedSystem().getGroupMembers(grp));
         }
 
-        StringBuilder successMessage = new StringBuilder();
         if (dsMembers.size() > 0) {
           for (DistributedMember member : dsMembers) {
             executeAndGetResults(functionId, filterString, resultCollector, arguments, cache,
@@ -285,14 +260,12 @@ public class FunctionCommands implements GfshCommand {
     } catch (Exception e) {
       ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
           .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
-      result = ResultBuilder.buildResult(errorResultData);
-      return result;
+      return ResultBuilder.buildResult(errorResultData);
     }
-
-    return result;
+    return null;
   }
 
-  private boolean isMoreThanOneIsTrue(Boolean... values) {
+  private boolean isMoreThanOneTrue(Boolean... values) {
     return Stream.of(values).mapToInt(BooleanUtils::toInteger).sum() > 1;
   }
 
@@ -350,188 +323,8 @@ public class FunctionCommands implements GfshCommand {
     }
   }
 
-  protected void toTabularResultData(TabularResultData table, String memberId,
-      String memberResult) {
-    String newLine = System.getProperty("line.separator");
+  private void toTabularResultData(TabularResultData table, String memberId, String memberResult) {
     table.accumulate("Member ID/Name", memberId);
     table.accumulate("Function Execution Result", memberResult);
-  }
-
-  @CliCommand(value = CliStrings.DESTROY_FUNCTION, help = CliStrings.DESTROY_FUNCTION__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
-      interceptor = "org.apache.geode.management.internal.cli.commands.FunctionCommands$Interceptor")
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE, target = Target.JAR)
-  // TODO: Add optioncontext for functionId
-  public Result destroyFunction(
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,
-          help = CliStrings.DESTROY_FUNCTION__HELP) String functionId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.DESTROY_FUNCTION__ONGROUPS__HELP) String[] groups,
-      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.DESTROY_FUNCTION__ONMEMBER__HELP) String memberId) {
-    Result result;
-    try {
-      InternalCache cache = getCache();
-      Set<DistributedMember> dsMembers = new HashSet<>();
-      if (groups != null && memberId != null) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.DESTROY_FUNCTION__MSG__PROVIDE_OPTION);
-      } else if (groups != null && groups.length > 0) {
-        // execute on group members
-        for (String grp : groups) {
-          dsMembers.addAll(cache.getDistributedSystem().getGroupMembers(grp));
-        }
-        @SuppressWarnings("unchecked")
-        Result results = executeFunction(cache, dsMembers, functionId);
-        return results;
-      } else if (memberId != null) {
-        // execute on member
-        dsMembers.add(getMember(cache, memberId));
-        @SuppressWarnings("unchecked")
-        Result results = executeFunction(cache, dsMembers, functionId);
-        return results;
-      } else {
-        // no option provided.
-        @SuppressWarnings("unchecked")
-        Result results = executeFunction(cache, cache.getMembers(), functionId);
-        return results;
-      }
-    } catch (Exception e) {
-      ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
-      result = ResultBuilder.buildResult(errorResultData);
-      return result;
-    }
-  }
-
-  /**
-   * Interceptor used by gfsh to intercept execution of destroy.
-   */
-  public static class Interceptor extends AbstractCliAroundInterceptor {
-    @Override
-    public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-      Set<Entry<String, String>> setEnvMap = paramValueMap.entrySet();
-      String onGroup = paramValueMap.get(CliStrings.GROUP);
-      String onMember = paramValueMap.get(CliStrings.MEMBER);
-
-      if ((onGroup == null && onMember == null)) {
-        Response response = readYesNo("Do you really want to destroy "
-            + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID) + " on entire DS?", Response.NO);
-        if (response == Response.NO) {
-          return ResultBuilder.createShellClientAbortOperationResult(
-              "Aborted destroy of " + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID));
-        } else {
-          return ResultBuilder
-              .createInfoResult("Destroying " + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID));
-        }
-      } else {
-        return ResultBuilder
-            .createInfoResult("Destroying " + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID));
-      }
-    }
-  }
-
-  Result executeFunction(InternalCache cache, Set<DistributedMember> DsMembers, String functionId) {
-    // unregister on a set of of members
-    Function unregisterFunction = new UnregisterFunction();
-    FunctionService.registerFunction(unregisterFunction);
-    List resultList;
-
-    if (DsMembers.isEmpty()) {
-      return ResultBuilder.createInfoResult("No members for execution");
-    }
-    Object[] obj = new Object[1];
-    obj[0] = functionId;
-
-    Execution execution = FunctionService.onMembers(DsMembers).setArguments(obj);
-
-    if (execution == null) {
-      cache.getLogger().error("executeUnregister execution is null");
-      ErrorResultData errorResultData =
-          ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-              .addLine(CliStrings.DESTROY_FUNCTION__MSG__CANNOT_EXECUTE);
-      return (ResultBuilder.buildResult(errorResultData));
-    }
-    try {
-      resultList = (ArrayList) execution.execute(unregisterFunction).getResult();
-    } catch (FunctionException ex) {
-      ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(ex.getMessage());
-      return (ResultBuilder.buildResult(errorResultData));
-    }
-    String resultStr = ((String) resultList.get(0));
-    if (resultStr.equals("Succeeded in unregistering")) {
-      StringBuilder members = new StringBuilder();
-      for (DistributedMember member : DsMembers) {
-        members.append(member.getId());
-        members.append(",");
-      }
-      return ResultBuilder.createInfoResult("Destroyed " + functionId + " Successfully on "
-          + members.toString().substring(0, members.toString().length() - 1));
-    } else {
-      return ResultBuilder.createInfoResult("Failed in unregistering");
-    }
-  }
-
-  @CliCommand(value = CliStrings.LIST_FUNCTION, help = CliStrings.LIST_FUNCTION__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listFunction(
-      @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES,
-          help = CliStrings.LIST_FUNCTION__MATCHES__HELP) String matches,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_FUNCTION__GROUP__HELP) String[] groups,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String[] members) {
-    TabularResultData tabularData = ResultBuilder.createTabularResultData();
-    boolean accumulatedData = false;
-
-    InternalCache cache = getCache();
-
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, members);
-
-    if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-    }
-
-    try {
-      ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(this.listFunctionFunction, new Object[] {matches}, targetMembers);
-      List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
-
-      for (CliFunctionResult result : results) {
-        if (result.getThrowable() != null) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Function", "<ERROR: " + result.getThrowable().getMessage() + ">");
-          accumulatedData = true;
-          tabularData.setStatus(Status.ERROR);
-        } else if (result.isSuccessful()) {
-          String[] strings = (String[]) result.getSerializables();
-          Arrays.sort(strings);
-          for (String string : strings) {
-            tabularData.accumulate("Member", result.getMemberIdOrName());
-            tabularData.accumulate("Function", string);
-            accumulatedData = true;
-          }
-        }
-      }
-
-      if (!accumulatedData) {
-        return ResultBuilder
-            .createInfoResult(CliStrings.LIST_FUNCTION__NO_FUNCTIONS_FOUND_ERROR_MESSAGE);
-      }
-      return ResultBuilder.buildResult(tabularData);
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createGemFireErrorResult(
-          "Exception while attempting to list functions: " + th.getMessage());
-    }
   }
 }

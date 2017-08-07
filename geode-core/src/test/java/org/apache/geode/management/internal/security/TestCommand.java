@@ -184,8 +184,8 @@ public class TestCommand {
         clusterRead);
     createTestCommand("import cluster-configuration --zip-file-name=value.zip", clusterManage);
 
-    // FunctionCommands
-    // createTestCommand("destroy function --id=InterestCalculations", dataManage);
+    // DestroyFunctionCommand, ExecuteFunctionCommand, ListFunctionCommand
+    createTestCommand("destroy function --id=InterestCalculations", dataManage);
     createTestCommand("execute function --id=InterestCalculations --groups=Group1", dataWrite);
     createTestCommand("list functions", clusterRead);
 
