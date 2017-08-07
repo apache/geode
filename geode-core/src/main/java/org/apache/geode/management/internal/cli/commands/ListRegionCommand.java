@@ -16,9 +16,11 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -34,7 +36,6 @@ import org.apache.geode.management.internal.cli.domain.RegionInformation;
 import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -54,7 +55,6 @@ public class ListRegionCommand implements GfshCommand {
           help = CliStrings.LIST_REGION__MEMBER__HELP) String[] memberNameOrId) {
     Result result = null;
     try {
-      Set<RegionInformation> regionInfoSet = new LinkedHashSet<>();
       ResultCollector<?, ?> rc;
       Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
 
@@ -62,45 +62,18 @@ public class ListRegionCommand implements GfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      TabularResultData resultData = ResultBuilder.createTabularResultData();
       rc = CliUtil.executeFunction(getRegionsFunction, null, targetMembers);
-      ArrayList<?> resultList = (ArrayList<?>) rc.getResult();
+      List<?> resultList = (ArrayList<?>) rc.getResult();
 
-      if (resultList != null) {
-
-        for (Object resultObj : resultList) {
-          if (resultObj != null) {
-            if (resultObj instanceof Object[]) {
-              Object[] resultObjectArray = (Object[]) resultObj;
-              for (Object regionInfo : resultObjectArray) {
-                if (regionInfo instanceof RegionInformation) {
-                  regionInfoSet.add((RegionInformation) regionInfo);
-                }
-              }
-            }
-          }
-        }
-
-        Set<String> regionNames = new TreeSet<>();
-
-        for (RegionInformation regionInfo : regionInfoSet) {
-          regionNames.add(regionInfo.getName());
-          Set<String> subRegionNames = regionInfo.getSubRegionNames();
-
-          regionNames.addAll(subRegionNames);
-        }
-
-        for (String regionName : regionNames) {
-          resultData.accumulate("List of regions", regionName);
-        }
-
-        if (!regionNames.isEmpty()) {
-          result = ResultBuilder.buildResult(resultData);
-
-        } else {
-          result = ResultBuilder.createInfoResult(CliStrings.LIST_REGION__MSG__NOT_FOUND);
-        }
+      if (resultList == null) {
+        return null;
       }
+
+      resultList.stream().filter(resultObj -> resultObj instanceof Object[])
+          .map(resultObj -> (Object[]) resultObj).flatMap(Arrays::stream)
+          .filter(regionInfo -> regionInfo instanceof RegionInformation)
+          .map(regionInfo -> (RegionInformation) regionInfo)
+          .collect(Collectors.toCollection(LinkedHashSet::new));
     } catch (FunctionInvocationTargetException e) {
       result = ResultBuilder.createGemFireErrorResult(CliStrings
           .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.LIST_REGION));
