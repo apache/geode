@@ -14,10 +14,6 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,13 +21,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+
 /**
  * The DurableClientCommandsController class implements GemFire Management REST API web service
  * endpoints for the durable client/CQs Gfsh commands.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.DurableClientCommands
- * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
+ * @see org.apache.geode.management.internal.cli.commands.CloseDurableClientCommand
+ * @see org.apache.geode.management.internal.cli.commands.CloseDurableCQsCommand
+ * @see org.apache.geode.management.internal.cli.commands.CountDurableCQEventsCommand
+ * @see org.apache.geode.management.internal.cli.commands.ListDurableClientCQsCommand
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable
  * @see org.springframework.web.bind.annotation.RequestMapping
