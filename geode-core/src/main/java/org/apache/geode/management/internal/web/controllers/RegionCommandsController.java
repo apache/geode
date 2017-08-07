@@ -26,11 +26,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
 /**
- * The RegionCommands class implements GemFire Management REST API web service endpoints for the
- * Gfsh Region Commands.
+ * The ListRegionCommand and DescribeRegionCommand classes implement GemFire Management REST API web
+ * service endpoints for the Gfsh Region Commands.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.RegionCommands
+ * @see org.apache.geode.management.internal.cli.commands.ListRegionCommand
+ * @see org.apache.geode.management.internal.cli.commands.DescribeRegionCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable
