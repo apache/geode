@@ -30,7 +30,14 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
  * endpoints for the Gfsh Miscellaneous Commands.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.MiscellaneousCommands
+ * @see org.apache.geode.management.internal.cli.commands.ChangeLogLevelCommand
+ * @see org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand
+ * @see org.apache.geode.management.internal.cli.commands.GCCommand
+ * @see org.apache.geode.management.internal.cli.commands.NetstatCommand
+ * @see org.apache.geode.management.internal.cli.commands.ShowDeadlockCommand
+ * @see org.apache.geode.management.internal.cli.commands.ShowLogCommand
+ * @see org.apache.geode.management.internal.cli.commands.ShowMetricsCommand
+ * @see org.apache.geode.management.internal.cli.commands.ShutdownCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable
