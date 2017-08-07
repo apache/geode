@@ -192,7 +192,8 @@ public class TestCommand {
     createTestCommand("hint");
     createTestCommand("help");
 
-    // IndexCommands
+    // ClearDefinedIndexesCommand, CreateDefinedIndexesCommand, CreateIndexCommand,
+    // DefineIndexCommand, DestroyIndexCommand, ListIndexCommand
     createTestCommand("clear defined indexes", clusterManageQuery);
     createTestCommand("create defined indexes", clusterManageQuery);
     createTestCommand(
