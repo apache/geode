@@ -23,7 +23,22 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.commons.lang.StringUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -43,27 +58,18 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the
  * index-based GemFire shell (Gfsh) commands.
  *
  * @see org.apache.geode.management.internal.cli.commands.CliCommandTestBase
- * @see org.apache.geode.management.internal.cli.commands.IndexCommands
+ * @see org.apache.geode.management.internal.cli.commands.ClearDefinedIndexesCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateDefinedIndexesCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.DefineIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.DestroyIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.ListIndexCommand
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
@@ -690,7 +696,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     }
   }
 
-  private static enum CrudOperation {
+  private enum CrudOperation {
     CREATE, RETRIEVE, UPDATE, DELETE
   }
 }

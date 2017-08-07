@@ -14,7 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,11 +46,16 @@ import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The IndexCommandsJUnitTest class is a test suite of test cases testing the contract and
- * functionality of the IndexCommands class.
+ * The ListIndexCommandJUnitTest class is a test suite of test cases testing the contract and
+ * functionality of the ListIndexCommand class.
  * </p>
  * 
- * @see org.apache.geode.management.internal.cli.commands.IndexCommands
+ * @see org.apache.geode.management.internal.cli.commands.ClearDefinedIndexesCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateDefinedIndexesCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.DefineIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.DestroyIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.ListIndexCommand
  * @see org.apache.geode.management.internal.cli.domain.IndexDetails
  * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
  * @see org.jmock.Expectations
@@ -59,8 +66,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)
-public class IndexCommandsJUnitTest {
-
+public class ListIndexCommandJUnitTest {
   private Mockery mockContext;
 
   @Before
@@ -79,14 +85,13 @@ public class IndexCommandsJUnitTest {
     mockContext = null;
   }
 
-  private IndexCommands createIndexCommands(final InternalCache cache,
+  private ListIndexCommand createListIndexCommand(final InternalCache cache,
       final Execution functionExecutor) {
-    return new TestIndexCommands(cache, functionExecutor);
+    return new TestListIndexCommands(cache, functionExecutor);
   }
 
-  private IndexDetails createIndexDetails(final String memberId, final String regionPath,
-      final String indexName) {
-    return new IndexDetails(memberId, regionPath, indexName);
+  private IndexDetails createIndexDetails(final String memberId, final String indexName) {
+    return new IndexDetails(memberId, "/Employees", indexName);
   }
 
   @Test
@@ -99,10 +104,9 @@ public class IndexCommandsJUnitTest {
     final ResultCollector mockResultCollector =
         mockContext.mock(ResultCollector.class, "ResultCollector");
 
-    final IndexDetails indexDetails1 = createIndexDetails("memberOne", "/Employees", "empIdIdx");
-    final IndexDetails indexDetails2 =
-        createIndexDetails("memberOne", "/Employees", "empLastNameIdx");
-    final IndexDetails indexDetails3 = createIndexDetails("memberTwo", "/Employees", "empDobIdx");
+    final IndexDetails indexDetails1 = createIndexDetails("memberOne", "empIdIdx");
+    final IndexDetails indexDetails2 = createIndexDetails("memberOne", "empLastNameIdx");
+    final IndexDetails indexDetails3 = createIndexDetails("memberTwo", "empDobIdx");
 
     final List<IndexDetails> expectedIndexDetails =
         Arrays.asList(indexDetails1, indexDetails2, indexDetails3);
@@ -122,8 +126,7 @@ public class IndexCommandsJUnitTest {
       }
     });
 
-    final IndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
-
+    final ListIndexCommand commands = createListIndexCommand(mockCache, mockFunctionExecutor);
     final List<IndexDetails> actualIndexDetails = commands.getIndexListing();
 
     assertNotNull(actualIndexDetails);
@@ -133,7 +136,6 @@ public class IndexCommandsJUnitTest {
   @Test(expected = RuntimeException.class)
   public void testGetIndexListingThrowsRuntimeException() {
     final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
     final Execution mockFunctionExecutor = mockContext.mock(Execution.class, "Function Executor");
 
     mockContext.checking(new Expectations() {
@@ -143,7 +145,7 @@ public class IndexCommandsJUnitTest {
       }
     });
 
-    final IndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
+    final ListIndexCommand commands = createListIndexCommand(mockCache, mockFunctionExecutor);
 
     try {
       commands.getIndexListing();
@@ -163,9 +165,9 @@ public class IndexCommandsJUnitTest {
     final ResultCollector mockResultCollector =
         mockContext.mock(ResultCollector.class, "ResultCollector");
 
-    final IndexDetails indexDetails = createIndexDetails("memberOne", "/Employees", "empIdIdx");
+    final IndexDetails indexDetails = createIndexDetails("memberOne", "empIdIdx");
 
-    final List<IndexDetails> expectedIndexDetails = Arrays.asList(indexDetails);
+    final List<IndexDetails> expectedIndexDetails = Collections.singletonList(indexDetails);
 
     final List<Object> results = new ArrayList<Object>(2);
 
@@ -182,7 +184,7 @@ public class IndexCommandsJUnitTest {
       }
     });
 
-    final IndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
+    final ListIndexCommand commands = createListIndexCommand(mockCache, mockFunctionExecutor);
 
     final List<IndexDetails> actualIndexDetails = commands.getIndexListing();
 
@@ -190,12 +192,11 @@ public class IndexCommandsJUnitTest {
     assertEquals(expectedIndexDetails, actualIndexDetails);
   }
 
-  private static class TestIndexCommands extends IndexCommands {
-
+  private static class TestListIndexCommands extends ListIndexCommand {
     private final InternalCache cache;
     private final Execution functionExecutor;
 
-    protected TestIndexCommands(final InternalCache cache, final Execution functionExecutor) {
+    TestListIndexCommands(final InternalCache cache, final Execution functionExecutor) {
       assert cache != null : "The InternalCache cannot be null!";
       assert functionExecutor != null : "The function executor cannot be null!";
       this.cache = cache;
@@ -219,5 +220,4 @@ public class IndexCommandsJUnitTest {
       return functionExecutor;
     }
   }
-
 }
