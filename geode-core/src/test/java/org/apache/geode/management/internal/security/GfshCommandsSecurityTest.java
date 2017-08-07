@@ -160,8 +160,8 @@ public class GfshCommandsSecurityTest {
         continue;
       }
 
-      assertThat(ResultBuilder.ERRORCODE_UNAUTHORIZED).describedAs(other.getCommand())
-          .isEqualTo(((ErrorResultData) result.getResultData()).getErrorCode());
+      assertThat(((ErrorResultData) result.getResultData()).getErrorCode())
+          .describedAs(other.getCommand()).isEqualTo(ResultBuilder.ERRORCODE_UNAUTHORIZED);
     }
   }
 
