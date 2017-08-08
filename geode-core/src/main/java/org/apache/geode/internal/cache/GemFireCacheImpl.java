@@ -79,6 +79,8 @@ import com.sun.jna.Platform;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -184,7 +186,6 @@ import org.apache.geode.internal.cache.locks.TXLockService;
 import org.apache.geode.internal.cache.lru.HeapEvictor;
 import org.apache.geode.internal.cache.lru.OffHeapEvictor;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
-import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.snapshot.CacheSnapshotServiceImpl;
@@ -4351,7 +4352,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (!this.backupManager.compareAndSet(null, manager)) {
       throw new IOException("Backup already in progress");
     }
-    manager.start();
+    manager.validateRequestingAdmin();
     return manager;
   }
 

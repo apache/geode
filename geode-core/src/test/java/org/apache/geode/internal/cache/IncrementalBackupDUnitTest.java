@@ -55,7 +55,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.test.dunit.Host;
@@ -615,7 +614,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     File backupDir = getBackupDirForMember(getBaselineDir(), getMemberId(vm));
     assertTrue(backupDir.exists());
 
-    File incomplete = new File(backupDir, BackupManager.INCOMPLETE_BACKUP);
+    File incomplete = new File(backupDir, BackupManager.INCOMPLETE_BACKUP_FILE);
     incomplete.createNewFile();
   }
 

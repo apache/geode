@@ -46,11 +46,13 @@ import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -67,34 +69,38 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 @Category(DistributedTest.class)
 public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
+  Logger logger = LogManager.getLogger(BackupDUnitTest.class);
 
-  private static final long MAX_WAIT = 30 * 1000;
+  private static final long MAX_WAIT_SECONDS = 30;
+  private VM vm0;
+  private VM vm1;
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     StringBuilder failures = new StringBuilder();
     delete(getBackupDir(), failures);
     if (failures.length() > 0) {
-      LogWriterUtils.getLogWriter().error(failures.toString());
+      logger.error(failures.toString());
     }
   }
 
   @Test
   public void testBackupPR() throws Throwable {
     Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    logger.info("Creating region in VM0");
     createPersistentRegion(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    logger.info("Creating region in VM1");
     createPersistentRegion(vm1);
 
     long lm0 = setBackupFiles(vm0);
@@ -107,7 +113,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     assertEquals(2, status.getBackedUpDiskStores().size());
     assertEquals(Collections.emptySet(), status.getOfflineDiskStores());
 
-    Pattern pattern = Pattern.compile(".*my.txt.*");
     Collection<File> files = FileUtils.listFiles(getBackupDir(), new String[] {"txt"}, true);
     assertEquals(4, files.size());
     deleteOldUserUserFile(vm0);
@@ -136,13 +141,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
     restoreBackup(2);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
-    AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
-    AsyncInvocation async1 = createPersistentRegionAsync(vm1);
-
-    async0.getResult(MAX_WAIT);
-    async1.getResult(MAX_WAIT);
+    createPersistentRegionsAsync();
 
     checkData(vm0, 0, 5, "A", "region1");
     checkData(vm0, 0, 5, "B", "region2");
@@ -156,12 +155,12 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   @Test
   public void testBackupFromMemberWithDiskStore() throws Throwable {
     Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    logger.info("Creating region in VM0");
     createPersistentRegion(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    logger.info("Creating region in VM1");
     createPersistentRegion(vm1);
 
     createData(vm0, 0, 5, "A", "region1");
@@ -192,25 +191,21 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
     restoreBackup(2);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
-    AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
-    AsyncInvocation async1 = createPersistentRegionAsync(vm1);
-
-    async0.getResult(MAX_WAIT);
-    async1.getResult(MAX_WAIT);
+    createPersistentRegionsAsync();
 
     checkData(vm0, 0, 5, "A", "region1");
     checkData(vm0, 0, 5, "B", "region2");
   }
 
-  // public void testLoop() throws Throwable {
-  // for(int i =0 ;i < 100; i++) {
-  // testBackupWhileBucketIsCreated();
-  // setUp();
-  // tearDown();
-  // }
-  // }
+  private void createPersistentRegionsAsync() throws java.util.concurrent.ExecutionException,
+      InterruptedException, java.util.concurrent.TimeoutException {
+    logger.info("Creating region in VM0");
+    AsyncInvocation async0 = createPersistentRegionAsync(vm0);
+    logger.info("Creating region in VM1");
+    AsyncInvocation async1 = createPersistentRegionAsync(vm1);
+    async0.get(MAX_WAIT_SECONDS, TimeUnit.SECONDS);
+    async1.get(MAX_WAIT_SECONDS, TimeUnit.SECONDS);
+  }
 
   /**
    * Test for bug 42419
@@ -218,40 +213,27 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   @Test
   public void testBackupWhileBucketIsCreated() throws Throwable {
     Host host = Host.getHost(0);
-    final VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    logger.info("Creating region in VM0");
     createPersistentRegion(vm0);
 
     // create a bucket on vm0
     createData(vm0, 0, 1, "A", "region1");
 
     // create the pr on vm1, which won't have any buckets
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    logger.info("Creating region in VM1");
     createPersistentRegion(vm1);
 
-    final AtomicReference<BackupStatus> statusRef = new AtomicReference<BackupStatus>();
-    Thread thread1 = new Thread() {
-      public void run() {
+    CompletableFuture<BackupStatus> backupStatusFuture =
+        CompletableFuture.supplyAsync(() -> backup(vm2));
+    CompletableFuture<Void> createDataFuture =
+        CompletableFuture.runAsync(() -> createData(vm0, 1, 5, "A", "region1"));
+    CompletableFuture.allOf(backupStatusFuture, createDataFuture);
 
-        BackupStatus status = backup(vm2);
-        statusRef.set(status);
-
-      }
-    };
-    thread1.start();
-    Thread thread2 = new Thread() {
-      public void run() {
-        createData(vm0, 1, 5, "A", "region1");
-      }
-    };
-    thread2.start();
-    thread1.join();
-    thread2.join();
-
-    BackupStatus status = statusRef.get();
+    BackupStatus status = backupStatusFuture.get();
     assertEquals(2, status.getBackedUpDiskStores().size());
     assertEquals(Collections.emptySet(), status.getOfflineDiskStores());
 
@@ -278,13 +260,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
     restoreBackup(2);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
-    AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
-    AsyncInvocation async1 = createPersistentRegionAsync(vm1);
-
-    async0.getResult(MAX_WAIT);
-    async1.getResult(MAX_WAIT);
+    createPersistentRegionsAsync();
 
     checkData(vm0, 0, 1, "A", "region1");
   }
@@ -296,8 +272,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
     DistributionMessageObserver observer = new SerializableDistributionMessageObserver() {
       private volatile boolean done;
-      private AtomicInteger count = new AtomicInteger();
-      private volatile int replyId = -0xBAD;
 
       @Override
       public void beforeSendMessage(DistributionManager dm, DistributionMessage msg) {
@@ -316,8 +290,8 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   @Test
   public void testBackupWhileBucketIsMovedBackupAfterSendDestroy() throws Throwable {
     Host host = Host.getHost(0);
-    final VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
 
     DistributionMessageObserver observer = new SerializableDistributionMessageObserver() {
@@ -407,12 +381,11 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
    * 
    * @param observer - a message observer that triggers at the backup at the correct time.
    */
-  public void backupWhileBucketIsMoved(final DistributionMessageObserver observer)
+  private void backupWhileBucketIsMoved(final DistributionMessageObserver observer)
       throws Throwable {
     Host host = Host.getHost(0);
-    final VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    final VM vm2 = host.getVM(2);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
 
     vm0.invoke(new SerializableRunnable("Add listener to invoke backup") {
 
@@ -428,14 +401,14 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     });
     try {
 
-      LogWriterUtils.getLogWriter().info("Creating region in VM0");
+      logger.info("Creating region in VM0");
       createPersistentRegion(vm0);
 
       // create twos bucket on vm0
       createData(vm0, 0, 2, "A", "region1");
 
       // create the pr on vm1, which won't have any buckets
-      LogWriterUtils.getLogWriter().info("Creating region in VM1");
+      logger.info("Creating region in VM1");
 
       createPersistentRegion(vm1);
 
@@ -476,13 +449,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
       restoreBackup(2);
 
-      LogWriterUtils.getLogWriter().info("Creating region in VM0");
-      AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-      LogWriterUtils.getLogWriter().info("Creating region in VM1");
-      AsyncInvocation async1 = createPersistentRegionAsync(vm1);
-
-      async0.getResult(MAX_WAIT);
-      async1.getResult(MAX_WAIT);
+      createPersistentRegionsAsync();
 
       checkData(vm0, 0, 2, "A", "region1");
     } finally {
@@ -502,13 +469,13 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   @Test
   public void testBackupOverflow() throws Throwable {
     Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    logger.info("Creating region in VM0");
     createPersistentRegion(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    logger.info("Creating region in VM1");
     createOverflowRegion(vm1);
 
     createData(vm0, 0, 5, "A", "region1");
@@ -526,16 +493,16 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   @Test
   public void testBackupPRWithOfflineMembers() throws Throwable {
     Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    logger.info("Creating region in VM0");
     createPersistentRegion(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    logger.info("Creating region in VM1");
     createPersistentRegion(vm1);
-    LogWriterUtils.getLogWriter().info("Creating region in VM2");
+    logger.info("Creating region in VM2");
     createPersistentRegion(vm2);
 
     createData(vm0, 0, 5, "A", "region1");
@@ -562,11 +529,11 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     assertTrue(files.length == 0);
   }
 
-  protected void createPersistentRegion(VM vm) throws Throwable {
+  private void createPersistentRegion(VM vm) throws Throwable {
     AsyncInvocation future = createPersistentRegionAsync(vm);
-    future.join(MAX_WAIT);
+    future.get(MAX_WAIT_SECONDS, TimeUnit.SECONDS);
     if (future.isAlive()) {
-      fail("Region not created within" + MAX_WAIT);
+      fail("Region not created within" + MAX_WAIT_SECONDS);
     }
     if (future.exceptionOccurred()) {
       throw new RuntimeException(future.getException());
@@ -576,9 +543,8 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   private void deleteOldUserUserFile(final VM vm) {
     SerializableRunnable validateUserFileBackup = new SerializableRunnable("set user backups") {
       public void run() {
-        final int pid = vm.getPid();
         try {
-          FileUtils.deleteDirectory(new File("userbackup_" + pid));
+          FileUtils.deleteDirectory(new File("userbackup_" + vm.getPid()));
         } catch (IOException e) {
           fail(e.getMessage());
         }
@@ -587,7 +553,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     vm.invoke(validateUserFileBackup);
   }
 
-  protected long setBackupFiles(final VM vm) {
+  private long setBackupFiles(final VM vm) {
     SerializableCallable setUserBackups = new SerializableCallable("set user backups") {
       public Object call() {
         final int pid = DUnitEnv.get().getPid();
@@ -595,7 +561,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
         File test1 = new File(vmdir, "test1");
         File test2 = new File(test1, "test2");
         File mytext = new File(test2, "my.txt");
-        final ArrayList<File> backuplist = new ArrayList<File>();
+        final ArrayList<File> backuplist = new ArrayList<>();
         test2.mkdirs();
         PrintStream ps = null;
         try {
@@ -619,7 +585,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     return (long) vm.invoke(setUserBackups);
   }
 
-  protected void verifyUserFileRestored(VM vm, final long lm) {
+  private void verifyUserFileRestored(VM vm, final long lm) {
     vm.invoke(new SerializableRunnable() {
       public void run() {
         final int pid = DUnitEnv.get().getPid();
@@ -640,8 +606,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
           BufferedReader bin = new BufferedReader(fr);
           String content = bin.readLine();
           assertTrue(content.equals("" + pid));
-        } catch (FileNotFoundException e) {
-          fail(e.getMessage());
         } catch (IOException e) {
           fail(e.getMessage());
         }
@@ -649,7 +613,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     });
   }
 
-  protected AsyncInvocation createPersistentRegionAsync(final VM vm) {
+  private AsyncInvocation createPersistentRegionAsync(final VM vm) {
     SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
       public void run() {
         Cache cache = getCache();
@@ -670,7 +634,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
         dsf = cache.createDiskStoreFactory();
         dsf.setDiskDirs(getDiskDirs(getUniqueName() + 2));
         dsf.setMaxOplogSize(1);
-        ds = dsf.create(getUniqueName() + 2);
+        dsf.create(getUniqueName() + 2);
         rf.setDiskStoreName(getUniqueName() + 2);
         rf.create("region2");
       }
@@ -678,7 +642,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     return vm.invokeAsync(createRegion);
   }
 
-  protected void createOverflowRegion(final VM vm) {
+  private void createOverflowRegion(final VM vm) {
     SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
       public void run() {
         Cache cache = getCache();
@@ -760,14 +724,14 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
       public Object call() throws Exception {
         Cache cache = getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-        return new TreeSet<Integer>(region.getDataStore().getAllLocalBucketIds());
+        return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
       }
     };
 
     return (Set<Integer>) vm0.invoke(getBuckets);
   }
 
-  public File[] getDiskDirs(String dsName) {
+  private File[] getDiskDirs(String dsName) {
     File[] dirs = getDiskDirs();
     File[] diskStoreDirs = new File[1];
     diskStoreDirs[0] = new File(dirs[0], dsName);
@@ -775,7 +739,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     return diskStoreDirs;
   }
 
-  protected DataPolicy getDataPolicy() {
+  private DataPolicy getDataPolicy() {
     return DataPolicy.PERSISTENT_PARTITION;
   }
 
