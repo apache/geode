@@ -99,7 +99,7 @@ public class FinishBackupRequest extends CliLegacyMessage {
       persistentIds = new HashSet<PersistentID>();
     } else {
       try {
-        persistentIds = cache.getBackupManager().finishBackup(targetDir, baselineDir, abort);
+        persistentIds = cache.getBackupManager().doBackup(targetDir, baselineDir, abort);
       } catch (IOException e) {
         logger.error(
             LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), e);

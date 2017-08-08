@@ -25,17 +25,16 @@ import org.apache.geode.internal.cache.persistence.BackupInspector;
  * This class manages the state of the backup of an individual disk store. It holds the list of
  * oplogs that still need to be backed up, along with the lists of oplog files that should be
  * deleted when the oplog is backed up. See
- * {@link DiskStoreImpl#startBackup(File, BackupInspector, org.apache.geode.internal.cache.persistence.RestoreScript)}
  */
 public class DiskStoreBackup {
 
   private final Set<Oplog> pendingBackup;
-  private final Set<Oplog> deferredCrfDeletes = new HashSet<Oplog>();
-  private final Set<Oplog> deferredDrfDeletes = new HashSet<Oplog>();
+  private final Set<Oplog> deferredCrfDeletes = new HashSet<>();
+  private final Set<Oplog> deferredDrfDeletes = new HashSet<>();
   private final File targetDir;
 
   public DiskStoreBackup(Oplog[] allOplogs, File targetDir) {
-    this.pendingBackup = new HashSet<Oplog>(Arrays.asList(allOplogs));
+    this.pendingBackup = new HashSet<>(Arrays.asList(allOplogs));
     this.targetDir = targetDir;
   }
 
@@ -70,7 +69,7 @@ public class DiskStoreBackup {
   }
 
   public synchronized Set<Oplog> getPendingBackup() {
-    return new HashSet<Oplog>(pendingBackup);
+    return new HashSet<>(pendingBackup);
   }
 
   public synchronized void backupFinished(Oplog oplog) {

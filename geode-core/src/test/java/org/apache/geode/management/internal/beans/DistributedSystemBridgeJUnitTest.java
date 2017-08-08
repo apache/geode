@@ -32,7 +32,7 @@ import org.apache.geode.admin.internal.PrepareBackupRequest;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.cache.BackupManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -74,9 +74,9 @@ public class DistributedSystemBridgeJUnitTest {
 
     InOrder inOrder = inOrder(dm, backupManager);
     inOrder.verify(dm).putOutgoing(isA(PrepareBackupRequest.class));
-    inOrder.verify(backupManager).prepareBackup();
+    inOrder.verify(backupManager).prepareForBackup();
     inOrder.verify(dm).putOutgoing(isA(FinishBackupRequest.class));
-    inOrder.verify(backupManager).finishBackup(any(), any(), eq(false));
+    inOrder.verify(backupManager).doBackup(any(), any(), eq(false));
   }
 
   @Test
@@ -99,6 +99,6 @@ public class DistributedSystemBridgeJUnitTest {
     }
 
     verify(dm).putOutgoing(isA(FinishBackupRequest.class));
-    verify(backupManager).finishBackup(any(), any(), eq(true));
+    verify(backupManager).doBackup(any(), any(), eq(true));
   }
 }

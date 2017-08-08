@@ -5702,6 +5702,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   public void deleteCRF() {
     oplogSet.crfDelete(this.oplogId);
+    BackupManager backupManager = getInternalCache().getBackupManager();
     DiskStoreBackup inProgressBackup = getParent().getInProgressBackup();
     if (inProgressBackup == null || !inProgressBackup.deferCrfDelete(this)) {
       deleteCRFFileOnly();
