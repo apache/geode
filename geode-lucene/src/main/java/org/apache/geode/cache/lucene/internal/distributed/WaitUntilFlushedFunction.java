@@ -72,10 +72,8 @@ public class WaitUntilFlushedFunction implements Function, InternalEntity {
       }
 
     } else {
-      IllegalStateException illegalStateException = new IllegalStateException(
+      throw new IllegalStateException(
           "The AEQ does not exist for the index " + indexName + " region " + region.getFullPath());
-      logger.error(illegalStateException.getMessage());
-      resultSender.lastResult(result);
     }
     resultSender.lastResult(result);
   }
