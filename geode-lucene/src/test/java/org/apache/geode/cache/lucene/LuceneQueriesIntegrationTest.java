@@ -342,10 +342,15 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
     // This is to send IllegalStateException from WaitUntilFlushedFunction
     String nonCreatedIndex = "index2";
-
-    boolean b =
-        luceneService.waitUntilFlushed(nonCreatedIndex, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
-    assertFalse(b);
+    boolean result = false;
+    try {
+      result = luceneService.waitUntilFlushed(nonCreatedIndex, REGION_NAME, 60000,
+          TimeUnit.MILLISECONDS);
+    } catch (Exception ex) {
+      assertEquals(ex.getMessage(),
+          "java.lang.IllegalStateException: The AEQ does not exist for the index index2 region /index");
+      assertFalse(result);
+    }
   }
 
   @Test()
