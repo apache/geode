@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.serializer.ProtocolSerializer;
 
+@Experimental
 public class ProtobufProtocolSerializer implements ProtocolSerializer<ClientProtocol.Message> {
   @Override
   public ClientProtocol.Message deserialize(InputStream inputStream)

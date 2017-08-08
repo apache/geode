@@ -16,9 +16,11 @@ package org.apache.geode.serialization.codec;
 
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
 
+@Experimental
 public class ByteCodec implements TypeCodec<Byte> {
   @Override
   public Byte decode(byte[] incoming) {

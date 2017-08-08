@@ -14,6 +14,9 @@
  */
 package org.apache.geode.protocol.protobuf.utilities;
 
+import java.util.Set;
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.RegionAPI;
@@ -27,6 +30,7 @@ import java.util.Set;
  * Response building helpers can be found in {@link ProtobufResponseUtilities}, while more general
  * purpose helpers can be found in {@link ProtobufUtilities}
  */
+@Experimental
 public abstract class ProtobufRequestUtilities {
   /**
    * Creates a request object containing a RegionAPI.GetRequest
