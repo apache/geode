@@ -57,9 +57,9 @@ For flexibility, the product name (a long version and a short one) and version a
 
 ```
 template_variables:
-  - geode_product_name_long: Apache Geode
-  - geode_product_name: Geode
-  - geode_product_version: 1.2
+  - product_name_long: Apache Geode
+  - product_name: Geode
+  - product_version: 1.2
 
 ```
 
@@ -79,7 +79,7 @@ Instead of:
     
 Do this:
 
-    <% set_title(geode_product_name_long, geode_product_version, "Documentation") %>
+    <% set_title(product_name_long, product_version, "Documentation") %>
 
 Why? Because the `title:` construct is not Ruby code, it's YAML, and it cannot interpret Ruby variables.
 
@@ -87,7 +87,8 @@ Why? Because the `title:` construct is not Ruby code, it's YAML, and it cannot i
 
   - Begin with `<%`, not `<%=`. (We're invoking a function, not printing its value.)
   - Do not put a space before the opening parenthesis (use `set_title(` not `set_title (`.)
-  - **Do not** quote the three product variable names (`geode_product_name`, `geode_product_name_long`, and `geode_product_version`). **Do** quote all other text.
+  - **Do not** quote the three product variable names (`product_name`, `product_name_long`, and `product_version`). **Do** quote all other text.
+  - This feature requires Bookbinder v10.1.7 (Aug 2017) or later.
 
 
 
