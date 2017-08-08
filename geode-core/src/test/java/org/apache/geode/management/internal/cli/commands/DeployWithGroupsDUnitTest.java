@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  */
 @SuppressWarnings("serial")
 @Category(DistributedTest.class)
-public class DeployCommandsDUnitTest implements Serializable {
+public class DeployWithGroupsDUnitTest implements Serializable {
   private static final String GROUP1 = "Group1";
   private static final String GROUP2 = "Group2";
 
