@@ -14,6 +14,7 @@
  */
 package org.apache.geode.protocol.operations;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.protocol.protobuf.ProtobufOpsProcessor;
 import org.apache.geode.protocol.protobuf.Result;
@@ -25,6 +26,7 @@ import org.apache.geode.serialization.SerializationService;
  *
  * See {@link ProtobufOpsProcessor}
  */
+@Experimental
 public interface OperationHandler<Req, Resp> {
   /**
    * Decode the message, deserialize contained values using the serialization service, do the work

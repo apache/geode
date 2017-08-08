@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
@@ -33,6 +34,7 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
  * messages, hands the requests to an appropriate handler, wraps the response in a protobuf message,
  * and then pushes it to the output stream.
  */
+@Experimental
 public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   private final ProtobufProtocolSerializer protobufProtocolSerializer;
   private final ProtobufOpsProcessor protobufOpsProcessor;

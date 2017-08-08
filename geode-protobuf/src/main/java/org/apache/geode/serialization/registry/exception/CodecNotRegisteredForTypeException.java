@@ -14,9 +14,12 @@
  */
 package org.apache.geode.serialization.registry.exception;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * This indicates we're attempting to handle a type for which we don't have a registered codec.
  */
+@Experimental
 public class CodecNotRegisteredForTypeException extends Exception {
   public CodecNotRegisteredForTypeException(String message) {
     super(message);

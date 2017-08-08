@@ -18,6 +18,7 @@ package org.apache.geode.protocol.protobuf.registry;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ClientProtocol.Request.RequestAPICase;
 import org.apache.geode.protocol.protobuf.OperationContext;
@@ -30,6 +31,7 @@ import org.apache.geode.protocol.protobuf.operations.PutAllRequestOperationHandl
 import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.RemoveRequestOperationHandler;
 
+@Experimental
 public class OperationContextRegistry {
   private Map<RequestAPICase, OperationContext> operationContexts = new ConcurrentHashMap<>();
 

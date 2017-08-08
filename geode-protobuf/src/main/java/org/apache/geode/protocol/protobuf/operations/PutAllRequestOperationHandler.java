@@ -14,6 +14,13 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
@@ -28,12 +35,8 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.util.Objects;
-import java.util.stream.Collectors;
-
+@Experimental
 public class PutAllRequestOperationHandler
     implements OperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse> {
   private static Logger logger = LogManager.getLogger();

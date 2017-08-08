@@ -13,6 +13,12 @@
  * the License.
  */
 
+/*
+* These ProtoBuf files are part of an experimental interface.
+* Use this interface at your own risk.
+*/
+
+
 syntax = "proto3";
 package org.apache.geode.protocol.protobuf;
 

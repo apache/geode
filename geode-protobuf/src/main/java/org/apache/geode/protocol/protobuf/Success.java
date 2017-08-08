@@ -16,6 +16,9 @@ package org.apache.geode.protocol.protobuf;
 
 import java.util.function.Function;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public class Success<SuccessType> implements Result<SuccessType> {
   private final SuccessType successResponse;
 

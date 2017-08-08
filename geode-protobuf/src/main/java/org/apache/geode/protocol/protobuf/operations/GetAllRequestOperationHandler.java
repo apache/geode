@@ -14,6 +14,11 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
@@ -28,10 +33,7 @@ import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+@Experimental
 public class GetAllRequestOperationHandler
     implements OperationHandler<RegionAPI.GetAllRequest, RegionAPI.GetAllResponse> {
 

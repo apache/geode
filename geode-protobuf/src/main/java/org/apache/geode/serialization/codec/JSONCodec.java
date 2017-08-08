@@ -14,11 +14,13 @@
  */
 package org.apache.geode.serialization.codec;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
 
+@Experimental
 public class JSONCodec implements TypeCodec<PdxInstance> {
   @Override
   public PdxInstance decode(byte[] incoming) {
