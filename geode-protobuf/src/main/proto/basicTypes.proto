@@ -71,12 +71,16 @@ message Server {
     int32 port = 2;
 }
 
-message ErrorResponse {
+message Error {
     int32 errorCode = 1;
     string message = 2;
 }
 
+message ErrorResponse {
+    Error error = 1;
+}
+
 message KeyedErrorResponse {
     EncodedValue key = 1;
-    ErrorResponse error = 2;
+    Error error = 2;
 }

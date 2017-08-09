@@ -99,6 +99,6 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
         MessageUtil.makeGetRegionRequest(unknownRegionName), emptyCache);
     Assert.assertTrue(result instanceof Failure);
     Assert.assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
-        result.getErrorMessage().getErrorCode());
+        result.getErrorMessage().getError().getErrorCode());
   }
 }

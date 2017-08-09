@@ -18,6 +18,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
+
 import org.apache.logging.log4j.Logger;
 
 import java.util.Set;
@@ -33,7 +34,7 @@ public abstract class ProtobufResponseUtilities {
   /**
    * This creates response object containing a BasicTypes.ErrorResponse, and also logs the passed
    * error message and exception (if present) to the provided logger.
-   *
+   * 
    * @param errorMessage - description of the error
    * @param logger - logger to write the error message to
    * @param ex - exception which should be logged
@@ -46,13 +47,12 @@ public abstract class ProtobufResponseUtilities {
     } else {
       logger.error(errorMessage);
     }
-    return BasicTypes.ErrorResponse.newBuilder().setErrorCode(errorCode.codeValue)
-        .setMessage(errorMessage).build();
+    return makeErrorResponse(errorCode.codeValue, errorMessage);
   }
 
   /**
    * This creates a response object containing a RegionAPI.GetRegionNamesResponse
-   *
+   * 
    * @param regionSet - A set of regions
    * @return A response object containing the names of the regions in the passed regionSet
    */
@@ -64,5 +64,11 @@ public abstract class ProtobufResponseUtilities {
       builder.addRegions(region.getName());
     }
     return builder.build();
+  }
+
+  public static BasicTypes.ErrorResponse makeErrorResponse(int errorCode, String message) {
+    return BasicTypes.ErrorResponse.newBuilder()
+        .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(message))
+        .build();
   }
 }
