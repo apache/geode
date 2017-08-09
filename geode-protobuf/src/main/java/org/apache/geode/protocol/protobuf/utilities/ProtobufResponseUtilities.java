@@ -24,6 +24,7 @@ import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 
+
 /**
  * This class contains helper functions for generating ClientProtocol.Response objects.
  * <p>
@@ -49,8 +50,7 @@ public abstract class ProtobufResponseUtilities {
     } else {
       logger.error(errorMessage);
     }
-    return BasicTypes.ErrorResponse.newBuilder().setErrorCode(errorCode.codeValue)
-        .setMessage(errorMessage).build();
+    return makeErrorResponse(errorCode.codeValue, errorMessage);
   }
 
   /**
@@ -67,5 +67,11 @@ public abstract class ProtobufResponseUtilities {
       builder.addRegions(region.getName());
     }
     return builder.build();
+  }
+
+  public static BasicTypes.ErrorResponse makeErrorResponse(int errorCode, String message) {
+    return BasicTypes.ErrorResponse.newBuilder()
+        .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(message))
+        .build();
   }
 }

@@ -40,6 +40,7 @@ import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.ServerAPI;
 import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.serialization.SerializationService;
 
 @Experimental
@@ -73,9 +74,8 @@ public class GetAvailableServersOperationHandler implements
         // try the next locator
       }
     }
-    return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-        .setErrorCode(ProtocolErrorCode.DATA_UNREACHABLE.codeValue)
-        .setMessage("Unable to find a locator").build());
+    return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+        ProtocolErrorCode.DATA_UNREACHABLE.codeValue, "Unable to find a locator"));
   }
 
   private Result<ServerAPI.GetAvailableServersResponse> getGetAvailableServersFromLocator(

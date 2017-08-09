@@ -82,9 +82,10 @@ public class PutAllRequestOperationHandler
   private BasicTypes.KeyedErrorResponse buildAndLogKeyedError(BasicTypes.Entry entry,
       ProtocolErrorCode errorCode, String message, Exception ex) {
     logger.error(message, ex);
-    BasicTypes.ErrorResponse errorResponse = BasicTypes.ErrorResponse.newBuilder()
-        .setErrorCode(errorCode.codeValue).setMessage(message).build();
-    return BasicTypes.KeyedErrorResponse.newBuilder().setKey(entry.getKey()).setError(errorResponse)
+
+    return BasicTypes.KeyedErrorResponse.newBuilder().setKey(entry.getKey())
+        .setError(
+            BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message))
         .build();
   }
 }

@@ -24,6 +24,7 @@ import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
@@ -39,9 +40,9 @@ public class PutRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-          .setErrorCode(ProtocolErrorCode.REGION_NOT_FOUND.codeValue)
-          .setMessage("Region passed by client did not exist: " + regionName).build());
+      return Failure.of(
+          ProtobufResponseUtilities.makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
+              "Region passed by client did not exist: " + regionName));
     }
 
     try {
@@ -53,18 +54,13 @@ public class PutRequestOperationHandler
         region.put(decodedKey, decodedValue);
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
-        return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-            .setErrorCode(ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue)
-            .setMessage("invalid key or value type for region " + regionName).build());
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+            ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue,
+            "invalid key or value type for region " + regionName));
       }
-    } catch (UnsupportedEncodingTypeException ex) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
-          .setMessage(ex.getMessage()).build());
-    } catch (CodecNotRegisteredForTypeException ex) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
-          .setMessage(ex.getMessage()).build());
+    } catch (UnsupportedEncodingTypeException | CodecNotRegisteredForTypeException ex) {
+      return Failure.of(ProtobufResponseUtilities
+          .makeErrorResponse(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue, ex.getMessage()));
     }
   }
 }
