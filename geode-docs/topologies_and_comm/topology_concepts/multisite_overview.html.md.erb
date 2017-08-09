@@ -108,7 +108,8 @@ A gateway receiver applies each region event to the same region or partition tha
 
 Gateway senders use any available gateway receiver in the target cluster to send region events. You can deploy gateway receiver configurations to multiple Geode members as needed for high availability and load balancing, however you can only host one gateway receiver per member.
 
-After you create a gateway receiver, you can configure the gateway receiver to start automatically or to require a manual start. The current default is to require a manual start for the gateway receiver (`manual-start` is set to true).
+After you create a gateway receiver, you can configure the gateway receiver to start automatically or to require a manual start. 
+By default, the gateway receiver starts automatically (`manual-start` is set to false).
 
 After you create and start a new gateway receiver at one WAN site, you can execute the [load-balance gateway-sender](../../tools_modules/gfsh/command-pages/load-balance.html#concept_fn2_qls_5q) command in `gfsh` for existing remote gateway senders so that the new receiver can pick up connections to gateway senders at different sites. You invoke this command on the gateway senders to redistribute connections more evenly among all the gateway receivers. Another option is to use the `GatewaySender.rebalance` Java API.
 
