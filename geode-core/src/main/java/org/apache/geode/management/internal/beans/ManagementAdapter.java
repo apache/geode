@@ -633,7 +633,7 @@ public class ManagementAdapter {
       return;
     }
 
-    CacheServerBridge cacheServerBridge = new CacheServerBridge(cacheServer, internalCache);
+    CacheServerBridge cacheServerBridge = new CacheServerBridge(internalCache, cacheServer);
     cacheServerBridge.setMemberMBeanBridge(memberMBeanBridge);
 
     CacheServerMBean cacheServerMBean = new CacheServerMBean(cacheServerBridge);
