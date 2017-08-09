@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -41,7 +40,7 @@ public class GetRegionsFunction implements Function, InternalEntity {
   @Override
   public void execute(FunctionContext functionContext) {
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = functionContext.getCache();
       Set<Region<?, ?>> regions = cache.rootRegions(); // should never return a null
 
       if (regions == null || regions.isEmpty()) {

@@ -18,9 +18,14 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_T
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 import static org.apache.geode.management.internal.cli.util.HostUtils.getLocatorId;
 
+import java.io.IOException;
+
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
@@ -31,10 +36,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
-import java.io.IOException;
+import org.apache.commons.lang.StringUtils;
 
 public class StatusLocatorCommand implements GfshCommand {
   @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
@@ -75,11 +78,15 @@ public class StatusLocatorCommand implements GfshCommand {
                 .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid)
                 .setPort(locatorPort).setWorkingDirectory(workingDirectory).build();
 
-        final LocatorLauncher.LocatorState state = locatorLauncher.status();
-        return createStatusLocatorResult(state);
+        final LocatorLauncher.LocatorState status = locatorLauncher.status();
+        if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
+            || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
+          return ResultBuilder.createShellClientErrorResult(status.toString());
+        }
+        return createStatusLocatorResult(status);
       }
     } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
+      return ResultBuilder.createUserErrorResult(e.toString());
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;

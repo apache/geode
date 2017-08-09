@@ -14,6 +14,21 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.pause;
+
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -21,16 +36,6 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.List;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.pause;
 
 @Category(DistributedTest.class)
 public class WanCommandListDUnitTest extends WANCommandTestBase {
@@ -40,19 +45,19 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewayWithNoSenderReceiver() {
 
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    props.setProperty(LOCATORS, "localhost[" + dsIdPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
-    vm3.invoke(() -> createCache(punePort));
-    vm4.invoke(() -> createCache(punePort));
-    vm5.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
 
     pause(10000);
     String command = CliStrings.LIST_GATEWAY;
@@ -69,28 +74,28 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewaySender() {
 
-    Integer punePort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    props.setProperty(LOCATORS, "localhost[" + dsIdPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, punePort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
 
     vm6.invoke(() -> createAndStartReceiver(nyPort));
     vm7.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm3.invoke(() -> createCache(punePort));
+    vm3.invoke(() -> createCache(dsIdPort));
     vm3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
     vm3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
 
-    vm4.invoke(() -> createCache(punePort));
+    vm4.invoke(() -> createCache(dsIdPort));
     vm4.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
     vm4.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
 
-    vm5.invoke(() -> createCache(punePort));
+    vm5.invoke(() -> createCache(dsIdPort));
     vm5.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
 
     pause(10000);

@@ -14,14 +14,17 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
-import org.apache.geode.protocol.protobuf.ProtobufUtilities;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.protobuf.Result;
+import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
-import org.apache.geode.protocol.protobuf.EncodingTypeTranslator;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
@@ -29,54 +32,35 @@ public class GetRequestOperationHandler
     implements OperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
 
   @Override
-  public RegionAPI.GetResponse process(SerializationService serializationService,
+  public Result<RegionAPI.GetResponse> process(SerializationService serializationService,
       RegionAPI.GetRequest request, Cache cache) {
     String regionName = request.getRegionName();
+    Region region = cache.getRegion(regionName);
+    if (region == null) {
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.REGION_NOT_FOUND.codeValue).setMessage("Region not found")
+          .build());
+    }
+
     try {
       Object decodedKey = ProtobufUtilities.decodeValue(serializationService, request.getKey());
-
-
-      Region region = cache.getRegion(regionName);
-
-      if (region == null) {
-        return buildGetResponseFailure();
-      }
-
       Object resultValue = region.get(decodedKey);
 
       if (resultValue == null) {
-        return buildGetResponseKeyNotFound();
+        return Success.of(RegionAPI.GetResponse.newBuilder().build());
       }
 
-      return buildGetResponseSuccess(serializationService, resultValue);
+      BasicTypes.EncodedValue encodedValue =
+          ProtobufUtilities.createEncodedValue(serializationService, resultValue);
+      return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } catch (UnsupportedEncodingTypeException ex) {
-      // can be thrown by encoding or decoding.
-      cache.getLogger().error("encoding not supported ", ex);
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
+          .setMessage("Encoding not supported.").build());
     } catch (CodecNotRegisteredForTypeException ex) {
-      cache.getLogger().error("codec error in protobuf deserialization ", ex);
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
+          .setMessage("Codec error in protobuf deserialization.").build());
     }
-    return buildGetResponseFailure();
-  }
-
-  private RegionAPI.GetResponse buildGetResponseKeyNotFound() {
-    return RegionAPI.GetResponse.newBuilder().setSuccess(true).setKeyExists(false).build();
-  }
-
-  private RegionAPI.GetResponse buildGetResponseFailure() {
-    return RegionAPI.GetResponse.newBuilder().setSuccess(false).build();
-  }
-
-  // throws if the object in the cache is not of a class that be serialized via the protobuf
-  // protocol.
-  private RegionAPI.GetResponse buildGetResponseSuccess(SerializationService serializationService,
-      Object resultValue)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    BasicTypes.EncodingType resultEncodingType =
-        EncodingTypeTranslator.getEncodingTypeForObject(resultValue);
-    byte[] resultEncodedValue = serializationService.encode(resultEncodingType, resultValue);
-
-    return RegionAPI.GetResponse.newBuilder().setSuccess(true).setKeyExists(true)
-        .setResult(ProtobufUtilities.getEncodedValue(resultEncodingType, resultEncodedValue))
-        .build();
   }
 }

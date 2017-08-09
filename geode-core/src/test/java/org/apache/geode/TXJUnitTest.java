@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.transaction.Synchronization;
 
+import org.apache.geode.cache.util.TxEventTestUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -470,7 +471,7 @@ public class TXJUnitTest {
     assertEquals("value2", reg2.get("key2"));
     assertEquals(txCommitChanges + 2, stats.getTxCommitChanges());
     {
-      List<EntryEvent<?, ?>> creates = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(2, creates.size());
 
@@ -536,13 +537,13 @@ public class TXJUnitTest {
     reg1.create("key1", "value1");
     this.txMgr.rollback();
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     {
       Cache teCache = this.te.getCache();
       assertEquals(teCache, this.cache);
-      List<EntryEvent<?, ?>> creates = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, creates.size());
 
@@ -568,13 +569,13 @@ public class TXJUnitTest {
     reg1.put("key1", "value1");
     this.txMgr.rollback();
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     {
       Cache teCache = this.te.getCache();
       assertEquals(teCache, this.cache);
-      List<EntryEvent<?, ?>> creates = this.te.getPutEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getPutEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, creates.size());
 
@@ -600,13 +601,13 @@ public class TXJUnitTest {
     reg1.put("key1", "value0");
     this.txMgr.rollback();
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     {
       Cache teCache = this.te.getCache();
       assertEquals(teCache, this.cache);
-      List<EntryEvent<?, ?>> creates = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, creates.size());
 
@@ -632,13 +633,13 @@ public class TXJUnitTest {
     reg1.invalidate("key1");
     this.txMgr.rollback();
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     {
       Cache teCache = this.te.getCache();
       assertEquals(teCache, this.cache);
-      List<EntryEvent<?, ?>> creates = this.te.getInvalidateEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getInvalidateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, creates.size());
 
@@ -665,13 +666,13 @@ public class TXJUnitTest {
     reg1.localInvalidate("key1");
     this.txMgr.rollback();
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     {
       Cache teCache = this.te.getCache();
       assertEquals(teCache, this.cache);
-      List<EntryEvent<?, ?>> creates = this.te.getInvalidateEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getInvalidateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, creates.size());
 
@@ -699,13 +700,13 @@ public class TXJUnitTest {
     reg1.destroy("key1");
     this.txMgr.rollback();
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     {
       Cache teCache = this.te.getCache();
       assertEquals(teCache, this.cache);
-      List<EntryEvent<?, ?>> creates = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, creates.size());
 
@@ -732,13 +733,13 @@ public class TXJUnitTest {
     reg1.localDestroy("key1");
     this.txMgr.rollback();
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     {
       Cache teCache = this.te.getCache();
       assertEquals(teCache, this.cache);
-      List<EntryEvent<?, ?>> creates = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> creates = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, creates.size());
 
@@ -1060,7 +1061,7 @@ public class TXJUnitTest {
         return fetchLocal ? this.aLocalDestroyCalls : this.aDestroyCalls;
       }
     };
-    mutator.setCacheListener(cntListener);
+    mutator.addCacheListener(cntListener);
     CountingCacheWriter cntWriter = new CountingCacheWriter() {
       int bCreateCalls, bUpdateCalls, bDestroyCalls, bLocalDestroyCalls;
 
@@ -1141,11 +1142,11 @@ public class TXJUnitTest {
     callbackVal.reAssert();
     assertEquals("value2", reg1.getEntry("key1").getValue());
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1182,11 +1183,11 @@ public class TXJUnitTest {
     assertTrue(reg1.containsKey("key1"));
     assertTrue(!reg1.containsValueForKey("key1"));
     assertEquals(1, this.te.getEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1227,10 +1228,10 @@ public class TXJUnitTest {
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
     assertEquals(0, this.te.getEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
 
     // Check C + LI -> C
     callbackVal.reset();
@@ -1247,12 +1248,12 @@ public class TXJUnitTest {
     callbackVal.reAssert();
     assertTrue(reg1.containsKey("key1"));
     assertTrue(!reg1.containsValueForKey("key1"));
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1298,12 +1299,12 @@ public class TXJUnitTest {
     callbackVal.reAssert();
     assertTrue(reg1.containsKey("key1"));
     assertEquals("value2", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1338,10 +1339,10 @@ public class TXJUnitTest {
     callbackVal.assertDestroyListenerCnt(0);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(0, this.te.getEvents().size());
 
     // Check C + LI + DD -> NOOP
@@ -1359,10 +1360,10 @@ public class TXJUnitTest {
     callbackVal.assertCreateListenerCnt(0);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(0, this.te.getEvents().size());
 
     // check C + LD -> NOOP
@@ -1378,10 +1379,10 @@ public class TXJUnitTest {
     callbackVal.assertLocalDestroyListenerCnt(0);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(0, this.te.getEvents().size());
 
     // check C + LD + D -> EX
@@ -1426,12 +1427,12 @@ public class TXJUnitTest {
     callbackVal.assertCreateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1467,12 +1468,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(0);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1516,12 +1517,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getPutEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getPutEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1558,12 +1559,12 @@ public class TXJUnitTest {
     callbackVal.reAssert();
     assertTrue(reg1.containsKey("key1"));
     assertTrue(!reg1.containsValueForKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getInvalidateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getInvalidateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1599,12 +1600,12 @@ public class TXJUnitTest {
     callbackVal.assertDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1640,12 +1641,12 @@ public class TXJUnitTest {
     assertTrue(reg1.containsKey("key1"));
     assertEquals(null, reg1.getEntry("key1").getValue());
     assertTrue(!reg1.containsValueForKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getInvalidateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getInvalidateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1691,12 +1692,12 @@ public class TXJUnitTest {
     callbackVal.reAssert();
     assertTrue(reg1.containsKey("key1"));
     assertEquals("value2", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getPutEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getPutEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1734,12 +1735,12 @@ public class TXJUnitTest {
     callbackVal.assertLocalDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1775,12 +1776,12 @@ public class TXJUnitTest {
     callbackVal.assertDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1815,12 +1816,12 @@ public class TXJUnitTest {
     callbackVal.assertLocalDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1883,12 +1884,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1925,12 +1926,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -1971,12 +1972,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value2", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getPutEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getPutEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2010,12 +2011,12 @@ public class TXJUnitTest {
     callbackVal.assertDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2049,12 +2050,12 @@ public class TXJUnitTest {
     callbackVal.assertLocalDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2120,12 +2121,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2164,12 +2165,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2211,12 +2212,12 @@ public class TXJUnitTest {
     callbackVal.assertInvalidateCnt(0);
     callbackVal.reAssert();
     assertEquals("value2", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getPutEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getPutEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2251,12 +2252,12 @@ public class TXJUnitTest {
     callbackVal.assertDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2290,12 +2291,12 @@ public class TXJUnitTest {
     callbackVal.assertLocalDestroyListenerCnt(1);
     callbackVal.reAssert();
     assertTrue(!reg1.containsKey("key1"));
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getDestroyEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getDestroyEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2361,12 +2362,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2405,12 +2406,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value3", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2451,12 +2452,12 @@ public class TXJUnitTest {
       LocalRegion.NonTXEntry nonTXe = (LocalRegion.NonTXEntry) reg1.getEntry("key1");
       assertTrue(nonTXe.getRegionEntry().isInvalid());
     }
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getInvalidateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getInvalidateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2495,12 +2496,12 @@ public class TXJUnitTest {
       LocalRegion.NonTXEntry nonTXe = (LocalRegion.NonTXEntry) reg1.getEntry("key1");
       assertTrue(nonTXe.getRegionEntry().isInvalid());
     }
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
-    assertEquals(0, this.te.getCreateEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getInvalidateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getInvalidateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2536,12 +2537,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value1", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2577,12 +2578,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value1", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2618,12 +2619,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value1", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2659,12 +2660,12 @@ public class TXJUnitTest {
     callbackVal.assertUpdateListenerCnt(1);
     callbackVal.reAssert();
     assertEquals("value1", reg1.getEntry("key1").getValue());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(1, this.te.getEvents().size());
     {
-      List<EntryEvent<?, ?>> events = this.te.getCreateEvents();
+      List<EntryEvent<?, ?>> events = TxEventTestUtil.getCreateEvents(this.te.getEvents());
       assertEquals(myTxId, this.te.getTransactionId());
       assertEquals(1, events.size());
 
@@ -2858,10 +2859,10 @@ public class TXJUnitTest {
     assertEquals(0, this.listenerAfterRollback);
     this.txMgr.rollback();
     assertEquals(1, this.listenerAfterRollback);
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(0, this.te.getEvents().size());
     assertEquals(myTxId, this.te.getTransactionId());
 
@@ -2874,10 +2875,10 @@ public class TXJUnitTest {
       fail("did not expect " + unexpected);
     }
     assertEquals(1, this.listenerAfterCommit);
-    assertEquals(0, this.te.getCreateEvents().size());
-    assertEquals(0, this.te.getPutEvents().size());
-    assertEquals(0, this.te.getInvalidateEvents().size());
-    assertEquals(0, this.te.getDestroyEvents().size());
+    assertEquals(0, TxEventTestUtil.getCreateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getInvalidateEvents(this.te.getEvents()).size());
+    assertEquals(0, TxEventTestUtil.getDestroyEvents(this.te.getEvents()).size());
     assertEquals(0, this.te.getEvents().size());
     assertEquals(myTxId, this.te.getTransactionId());
 
@@ -2927,7 +2928,7 @@ public class TXJUnitTest {
   public void testNoCallbacksOnRollback() throws CacheException {
     // install listeners
     AttributesMutator<String, String> mutator = this.region.getAttributesMutator();
-    mutator.setCacheListener(new CacheListenerAdapter<String, String>() {
+    mutator.addCacheListener(new CacheListenerAdapter<String, String>() {
       @Override
       public void close() {
         cbCount++;
@@ -3395,7 +3396,7 @@ public class TXJUnitTest {
     };
 
     vCl.setValidator(cbv);
-    mutator.setCacheListener(vCl);
+    mutator.addCacheListener(vCl);
 
     // CacheWriter
     ValidatableCacheWriter vCw = new ValidatableCacheWriter() {

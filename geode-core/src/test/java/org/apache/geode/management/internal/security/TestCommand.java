@@ -119,7 +119,7 @@ public class TestCommand {
   }
 
   private static void init() {
-    // ClientCommands
+    // ListClientCommand, DescribeClientCommand
     createTestCommand("list clients", clusterRead);
     createTestCommand("describe client --clientID=172.16.196.144", clusterRead);
 
@@ -204,7 +204,7 @@ public class TestCommand {
     createTestCommand("destroy index --region=RegionA --member=server2", clusterManageQuery);
     createTestCommand("list indexes", clusterReadQuery);
 
-    // LauncherLifecycleCommands
+    // GfshCommand, StartLocatorCommand, StartServerCommand
     createTestCommand("start jconsole");
     createTestCommand("start jvisualvm");
     createTestCommand("start locator --name=locator1");

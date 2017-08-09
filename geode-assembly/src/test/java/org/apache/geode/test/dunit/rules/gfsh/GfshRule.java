@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules.gfsh;
 
+import static org.apache.commons.lang.SystemUtils.PATH_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -22,13 +23,17 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.internal.cli.commands.StatusLocatorRealGfshTest;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 
 /**
@@ -38,26 +43,31 @@ import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
  * {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
  */
 public class GfshRule extends ExternalResource {
+  public TemporaryFolder getTemporaryFolder() {
+    return temporaryFolder;
+  }
+
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private List<Process> processes = new ArrayList<>();
+  private List<GfshExecution> gfshExecutions;
   private Path gfsh;
 
-  public Process execute(String... commands) {
+  public GfshExecution execute(String... commands) {
     return execute(GfshScript.of(commands));
   }
 
-  public Process execute(GfshScript gfshScript) {
-    Process process;
+  public GfshExecution execute(GfshScript gfshScript) {
+    GfshExecution gfshExecution;
     try {
-      process = gfshScript.toProcessBuilder(gfsh, temporaryFolder.getRoot()).start();
+      File workingDir = temporaryFolder.newFolder(gfshScript.getName());
+      Process process = toProcessBuilder(gfshScript, gfsh, workingDir).start();
+      gfshExecution = new GfshExecution(process, workingDir);
+      gfshExecutions.add(gfshExecution);
+      gfshScript.awaitIfNecessary(process);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
-    processes.add(process);
-    gfshScript.awaitIfNecessary(process);
-
-    return process;
+    return gfshExecution;
   }
 
   @Override
@@ -65,6 +75,7 @@ public class GfshRule extends ExternalResource {
     gfsh = new RequiresGeodeHome().getGeodeHome().toPath().resolve("bin/gfsh");
     assertThat(gfsh).exists();
 
+    gfshExecutions = new ArrayList<>();
     temporaryFolder.create();
   }
 
@@ -74,21 +85,49 @@ public class GfshRule extends ExternalResource {
    */
   @Override
   protected void after() {
-    stopMembersQuietly();
-    processes.forEach(Process::destroyForcibly);
-    processes.forEach((Process process) -> {
-      try {
-        // Process.destroyForcibly() may not terminate immediately
-        process.waitFor(1, TimeUnit.MINUTES);
-      } catch (InterruptedException ignore) {
-        // We ignore this exception so that we still attempt the rest of the cleanup.
-      }
-    });
+    gfshExecutions.stream().map(GfshExecution::getWorkingDir).collect(Collectors.toList())
+        .forEach(this::stopMembersQuietly);
+
+    gfshExecutions.stream().map(GfshExecution::getProcess).map(Process::destroyForcibly)
+        .forEach((Process process) -> {
+          try {
+            // Process.destroyForcibly() may not terminate immediately
+            process.waitFor(1, TimeUnit.MINUTES);
+          } catch (InterruptedException ignore) {
+            // We ignore this exception so that we still attempt the rest of the cleanup.
+          }
+        });
+
     temporaryFolder.delete();
   }
 
-  private void stopMembersQuietly() {
-    File[] directories = temporaryFolder.getRoot().listFiles(File::isDirectory);
+  protected ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir) {
+    List<String> commandsToExecute = new ArrayList<>();
+    commandsToExecute.add(gfshPath.toAbsolutePath().toString());
+
+    for (String command : gfshScript.getCommands()) {
+      commandsToExecute.add("-e " + command);
+    }
+
+    ProcessBuilder processBuilder = new ProcessBuilder(commandsToExecute);
+    processBuilder.directory(workingDir);
+
+    List<String> extendedClasspath = gfshScript.getExtendedClasspath();
+    if (!extendedClasspath.isEmpty()) {
+      Map<String, String> environmentMap = processBuilder.environment();
+      String classpathKey = "CLASSPATH";
+      String existingJavaArgs = environmentMap.get(classpathKey);
+      String specified = String.join(PATH_SEPARATOR, extendedClasspath);
+      String newValue =
+          String.format("%s%s", existingJavaArgs == null ? "" : existingJavaArgs + ":", specified);
+      environmentMap.put(classpathKey, newValue);
+    }
+
+    return processBuilder;
+  }
+
+  private void stopMembersQuietly(File parentDirectory) {
+    File[] potentialMemberDirectories = parentDirectory.listFiles(File::isDirectory);
 
     Predicate<File> isServerDir = (File directory) -> Arrays.stream(directory.list())
         .anyMatch(filename -> filename.endsWith("server.pid"));
@@ -96,21 +135,26 @@ public class GfshRule extends ExternalResource {
     Predicate<File> isLocatorDir = (File directory) -> Arrays.stream(directory.list())
         .anyMatch(filename -> filename.endsWith("locator.pid"));
 
-    Arrays.stream(directories).filter(isServerDir).forEach(this::stopServerInDir);
-    Arrays.stream(directories).filter(isLocatorDir).forEach(this::stopLocatorInDir);
+    Arrays.stream(potentialMemberDirectories).filter(isServerDir).forEach(this::stopServerInDir);
+    Arrays.stream(potentialMemberDirectories).filter(isLocatorDir).forEach(this::stopLocatorInDir);
   }
 
   private void stopServerInDir(File dir) {
-    GfshScript stopServerScript = new GfshScript("stop server --dir=" + dir.getAbsolutePath())
-        .awaitQuietlyAtMost(1, TimeUnit.MINUTES);
+    String stopServerCommand =
+        new CommandStringBuilder("stop server").addOption("dir", dir).toString();
 
+    GfshScript stopServerScript =
+        new GfshScript(stopServerCommand).withName("stop-server-teardown").awaitQuietly();
     execute(stopServerScript);
   }
 
   private void stopLocatorInDir(File dir) {
-    GfshScript stopServerScript = new GfshScript("stop locator --dir=" + dir.getAbsolutePath())
-        .awaitQuietlyAtMost(1, TimeUnit.MINUTES);
+    String stopLocatorCommand =
+        new CommandStringBuilder("stop locator").addOption("dir", dir).toString();
 
+    GfshScript stopServerScript =
+        new GfshScript(stopLocatorCommand).withName("stop-locator-teardown").awaitQuietly();
     execute(stopServerScript);
   }
+
 }

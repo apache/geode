@@ -19,6 +19,14 @@ import static org.apache.geode.cache.DataPolicy.PARTITION;
 import static org.apache.geode.cache.DataPolicy.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -26,12 +34,6 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
 
 @Category(DistributedTest.class)
 public class ImportClusterConfigDistributedTest {
@@ -40,6 +42,9 @@ public class ImportClusterConfigDistributedTest {
 
   private File exportedClusterConfig;
   private MemberVM locator, server;
+
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -60,9 +65,8 @@ public class ImportClusterConfigDistributedTest {
 
     server.invoke(ImportClusterConfigDistributedTest::validateServerIsUsingClusterConfig);
 
-    this.exportedClusterConfig =
-        new File(lsRule.getTempFolder().getRoot(), EXPORTED_CLUSTER_CONFIG_ZIP_NAME);
-
+    // do not create the file yet
+    this.exportedClusterConfig = new File(tempFolder.getRoot(), EXPORTED_CLUSTER_CONFIG_ZIP_NAME);
 
     gfsh.executeAndVerifyCommand(
         "export cluster-configuration --zip-file-name=" + exportedClusterConfig.getCanonicalPath());

@@ -15,16 +15,17 @@
 
 package org.apache.geode.internal.net;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 public class SSLConfigurationFactory {
 
@@ -161,6 +162,7 @@ public class SSLConfigurationFactory {
     sslConfig.setKeystoreType(getDistributionConfig().getSSLKeyStoreType());
     sslConfig.setTruststore(getDistributionConfig().getSSLTrustStore());
     sslConfig.setTruststorePassword(getDistributionConfig().getSSLTrustStorePassword());
+    sslConfig.setTruststoreType(getDistributionConfig().getSSLTrustStoreType());
     sslConfig.setProtocols(getDistributionConfig().getSSLProtocols());
     sslConfig.setRequireAuth(getDistributionConfig().getSSLRequireAuthentication());
     sslConfig.setAlias(getDistributionConfig().getSSLDefaultAlias());
@@ -195,6 +197,7 @@ public class SSLConfigurationFactory {
     sslConfig.setKeystoreType(getDistributionConfig().getClusterSSLKeyStoreType());
     sslConfig.setTruststore(getDistributionConfig().getClusterSSLTrustStore());
     sslConfig.setTruststorePassword(getDistributionConfig().getClusterSSLTrustStorePassword());
+    sslConfig.setTruststoreType(getDistributionConfig().getClusterSSLKeyStoreType());
     sslConfig.setProtocols(getDistributionConfig().getClusterSSLProtocols());
     sslConfig.setRequireAuth(getDistributionConfig().getClusterSSLRequireAuthentication());
     return sslConfig;
@@ -214,6 +217,7 @@ public class SSLConfigurationFactory {
     sslConfig.setKeystoreType(getDistributionConfig().getServerSSLKeyStoreType());
     sslConfig.setTruststore(getDistributionConfig().getServerSSLTrustStore());
     sslConfig.setTruststorePassword(getDistributionConfig().getServerSSLTrustStorePassword());
+    sslConfig.setTruststoreType(getDistributionConfig().getServerSSLKeyStoreType());
     sslConfig.setProtocols(getDistributionConfig().getServerSSLProtocols());
     sslConfig.setRequireAuth(getDistributionConfig().getServerSSLRequireAuthentication());
     return sslConfig;
@@ -233,6 +237,7 @@ public class SSLConfigurationFactory {
     sslConfig.setKeystoreType(getDistributionConfig().getJmxManagerSSLKeyStoreType());
     sslConfig.setTruststore(getDistributionConfig().getJmxManagerSSLTrustStore());
     sslConfig.setTruststorePassword(getDistributionConfig().getJmxManagerSSLTrustStorePassword());
+    sslConfig.setTruststoreType(getDistributionConfig().getJmxManagerSSLKeyStoreType());
     sslConfig.setProtocols(getDistributionConfig().getJmxManagerSSLProtocols());
     sslConfig.setRequireAuth(getDistributionConfig().getJmxManagerSSLRequireAuthentication());
     return sslConfig;
@@ -271,6 +276,7 @@ public class SSLConfigurationFactory {
     sslConfig.setKeystoreType(getDistributionConfig().getHttpServiceSSLKeyStoreType());
     sslConfig.setTruststore(getDistributionConfig().getHttpServiceSSLTrustStore());
     sslConfig.setTruststorePassword(getDistributionConfig().getHttpServiceSSLTrustStorePassword());
+    sslConfig.setTruststoreType(getDistributionConfig().getHttpServiceSSLKeyStoreType());
     sslConfig.setProtocols(getDistributionConfig().getHttpServiceSSLProtocols());
     sslConfig.setRequireAuth(getDistributionConfig().getHttpServiceSSLRequireAuthentication());
     return sslConfig;

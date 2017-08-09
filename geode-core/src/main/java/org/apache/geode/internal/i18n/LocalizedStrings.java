@@ -1112,7 +1112,7 @@ public class LocalizedStrings {
       new StringId(1690, "Running in local mode since no locators were specified.");
   public static final StringId InternalDistributedSystem_SHUTDOWNLISTENER__0__THREW =
       new StringId(1691, "ShutdownListener < {0} > threw...");
-  public static final StringId InternalDistributedSystem_STARTUP_CONFIGURATIONN_0 =
+  public static final StringId InternalDistributedSystem_STARTUP_CONFIGURATION_0 =
       new StringId(1692, "Startup Configuration:\n {0}");
 
   public static final StringId InternalInstantiator_CLASS_0_DOES_NOT_HAVE_A_TWOARGUMENT_CLASS_INT_CONSTRUCTOR =

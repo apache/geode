@@ -136,7 +136,7 @@ When using region compression, you can use the default Snappy compressor include
 The compression API consists of a single interface that compression providers must implement. The default compressor (SnappyCompressor) is the single compression implementation that comes bundled with the product. Note that since the Compressor is stateless, there only needs to be a single instance in any JVM; however, multiple instances may be used without issue. The single, default instance of the SnappyCompressor may be retrieved with the `SnappyCompressor.getDefaultInstance()` static method.
 
 **Note:**
-The Snappy codec included with Geode cannot be used with Solaris deployments. Snappy is only supported on Linux, Windows, and OSX deployments of Geode.
+The Snappy codec included with Geode cannot be used with Solaris deployments. Snappy is only supported on Linux, Windows, and macOS deployments of Geode.
 
 This example provides a custom Compressor implementation:
 

@@ -30,6 +30,7 @@ import org.apache.geode.codeAnalysis.decode.cp.CpClass;
 import org.apache.geode.codeAnalysis.decode.cp.CpDouble;
 import org.apache.geode.codeAnalysis.decode.cp.CpLong;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.PureLogWriter;
 
 
@@ -222,15 +223,15 @@ public class CompiledClass implements Comparable {
       classFile = new File(argv[0]);
     } catch (NullPointerException e) {
       System.err.println("You must give the name of a class file on the command line");
-      exit(3);
+      System.exit(3);
     }
     if (classFile == null) {
       System.err.println("Unable to access " + argv[0]);
-      exit(3);
+      System.exit(3);
     }
     if (!classFile.canRead()) {
       System.err.println("Unable to read " + argv[0]);
-      exit(3);
+      System.exit(3);
     }
     try {
       instance = getInstance(classFile);
@@ -253,23 +254,9 @@ public class CompiledClass implements Comparable {
       }
     } catch (Throwable e) {
       System.err.println("Error reading file: " + e.getMessage());
-      exit(3);
+      System.exit(3);
     }
-    exit(0);
-  }
-
-  private static void exit(int exitCode) {
-    int b;
-    // if (false) {
-    // if (exitCode == 0)
-    // System.out.println("Done - press Enter to exit: ");
-    // else
-    // System.out.println("Press Enter to exit:");
-    // try {
-    // b = System.in.read();
-    // } catch (java.io.IOException e) {};
-    // }
-    System.exit(exitCode);
+    ExitCode.NORMAL.doSystemExit();
   }
 
 }

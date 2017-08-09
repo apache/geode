@@ -55,6 +55,7 @@ import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
@@ -111,6 +112,7 @@ public class PoolImpl implements InternalPool {
   private final int subscriptionMessageTrackingTimeout;
   private final int subscriptionAckInterval;
   private final String serverGroup;
+  private final List<HostAddress> locatorAddresses;
   private final List<InetSocketAddress> locators;
   private final List<InetSocketAddress> servers;
   private final boolean startDisabled;
@@ -151,8 +153,9 @@ public class PoolImpl implements InternalPool {
   public static final int PRIMARY_QUEUE_TIMED_OUT = -1;
   private AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
-  public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes) {
-    PoolImpl pool = new PoolImpl(pm, name, attributes);
+  public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
+      List<HostAddress> locatorAddresses) {
+    PoolImpl pool = new PoolImpl(pm, name, attributes, locatorAddresses);
     pool.finishCreate(pm);
     return pool;
   }
@@ -178,7 +181,8 @@ public class PoolImpl implements InternalPool {
     }
   }
 
-  protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes) {
+  protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
+      List<HostAddress> locAddresses) {
     this.pm = pm;
     this.name = name;
     this.socketConnectTimeout = attributes.getSocketConnectTimeout();
@@ -200,6 +204,7 @@ public class PoolImpl implements InternalPool {
     this.subscriptionAckInterval = attributes.getSubscriptionAckInterval();
     this.serverGroup = attributes.getServerGroup();
     this.multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
+    this.locatorAddresses = locAddresses;
     this.locators = attributes.getLocators();
     this.servers = attributes.getServers();
     this.startDisabled =
@@ -643,8 +648,8 @@ public class PoolImpl implements InternalPool {
     if (locators.isEmpty()) {
       return new ExplicitConnectionSourceImpl(getServers());
     } else {
-      AutoConnectionSourceImpl source =
-          new AutoConnectionSourceImpl(locators, getServerGroup(), socketConnectTimeout);
+      AutoConnectionSourceImpl source = new AutoConnectionSourceImpl(locators, locatorAddresses,
+          getServerGroup(), socketConnectTimeout);
       if (locatorDiscoveryCallback != null) {
         source.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
       }

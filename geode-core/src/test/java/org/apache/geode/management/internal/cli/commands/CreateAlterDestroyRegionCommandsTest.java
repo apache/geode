@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -39,12 +40,14 @@ public class CreateAlterDestroyRegionCommandsTest {
   public void testCreateRegionWithInvalidPartitionResolver() throws Exception {
     InternalCache cache = mock(InternalCache.class);
     DistributedSystemMXBean dsMBean = mock(DistributedSystemMXBean.class);
-    CreateAlterDestroyRegionCommands spy =
-        parser.spyCommand("create region --name=region3 --type=PARTITION --partition-resolver=Foo");
+    CreateAlterDestroyRegionCommands spy = Mockito.spy(CreateAlterDestroyRegionCommands.class);
+
     doReturn(cache).when(spy).getCache();
     doReturn(dsMBean).when(spy).getDSMBean(cache);
 
-    assertThatThrownBy(() -> parser.executeLastCommandWithInstance(spy))
+    String command = "create region --name=region3 --type=PARTITION --partition-resolver=Foo";
+
+    assertThatThrownBy(() -> parser.executeCommandWithInstance(spy, command))
         .hasMessageContaining("Foo is an invalid Partition Resolver");
   }
 }

@@ -24,7 +24,7 @@ message PutRequest {
 }
 
 message PutResponse {
-    bool success = 1;
+    // message presence indicates success.
 }
 
 message GetRequest {
@@ -33,9 +33,7 @@ message GetRequest {
 }
 
 message GetResponse {
-    bool success = 1;
-    bool keyExists = 2;
-    EncodedValue result = 3;
+    EncodedValue result = 1;
 }
 
 message PutAllRequest {
@@ -44,7 +42,7 @@ message PutAllRequest {
 }
 
 message PutAllResponse {
-    repeated EncodedValue failedKeys = 1;
+    repeated KeyedErrorResponse failedKeys = 1;
 }
 
 message GetAllRequest {
@@ -57,21 +55,12 @@ message GetAllResponse {
     repeated Entry entries = 1;
 }
 
-message ListKeysRequest {
-    string regionName = 1;
-}
-
-message ListKeysResponse {
-    repeated EncodedValue key = 1;
-}
-
 message RemoveRequest {
     string regionName = 1;
     EncodedValue key = 2;
 }
 
 message RemoveResponse {
-    bool success = 1;
 }
 
 message RemoveAllRequest {
@@ -99,10 +88,18 @@ message DestroyRegionResponse {
     bool success = 1;
 }
 
-message GetRegionsRequest {
+message GetRegionNamesRequest {
 
 }
 
-message GetRegionsResponse {
-    repeated Region regions = 1;
+message GetRegionNamesResponse {
+    repeated string regions = 1;
+}
+
+message GetRegionRequest {
+    string regionName = 1;
+}
+
+message GetRegionResponse {
+    Region region = 1;
 }

@@ -60,6 +60,16 @@ public class VM implements Serializable {
   }
 
   /**
+   * restart an unavailable VM
+   */
+  public synchronized void makeAvailable() {
+    if (!this.available) {
+      this.available = true;
+      bounce();
+    }
+  }
+
+  /**
    * Returns the total number of {@code VM}s on all {@code Host}s (note that DUnit currently only
    * supports one {@code Host}).
    */

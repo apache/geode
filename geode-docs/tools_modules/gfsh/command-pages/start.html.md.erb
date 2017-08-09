@@ -421,28 +421,6 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 start locator --name=locator1
 ```
 
-**Sample Output:**
-
-``` pre
-gfsh>start locator --name=locator3
-Starting a GemFire Locator in /home/user/locator3...
-................................
-Locator in /home/user/locator3 on ubuntu.local[10334] as locator3 is currently online.
-Process ID: 1898
-Uptime: 19 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/locator3/locator3.log
-JVM Arguments: -Dgemfire.default.locators=192.0.2.3[40402]
--Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
--Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
--Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48258_Linux/lib/locator-dependencies.jar:
-/usr/local/java/lib/tools.jar
-
-Cluster configuration service is up and running.
-```
-
 ## <a id="topic_E906BA7D9E7F4C5890FEFA7ECD40DD77" class="no-quick-link"></a>start pulse
 
 Launch the Geode Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
@@ -789,22 +767,4 @@ the cluster.
 ``` pre
 gfsh>start server --name=server1
 gfsh>start server --name=server2 --server-port=40405
-```
-
-**Sample Output:**
-
-``` pre
-gfsh>start server --name=server1 --server-port=40406
-Starting a GemFire Server in /home/user/server1...
-....................................................
-Server in /home/user/server1 on ubuntu.local[40406] as server1 is currently online.
-Process ID: 32209
-Uptime: 47 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/server1/server1.log
-JVM Arguments: -Dgemfire.default.locators=192.0.2.4[40402] -Dgemfire.use-cluster-configuration=true
--XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
--Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48258_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
 ```

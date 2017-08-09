@@ -31,7 +31,7 @@ public abstract class AbstractMockExtensionXmlGenerator<T> implements XmlGenerat
   }
 
   @Override
-  public String getNamspaceUri() {
+  public String getNamespaceUri() {
     return MockExtensionXmlParser.NAMESPACE;
   }
 

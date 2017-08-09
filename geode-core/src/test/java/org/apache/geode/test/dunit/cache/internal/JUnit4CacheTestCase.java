@@ -290,7 +290,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    *
    * @since GemFire 6.5
    */
-  public final InternalClientCache getClientCache(final ClientCacheFactory factory) {
+  public final ClientCache getClientCache(final ClientCacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
@@ -315,7 +315,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       if (cache != null) {
         IgnoredException.addIgnoredException("java.net.ConnectException");
       }
-      return (InternalClientCache) cache;
+      return (ClientCache) cache;
     }
   }
 

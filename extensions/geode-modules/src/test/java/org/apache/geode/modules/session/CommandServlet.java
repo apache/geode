@@ -71,6 +71,7 @@ public class CommandServlet extends HttpServlet {
           out.write(val);
         }
         break;
+
       case INVALIDATE:
         session = request.getSession();
         session.invalidate();

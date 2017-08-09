@@ -28,9 +28,23 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class BackupLock extends ReentrantLock {
 
-  private Thread backupThread;
+  private final ThreadLocal<Boolean> isBackupThread = new ThreadLocal<Boolean>();
   boolean isBackingUp;
   Condition backupDone = super.newCondition();
+
+  // test hook
+  private BackupLockTestHook hook = null;
+
+  public interface BackupLockTestHook {
+    /**
+     * Test hook called before the wait for backup to complete
+     */
+    public void beforeWaitForBackupCompletion();
+  }
+
+  public void setBackupLockTestHook(BackupLockTestHook testHook) {
+    hook = testHook;
+  }
 
   public void lockForBackup() {
     super.lock();
@@ -38,44 +52,48 @@ public class BackupLock extends ReentrantLock {
     super.unlock();
   }
 
-  public void setBackupThread(Thread thread) {
-    super.lock();
-    backupThread = thread;
-    super.unlock();
+  public void setBackupThread() {
+    isBackupThread.set(true);
   }
 
   public void unlockForBackup() {
     super.lock();
     isBackingUp = false;
-    backupThread = null;
+    isBackupThread.set(false);
     backupDone.signalAll();
     super.unlock();
   }
 
-  /**
-   * Acquire this lock, waiting for an in progress backup if one is in progress.
-   */
+  public boolean isCurrentThreadDoingBackup() {
+    Boolean result = isBackupThread.get();
+    return (result != null) && result;
+  }
+
   @Override
-  public void lock() {
-    lock(true);
+  public void unlock() {
+    // The backup thread does not need to unlock this lock since it never gets the lock. It is the
+    // only thread that has permission to modify disk files during backup.
+    if (!isCurrentThreadDoingBackup()) {
+      super.unlock();
+    }
   }
 
   /**
-   * Acquire this lock, Optionally waiting for a backup to finish the first phase. Any operations
-   * that update metadata related to the distributed system state should pass true for this flag,
-   * because we need to make sure we get a point in time snapshot of the init files across members
-   * to for metadata consistentency.
+   * Acquire this lock, waiting for a backup to finish the first phase.
    * 
-   * Updates which update only record changes to the local state on this member(eg, switching
-   * oplogs), do not need to wait for the backup.
-   * 
-   * @param waitForBackup if true, we will wait for an in progress backup before acquiring this
-   *        lock.
    */
-  public void lock(boolean waitForBackup) {
-    super.lock();
-    while (isBackingUp && waitForBackup && !(Thread.currentThread() == backupThread)) {
-      backupDone.awaitUninterruptibly();
+  @Override
+  public void lock() {
+    // The backup thread is a noop; it does not need to get the lock since it is the only thread
+    // with permission to modify disk files during backup
+    if (!isCurrentThreadDoingBackup()) {
+      super.lock();
+      while (isBackingUp) {
+        if (hook != null) {
+          hook.beforeWaitForBackupCompletion();
+        }
+        backupDone.awaitUninterruptibly();
+      }
     }
   }
 }

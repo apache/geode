@@ -14,7 +14,10 @@
  */
 package org.apache.geode.pdx;
 
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.io.FileUtils;
@@ -26,12 +29,15 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.PdxInitializationException;
 import org.apache.geode.pdx.SimpleClass.SimpleEnum;
 import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -48,6 +54,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,6 +64,8 @@ import java.util.Map;
 public class PdxAttributesJUnitTest {
 
   private File diskDir;
+
+  private Cache cache;
 
   @Before
   public void setUp() {
@@ -82,15 +91,15 @@ public class PdxAttributesJUnitTest {
     for (File file : defaultStoreFiles) {
       FileUtils.forceDelete(file);
     }
+    if (cache != null) {
+      cache.close();
+    }
   }
 
   @Test
   public void testPdxPersistent() throws Exception {
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      Cache cache = cf.create();
-
+      initCache(false, false, null);
       // define a type
       defineAType();
       Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
@@ -101,28 +110,18 @@ public class PdxAttributesJUnitTest {
     setUp();
 
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      cf.setPdxPersistent(true);
-      Cache cache = cf.create();
-
+      initCache(false, true, null);
       // define a type
       defineAType();
       Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
       assertEquals(DataPolicy.PERSISTENT_REPLICATE, pdxRegion.getAttributes().getDataPolicy());
-      cache.close();
     }
   }
 
   @Test
   public void testPdxTypeId() throws Exception {
-
     int dsId = 5;
-    CacheFactory cf = new CacheFactory();
-    cf.set(MCAST_PORT, "0");
-    cf.set(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, String.valueOf(dsId));
-    Cache cache = cf.create();
-
+    initCache(false, false, String.valueOf(dsId));
     // define a type.
     defineAType();
 
@@ -166,13 +165,8 @@ public class PdxAttributesJUnitTest {
 
   @Test
   public void testDuplicatePdxTypeId() throws Exception {
-
     int dsId = 5;
-    CacheFactory cf = new CacheFactory();
-    cf.set(MCAST_PORT, "0");
-    cf.set(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, String.valueOf(dsId));
-    Cache cache = cf.create();
-
+    initCache(false, false, String.valueOf(dsId));
     // define a type.
     defineAType();
 
@@ -213,11 +207,7 @@ public class PdxAttributesJUnitTest {
   public void testPdxTypeIdWithNegativeDsId() throws Exception {
     // in this case geode will use 0 as dsId
     int dsId = -1;
-    CacheFactory cf = new CacheFactory();
-    cf.set(MCAST_PORT, "0");
-    cf.set(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, String.valueOf(dsId));
-    Cache cache = cf.create();
-
+    initCache(false, false, String.valueOf(dsId));
     // define a type.
     defineAType();
 
@@ -260,13 +250,7 @@ public class PdxAttributesJUnitTest {
   @Test
   public void testPdxDiskStore() throws Exception {
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      cf.setPdxPersistent(true);
-      cf.setPdxDiskStore("diskstore1");
-      Cache cache = cf.create();
-      cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1)
-          .create("diskstore1");
+      initCache(true, true, null, "diskstore1");
 
       // define a type.
       defineAType();
@@ -279,11 +263,7 @@ public class PdxAttributesJUnitTest {
     setUp();
 
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      cf.setPdxPersistent(true);
-      Cache cache = cf.create();
-
+      initCache(false, true, null);
       // define a type
       defineAType();
       Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
@@ -295,11 +275,7 @@ public class PdxAttributesJUnitTest {
   @Test
   public void testNonPersistentRegistryWithOverflowRegion() throws Exception {
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      Cache cache = cf.create();
-      cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1)
-          .create("diskstore1");
+      initCache(true, false, null, "diskstore1");
       cache.createRegionFactory(RegionShortcut.LOCAL_OVERFLOW).setDiskStoreName("diskstore1")
           .create("region");
       defineAType();
@@ -308,9 +284,7 @@ public class PdxAttributesJUnitTest {
     setUp();
 
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      Cache cache = cf.create();
+      initCache(false, false, null);
       defineAType();
       cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1)
           .create("diskstore1");
@@ -322,39 +296,90 @@ public class PdxAttributesJUnitTest {
   @Test
   public void testNonPersistentRegistryWithPersistentRegion() throws Exception {
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      Cache cache = cf.create();
-      cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1)
-          .create("diskstore1");
-      cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("diskstore1")
-          .create("region");
+      initCache(true, false, null);
+      Region region = createRegion(true, false);
 
-      try {
-        defineATypeNoEnum();
-        throw new RuntimeException("Should have received an exception");
-      } catch (PdxInitializationException expected) {
+      catchException(this).defineATypeNoEnum();
+      assertThat((Exception) caughtException())
+          .isExactlyInstanceOf(PdxInitializationException.class);
 
-      }
+      // Drop partitioned region.
+      region.destroyRegion();
+      // The pdx type creation should work.
+      defineATypeNoEnum();
+    }
+    tearDown();
+    setUp();
+    {
+      initCache(true, false, null);
+      defineATypeNoEnum();
+      catchException(this).createRegion(true, false);
+      assertThat((Exception) caughtException())
+          .isExactlyInstanceOf(PdxInitializationException.class);
+    }
+  }
+
+  @Test
+  public void testNonPersistentRegistryWithPersistentPR() throws Exception {
+    {
+      initCache(true, false, null);
+      Region region = createRegion(true, true);
+      catchException(this).defineATypeNoEnum();
+      assertThat((Exception) caughtException())
+          .isExactlyInstanceOf(PdxInitializationException.class);
+
+      // Drop partitioned region.
+      region.destroyRegion();
+      // The pdx type creation should work.
+      defineATypeNoEnum();
     }
     tearDown();
     setUp();
 
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      Cache cache = cf.create();
+      initCache(true, false, null);
       defineATypeNoEnum();
-      cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1)
-          .create("diskstore1");
-      try {
-        cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("diskStore1")
-            .create("region");
-        throw new RuntimeException("Should have received an exception");
-      } catch (PdxInitializationException expected) {
+      catchException(this).createRegion(true, true);
+      assertThat((Exception) caughtException())
+          .isExactlyInstanceOf(PdxInitializationException.class);
+    }
+  }
 
-      }
+  @Test
+  public void testPersistentRegistryWithPersistentRegion() throws Exception {
+    {
+      initCache(true, true, null);
+      createRegion(true, false);
+      defineATypeNoEnum();
+    }
+    tearDown();
+    setUp();
 
+    {
+      initCache(true, true, null);
+      defineATypeNoEnum();
+      createRegion(true, false);
+    }
+  }
+
+  @Test
+  public void testNonPersistentRegistryWithAEQ() throws Exception {
+    {
+      initCache(true, false, null);
+      definePersistentAEQ(cache, "aeq", true);
+      catchException(this).defineATypeNoEnum();
+      assertThat((Exception) caughtException())
+          .isExactlyInstanceOf(PdxInitializationException.class);
+    }
+    tearDown();
+    setUp();
+
+    {
+      initCache(true, false, null);
+      defineATypeNoEnum();
+      catchException(this).definePersistentAEQ(cache, "aeq", true);
+      assertThat((Exception) caughtException())
+          .isExactlyInstanceOf(PdxInitializationException.class);
     }
   }
 
@@ -367,9 +392,7 @@ public class PdxAttributesJUnitTest {
   public void testLazyLoner() throws Exception {
     // Test that we can become a peer registry
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      Cache cache = cf.create();
+      initCache(false, false, null);
       // This should work, because this is a peer.
       defineAType();
     }
@@ -378,33 +401,77 @@ public class PdxAttributesJUnitTest {
 
     // Test that we can become a client registry.
     {
-      CacheFactory cf = new CacheFactory();
-      cf.set(MCAST_PORT, "0");
-      Cache cache = cf.create();
+      initCache(false, false, null);
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
       PoolManager.createFactory().addServer("localhost", port).create("pool");
 
-
-      try {
-        defineAType();
-        throw new RuntimeException(
-            "Should have failed, this is a client that can't connect to a server");
-      } catch (ToDataException expected) {
-        // do nothing.
-      }
+      catchException(this).defineAType();
+      assertThat((Exception) caughtException()).isExactlyInstanceOf(ToDataException.class);
     }
   }
 
-  private void defineAType() throws IOException {
+  public void defineAType() throws IOException {
     SimpleClass sc = new SimpleClass(1, (byte) 2);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(sc, out);
   }
 
-  private void defineATypeNoEnum() throws IOException {
+  public void defineATypeNoEnum() throws /* IO */ Exception {
     SimpleClass sc = new SimpleClass(1, (byte) 2, null);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(sc, out);
+  }
+
+  private void initCache(boolean createDiskStore, boolean pdxPersist, String dsId) {
+    initCache(createDiskStore, pdxPersist, dsId, null);
+  }
+
+  private void initCache(boolean createDiskStore, boolean pdxPersist, String dsId,
+      String pdxDiskstore) {
+    CacheFactory cf = new CacheFactory();
+    cf.set(MCAST_PORT, "0");
+    cf.setPdxPersistent(pdxPersist);
+    if (dsId != null) {
+      cf.set(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, dsId);
+    }
+    if (pdxDiskstore != null) {
+      cf.setPdxDiskStore(pdxDiskstore);
+    }
+    cache = cf.create();
+
+    if (createDiskStore) {
+      cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1)
+          .create("diskstore1");
+    }
+  }
+
+  public Region createRegion(boolean persistent, boolean pr) {
+    Region region;
+    RegionShortcut rs;
+
+    if (persistent) {
+      // cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1)
+      // .create("diskstore1");
+
+      rs = pr ? RegionShortcut.PARTITION_PERSISTENT : RegionShortcut.LOCAL_PERSISTENT;
+      region = cache.createRegionFactory(rs).setDiskStoreName("diskstore1").create("region");
+    } else {
+      rs = pr ? RegionShortcut.PARTITION : RegionShortcut.LOCAL;
+      region = cache.createRegionFactory(rs).create("region");
+    }
+    return region;
+  }
+
+  public void definePersistentAEQ(Cache cache, String id, boolean persistent) {
+    AsyncEventListener al = new AsyncEventListener() {
+      public void close() {}
+
+      public boolean processEvents(List<AsyncEvent> events) {
+        return true;
+      }
+    };
+
+    cache.createAsyncEventQueueFactory().setPersistent(persistent).create(id, al);
   }
 
 }

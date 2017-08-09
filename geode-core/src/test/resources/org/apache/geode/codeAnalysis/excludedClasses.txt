@@ -7,7 +7,9 @@ org/apache/geode/distributed/LocatorLauncher$Command
 org/apache/geode/distributed/ServerLauncher
 org/apache/geode/distributed/ServerLauncher$Command
 org/apache/geode/distributed/internal/DistributionManager
+org/apache/geode/internal/ExitCode
 org/apache/geode/internal/JarDeployer
+org/apache/geode/internal/cache/BackupLock
 org/apache/geode/internal/logging/GemFireLevel
 org/apache/geode/internal/logging/LoggingThreadGroup
 org/apache/geode/internal/logging/LogWriterImpl
@@ -156,3 +158,4 @@ org.apache.geode.internal.security.SecurableCommunicationChannel
 org/apache/geode/internal/security/shiro/GeodeAuthenticationToken
 org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
 org/apache/geode/internal/AvailablePort$Keeper
+org/apache/geode/internal/admin/remote/DistributionLocatorId

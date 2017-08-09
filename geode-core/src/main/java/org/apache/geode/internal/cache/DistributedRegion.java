@@ -90,6 +90,8 @@ import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
 import org.apache.geode.internal.cache.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
+import org.apache.geode.internal.cache.event.DistributedEventTracker;
+import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultWaiter;
@@ -98,7 +100,6 @@ import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.lru.LRUEntry;
-import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.persistence.CreatePersistentRegionProcessor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
@@ -255,9 +256,10 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   }
 
   @Override
-  public void createEventTracker() {
-    this.eventTracker = new EventTracker(this);
-    this.eventTracker.start();
+  protected EventTracker createEventTracker() {
+    EventTracker tracker = new DistributedEventTracker(cache, stopper, getName());
+    tracker.start();
+    return tracker;
   }
 
   /**
@@ -489,6 +491,38 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
               this.getName());
         }
         op.distribute();
+      }
+    }
+  }
+
+  @Override
+  public boolean hasSeenEvent(EntryEventImpl event) {
+    boolean isDuplicate = false;
+
+    isDuplicate = getEventTracker().hasSeenEvent(event);
+    if (isDuplicate) {
+      markEventAsDuplicate(event);
+    } else {
+      // bug #48205 - a retried PR operation may already have a version assigned to it
+      // in another VM
+      if (event.isPossibleDuplicate() && event.getRegion().concurrencyChecksEnabled
+          && event.getVersionTag() == null && event.getEventId() != null) {
+        boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
+        VersionTag tag =
+            FindVersionTagOperation.findVersionTag(event.getRegion(), event.getEventId(), isBulkOp);
+        event.setVersionTag(tag);
+      }
+    }
+    return isDuplicate;
+  }
+
+  private void markEventAsDuplicate(EntryEventImpl event) {
+    event.setPossibleDuplicate(true);
+    if (concurrencyChecksEnabled && event.getVersionTag() == null) {
+      if (event.isBulkOpInProgress()) {
+        event.setVersionTag(getEventTracker().findVersionTagForBulkOp(event.getEventId()));
+      } else {
+        event.setVersionTag(getEventTracker().findVersionTagForSequence(event.getEventId()));
       }
     }
   }
@@ -1038,9 +1072,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       // makes sure all latches are released if they haven't been already
       super.initialize(null, null, null);
     } finally {
-      if (this.eventTracker != null) {
-        this.eventTracker.setInitialized();
-      }
+      getEventTracker().setInitialized();
     }
   }
 
@@ -3618,8 +3650,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       final Object args, int prid, final Set filter, boolean isReExecute) throws IOException {
     final DM dm = getDistributionManager();
     ResultSender resultSender = new DistributedRegionFunctionResultSender(dm, msg, function);
-    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(function.getId(), this,
-        args, filter, null, null, resultSender, isReExecute);
+    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
+        this, args, filter, null, null, resultSender, isReExecute);
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), dm.getSystem());
     try {
       long start = stats.startTime();
@@ -3656,7 +3688,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     final DM dm = getDistributionManager();
     final DistributedRegionFunctionResultSender resultSender =
         new DistributedRegionFunctionResultSender(dm, localRC, function, sender);
-    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(function.getId(),
+    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
         DistributedRegion.this, args, filter, null, null, resultSender, execution.isReExecute());
     execution.executeFunctionOnLocalNode(function, context, resultSender, dm, isTX());
     return localRC;

@@ -15,25 +15,25 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.File;
+import java.io.Serializable;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.Properties;
+import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
  * Unit tests for the DeployCommands class
@@ -67,6 +67,9 @@ public class DeployCommandsDUnitTest implements Serializable {
   private MemberVM server2;
 
   @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
@@ -74,11 +77,8 @@ public class DeployCommandsDUnitTest implements Serializable {
 
   @Before
   public void setup() throws Exception {
-    getHost(0).getVM(1).bounce();
-    getHost(0).getVM(2).bounce();
-
     ClassBuilder classBuilder = new ClassBuilder();
-    File jarsDir = lsRule.getTempFolder().newFolder();
+    File jarsDir = temporaryFolder.newFolder();
     jar1 = new File(jarsDir, jarName1);
     jar2 = new File(jarsDir, jarName2);
 
@@ -107,8 +107,7 @@ public class DeployCommandsDUnitTest implements Serializable {
   @Test
   public void deployJarToOneGroup() throws Exception {
     // Deploy a jar to a single group
-    CommandResult cmdResult =
-        gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar2 + " --group=" + GROUP1);
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar2 + " --group=" + GROUP1);
     String resultString = gfshConnector.getGfshOutput();
 
     assertThat(resultString).contains(server1.getName());

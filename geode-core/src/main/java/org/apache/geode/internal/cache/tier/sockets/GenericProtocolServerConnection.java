@@ -26,27 +26,15 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 /**
- * Holds the socket and protocol handler for the new client protocol. TODO: Currently unimplemented
- * due the the protocol not being there.
+ * Holds the socket and protocol handler for the new client protocol.
  */
 public class GenericProtocolServerConnection extends ServerConnection {
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
-  // TODO implement this.
   private final ClientProtocolMessageHandler messageHandler;
 
   /**
    * Creates a new <code>GenericProtocolServerConnection</code> that processes messages received
    * from an edge client over a given <code>Socket</code>.
-   *
-   * @param s
-   * @param c
-   * @param helper
-   * @param stats
-   * @param hsTimeout
-   * @param socketBufferSize
-   * @param communicationModeStr
-   * @param communicationMode
-   * @param acceptor
    */
   public GenericProtocolServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
@@ -64,12 +52,11 @@ public class GenericProtocolServerConnection extends ServerConnection {
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
 
-      // TODO serialization types?
       messageHandler.receiveMessage(inputStream, outputStream, this.getCache());
     } catch (IOException e) {
-      // TODO?
+      logger.warn(e);
+      this.setFlagProcessMessagesAsFalse(); // TODO: better shutdown.
     }
-    return;
   }
 
   @Override

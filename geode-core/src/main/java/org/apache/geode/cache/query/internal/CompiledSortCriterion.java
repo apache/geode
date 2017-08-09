@@ -56,7 +56,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
    * evaluates sort criteria in order by clause
    */
   public Object evaluate(Object data, ExecutionContext context) {
-    Object value = null;
+    Object value;
     if (this.columnIndex > 0) {
       value = ((Object[]) data)[this.columnIndex];
     } else if (this.columnIndex == 0) {
@@ -113,7 +113,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
   }
 
   private CompiledValue getReconstructedExpression(String projAttribStr, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     List<CompiledValue> expressions = PathUtils.collectCompiledValuesInThePath(expr, context);
     StringBuilder tempBuff = new StringBuilder();
     ListIterator<CompiledValue> listIter = expressions.listIterator(expressions.size());
@@ -180,7 +180,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
   }
 
   boolean mapExpressionToProjectionField(List projAttrs, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     boolean mappedColumn = false;
     this.originalCorrectedExpression = expr;
     if (projAttrs != null) {

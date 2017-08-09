@@ -207,13 +207,12 @@ The status will be one of the following:
 -   offline
 -   not responding
 
-**Availability:** Online or offline. If you want to obtain the status of a locator while you are offline, use the `--dir` or the `--pid` parameter.
+**Availability:** Online or offline. If you want to obtain the status of a locator while you are offline, use the `--dir` option.
 
 **Syntax:**
 
 ``` pre
-status locator [--name=value] [--host=value] [--port=value]
-[--pid=value] [--dir=value]
+status locator [--name=value] [--host=value] [--port=value] [--dir=value]
 ```
 
 <a id="topic_E96D0EFA513C4CD79B833FCCDD69C832__table_s44_w3f_2w"></a>
@@ -223,7 +222,6 @@ status locator [--name=value] [--host=value] [--port=value]
 | <span class="keyword parmname">&#8209;&#8209;name</span> | Name/ID of the locator for which to display status. You must be connected to the JMX Manager to use this option. Can be used to obtain status of remote locators. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
 | <span class="keyword parmname">\\-\\-host</span> | Hostname or IP address on which the Locator is running.                                                                                                                                                                                                                                                                                                                                                                        |                   |
 | <span class="keyword parmname">\\-\\-port</span> | Port on which the locator is listening.                                                                                                                                                                                                                                                                                                                                                                                        | 10334             |
-| <span class="keyword parmname">\\-\\-pid</span>  | Process ID (PID) of the running locator.                                                                                                                                                                                                                                                                                                                                                                                       |                   |
 | <span class="keyword parmname">\\-\\-dir</span>  | Directory in which the locator was started.                                                                                                                                                                                                                                                                                                                                                                                    | current directory |
 
 <span class="tablecap">Table 3. Status Locator Parameters</span>
@@ -235,33 +233,16 @@ status locator
 status locator --name=locator1
 ```
 
-**Sample Output:**
-
-``` pre
-gfsh>status locator --name=locator1
-Locator in /home/user/gemfire/locator1 on ubuntu.local[10334] as locator1 is currently online.
-Process ID: 2401
-Uptime: 12 minutes 3 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/gemfire/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
--Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
-
-Cluster configuration service is up and running.
-```
-
 ## <a id="topic_E5DB49044978404D9D6B1971BF5D400D" class="no-quick-link"></a>status server
 
 Display the status of the specified Geode cache server.
 
-**Availability:** Online or offline. If you want to obtain the status of a server while you are offline, use the `--dir` or the `--pid` parameter.
+**Availability:** Online or offline. If you want to obtain the status of a server while you are offline, use the `--dir` option.
 
 **Syntax:**
 
 ``` pre
-status server [--name=value] [--pid=value] [--dir=value]
+status server [--name=value] [--dir=value]
 ```
 
 <a id="topic_E5DB49044978404D9D6B1971BF5D400D__table_zvn_z3f_2w"></a>
@@ -269,7 +250,6 @@ status server [--name=value] [--pid=value] [--dir=value]
 | Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                           | Default Value     |
 |----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
 | <span class="keyword parmname">&#8209;&#8209;name</span> | Name or ID of the Cache Server for which to display status. You must be connected to the JMX Manager to use this option. Can be used to obtain status of remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
-| <span class="keyword parmname">\\-\\-pid</span>  | Process ID (PID) of the running Geode Cache Server.                                                                                                                                                                                                                                                                                                                                                      |                   |
 | <span class="keyword parmname">\\-\\-dir </span> | Directory in which the Geode Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
 
 <span class="tablecap">Table 4. Status Server Parameters</span>
@@ -279,20 +259,4 @@ status server [--name=value] [--pid=value] [--dir=value]
 ``` pre
 status server
 status server --name=server1
-```
-
-**Sample Output:**
-
-``` pre
-gfsh>status server --name=server1
-Server in /home/user/gemfire/server1 on ubuntu.local[40404] as server1 is currently online.
-Process ID: 2726
-Uptime: 1 minute 3 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/gemfire/server1/server1.log
-JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true
- -XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
--Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
 ```

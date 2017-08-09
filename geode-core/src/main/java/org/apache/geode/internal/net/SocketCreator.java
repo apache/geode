@@ -264,7 +264,7 @@ public class SocketCreator {
   /**
    * Constructs new SocketCreator instance.
    */
-  SocketCreator(final SSLConfig sslConfig) {
+  public SocketCreator(final SSLConfig sslConfig) {
     this.sslConfig = sslConfig;
     initialize();
   }

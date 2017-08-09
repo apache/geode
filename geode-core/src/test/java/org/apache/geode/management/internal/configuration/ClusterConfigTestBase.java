@@ -18,19 +18,19 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.test.dunit.Host.getHost;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.junit.Before;
-import org.junit.Rule;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Rule;
+
+import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 public abstract class ClusterConfigTestBase {
   public String clusterConfigZipPath;
@@ -53,6 +53,9 @@ public abstract class ClusterConfigTestBase {
           .regions("regionForGroup2"));
 
   @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   protected Properties locatorProps;
@@ -70,7 +73,7 @@ public abstract class ClusterConfigTestBase {
   }
 
   private String buildClusterZipFile() throws Exception {
-    File clusterConfigDir = this.lsRule.getTempFolder().newFolder("cluster_config");
+    File clusterConfigDir = temporaryFolder.newFolder("cluster_config");
 
     File clusterDir = new File(clusterConfigDir, "cluster");
     String clusterXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
@@ -104,7 +107,7 @@ public abstract class ClusterConfigTestBase {
     createJarFileWithClass("Group2", "group2.jar", group2Dir);
 
 
-    File clusterConfigZip = new File(lsRule.getTempFolder().newFolder(), "cluster_config.zip");
+    File clusterConfigZip = new File(temporaryFolder.newFolder(), "cluster_config.zip");
     ZipUtils.zipDirectory(clusterConfigDir.getCanonicalPath(), clusterConfigZip.getCanonicalPath());
 
     FileUtils.deleteDirectory(clusterConfigDir);

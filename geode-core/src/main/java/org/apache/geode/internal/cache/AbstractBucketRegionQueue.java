@@ -298,13 +298,13 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   /**
-   * Marks batchSize number of events in the iterator as duplicate
+   * Marks all events in the iterator as duplicate
    */
-  protected void markEventsAsDuplicate(int batchSize, Iterator itr) {
+  protected void markEventsAsDuplicate(Iterator itr) {
     int i = 0;
-    // mark number of event equal to the batchSize for setPossibleDuplicate to
-    // true before this bucket becomes primary on the node
-    while (i < batchSize && itr.hasNext()) {
+    // mark setPossibleDuplicate to true for all events in this bucket before it becomes primary on
+    // the node
+    while (itr.hasNext()) {
       Object key = itr.next();
       Object senderEvent = getNoLRU(key, true, false, false);
 

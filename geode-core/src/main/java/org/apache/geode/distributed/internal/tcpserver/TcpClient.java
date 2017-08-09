@@ -134,6 +134,7 @@ public class TcpClient {
    */
   public Object requestToServer(InetAddress addr, int port, Object request, int timeout)
       throws IOException, ClassNotFoundException {
+
     return requestToServer(addr, port, request, timeout, true);
   }
 
@@ -146,7 +147,7 @@ public class TcpClient {
    * @param timeout Timeout for sending the message and receiving a reply
    * @param replyExpected Whether to wait for a reply
    *
-   * @return The reply, or null if no reply is expected
+   * @return the reply
    *
    * @throws IOException
    * @throws ClassNotFoundException
@@ -159,6 +160,28 @@ public class TcpClient {
     } else {
       ipAddr = new InetSocketAddress(addr, port); // fix for bug 30810
     }
+    return requestToServer(ipAddr, request, timeout, replyExpected);
+  }
+
+  /**
+   * Send a request to a Locator
+   * 
+   * @param ipAddr The locator's inet socket address
+   * @param request The request message
+   * @param timeout Timeout for sending the message and receiving a reply
+   * @param replyExpected Whether to wait for a reply
+   *
+   * @return The reply, or null if no reply is expected
+   *
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  public Object requestToServer(InetSocketAddress ipAddr, Object request, int timeout,
+      boolean replyExpected) throws IOException, ClassNotFoundException {
+    /*
+     * InetSocketAddress ipAddr; if (addr == null) { ipAddr = new InetSocketAddress(port); } else {
+     * ipAddr = new InetSocketAddress(addr, port); // fix for bug 30810 }
+     */
 
     long giveupTime = System.currentTimeMillis() + timeout;
 
@@ -209,6 +232,7 @@ public class TcpClient {
           logger.debug("received response: {}", response);
           return response;
         } catch (EOFException ex) {
+          logger.debug("requestToServer EOFException ", ex);
           EOFException eof = new EOFException("Locator at " + ipAddr
               + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
           eof.initCause(ex);

@@ -15,10 +15,7 @@
 package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.operations.OperationHandler;
-import org.apache.geode.protocol.operations.registry.OperationsHandlerRegistry;
-import org.apache.geode.protocol.operations.registry.exception.OperationHandlerNotRegisteredException;
+import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.serialization.SerializationService;
 
 /**
@@ -26,56 +23,25 @@ import org.apache.geode.serialization.SerializationService;
  * it to the appropriate handler.
  */
 public class ProtobufOpsProcessor {
-  private final OperationsHandlerRegistry opsHandlerRegistry;
+
+  private final OperationContextRegistry operationContextRegistry;
   private final SerializationService serializationService;
 
-  public ProtobufOpsProcessor(OperationsHandlerRegistry opsHandlerRegistry,
-      SerializationService serializationService) {
-    this.opsHandlerRegistry = opsHandlerRegistry;
+  public ProtobufOpsProcessor(SerializationService serializationService,
+      OperationContextRegistry operationContextRegistry) {
     this.serializationService = serializationService;
+    this.operationContextRegistry = operationContextRegistry;
   }
 
-  public ClientProtocol.Response process(ClientProtocol.Request request, Cache cache)
-      throws OperationHandlerNotRegisteredException, InvalidProtocolMessageException {
+  public ClientProtocol.Response process(ClientProtocol.Request request, Cache cache) {
     ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
-    OperationHandler opsHandler =
-        opsHandlerRegistry.getOperationHandlerForOperationId(requestType.getNumber());
+    OperationContext operationContext = operationContextRegistry.getOperationContext(requestType);
+    ClientProtocol.Response.Builder builder;
+    Result result = operationContext.getOperationHandler().process(serializationService,
+        operationContext.getFromRequest().apply(request), cache);
 
-    Object responseMessage =
-        opsHandler.process(serializationService, getRequestForOperationTypeID(request), cache);
-    return wrapResponseForOperationTypeID(requestType, responseMessage);
-  }
-
-  // package visibility for testing
-  static Object getRequestForOperationTypeID(ClientProtocol.Request request)
-      throws InvalidProtocolMessageException {
-    switch (request.getRequestAPICase()) {
-      case PUTREQUEST:
-        return request.getPutRequest();
-      case GETREQUEST:
-        return request.getGetRequest();
-      case PUTALLREQUEST:
-        return request.getPutAllRequest();
-      default:
-        throw new InvalidProtocolMessageException(
-            "Unknown request type: " + request.getRequestAPICase().getNumber());
-    }
-  }
-
-  static ClientProtocol.Response wrapResponseForOperationTypeID(
-      ClientProtocol.Request.RequestAPICase requestType, Object response)
-      throws InvalidProtocolMessageException {
-    ClientProtocol.Response.Builder builder = ClientProtocol.Response.newBuilder();
-    switch (requestType) {
-      case PUTREQUEST:
-        return builder.setPutResponse((RegionAPI.PutResponse) response).build();
-      case GETREQUEST:
-        return builder.setGetResponse((RegionAPI.GetResponse) response).build();
-      case PUTALLREQUEST:
-        return builder.setPutAllResponse((RegionAPI.PutAllResponse) response).build();
-      default:
-        throw new InvalidProtocolMessageException(
-            "Unknown request type: " + requestType.getNumber());
-    }
+    builder = (ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
+        operationContext.getToErrorResponse());
+    return builder.build();
   }
 }

@@ -16,7 +16,6 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;

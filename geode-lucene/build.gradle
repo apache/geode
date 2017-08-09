@@ -22,6 +22,7 @@ dependencies {
     compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
     compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
     compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
+    compile ('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
     compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
       exclude module: 'lucene-sandbox'
     }
@@ -33,9 +34,10 @@ dependencies {
     testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
     testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
     testCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
-    testCompile 'commons-codec:commons-codec:' + project.'codec.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
     testCompile files(project(':geode-core').sourceSets.test.output)
+    testCompile project(':geode-old-versions')
+
 }
 
 //The lucene integration tests don't have any issues that requiring forking

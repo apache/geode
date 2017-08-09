@@ -19,6 +19,20 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.cli.Result;
@@ -27,18 +41,6 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 @Category(DistributedTest.class)
 public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
@@ -143,14 +145,15 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   @Test
   public void testExportWithAbsolutePath() throws Exception {
     Path exportedZipPath =
-        lsRule.getTempFolder().getRoot().toPath().resolve("exportedCC.zip").toAbsolutePath();
+        temporaryFolder.getRoot().toPath().resolve("exportedCC.zip").toAbsolutePath();
 
     testExportClusterConfig(exportedZipPath.toString());
   }
 
   @Test
   public void testExportWithRelativePath() throws Exception {
-    testExportClusterConfig("tmp/exportedCC.zip");
+    testExportClusterConfig("mytemp/exportedCC.zip");
+    FileUtils.deleteQuietly(new File("mytemp"));
   }
 
   public void testExportClusterConfig(String zipFilePath) throws Exception {

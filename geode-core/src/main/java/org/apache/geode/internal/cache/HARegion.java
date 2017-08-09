@@ -39,6 +39,8 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.event.EventTracker;
+import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -112,8 +114,9 @@ public class HARegion extends DistributedRegion {
       boolean ifOld, Object expectedOldValue, boolean requireOldValue) {}
 
   @Override
-  public void createEventTracker() {
+  public EventTracker createEventTracker() {
     // event trackers aren't needed for HARegions
+    return NonDistributedEventTracker.getInstance();
   }
 
   /**

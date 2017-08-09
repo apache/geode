@@ -14,75 +14,241 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.query.Index;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
 
 @Category(DistributedTest.class)
-public class IndexCommandsDUnitTest extends CliCommandTestBase {
+public class IndexCommandsDUnitTest {
 
-  private static final long serialVersionUID = 1L;
-  private static final String VM1Name = "VM1";
-  private static final String group1 = "G1";
-  private static final String indexName = "Id1";
-  private static final String parRegPersName = "ParRegPers";
-  private static final String repRegPersName = "RepRegPer";
+  @Rule
+  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
-  Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint,
-      Class valueConstraint) {
+  @Rule
+  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  private static final String partitionedRegionName = "partitionedRegion";
+  private static final String indexName = "index1";
+  private static final String groupName = "group1";
+
+  @Before
+  public void before() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("groups", groupName);
+    MemberVM serverVM = startupRule.startServerAsJmxManager(0, props);
+    serverVM.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Region parReg =
+          createPartitionedRegion(partitionedRegionName, cache, String.class, Stock.class);
+      parReg.put("VMW", new Stock("VMW", 98));
+      parReg.put("APPL", new Stock("APPL", 600));
+    });
+    connect(serverVM);
+  }
+
+  public void connect(MemberVM serverVM) throws Exception {
+    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+  }
+
+  @Test
+  public void testCreateAndDestroyIndex() throws Exception {
+    // Create an index
+    CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
+    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+
+    assertTrue(indexIsListed());
+
+    // Destroy the index
+    CommandStringBuilder destroyStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    destroyStringBuilder.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
+    destroyStringBuilder.addOption(CliStrings.DESTROY_INDEX__REGION, "/" + partitionedRegionName);
+    gfsh.executeAndVerifyCommand(destroyStringBuilder.toString());
+
+    assertFalse(indexIsListed());
+  }
+
+  @Test
+  public void testCreateIndexWithMultipleIterators() throws Exception {
+    CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
+        "\"/" + partitionedRegionName + " s, s.history h\"");
+
+    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+
+    assertTrue(indexIsListed());
+  }
+
+  @Test
+  public void testCannotCreateIndexWithExistingIndexName() throws Exception {
+    createBaseIndexForTesting();
+
+    // CREATE the same index
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
+    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
+
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void testCannotCreateIndexInIncorrectRegion() throws Exception {
+    // Create index on a wrong regionPath
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/InvalidRegionName");
+    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
+
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+
+  @Test
+  public void testCannotCreateIndexWithInvalidIndexExpression() throws Exception {
+    // Create index with wrong expression
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "InvalidExpressionOption");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
+    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
+
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void testCannotCreateIndexWithInvalidIndexType() throws Exception {
+    // Create index with wrong type
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
+    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "InvalidIndexType");
+
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void testCannotDestroyIndexWithInvalidIndexName() throws Exception {
+    createBaseIndexForTesting();
+
+    // Destroy index with incorrect indexName
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.DESTROY_INDEX__NAME, "IncorrectIndexName");
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(gfsh.getGfshOutput()).contains(
+        CliStrings.format(CliStrings.DESTROY_INDEX__INDEX__NOT__FOUND, "IncorrectIndexName"));
+  }
+
+  @Test
+  public void testCannotDestroyIndexWithInvalidRegion() throws Exception {
+    createBaseIndexForTesting();
+
+    // Destroy index with incorrect region
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "IncorrectRegion");
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(gfsh.getGfshOutput()).contains(
+        CliStrings.format(CliStrings.DESTROY_INDEX__REGION__NOT__FOUND, "IncorrectRegion"));
+  }
+
+  @Test
+  public void testCannotDestroyIndexWithInvalidMember() throws Exception {
+    createBaseIndexForTesting();
+
+    // Destroy index with incorrect member name
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "Region");
+    csb.addOption(CliStrings.MEMBER, "InvalidMemberName");
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void testCannotDestroyIndexWithNoOptions() throws Exception {
+    createBaseIndexForTesting();
+
+    // Destroy index with no option
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void testDestroyIndexViaRegion() throws Exception {
+    createBaseIndexForTesting();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.DESTROY_INDEX__REGION, partitionedRegionName);
+    gfsh.executeAndVerifyCommand(csb.toString());
+
+    assertFalse(indexIsListed());
+  }
+
+  @Test
+  public void testDestroyIndexViaGroup() throws Exception {
+    createBaseIndexForTesting();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.GROUP, groupName);
+    gfsh.executeAndVerifyCommand(csb.toString());
+
+    assertFalse(indexIsListed());
+
+  }
+
+  private void createBaseIndexForTesting() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
+    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
+    gfsh.executeAndVerifyCommand(csb.toString());
+    assertTrue(indexIsListed());
+  }
+
+  private boolean indexIsListed() throws Exception {
+    gfsh.executeAndVerifyCommand(CliStrings.LIST_INDEX);
+    return gfsh.getGfshOutput().contains(indexName);
+  }
+
+  private static Region<?, ?> createPartitionedRegion(String regionName, Cache cache,
+      Class keyConstraint, Class valueConstraint) {
     RegionFactory regionFactory = cache.createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
     regionFactory.setKeyConstraint(keyConstraint);
@@ -90,778 +256,5 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
-  private Region<?, ?> createParRegWithPersistence(String regionName, String diskStoreName,
-      String diskDirName) {
-    Cache cache = getCache();
-    File diskStoreDirFile = new File(diskDirName);
-    diskStoreDirFile.deleteOnExit();
-
-    if (!diskStoreDirFile.exists()) {
-      diskStoreDirFile.mkdirs();
-    }
-
-    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskStoreFactory.setDiskDirs(new File[] {diskStoreDirFile});
-    diskStoreFactory.setMaxOplogSize(1);
-    diskStoreFactory.setAllowForceCompaction(true);
-    diskStoreFactory.setAutoCompact(false);
-    diskStoreFactory.create(diskStoreName);
-
-    /****
-     * Eviction Attributes
-     */
-    EvictionAttributes ea =
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
-
-    RegionFactory regionFactory = cache.createRegionFactory();
-    regionFactory.setDiskStoreName(diskStoreName);
-    regionFactory.setDiskSynchronous(true);
-    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    regionFactory.setEvictionAttributes(ea);
-
-    return regionFactory.create(regionName);
-  }
-
-  private Region<?, ?> createRepRegWithPersistence(String regionName, String diskStoreName,
-      String diskDirName) {
-    Cache cache = getCache();
-    File diskStoreDirFile = new File(diskDirName);
-    diskStoreDirFile.deleteOnExit();
-
-    if (!diskStoreDirFile.exists()) {
-      diskStoreDirFile.mkdirs();
-    }
-
-    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskStoreFactory.setDiskDirs(new File[] {diskStoreDirFile});
-    diskStoreFactory.setMaxOplogSize(1);
-    diskStoreFactory.setAllowForceCompaction(true);
-    diskStoreFactory.setAutoCompact(false);
-    diskStoreFactory.create(diskStoreName);
-
-    /****
-     * Eviction Attributes
-     */
-    EvictionAttributes ea =
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
-
-    RegionFactory regionFactory = cache.createRegionFactory();
-    regionFactory.setDiskStoreName(diskStoreName);
-    regionFactory.setDiskSynchronous(true);
-    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-    regionFactory.setEvictionAttributes(ea);
-
-    return regionFactory.create(regionName);
-  }
-
-  public void testCreateKeyIndexOnRegionWithPersistence() {
-    setupSystemPersist();
-
-    // Creating key indexes on Persistent Partitioned Region
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, "id1");
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "ty");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + parRegPersName);
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "key");
-    String commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("Command Result :\n", resultAsString);
-    assertTrue(Status.OK.equals(commandResult.getStatus()));
-    // Creating key indexes on Persistent Replicated Regions
-    csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, "id2");
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "ee");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + repRegPersName);
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "key");
-    commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command Result :\n", resultAsString);
-    assertTrue(Status.OK.equals(commandResult.getStatus()));
-  }
-
-  public void testCreateAndDestroyIndex() {
-    setupSystem();
-    /***
-     * Basic Create and Destroy
-     */
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-
-    String commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("testCreateAndDestroyIndex", resultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(resultAsString.contains(indexName));
-
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "/StocksParReg");
-    commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("testCreateAndDestroyIndex", resultAsString);
-    assertEquals(commandResult.getStatus(), Status.OK);
-
-    commandResult = executeCommand(CliStrings.LIST_INDEX);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(commandResult.getStatus(), Status.OK);
-    assertFalse(resultAsString.contains(indexName));
-  }
-
-  public void testCreateIndexMultipleIterators() {
-    setupSystem();
-
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "\"/StocksParReg s, s.history h\"");
-
-    String commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("testCreateIndexMultipleIterators", resultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("testCreateIndexMultipleIterators", resultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(resultAsString.contains(indexName));
-  }
-
-  @Category(FlakyTest.class) // GEODE-1048: HeadlessGFSH, random ports
-  @Test
-  public void testCreateMultipleIndexes() {
-    setupSystem();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-
-    String commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("testCreateMultipleIndexes", resultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName + "2");
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-
-    csb = new CommandStringBuilder(CliStrings.CREATE_DEFINED_INDEXES);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(resultAsString.contains(indexName));
-  }
-
-  @Category(FlakyTest.class) // GEODE-689: random ports, unused returns, HeadlessGfsh
-  @Test
-  public void testClearMultipleIndexes() {
-    setupSystem();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-
-    String commandString = csb.toString();
-    writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("testClearMultipleIndexes", resultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName + "2");
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-
-    csb = new CommandStringBuilder(CliStrings.CLEAR_DEFINED_INDEXES);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(!resultAsString.contains(indexName));
-  }
-
-  @Test
-  public void testCreateAndDestroyIndexOnMember() {
-    setupSystem();
-    /***
-     * Basic Create and Destroy
-     */
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.MEMBER, VM1Name);
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "key");
-
-    String commandString = csb.toString();
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexOnMember", resultAsString);
-
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexOnMember", resultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(resultAsString.contains(indexName));
-    assertTrue(resultAsString.contains(VM1Name));
-
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.MEMBER, VM1Name);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexOnMember", resultAsString);
-    assertEquals(commandResult.getStatus(), Status.OK);
-
-    commandResult = executeCommand(CliStrings.LIST_INDEX);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexOnMember", resultAsString);
-    assertEquals(commandResult.getStatus(), Status.OK);
-    assertFalse(resultAsString.contains(VM1Name));
-  }
-
-  @Category(FlakyTest.class) // GEODE-1684
-  @Test
-  public void testCreateAndDestroyIndexOnGroup() {
-    setupSystem();
-    /***
-     * Basic Create and Destroy
-     */
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-    csb.addOption(CliStrings.GROUP, group1);
-
-    String commandString = csb.toString();
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexOnGroup", resultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertEquals(true, resultAsString.contains(indexName));
-    assertEquals(true, resultAsString.contains(VM1Name));
-
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.GROUP, group1);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexOnGroup", resultAsString);
-    assertEquals(commandResult.getStatus(), Status.OK);
-
-    commandResult = executeCommand(CliStrings.LIST_INDEX);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(commandResult.getStatus(), Status.OK);
-    assertFalse(resultAsString.contains(VM1Name));
-
-    /***
-     * In case of a partitioned region , the index might get created on a member which hosts the
-     * region and is not the member of the group1
-     */
-    if (resultAsString.contains(indexName)) {
-      csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-      csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-      csb.addOption(CliStrings.DESTROY_INDEX__REGION, "/StocksParReg");
-      commandString = csb.toString();
-      commandResult = executeCommand(commandString);
-      resultAsString = commandResultToString(commandResult);
-      assertEquals(commandResult.getStatus(), Status.OK);
-
-      commandResult = executeCommand(CliStrings.LIST_INDEX);
-      resultAsString = commandResultToString(commandResult);
-      writeToLog("Command String :\n ", commandString);
-      writeToLog("testCreateAndDestroyIndexOnGroup", resultAsString);
-
-      assertEquals(commandResult.getStatus(), Status.OK);
-      assertFalse(resultAsString.contains(indexName));
-      assertTrue(resultAsString.contains(CliStrings.LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE));
-    }
-  }
-
-  @Test
-  public void testCreateAndDestroyIndexWithIncorrectInput() {
-    setupSystem();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-    String commandString = csb.toString();
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-
-    assertEquals(commandResult.getStatus(), Status.OK);
-
-    // CREATE the same index
-    csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    // assertTrue(resultAsString.contains(CliStrings.format(CliStrings.CREATE_INDEX__NAME__CONFLICT,
-    // indexName)));
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-
-
-    // Create index on a wrong regionPath
-    csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocsParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    // assertTrue(resultAsString.contains(CliStrings.format(CliStrings.CREATE_INDEX__INVALID__REGIONPATH,
-    // "/StocsParReg")));
-
-    // Create index with wrong expression
-    csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, "Id2");
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "rey");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-
-    // Create index with wrong type
-    csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "bash");
-
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-    assertTrue(resultAsString.contains(CliStrings.CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE));
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-
-    // Destroy index with incorrect indexName
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__NAME, "Id2");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    assertTrue(resultAsString
-        .contains(CliStrings.format(CliStrings.DESTROY_INDEX__INDEX__NOT__FOUND, "Id2")));
-
-    // Destroy index with incorrect region
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "Region");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    assertTrue(resultAsString
-        .contains(CliStrings.format(CliStrings.DESTROY_INDEX__REGION__NOT__FOUND, "Region")));
-
-    // Destroy index with incorrect memberName
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "Region");
-    csb.addOption(CliStrings.MEMBER, "wrongOne");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-
-    // Destroy index with no option
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    writeToLog("Command String :\n ", commandString);
-    writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
-    assertTrue(commandResult.getStatus().equals(Status.ERROR));
-  }
-
-  @Category(FlakyTest.class) // GEODE-1315
-  @Test
-  public void testDestroyIndexWithoutIndexName() {
-    setupSystem();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-    String commandString = csb.toString();
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
-    assertEquals(commandResult.getStatus(), Status.OK);
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertEquals(true, resultAsString.contains(indexName));
-    assertEquals(true, resultAsString.contains(VM1Name));
-
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.GROUP, group1);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/StocksParReg");
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__REGION, "StocksParReg");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-
-    csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(resultAsString.contains(CliStrings.LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE));
-  }
-
-  /**
-   * Asserts that creating and destroying indexes correctly updates the shared configuration.
-   */
-  @Category(FlakyTest.class) // GEODE-1954
-  @Test
-  public void testCreateDestroyUpdatesSharedConfig() {
-    disconnectAllFromDS();
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    jmxPort = ports[0];
-    httpPort = ports[1];
-    try {
-      jmxHost = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException ignore) {
-      jmxHost = "localhost";
-    }
-
-    final String regionName = "testIndexSharedConfigRegion";
-    final String groupName = "testIndexSharedConfigGroup";
-
-    final Properties locatorProps = new Properties();
-    locatorProps.setProperty(NAME, "Locator");
-    locatorProps.setProperty(MCAST_PORT, "0");
-    locatorProps.setProperty(LOG_LEVEL, "fine");
-    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-    locatorProps.setProperty(JMX_MANAGER, "true");
-    locatorProps.setProperty(JMX_MANAGER_START, "true");
-    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
-    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
-
-    // Start the Locator and wait for shared configuration to be available
-    final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        final File locatorLogFile = new File("locator-" + locatorPort + ".log");
-        try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
-              locatorLogFile, null, locatorProps);
-
-          WaitCriterion wc = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return locator.isSharedConfigurationRunning();
-            }
-
-            @Override
-            public String description() {
-              return "Waiting for shared configuration to be started";
-            }
-          };
-          Wait.waitForCriterion(wc, 5000, 500, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
-        }
-      }
-    });
-
-    // Start the default manager
-    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
-
-    // Create a cache in VM 1
-    VM vm = Host.getHost(0).getVM(1);
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Properties localProps = new Properties();
-        localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-        localProps.setProperty(GROUPS, groupName);
-        getSystem(localProps);
-        assertNotNull(getCache());
-
-        Region parReg = createParReg(regionName, getCache(), String.class, Stock.class);
-        parReg.put("VMW", new Stock("VMW", 98));
-      }
-    });
-
-    // Test creating the index
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    commandStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    commandStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
-    commandStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION, "\"/" + regionName + " p\"");
-    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    // Make sure the index exists in the shared config
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        ClusterConfigurationService sharedConfig =
-            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        String xmlFromConfig;
-        try {
-          xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
-          assertTrue(xmlFromConfig.contains(indexName));
-        } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
-        }
-      }
-    });
-
-    // Restart a member and make sure he gets the shared configuration
-    vm = Host.getHost(0).getVM(1);
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        getCache().close();
-
-        Properties localProps = new Properties();
-        localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-        localProps.setProperty(GROUPS, groupName);
-        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
-        getSystem(localProps);
-        Cache cache = getCache();
-        assertNotNull(cache);
-        Region region = cache.getRegion(regionName);
-        assertNotNull(region);
-        Index index = cache.getQueryService().getIndex(region, indexName);
-        assertNotNull(index);
-      }
-    });
-
-    // Test destroying the index
-    commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    commandStringBuilder.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
-    commandStringBuilder.addOption(CliStrings.DESTROY_INDEX__REGION, "/" + regionName);
-    cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    // Make sure the index was removed from the shared config
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        ClusterConfigurationService sharedConfig =
-            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        String xmlFromConfig;
-        try {
-          xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
-          assertFalse(xmlFromConfig.contains(indexName));
-        } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
-        }
-      }
-    });
-
-    // Restart the data member cache to make sure that the index is destroyed.
-    vm = Host.getHost(0).getVM(1);
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        getCache().close();
-
-        Properties localProps = new Properties();
-        localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-        localProps.setProperty(GROUPS, groupName);
-        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
-        getSystem(localProps);
-        Cache cache = getCache();
-        assertNotNull(cache);
-        Region region = cache.getRegion(regionName);
-        assertNotNull(region);
-        Index index = cache.getQueryService().getIndex(region, indexName);
-        assertNull(index);
-      }
-    });
-  }
-
-  private void writeToLog(String text, String resultAsString) {
-    LogWriterUtils.getLogWriter().info(getTestMethodName() + "\n");
-    LogWriterUtils.getLogWriter().info(resultAsString);
-  }
-
-  private void setupSystem() {
-    disconnectAllFromDS();
-    setUpJmxManagerOnVm0ThenConnect(null);
-    final String parRegName = "StocksParReg";
-
-    final VM manager = Host.getHost(0).getVM(0);
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    manager.invoke(new SerializableCallable() {
-      public Object call() {
-        Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);
-        parReg.put("VMW", new Stock("VMW", 98));
-        return parReg.put("APPL", new Stock("APPL", 600));
-      }
-    });
-
-    vm1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Properties props = new Properties();
-        props.setProperty(NAME, VM1Name);
-        props.setProperty(GROUPS, group1);
-        getSystem(props);
-        Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);
-        parReg.put("MSFT", new Stock("MSFT", 27));
-        return parReg.put("GOOG", new Stock("GOOG", 540));
-      }
-    });
-  }
-
-  private void setupSystemPersist() {
-    disconnectAllFromDS();
-    setUpJmxManagerOnVm0ThenConnect(null);
-    final String parRegName = "StocksParReg";
-
-    final VM manager = Host.getHost(0).getVM(0);
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    manager.invoke(new SerializableCallable() {
-      public Object call() {
-        Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);
-        parReg.put("VMW", new Stock("VMW", 98));
-        Region parRegPers = createParRegWithPersistence(parRegPersName, "testCreateIndexDiskstore1",
-            "testCreateIndexDiskDir1");
-        Region repRegPers = createRepRegWithPersistence(repRegPersName, "testCreateIndexDiskstore1",
-            "testCreateIndexDiskDir1");
-        return parReg.put("APPL", new Stock("APPL", 600));
-      }
-    });
-
-    vm1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Properties props = new Properties();
-        props.setProperty(NAME, VM1Name);
-        props.setProperty(GROUPS, group1);
-        getSystem(props);
-        Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);
-        parReg.put("MSFT", new Stock("MSFT", 27));
-        Region parRegPers = createParRegWithPersistence(parRegPersName, "testCreateIndexDiskstore2",
-            "testCreateIndexDiskDir2");
-        Region repRegPers = createRepRegWithPersistence(repRegPersName, "testCreateIndexDiskstore2",
-            "testCreateIndexDiskDir2");
-        return parReg.put("GOOG", new Stock("GOOG", 540));
-      }
-    });
-  }
 }
+

@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,6 +36,11 @@ public class PasswordUtilJUnitTest {
     String password = "password";
     String encrypted = "encrypted(C3CDC3485F7FF64381841CD344CBDF8A)";
     String decrypted = PasswordUtil.decrypt(encrypted);
-    assertEquals(password, decrypted);
+    assertThat(decrypted).isEqualTo(password);
+  }
+
+  @Test
+  public void testNullPassword() throws Exception {
+    assertThat(PasswordUtil.decrypt(null)).isNull();
   }
 }

@@ -238,7 +238,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     index.setSearchableFields(fields);
     index.setAnalyzer(analyzer);
     index.setFieldAnalyzers(fieldAnalyzers);
-    index.initializeAEQ(attributes, aeqId);
+    index.setupRepositoryManager();
+    index.setupAEQ(attributes, aeqId);
     return index;
 
   }

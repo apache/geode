@@ -14,27 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.domain;
 
-import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.createBannerResult;
-import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.createPageResult;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.util.JsonUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -45,12 +24,29 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.util.JsonUtil;
+
 
 /**
  * Domain object used for Data Commands Functions TODO : Implement DataSerializable
  */
 public class DataCommandResult implements /* Data */ Serializable {
-
   private static Logger logger = LogManager.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -560,7 +556,7 @@ public class DataCommandResult implements /* Data */ Serializable {
         section.addData("Message", infoString);
       }
       if (inputQuery != null) {
-        if (this.limit != -1) {
+        if (this.limit > 0) {
           section.addData("Limit", this.limit);
         }
         if (this.selectResult != null) {
@@ -572,67 +568,6 @@ public class DataCommandResult implements /* Data */ Serializable {
         }
       }
       return data;
-    }
-  }
-
-  /**
-   * This method returns a "Page" as dictated by arguments startCount and endCount. Returned result
-   * is not standard CommandResult and its consumed by Display Step
-   */
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public Result pageResult(int startCount, int endCount, String step) {
-    List<String> fields = new ArrayList<>();
-    List values = new ArrayList<String>();
-    fields.add(RESULT_FLAG);
-    values.add(operationCompletedSuccessfully);
-    fields.add(QUERY_PAGE_START);
-    values.add(startCount);
-    fields.add(QUERY_PAGE_END);
-    values.add(endCount);
-    if (errorString != null) {
-      fields.add("Message");
-      values.add(errorString);
-      return createBannerResult(fields, values, step);
-    } else {
-
-      if (infoString != null) {
-        fields.add("Message");
-        values.add(infoString);
-      }
-
-      if (selectResult != null) {
-        try {
-          TabularResultData table = ResultBuilder.createTabularResultData();
-          String[] headers;
-          Object[][] rows;
-          int rowCount = buildTable(table, startCount, endCount);
-          GfJsonArray array = table.getHeaders();
-          headers = new String[array.size()];
-          rows = new Object[rowCount][array.size()];
-          for (int i = 0; i < array.size(); i++) {
-            headers[i] = (String) array.get(i);
-            List<String> list = table.retrieveAllValues(headers[i]);
-            for (int j = 0; j < list.size(); j++) {
-              rows[j][i] = list.get(j);
-            }
-          }
-          fields.add(NUM_ROWS);
-          values.add((selectResult == null) ? 0 : selectResult.size());
-          if (queryTraceString != null) {
-            fields.add(QUERY_TRACE);
-            values.add(queryTraceString);
-          }
-          return createPageResult(fields, values, step, headers, rows);
-        } catch (GfJsonException e) {
-          String[] headers = new String[] {"Error"};
-          Object[][] rows = {{e.getMessage()}};
-          String fieldsArray[] = {QUERY_PAGE_START, QUERY_PAGE_END};
-          Object valuesArray[] = {startCount, endCount};
-          return createPageResult(fieldsArray, valuesArray, step, headers, rows);
-        }
-      } else {
-        return createBannerResult(fields, values, step);
-      }
     }
   }
 
@@ -727,6 +662,10 @@ public class DataCommandResult implements /* Data */ Serializable {
 
   public void setInputQuery(Object inputQuery) {
     this.inputQuery = inputQuery;
+  }
+
+  public void setLimit(int limit) {
+    this.limit = limit;
   }
 
   public static class KeyInfo implements /* Data */ Serializable {

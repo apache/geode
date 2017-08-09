@@ -14,13 +14,13 @@
  */
 package org.apache.geode.serialization.registry;
 
+import java.util.HashMap;
+import java.util.ServiceLoader;
+
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
-
-import java.util.HashMap;
-import java.util.ServiceLoader;
 
 public class SerializationCodecRegistry {
   private HashMap<SerializationType, TypeCodec> codecRegistry = new HashMap<>();

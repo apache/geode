@@ -131,8 +131,8 @@ public class LocatorDiscovery {
     while (!getDiscoverer().isStopped()) {
       try {
         RemoteLocatorJoinResponse response =
-            (RemoteLocatorJoinResponse) locatorClient.requestToServer(locatorId.getHost(),
-                locatorId.getPort(), request, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
+            (RemoteLocatorJoinResponse) locatorClient.requestToServer(locatorId.getHost(), request,
+                WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
         if (response != null) {
           LocatorHelper.addExchangedLocators(response.getLocators(), this.locatorListener);
           logger.info(LocalizedMessage.create(
@@ -181,8 +181,7 @@ public class LocatorDiscovery {
       try {
         response =
             (RemoteLocatorJoinResponse) locatorClient.requestToServer(remoteLocator.getHost(),
-                remoteLocator.getPort(), request,
-                WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
+                request, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
         if (response != null) {
           LocatorHelper.addExchangedLocators(response.getLocators(), this.locatorListener);
           logger.info(LocalizedMessage.create(
@@ -193,8 +192,7 @@ public class LocatorDiscovery {
             Thread.sleep(WAN_LOCATOR_PING_INTERVAL);
             RemoteLocatorPingResponse pingResponse =
                 (RemoteLocatorPingResponse) locatorClient.requestToServer(remoteLocator.getHost(),
-                    remoteLocator.getPort(), pingRequest,
-                    WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
+                    pingRequest, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
             if (pingResponse != null) {
               continue;
             }

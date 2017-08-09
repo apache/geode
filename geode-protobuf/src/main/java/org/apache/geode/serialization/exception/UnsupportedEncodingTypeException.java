@@ -21,4 +21,8 @@ public class UnsupportedEncodingTypeException extends Exception {
   public UnsupportedEncodingTypeException(String message) {
     super(message);
   }
+
+  public UnsupportedEncodingTypeException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

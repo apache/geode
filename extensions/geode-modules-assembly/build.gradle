@@ -27,14 +27,13 @@ dependencies {
   slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
 }
 
-jar.enabled = false
+jar.enabled = true
 extraArchive {
   sources = false
   javadoc = false
   tests = false
 }
 
-disableMavenPublishing()
 disableSigning()
 
 def getJarArtifact(module) {
@@ -43,8 +42,11 @@ def getJarArtifact(module) {
   }.collect { it.file }
 }
 
+def moduleBaseName = "Apache_Geode_Modules"
+
 def configureTcServerAssembly = {
-  archiveName = "Apache_Geode_Modules-${version}-tcServer.zip"
+  baseName = moduleBaseName
+  classifier = "tcServer"
 
   // All client-server files
   into('geode-cs/lib') {
@@ -116,7 +118,8 @@ def configureTcServerAssembly = {
 }
 
 def configureTcServer30Assembly = {
-  archiveName = "Apache_Geode_Modules-${version}-tcServer30.zip"
+  baseName = moduleBaseName
+  classifier = "tcServer30"
 
   into('geode-cs-tomcat-8/conf') {
     from('release/tcserver/geode-cs-tomcat-8') {
@@ -132,7 +135,8 @@ def configureTcServer30Assembly = {
 }
 
 task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
-  archiveName = "Apache_Geode_Modules-${version}-Tomcat.zip"
+  baseName = moduleBaseName
+  classifier = "Tomcat"
 
   // All client-server files
   into('lib') {
@@ -155,7 +159,8 @@ task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
 }
 
 task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:assemble') {
-  archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
+  baseName = moduleBaseName
+  classifier = "AppServer"
 
   into('lib') {
     from getJarArtifact(':extensions/geode-modules-session')
@@ -175,6 +180,9 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:asse
       filter(ReplaceTokens, tokens:['ANTLR_VERSION': project.'antlr.version'])
       filter(ReplaceTokens, tokens:['TX_VERSION': project.'javax.transaction-api.version'])
       filter(ReplaceTokens, tokens:['JGROUPS_VERSION': project.'jgroups.version'])
+      filter(ReplaceTokens, tokens:['SHIRO_VERSION': project.'shiro.version'])
+      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang.version'])
+      filter(ReplaceTokens, tokens:['COMMONS_VALIDATOR_VERSION': project.'commons-validator.version'])
     }
   }
 
@@ -202,3 +210,14 @@ dependencies {
 task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distAppServer'])
 
 build.dependsOn dist
+
+install.dependsOn dist
+uploadArchives.dependsOn dist
+
+artifacts {
+  archives distTcServer
+  archives distTcServer30
+  archives distAppServer
+  archives distTomcat
+}
+

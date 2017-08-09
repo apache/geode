@@ -18,18 +18,19 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.util.Properties;
+import java.util.Scanner;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.Scanner;
 
 @Category(IntegrationTest.class)
 public class LogNoPasswordTest {
@@ -37,7 +38,7 @@ public class LogNoPasswordTest {
   private static String PASSWORD = "abcdefghijklmn";
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withProperty(LOG_LEVEL, "DEBUG")
-      .withSecurityManager(MySecurityManager.class);
+      .withWorkingDir().withLogFile().withSecurityManager(MySecurityManager.class);
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();

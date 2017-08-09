@@ -15,15 +15,10 @@
 
 package org.apache.geode.modules.session.installer;
 
-import org.apache.geode.modules.session.installer.args.Argument;
-import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
-import org.apache.geode.modules.session.installer.args.ArgumentValues;
-import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
-import org.apache.geode.modules.session.installer.args.UsageException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,10 +27,18 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import org.apache.geode.internal.ExitCode;
+import org.apache.geode.modules.session.installer.args.Argument;
+import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
+import org.apache.geode.modules.session.installer.args.ArgumentValues;
+import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
+import org.apache.geode.modules.session.installer.args.UsageException;
 
 /**
  *
@@ -116,7 +119,7 @@ public class Installer {
         error.append(ux.getUsage());
       }
       log(error.toString());
-      System.exit(2);
+      ExitCode.INSTALL_FAILURE.doSystemExit();
     }
 
   }

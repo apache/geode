@@ -24,16 +24,13 @@ The `gfsh.bat` and `gfsh` bash script automatically append the required Apache G
 
 ## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_0D2EEA7A9ED54DFDB2E1EE955E47921E" class="no-quick-link"></a>JAR Libraries in CLASSPATH
 
-When you start up `gfsh`, it will automatically load required JAR files that have been packaged in the `gfsh-dependencies.jar` file. You do not need to modify your CLASSPATH to run gfsh. When starting servers and locators in gfsh, the start server and start locator commands will load `server-dependencies.jar` and `locator-dependencies.jar` files into the process CLASSPATH for you.
+When you start up `gfsh`, it will automatically load required JAR files that have been packaged in the `gfsh-dependencies.jar` file. You do not need to modify your CLASSPATH to run `gfsh`.
 
-These dependency JAR files are packaged in your Apache Geode installation in the `$GEMFIRE/lib` (or on Windows, the `%GEODE_HOME%\lib`) directory.
-
-**Note:**
-The `gfsh` command-line utility also searches for `tools.jar` (included with JDK) and adds it to gfsh's CLASSPATH. If you do not have a JDK installed, gfsh uses file-based communication instead for the `status` and `stop` commands. If using a JRE instead of JDK, gfsh must have read-write permissions in the working directory of the server and locator processes.
+The JAR files are packaged within your installation directory in the `lib` directory.
 
 ## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_02EEF9A519094EAD9D6B5C8E896EBA27" class="no-quick-link"></a>Machine Hostname
 
-On some operating systems, you may need to ensure that the hostname of your machine is configured in your system hosts file. For example, on Mac OSX you may need to map your machine's hostname to your IP address in the `/etc/hosts` file in order for `gfsh` and Pulse to operate correctly.
+On some operating systems, you may need to ensure that the hostname of your machine is configured in your system hosts file. For example, on macOS you may need to map your machine's hostname to your IP address in the `/etc/hosts` file in order for `gfsh` and Pulse to operate correctly.
 
 ## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_3FA4CD2B451B4A30A12D30DDE8DF8619" class="no-quick-link"></a>Configuring gfsh Security
 
@@ -81,7 +78,7 @@ export JAVA_ARGS="-Dgfsh.log-level=info -Dgfsh.log-dir=/machinename/logs"
 
 Then, start `gfsh`.
 
-In addition, `gfsh` records a history of commands in the `${SYS_USER_HOME}/.gemfire/.gfsh.history` file, which you can use to create scripts or review past commands.
+In addition, `gfsh` records a history of commands in the `${SYS_USER_HOME}/.geode/.gfsh.history` file, which you can use to create scripts or review past commands.
 
 ## Member Log Files
 

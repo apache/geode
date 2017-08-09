@@ -1416,7 +1416,7 @@ public class SystemAdmin {
   protected void usage(String cmd) {
     System.err.println(
         LocalizedStrings.SystemAdmin_USAGE.toLocalizedString() + " " + getUsageString(cmd));
-    System.exit(1);
+    ExitCode.FATAL.doSystemExit();
   }
 
   private final static String[] validCommands = new String[] {"version", "stats", START_LOCATOR,
@@ -2006,7 +2006,7 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     }
     if (cmdLine.size() == 0) {
       if (help) {
@@ -2041,7 +2041,7 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     }
     if (needsSysDir(cmd) && !help) {
       if (sysDirName != null && sysDirName.length() > 0) {
@@ -2237,7 +2237,7 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (IllegalArgumentException ex) {
       System.err.println(LocalizedStrings.SystemAdmin_ERROR_OPERATION_0_FAILED_BECAUSE_1
           .toLocalizedString(new Object[] {cmd, getExceptionMessage(ex)}));
@@ -2245,14 +2245,14 @@ public class SystemAdmin {
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (Exception ex) {
       System.err.println(LocalizedStrings.SystemAdmin_ERROR_OPERATION_0_FAILED_BECAUSE_1
           .toLocalizedString(new Object[] {cmd, getExceptionMessage(ex)}));
       if (debug) {
         ex.printStackTrace(System.err);
       }
-      System.exit(1); // fix for bug 28351
+      ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     }
   }
 }

@@ -86,6 +86,9 @@ public class MyTransactionFunction implements Function {
       case PRTransactionDUnitTest.VERIFY_REP_READ:
         verifyRepeatableRead(ctx);
         break;
+      case PRTransactionDUnitTest.UPDATE_NON_COLOCATION:
+        updateNonColocation(ctx);
+        break;
     }
     context.getResultSender().lastResult(null);
   }
@@ -474,6 +477,19 @@ public class MyTransactionFunction implements Function {
     mImp.internalResume(txState);
     Assert.assertTrue(oldCust.equals(custPR.get(custId)));
     mImp.commit();
+  }
+
+  private void updateNonColocation(RegionFunctionContext ctx) {
+    Region custPR = ctx.getDataSet();
+
+    ArrayList args = (ArrayList) ctx.getArguments();
+    CustId custId = (CustId) args.get(1);
+    Customer newCus = (Customer) args.get(2);
+
+    custPR.put(custId, newCus);
+    Assert.assertTrue(custPR.containsKey(custId));
+    Assert.assertTrue(custPR.containsValueForKey(custId));
+
   }
 
   public boolean hasResult() {

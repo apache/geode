@@ -15,8 +15,6 @@
 
 package org.apache.geode.cache.lucene.internal.cli;
 
-import java.io.Serializable;
-
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 
 public class LuceneQueryInfo extends LuceneFunctionSerializable {

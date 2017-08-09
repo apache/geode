@@ -14,18 +14,6 @@
  */
 package org.apache.geode.examples.security;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
-import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.SecurityManager;
-import org.apache.shiro.authz.Permission;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -39,6 +27,19 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+import org.apache.shiro.authz.Permission;
+
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.SecurityManager;
 
 /**
  * This class provides a sample implementation of {@link SecurityManager} for authentication and
@@ -112,6 +113,8 @@ public class ExampleSecurityManager implements SecurityManager {
 
     // check if the user has this permission defined in the context
     for (Role role : this.userNameToUser.get(user.name).roles) {
+      if (role == null)
+        continue;
       for (Permission permitted : role.permissions) {
         if (permitted.implies(context)) {
           return true;

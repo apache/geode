@@ -33,14 +33,10 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.ResourcePermission.Target;
 
 
 /**
@@ -93,10 +89,6 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       }
 
       REGION_PATH.validateName(indexInfo.getRegionPath());
-
-      // Every lucene index potentially writes to disk.
-      ((InternalCache) cache).getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE,
-          Target.DISK);
 
       indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
 

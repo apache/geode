@@ -26,7 +26,6 @@ import java.util.Properties;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,7 +46,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Ignore("GEODE-3134")
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneCommandsSecurityDUnitTest {
@@ -77,8 +75,8 @@ public class LuceneCommandsSecurityDUnitTest {
   protected UserNameAndExpectedResponse[] getCreateIndexUserNameAndExpectedResponses() {
     return new UserNameAndExpectedResponse[] {
         new UserNameAndExpectedResponse("noPermissions", true,
-            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:MANAGE:QUERY"),
-        new UserNameAndExpectedResponse("clusterManageQuery", false,
+            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:MANAGE:LUCENE"),
+        new UserNameAndExpectedResponse("clusterManageLucene", false,
             "Successfully created lucene index")};
   }
 
@@ -123,8 +121,8 @@ public class LuceneCommandsSecurityDUnitTest {
   protected UserNameAndExpectedResponse[] getListIndexesUserNameAndExpectedResponses() {
     return new UserNameAndExpectedResponse[] {
         new UserNameAndExpectedResponse("noPermissions", true,
-            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:READ:QUERY"),
-        new UserNameAndExpectedResponse("clusterReadQuery", false, "Index Name")};
+            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:READ:LUCENE"),
+        new UserNameAndExpectedResponse("clusterReadLucene", false, "Index Name")};
   }
 
   @Test
@@ -147,8 +145,8 @@ public class LuceneCommandsSecurityDUnitTest {
   protected UserNameAndExpectedResponse[] getDescribeIndexUserNameAndExpectedResponses() {
     return new UserNameAndExpectedResponse[] {
         new UserNameAndExpectedResponse("noPermissions", true,
-            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:READ:QUERY"),
-        new UserNameAndExpectedResponse("clusterReadQuery", false, "Index Name")};
+            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:READ:LUCENE"),
+        new UserNameAndExpectedResponse("clusterReadLucene", false, "Index Name")};
   }
 
   @Test
@@ -171,8 +169,8 @@ public class LuceneCommandsSecurityDUnitTest {
   protected UserNameAndExpectedResponse[] getDestroyIndexUserNameAndExpectedResponses() {
     return new UserNameAndExpectedResponse[] {
         new UserNameAndExpectedResponse("noPermissions", true,
-            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:MANAGE:QUERY"),
-        new UserNameAndExpectedResponse("clusterManageQuery", false,
+            "Unauthorized. Reason : noPermissions not authorized for CLUSTER:MANAGE:LUCENE"),
+        new UserNameAndExpectedResponse("clusterManageLucene", false,
             "Successfully destroyed lucene index")};
   }
 

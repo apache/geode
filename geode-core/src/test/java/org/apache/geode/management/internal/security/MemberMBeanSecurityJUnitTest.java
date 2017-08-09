@@ -41,8 +41,8 @@ public class MemberMBeanSecurityJUnitTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule // do not use a ClassRule since some test will do a shutdownMember
-  public ServerStarterRule server = ServerStarterRule.createWithoutTemporaryWorkingDir()
-      .withJMXManager().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server = new ServerStarterRule().withJMXManager()
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
       .withAutoStart();

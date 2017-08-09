@@ -15,28 +15,23 @@
 package org.apache.geode.management.internal.configuration;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.util.Properties;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -77,27 +72,15 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
     lsRule.stopMember(1);
-    lsRule.startServerVM(1, lsRule.getMember(0).getPort());
+    lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
   }
 
   private void verifyIndexRecreated(String indexName) throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-    String resultAsString = commandResultToString(commandResult);
-    assertEquals(Result.Status.OK, commandResult.getStatus());
+    gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    String resultAsString = gfshShellConnectionRule.getGfshOutput();
     assertTrue(resultAsString.contains(indexName));
-  }
-
-  private String commandResultToString(final CommandResult commandResult) {
-    assertNotNull(commandResult);
-    commandResult.resetToFirstLine();
-    StringBuilder buffer = new StringBuilder(commandResult.getHeader());
-    while (commandResult.hasNextLine()) {
-      buffer.append(commandResult.nextLine());
-    }
-    buffer.append(commandResult.getFooter());
-    return buffer.toString();
   }
 
   private void createIndexUsingGfsh(String regionName, String expression, String indexName)

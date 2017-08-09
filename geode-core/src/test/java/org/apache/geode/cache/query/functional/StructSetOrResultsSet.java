@@ -18,7 +18,9 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -93,8 +95,8 @@ public class StructSetOrResultsSet {
   public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder,
       String queries[]) {
 
-    Collection coll1 = null;
-    Collection coll2 = null;
+    Collection coll1;
+    Collection coll2;
     for (int j = 0; j < len; j++) {
       checkSelectResultTypes((SelectResults) r[j][0], (SelectResults) r[j][1], queries[j]);
       checkResultSizes((SelectResults) r[j][0], (SelectResults) r[j][1], queries[j]);
@@ -113,7 +115,7 @@ public class StructSetOrResultsSet {
   public void compareExternallySortedQueriesWithOrderBy(String[] queries, Object[][] baseResults)
       throws Exception {
     for (int i = 0; i < queries.length; i++) {
-      Query q = null;
+      Query q;
       try {
         String query = queries[i];
         int indexOfOrderBy = query.indexOf("order ");
@@ -124,7 +126,7 @@ public class StructSetOrResultsSet {
         int unorderedResultsSize = ((SelectResults) baseResults[i][1]).size();
         if (unorderedResultsSize == 0) {
           fail(
-              "The test results size is 0 , it possibly is not validating anything. rewrite the test");
+              "The test results size is 0. It may not be validating anything. Please rewrite the test.");
         }
         Wrapper wrapper = getOrderByComparatorAndLimitForQuery(queries[i], unorderedResultsSize);
         if (wrapper.validationLevel != ValidationLevel.NONE) {
@@ -230,7 +232,6 @@ public class StructSetOrResultsSet {
         @Override
         public int compare(Struct o1, Struct o2) {
           return obc.compare(o1.getFieldValues(), o2.getFieldValues());
-
         }
       };
     }

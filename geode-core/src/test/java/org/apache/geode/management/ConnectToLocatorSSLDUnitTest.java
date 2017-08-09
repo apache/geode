@@ -14,18 +14,6 @@
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -33,8 +21,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.util.test.TestUtil.getResourcePath;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.SecurableCommunicationChannels;
@@ -45,18 +44,6 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class ConnectToLocatorSSLDUnitTest {
@@ -66,88 +53,52 @@ public class ConnectToLocatorSSLDUnitTest {
 
   @Rule
   public RuleChain ruleChain =
-      RuleChain.outerRule(cleanupDUnitVMsRule).around(folder).around(lsRule);
+      RuleChain.outerRule(folder).around(cleanupDUnitVMsRule).around(lsRule);
 
   private File jks = null;
-  private File securityPropsFile = null;
+  protected File securityPropsFile = null;
   private Properties securityProps;
+  protected MemberVM locator;
 
   @Before
   public void before() throws Exception {
-    this.jks = new File(getResourcePath(getClass(), "/ssl/trusted.keystore"));
+    jks = new File(getResourcePath(getClass(), "/ssl/trusted.keystore"));
     securityPropsFile = folder.newFile("security.properties");
     securityProps = new Properties();
   }
 
-  @After
-  public void after() throws Exception {
-    securityPropsFile.delete();
-  }
-
-  private void setUpLocatorAndConnect(Properties securityProps) throws Exception {
-    MemberVM locator = lsRule.startLocatorVM(0, securityProps);
-
-    // saving the securityProps to a file
-    OutputStream out = new FileOutputStream(securityPropsFile);
-    securityProps.store(out, null);
-
-
-    /*
-     * When using SSL, the GfshShellConnectionRule seems to leave behind state in the JVM that
-     * causes test flakinesss. (Each test method will pass if run in isolation, but when all run
-     * together, the second and third tests will fail.) To avoid this issue, we connect to our
-     * locator from a remote VM which is cleaned up by the CleanupDUnitVMsRule in between tests.
-     */
-
+  protected void connect() throws Exception {
     final int locatorPort = locator.getPort();
     final String securityPropsFilePath = securityPropsFile.getCanonicalPath();
+
+    // when gfsh uses SSL, it leaves SSL state behind to contaminate other tests. So we pushed
+    // gfsh into a VM and uses a CleanupDUnitVM rule to clean it up after each test.
     Host.getHost(0).getVM(1).invoke(() -> {
       GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
-      try {
-        gfshConnector.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.locator,
-            CliStrings.CONNECT__SECURITY_PROPERTIES, securityPropsFilePath);
-      } finally {
-        gfshConnector.close();
-      }
+      gfshConnector.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.locator,
+          CliStrings.CONNECT__SECURITY_PROPERTIES, securityPropsFilePath);
+      gfshConnector.executeAndVerifyCommand("list members");
+      gfshConnector.close();
     });
+
   }
 
   @Test
-  public void testConnectToLocatorWithSSLJMX() throws Exception {
-    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.JMX);
+  public void testConnectToLocator_withSSL() throws Exception {
+    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.ALL);
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    // securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     securityProps.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     securityProps.setProperty(SSL_CIPHERS, "any");
 
-    setUpLocatorAndConnect(securityProps);
+    // start up the locator
+    locator = lsRule.startLocatorVM(0, securityProps);
+    // saving the securityProps to a file
+    OutputStream out = new FileOutputStream(securityPropsFile);
+    securityProps.store(out, null);
+
+    connect();
   }
-
-  @Test
-  public void testConnectToLocatorWithLegacyClusterSSL() throws Exception {
-    securityProps.setProperty(CLUSTER_SSL_ENABLED, "true");
-    securityProps.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
-    securityProps.setProperty(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-    securityProps.setProperty(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
-    securityProps.setProperty(CLUSTER_SSL_TRUSTSTORE, jks.getCanonicalPath());
-    securityProps.setProperty(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
-
-    setUpLocatorAndConnect(securityProps);
-  }
-
-  @Test
-  public void testConnectToLocatorWithLegacyJMXSSL() throws Exception {
-    securityProps.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
-    securityProps.setProperty(JMX_MANAGER_SSL_KEYSTORE, jks.getCanonicalPath());
-    securityProps.setProperty(JMX_MANAGER_SSL_KEYSTORE_PASSWORD, "password");
-    securityProps.setProperty(JMX_MANAGER_SSL_KEYSTORE_TYPE, "JKS");
-    securityProps.setProperty(JMX_MANAGER_SSL_TRUSTSTORE, jks.getCanonicalPath());
-    securityProps.setProperty(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD, "password");
-
-    setUpLocatorAndConnect(securityProps);
-  }
-
 }

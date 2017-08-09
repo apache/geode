@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.test;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;

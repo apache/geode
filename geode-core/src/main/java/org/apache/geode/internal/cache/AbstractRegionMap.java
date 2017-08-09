@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
@@ -768,7 +770,15 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
 
     if (owner instanceof HARegion && newValue instanceof CachedDeserializable) {
-      Object actualVal = ((CachedDeserializable) newValue).getDeserializedValue(null, null);
+      Object actualVal = null;
+      CachedDeserializable newValueCd = (CachedDeserializable) newValue;
+      try {
+        actualVal = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
+            sender.getVersionObject(), null);
+        newValue = new VMCachedDeserializable(actualVal, newValueCd.getSizeInBytes());
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException("Unable to deserialize HA event for region " + owner);
+      }
       if (actualVal instanceof HAEventWrapper) {
         HAEventWrapper haEventWrapper = (HAEventWrapper) actualVal;
         // Key was removed at sender side so not putting it into the HARegion
@@ -798,8 +808,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 HARegionQueue.addClientCQsAndInterestList(oldMsg, haEventWrapper, haContainer,
                     owner.getName());
                 haEventWrapper.setClientUpdateMessage(null);
-                newValue = CachedDeserializableFactory.create(original,
-                    ((CachedDeserializable) newValue).getSizeInBytes());
+                newValue = new VMCachedDeserializable(original, newValueCd.getSizeInBytes());
               } else {
                 original = null;
               }
@@ -1350,6 +1359,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                           owner.basicDestroyPart2(tombstone, event, inTokenMode,
                               true /* conflict with clear */, duringRI, true);
                           opCompleted = true;
+                        } else {
+                          Assert.assertTrue(event.getVersionTag() == null);
+                          Assert.assertTrue(newRe == tombstone);
+                          event.setVersionTag(getVersionTagFromStamp(tombstone.getVersionStamp()));
                         }
                       } catch (ConcurrentCacheModificationException ccme) {
                         VersionTag tag = event.getVersionTag();
@@ -1553,6 +1566,15 @@ public abstract class AbstractRegionMap implements RegionMap {
       releaseCacheModificationLock(owner, event);
     }
     return false;
+  }
+
+  private VersionTag getVersionTagFromStamp(VersionStamp stamp) {
+    VersionTag tag = VersionTag.create(stamp.getMemberID());
+    tag.setEntryVersion(stamp.getEntryVersion());
+    tag.setRegionVersion(stamp.getRegionVersion());
+    tag.setVersionTimeStamp(stamp.getVersionTimeStamp());
+    tag.setDistributedSystemId(stamp.getDistributedSystemId());
+    return tag;
   }
 
   public void txApplyDestroy(Object key, TransactionId txId, TXRmtEvent txEvent,
@@ -2502,9 +2524,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         RegionEntry re = getEntry(key);
         if (re != null) {
           synchronized (re) {
-            {
+            // Fix GEODE-3204, do not invalidate the region entry if it is a removed token
+            if (!Token.isRemoved(re.getValueAsToken())) {
               final int oldSize = owner.calculateRegionEntryValueSize(re);
-              boolean wasTombstone = re.isTombstone();
               Object oldValue = re.getValueInVM(owner); // OFFHEAP eei
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks
@@ -2532,9 +2554,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                 try {
                   re.setValue(owner, re.prepareValueForCache(owner, newValue, true));
                   EntryLogger.logTXInvalidate(_getOwnerObject(), key);
-                  if (wasTombstone) {
-                    owner.unscheduleTombstone(re);
-                  }
                   owner.updateSizeOnPut(key, oldSize, 0);
                 } catch (RegionClearedException rce) {
                   clearOccured = true;
@@ -2561,9 +2580,11 @@ public abstract class AbstractRegionMap implements RegionMap {
                 if (!cbEventInPending)
                   cbEvent.release();
               }
+              return;
             }
           }
-        } else { // re == null
+        }
+        { // re == null or region entry is removed token.
           // Fix bug#43594
           // In cases where bucket region is re-created, it may so happen
           // that the invalidate is already applied on the Initial image
@@ -3096,7 +3117,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
     final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
     final boolean isTXHost = txEntryState != null;
-    final boolean isClientTXOriginator = owner.cache.isClient() && !hasRemoteOrigin;
+    final boolean isClientTXOriginator = owner.getCache().isClient() && !hasRemoteOrigin;
     final boolean isRegionReady = owner.isInitialized();
     @Released
     EntryEventImpl cbEvent = null;

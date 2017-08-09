@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.operations.ExecuteCQOperationContext;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.Query;
@@ -40,10 +45,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.util.Set;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * @since GemFire 6.1
@@ -132,8 +136,10 @@ public class ExecuteCQ61 extends BaseCQCommand {
         }
       }
 
-      // test hook to trigger vMotion during CQ registration
+      // auth check to see if user can create CQ or not
+      securityService.authorize(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
 
+      // test hook to trigger vMotion during CQ registration
       if (CqServiceProvider.VMOTION_DURING_CQ_REGISTRATION_FLAG) {
         VMotionObserver vmo = VMotionObserverHolder.getInstance();
         vmo.vMotionBeforeCQRegistration();

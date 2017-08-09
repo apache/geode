@@ -37,6 +37,7 @@ import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -54,6 +55,8 @@ public class PoolFactoryImpl implements PoolFactory {
    * Used internally to pass the attributes from this factory to the real pool it is creating.
    */
   private PoolAttributes attributes = new PoolAttributes();
+
+  private List<HostAddress> locatorAddresses = new ArrayList<>();
 
   /**
    * The cache that created this factory
@@ -217,25 +220,24 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
-  private PoolFactory add(String host, int port, List l) {
+  private InetSocketAddress getInetSocketAddress(String host, int port) {
     if (port == 0) {
       throw new IllegalArgumentException("port must be greater than 0 but was " + port);
       // the rest of the port validation is done by InetSocketAddress
     }
+    InetSocketAddress sockAddr = null;
     try {
       InetAddress hostAddr = InetAddress.getByName(host);
-      InetSocketAddress sockAddr = new InetSocketAddress(hostAddr, port);
-      l.add(sockAddr);
+      sockAddr = new InetSocketAddress(hostAddr, port);
     } catch (UnknownHostException ignore) {
       // IllegalArgumentException ex = new IllegalArgumentException("Unknown host " + host);
       // ex.initCause(cause);
       // throw ex;
       // Fix for #45348
       logger.warn(LocalizedMessage.create(LocalizedStrings.PoolFactoryImpl_HOSTNAME_UNKNOWN, host));
-      InetSocketAddress sockAddr = new InetSocketAddress(host, port);
-      l.add(sockAddr);
+      sockAddr = new InetSocketAddress(host, port);
     }
-    return this;
+    return sockAddr;
   }
 
   public PoolFactory setSubscriptionAckInterval(int ackInterval) {
@@ -252,7 +254,10 @@ public class PoolFactoryImpl implements PoolFactory {
       throw new IllegalStateException(
           "A server has already been added. You can only add locators or servers; not both.");
     }
-    return add(host, port, this.attributes.locators);
+    InetSocketAddress isa = getInetSocketAddress(host, port);
+    this.attributes.locators.add(isa);
+    locatorAddresses.add(new HostAddress(isa, host));
+    return this;
   }
 
   public PoolFactory addServer(String host, int port) {
@@ -260,7 +265,8 @@ public class PoolFactoryImpl implements PoolFactory {
       throw new IllegalStateException(
           "A locator has already been added. You can only add locators or servers; not both.");
     }
-    return add(host, port, this.attributes.servers);
+    this.attributes.servers.add(getInetSocketAddress(host, port));
+    return this;
   }
 
   public PoolFactory reset() {
@@ -295,7 +301,9 @@ public class PoolFactoryImpl implements PoolFactory {
     setSubscriptionAckInterval(cp.getSubscriptionAckInterval());
     setServerGroup(cp.getServerGroup());
     setMultiuserAuthentication(cp.getMultiuserAuthentication());
-    this.attributes.locators.addAll(cp.getLocators());
+    for (InetSocketAddress inetSocketAddress : cp.getLocators()) {
+      addLocator(inetSocketAddress.getHostName(), inetSocketAddress.getPort());
+    }
     this.attributes.servers.addAll(cp.getServers());
   }
 
@@ -327,7 +335,7 @@ public class PoolFactoryImpl implements PoolFactory {
         registry.creatingPool();
       }
     }
-    return PoolImpl.create(this.pm, name, this.attributes);
+    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses);
   }
 
   /**

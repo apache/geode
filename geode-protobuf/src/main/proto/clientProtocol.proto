@@ -43,19 +43,19 @@ message Request {
         GetAllRequest getAllRequest = 5;
         RemoveRequest removeRequest = 6;
         RemoveAllRequest removeAllRequest = 7;
-        ListKeysRequest listKeysRequest = 8;
 
         CreateRegionRequest createRegionRequest = 21;
         DestroyRegionRequest destroyRegionRequest = 22;
 
-        PingRequest pingRequest = 41;
-        GetServersRequest getServersRequest = 42;
-        GetRegionsRequest getRegionsRequest = 43;
+//        PingRequest pingRequest = 41;
+        GetAvailableServersRequest getAvailableServersRequest = 42;
+        GetRegionNamesRequest getRegionNamesRequest = 43;
+        GetRegionRequest getRegionRequest = 44;
+
     }
 }
 
 message Response {
-    ResponseHeader responseHeader = 1;
     oneof responseAPI {
         PutResponse putResponse = 2;
         GetResponse getResponse = 3;
@@ -63,21 +63,16 @@ message Response {
         GetAllResponse getAllResponse = 5;
         RemoveResponse removeResponse = 6;
         RemoveAllResponse removeAllResponse = 7;
-        ListKeysResponse listKeysResponse = 8;
+
+        ErrorResponse errorResponse = 13;
 
         CreateRegionResponse createRegionResponse = 20;
         DestroyRegionResponse destroyRegionResponse = 21;
 
-        PingResponse pingResponse = 41;
-        GetServersResponse getServersResponse = 42;
-        GetRegionsResponse getRegionsResponse = 43;
-    }
-}
-
-message ResponseHeader {
-    oneof reponseType {
-        int32 responseTypeID = 1;
-        int32 errorCode = 2;
+//        PingResponse pingResponse = 41;
+        GetAvailableServersResponse getAvailableServersResponse = 42;
+        GetRegionNamesResponse getRegionNamesResponse = 43;
+        GetRegionResponse getRegionResponse = 44;
     }
 }
 

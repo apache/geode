@@ -14,7 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import org.apache.commons.lang.StringUtils;
+import java.lang.reflect.Method;
+
+import org.springframework.shell.event.ParseResult;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
+
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -23,15 +28,8 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.multistep.MultiStepCommand;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.springframework.shell.event.ParseResult;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
 
 /**
  * 
@@ -131,17 +129,7 @@ public class RemoteExecutionStrategy {
     if (cliMetadata.shellOnly()) {
       return true;
     }
-    MultiStepCommand stepCommand = method.getAnnotation(MultiStepCommand.class);
-    if (stepCommand == null) {
-      return false;
-    }
-    String step = result.getParamValue(MultiStepCommand.STEP_PARAMETER_NAME);
-    if (StringUtils.isBlank(step)) {
-      return false;
-    }
-    if (Arrays.asList(stepCommand.shellOnlyStep()).contains(step)) {
-      return true;
-    }
+
     return false;
   }
 

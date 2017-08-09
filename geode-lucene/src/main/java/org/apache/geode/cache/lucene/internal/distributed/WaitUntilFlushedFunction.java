@@ -17,8 +17,6 @@ package org.apache.geode.cache.lucene.internal.distributed;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
@@ -26,12 +24,8 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.lucene.LuceneService;
-import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.logging.LogService;
 
 /**
  * {@link WaitUntilFlushedFunction} will check all the members with index to wait until the events
@@ -41,8 +35,6 @@ import org.apache.geode.internal.logging.LogService;
 public class WaitUntilFlushedFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
   public static final String ID = WaitUntilFlushedFunction.class.getName();
-
-  private static final Logger logger = LogService.getLogger();
 
   @Override
   public void execute(FunctionContext context) {
@@ -58,9 +50,6 @@ public class WaitUntilFlushedFunction implements Function, InternalEntity {
     }
     long timeout = arg.getTimeout();
     TimeUnit unit = arg.getTimeunit();
-
-    LuceneService service = LuceneServiceProvider.get(cache);
-    LuceneIndexImpl index = (LuceneIndexImpl) service.getIndex(indexName, region.getFullPath());
 
     boolean result = false;
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, region.getFullPath());
