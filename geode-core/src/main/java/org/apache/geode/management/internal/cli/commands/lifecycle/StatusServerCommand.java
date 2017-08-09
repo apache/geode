@@ -80,7 +80,7 @@ public class StatusServerCommand implements GfshCommand {
       }
     } catch (IllegalArgumentException | IllegalStateException e) {
 
-      return ResultBuilder.createUserErrorResult(e.toString());
+      return ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;

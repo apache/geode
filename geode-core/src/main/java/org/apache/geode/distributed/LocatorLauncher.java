@@ -55,6 +55,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -683,7 +684,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   @Override
   protected Properties getDistributedSystemProperties() {
-    return super.getDistributedSystemProperties(getProperties());
+    Properties properties = super.getDistributedSystemProperties(getProperties());
+    return properties;
   }
 
   /**
@@ -740,6 +742,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       Thread.currentThread().interrupt();
       t = e;
       debug(e);
+    } catch (RuntimeException e) {
+      t = e;
+      throw e;
     } catch (Throwable e) {
       t = e;
       throw e;
@@ -890,15 +895,24 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     } catch (ConnectionFailedException e) {
       // failed to attach to locator JVM
       return createNoResponseState(e, "Failed to connect to locator with process id " + getPid());
-    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
-        | TimeoutException e) {
+    } catch (IOException e) {
       // failed to open or read file or dir
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + getPid());
+    } catch (MBeanInvocationFailedException e) {
+      // MBean either doesn't exist or method or attribute don't exist
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + getPid());
+    } catch (UnableToControlProcessException e) {
       return createNoResponseState(e,
           "Failed to communicate with locator with process id " + getPid());
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return createNoResponseState(e,
           "Interrupted while trying to communicate with locator with process id " + getPid());
+    } catch (TimeoutException e) {
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + getPid());
     }
   }
 
@@ -937,19 +951,28 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       // could not find pid file
       return createNoResponseState(e, "Failed to find process file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
-        | TimeoutException e) {
+    } catch (IOException e) {
       // failed to open or read file or dir
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + parsedPid);
+    } catch (MBeanInvocationFailedException e) {
+      // MBean either doesn't exist or method or attribute don't exist
       return createNoResponseState(e,
           "Failed to communicate with locator with process id " + parsedPid);
     } catch (PidUnavailableException e) {
       // couldn't determine pid from within locator JVM
       return createNoResponseState(e, "Failed to find usable process id within file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
+    } catch (UnableToControlProcessException e) {
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + parsedPid);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return createNoResponseState(e,
           "Interrupted while trying to communicate with locator with process id " + parsedPid);
+    } catch (TimeoutException e) {
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + parsedPid);
     }
   }
 
@@ -1033,8 +1056,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     } catch (ConnectionFailedException e) {
       // failed to attach to locator JVM
       return createNoResponseState(e, "Failed to connect to locator with process id " + getPid());
-    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException e) {
+    } catch (IOException e) {
       // failed to open or read file or dir
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + getPid());
+    } catch (MBeanInvocationFailedException e) {
+      // MBean either doesn't exist or method or attribute don't exist
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + getPid());
+    } catch (UnableToControlProcessException e) {
       return createNoResponseState(e,
           "Failed to communicate with locator with process id " + getPid());
     }
@@ -1066,7 +1096,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       // could not find pid file
       return createNoResponseState(e, "Failed to find process file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException e) {
+    } catch (IOException e) {
       // failed to open or read file or dir
       return createNoResponseState(e,
           "Failed to communicate with locator with process id " + parsedPid);
@@ -1074,6 +1104,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       Thread.currentThread().interrupt();
       return createNoResponseState(e,
           "Interrupted while trying to communicate with locator with process id " + parsedPid);
+    } catch (MBeanInvocationFailedException e) {
+      // MBean either doesn't exist or method or attribute don't exist
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + parsedPid);
     } catch (PidUnavailableException e) {
       // couldn't determine pid from within locator JVM
       return createNoResponseState(e, "Failed to find usable process id within file "
@@ -1081,11 +1115,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     } catch (TimeoutException e) {
       return createNoResponseState(e, "Timed out trying to find usable process id within file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
+    } catch (UnableToControlProcessException e) {
+      return createNoResponseState(e,
+          "Failed to communicate with locator with process id " + parsedPid);
     }
   }
 
   private LocatorState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(cause);
+    // info(errorMessage);
     return new LocatorState(this, Status.NOT_RESPONDING, errorMessage);
   }
 
@@ -1129,7 +1167,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public ObjectName getNamePattern() {
       try {
         return ObjectName.getInstance("GemFire:type=Member,*");
-      } catch (MalformedObjectNameException | NullPointerException e) {
+      } catch (MalformedObjectNameException e) {
+        return null;
+      } catch (NullPointerException e) {
         return null;
       }
     }
@@ -1974,17 +2014,17 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       this(status, // status
           errorMessage, // statusMessage
           System.currentTimeMillis(), // timestamp
-          launcher.getId(), // locatorLocation
+          null, // locatorLocation
           null, // pid
           0L, // uptime
           launcher.getWorkingDirectory(), // workingDirectory
-          ManagementFactory.getRuntimeMXBean().getInputArguments(), // jvmArguments
+          Collections.<String>emptyList(), // jvmArguments
           null, // classpath
           GemFireVersion.getGemFireVersion(), // gemfireVersion
-          System.getProperty("java.version"), // javaVersion
+          null, // javaVersion
           null, // logFile
-          launcher.getBindAddressAsString(), // host
-          launcher.getPortAsString(), // port
+          null, // host
+          null, // port
           null);// memberName
     }
 
