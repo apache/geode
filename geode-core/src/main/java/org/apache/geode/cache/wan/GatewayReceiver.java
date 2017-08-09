@@ -64,7 +64,7 @@ public interface GatewayReceiver {
   public static final String DEFAULT_HOSTNAME_FOR_SENDERS = "";
 
   /**
-   * The default value (true) for manually starting a <code>GatewayReceiver</code>.
+   * The default value for manually starting a <code>GatewayReceiver</code>.
    * 
    * @since GemFire 8.1
    */
