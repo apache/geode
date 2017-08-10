@@ -42,7 +42,7 @@ public abstract class BaseProcessStreamReaderIntegrationTest
     givenRunningProcessWithStreamReaders(ProcessSleeps.class);
 
     // act
-    process.destroy(); // results in SIGTERM which usually has an exit code 143
+    process.destroy(); // results in SIGTERM which usually has an exit code of 143
 
     // assert
     waitUntilProcessStops();
