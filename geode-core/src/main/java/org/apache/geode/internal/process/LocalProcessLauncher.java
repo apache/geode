@@ -17,11 +17,11 @@ package org.apache.geode.internal.process;
 import static org.apache.commons.lang.Validate.notNull;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * Creates a pid file and writes the process id to the pid file.

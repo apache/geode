@@ -22,6 +22,10 @@ import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
+import static org.apache.geode.internal.lang.StringUtils.wrap;
+import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
+import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,8 +69,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -81,7 +83,6 @@ import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.StartupStatusListener;
 import org.apache.geode.internal.process.UnableToControlProcessException;
-import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
@@ -222,8 +223,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
   public static void main(final String... args) {
     try {
       new Builder(args).build().run();
-    } catch (AttachAPINotFoundException e) {
-      System.err.println(e.getMessage());
+    } catch (AttachAPINotFoundException handled) {
+      System.err.println(handled.getMessage());
     }
   }
 
@@ -519,8 +520,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       final InetAddress localhost = SocketCreator.getLocalHost();
 
       return localhost.getCanonicalHostName();
-    } catch (UnknownHostException ignore) {
-      // consider using a better value for the host on which the Server is running to return here...
+    } catch (UnknownHostException handled) {
       // NOTE returning localhost/127.0.0.1 implies the serverBindAddress was null and no IP address
       // for localhost could be found
       return "localhost/127.0.0.1";
@@ -549,7 +549,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see #getServerPort()
    */
   public String getServerPortAsString() {
-    return ObjectUtils.defaultIfNull(getServerPort(), getDefaultServerPort()).toString();
+    return defaultIfNull(getServerPort(), getDefaultServerPort()).toString();
   }
 
   /**
@@ -647,14 +647,13 @@ public class ServerLauncher extends AbstractLauncher<String> {
     if (Command.isUnspecified(command)) {
       usage();
     } else {
-      info(StringUtils.wrap(helpMap.get(command.getName()), 80, ""));
+      info(wrap(helpMap.get(command.getName()), 80, ""));
       info("\n\nusage: \n\n");
-      info(StringUtils.wrap("> java ... " + getClass().getName() + ' ' + usageMap.get(command), 80,
-          "\t\t"));
+      info(wrap("> java ... " + getClass().getName() + ' ' + usageMap.get(command), 80, "\t\t"));
       info("\n\noptions: \n\n");
 
       for (final String option : command.getOptions()) {
-        info(StringUtils.wrap("--" + option + ": " + helpMap.get(option) + '\n', 80, "\t"));
+        info(wrap("--" + option + ": " + helpMap.get(option) + '\n', 80, "\t"));
       }
 
       info("\n\n");
@@ -668,7 +667,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see #help(org.apache.geode.distributed.ServerLauncher.Command)
    */
   public void usage() {
-    info(StringUtils.wrap(helpMap.get("launcher"), 80, "\t"));
+    info(wrap(helpMap.get("launcher"), 80, "\t"));
     info("\n\nSTART\n\n");
     help(Command.START);
     info("STATUS\n\n");
@@ -818,15 +817,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
             LocalizedStrings.Launcher_Command_START_PID_UNAVAILABLE_ERROR_MESSAGE.toLocalizedString(
                 getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
             e);
-      } catch (RuntimeException e) {
+      } catch (RuntimeException|Error e) {
         failOnStart(e);
         throw e;
       } catch (Exception e) {
         failOnStart(e);
         throw new RuntimeException(e);
-      } catch (Error e) {
-        failOnStart(e);
-        throw e;
       } finally {
         this.starting.set(false);
       }
@@ -908,7 +904,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
             synchronized (this) {
               wait(500L);
             }
-          } catch (InterruptedException ignore) {
+          } catch (InterruptedException handled) {
+            // loop back around
           }
         }
       } catch (RuntimeException e) {
@@ -1079,47 +1076,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
       controller.checkPidSupport();
       final String statusJson = controller.status();
       return ServerState.fromJson(statusJson);
-    }
-    // catch (NoClassDefFoundError error) {
-    // if (isAttachAPINotFound(error)) {
-    // throw new
-    // AttachAPINotFoundException(LocalizedStrings.Launcher_ATTACH_API_NOT_FOUND_ERROR_MESSAGE
-    // .toLocalizedString(), error);
-    // }
-    //
-    // throw error;
-    // }
-    catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(e, "Failed to connect to server with process id " + getPid());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + getPid());
-    }
-    // catch (MalformedObjectNameException e) { // impossible
-    // // JMX object name is bad
-    // return createNoResponseState(e, "Failed to communicate with server with process id " +
-    // getPid());
-    // }
-    catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + getPid());
-    }
-    // catch (PidUnavailableException e) {
-    // // couldn't determine pid from within server JVM
-    // return createNoResponseState(e, "Failed to communicate with server with process id " +
-    // getPid());
-    // }
-    catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + getPid());
-    } catch (InterruptedException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + getPid());
-    } catch (TimeoutException e) {
-      return createNoResponseState(e,
+      return createNoResponseState(handled, "Failed to connect to server with process id " + getPid());
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|InterruptedException|TimeoutException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with server with process id " + getPid());
     }
   }
@@ -1142,35 +1103,24 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       final String statusJson = controller.status();
       return ServerState.fromJson(statusJson);
-    } catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(e, "Failed to connect to server with process id " + parsedPid);
-    } catch (FileNotFoundException e) {
+      return createNoResponseState(handled, "Failed to connect to server with process id " + parsedPid);
+    } catch (FileNotFoundException handled) {
       // could not find pid file
-      return createNoResponseState(e, "Failed to find process file "
+      return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|TimeoutException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with server with process id " + parsedPid);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
-      return createNoResponseState(e,
+      return createNoResponseState(handled,
           "Interrupted while trying to communicate with server with process id " + parsedPid);
-    } catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + parsedPid);
-    } catch (PidUnavailableException e) {
+    } catch (PidUnavailableException handled) {
       // couldn't determine pid from within server JVM
-      return createNoResponseState(e, "Failed to find usable process id within file "
+      return createNoResponseState(handled, "Failed to find usable process id within file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + parsedPid);
-    } catch (TimeoutException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + parsedPid);
     }
   }
 
@@ -1236,41 +1186,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
       controller.checkPidSupport();
       controller.stop();
       return new ServerState(this, Status.STOPPED);
-    }
-    // catch (NoClassDefFoundError error) {
-    // if (isAttachAPINotFound(error)) {
-    // throw new
-    // AttachAPINotFoundException(LocalizedStrings.Launcher_ATTACH_API_NOT_FOUND_ERROR_MESSAGE
-    // .toLocalizedString(), error);
-    // }
-    //
-    // throw error;
-    // }
-    catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(e, "Failed to connect to server with process id " + getPid());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + getPid());
-    }
-    // catch (MalformedObjectNameException e) { // impossible
-    // // JMX object name is bad
-    // return createNoResponseState(e, "Failed to communicate with server with process id " +
-    // getPid());
-    // }
-    catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + getPid());
-    }
-    // catch (PidUnavailableException e) {
-    // // couldn't determine pid from within server JVM
-    // return createNoResponseState(e, "Failed to communicate with server with process id " +
-    // getPid());
-    // }
-    catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
+      return createNoResponseState(handled, "Failed to connect to server with process id " + getPid());
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with server with process id " + getPid());
     }
   }
@@ -1293,35 +1213,27 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       controller.stop();
       return new ServerState(this, Status.STOPPED);
-    } catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(e, "Failed to connect to server with process id " + parsedPid);
-    } catch (FileNotFoundException e) {
+      return createNoResponseState(handled, "Failed to connect to server with process id " + parsedPid);
+    } catch (FileNotFoundException handled) {
       // could not find pid file
-      return createNoResponseState(e, "Failed to find process file "
+      return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with server with process id " + parsedPid);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
-      return createNoResponseState(e,
+      return createNoResponseState(handled,
           "Interrupted while trying to communicate with server with process id " + parsedPid);
-    } catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + parsedPid);
-    } catch (PidUnavailableException e) {
+    } catch (PidUnavailableException handled) {
       // couldn't determine pid from within server JVM
-      return createNoResponseState(e, "Failed to find usable process id within file "
+      return createNoResponseState(handled, "Failed to find usable process id within file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (TimeoutException e) {
-      return createNoResponseState(e, "Timed out trying to find usable process id within file "
+    } catch (TimeoutException handled) {
+      return createNoResponseState(handled, "Timed out trying to find usable process id within file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with server with process id " + parsedPid);
     }
   }
 
@@ -1329,7 +1241,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
   void setIsRunningForTest() {
     this.running.set(true);
   }
-
 
   private ServerState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(cause);
@@ -1376,7 +1287,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public ObjectName getNamePattern() {
       try {
         return ObjectName.getInstance("GemFire:type=Member,*");
-      } catch (MalformedObjectNameException | NullPointerException ignore) {
+      } catch (MalformedObjectNameException | NullPointerException handled) {
         return null;
       }
     }
@@ -1728,7 +1639,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see org.apache.geode.distributed.ServerLauncher.Command
      */
     public Command getCommand() {
-      return ObjectUtils.defaultIfNull(this.command, DEFAULT_COMMAND);
+      return defaultIfNull(this.command, DEFAULT_COMMAND);
     }
 
     /**
@@ -1871,7 +1782,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
-      return ObjectUtils.defaultIfNull(this.force, DEFAULT_FORCE);
+      return defaultIfNull(this.force, DEFAULT_FORCE);
     }
 
     /**
@@ -2107,7 +2018,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #setServerPort(Integer)
      */
     public Integer getServerPort() {
-      return ObjectUtils.defaultIfNull(this.serverPort, getDefaultServerPort());
+      return defaultIfNull(this.serverPort, getDefaultServerPort());
     }
 
     boolean isServerPortSetByUser() {
@@ -2170,7 +2081,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #setWorkingDirectory(String)
      */
     public String getWorkingDirectory() {
-      return IOUtils.tryGetCanonicalPathElseGetAbsolutePath(
+      return tryGetCanonicalPathElseGetAbsolutePath(
           new File(defaultIfBlank(this.workingDirectory, DEFAULT_WORKING_DIRECTORY)));
     }
 
@@ -2450,7 +2361,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
                   .toLocalizedString("Server"));
         }
 
-        if (!SystemUtils.CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
+        if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
           throw new IllegalStateException(
               LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
                   .toLocalizedString("Server"));
@@ -2702,7 +2613,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         final File logFile = system.getConfig().getLogFile();
         if (logFile != null && logFile.isFile()) {
           final String logFileCanonicalPath =
-              IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
+              tryGetCanonicalPathElseGetAbsolutePath(logFile);
           if (isNotBlank(logFileCanonicalPath)) {
             return logFileCanonicalPath;
           }

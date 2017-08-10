@@ -20,6 +20,10 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
+import static org.apache.geode.internal.lang.StringUtils.wrap;
+import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
+import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -57,8 +61,6 @@ import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -74,7 +76,6 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.StartupStatusListener;
 import org.apache.geode.internal.process.UnableToControlProcessException;
-import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -188,8 +189,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   public static void main(final String... args) {
     try {
       new Builder(args).build().run();
-    } catch (AttachAPINotFoundException e) {
-      System.err.println(e.getMessage());
+    } catch (AttachAPINotFoundException handled) {
+      System.err.println(handled.getMessage());
     }
   }
 
@@ -378,8 +379,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       InetAddress localhost = SocketCreator.getLocalHost();
 
       return localhost.getCanonicalHostName();
-    } catch (UnknownHostException ignore) {
-      // consider using a better value for the host on which the Locator is running to return here
+    } catch (UnknownHostException handled) {
       // NOTE returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
       // localhost could be found
       return "localhost/127.0.0.1";
@@ -451,7 +451,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #getPort()
    */
   public String getPortAsString() {
-    return ObjectUtils.defaultIfNull(getPort(), getDefaultLocatorPort()).toString();
+    return defaultIfNull(getPort(), getDefaultLocatorPort()).toString();
   }
 
   /**
@@ -496,14 +496,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     if (Command.isUnspecified(command)) {
       usage();
     } else {
-      info(StringUtils.wrap(helpMap.get(command.getName()), 80, ""));
+      info(wrap(helpMap.get(command.getName()), 80, ""));
       info("\n\nusage: \n\n");
-      info(StringUtils.wrap("> java ... " + getClass().getName() + " " + usageMap.get(command), 80,
-          "\t\t"));
+      info(wrap("> java ... " + getClass().getName() + " " + usageMap.get(command), 80, "\t\t"));
       info("\n\noptions: \n\n");
 
       for (String option : command.getOptions()) {
-        info(StringUtils.wrap("--" + option + ": " + helpMap.get(option) + "\n", 80, "\t"));
+        info(wrap("--" + option + ": " + helpMap.get(option) + "\n", 80, "\t"));
       }
 
       info("\n\n");
@@ -517,7 +516,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #help(org.apache.geode.distributed.LocatorLauncher.Command)
    */
   public void usage() {
-    info(StringUtils.wrap(helpMap.get("launcher"), 80, "\t"));
+    info(wrap(helpMap.get("launcher"), 80, "\t"));
     info("\n\nSTART\n\n");
     help(Command.START);
     info("STATUS\n\n");
@@ -671,10 +670,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             LocalizedStrings.Launcher_Command_START_PID_UNAVAILABLE_ERROR_MESSAGE.toLocalizedString(
                 getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
             e);
-      } catch (Error e) {
-        failOnStart(e);
-        throw e;
-      } catch (RuntimeException e) {
+      } catch (Error|RuntimeException e) {
         failOnStart(e);
         throw e;
       } catch (Exception e) {
@@ -746,13 +742,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
       // prevent the JVM from exiting by joining the Locator Thread
       getLocator().waitToStop();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
-      t = e;
-      debug(e);
-    } catch (RuntimeException e) {
-      t = e;
-      throw e;
+      t = handled;
+      debug(handled);
     } catch (Throwable e) {
       t = e;
       throw e;
@@ -797,14 +790,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       try {
         LocatorStatusResponse response = statusLocator(getPort(), getBindAddress());
         return new LocatorState(this, Status.ONLINE, response);
-      } catch (Exception ignore) {
-        try {
-          synchronized (this) {
-            timeUnit.timedWait(this, interval);
-          }
-        } catch (InterruptedException ignoreInterrupt) {
-          // NOTE just go and send another status request to the Locator...
-        }
+      } catch (Exception handled) {
+        timedWait(interval, timeUnit);
       }
     }
 
@@ -814,6 +801,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     // not be
     // long enough.
     return new LocatorState(this, Status.NOT_RESPONDING);
+  }
+
+  private void timedWait(final long interval, final TimeUnit timeUnit) {
+    try {
+      synchronized (this) {
+        timeUnit.timedWait(this, interval);
+      }
+    } catch (InterruptedException handled) {
+      // NOTE just go and send another status request to the Locator...
+    }
   }
 
   /**
@@ -900,27 +897,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       controller.checkPidSupport();
       final String statusJson = controller.status();
       return LocatorState.fromJson(statusJson);
-    } catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(e, "Failed to connect to locator with process id " + getPid());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
+      return createNoResponseState(handled, "Failed to connect to locator with process id " + getPid());
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|TimeoutException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + getPid());
-    } catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + getPid());
-    } catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + getPid());
-    } catch (InterruptedException e) {
+    } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
-      return createNoResponseState(e,
+      return createNoResponseState(handled,
           "Interrupted while trying to communicate with locator with process id " + getPid());
-    } catch (TimeoutException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + getPid());
     }
   }
 
@@ -928,8 +914,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     try {
       LocatorStatusResponse response = statusLocator(getPort(), getBindAddress());
       return new LocatorState(this, Status.ONLINE, response);
-    } catch (Exception e) {
-      return createNoResponseState(e, "Failed to connect to locator " + getId());
+    } catch (Exception handled) {
+      return createNoResponseState(handled, "Failed to connect to locator " + getId());
     }
   }
 
@@ -951,35 +937,24 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
       final String statusJson = controller.status();
       return LocatorState.fromJson(statusJson);
-    } catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(e, "Failed to connect to locator with process id " + parsedPid);
-    } catch (FileNotFoundException e) {
+      return createNoResponseState(handled, "Failed to connect to locator with process id " + parsedPid);
+    } catch (FileNotFoundException handled) {
       // could not find pid file
-      return createNoResponseState(e, "Failed to find process file "
+      return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + parsedPid);
-    } catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|TimeoutException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + parsedPid);
     } catch (PidUnavailableException e) {
       // couldn't determine pid from within locator JVM
       return createNoResponseState(e, "Failed to find usable process id within file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + parsedPid);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
-      return createNoResponseState(e,
+      return createNoResponseState(handled,
           "Interrupted while trying to communicate with locator with process id " + parsedPid);
-    } catch (TimeoutException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + parsedPid);
     }
   }
 
@@ -1060,19 +1035,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       controller.checkPidSupport();
       controller.stop();
       return new LocatorState(this, Status.STOPPED);
-    } catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(e, "Failed to connect to locator with process id " + getPid());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + getPid());
-    } catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + getPid());
-    } catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
+      return createNoResponseState(handled, "Failed to connect to locator with process id " + getPid());
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + getPid());
     }
   }
@@ -1095,41 +1062,32 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
       controller.stop();
       return new LocatorState(this, Status.STOPPED);
-    } catch (ConnectionFailedException e) {
+    } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(e, "Failed to connect to locator with process id " + parsedPid);
-    } catch (FileNotFoundException e) {
+      return createNoResponseState(handled, "Failed to connect to locator with process id " + parsedPid);
+    } catch (FileNotFoundException handled) {
       // could not find pid file
-      return createNoResponseState(e, "Failed to find process file "
+      return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException e) {
-      // failed to open or read file or dir
-      return createNoResponseState(e,
+    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + parsedPid);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
-      return createNoResponseState(e,
+      return createNoResponseState(handled,
           "Interrupted while trying to communicate with locator with process id " + parsedPid);
-    } catch (MBeanInvocationFailedException e) {
-      // MBean either doesn't exist or method or attribute don't exist
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + parsedPid);
-    } catch (PidUnavailableException e) {
+    } catch (PidUnavailableException handled) {
       // couldn't determine pid from within locator JVM
-      return createNoResponseState(e, "Failed to find usable process id within file "
+      return createNoResponseState(handled, "Failed to find usable process id within file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (TimeoutException e) {
-      return createNoResponseState(e, "Timed out trying to find usable process id within file "
+    } catch (TimeoutException handled) {
+      return createNoResponseState(handled, "Timed out trying to find usable process id within file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (UnableToControlProcessException e) {
-      return createNoResponseState(e,
-          "Failed to communicate with locator with process id " + parsedPid);
     }
   }
 
   private LocatorState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(cause);
-    // info(errorMessage);
     return new LocatorState(this, Status.NOT_RESPONDING, errorMessage);
   }
 
@@ -1173,9 +1131,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public ObjectName getNamePattern() {
       try {
         return ObjectName.getInstance("GemFire:type=Member,*");
-      } catch (MalformedObjectNameException e) {
-        return null;
-      } catch (NullPointerException e) {
+      } catch (MalformedObjectNameException|NullPointerException handled) {
         return null;
       }
     }
@@ -1382,7 +1338,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see LocatorLauncher.Command
      */
     public Command getCommand() {
-      return ObjectUtils.defaultIfNull(this.command, DEFAULT_COMMAND);
+      return defaultIfNull(this.command, DEFAULT_COMMAND);
     }
 
     /**
@@ -1467,7 +1423,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
-      return ObjectUtils.defaultIfNull(this.force, DEFAULT_FORCE);
+      return defaultIfNull(this.force, DEFAULT_FORCE);
     }
 
     /**
@@ -1675,7 +1631,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setPort(Integer)
      */
     public Integer getPort() {
-      return ObjectUtils.defaultIfNull(port, getDefaultLocatorPort());
+      return defaultIfNull(port, getDefaultLocatorPort());
     }
 
     /**
@@ -1749,7 +1705,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setWorkingDirectory(String)
      */
     public String getWorkingDirectory() {
-      return IOUtils.tryGetCanonicalPathElseGetAbsolutePath(
+      return tryGetCanonicalPathElseGetAbsolutePath(
           new File(defaultIfBlank(this.workingDirectory, DEFAULT_WORKING_DIRECTORY)));
     }
 
@@ -1827,7 +1783,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
                   .toLocalizedString("Locator"));
         }
 
-        if (!SystemUtils.CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
+        if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
           throw new IllegalStateException(
               LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
                   .toLocalizedString("Locator"));
@@ -2083,7 +2039,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         if (logFile != null && logFile.isFile()) {
           final String logFileCanonicalPath =
-              IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
+              tryGetCanonicalPathElseGetAbsolutePath(logFile);
           if (isNotBlank(logFileCanonicalPath)) { // this is probably not need but a
                                                   // safe
             // check none-the-less.

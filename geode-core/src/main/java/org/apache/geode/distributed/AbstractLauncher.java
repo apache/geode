@@ -18,12 +18,18 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.internal.lang.ClassUtils.forName;
+import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
+import static org.apache.geode.internal.lang.StringUtils.defaultString;
+import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.BindException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -35,8 +41,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -46,10 +50,6 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.lang.ClassUtils;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -75,7 +75,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   @Deprecated
   protected static final long READ_PID_FILE_TIMEOUT_MILLIS = 2 * 1000;
 
-  public static final String DEFAULT_WORKING_DIRECTORY = SystemUtils.CURRENT_DIRECTORY;
+  public static final String DEFAULT_WORKING_DIRECTORY = CURRENT_DIRECTORY;
 
   public static final String SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "launcher.registerSignalHandlers";
@@ -94,12 +94,12 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   public AbstractLauncher() {
     try {
       if (Boolean.getBoolean(SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY)) {
-        ClassUtils.forName(SUN_SIGNAL_API_CLASS_NAME, new SunAPINotFoundException(
+        forName(SUN_SIGNAL_API_CLASS_NAME, new SunAPINotFoundException(
             "WARNING!!! Not running a Sun JVM.  Could not find the sun.misc.Signal class; Signal handling disabled."));
         RegisterSignalHandlerSupport.registerSignalHandlers();
       }
-    } catch (SunAPINotFoundException e) {
-      info(e.getMessage());
+    } catch (SunAPINotFoundException handled) {
+      info(handled.getMessage());
     }
   }
 
@@ -162,30 +162,18 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     if (url != null) {
       try {
         properties.load(new FileReader(new File(url.toURI())));
-      } catch (Exception ignored) {
+      } catch (IOException | URISyntaxException handled) {
+        // not in the file system, try the classpath
         try {
-          // not in the file system, try the classpath
           properties.load(
               AbstractLauncher.class.getResourceAsStream(DistributedSystem.getPropertiesFile()));
-        } catch (Exception ignore) {
-          // not in the file system or the classpath; gemfire.properties does not exist
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
         }
       }
     }
 
     return properties;
-  }
-
-  void initLogger() {
-    try {
-      this.logger.addHandler(new FileHandler(SystemUtils.CURRENT_DIRECTORY.concat("debug.log")));
-      this.logger.setLevel(Level.ALL);
-      this.logger.setUseParentHandlers(true);
-    } catch (IOException e) {
-      e.printStackTrace(System.err);
-      System.err.flush();
-      throw new RuntimeException(e);
-    }
   }
 
   /**
@@ -269,7 +257,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   protected String getLogFileCanonicalPath() {
     try {
       return getLogFile().getCanonicalPath();
-    } catch (IOException ignored) {
+    } catch (IOException handled) {
       return getLogFileName();
     }
   }
@@ -435,7 +423,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   int identifyPidOrNot() {
     try {
       return identifyPid();
-    } catch (PidUnavailableException ignored) {
+    } catch (PidUnavailableException handled) {
       return -1;
     }
   }
@@ -493,7 +481,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     private final Timestamp timestamp;
 
-    // consider refactoring the logic in this method into a DateTimeFormatUtils class
     protected static String format(final Date timestamp) {
       return timestamp == null ? ""
           : new SimpleDateFormat(DATE_TIME_FORMAT_PATTERN).format(timestamp);
@@ -502,12 +489,11 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     protected static Integer identifyPid() {
       try {
         return ProcessUtils.identifyPid();
-      } catch (PidUnavailableException ignore) {
+      } catch (PidUnavailableException handled) {
         return null;
       }
     }
 
-    // consider refactoring the logic in this method into a DateTimeFormatUtils class
     protected static String toDaysHoursMinutesSeconds(final Long milliseconds) {
       final StringBuilder buffer = new StringBuilder();
 
@@ -560,7 +546,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       this.pid = pid;
       this.uptime = uptime;
       this.workingDirectory = workingDirectory;
-      this.jvmArguments = ObjectUtils.defaultIfNull(Collections.unmodifiableList(jvmArguments),
+      this.jvmArguments = defaultIfNull(Collections.unmodifiableList(jvmArguments),
           Collections.<String>emptyList());
       this.classpath = classpath;
       this.gemfireVersion = gemfireVersion;
@@ -733,7 +719,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return a String value indicating the GemFire service's working (running) directory.
      */
     public String getWorkingDirectory() {
-      return ObjectUtils.defaultIfNull(workingDirectory, DEFAULT_WORKING_DIRECTORY);
+      return defaultIfNull(workingDirectory, DEFAULT_WORKING_DIRECTORY);
     }
 
     /**
@@ -799,7 +785,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     // the value of a Number as a String, or "" if null
     protected String toString(final Number value) {
-      return StringUtils.defaultString(value);
+      return defaultString(value);
     }
 
     // a String concatenation of all values separated by " "
@@ -809,7 +795,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     // the value of the String, or "" if value is null
     protected String toString(final String value) {
-      return ObjectUtils.defaultIfNull(value, "");
+      return defaultIfNull(value, "");
     }
   }
 
